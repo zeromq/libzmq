@@ -69,7 +69,7 @@ zmq::options_t::options_t () :
     ipv6 (0),
     immediate (0),
     filter (false),
-    invert_matching(false),
+    invert_matching (false),
     recv_routing_id (false),
     raw_socket (false),
     raw_notify (true),
@@ -103,10 +103,11 @@ zmq::options_t::options_t () :
 #endif
 }
 
-int zmq::options_t::set_curve_key(uint8_t * destination, const void * optval_, size_t optvallen_)
+int zmq::options_t::set_curve_key (uint8_t *destination,
+                                   const void *optval_,
+                                   size_t optvallen_)
 {
     switch (optvallen_) {
-
         case CURVE_KEYSIZE:
             memcpy (destination, optval_, optvallen_);
             mechanism = ZMQ_CURVE;
@@ -120,9 +121,9 @@ int zmq::options_t::set_curve_key(uint8_t * destination, const void * optval_, s
             break;
 
         case CURVE_KEYSIZE_Z85:
-            char z85_key [CURVE_KEYSIZE_Z85 + 1];
+            char z85_key[CURVE_KEYSIZE_Z85 + 1];
             memcpy (z85_key, (char *) optval_, optvallen_);
-            z85_key [CURVE_KEYSIZE_Z85] = 0;
+            z85_key[CURVE_KEYSIZE_Z85] = 0;
             if (zmq_z85_decode (destination, z85_key)) {
                 mechanism = ZMQ_CURVE;
                 return 0;
@@ -135,14 +136,16 @@ int zmq::options_t::set_curve_key(uint8_t * destination, const void * optval_, s
     return -1;
 }
 
-int zmq::options_t::setsockopt (int option_, const void *optval_,
-    size_t optvallen_)
+int zmq::options_t::setsockopt (int option_,
+                                const void *optval_,
+                                size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
-    if (is_int) memcpy(&value, optval_, sizeof (int));
-#if defined (ZMQ_ACT_MILITANT)
-    bool malformed = true;          //  Did caller pass a bad option value?
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
+#if defined(ZMQ_ACT_MILITANT)
+    bool malformed = true; //  Did caller pass a bad option value?
 #endif
 
     switch (option_) {
@@ -162,7 +165,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 
         case ZMQ_AFFINITY:
             if (optvallen_ == sizeof (uint64_t)) {
-                affinity = *((uint64_t*) optval_);
+                affinity = *((uint64_t *) optval_);
                 return 0;
             }
             break;
@@ -308,11 +311,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optval_ == NULL && optvallen_ == 0) {
                 socks_proxy_address.clear ();
                 return 0;
-            }
-            else
-            if (optval_ != NULL && optvallen_ > 0 ) {
+            } else if (optval_ != NULL && optvallen_ > 0) {
                 socks_proxy_address =
-                    std::string ((const char *) optval_, optvallen_);
+                  std::string ((const char *) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -356,9 +357,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 tcp_accept_filters.clear ();
                 return 0;
-            }
-            else
-            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL && *((const char*) optval_) != 0) {
+            } else if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL
+                       && *((const char *) optval_) != 0) {
                 std::string filter_str ((const char *) optval_, optvallen_);
                 tcp_address_mask_t mask;
                 int rc = mask.resolve (filter_str.c_str (), ipv6);
@@ -374,9 +374,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_uid_accept_filters.clear ();
                 return 0;
-            }
-            else
-            if (optvallen_ == sizeof (uid_t) && optval_ != NULL) {
+            } else if (optvallen_ == sizeof (uid_t) && optval_ != NULL) {
                 ipc_uid_accept_filters.insert (*((uid_t *) optval_));
                 return 0;
             }
@@ -386,9 +384,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_gid_accept_filters.clear ();
                 return 0;
-            }
-            else
-            if (optvallen_ == sizeof (gid_t) && optval_ != NULL) {
+            } else if (optvallen_ == sizeof (gid_t) && optval_ != NULL) {
                 ipc_gid_accept_filters.insert (*((gid_t *) optval_));
                 return 0;
             }
@@ -400,9 +396,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_pid_accept_filters.clear ();
                 return 0;
-            }
-            else
-            if (optvallen_ == sizeof (pid_t) && optval_ != NULL) {
+            } else if (optvallen_ == sizeof (pid_t) && optval_ != NULL) {
                 ipc_pid_accept_filters.insert (*((pid_t *) optval_));
                 return 0;
             }
@@ -412,7 +406,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_PLAIN_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
-                mechanism = value? ZMQ_PLAIN: ZMQ_NULL;
+                mechanism = value ? ZMQ_PLAIN : ZMQ_NULL;
                 return 0;
             }
             break;
@@ -421,9 +415,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
                 return 0;
-            }
-            else
-            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            } else if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_username.assign ((const char *) optval_, optvallen_);
                 as_server = 0;
                 mechanism = ZMQ_PLAIN;
@@ -435,9 +427,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
                 return 0;
-            }
-            else
-            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            } else if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_password.assign ((const char *) optval_, optvallen_);
                 as_server = 0;
                 mechanism = ZMQ_PLAIN;
@@ -452,30 +442,30 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        //  If curve encryption isn't built, these options provoke EINVAL
+            //  If curve encryption isn't built, these options provoke EINVAL
 #ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
-                mechanism = value? ZMQ_CURVE: ZMQ_NULL;
+                mechanism = value ? ZMQ_CURVE : ZMQ_NULL;
                 return 0;
             }
             break;
 
         case ZMQ_CURVE_PUBLICKEY:
-            if(0 == set_curve_key(curve_public_key, optval_, optvallen_)) {
+            if (0 == set_curve_key (curve_public_key, optval_, optvallen_)) {
                 return 0;
             }
             break;
 
         case ZMQ_CURVE_SECRETKEY:
-            if(0 == set_curve_key(curve_secret_key, optval_, optvallen_)) {
+            if (0 == set_curve_key (curve_secret_key, optval_, optvallen_)) {
                 return 0;
             }
             break;
 
         case ZMQ_CURVE_SERVERKEY:
-            if(0 == set_curve_key(curve_server_key, optval_, optvallen_)) {
+            if (0 == set_curve_key (curve_server_key, optval_, optvallen_)) {
                 as_server = 0;
                 return 0;
             }
@@ -489,7 +479,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        //  If libgssapi isn't installed, these options provoke EINVAL
+            //  If libgssapi isn't installed, these options provoke EINVAL
 #ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int && (value == 0 || value == 1)) {
@@ -509,7 +499,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL:
             if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
-                gss_service_principal.assign ((const char *) optval_, optvallen_);
+                gss_service_principal.assign ((const char *) optval_,
+                                              optvallen_);
                 mechanism = ZMQ_GSSAPI;
                 as_server = 0;
                 return 0;
@@ -524,18 +515,20 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_GSSAPI_PRINCIPAL_NAMETYPE:
-            if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
-                        || value == ZMQ_GSSAPI_NT_USER_NAME
-                        || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
+            if (is_int
+                && (value == ZMQ_GSSAPI_NT_HOSTBASED
+                    || value == ZMQ_GSSAPI_NT_USER_NAME
+                    || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
                 gss_principal_nt = value;
                 return 0;
             }
             break;
 
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE:
-            if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
-                        || value == ZMQ_GSSAPI_NT_USER_NAME
-                        || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
+            if (is_int
+                && (value == ZMQ_GSSAPI_NT_HOSTBASED
+                    || value == ZMQ_GSSAPI_NT_USER_NAME
+                    || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
                 gss_service_principal_nt = value;
                 return 0;
             }
@@ -567,7 +560,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             // Convert this to deciseconds from milliseconds
             value = value / 100;
             if (is_int && value >= 0 && value <= 6553) {
-                heartbeat_ttl = (uint16_t)value;
+                heartbeat_ttl = (uint16_t) value;
                 return 0;
             }
             break;
@@ -582,28 +575,28 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 #ifdef ZMQ_HAVE_VMCI
         case ZMQ_VMCI_BUFFER_SIZE:
             if (optvallen_ == sizeof (uint64_t)) {
-                vmci_buffer_size = *((uint64_t*) optval_);
+                vmci_buffer_size = *((uint64_t *) optval_);
                 return 0;
             }
             break;
 
         case ZMQ_VMCI_BUFFER_MIN_SIZE:
             if (optvallen_ == sizeof (uint64_t)) {
-                vmci_buffer_min_size = *((uint64_t*) optval_);
+                vmci_buffer_min_size = *((uint64_t *) optval_);
                 return 0;
             }
             break;
 
         case ZMQ_VMCI_BUFFER_MAX_SIZE:
             if (optvallen_ == sizeof (uint64_t)) {
-                vmci_buffer_max_size = *((uint64_t*) optval_);
+                vmci_buffer_max_size = *((uint64_t *) optval_);
                 return 0;
             }
             break;
 
         case ZMQ_VMCI_CONNECT_TIMEOUT:
             if (optvallen_ == sizeof (int)) {
-                vmci_connect_timeout = *((int*) optval_);
+                vmci_connect_timeout = *((int *) optval_);
                 return 0;
             }
             break;
@@ -620,11 +613,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optval_ == NULL && optvallen_ == 0) {
                 bound_device.clear ();
                 return 0;
-            }
-            else
-            if (optval_ != NULL && optvallen_ > 0 && optvallen_ <= BINDDEVSIZ) {
-                bound_device =
-                    std::string ((const char *) optval_, optvallen_);
+            } else if (optval_ != NULL && optvallen_ > 0
+                       && optvallen_ <= BINDDEVSIZ) {
+                bound_device = std::string ((const char *) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -638,7 +629,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 
 
         default:
-#if defined (ZMQ_ACT_MILITANT)
+#if defined(ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
             //  values, e.g. to check if security is enabled or not. This will not
             //  provoke a militant assert. However, passing bad values to a valid
@@ -647,7 +638,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 #endif
             break;
     }
-#if defined (ZMQ_ACT_MILITANT)
+#if defined(ZMQ_ACT_MILITANT)
     //  There is no valid use case for passing an error back to the application
     //  when it sent malformed arguments to a socket option. Use ./configure
     //  --with-militant to enable this checking.
@@ -658,12 +649,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) const
+int zmq::options_t::getsockopt (int option_,
+                                void *optval_,
+                                size_t *optvallen_) const
 {
     bool is_int = (*optvallen_ == sizeof (int));
     int *value = (int *) optval_;
-#if defined (ZMQ_ACT_MILITANT)
-    bool malformed = true;          //  Did caller pass a bad option value?
+#if defined(ZMQ_ACT_MILITANT)
+    bool malformed = true; //  Did caller pass a bad option value?
 #endif
 
     switch (option_) {
@@ -839,7 +832,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_SOCKS_PROXY:
             if (*optvallen_ >= socks_proxy_address.size () + 1) {
-                memcpy (optval_, socks_proxy_address.c_str (), socks_proxy_address.size () + 1);
+                memcpy (optval_, socks_proxy_address.c_str (),
+                        socks_proxy_address.size () + 1);
                 *optvallen_ = socks_proxy_address.size () + 1;
                 return 0;
             }
@@ -889,7 +883,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_PLAIN_USERNAME:
             if (*optvallen_ >= plain_username.size () + 1) {
-                memcpy (optval_, plain_username.c_str (), plain_username.size () + 1);
+                memcpy (optval_, plain_username.c_str (),
+                        plain_username.size () + 1);
                 *optvallen_ = plain_username.size () + 1;
                 return 0;
             }
@@ -897,7 +892,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_PLAIN_PASSWORD:
             if (*optvallen_ >= plain_password.size () + 1) {
-                memcpy (optval_, plain_password.c_str (), plain_password.size () + 1);
+                memcpy (optval_, plain_password.c_str (),
+                        plain_password.size () + 1);
                 *optvallen_ = plain_password.size () + 1;
                 return 0;
             }
@@ -911,7 +907,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             }
             break;
 
-        //  If curve encryption isn't built, these options provoke EINVAL
+            //  If curve encryption isn't built, these options provoke EINVAL
 #ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int) {
@@ -924,10 +920,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
-            }
-            else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                zmq_z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
+            } else if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_public_key,
+                                CURVE_KEYSIZE);
                 return 0;
             }
             break;
@@ -936,10 +931,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
-            }
-            else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                zmq_z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
+            } else if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_secret_key,
+                                CURVE_KEYSIZE);
                 return 0;
             }
             break;
@@ -948,10 +942,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
-            }
-            else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                zmq_z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
+            } else if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_server_key,
+                                CURVE_KEYSIZE);
                 return 0;
             }
             break;
@@ -964,7 +957,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             }
             break;
 
-        //  If libgssapi isn't installed, these options provoke EINVAL
+            //  If libgssapi isn't installed, these options provoke EINVAL
 #ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int) {
@@ -975,7 +968,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_GSSAPI_PRINCIPAL:
             if (*optvallen_ >= gss_principal.size () + 1) {
-                memcpy (optval_, gss_principal.c_str (), gss_principal.size () + 1);
+                memcpy (optval_, gss_principal.c_str (),
+                        gss_principal.size () + 1);
                 *optvallen_ = gss_principal.size () + 1;
                 return 0;
             }
@@ -983,7 +977,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL:
             if (*optvallen_ >= gss_service_principal.size () + 1) {
-                memcpy (optval_, gss_service_principal.c_str (), gss_service_principal.size () + 1);
+                memcpy (optval_, gss_service_principal.c_str (),
+                        gss_service_principal.size () + 1);
                 *optvallen_ = gss_service_principal.size () + 1;
                 return 0;
             }
@@ -1055,7 +1050,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_BINDTODEVICE:
             if (*optvallen_ >= bound_device.size () + 1) {
-                memcpy (optval_, bound_device.c_str (), bound_device.size () + 1);
+                memcpy (optval_, bound_device.c_str (),
+                        bound_device.size () + 1);
                 *optvallen_ = bound_device.size () + 1;
                 return 0;
             }
@@ -1069,12 +1065,12 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             break;
 
         default:
-#if defined (ZMQ_ACT_MILITANT)
+#if defined(ZMQ_ACT_MILITANT)
             malformed = false;
 #endif
             break;
     }
-#if defined (ZMQ_ACT_MILITANT)
+#if defined(ZMQ_ACT_MILITANT)
     if (malformed)
         zmq_assert (false);
 #endif

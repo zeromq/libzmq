@@ -29,14 +29,16 @@
 
 #include "testutil.hpp"
 
-void ffn(void *data, void *hint) {
+void ffn (void *data, void *hint)
+{
     // Signal that ffn has been called by writing "freed" to hint
-    (void) data;      //  Suppress 'unused' warnings at compile time
-    memcpy(hint, (void *) "freed", 5);
+    (void) data; //  Suppress 'unused' warnings at compile time
+    memcpy (hint, (void *) "freed", 5);
 }
 
-int main (void) {
-    setup_test_environment();
+int main (void)
+{
+    setup_test_environment ();
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -62,74 +64,74 @@ int main (void) {
     zmq_msg_t msg;
     char hint[5];
     char data[255];
-    memset(data, 0, 255);
-    memcpy(data, (void *) "data", 4);
-    memcpy(hint, (void *) "hint", 4);
-    rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void*)hint);
+    memset (data, 0, 255);
+    memcpy (data, (void *) "data", 4);
+    memcpy (hint, (void *) "hint", 4);
+    rc = zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint);
     assert (rc == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
-    assert (memcmp(hint, "freed", 5) == 0);
-    memcpy(hint, (void *) "hint", 4);
+    assert (memcmp (hint, "freed", 5) == 0);
+    memcpy (hint, (void *) "hint", 4);
 
     // Making and closing a copy triggers ffn
     zmq_msg_t msg2;
-    zmq_msg_init(&msg2);
-    rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void *)hint);
+    zmq_msg_init (&msg2);
+    rc = zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint);
     assert (rc == 0);
-    rc = zmq_msg_copy(&msg2, &msg);
+    rc = zmq_msg_copy (&msg2, &msg);
     assert (rc == 0);
-    rc = zmq_msg_close(&msg2);
+    rc = zmq_msg_close (&msg2);
     assert (rc == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
-    assert (memcmp(hint, "freed", 5) == 0);
-    memcpy(hint, (void *) "hint", 4);
+    assert (memcmp (hint, "freed", 5) == 0);
+    memcpy (hint, (void *) "hint", 4);
 
     // Test that sending a message triggers ffn
-    rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void *)hint);
+    rc = zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint);
     assert (rc == 0);
 
-    zmq_msg_send(&msg, dealer, 0);
+    zmq_msg_send (&msg, dealer, 0);
     char buf[255];
-    rc = zmq_recv(router, buf, 255, 0);
+    rc = zmq_recv (router, buf, 255, 0);
     assert (rc > -1);
-    rc = zmq_recv(router, buf, 255, 0);
+    rc = zmq_recv (router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 4) == 0);
+    assert (memcmp (data, buf, 4) == 0);
 
     msleep (SETTLE_TIME);
-    assert (memcmp(hint, "freed", 5) == 0);
-    memcpy(hint, (void *) "hint", 4);
-    rc = zmq_msg_close(&msg);
+    assert (memcmp (hint, "freed", 5) == 0);
+    memcpy (hint, (void *) "hint", 4);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     // Sending a copy of a message triggers ffn
-    rc = zmq_msg_init(&msg2);
+    rc = zmq_msg_init (&msg2);
     assert (rc == 0);
-    rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void *)hint);
+    rc = zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint);
     assert (rc == 0);
-    rc = zmq_msg_copy(&msg2, &msg);
+    rc = zmq_msg_copy (&msg2, &msg);
     assert (rc == 0);
 
-    zmq_msg_send(&msg, dealer, 0);
-    rc = zmq_recv(router, buf, 255, 0);
+    zmq_msg_send (&msg, dealer, 0);
+    rc = zmq_recv (router, buf, 255, 0);
     assert (rc > -1);
-    rc = zmq_recv(router, buf, 255, 0);
+    rc = zmq_recv (router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 4) == 0);
-    rc = zmq_msg_close(&msg2);
+    assert (memcmp (data, buf, 4) == 0);
+    rc = zmq_msg_close (&msg2);
     assert (rc == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
-    assert (memcmp(hint, "freed", 5) == 0);
-    memcpy(hint, (void *) "hint", 4);
+    assert (memcmp (hint, "freed", 5) == 0);
+    memcpy (hint, (void *) "hint", 4);
 
     //  Deallocate the infrastructure.
     rc = zmq_close (router);
@@ -140,6 +142,5 @@ int main (void) {
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-    return 0 ;
+    return 0;
 }
-

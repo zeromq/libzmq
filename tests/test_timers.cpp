@@ -30,23 +30,23 @@
 #define __STDC_LIMIT_MACROS // to define SIZE_MAX with older compilers
 #include "testutil.hpp"
 
-void handler (int timer_id, void* arg)
+void handler (int timer_id, void *arg)
 {
-    (void) timer_id;               //  Stop 'unused' compiler warnings
-    *((bool *)arg) = true;
+    (void) timer_id; //  Stop 'unused' compiler warnings
+    *((bool *) arg) = true;
 }
 
-int sleep_and_execute(void *timers_) 
+int sleep_and_execute (void *timers_)
 {
     int timeout = zmq_timers_timeout (timers_);
 
     //  Sleep methods are inaccurate, so we sleep in a loop until time arrived
     while (timeout > 0) {
         msleep (timeout);
-        timeout = zmq_timers_timeout(timers_);
+        timeout = zmq_timers_timeout (timers_);
     }
 
-    return zmq_timers_execute(timers_);
+    return zmq_timers_execute (timers_);
 }
 
 void test_null_timer_pointers ()
@@ -138,7 +138,7 @@ void test_corner_cases ()
     assert (rc == -1 && errno == EINVAL);
 
     //  timeout without any timers active
-    rc = zmq_timers_timeout(timers);
+    rc = zmq_timers_timeout (timers);
     assert (rc == -1);
 
     rc = zmq_timers_destroy (&timers);
@@ -149,7 +149,7 @@ int main (void)
 {
     setup_test_environment ();
 
-    void* timers = zmq_timers_new ();
+    void *timers = zmq_timers_new ();
     assert (timers);
 
     bool timer_invoked = false;
@@ -163,14 +163,14 @@ int main (void)
     assert (!timer_invoked);
 
     //  Wait half the time and check again
-    long timeout = zmq_timers_timeout(timers);
+    long timeout = zmq_timers_timeout (timers);
     assert (rc != -1);
     msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
-    // Wait until the end    
+    // Wait until the end
     rc = sleep_and_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
@@ -193,7 +193,7 @@ int main (void)
     assert (!timer_invoked);
 
     // Wait until the end
-    rc = sleep_and_execute(timers);
+    rc = sleep_and_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
     timer_invoked = false;
@@ -201,7 +201,7 @@ int main (void)
     // reschedule
     rc = zmq_timers_set_interval (timers, timer_id, 50);
     assert (rc == 0);
-    rc = sleep_and_execute(timers);
+    rc = sleep_and_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
     timer_invoked = false;

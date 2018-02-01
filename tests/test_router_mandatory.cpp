@@ -34,8 +34,8 @@ bool send_msg_to_peer_if_ready (void *router, const char *peer_routing_id)
 {
     int rc = zmq_socket_get_peer_state (router, peer_routing_id, 1);
     if (rc == -1)
-        printf ("zmq_socket_get_peer_state failed for %s: %i\n", peer_routing_id,
-                errno);
+        printf ("zmq_socket_get_peer_state failed for %s: %i\n",
+                peer_routing_id, errno);
     assert (rc != -1);
     if (rc & ZMQ_POLLOUT) {
         rc = zmq_send (router, peer_routing_id, 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
@@ -183,8 +183,8 @@ void test_get_peer_state_corner_cases ()
     const char peer_routing_id[] = "foo";
 
     //  call get_peer_state with NULL socket
-    int rc =
-      zmq_socket_get_peer_state (NULL, peer_routing_id, strlen (peer_routing_id));
+    int rc = zmq_socket_get_peer_state (NULL, peer_routing_id,
+                                        strlen (peer_routing_id));
     assert (rc == -1 && errno == ENOTSOCK);
 
     void *ctx = zmq_ctx_new ();
@@ -195,13 +195,13 @@ void test_get_peer_state_corner_cases ()
     assert (router);
 
     //  call get_peer_state with a non-ROUTER socket
-    rc =
-      zmq_socket_get_peer_state (dealer, peer_routing_id, strlen (peer_routing_id));
+    rc = zmq_socket_get_peer_state (dealer, peer_routing_id,
+                                    strlen (peer_routing_id));
     assert (rc == -1 && errno == ENOTSUP);
 
     //  call get_peer_state for an unknown routing id
-    rc =
-      zmq_socket_get_peer_state (router, peer_routing_id, strlen (peer_routing_id));
+    rc = zmq_socket_get_peer_state (router, peer_routing_id,
+                                    strlen (peer_routing_id));
     assert (rc == -1 && errno == EHOSTUNREACH);
 
     rc = zmq_close (router);

@@ -67,12 +67,14 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     lb.attach (pipe_);
 }
 
-int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
+int zmq::dealer_t::xsetsockopt (int option_,
+                                const void *optval_,
+                                size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
-    if (is_int) memcpy(&value, optval_, sizeof (int));
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
 
     switch (option_) {
         case ZMQ_PROBE_ROUTER:

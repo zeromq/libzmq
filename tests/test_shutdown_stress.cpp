@@ -31,42 +31,41 @@
 
 #define THREAD_COUNT 100
 
-struct thread_data {
+struct thread_data
+{
     void *ctx;
     char endpoint[MAX_SOCKET_STRING];
 };
 
-extern "C"
+extern "C" {
+static void worker (void *data)
 {
-    static void worker (void *data)
-    {
-        int rc;
-        void *socket;
-        struct thread_data *tdata = (struct thread_data *)data;
+    int rc;
+    void *socket;
+    struct thread_data *tdata = (struct thread_data *) data;
 
-        socket = zmq_socket (tdata->ctx, ZMQ_SUB);
-        assert (socket);
+    socket = zmq_socket (tdata->ctx, ZMQ_SUB);
+    assert (socket);
 
-        rc = zmq_connect (socket, tdata->endpoint);
-        assert (rc == 0);
+    rc = zmq_connect (socket, tdata->endpoint);
+    assert (rc == 0);
 
-        //  Start closing the socket while the connecting process is underway.
-        rc = zmq_close (socket);
-        assert (rc == 0);
-    }
+    //  Start closing the socket while the connecting process is underway.
+    rc = zmq_close (socket);
+    assert (rc == 0);
+}
 }
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *socket;
     int i;
     int j;
     int rc;
-    void* threads [THREAD_COUNT];
+    void *threads[THREAD_COUNT];
 
     for (j = 0; j != 10; j++) {
-
         //  Check the shutdown with many parallel I/O threads.
         struct thread_data tdata;
         tdata.ctx = zmq_ctx_new ();
@@ -83,11 +82,11 @@ int main (void)
         assert (rc == 0);
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            threads [i] = zmq_threadstart(&worker, &tdata);
+            threads[i] = zmq_threadstart (&worker, &tdata);
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            zmq_threadclose(threads [i]);
+            zmq_threadclose (threads[i]);
         }
 
         rc = zmq_close (socket);

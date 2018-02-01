@@ -193,9 +193,8 @@ void zmq::own_t::process_term_ack ()
 
 void zmq::own_t::check_term_acks ()
 {
-    if (terminating && processed_seqnum == sent_seqnum.get () &&
-          term_acks == 0) {
-
+    if (terminating && processed_seqnum == sent_seqnum.get ()
+        && term_acks == 0) {
         //  Sanity check. There should be no active children at this point.
         zmq_assert (owned.empty ());
 
@@ -213,4 +212,3 @@ void zmq::own_t::process_destroy ()
 {
     delete this;
 }
-

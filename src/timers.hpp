@@ -38,73 +38,72 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace zmq
 {
-    typedef void (timers_timer_fn)(
-        int timer_id, void *arg);
+typedef void(timers_timer_fn) (int timer_id, void *arg);
 
-        class timers_t
-        {
-        public:
-            timers_t ();
-            ~timers_t ();
+class timers_t
+{
+  public:
+    timers_t ();
+    ~timers_t ();
 
-            //  Add timer to the set, timer repeats forever, or until cancel is called.
-            //  Returns a timer_id that is used to cancel the timer.
-            //  Returns -1 if there was an error.
-            int add (size_t interval, timers_timer_fn handler, void* arg);
+    //  Add timer to the set, timer repeats forever, or until cancel is called.
+    //  Returns a timer_id that is used to cancel the timer.
+    //  Returns -1 if there was an error.
+    int add (size_t interval, timers_timer_fn handler, void *arg);
 
-            //  Set the interval of the timer.
-            //  This method is slow, cancelling exsting and adding a new timer yield better performance.
-            //  Returns 0 on success and -1 on error.
-            int set_interval (int timer_id, size_t interval);
+    //  Set the interval of the timer.
+    //  This method is slow, cancelling exsting and adding a new timer yield better performance.
+    //  Returns 0 on success and -1 on error.
+    int set_interval (int timer_id, size_t interval);
 
-            //  Reset the timer.
-            //  This method is slow, cancelling exsting and adding a new timer yield better performance.
-            //  Returns 0 on success and -1 on error.
-            int reset (int timer_id);
+    //  Reset the timer.
+    //  This method is slow, cancelling exsting and adding a new timer yield better performance.
+    //  Returns 0 on success and -1 on error.
+    int reset (int timer_id);
 
-            //  Cancel a timer.
-            //  Returns 0 on success and -1 on error.
-            int cancel (int timer_id);
+    //  Cancel a timer.
+    //  Returns 0 on success and -1 on error.
+    int cancel (int timer_id);
 
-            //  Returns the time in millisecond until the next timer.
-            //  Returns -1 if no timer is due.
-            long timeout ();
+    //  Returns the time in millisecond until the next timer.
+    //  Returns -1 if no timer is due.
+    long timeout ();
 
-            //  Execute timers.
-            //  Return 0 if all succeed and -1 if error.
-            int execute ();
+    //  Execute timers.
+    //  Return 0 if all succeed and -1 if error.
+    int execute ();
 
-            //  Return false if object is not a timers class.
-            bool check_tag ();
+    //  Return false if object is not a timers class.
+    bool check_tag ();
 
-        private:
+  private:
+    //  Used to check whether the object is a timers class.
+    uint32_t tag;
 
-            //  Used to check whether the object is a timers class.
-            uint32_t tag;
+    int next_timer_id;
 
-            int next_timer_id;
+    //  Clock instance.
+    clock_t clock;
 
-            //  Clock instance.
-            clock_t clock;
+    typedef struct timer_t
+    {
+        int timer_id;
+        size_t interval;
+        timers_timer_fn *handler;
+        void *arg;
+    } timer_t;
 
-            typedef struct timer_t {
-                int timer_id;
-                size_t interval;
-                timers_timer_fn *handler;
-                void *arg;
-            } timer_t;
+    typedef std::multimap<uint64_t, timer_t> timersmap_t;
+    timersmap_t timers;
 
-            typedef std::multimap <uint64_t, timer_t> timersmap_t;
-            timersmap_t timers;
+    typedef std::set<int> cancelled_timers_t;
+    cancelled_timers_t cancelled_timers;
 
-            typedef std::set<int> cancelled_timers_t;
-            cancelled_timers_t cancelled_timers;
+    timers_t (const timers_t &);
+    const timers_t &operator= (const timers_t &);
 
-            timers_t (const timers_t&);
-            const timers_t &operator = (const timers_t&);
+    struct match_by_id;
+};
+}
 
-            struct match_by_id;
-        };
-    }
-
-    #endif
+#endif

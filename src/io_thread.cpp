@@ -51,7 +51,7 @@ zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
 
 zmq::io_thread_t::~io_thread_t ()
 {
-    LIBZMQ_DELETE(poller);
+    LIBZMQ_DELETE (poller);
 }
 
 void zmq::io_thread_t::start ()

@@ -37,7 +37,7 @@ int main (void)
 
     void *scatter = zmq_socket (ctx, ZMQ_SCATTER);
     void *gather = zmq_socket (ctx, ZMQ_GATHER);
-    void *gather2 = zmq_socket (ctx, ZMQ_GATHER);    
+    void *gather2 = zmq_socket (ctx, ZMQ_GATHER);
 
     int rc = zmq_bind (scatter, "inproc://test-scatter-gather");
     assert (rc == 0);
@@ -58,15 +58,15 @@ int main (void)
     rc = s_send (scatter, "2");
     assert (rc == 1);
 
-    char* message = s_recv (gather);
+    char *message = s_recv (gather);
     assert (message);
-    assert (streq(message, "1"));
-    free(message);
+    assert (streq (message, "1"));
+    free (message);
 
     message = s_recv (gather2);
     assert (message);
-    assert (streq(message, "2"));
-    free(message);
+    assert (streq (message, "2"));
+    free (message);
 
     rc = zmq_close (scatter);
     assert (rc == 0);
@@ -80,5 +80,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

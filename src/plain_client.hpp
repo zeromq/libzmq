@@ -35,45 +35,39 @@
 
 namespace zmq
 {
+class msg_t;
 
-    class msg_t;
+class plain_client_t : public mechanism_base_t
+{
+  public:
+    plain_client_t (session_base_t *const session_, const options_t &options_);
+    virtual ~plain_client_t ();
 
-    class plain_client_t : public mechanism_base_t
+    // mechanism implementation
+    virtual int next_handshake_command (msg_t *msg_);
+    virtual int process_handshake_command (msg_t *msg_);
+    virtual status_t status () const;
+
+  private:
+    enum state_t
     {
-      public:
-        plain_client_t (session_base_t *const session_,
-                        const options_t &options_);
-        virtual ~plain_client_t ();
-
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-        virtual status_t status () const;
-
-      private:
-
-        enum state_t {
-            sending_hello,
-            waiting_for_welcome,
-            sending_initiate,
-            waiting_for_ready,
-            error_command_received,
-            ready
-        };
-
-        state_t state;
-
-        int produce_hello (msg_t *msg_) const;
-        int produce_initiate (msg_t *msg_) const;
-
-        int process_welcome (
-            const unsigned char *cmd_data, size_t data_size);
-        int process_ready (
-            const unsigned char *cmd_data, size_t data_size);
-        int process_error (
-            const unsigned char *cmd_data, size_t data_size);
+        sending_hello,
+        waiting_for_welcome,
+        sending_initiate,
+        waiting_for_ready,
+        error_command_received,
+        ready
     };
 
+    state_t state;
+
+    int produce_hello (msg_t *msg_) const;
+    int produce_initiate (msg_t *msg_) const;
+
+    int process_welcome (const unsigned char *cmd_data, size_t data_size);
+    int process_ready (const unsigned char *cmd_data, size_t data_size);
+    int process_error (const unsigned char *cmd_data, size_t data_size);
+};
 }
 
 #endif

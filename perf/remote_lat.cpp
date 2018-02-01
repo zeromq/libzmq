@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main (int argc, char *argv [])
+int main (int argc, char *argv[])
 {
     const char *connect_to;
     int roundtrip_count;
@@ -48,12 +48,12 @@ int main (int argc, char *argv [])
 
     if (argc != 4) {
         printf ("usage: remote_lat <connect-to> <message-size> "
-            "<roundtrip-count>\n");
+                "<roundtrip-count>\n");
         return 1;
     }
-    connect_to = argv [1];
-    message_size = atoi (argv [2]);
-    roundtrip_count = atoi (argv [3]);
+    connect_to = argv[1];
+    message_size = atoi (argv[2]);
+    roundtrip_count = atoi (argv[3]);
 
     ctx = zmq_init (1);
     if (!ctx) {

@@ -33,16 +33,15 @@
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
 
-static int
-get_monitor_event (void *monitor, int *value, char **address)
+static int get_monitor_event (void *monitor, int *value, char **address)
 {
     //  First frame in message contains event number and value
-    zmq_msg_t msg; 
+    zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
+        return -1; //  Interruped, presumably
     assert (zmq_msg_more (&msg));
-    
+
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
     uint16_t event = *(uint16_t *) (data);
     if (value)
@@ -51,21 +50,20 @@ get_monitor_event (void *monitor, int *value, char **address)
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
+        return -1; //  Interruped, presumably
     assert (!zmq_msg_more (&msg));
-    
+
     if (address) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
         size_t size = zmq_msg_size (&msg);
         *address = (char *) malloc (size + 1);
         memcpy (*address, data, size);
-        *address [size] = 0;
+        *address[size] = 0;
     }
     return event;
 }
 
-static void
-test_stream_handshake_timeout_accept (void)
+static void test_stream_handshake_timeout_accept (void)
 {
     int rc;
     size_t len = MAX_SOCKET_STRING;
@@ -89,21 +87,21 @@ test_stream_handshake_timeout_accept (void)
     rc = zmq_setsockopt (dealer, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
     int val, tenth = 100;
-    size_t vsize = sizeof(val);
+    size_t vsize = sizeof (val);
 
     // check for the expected default handshake timeout value - 30 sec
     rc = zmq_getsockopt (dealer, ZMQ_HANDSHAKE_IVL, &val, &vsize);
     assert (rc == 0);
-    assert (vsize == sizeof(val));
+    assert (vsize == sizeof (val));
     assert (val == 30000);
     // make handshake timeout faster - 1/10 sec
     rc = zmq_setsockopt (dealer, ZMQ_HANDSHAKE_IVL, &tenth, sizeof (tenth));
     assert (rc == 0);
-    vsize = sizeof(val);
+    vsize = sizeof (val);
     // make sure zmq_setsockopt changed the value
     rc = zmq_getsockopt (dealer, ZMQ_HANDSHAKE_IVL, &val, &vsize);
     assert (rc == 0);
-    assert (vsize == sizeof(val));
+    assert (vsize == sizeof (val));
     assert (val == tenth);
 
     //  Create and connect a socket for collecting monitor events on dealer
@@ -111,7 +109,8 @@ test_stream_handshake_timeout_accept (void)
     assert (dealer_mon);
 
     rc = zmq_socket_monitor (dealer, "inproc://monitor-dealer",
-          ZMQ_EVENT_CONNECTED | ZMQ_EVENT_DISCONNECTED | ZMQ_EVENT_ACCEPTED);
+                             ZMQ_EVENT_CONNECTED | ZMQ_EVENT_DISCONNECTED
+                               | ZMQ_EVENT_ACCEPTED);
     assert (rc == 0);
 
     //  Connect to the inproc endpoint so we'll get events
@@ -146,8 +145,7 @@ test_stream_handshake_timeout_accept (void)
     assert (rc == 0);
 }
 
-static void
-test_stream_handshake_timeout_connect (void)
+static void test_stream_handshake_timeout_connect (void)
 {
     int rc;
     size_t len = MAX_SOCKET_STRING;
@@ -175,21 +173,21 @@ test_stream_handshake_timeout_connect (void)
     rc = zmq_setsockopt (dealer, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
     int val, tenth = 100;
-    size_t vsize = sizeof(val);
+    size_t vsize = sizeof (val);
 
     // check for the expected default handshake timeout value - 30 sec
     rc = zmq_getsockopt (dealer, ZMQ_HANDSHAKE_IVL, &val, &vsize);
     assert (rc == 0);
-    assert (vsize == sizeof(val));
+    assert (vsize == sizeof (val));
     assert (val == 30000);
     // make handshake timeout faster - 1/10 sec
     rc = zmq_setsockopt (dealer, ZMQ_HANDSHAKE_IVL, &tenth, sizeof (tenth));
     assert (rc == 0);
-    vsize = sizeof(val);
+    vsize = sizeof (val);
     // make sure zmq_setsockopt changed the value
     rc = zmq_getsockopt (dealer, ZMQ_HANDSHAKE_IVL, &val, &vsize);
     assert (rc == 0);
-    assert (vsize == sizeof(val));
+    assert (vsize == sizeof (val));
     assert (val == tenth);
 
     //  Create and connect a socket for collecting monitor events on dealer
@@ -197,7 +195,8 @@ test_stream_handshake_timeout_connect (void)
     assert (dealer_mon);
 
     rc = zmq_socket_monitor (dealer, "inproc://monitor-dealer",
-          ZMQ_EVENT_CONNECTED | ZMQ_EVENT_DISCONNECTED | ZMQ_EVENT_ACCEPTED);
+                             ZMQ_EVENT_CONNECTED | ZMQ_EVENT_DISCONNECTED
+                               | ZMQ_EVENT_ACCEPTED);
     assert (rc == 0);
 
     //  Connect to the inproc endpoint so we'll get events
@@ -229,7 +228,7 @@ test_stream_handshake_timeout_connect (void)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     test_stream_handshake_timeout_accept ();
     test_stream_handshake_timeout_connect ();
 }

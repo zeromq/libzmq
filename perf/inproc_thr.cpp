@@ -71,7 +71,6 @@ static void *worker (void *ctx_)
     }
 
     for (i = 0; i != message_count; i++) {
-
         rc = zmq_msg_init_size (&msg, message_size);
         if (rc != 0) {
             printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
@@ -106,7 +105,7 @@ static void *worker (void *ctx_)
 #endif
 }
 
-int main (int argc, char *argv [])
+int main (int argc, char *argv[])
 {
 #if defined ZMQ_HAVE_WINDOWS
     HANDLE local_thread;
@@ -128,8 +127,8 @@ int main (int argc, char *argv [])
         return 1;
     }
 
-    message_size = atoi (argv [1]);
-    message_count = atoi (argv [2]);
+    message_size = atoi (argv[1]);
+    message_count = atoi (argv[2]);
 
     ctx = zmq_init (1);
     if (!ctx) {
@@ -150,8 +149,7 @@ int main (int argc, char *argv [])
     }
 
 #if defined ZMQ_HAVE_WINDOWS
-    local_thread = (HANDLE) _beginthreadex (NULL, 0,
-        worker, ctx, 0 , NULL);
+    local_thread = (HANDLE) _beginthreadex (NULL, 0, worker, ctx, 0, NULL);
     if (local_thread == 0) {
         printf ("error in _beginthreadex\n");
         return -1;
@@ -238,8 +236,8 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    throughput = (unsigned long)
-        ((double) message_count / (double) elapsed * 1000000);
+    throughput =
+      (unsigned long) ((double) message_count / (double) elapsed * 1000000);
     megabits = (double) (throughput * message_size * 8) / 1000000;
 
     printf ("mean throughput: %d [msg/s]\n", (int) throughput);
@@ -247,4 +245,3 @@ int main (int argc, char *argv [])
 
     return 0;
 }
-

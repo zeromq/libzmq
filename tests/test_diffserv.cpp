@@ -34,11 +34,11 @@ int main (void)
     int rc;
     int tos = 0x28;
     int o_tos;
-    size_t tos_size = sizeof(tos);
+    size_t tos_size = sizeof (tos);
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -80,6 +80,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
-
+    return 0;
 }

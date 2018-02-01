@@ -38,66 +38,59 @@
 
 namespace zmq
 {
+class ctx_t;
+class pipe_t;
+class io_thread_t;
 
-    class ctx_t;
-    class pipe_t;
-    class io_thread_t;
+class xsub_t : public socket_base_t
+{
+  public:
+    xsub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+    ~xsub_t ();
 
-    class xsub_t :
-        public socket_base_t
-    {
-    public:
+  protected:
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    int xsend (zmq::msg_t *msg_);
+    bool xhas_out ();
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    const blob_t &get_credential () const;
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xhiccuped (pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
-        xsub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-        ~xsub_t ();
+  private:
+    //  Check whether the message matches at least one subscription.
+    bool match (zmq::msg_t *msg_);
 
-    protected:
+    //  Function to be applied to the trie to send all the subsciptions
+    //  upstream.
+    static void
+    send_subscription (unsigned char *data_, size_t size_, void *arg_);
 
-        //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
-        int xsend (zmq::msg_t *msg_);
-        bool xhas_out ();
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        const blob_t &get_credential () const;
-        void xread_activated (zmq::pipe_t *pipe_);
-        void xwrite_activated (zmq::pipe_t *pipe_);
-        void xhiccuped (pipe_t *pipe_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
+    //  Fair queueing object for inbound pipes.
+    fq_t fq;
 
-    private:
+    //  Object for distributing the subscriptions upstream.
+    dist_t dist;
 
-        //  Check whether the message matches at least one subscription.
-        bool match (zmq::msg_t *msg_);
+    //  The repository of subscriptions.
+    trie_t subscriptions;
 
-        //  Function to be applied to the trie to send all the subsciptions
-        //  upstream.
-        static void send_subscription (unsigned char *data_, size_t size_,
-            void *arg_);
+    //  If true, 'message' contains a matching message to return on the
+    //  next recv call.
+    bool has_message;
+    msg_t message;
 
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
+    //  If true, part of a multipart message was already received, but
+    //  there are following parts still waiting.
+    bool more;
 
-        //  Object for distributing the subscriptions upstream.
-        dist_t dist;
-
-        //  The repository of subscriptions.
-        trie_t subscriptions;
-
-        //  If true, 'message' contains a matching message to return on the
-        //  next recv call.
-        bool has_message;
-        msg_t message;
-
-        //  If true, part of a multipart message was already received, but
-        //  there are following parts still waiting.
-        bool more;
-
-        xsub_t (const xsub_t&);
-        const xsub_t &operator = (const xsub_t&);
-    };
-
+    xsub_t (const xsub_t &);
+    const xsub_t &operator= (const xsub_t &);
+};
 }
 
 #endif
-

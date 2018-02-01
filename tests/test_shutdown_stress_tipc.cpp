@@ -31,21 +31,20 @@
 
 #define THREAD_COUNT 100
 
-extern "C"
+extern "C" {
+static void *worker (void *s)
 {
-    static void *worker (void *s)
-    {
-        int rc;
+    int rc;
 
-        rc = zmq_connect (s, "tipc://{5560,0}@0.0.0");
-        assert (rc == 0);
+    rc = zmq_connect (s, "tipc://{5560,0}@0.0.0");
+    assert (rc == 0);
 
-        //  Start closing the socket while the connecting process is underway.
-        rc = zmq_close (s);
-        assert (rc == 0);
+    //  Start closing the socket while the connecting process is underway.
+    rc = zmq_close (s);
+    assert (rc == 0);
 
-        return NULL;
-    }
+    return NULL;
+}
 }
 
 int main (void)
@@ -56,12 +55,11 @@ int main (void)
     int i;
     int j;
     int rc;
-    pthread_t threads [THREAD_COUNT];
+    pthread_t threads[THREAD_COUNT];
 
     fprintf (stderr, "test_shutdown_stress_tipc running...\n");
 
     for (j = 0; j != 10; j++) {
-
         //  Check the shutdown with many parallel I/O threads.
         ctx = zmq_init (7);
         assert (ctx);
@@ -75,12 +73,12 @@ int main (void)
         for (i = 0; i != THREAD_COUNT; i++) {
             s2 = zmq_socket (ctx, ZMQ_SUB);
             assert (s2);
-            rc = pthread_create (&threads [i], NULL, worker, s2);
+            rc = pthread_create (&threads[i], NULL, worker, s2);
             assert (rc == 0);
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            rc = pthread_join (threads [i], NULL);
+            rc = pthread_join (threads[i], NULL);
             assert (rc == 0);
         }
 

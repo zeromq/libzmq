@@ -29,12 +29,12 @@
 
 #include "testutil.hpp"
 
-static const char* SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
+static const char *SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
 
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -55,8 +55,8 @@ int main (void)
     rc = zmq_send (sb0, "42", 2, 0);
     assert (rc == 2);
 
-    char buffer [2];
-    rc = zmq_recv(sc, buffer, 2, 0);
+    char buffer[2];
+    rc = zmq_recv (sc, buffer, 2, 0);
     assert (rc == 2);
 
     rc = zmq_close (sb0);
@@ -68,7 +68,7 @@ int main (void)
     rc = zmq_send (sb1, "42", 2, 0);
     assert (rc == 2);
 
-    rc = zmq_recv(sc, buffer, 2, 0);
+    rc = zmq_recv (sc, buffer, 2, 0);
     assert (rc == 2);
 
     rc = zmq_close (sc);

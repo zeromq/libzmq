@@ -29,18 +29,19 @@
 
 #include "testutil.hpp"
 
-int main (void) {
+int main (void)
+{
     setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     void *stream = zmq_socket (ctx, ZMQ_STREAM);
     assert (stream);
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
-    
+
     int rc = zmq_bind (stream, "tcp://127.0.0.1:*");
     assert (rc >= 0);
     rc = zmq_getsockopt (stream, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
@@ -48,26 +49,26 @@ int main (void) {
     rc = zmq_connect (dealer, my_endpoint);
     assert (rc >= 0);
     zmq_send (dealer, "", 0, 0);
-    
+
     zmq_msg_t ident, empty;
     zmq_msg_init (&ident);
     rc = zmq_msg_recv (&ident, stream, 0);
     assert (rc >= 0);
     rc = zmq_msg_init_data (&empty, (void *) "", 0, NULL, NULL);
     assert (rc >= 0);
-    
+
     rc = zmq_msg_send (&ident, stream, ZMQ_SNDMORE);
     assert (rc >= 0);
     rc = zmq_msg_close (&ident);
     assert (rc >= 0);
-    
+
     rc = zmq_msg_send (&empty, stream, 0);
     assert (rc >= 0);
-    
+
     //  This close used to fail with Bad Address
     rc = zmq_msg_close (&empty);
     assert (rc >= 0);
-    
+
     close_zero_linger (dealer);
     close_zero_linger (stream);
     zmq_ctx_term (ctx);

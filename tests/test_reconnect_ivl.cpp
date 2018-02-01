@@ -86,7 +86,7 @@ void test_reconnect_ivl_tcp (const char *address)
 
     if (streq (address, "tcp://[::1]:*")) {
         if (is_ipv6_available ()) {
-            zmq_ctx_set(ctx, ZMQ_IPV6, 1);
+            zmq_ctx_set (ctx, ZMQ_IPV6, 1);
         } else {
             zmq_ctx_term (ctx);
             return;
@@ -145,5 +145,5 @@ int main (void)
     test_reconnect_ivl_tcp ("tcp://127.0.0.1:*");
     test_reconnect_ivl_tcp ("tcp://[::1]:*");
 
-    return 0 ;
+    return 0;
 }

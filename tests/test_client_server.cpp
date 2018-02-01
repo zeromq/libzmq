@@ -49,7 +49,7 @@ int main (void)
     assert (rc == 0);
 
     char *data = (char *) zmq_msg_data (&msg);
-    data [0] = 1;
+    data[0] = 1;
 
     rc = zmq_msg_send (&msg, client, ZMQ_SNDMORE);
     assert (rc == -1);
@@ -72,7 +72,7 @@ int main (void)
     rc = zmq_msg_init_size (&msg, 1);
     assert (rc == 0);
 
-    data = (char *)zmq_msg_data (&msg);
+    data = (char *) zmq_msg_data (&msg);
     data[0] = 2;
 
     rc = zmq_msg_set_routing_id (&msg, routing_id);
@@ -102,5 +102,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

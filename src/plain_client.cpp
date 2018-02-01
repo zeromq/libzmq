@@ -73,17 +73,15 @@ int zmq::plain_client_t::next_handshake_command (msg_t *msg_)
 int zmq::plain_client_t::process_handshake_command (msg_t *msg_)
 {
     const unsigned char *cmd_data =
-        static_cast <unsigned char *> (msg_->data ());
+      static_cast<unsigned char *> (msg_->data ());
     const size_t data_size = msg_->size ();
 
     int rc = 0;
     if (data_size >= 8 && !memcmp (cmd_data, "\7WELCOME", 8))
         rc = process_welcome (cmd_data, data_size);
-    else
-    if (data_size >= 6 && !memcmp (cmd_data, "\5READY", 6))
+    else if (data_size >= 6 && !memcmp (cmd_data, "\5READY", 6))
         rc = process_ready (cmd_data, data_size);
-    else
-    if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
+    else if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
         rc = process_error (cmd_data, data_size);
     else {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -106,8 +104,7 @@ zmq::mechanism_t::status_t zmq::plain_client_t::status () const
 {
     if (state == ready)
         return mechanism_t::ready;
-    else
-    if (state == error_command_received)
+    else if (state == error_command_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;
@@ -121,28 +118,28 @@ int zmq::plain_client_t::produce_hello (msg_t *msg_) const
     const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
-    const size_t command_size = 6 + 1 + username.length ()
-                                  + 1 + password.length ();
+    const size_t command_size =
+      6 + 1 + username.length () + 1 + password.length ();
 
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
-    unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     memcpy (ptr, "\x05HELLO", 6);
     ptr += 6;
 
-    *ptr++ = static_cast <unsigned char> (username.length ());
+    *ptr++ = static_cast<unsigned char> (username.length ());
     memcpy (ptr, username.c_str (), username.length ());
     ptr += username.length ();
 
-    *ptr++ = static_cast <unsigned char> (password.length ());
+    *ptr++ = static_cast<unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
 
     return 0;
 }
 
-int zmq::plain_client_t::process_welcome (
-        const unsigned char *cmd_data, size_t data_size)
+int zmq::plain_client_t::process_welcome (const unsigned char *cmd_data,
+                                          size_t data_size)
 {
     LIBZMQ_UNUSED (cmd_data);
 
@@ -170,8 +167,8 @@ int zmq::plain_client_t::produce_initiate (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_client_t::process_ready (
-        const unsigned char *cmd_data, size_t data_size)
+int zmq::plain_client_t::process_ready (const unsigned char *cmd_data,
+                                        size_t data_size)
 {
     if (state != waiting_for_ready) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -189,8 +186,8 @@ int zmq::plain_client_t::process_ready (
     return rc;
 }
 
-int zmq::plain_client_t::process_error (
-        const unsigned char *cmd_data, size_t data_size)
+int zmq::plain_client_t::process_error (const unsigned char *cmd_data,
+                                        size_t data_size)
 {
     if (state != waiting_for_welcome && state != waiting_for_ready) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -205,7 +202,7 @@ int zmq::plain_client_t::process_error (
         errno = EPROTO;
         return -1;
     }
-    const size_t error_reason_len = static_cast <size_t> (cmd_data [6]);
+    const size_t error_reason_len = static_cast<size_t> (cmd_data[6]);
     if (error_reason_len > data_size - 7) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),

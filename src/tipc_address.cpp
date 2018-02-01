@@ -67,14 +67,13 @@ int zmq::tipc_address_t::resolve (const char *name)
     const int res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
 
     /* Fetch optional domain suffix. */
-    if ((domain = strchr(name, '@'))) {
-        if (sscanf(domain, "@%u.%u.%u%c", &z, &c, &n, &eof) != 3)
+    if ((domain = strchr (name, '@'))) {
+        if (sscanf (domain, "@%u.%u.%u%c", &z, &c, &n, &eof) != 3)
             return EINVAL;
     }
     if (res == 3)
         goto nameseq;
-    else
-    if (res == 2 && type > TIPC_RESERVED_TYPES) {
+    else if (res == 2 && type > TIPC_RESERVED_TYPES) {
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
@@ -82,8 +81,7 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.addr.name.domain = tipc_addr (z, c, n);
         address.scope = 0;
         return 0;
-    }
-    else
+    } else
         return EINVAL;
 nameseq:
     if (type < TIPC_RESERVED_TYPES || upper < lower)
@@ -104,7 +102,8 @@ int zmq::tipc_address_t::to_string (std::string &addr_)
         return -1;
     }
     std::stringstream s;
-    s << "tipc://" << "{" << address.addr.nameseq.type;
+    s << "tipc://"
+      << "{" << address.addr.nameseq.type;
     s << ", " << address.addr.nameseq.lower;
     s << ", " << address.addr.nameseq.upper << "}";
     addr_ = s.str ();
@@ -113,7 +112,7 @@ int zmq::tipc_address_t::to_string (std::string &addr_)
 
 const sockaddr *zmq::tipc_address_t::addr () const
 {
-    return (sockaddr*) &address;
+    return (sockaddr *) &address;
 }
 
 socklen_t zmq::tipc_address_t::addrlen () const

@@ -33,12 +33,12 @@
 void test__zmq_curve_keypair__always__success (void)
 {
     errno = 0;
-    char public_key[41] = { 0 };
-    char secret_key[41] = { 0 };
+    char public_key[41] = {0};
+    char secret_key[41] = {0};
 
-    const int rc = zmq_curve_keypair(public_key, secret_key);
+    const int rc = zmq_curve_keypair (public_key, secret_key);
 
-#if defined (ZMQ_HAVE_CURVE)
+#if defined(ZMQ_HAVE_CURVE)
     assert (rc == 0);
 #else
     assert (rc == -1);
@@ -53,11 +53,11 @@ void test__zmq_curve_public__valid__success ()
     static const char secret_key[] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
 
     errno = 0;
-    char out_public[41] = { 0 };
+    char out_public[41] = {0};
 
     const int rc = zmq_curve_public (out_public, secret_key);
 
-#if defined (ZMQ_HAVE_CURVE)
+#if defined(ZMQ_HAVE_CURVE)
     assert (rc == 0);
     assert (zmq_errno () == 0);
     assert (streq (out_public, public_key));
@@ -72,11 +72,11 @@ void test__zmq_curve_public__valid__success ()
 void test__zmq_curve_public__invalid__failure (const char *secret)
 {
     errno = 0;
-    char out_public[41] = { 0 };
+    char out_public[41] = {0};
 
-    const int rc = zmq_curve_public(out_public, secret);
+    const int rc = zmq_curve_public (out_public, secret);
 
-#if defined (ZMQ_HAVE_CURVE)
+#if defined(ZMQ_HAVE_CURVE)
     assert (rc == -1);
     assert (zmq_errno () == EINVAL);
     assert (streq (out_public, ""));
@@ -92,7 +92,8 @@ int main (void)
 
     test__zmq_curve_public__valid__success ();
     test__zmq_curve_public__invalid__failure ("42");
-    test__zmq_curve_public__invalid__failure ("0123456789012345678901234567890123456789.");
+    test__zmq_curve_public__invalid__failure (
+      "0123456789012345678901234567890123456789.");
 
     return 0;
 }

@@ -30,12 +30,10 @@
 #include "testutil.hpp"
 
 
-
 // This is our server task.
 // It runs a proxy with a single REP socket as both frontend and backend.
 
-void
-server_task (void *ctx)
+void server_task (void *ctx)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -75,7 +73,7 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *server_thread = zmq_threadstart(&server_task, ctx);
+    void *server_thread = zmq_threadstart (&server_task, ctx);
 
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_REP);
@@ -92,15 +90,15 @@ int main (void)
     assert (rc == 0);
 
     char buf[255];
-    rc = zmq_send(req, "msg1", 4, 0);
+    rc = zmq_send (req, "msg1", 4, 0);
     assert (rc == 4);
-    rc = zmq_recv(req, buf, 255, 0);
+    rc = zmq_recv (req, buf, 255, 0);
     assert (rc == 4);
     assert (memcmp (buf, "msg1", 4) == 0);
 
-    rc = zmq_send(req, "msg22", 5, 0);
+    rc = zmq_send (req, "msg22", 5, 0);
     assert (rc == 5);
-    rc = zmq_recv(req, buf, 255, 0);
+    rc = zmq_recv (req, buf, 255, 0);
     assert (rc == 5);
     assert (memcmp (buf, "msg22", 5) == 0);
 

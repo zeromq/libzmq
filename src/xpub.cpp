@@ -67,8 +67,7 @@ void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
         subscriptions.add (NULL, 0, pipe_);
 
     // if welcome message exists, send a copy of it
-    if (welcome_msg.size () > 0)
-    {
+    if (welcome_msg.size () > 0) {
         msg_t copy;
         copy.init ();
         int rc = copy.copy (welcome_msg);
@@ -91,10 +90,9 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         //  Apply the subscription to the trie
         unsigned char *const data = (unsigned char *) sub.data ();
         const size_t size = sub.size ();
-        metadata_t* metadata = sub.metadata();
+        metadata_t *metadata = sub.metadata ();
         if (size > 0 && (*data == 0 || *data == 1)) {
-            if (manual)
-            {
+            if (manual) {
                 // Store manual subscription to use on termination
                 if (*data == 0)
                     manual_subscriptions.rm (data + 1, size - 1, pipe_);
@@ -107,9 +105,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                     metadata->add_ref ();
                 pending_metadata.push_back (metadata);
                 pending_flags.push_back (0);
-            }
-            else
-            {
+            } else {
                 bool unique;
                 if (*data == 0)
                     unique = subscriptions.rm (data + 1, size - 1, pipe_);
@@ -119,17 +115,17 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 //  If the (un)subscription is not a duplicate store it so that it can be
                 //  passed to the user on next recv call unless verbose mode is enabled
                 //  which makes to pass always these messages.
-                if (options.type == ZMQ_XPUB && (unique || (*data == 1 && verbose_subs) ||
-                        (*data == 0 && verbose_unsubs && verbose_subs))) {
-                    pending_data.push_back (blob_t(data, size));
+                if (options.type == ZMQ_XPUB
+                    && (unique || (*data == 1 && verbose_subs)
+                        || (*data == 0 && verbose_unsubs && verbose_subs))) {
+                    pending_data.push_back (blob_t (data, size));
                     if (metadata)
                         metadata->add_ref ();
                     pending_metadata.push_back (metadata);
                     pending_flags.push_back (0);
                 }
             }
-        }
-        else {
+        } else {
             //  Process user message coming upstream from xsub socket
             pending_data.push_back (blob_t (data, size));
             if (metadata)
@@ -146,58 +142,46 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
     dist.activated (pipe_);
 }
 
-int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
+int zmq::xpub_t::xsetsockopt (int option_,
+                              const void *optval_,
+                              size_t optvallen_)
 {
-    if (option_ == ZMQ_XPUB_VERBOSE
-     || option_ == ZMQ_XPUB_VERBOSER
-     || option_ == ZMQ_XPUB_NODROP
-     || option_ == ZMQ_XPUB_MANUAL) {
-        if (optvallen_ != sizeof (int) || *static_cast <const int*> (optval_) < 0) {
+    if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
+        || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL) {
+        if (optvallen_ != sizeof (int)
+            || *static_cast<const int *> (optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
         if (option_ == ZMQ_XPUB_VERBOSE) {
-            verbose_subs = (*static_cast <const int*> (optval_) != 0);
+            verbose_subs = (*static_cast<const int *> (optval_) != 0);
             verbose_unsubs = 0;
-        }
-        else
-        if (option_ == ZMQ_XPUB_VERBOSER) {
-            verbose_subs = (*static_cast <const int*> (optval_) != 0);
+        } else if (option_ == ZMQ_XPUB_VERBOSER) {
+            verbose_subs = (*static_cast<const int *> (optval_) != 0);
             verbose_unsubs = verbose_subs;
-        }
-        else
-        if (option_ == ZMQ_XPUB_NODROP)
-            lossy = (*static_cast <const int*> (optval_) == 0);
-        else
-        if (option_ == ZMQ_XPUB_MANUAL)
-            manual = (*static_cast <const int*> (optval_) != 0);
-    }
-    else
-    if (option_ == ZMQ_SUBSCRIBE && manual) {
+        } else if (option_ == ZMQ_XPUB_NODROP)
+            lossy = (*static_cast<const int *> (optval_) == 0);
+        else if (option_ == ZMQ_XPUB_MANUAL)
+            manual = (*static_cast<const int *> (optval_) != 0);
+    } else if (option_ == ZMQ_SUBSCRIBE && manual) {
         if (last_pipe != NULL)
-            subscriptions.add ((unsigned char *) optval_, optvallen_, last_pipe);
-    }
-    else
-    if (option_ == ZMQ_UNSUBSCRIBE && manual) {
+            subscriptions.add ((unsigned char *) optval_, optvallen_,
+                               last_pipe);
+    } else if (option_ == ZMQ_UNSUBSCRIBE && manual) {
         if (last_pipe != NULL)
             subscriptions.rm ((unsigned char *) optval_, optvallen_, last_pipe);
-    }
-    else
-    if (option_ == ZMQ_XPUB_WELCOME_MSG) {
+    } else if (option_ == ZMQ_XPUB_WELCOME_MSG) {
         welcome_msg.close ();
 
         if (optvallen_ > 0) {
             int rc = welcome_msg.init_size (optvallen_);
-            errno_assert(rc == 0);
+            errno_assert (rc == 0);
 
-            unsigned char *data = (unsigned char*) welcome_msg.data ();
+            unsigned char *data = (unsigned char *) welcome_msg.data ();
             memcpy (data, optval_, optvallen_);
-        }
-        else
+        } else
             welcome_msg.init ();
-    }
-    else {
+    } else {
         errno = EINVAL;
         return -1;
     }
@@ -206,15 +190,14 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
 
 static void stub (unsigned char *data_, size_t size_, void *arg_)
 {
-    LIBZMQ_UNUSED(data_);
-    LIBZMQ_UNUSED(size_);
-    LIBZMQ_UNUSED(arg_);
+    LIBZMQ_UNUSED (data_);
+    LIBZMQ_UNUSED (size_);
+    LIBZMQ_UNUSED (arg_);
 }
 
 void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    if (manual)
-    {
+    if (manual) {
         //  Remove the pipe from the trie and send corresponding manual
         //  unsubscriptions upstream.
         manual_subscriptions.rm (pipe_, send_unsubscription, this, false);
@@ -222,9 +205,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  care of by the manual call above. subscriptions is the real mtrie,
         //  so the pipe must be removed from there or it will be left over.
         subscriptions.rm (pipe_, stub, NULL, false);
-    }
-    else
-    {
+    } else {
         //  Remove the pipe from the trie. If there are topics that nobody
         //  is interested in anymore, send corresponding unsubscriptions
         //  upstream.
@@ -236,7 +217,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 
 void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
 {
-    xpub_t *self = (xpub_t*) arg_;
+    xpub_t *self = (xpub_t *) arg_;
     self->dist.match (pipe_);
 }
 
@@ -246,15 +227,15 @@ int zmq::xpub_t::xsend (msg_t *msg_)
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!more) {
-        subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
-            mark_as_matching, this);
+        subscriptions.match ((unsigned char *) msg_->data (), msg_->size (),
+                             mark_as_matching, this);
         // If inverted matching is used, reverse the selection now
         if (options.invert_matching) {
-            dist.reverse_match();
+            dist.reverse_match ();
         }
     }
 
-    int rc = -1;            //  Assume we fail
+    int rc = -1; //  Assume we fail
     if (lossy || dist.check_hwm ()) {
         if (dist.send_to_matching (msg_) == 0) {
             //  If we are at the end of multi-part message we can mark
@@ -262,10 +243,9 @@ int zmq::xpub_t::xsend (msg_t *msg_)
             if (!msg_more)
                 dist.unmatch ();
             more = msg_more;
-            rc = 0;         //  Yay, sent successfully
+            rc = 0; //  Yay, sent successfully
         }
-    }
-    else
+    } else
         errno = EAGAIN;
     return rc;
 }
@@ -293,15 +273,14 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
     errno_assert (rc == 0);
     rc = msg_->init_size (pending_data.front ().size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (),
-        pending_data.front ().data (),
-        pending_data.front ().size ());
+    memcpy (msg_->data (), pending_data.front ().data (),
+            pending_data.front ().size ());
 
     // set metadata only if there is some
-    if (metadata_t* metadata = pending_metadata.front ()) {
+    if (metadata_t *metadata = pending_metadata.front ()) {
         msg_->set_metadata (metadata);
         // Remove ref corresponding to vector placement
-        metadata->drop_ref();
+        metadata->drop_ref ();
     }
 
     msg_->set_flags (pending_flags.front ());
@@ -316,19 +295,20 @@ bool zmq::xpub_t::xhas_in ()
     return !pending_data.empty ();
 }
 
-void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
-    void *arg_)
+void zmq::xpub_t::send_unsubscription (unsigned char *data_,
+                                       size_t size_,
+                                       void *arg_)
 {
-    xpub_t *self = (xpub_t*) arg_;
+    xpub_t *self = (xpub_t *) arg_;
 
     if (self->options.type != ZMQ_PUB) {
         //  Place the unsubscription to the queue of pending (un)subscriptions
         //  to be retrieved by the user later on.
         blob_t unsub (size_ + 1);
-        *unsub.data() = 0;
+        *unsub.data () = 0;
         if (size_ > 0)
-            memcpy (unsub.data() + 1, data_, size_);
-        self->pending_data.ZMQ_PUSH_OR_EMPLACE_BACK (ZMQ_MOVE(unsub));
+            memcpy (unsub.data () + 1, data_, size_);
+        self->pending_data.ZMQ_PUSH_OR_EMPLACE_BACK (ZMQ_MOVE (unsub));
         self->pending_metadata.push_back (NULL);
         self->pending_flags.push_back (0);
 

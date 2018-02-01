@@ -39,7 +39,7 @@ void test_system_max ()
     const int no_of_sockets = 2 * 65536;
     void *ctx = zmq_ctx_new ();
     zmq_ctx_set (ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
-    std::vector <void*> sockets;
+    std::vector<void *> sockets;
 
     while (true) {
         void *socket = zmq_socket (ctx, ZMQ_PAIR);
@@ -56,7 +56,7 @@ void test_system_max ()
     }
     // Clean up.
     for (unsigned int i = 0; i < sockets.size (); ++i)
-        zmq_close (sockets [i]);
+        zmq_close (sockets[i]);
 
     zmq_ctx_destroy (ctx);
 }
@@ -65,7 +65,7 @@ void test_zmq_default_max ()
 {
     //  Keep allocating sockets until we hit the default limit
     void *ctx = zmq_ctx_new ();
-    std::vector<void*> sockets;
+    std::vector<void *> sockets;
 
     while (true) {
         void *socket = zmq_socket (ctx, ZMQ_PAIR);
@@ -84,7 +84,7 @@ void test_zmq_default_max ()
 
     //  Clean up
     for (unsigned int i = 0; i < sockets.size (); ++i)
-        zmq_close (sockets [i]);
+        zmq_close (sockets[i]);
 
     zmq_ctx_destroy (ctx);
 }

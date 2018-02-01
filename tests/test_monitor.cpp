@@ -32,13 +32,13 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     //  We'll monitor these two sockets
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -67,7 +67,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (server_mon, "inproc://monitor-server");
     assert (rc == 0);
-    
+
     //  Now do a basic ping test
     rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
@@ -80,7 +80,7 @@ int main (void)
     //  Close client and server
     close_zero_linger (client);
     close_zero_linger (server);
-    
+
     //  Now collect and check events from both sockets
     int event = get_monitor_event (client_mon, NULL, NULL);
     if (event == ZMQ_EVENT_CONNECT_DELAYED)
@@ -100,17 +100,17 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {
-      assert (event == ZMQ_EVENT_CLOSED);
-      event = get_monitor_event (server_mon, NULL, NULL);
+        assert (event == ZMQ_EVENT_CLOSED);
+        event = get_monitor_event (server_mon, NULL, NULL);
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
-      assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+        assert (event == ZMQ_EVENT_MONITOR_STOPPED);
     }
-    
+
     //  Close down the sockets
     close_zero_linger (client_mon);
     close_zero_linger (server_mon);
     zmq_ctx_term (ctx);
 
-    return 0 ;
+    return 0;
 }

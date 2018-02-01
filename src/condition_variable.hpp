@@ -58,38 +58,26 @@
 
 namespace zmq
 {
+class condition_variable_t
+{
+  public:
+    inline condition_variable_t () { zmq_assert (false); }
 
-    class condition_variable_t
+    inline ~condition_variable_t () {}
+
+    inline int wait (mutex_t *mutex_, int timeout_)
     {
-    public:
-        inline condition_variable_t ()
-        {
-            zmq_assert(false);
-        }
+        zmq_assert (false);
+        return -1;
+    }
 
-        inline ~condition_variable_t ()
-        {
+    inline void broadcast () { zmq_assert (false); }
 
-        }
-
-        inline int wait (mutex_t* mutex_, int timeout_ )
-        {
-            zmq_assert(false);
-            return -1;
-        }
-
-        inline void broadcast ()
-        {
-            zmq_assert(false);
-        }
-
-    private:
-
-        //  Disable copy construction and assignment.
-        condition_variable_t (const condition_variable_t&);
-        void operator = (const condition_variable_t&);
-    };
-
+  private:
+    //  Disable copy construction and assignment.
+    condition_variable_t (const condition_variable_t &);
+    void operator= (const condition_variable_t &);
+};
 }
 
 #else
@@ -103,94 +91,79 @@ namespace zmq
 {
 
 #if !defined(ZMQ_HAVE_WINDOWS_TARGET_XP) && _WIN32_WINNT >= 0x0600
-    class condition_variable_t
+class condition_variable_t
+{
+  public:
+    inline condition_variable_t () { InitializeConditionVariable (&cv); }
+
+    inline ~condition_variable_t () {}
+
+    inline int wait (mutex_t *mutex_, int timeout_)
     {
-    public:
-        inline condition_variable_t ()
-        {
-            InitializeConditionVariable (&cv);
-        }
+        int rc = SleepConditionVariableCS (&cv, mutex_->get_cs (), timeout_);
 
-        inline ~condition_variable_t ()
-        {
+        if (rc != 0)
+            return 0;
 
-        }
+        rc = GetLastError ();
 
-        inline int wait (mutex_t* mutex_, int timeout_ )
-        {
-            int rc = SleepConditionVariableCS(&cv, mutex_->get_cs (), timeout_);
+        if (rc != ERROR_TIMEOUT)
+            win_assert (rc);
 
-            if (rc != 0)
-                return 0;
+        errno = EAGAIN;
+        return -1;
+    }
 
-            rc = GetLastError();
+    inline void broadcast () { WakeAllConditionVariable (&cv); }
 
-            if (rc != ERROR_TIMEOUT)
-                win_assert(rc);
+  private:
+    CONDITION_VARIABLE cv;
 
-            errno = EAGAIN;
-            return -1;
-        }
-
-        inline void broadcast ()
-        {
-            WakeAllConditionVariable(&cv);
-        }
-
-    private:
-
-        CONDITION_VARIABLE cv;
-
-        //  Disable copy construction and assignment.
-        condition_variable_t (const condition_variable_t&);
-        void operator = (const condition_variable_t&);
-    };
+    //  Disable copy construction and assignment.
+    condition_variable_t (const condition_variable_t &);
+    void operator= (const condition_variable_t &);
+};
 #else
-	class condition_variable_t
-	{
-	public:
-		inline condition_variable_t()
-		{
+class condition_variable_t
+{
+  public:
+    inline condition_variable_t () {}
 
-		}
+    inline ~condition_variable_t () {}
 
-		inline ~condition_variable_t()
-		{
+    inline int wait (mutex_t *mutex_, int timeout_)
+    {
+        std::unique_lock<std::mutex> lck (mtx); // lock mtx
+        mutex_->unlock ();                      // unlock mutex_
+        int res = 0;
+        if (timeout_ == -1) {
+            cv.wait (
+              lck); // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
+        } else if (cv.wait_for (lck, std::chrono::milliseconds (timeout_))
+                   == std::cv_status::timeout) {
+            // time expired
+            errno = EAGAIN;
+            res = -1;
+        }
+        lck.unlock ();   // unlock mtx
+        mutex_->lock (); // lock mutex_
+        return res;
+    }
 
-		}
+    inline void broadcast ()
+    {
+        std::unique_lock<std::mutex> lck (mtx); // lock mtx
+        cv.notify_all ();
+    }
 
-		inline int wait(mutex_t* mutex_, int timeout_)
-		{
-			std::unique_lock<std::mutex> lck(mtx);  // lock mtx
-			mutex_->unlock();                       // unlock mutex_
-			int res = 0;
-			if(timeout_ == -1) {
-				cv.wait(lck);                       // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
-			} else if (cv.wait_for(lck, std::chrono::milliseconds(timeout_)) == std::cv_status::timeout) {
-				// time expired
-				errno = EAGAIN;
-				res = -1;
-			}
-			lck.unlock();                           // unlock mtx
-			mutex_->lock();                         // lock mutex_
-			return res;
-		}
+  private:
+    std::condition_variable cv;
+    std::mutex mtx;
 
-		inline void broadcast()
-		{
-			std::unique_lock<std::mutex> lck(mtx);  // lock mtx
-			cv.notify_all();
-		}
-
-	private:
-
-		std::condition_variable cv;
-		std::mutex mtx;
-
-		//  Disable copy construction and assignment.
-		condition_variable_t(const condition_variable_t&);
-		void operator = (const condition_variable_t&);
-	};
+    //  Disable copy construction and assignment.
+    condition_variable_t (const condition_variable_t &);
+    void operator= (const condition_variable_t &);
+};
 
 #endif
 }
@@ -203,74 +176,72 @@ namespace zmq
 
 namespace zmq
 {
-
-    class condition_variable_t
+class condition_variable_t
+{
+  public:
+    inline condition_variable_t ()
     {
-    public:
-        inline condition_variable_t ()
-        {
-            int rc = pthread_cond_init (&cond, NULL);
-            posix_assert (rc);
-        }
+        int rc = pthread_cond_init (&cond, NULL);
+        posix_assert (rc);
+    }
 
-        inline ~condition_variable_t ()
-        {
-            int rc = pthread_cond_destroy (&cond);
-            posix_assert (rc);
-        }
+    inline ~condition_variable_t ()
+    {
+        int rc = pthread_cond_destroy (&cond);
+        posix_assert (rc);
+    }
 
-        inline int wait (mutex_t* mutex_, int timeout_)
-        {
-            int rc;
+    inline int wait (mutex_t *mutex_, int timeout_)
+    {
+        int rc;
 
-            if (timeout_ != -1) {
-                struct timespec timeout;
+        if (timeout_ != -1) {
+            struct timespec timeout;
 
-#if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-                alt_clock_gettime(SYSTEM_CLOCK, &timeout);
+#if defined ZMQ_HAVE_OSX                                                       \
+  && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
+            alt_clock_gettime (SYSTEM_CLOCK, &timeout);
 #else
-                clock_gettime(CLOCK_MONOTONIC, &timeout);
+            clock_gettime (CLOCK_MONOTONIC, &timeout);
 #endif
 
-                timeout.tv_sec += timeout_ / 1000;
-                timeout.tv_nsec += (timeout_ % 1000) * 1000000;
+            timeout.tv_sec += timeout_ / 1000;
+            timeout.tv_nsec += (timeout_ % 1000) * 1000000;
 
-                if (timeout.tv_nsec > 1000000000) {
-                    timeout.tv_sec++;
-                    timeout.tv_nsec -= 1000000000;
-                }
-
-                rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);
-            }
-            else
-                rc = pthread_cond_wait(&cond, mutex_->get_mutex());
-
-            if (rc == 0)
-                return 0;
-
-            if (rc == ETIMEDOUT){
-                errno= EAGAIN;
-                return -1;
+            if (timeout.tv_nsec > 1000000000) {
+                timeout.tv_sec++;
+                timeout.tv_nsec -= 1000000000;
             }
 
-            posix_assert (rc);
+            rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);
+        } else
+            rc = pthread_cond_wait (&cond, mutex_->get_mutex ());
+
+        if (rc == 0)
+            return 0;
+
+        if (rc == ETIMEDOUT) {
+            errno = EAGAIN;
             return -1;
         }
 
-        inline void broadcast ()
-        {
-            int rc = pthread_cond_broadcast (&cond);
-            posix_assert (rc);
-        }
+        posix_assert (rc);
+        return -1;
+    }
 
-    private:
+    inline void broadcast ()
+    {
+        int rc = pthread_cond_broadcast (&cond);
+        posix_assert (rc);
+    }
 
-        pthread_cond_t cond;
+  private:
+    pthread_cond_t cond;
 
-        // Disable copy construction and assignment.
-        condition_variable_t (const condition_variable_t&);
-        const condition_variable_t &operator = (const condition_variable_t&);
-    };
+    // Disable copy construction and assignment.
+    condition_variable_t (const condition_variable_t &);
+    const condition_variable_t &operator= (const condition_variable_t &);
+};
 }
 
 #endif

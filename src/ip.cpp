@@ -64,9 +64,9 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
         return -1;
 #endif
 
-    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-    //  race condition can cause socket not to be closed (if fork happens
-    //  between socket creation and this point).
+        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+        //  race condition can cause socket not to be closed (if fork happens
+        //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
     rc = fcntl (s, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
@@ -106,7 +106,7 @@ void zmq::unblock_socket (fd_t s_)
 
 void zmq::enable_ipv4_mapping (fd_t s_)
 {
-  (void) s_;
+    (void) s_;
 
 #if defined IPV6_V6ONLY && !defined ZMQ_HAVE_OPENBSD
 #ifdef ZMQ_HAVE_WINDOWS
@@ -114,8 +114,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (const char*) &flag,
-        sizeof (flag));
+    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (const char *) &flag,
+                         sizeof (flag));
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -130,38 +130,36 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     struct sockaddr_storage ss;
 
 #if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS
-    int addrlen = static_cast <int> (sizeof ss);
+    int addrlen = static_cast<int> (sizeof ss);
 #else
     socklen_t addrlen = sizeof ss;
 #endif
-    rc = getpeername (sockfd_, (struct sockaddr*) &ss, &addrlen);
+    rc = getpeername (sockfd_, (struct sockaddr *) &ss, &addrlen);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        const int last_error = WSAGetLastError();
-        wsa_assert (last_error != WSANOTINITIALISED &&
-                    last_error != WSAEFAULT &&
-                    last_error != WSAEINPROGRESS &&
-                    last_error != WSAENOTSOCK);
+        const int last_error = WSAGetLastError ();
+        wsa_assert (last_error != WSANOTINITIALISED && last_error != WSAEFAULT
+                    && last_error != WSAEINPROGRESS
+                    && last_error != WSAENOTSOCK);
         return 0;
     }
 #else
     if (rc == -1) {
-        errno_assert (errno != EBADF &&
-                      errno != EFAULT &&
-                      errno != ENOTSOCK);
+        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOTSOCK);
         return 0;
     }
 #endif
 
-    char host [NI_MAXHOST];
-    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host,
-        NULL, 0, NI_NUMERICHOST);
+    char host[NI_MAXHOST];
+    rc = getnameinfo ((struct sockaddr *) &ss, addrlen, host, sizeof host, NULL,
+                      0, NI_NUMERICHOST);
     if (rc != 0)
         return 0;
 
     ip_addr_ = host;
 
-    union {
+    union
+    {
         struct sockaddr sa;
         struct sockaddr_storage sa_stor;
     } u;
@@ -172,7 +170,9 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 {
-    int rc = setsockopt(s_, IPPROTO_IP, IP_TOS, reinterpret_cast<const char*>(&iptos), sizeof(iptos));
+    int rc =
+      setsockopt (s_, IPPROTO_IP, IP_TOS,
+                  reinterpret_cast<const char *> (&iptos), sizeof (iptos));
 
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
@@ -181,19 +181,14 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 #endif
 
     //  Windows and Hurd do not support IPV6_TCLASS
-#if !defined (ZMQ_HAVE_WINDOWS) && defined (IPV6_TCLASS)
-    rc = setsockopt(
-        s_,
-        IPPROTO_IPV6,
-        IPV6_TCLASS,
-        reinterpret_cast<const char*>(&iptos),
-        sizeof(iptos));
+#if !defined(ZMQ_HAVE_WINDOWS) && defined(IPV6_TCLASS)
+    rc = setsockopt (s_, IPPROTO_IPV6, IPV6_TCLASS,
+                     reinterpret_cast<const char *> (&iptos), sizeof (iptos));
 
     //  If IPv6 is not enabled ENOPROTOOPT will be returned on Linux and
     //  EINVAL on OSX
     if (rc == -1) {
-        errno_assert (errno == ENOPROTOOPT ||
-                      errno == EINVAL);
+        errno_assert (errno == ENOPROTOOPT || errno == EINVAL);
     }
 #endif
 }
@@ -221,7 +216,8 @@ int zmq::set_nosigpipe (fd_t s_)
 void zmq::bind_to_device (fd_t s_, std::string &bound_device_)
 {
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
-    int rc = setsockopt(s_, SOL_SOCKET, SO_BINDTODEVICE, bound_device_.c_str (), bound_device_.length ());
+    int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
+                         bound_device_.c_str (), bound_device_.length ());
 
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);

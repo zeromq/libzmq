@@ -39,9 +39,7 @@
 #include "session_base.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) :
-    ctx (ctx_),
-    tid (tid_)
+zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) : ctx (ctx_), tid (tid_)
 {
 }
 
@@ -60,7 +58,7 @@ uint32_t zmq::object_t::get_tid ()
     return tid;
 }
 
-void zmq::object_t::set_tid(uint32_t id)
+void zmq::object_t::set_tid (uint32_t id)
 {
     tid = id;
 }
@@ -73,97 +71,97 @@ zmq::ctx_t *zmq::object_t::get_ctx ()
 void zmq::object_t::process_command (command_t &cmd_)
 {
     switch (cmd_.type) {
+        case command_t::activate_read:
+            process_activate_read ();
+            break;
 
-    case command_t::activate_read:
-        process_activate_read ();
-        break;
+        case command_t::activate_write:
+            process_activate_write (cmd_.args.activate_write.msgs_read);
+            break;
 
-    case command_t::activate_write:
-        process_activate_write (cmd_.args.activate_write.msgs_read);
-        break;
+        case command_t::stop:
+            process_stop ();
+            break;
 
-    case command_t::stop:
-        process_stop ();
-        break;
+        case command_t::plug:
+            process_plug ();
+            process_seqnum ();
+            break;
 
-    case command_t::plug:
-        process_plug ();
-        process_seqnum ();
-        break;
+        case command_t::own:
+            process_own (cmd_.args.own.object);
+            process_seqnum ();
+            break;
 
-    case command_t::own:
-        process_own (cmd_.args.own.object);
-        process_seqnum ();
-        break;
+        case command_t::attach:
+            process_attach (cmd_.args.attach.engine);
+            process_seqnum ();
+            break;
 
-    case command_t::attach:
-        process_attach (cmd_.args.attach.engine);
-        process_seqnum ();
-        break;
+        case command_t::bind:
+            process_bind (cmd_.args.bind.pipe);
+            process_seqnum ();
+            break;
 
-    case command_t::bind:
-        process_bind (cmd_.args.bind.pipe);
-        process_seqnum ();
-        break;
+        case command_t::hiccup:
+            process_hiccup (cmd_.args.hiccup.pipe);
+            break;
 
-    case command_t::hiccup:
-        process_hiccup (cmd_.args.hiccup.pipe);
-        break;
+        case command_t::pipe_term:
+            process_pipe_term ();
+            break;
 
-    case command_t::pipe_term:
-        process_pipe_term ();
-        break;
+        case command_t::pipe_term_ack:
+            process_pipe_term_ack ();
+            break;
 
-    case command_t::pipe_term_ack:
-        process_pipe_term_ack ();
-        break;
+        case command_t::pipe_hwm:
+            process_pipe_hwm (cmd_.args.pipe_hwm.inhwm,
+                              cmd_.args.pipe_hwm.outhwm);
+            break;
 
-    case command_t::pipe_hwm:
-        process_pipe_hwm (cmd_.args.pipe_hwm.inhwm, cmd_.args.pipe_hwm.outhwm);
-        break;
+        case command_t::term_req:
+            process_term_req (cmd_.args.term_req.object);
+            break;
 
-    case command_t::term_req:
-        process_term_req (cmd_.args.term_req.object);
-        break;
+        case command_t::term:
+            process_term (cmd_.args.term.linger);
+            break;
 
-    case command_t::term:
-        process_term (cmd_.args.term.linger);
-        break;
+        case command_t::term_ack:
+            process_term_ack ();
+            break;
 
-    case command_t::term_ack:
-        process_term_ack ();
-        break;
+        case command_t::term_endpoint:
+            process_term_endpoint (cmd_.args.term_endpoint.endpoint);
+            break;
 
-    case command_t::term_endpoint:
-        process_term_endpoint (cmd_.args.term_endpoint.endpoint);
-        break;
+        case command_t::reap:
+            process_reap (cmd_.args.reap.socket);
+            break;
 
-    case command_t::reap:
-        process_reap (cmd_.args.reap.socket);
-        break;
+        case command_t::reaped:
+            process_reaped ();
+            break;
 
-    case command_t::reaped:
-        process_reaped ();
-        break;
+        case command_t::inproc_connected:
+            process_seqnum ();
+            break;
 
-    case command_t::inproc_connected:
-        process_seqnum ();
-        break;
-
-    case command_t::done:
-    default:
-        zmq_assert (false);
+        case command_t::done:
+        default:
+            zmq_assert (false);
     }
 }
 
 int zmq::object_t::register_endpoint (const char *addr_,
-        const endpoint_t &endpoint_)
+                                      const endpoint_t &endpoint_)
 {
     return ctx->register_endpoint (addr_, endpoint_);
 }
 
-int zmq::object_t::unregister_endpoint (
-        const std::string &addr_, socket_base_t *socket_)
+int zmq::object_t::unregister_endpoint (const std::string &addr_,
+                                        socket_base_t *socket_)
 {
     return ctx->unregister_endpoint (addr_, socket_);
 }
@@ -179,14 +177,16 @@ zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
 }
 
 void zmq::object_t::pend_connection (const std::string &addr_,
-        const endpoint_t &endpoint_, pipe_t **pipes_)
+                                     const endpoint_t &endpoint_,
+                                     pipe_t **pipes_)
 {
     ctx->pend_connection (addr_, endpoint_, pipes_);
 }
 
-void zmq::object_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
+void zmq::object_t::connect_pending (const char *addr_,
+                                     zmq::socket_base_t *bind_socket_)
 {
-    return ctx->connect_pending(addr_, bind_socket_);
+    return ctx->connect_pending (addr_, bind_socket_);
 }
 
 void zmq::object_t::destroy_socket (socket_base_t *socket_)
@@ -231,7 +231,8 @@ void zmq::object_t::send_own (own_t *destination_, own_t *object_)
 }
 
 void zmq::object_t::send_attach (session_base_t *destination_,
-    i_engine *engine_, bool inc_seqnum_)
+                                 i_engine *engine_,
+                                 bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -243,8 +244,9 @@ void zmq::object_t::send_attach (session_base_t *destination_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (own_t *destination_, pipe_t *pipe_,
-    bool inc_seqnum_)
+void zmq::object_t::send_bind (own_t *destination_,
+                               pipe_t *pipe_,
+                               bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -265,7 +267,7 @@ void zmq::object_t::send_activate_read (pipe_t *destination_)
 }
 
 void zmq::object_t::send_activate_write (pipe_t *destination_,
-    uint64_t msgs_read_)
+                                         uint64_t msgs_read_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -299,7 +301,9 @@ void zmq::object_t::send_pipe_term_ack (pipe_t *destination_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_pipe_hwm (pipe_t *destination_, int inhwm_, int outhwm_)
+void zmq::object_t::send_pipe_hwm (pipe_t *destination_,
+                                   int inhwm_,
+                                   int outhwm_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -309,8 +313,7 @@ void zmq::object_t::send_pipe_hwm (pipe_t *destination_, int inhwm_, int outhwm_
     send_command (cmd);
 }
 
-void zmq::object_t::send_term_req (own_t *destination_,
-    own_t *object_)
+void zmq::object_t::send_term_req (own_t *destination_, own_t *object_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -337,7 +340,7 @@ void zmq::object_t::send_term_ack (own_t *destination_)
 }
 
 void zmq::object_t::send_term_endpoint (own_t *destination_,
-        std::string *endpoint_)
+                                        std::string *endpoint_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -473,4 +476,3 @@ void zmq::object_t::send_command (command_t &cmd_)
 {
     ctx->send_command (cmd_.destination->get_tid (), cmd_);
 }
-

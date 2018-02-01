@@ -41,83 +41,78 @@
 
 namespace zmq
 {
+class io_thread_t;
+class socket_base_t;
 
-    class io_thread_t;
-    class socket_base_t;
+class ipc_listener_t : public own_t, public io_object_t
+{
+  public:
+    ipc_listener_t (zmq::io_thread_t *io_thread_,
+                    zmq::socket_base_t *socket_,
+                    const options_t &options_);
+    ~ipc_listener_t ();
 
-    class ipc_listener_t : public own_t, public io_object_t
-    {
-    public:
+    //  Set address to listen on.
+    int set_address (const char *addr_);
 
-        ipc_listener_t (zmq::io_thread_t *io_thread_,
-            zmq::socket_base_t *socket_, const options_t &options_);
-        ~ipc_listener_t ();
+    // Get the bound address for use with wildcards
+    int get_address (std::string &addr_);
 
-        //  Set address to listen on.
-        int set_address (const char *addr_);
+  private:
+    //  Handlers for incoming commands.
+    void process_plug ();
+    void process_term (int linger_);
 
-        // Get the bound address for use with wildcards
-        int get_address (std::string &addr_);
+    //  Handlers for I/O events.
+    void in_event ();
 
-    private:
+    //  Close the listening socket.
+    int close ();
 
-        //  Handlers for incoming commands.
-        void process_plug ();
-        void process_term (int linger_);
+    // Create wildcard path address
+    static int create_wildcard_address (std::string &path_, std::string &file_);
 
-        //  Handlers for I/O events.
-        void in_event ();
+    //  Filter new connections if the OS provides a mechanism to get
+    //  the credentials of the peer process.  Called from accept().
+#if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+    bool filter (fd_t sock);
+#endif
 
-        //  Close the listening socket.
-        int close ();
+    //  Accept the new connection. Returns the file descriptor of the
+    //  newly created connection. The function may return retired_fd
+    //  if the connection was dropped while waiting in the listen backlog.
+    fd_t accept ();
 
-        // Create wildcard path address
-        static int create_wildcard_address(std::string& path_,
-                std::string& file_);
+    //  True, if the underlying file for UNIX domain socket exists.
+    bool has_file;
 
-        //  Filter new connections if the OS provides a mechanism to get
-        //  the credentials of the peer process.  Called from accept().
-#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-        bool filter (fd_t sock);
-#       endif
+    //  Name of the temporary directory (if any) that has the
+    //  the UNIX domain socket
+    std::string tmp_socket_dirname;
 
-        //  Accept the new connection. Returns the file descriptor of the
-        //  newly created connection. The function may return retired_fd
-        //  if the connection was dropped while waiting in the listen backlog.
-        fd_t accept ();
+    //  Name of the file associated with the UNIX domain address.
+    std::string filename;
 
-        //  True, if the underlying file for UNIX domain socket exists.
-        bool has_file;
+    //  Underlying socket.
+    fd_t s;
 
-        //  Name of the temporary directory (if any) that has the
-        //  the UNIX domain socket
-        std::string tmp_socket_dirname;
+    //  Handle corresponding to the listening socket.
+    handle_t handle;
 
-        //  Name of the file associated with the UNIX domain address.
-        std::string filename;
+    //  Socket the listener belongs to.
+    zmq::socket_base_t *socket;
 
-        //  Underlying socket.
-        fd_t s;
+    // String representation of endpoint to bind to
+    std::string endpoint;
 
-        //  Handle corresponding to the listening socket.
-        handle_t handle;
+    // Acceptable temporary directory environment variables
+    static const char *tmp_env_vars[];
 
-        //  Socket the listener belongs to.
-        zmq::socket_base_t *socket;
-
-        // String representation of endpoint to bind to
-        std::string endpoint;
-
-        // Acceptable temporary directory environment variables
-        static const char *tmp_env_vars[];
-
-        ipc_listener_t (const ipc_listener_t&);
-        const ipc_listener_t &operator = (const ipc_listener_t&);
-    };
-
+    ipc_listener_t (const ipc_listener_t &);
+    const ipc_listener_t &operator= (const ipc_listener_t &);
+};
 }
 
 #endif
 
 #endif
-

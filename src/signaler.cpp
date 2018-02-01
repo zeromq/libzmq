@@ -77,7 +77,7 @@
 #include <sys/socket.h>
 #endif
 
-#if !defined (ZMQ_HAVE_WINDOWS)
+#if !defined(ZMQ_HAVE_WINDOWS)
 // Helper to sleep for specific number of milliseconds (or until signal)
 //
 static int sleep_ms (unsigned int ms_)
@@ -102,13 +102,13 @@ static int sleep_ms (unsigned int ms_)
 static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
 {
     unsigned int ms_so_far = 0;
-    unsigned int step_ms   = max_ms_ / 10;
+    unsigned int step_ms = max_ms_ / 10;
     if (step_ms < 1)
         step_ms = 1;
     if (step_ms > 100)
         step_ms = 100;
 
-    int rc = 0;       // do not sleep on first attempt
+    int rc = 0; // do not sleep on first attempt
     do {
         if (rc == -1 && errno == EAGAIN) {
             sleep_ms (step_ms);
@@ -138,20 +138,22 @@ zmq::signaler_t::signaler_t ()
 zmq::signaler_t::~signaler_t ()
 {
 #if defined ZMQ_HAVE_EVENTFD
-    if (r == retired_fd) return;
+    if (r == retired_fd)
+        return;
     int rc = close_wait_ms (r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
     if (w != retired_fd) {
-        const struct linger so_linger = { 1, 0 };
+        const struct linger so_linger = {1, 0};
         int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
-            (const char *) &so_linger, sizeof so_linger);
+                             (const char *) &so_linger, sizeof so_linger);
         //  Only check shutdown if WSASTARTUP was previously done
         if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
             wsa_assert (rc != SOCKET_ERROR);
             rc = closesocket (w);
             wsa_assert (rc != SOCKET_ERROR);
-            if (r == retired_fd) return;
+            if (r == retired_fd)
+                return;
             rc = closesocket (r);
             wsa_assert (rc != SOCKET_ERROR);
         }
@@ -188,7 +190,7 @@ void zmq::signaler_t::send ()
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
     while (true) {
-        int nbytes = ::send (w, (char*) &dummy, sizeof (dummy), 0);
+        int nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
         wsa_assert (nbytes != SOCKET_ERROR);
         if (unlikely (nbytes == SOCKET_ERROR))
             continue;
@@ -234,15 +236,12 @@ int zmq::signaler_t::wait (int timeout_)
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
-    }
-    else
-    if (unlikely (rc == 0)) {
+    } else if (unlikely (rc == 0)) {
         errno = EAGAIN;
         return -1;
     }
 #ifdef HAVE_FORK
-    else
-    if (unlikely (pid != getpid ())) {
+    else if (unlikely (pid != getpid ())) {
         // we have forked and the file descriptor is closed. Emulate an interrupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #2\n", getpid());
@@ -265,12 +264,10 @@ int zmq::signaler_t::wait (int timeout_)
         timeout.tv_usec = timeout_ % 1000 * 1000;
     }
 #ifdef ZMQ_HAVE_WINDOWS
-    int rc = select (0, &fds, NULL, NULL,
-        timeout_ >= 0 ? &timeout : NULL);
+    int rc = select (0, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = select (r + 1, &fds, NULL, NULL,
-        timeout_ >= 0 ? &timeout : NULL);
+    int rc = select (r + 1, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
@@ -290,7 +287,7 @@ int zmq::signaler_t::wait (int timeout_)
 
 void zmq::signaler_t::recv ()
 {
-    //  Attempt to read a signal.
+//  Attempt to read a signal.
 #if defined ZMQ_HAVE_EVENTFD
     uint64_t dummy;
     ssize_t sz = read (r, &dummy, sizeof (dummy));
@@ -322,15 +319,14 @@ void zmq::signaler_t::recv ()
 
 int zmq::signaler_t::recv_failable ()
 {
-    //  Attempt to read a signal.
+//  Attempt to read a signal.
 #if defined ZMQ_HAVE_EVENTFD
     uint64_t dummy;
     ssize_t sz = read (r, &dummy, sizeof (dummy));
     if (sz == -1) {
         errno_assert (errno == EAGAIN);
         return -1;
-    }
-    else {
+    } else {
         errno_assert (sz == sizeof (dummy));
 
         //  If we accidentally grabbed the next signal(s) along with the current
@@ -349,7 +345,7 @@ int zmq::signaler_t::recv_failable ()
 #if defined ZMQ_HAVE_WINDOWS
     int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
-        const int last_error = WSAGetLastError();
+        const int last_error = WSAGetLastError ();
         if (last_error == WSAEWOULDBLOCK) {
             errno = EAGAIN;
             return -1;
@@ -363,7 +359,8 @@ int zmq::signaler_t::recv_failable ()
             errno = EAGAIN;
             return -1;
         }
-        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR);
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK
+                      || errno == EINTR);
     }
 #endif
     zmq_assert (nbytes == sizeof (dummy));
@@ -403,14 +400,13 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
         return -1;
-    } 
-    else {
+    } else {
         *w_ = *r_ = fd;
         return 0;
     }
 
 #elif defined ZMQ_HAVE_WINDOWS
-#   if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
     //  Windows CE does not manage security attributes
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES sa;
@@ -422,7 +418,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     sa.nLength = sizeof (SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = &sd;
-#   endif
+#endif
 
     //  This function has to be in a system-wide critical section so that
     //  two instances of the library don't accidentally create signaler
@@ -439,31 +435,33 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     int event_signaler_port = 5905;
 
     if (signaler_port == event_signaler_port) {
-#       if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
-        sync = CreateEventW (&sa, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
-#       else
-        sync = CreateEventW (NULL, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
-#       endif
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
+        sync =
+          CreateEventW (&sa, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
+#else
+        sync =
+          CreateEventW (NULL, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
+#endif
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
-            sync = OpenEventW (SYNCHRONIZE | EVENT_MODIFY_STATE,
-                              FALSE, L"Global\\zmq-signaler-port-sync");
+            sync = OpenEventW (SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE,
+                               L"Global\\zmq-signaler-port-sync");
 
         win_assert (sync != NULL);
-    }
-    else
-    if (signaler_port != 0) {
-        wchar_t mutex_name [MAX_PATH];
-#       ifdef __MINGW32__
-        _snwprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
-#       else
-        swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
-#       endif
+    } else if (signaler_port != 0) {
+        wchar_t mutex_name[MAX_PATH];
+#ifdef __MINGW32__
+        _snwprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
+                    signaler_port);
+#else
+        swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
+                  signaler_port);
+#endif
 
-#       if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         sync = CreateMutexW (&sa, FALSE, mutex_name);
-#       else
+#else
         sync = CreateMutexW (NULL, FALSE, mutex_name);
-#       endif
+#endif
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
             sync = OpenMutexW (SYNCHRONIZE, FALSE, mutex_name);
 
@@ -483,11 +481,11 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
     BOOL so_reuseaddr = 1;
     int rc = setsockopt (listener, SOL_SOCKET, SO_REUSEADDR,
-        (char *) &so_reuseaddr, sizeof so_reuseaddr);
+                         (char *) &so_reuseaddr, sizeof so_reuseaddr);
     wsa_assert (rc != SOCKET_ERROR);
     BOOL tcp_nodelay = 1;
-    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY,
-        (char *) &tcp_nodelay, sizeof tcp_nodelay);
+    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, (char *) &tcp_nodelay,
+                     sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Init sockaddr to signaler port.
@@ -502,8 +500,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     wsa_assert (*w_ != INVALID_SOCKET);
 
     //  Set TCP_NODELAY on writer socket.
-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY,
-        (char *) &tcp_nodelay, sizeof tcp_nodelay);
+    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *) &tcp_nodelay,
+                     sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     if (sync != NULL) {
@@ -536,7 +534,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  Send/receive large chunk to work around TCP slow start
     //  This code is a workaround for #1608
     if (*r_ != INVALID_SOCKET) {
-        size_t dummy_size = 1024 * 1024;        //  1M to overload default receive buffer
+        size_t dummy_size =
+          1024 * 1024; //  1M to overload default receive buffer
         unsigned char *dummy = (unsigned char *) malloc (dummy_size);
         wsa_assert (dummy);
 
@@ -545,11 +544,14 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         while (still_to_send || still_to_recv) {
             int nbytes;
             if (still_to_send > 0) {
-                nbytes = ::send (*w_, (char *) (dummy + dummy_size - still_to_send), still_to_send, 0);
+                nbytes =
+                  ::send (*w_, (char *) (dummy + dummy_size - still_to_send),
+                          still_to_send, 0);
                 wsa_assert (nbytes != SOCKET_ERROR);
                 still_to_send -= nbytes;
             }
-            nbytes = ::recv (*r_, (char *) (dummy + dummy_size - still_to_recv), still_to_recv, 0);
+            nbytes = ::recv (*r_, (char *) (dummy + dummy_size - still_to_recv),
+                             still_to_recv, 0);
             wsa_assert (nbytes != SOCKET_ERROR);
             still_to_recv -= nbytes;
         }
@@ -563,7 +565,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  We don't need the listening socket anymore. Close it.
     rc = closesocket (listener);
-    wsa_assert(rc != SOCKET_ERROR);
+    wsa_assert (rc != SOCKET_ERROR);
 
     if (sync != NULL) {
         //  Exit the critical section.
@@ -580,14 +582,13 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     if (*r_ != INVALID_SOCKET) {
-#   if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         //  On Windows, preventing sockets to be inherited by child processes.
         BOOL brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
         win_assert (brc);
-#   endif
+#endif
         return 0;
-    }
-    else {
+    } else {
         //  Cleanup writer if connection failed
         if (*w_ != INVALID_SOCKET) {
             rc = closesocket (*w_);
@@ -655,7 +656,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
 #else
     // All other implementations support socketpair()
-    int sv [2];
+    int sv[2];
     int type = SOCK_STREAM;
     //  Setting this option result in sane behaviour when exec() functions
     //  are used. Old sockets are closed and don't block TCP ports, avoid
@@ -668,19 +669,18 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
         return -1;
-    }
-    else {
-        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-        //  race condition can cause socket not to be closed (if fork happens
-        //  between socket creation and this point).
+    } else {
+    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+    //  race condition can cause socket not to be closed (if fork happens
+    //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
-        rc = fcntl (sv [0], F_SETFD, FD_CLOEXEC);
+        rc = fcntl (sv[0], F_SETFD, FD_CLOEXEC);
         errno_assert (rc != -1);
-        rc = fcntl (sv [1], F_SETFD, FD_CLOEXEC);
+        rc = fcntl (sv[1], F_SETFD, FD_CLOEXEC);
         errno_assert (rc != -1);
 #endif
-        *w_ = sv [0];
-        *r_ = sv [1];
+        *w_ = sv[0];
+        *r_ = sv[1];
         return 0;
     }
 #endif

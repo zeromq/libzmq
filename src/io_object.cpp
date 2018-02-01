@@ -32,8 +32,7 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 
-zmq::io_object_t::io_object_t (io_thread_t *io_thread_) :
-    poller (NULL)
+zmq::io_object_t::io_object_t (io_thread_t *io_thread_) : poller (NULL)
 {
     if (io_thread_)
         plug (io_thread_);

@@ -37,7 +37,6 @@ zmq::mechanism_base_t::mechanism_base_t (session_base_t *const session_,
     mechanism_t (options_),
     session (session_)
 {
-
 }
 
 int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_)
@@ -64,7 +63,7 @@ void zmq::mechanism_base_t::handle_error_reason (const char *error_reason,
     }
 }
 
-bool zmq::mechanism_base_t::zap_required() const
+bool zmq::mechanism_base_t::zap_required () const
 {
     return !options.zap_domain.empty ();
 }

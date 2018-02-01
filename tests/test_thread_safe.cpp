@@ -72,7 +72,7 @@ int main (void)
     while (threads_completed < 2) {
         zmq_recv (server, &data, 1, 0);
         if (data == 1)
-            threads_completed++;            //  Thread ended
+            threads_completed++; //  Thread ended
     }
     zmq_threadclose (t1);
     zmq_threadclose (t2);
@@ -86,5 +86,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

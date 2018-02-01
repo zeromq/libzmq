@@ -136,7 +136,7 @@ class select_t : public poller_base_t
         ~wsa_events_t ();
 
         //  read, write, error and readwrite
-        WSAEVENT events [4];
+        WSAEVENT events[4];
     };
 
     family_entries_t family_entries;
@@ -147,7 +147,7 @@ class select_t : public poller_base_t
                               zmq::fd_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
-    std::pair<fd_t, u_short> fd_family_cache [fd_family_cache_size];
+    std::pair<fd_t, u_short> fd_family_cache[fd_family_cache_size];
 
     u_short get_fd_family (fd_t fd_);
 

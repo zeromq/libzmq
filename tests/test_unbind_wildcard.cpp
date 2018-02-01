@@ -21,7 +21,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     int ipv6 = is_ipv6_available ();
@@ -37,14 +37,14 @@ int main (void)
 
     char bindEndpoint[256];
     char connectEndpoint[256];
-    size_t endpoint_len = sizeof (bindEndpoint);    
+    size_t endpoint_len = sizeof (bindEndpoint);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
     assert (rc == 0);
 
     //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
 #ifdef ZMQ_HAVE_WINDOWS
     sprintf (connectEndpoint, "tcp://127.0.0.1:%s",
-                    strrchr(bindEndpoint, ':') + 1);
+             strrchr (bindEndpoint, ':') + 1);
 #else
     strcpy (connectEndpoint, bindEndpoint);
 #endif
@@ -79,17 +79,17 @@ int main (void)
     assert (rc == 0);
 
     endpoint_len = sizeof (bindEndpoint);
-    memset(bindEndpoint, 0, endpoint_len);
+    memset (bindEndpoint, 0, endpoint_len);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
     assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (ipv6)
         sprintf (connectEndpoint, "tcp://[::1]:%s",
-                strrchr(bindEndpoint, ':') + 1);
+                 strrchr (bindEndpoint, ':') + 1);
     else
         sprintf (connectEndpoint, "tcp://127.0.0.1:%s",
-                strrchr(bindEndpoint, ':') + 1);
+                 strrchr (bindEndpoint, ':') + 1);
 #else
     strcpy (connectEndpoint, bindEndpoint);
 #endif
@@ -120,7 +120,7 @@ int main (void)
 
     char endpoint[256];
     endpoint_len = sizeof (endpoint);
-    memset(endpoint, 0, endpoint_len);
+    memset (endpoint, 0, endpoint_len);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
     assert (rc == 0);
 
@@ -154,7 +154,7 @@ int main (void)
     assert (rc == 0);
 
     endpoint_len = sizeof (endpoint);
-    memset(endpoint, 0, endpoint_len);
+    memset (endpoint, 0, endpoint_len);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
     assert (rc == 0);
 
@@ -189,7 +189,7 @@ int main (void)
         assert (rc == 0);
 
         endpoint_len = sizeof (endpoint);
-        memset(endpoint, 0, endpoint_len);
+        memset (endpoint, 0, endpoint_len);
         rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
         assert (rc == 0);
 

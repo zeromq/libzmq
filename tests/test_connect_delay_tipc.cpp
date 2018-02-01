@@ -41,21 +41,21 @@ int main (void)
     // of the messages getting queued, as connect() creates a
     // pipe immediately.
 
-    void *context = zmq_ctx_new();
+    void *context = zmq_ctx_new ();
     assert (context);
-    void *to = zmq_socket(context, ZMQ_PULL);
+    void *to = zmq_socket (context, ZMQ_PULL);
     assert (to);
 
     // Bind the one valid receiver
     val = 0;
-    rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
     rc = zmq_bind (to, "tipc://{6555,0,0}");
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
     void *from = zmq_socket (context, ZMQ_PUSH);
-    assert(from);
+    assert (from);
 
     val = 0;
     zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
@@ -83,7 +83,7 @@ int main (void)
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
         if (rc == -1)
-            break;          //  Break when we didn't get a message
+            break; //  Break when we didn't get a message
         seen++;
     }
     assert (seen == 5);
@@ -104,7 +104,7 @@ int main (void)
     // also set the delay attach on connect flag, which should
     // cause the pipe attachment to be delayed until the connection
     // succeeds.
-    context = zmq_ctx_new();
+    context = zmq_ctx_new ();
 
     // Bind the valid socket
     to = zmq_socket (context, ZMQ_PULL);
@@ -113,7 +113,7 @@ int main (void)
     assert (rc == 0);
 
     val = 0;
-    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - all messages should arrive.
@@ -121,12 +121,12 @@ int main (void)
     assert (from);
 
     val = 0;
-    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
 
     // Set the key flag
     val = 1;
-    rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
+    rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof (val));
     assert (rc == 0);
 
     // Connect to the invalid socket
@@ -148,7 +148,7 @@ int main (void)
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
         if (rc == -1)
-            break;          //  Break when we didn't get a message
+            break; //  Break when we didn't get a message
         seen++;
     }
     assert (seen == 10);
@@ -181,7 +181,8 @@ int main (void)
 
     //  Frontend connects to backend using DELAY_ATTACH_ON_CONNECT
     int on = 1;
-    rc = zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on));
+    rc =
+      zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on));
     assert (rc == 0);
     rc = zmq_bind (backend, "tipc://{5560,0,0}");
     assert (rc == 0);
@@ -235,4 +236,3 @@ int main (void)
     rc = zmq_ctx_term (context);
     assert (rc == 0);
 }
-

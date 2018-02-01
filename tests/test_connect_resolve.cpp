@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -49,10 +49,10 @@ int main (void)
 
     rc = zmq_connect (sock, "tcp://in val id:1234");
     assert (rc == -1);
-    
+
     rc = zmq_connect (sock, "tcp://");
     assert (rc == -1);
-    
+
     rc = zmq_connect (sock, "tcp://192.168.0.200:*");
     assert (rc == -1);
 

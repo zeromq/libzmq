@@ -51,8 +51,7 @@ void zmq::poller_base_t::adjust_load (int amount_)
 {
     if (amount_ > 0)
         load.add (amount_);
-    else
-    if (amount_ < 0)
+    else if (amount_ < 0)
         load.sub (-amount_);
 }
 
@@ -88,7 +87,6 @@ uint64_t zmq::poller_base_t::execute_timers ()
     //   Execute the timers that are already due.
     timers_t::iterator it = timers.begin ();
     while (it != timers.end ()) {
-
         //  If we have to wait to execute the item, same will be true about
         //  all the following items (multimap is sorted). Thus we can stop
         //  checking the subsequent timers and return the time to wait for

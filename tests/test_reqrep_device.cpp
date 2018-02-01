@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char endpoint1[MAX_SOCKET_STRING];
     char endpoint2[MAX_SOCKET_STRING];
@@ -82,12 +82,12 @@ int main (void)
         size_t sz = sizeof (rcvmore);
         rc = zmq_getsockopt (router, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_msg_send (&msg, dealer, rcvmore? ZMQ_SNDMORE: 0);
+        rc = zmq_msg_send (&msg, dealer, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
     //  Receive the request.
-    char buff [3];
+    char buff[3];
     rc = zmq_recv (rep, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "ABC", 3) == 0);
@@ -119,7 +119,7 @@ int main (void)
         int rcvmore;
         rc = zmq_getsockopt (dealer, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_msg_send (&msg, router, rcvmore? ZMQ_SNDMORE: 0);
+        rc = zmq_msg_send (&msg, router, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
@@ -149,5 +149,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

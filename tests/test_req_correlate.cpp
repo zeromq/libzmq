@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
@@ -82,7 +82,7 @@ int main (void)
     // Receive request id 1
     rc = zmq_msg_recv (&msg, router, 0);
     assert (rc != -1);
-    assert (zmq_msg_size (&msg) == sizeof(uint32_t));
+    assert (zmq_msg_size (&msg) == sizeof (uint32_t));
     uint32_t req_id = *static_cast<uint32_t *> (zmq_msg_data (&msg));
     zmq_msg_t req_id_msg;
     zmq_msg_init (&req_id_msg);

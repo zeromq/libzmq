@@ -33,11 +33,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::fq_t::fq_t () :
-    active (0),
-    last_in (NULL),
-    current (0),
-    more (false)
+zmq::fq_t::fq_t () : active (0), last_in (NULL), current (0), more (false)
 {
 }
 
@@ -93,20 +89,19 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 
     //  Round-robin over the pipes to get the next message.
     while (active > 0) {
-
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
-        bool fetched = pipes [current]->read (msg_);
+        bool fetched = pipes[current]->read (msg_);
 
         //  Note that when message is not fetched, current pipe is deactivated
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
             if (pipe_)
-                *pipe_ = pipes [current];
-            more = msg_->flags () & msg_t::more? true: false;
+                *pipe_ = pipes[current];
+            more = msg_->flags () & msg_t::more ? true : false;
             if (!more) {
-                last_in = pipes [current];
+                last_in = pipes[current];
                 current = (current + 1) % active;
             }
             return 0;
@@ -142,7 +137,7 @@ bool zmq::fq_t::has_in ()
     //  get back to its original value. Otherwise it'll point to the first
     //  pipe holding messages, skipping only pipes with no messages available.
     while (active > 0) {
-        if (pipes [current]->check_read ())
+        if (pipes[current]->check_read ())
             return true;
 
         //  Deactivate the pipe.
@@ -157,7 +152,5 @@ bool zmq::fq_t::has_in ()
 
 const zmq::blob_t &zmq::fq_t::get_credential () const
 {
-    return last_in?
-        last_in->get_credential (): saved_credential;
+    return last_in ? last_in->get_credential () : saved_credential;
 }
-
