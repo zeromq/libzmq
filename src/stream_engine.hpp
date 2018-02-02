@@ -178,7 +178,7 @@ class stream_engine_t : public io_object_t, public i_engine
     //  The session this engine is attached to.
     zmq::session_base_t *session;
 
-    options_t options;
+    const options_t options;
 
     // String representation of endpoint
     std::string endpoint;

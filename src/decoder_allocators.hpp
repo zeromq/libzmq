@@ -122,7 +122,7 @@ class shared_message_memory_allocator
   private:
     unsigned char *buf;
     std::size_t bufsize;
-    std::size_t max_size;
+    const std::size_t max_size;
     zmq::msg_t::content_t *msg_content;
     std::size_t maxCounters;
 };

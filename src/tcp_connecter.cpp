@@ -72,12 +72,15 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     connect_timer_started (false),
     reconnect_timer_started (false),
     session (session_),
-    current_reconnect_ivl (options.reconnect_ivl)
+    current_reconnect_ivl (options.reconnect_ivl),
+    socket (session->get_socket ())
 {
     zmq_assert (addr);
     zmq_assert (addr->protocol == "tcp");
     addr->to_string (endpoint);
-    socket = session->get_socket ();
+    // TODO the return value is unused! what if it fails? if this is impossible
+    // or does not matter, change such that endpoint in initialized using an
+    // initializer, and make endpoint const
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()

@@ -54,7 +54,7 @@ class v1_decoder_t : public zmq::c_single_allocator,
     unsigned char tmpbuf[8];
     msg_t in_progress;
 
-    int64_t maxmsgsize;
+    const int64_t maxmsgsize;
 
     v1_decoder_t (const v1_decoder_t &);
     void operator= (const v1_decoder_t &);

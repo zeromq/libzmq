@@ -60,9 +60,9 @@ template <typename T> class encoder_base_t : public i_encoder
         next (NULL),
         new_msg_flag (false),
         bufsize (bufsize_),
+        buf ((unsigned char *) malloc (bufsize_)),
         in_progress (NULL)
     {
-        buf = (unsigned char *) malloc (bufsize_);
         alloc_assert (buf);
     }
 
@@ -166,8 +166,8 @@ template <typename T> class encoder_base_t : public i_encoder
     bool new_msg_flag;
 
     //  The buffer for encoded data.
-    size_t bufsize;
-    unsigned char *buf;
+    const size_t bufsize;
+    unsigned char *const buf;
 
     encoder_base_t (const encoder_base_t &);
     void operator= (const encoder_base_t &);
