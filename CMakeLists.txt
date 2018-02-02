@@ -1070,7 +1070,7 @@ if (MSVC AND ENABLE_CPACK)
   # add_crt_version (v100)
   # add_crt_version (v90)
 
-  set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+  list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
   set (CPACK_GENERATOR "NSIS")
   set (CPACK_PACKAGE_NAME "ZeroMQ")
   set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
