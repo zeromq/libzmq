@@ -35,11 +35,14 @@ elif [ $CURVE == "libsodium" ]; then
 fi
 
 # Build, check, and install from local source
+cd ../..
+mkdir build_cmake
+cd build_cmake
 if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
-    if ! (cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make clang-format-check) ; then 
+    if ! ( PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make clang-format-check) ; then
         make clang-format-diff
         exit 1
     fi
 else
-    ( cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make -j5 all VERBOSE=1 && make install && make -j5 test ) || exit 1
+    ( PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make -j5 all VERBOSE=1 && make install && make -j5 test ) || exit 1
 fi
