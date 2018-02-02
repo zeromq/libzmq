@@ -44,9 +44,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::epoll_t::epoll_t (const zmq::ctx_t &ctx_) :
-    ctx(ctx_),
-    stopping (false)
+zmq::epoll_t::epoll_t (const zmq::ctx_t &ctx_) : ctx (ctx_), stopping (false)
 {
 #ifdef ZMQ_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions
@@ -65,8 +63,9 @@ zmq::epoll_t::~epoll_t ()
     worker.stop ();
 
     close (epoll_fd);
-    for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
-        LIBZMQ_DELETE(*it);
+    for (retired_t::iterator it = retired.begin (); it != retired.end ();
+         ++it) {
+        LIBZMQ_DELETE (*it);
     }
 }
 
@@ -95,7 +94,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 
 void zmq::epoll_t::rm_fd (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_;
+    poll_entry_t *pe = (poll_entry_t *) handle_;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
@@ -109,7 +108,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 
 void zmq::epoll_t::set_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_;
+    poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLIN;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -117,7 +116,7 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
 
 void zmq::epoll_t::reset_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_;
+    poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLIN);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -125,7 +124,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
 
 void zmq::epoll_t::set_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_;
+    poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLOUT;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -133,7 +132,7 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
 
 void zmq::epoll_t::reset_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_;
+    poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLOUT);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -156,42 +155,42 @@ int zmq::epoll_t::max_fds ()
 
 void zmq::epoll_t::loop ()
 {
-    epoll_event ev_buf [max_io_events];
+    epoll_event ev_buf[max_io_events];
 
     while (!stopping) {
-
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
 
         //  Wait for events.
-        int n = epoll_wait (epoll_fd, &ev_buf [0], max_io_events,
-            timeout ? timeout : -1);
+        int n = epoll_wait (epoll_fd, &ev_buf[0], max_io_events,
+                            timeout ? timeout : -1);
         if (n == -1) {
             errno_assert (errno == EINTR);
             continue;
         }
 
-        for (int i = 0; i < n; i ++) {
-            poll_entry_t *pe = ((poll_entry_t*) ev_buf [i].data.ptr);
+        for (int i = 0; i < n; i++) {
+            poll_entry_t *pe = ((poll_entry_t *) ev_buf[i].data.ptr);
 
             if (pe->fd == retired_fd)
                 continue;
-            if (ev_buf [i].events & (EPOLLERR | EPOLLHUP))
+            if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
                 pe->events->in_event ();
             if (pe->fd == retired_fd)
-               continue;
-            if (ev_buf [i].events & EPOLLOUT)
+                continue;
+            if (ev_buf[i].events & EPOLLOUT)
                 pe->events->out_event ();
             if (pe->fd == retired_fd)
                 continue;
-            if (ev_buf [i].events & EPOLLIN)
+            if (ev_buf[i].events & EPOLLIN)
                 pe->events->in_event ();
         }
 
         //  Destroy retired event sources.
         retired_sync.lock ();
-        for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
-            LIBZMQ_DELETE(*it);
+        for (retired_t::iterator it = retired.begin (); it != retired.end ();
+             ++it) {
+            LIBZMQ_DELETE (*it);
         }
         retired.clear ();
         retired_sync.unlock ();
@@ -200,7 +199,7 @@ void zmq::epoll_t::loop ()
 
 void zmq::epoll_t::worker_routine (void *arg_)
 {
-    ((epoll_t*) arg_)->loop ();
+    ((epoll_t *) arg_)->loop ();
 }
 
 #endif

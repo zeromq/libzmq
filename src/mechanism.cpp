@@ -37,8 +37,7 @@
 #include "wire.hpp"
 #include "session_base.hpp"
 
-zmq::mechanism_t::mechanism_t (const options_t &options_) :
-    options (options_)
+zmq::mechanism_t::mechanism_t (const options_t &options_) : options (options_)
 {
 }
 
@@ -48,7 +47,7 @@ zmq::mechanism_t::~mechanism_t ()
 
 void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr, size_t id_size)
 {
-    routing_id.set (static_cast <const unsigned char*> (id_ptr), id_size);
+    routing_id.set (static_cast<const unsigned char *> (id_ptr), id_size);
 }
 
 void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
@@ -61,7 +60,7 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
-    user_id.set (static_cast <const unsigned char*> (data_), size_);
+    user_id.set (static_cast<const unsigned char *> (data_), size_);
     zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_));
 }
@@ -73,14 +72,12 @@ const zmq::blob_t &zmq::mechanism_t::get_user_id () const
 
 const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
-    static const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP",
-                                   "DEALER", "ROUTER", "PULL", "PUSH",
-                                   "XPUB", "XSUB", "STREAM",
-                                   "SERVER", "CLIENT",
-                                   "RADIO", "DISH",
-                                   "GATHER", "SCATTER", "DGRAM"};
+    static const char *names[] = {
+      "PAIR",  "PUB",  "SUB",    "REQ",     "REP",    "DEALER", "ROUTER",
+      "PULL",  "PUSH", "XPUB",   "XSUB",    "STREAM", "SERVER", "CLIENT",
+      "RADIO", "DISH", "GATHER", "SCATTER", "DGRAM"};
     zmq_assert (socket_type >= 0 && socket_type <= 18);
-    return names [socket_type];
+    return names[socket_type];
 }
 
 static size_t property_len (size_t name_len, size_t value_len)
@@ -105,11 +102,11 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr,
     const size_t total_len = ::property_len (name_len, value_len);
     zmq_assert (total_len <= ptr_capacity);
 
-    *ptr++ = static_cast <unsigned char> (name_len);
+    *ptr++ = static_cast<unsigned char> (name_len);
     memcpy (ptr, name, name_len);
     ptr += name_len;
     zmq_assert (value_len <= 0x7FFFFFFF);
-    put_uint32 (ptr, static_cast <uint32_t> (value_len));
+    put_uint32 (ptr, static_cast<uint32_t> (value_len));
     ptr += 4;
     memcpy (ptr, value, value_len);
 
@@ -131,28 +128,26 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, buf_capacity,
-                         ZMTP_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
+    ptr += add_property (ptr, buf_capacity, ZMTP_PROPERTY_SOCKET_TYPE,
+                         socket_type, strlen (socket_type));
 
     //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, buf_capacity - (ptr - buf),
-                             ZMTP_PROPERTY_IDENTITY, options.routing_id,
-                             options.routing_id_size);
+        ptr +=
+          add_property (ptr, buf_capacity - (ptr - buf), ZMTP_PROPERTY_IDENTITY,
+                        options.routing_id, options.routing_id_size);
 
     return ptr - buf;
 }
 
-size_t zmq::mechanism_t::basic_properties_len() const
+size_t zmq::mechanism_t::basic_properties_len () const
 {
     const char *socket_type = socket_type_string (options.type);
     return property_len (ZMTP_PROPERTY_SOCKET_TYPE, strlen (socket_type))
            + ((options.type == ZMQ_REQ || options.type == ZMQ_DEALER
                || options.type == ZMQ_ROUTER)
-                ? property_len (ZMTP_PROPERTY_IDENTITY,
-                                options.routing_id_size)
+                ? property_len (ZMTP_PROPERTY_IDENTITY, options.routing_id_size)
                 : 0);
 }
 
@@ -169,8 +164,8 @@ void zmq::mechanism_t::make_command_with_basic_properties (
     memcpy (ptr, prefix, prefix_len);
     ptr += prefix_len;
 
-    add_basic_properties (
-      ptr, command_size - (ptr - (unsigned char *) msg_->data ()));
+    add_basic_properties (ptr, command_size
+                                 - (ptr - (unsigned char *) msg_->data ()));
 }
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
@@ -180,7 +175,7 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
     size_t bytes_left = length_;
 
     while (bytes_left > 1) {
-        const size_t name_length = static_cast <size_t> (*ptr_);
+        const size_t name_length = static_cast<size_t> (*ptr_);
         ptr_ += 1;
         bytes_left -= 1;
         if (bytes_left < name_length)
@@ -192,7 +187,7 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         if (bytes_left < 4)
             break;
 
-        const size_t value_length = static_cast <size_t> (get_uint32 (ptr_));
+        const size_t value_length = static_cast<size_t> (get_uint32 (ptr_));
         ptr_ += 4;
         bytes_left -= 4;
         if (bytes_left < value_length)
@@ -204,25 +199,23 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
 
         if (name == ZMTP_PROPERTY_IDENTITY && options.recv_routing_id)
             set_peer_routing_id (value, value_length);
-        else
-        if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
+        else if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
             const std::string socket_type ((char *) value, value_length);
             if (!check_socket_type (socket_type)) {
                 errno = EINVAL;
                 return -1;
             }
-        }
-        else {
+        } else {
             const int rc = property (name, value, value_length);
             if (rc == -1)
                 return -1;
         }
         if (zap_flag)
             zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
-                    name, std::string ((char *) value, value_length));
+              name, std::string ((char *) value, value_length));
         else
             zmtp_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
-                    name, std::string ((char *) value, value_length));
+              name, std::string ((char *) value, value_length));
     }
     if (bytes_left > 0) {
         errno = EPROTO;
@@ -231,15 +224,16 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
     return 0;
 }
 
-int zmq::mechanism_t::property (const std::string& /* name_ */,
-                                const void * /* value_ */, size_t /* length_ */)
+int zmq::mechanism_t::property (const std::string & /* name_ */,
+                                const void * /* value_ */,
+                                size_t /* length_ */)
 {
     //  Default implementation does not check
     //  property values and returns 0 to signal success.
     return 0;
 }
 
-bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
+bool zmq::mechanism_t::check_socket_type (const std::string &type_) const
 {
     switch (options.type) {
         case ZMQ_REQ:

@@ -32,8 +32,7 @@
 #include "clock.hpp"
 #include "err.hpp"
 
-zmq::mailbox_safe_t::mailbox_safe_t (mutex_t* sync_) :
-    sync (sync_)
+zmq::mailbox_safe_t::mailbox_safe_t (mutex_t *sync_) : sync (sync_)
 {
     //  Get the pipe into passive state. That way, if the users starts by
     //  polling on the associated file descriptor it will get woken up when
@@ -52,23 +51,23 @@ zmq::mailbox_safe_t::~mailbox_safe_t ()
     sync->unlock ();
 }
 
-void zmq::mailbox_safe_t::add_signaler (signaler_t* signaler)
+void zmq::mailbox_safe_t::add_signaler (signaler_t *signaler)
 {
-    signalers.push_back(signaler);
+    signalers.push_back (signaler);
 }
 
-void zmq::mailbox_safe_t::remove_signaler (signaler_t* signaler)
+void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler)
 {
-    std::vector<signaler_t*>::iterator it = signalers.begin();
+    std::vector<signaler_t *>::iterator it = signalers.begin ();
 
     // TODO: make a copy of array and signal outside the lock
-    for (; it != signalers.end(); ++it){
+    for (; it != signalers.end (); ++it) {
         if (*it == signaler)
-           break;
+            break;
     }
 
-    if (it != signalers.end())
-        signalers.erase(it);
+    if (it != signalers.end ())
+        signalers.erase (it);
 }
 
 void zmq::mailbox_safe_t::clear_signalers ()
@@ -84,8 +83,9 @@ void zmq::mailbox_safe_t::send (const command_t &cmd_)
 
     if (!ok) {
         cond_var.broadcast ();
-        for (std::vector<signaler_t*>::iterator it = signalers.begin(); it != signalers.end(); ++it){
-            (*it)->send();
+        for (std::vector<signaler_t *>::iterator it = signalers.begin ();
+             it != signalers.end (); ++it) {
+            (*it)->send ();
         }
     }
 

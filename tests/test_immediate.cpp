@@ -31,27 +31,27 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     int val;
     int rc;
     char buffer[16];
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    // TEST 1. 
+    // TEST 1.
     // First we're going to attempt to send messages to two
     // pipes, one connected, the other not. We should see
     // the PUSH load balancing to both pipes, and hence half
     // of the messages getting queued, as connect() creates a
-    // pipe immediately. 
-    
-    void *context = zmq_ctx_new();
+    // pipe immediately.
+
+    void *context = zmq_ctx_new ();
     assert (context);
-    void *to = zmq_socket(context, ZMQ_PULL);
+    void *to = zmq_socket (context, ZMQ_PULL);
     assert (to);
 
     // Bind the one valid receiver
     val = 0;
-    rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
     rc = zmq_bind (to, "tcp://127.0.0.1:*");
     assert (rc == 0);
@@ -60,14 +60,14 @@ int main (void)
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
     void *from = zmq_socket (context, ZMQ_PUSH);
-    assert(from);
+    assert (from);
 
     val = 0;
     zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
     // This pipe will not connect
     rc = zmq_connect (from, "tcp://localhost:5556");
     assert (rc == 0);
-    // This pipe will 
+    // This pipe will
     rc = zmq_connect (from, my_endpoint);
     assert (rc == 0);
 
@@ -90,7 +90,7 @@ int main (void)
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
         if (rc == -1)
-            break;          //  Break when we didn't get a message
+            break; //  Break when we didn't get a message
         seen++;
     }
     assert (seen == 5);
@@ -105,13 +105,13 @@ int main (void)
     assert (rc == 0);
 
     // TEST 2
-    // This time we will do the same thing, connect two pipes, 
-    // one of which will succeed in connecting to a bound 
-    // receiver, the other of which will fail. However, we will 
-    // also set the delay attach on connect flag, which should 
+    // This time we will do the same thing, connect two pipes,
+    // one of which will succeed in connecting to a bound
+    // receiver, the other of which will fail. However, we will
+    // also set the delay attach on connect flag, which should
     // cause the pipe attachment to be delayed until the connection
-    // succeeds. 
-    context = zmq_ctx_new();
+    // succeeds.
+    context = zmq_ctx_new ();
 
     // Bind the valid socket
     to = zmq_socket (context, ZMQ_PULL);
@@ -123,7 +123,7 @@ int main (void)
     assert (rc == 0);
 
     val = 0;
-    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - all messages should arrive.
@@ -131,12 +131,12 @@ int main (void)
     assert (from);
 
     val = 0;
-    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
 
     // Set the key flag
     val = 1;
-    rc = zmq_setsockopt (from, ZMQ_IMMEDIATE, &val, sizeof(val));
+    rc = zmq_setsockopt (from, ZMQ_IMMEDIATE, &val, sizeof (val));
     assert (rc == 0);
 
     // Connect to the invalid socket
@@ -153,12 +153,12 @@ int main (void)
     }
     rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    
+
     seen = 0;
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
         if (rc == -1)
-            break;          //  Break when we didn't get a message
+            break; //  Break when we didn't get a message
         seen++;
     }
     assert (seen == 10);
@@ -168,7 +168,7 @@ int main (void)
 
     rc = zmq_close (to);
     assert (rc == 0);
-    
+
     rc = zmq_ctx_term (context);
     assert (rc == 0);
 
@@ -206,17 +206,17 @@ int main (void)
     assert (rc == 5);
     rc = zmq_recv (frontend, buffer, 255, 0);
     assert (rc == 5);
-    
+
     // Send message from frontend to backend
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == 5);
-    
+
     rc = zmq_close (backend);
     assert (rc == 0);
 
     //  Give time to process disconnect
     msleep (SETTLE_TIME * 10);
-    
+
     // Send a message, should fail
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == -1);
@@ -238,10 +238,10 @@ int main (void)
     // After the reconnect, should succeed
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == 5);
-    
+
     rc = zmq_close (backend);
     assert (rc == 0);
-    
+
     rc = zmq_close (frontend);
     assert (rc == 0);
 

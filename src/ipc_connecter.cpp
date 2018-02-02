@@ -50,8 +50,10 @@
 #include <sys/un.h>
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
-      class session_base_t *session_, const options_t &options_,
-      const address_t *addr_, bool delayed_start_) :
+                                       class session_base_t *session_,
+                                       const options_t &options_,
+                                       const address_t *addr_,
+                                       bool delayed_start_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     addr (addr_),
@@ -60,12 +62,12 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     delayed_start (delayed_start_),
     timer_started (false),
     session (session_),
-    current_reconnect_ivl(options.reconnect_ivl)
+    current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
     zmq_assert (addr->protocol == "ipc");
     addr->to_string (endpoint);
-    socket = session-> get_socket();
+    socket = session->get_socket ();
 }
 
 zmq::ipc_connecter_t::~ipc_connecter_t ()
@@ -118,12 +120,12 @@ void zmq::ipc_connecter_t::out_event ()
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {
         close ();
-        add_reconnect_timer();
+        add_reconnect_timer ();
         return;
     }
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -155,12 +157,11 @@ void zmq::ipc_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
-    else
-    if (rc == -1 && errno == EINPROGRESS) {
+    else if (rc == -1 && errno == EINPROGRESS) {
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);
-        socket->event_connect_delayed (endpoint, zmq_errno());
+        socket->event_connect_delayed (endpoint, zmq_errno ());
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -171,9 +172,9 @@ void zmq::ipc_connecter_t::start_connecting ()
     }
 }
 
-void zmq::ipc_connecter_t::add_reconnect_timer()
+void zmq::ipc_connecter_t::add_reconnect_timer ()
 {
-    int rc_ivl = get_new_reconnect_ivl();
+    int rc_ivl = get_new_reconnect_ivl ();
     add_timer (rc_ivl, reconnect_timer_id);
     socket->event_connect_retried (endpoint, rc_ivl);
     timer_started = true;
@@ -182,17 +183,16 @@ void zmq::ipc_connecter_t::add_reconnect_timer()
 int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
-    int this_interval = current_reconnect_ivl +
-        (generate_random () % options.reconnect_ivl);
+    int this_interval =
+      current_reconnect_ivl + (generate_random () % options.reconnect_ivl);
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 &&
-        options.reconnect_ivl_max > options.reconnect_ivl) {
-
+    if (options.reconnect_ivl_max > 0
+        && options.reconnect_ivl_max > options.reconnect_ivl) {
         //  Calculate the next interval
         current_reconnect_ivl = current_reconnect_ivl * 2;
-        if(current_reconnect_ivl >= options.reconnect_ivl_max) {
+        if (current_reconnect_ivl >= options.reconnect_ivl_max) {
             current_reconnect_ivl = options.reconnect_ivl_max;
         }
     }
@@ -212,9 +212,8 @@ int zmq::ipc_connecter_t::open ()
     unblock_socket (s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (
-        s, addr->resolved.ipc_addr->addr (),
-        addr->resolved.ipc_addr->addrlen ());
+    int rc = ::connect (s, addr->resolved.ipc_addr->addr (),
+                        addr->resolved.ipc_addr->addrlen ());
 
     //  Connect was successful immediately.
     if (rc == 0)
@@ -251,20 +250,19 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
 #else
     socklen_t len = sizeof (err);
 #endif
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
     if (rc == -1) {
         if (errno == ENOPROTOOPT)
             errno = 0;
         err = errno;
     }
     if (err != 0) {
-
         //  Assert if the error was caused by 0MQ bug.
         //  Networking problems are OK. No need to assert.
         errno = err;
-        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
-            errno == ETIMEDOUT || errno == EHOSTUNREACH ||
-            errno == ENETUNREACH || errno == ENETDOWN);
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN);
 
         return retired_fd;
     }
@@ -275,4 +273,3 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
 }
 
 #endif
-

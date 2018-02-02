@@ -64,25 +64,23 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         return -1;
     }
 
-    if (zap_required() && !zap_reply_received) {
+    if (zap_required () && !zap_reply_received) {
         if (zap_request_sent) {
             errno = EAGAIN;
             return -1;
         }
-        int rc = session->zap_connect();
-        if (rc == -1)
-        {
-            session->get_socket()->event_handshake_failed_no_detail (
-                session->get_endpoint(),
-                EFAULT);
+        int rc = session->zap_connect ();
+        if (rc == -1) {
+            session->get_socket ()->event_handshake_failed_no_detail (
+              session->get_endpoint (), EFAULT);
             return -1;
         }
         send_zap_request ();
         zap_request_sent = true;
 
-        //  TODO actually, it is quite unlikely that we can read the ZAP 
+        //  TODO actually, it is quite unlikely that we can read the ZAP
         //  reply already, but removing this has some strange side-effect
-        //  (probably because the pipe's in_active flag is true until a read 
+        //  (probably because the pipe's in_active flag is true until a read
         //  is attempted)
         rc = receive_and_process_zap_reply ();
         if (rc != 0)
@@ -120,26 +118,23 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
     if (ready_command_received || error_command_received) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
     const unsigned char *cmd_data =
-        static_cast <unsigned char *> (msg_->data ());
+      static_cast<unsigned char *> (msg_->data ());
     const size_t data_size = msg_->size ();
 
     int rc = 0;
     if (data_size >= 6 && !memcmp (cmd_data, "\5READY", 6))
         rc = process_ready_command (cmd_data, data_size);
-    else
-    if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
+    else if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
         rc = process_error_command (cmd_data, data_size);
     else {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         rc = -1;
     }
@@ -153,15 +148,15 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
-int zmq::null_mechanism_t::process_ready_command (
-        const unsigned char *cmd_data, size_t data_size)
+int zmq::null_mechanism_t::process_ready_command (const unsigned char *cmd_data,
+                                                  size_t data_size)
 {
     ready_command_received = true;
     return parse_metadata (cmd_data + 6, data_size - 6);
 }
 
-int zmq::null_mechanism_t::process_error_command (
-        const unsigned char *cmd_data, size_t data_size)
+int zmq::null_mechanism_t::process_error_command (const unsigned char *cmd_data,
+                                                  size_t data_size)
 {
     if (data_size < 7) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -171,7 +166,7 @@ int zmq::null_mechanism_t::process_error_command (
         errno = EPROTO;
         return -1;
     }
-    const size_t error_reason_len = static_cast <size_t> (cmd_data [6]);
+    const size_t error_reason_len = static_cast<size_t> (cmd_data[6]);
     if (error_reason_len > data_size - 7) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
@@ -200,15 +195,13 @@ int zmq::null_mechanism_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
-    const bool command_sent =
-        ready_command_sent || error_command_sent;
+    const bool command_sent = ready_command_sent || error_command_sent;
     const bool command_received =
-        ready_command_received || error_command_received;
+      ready_command_received || error_command_received;
 
     if (ready_command_sent && ready_command_received)
         return mechanism_t::ready;
-    else
-    if (command_sent && command_received)
+    else if (command_sent && command_received)
         return error;
     else
         return handshaking;

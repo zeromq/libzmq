@@ -41,35 +41,30 @@
 
 namespace zmq
 {
+class tipc_address_t
+{
+  public:
+    tipc_address_t ();
+    tipc_address_t (const sockaddr *sa, socklen_t sa_len);
+    ~tipc_address_t ();
 
-    class tipc_address_t
-    {
-    public:
+    //  This function sets up the address "{type, lower, upper}" for TIPC transport
+    int resolve (const char *name);
 
-        tipc_address_t ();
-        tipc_address_t (const sockaddr *sa, socklen_t sa_len);
-        ~tipc_address_t ();
+    //  The opposite to resolve()
+    int to_string (std::string &addr_);
 
-        //  This function sets up the address "{type, lower, upper}" for TIPC transport
-        int resolve (const char *name);
+    const sockaddr *addr () const;
+    socklen_t addrlen () const;
 
-        //  The opposite to resolve()
-        int to_string (std::string &addr_);
+  private:
+    struct sockaddr_tipc address;
 
-        const sockaddr *addr () const;
-        socklen_t addrlen () const;
-
-    private:
-
-        struct sockaddr_tipc address;
-
-        tipc_address_t (const tipc_address_t&);
-        const tipc_address_t &operator = (const tipc_address_t&);
-    };
-
+    tipc_address_t (const tipc_address_t &);
+    const tipc_address_t &operator= (const tipc_address_t &);
+};
 }
 
 #endif
 
 #endif
-

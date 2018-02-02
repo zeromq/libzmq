@@ -34,34 +34,39 @@
 
 #include "msg.hpp"
 
-zmq::shared_message_memory_allocator::shared_message_memory_allocator (std::size_t bufsize_) :
-    buf(NULL),
-    bufsize(0),
-    max_size(bufsize_),
-    msg_content(NULL),
-    maxCounters (static_cast <size_t> (std::ceil (static_cast <double> (max_size) / static_cast <double> (msg_t::max_vsm_size))))
+zmq::shared_message_memory_allocator::shared_message_memory_allocator (
+  std::size_t bufsize_) :
+    buf (NULL),
+    bufsize (0),
+    max_size (bufsize_),
+    msg_content (NULL),
+    maxCounters (static_cast<size_t> (
+      std::ceil (static_cast<double> (max_size)
+                 / static_cast<double> (msg_t::max_vsm_size))))
 {
 }
 
-zmq::shared_message_memory_allocator::shared_message_memory_allocator (std::size_t bufsize_, std::size_t maxMessages) :
-    buf(NULL),
-    bufsize(0),
-    max_size(bufsize_),
-    msg_content(NULL),
-    maxCounters(maxMessages)
+zmq::shared_message_memory_allocator::shared_message_memory_allocator (
+  std::size_t bufsize_, std::size_t maxMessages) :
+    buf (NULL),
+    bufsize (0),
+    max_size (bufsize_),
+    msg_content (NULL),
+    maxCounters (maxMessages)
 {
 }
 
 zmq::shared_message_memory_allocator::~shared_message_memory_allocator ()
 {
-    deallocate();
+    deallocate ();
 }
 
-unsigned char* zmq::shared_message_memory_allocator::allocate ()
+unsigned char *zmq::shared_message_memory_allocator::allocate ()
 {
     if (buf) {
         // release reference count to couple lifetime to messages
-        zmq::atomic_counter_t* c = reinterpret_cast<zmq::atomic_counter_t* >(buf);
+        zmq::atomic_counter_t *c =
+          reinterpret_cast<zmq::atomic_counter_t *> (buf);
 
         // if refcnt drops to 0, there are no message using the buffer
         // because either all messages have been closed or only vsm-messages
@@ -77,36 +82,38 @@ unsigned char* zmq::shared_message_memory_allocator::allocate ()
     if (!buf) {
         // allocate memory for reference counters together with reception buffer
         std::size_t const allocationsize =
-              max_size + sizeof (zmq::atomic_counter_t) +
-              maxCounters * sizeof (zmq::msg_t::content_t);
+          max_size + sizeof (zmq::atomic_counter_t)
+          + maxCounters * sizeof (zmq::msg_t::content_t);
 
-        buf = static_cast <unsigned char *> (std::malloc (allocationsize));
+        buf = static_cast<unsigned char *> (std::malloc (allocationsize));
         alloc_assert (buf);
 
         new (buf) atomic_counter_t (1);
     } else {
         // release reference count to couple lifetime to messages
-        zmq::atomic_counter_t *c = reinterpret_cast <zmq::atomic_counter_t *> (buf);
+        zmq::atomic_counter_t *c =
+          reinterpret_cast<zmq::atomic_counter_t *> (buf);
         c->set (1);
     }
 
     bufsize = max_size;
-    msg_content = reinterpret_cast <zmq::msg_t::content_t*> (buf + sizeof (atomic_counter_t) + max_size);
+    msg_content = reinterpret_cast<zmq::msg_t::content_t *> (
+      buf + sizeof (atomic_counter_t) + max_size);
     return buf + sizeof (zmq::atomic_counter_t);
 }
 
 void zmq::shared_message_memory_allocator::deallocate ()
 {
-    zmq::atomic_counter_t* c = reinterpret_cast<zmq::atomic_counter_t* >(buf);
-    if (buf && !c->sub(1)) {
-        std::free(buf);
+    zmq::atomic_counter_t *c = reinterpret_cast<zmq::atomic_counter_t *> (buf);
+    if (buf && !c->sub (1)) {
+        std::free (buf);
     }
-    release();
+    release ();
 }
 
-unsigned char* zmq::shared_message_memory_allocator::release ()
+unsigned char *zmq::shared_message_memory_allocator::release ()
 {
-    unsigned char* b = buf;
+    unsigned char *b = buf;
     buf = NULL;
     bufsize = 0;
     msg_content = NULL;
@@ -116,14 +123,14 @@ unsigned char* zmq::shared_message_memory_allocator::release ()
 
 void zmq::shared_message_memory_allocator::inc_ref ()
 {
-    (reinterpret_cast <zmq::atomic_counter_t*> (buf))->add (1);
+    (reinterpret_cast<zmq::atomic_counter_t *> (buf))->add (1);
 }
 
-void zmq::shared_message_memory_allocator::call_dec_ref(void*, void* hint)
+void zmq::shared_message_memory_allocator::call_dec_ref (void *, void *hint)
 {
     zmq_assert (hint);
-    unsigned char* buf = static_cast <unsigned char*> (hint);
-    zmq::atomic_counter_t* c = reinterpret_cast <zmq::atomic_counter_t*> (buf);
+    unsigned char *buf = static_cast<unsigned char *> (hint);
+    zmq::atomic_counter_t *c = reinterpret_cast<zmq::atomic_counter_t *> (buf);
 
     if (!c->sub (1)) {
         c->~atomic_counter_t ();
@@ -138,7 +145,7 @@ std::size_t zmq::shared_message_memory_allocator::size () const
     return bufsize;
 }
 
-unsigned char* zmq::shared_message_memory_allocator::data ()
+unsigned char *zmq::shared_message_memory_allocator::data ()
 {
     return buf + sizeof (zmq::atomic_counter_t);
 }

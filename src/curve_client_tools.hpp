@@ -153,8 +153,7 @@ struct curve_client_tools_t
         //  Create vouch = Box [C',S](C->S')
         memset (vouch_plaintext, 0, crypto_box_ZEROBYTES);
         memcpy (vouch_plaintext + crypto_box_ZEROBYTES, cn_public, 32);
-        memcpy (vouch_plaintext + crypto_box_ZEROBYTES + 32, server_key,
-                32);
+        memcpy (vouch_plaintext + crypto_box_ZEROBYTES + 32, server_key, 32);
 
         memcpy (vouch_nonce, "VOUCH---", 8);
         randombytes (vouch_nonce + 8, 16);
@@ -165,8 +164,8 @@ struct curve_client_tools_t
             return -1;
 
         uint8_t initiate_nonce[crypto_box_NONCEBYTES];
-        uint8_t *initiate_box = (uint8_t *) malloc (
-          crypto_box_BOXZEROBYTES + 144 + metadata_length);
+        uint8_t *initiate_box =
+          (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 144 + metadata_length);
         alloc_assert (initiate_box);
         uint8_t *initiate_plaintext =
           (uint8_t *) malloc (crypto_box_ZEROBYTES + 128 + metadata_length);
@@ -174,8 +173,7 @@ struct curve_client_tools_t
 
         //  Create Box [C + vouch + metadata](C'->S')
         memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
-        memcpy (initiate_plaintext + crypto_box_ZEROBYTES, public_key,
-                32);
+        memcpy (initiate_plaintext + crypto_box_ZEROBYTES, public_key, 32);
         memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 32, vouch_nonce + 8,
                 16);
         memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48,

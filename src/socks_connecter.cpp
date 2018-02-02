@@ -50,18 +50,21 @@
 #endif
 
 zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
-      class session_base_t *session_, const options_t &options_,
-      address_t *addr_, address_t *proxy_addr_, bool delayed_start_) :
+                                           class session_base_t *session_,
+                                           const options_t &options_,
+                                           address_t *addr_,
+                                           address_t *proxy_addr_,
+                                           bool delayed_start_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     addr (addr_),
     proxy_addr (proxy_addr_),
     status (unplugged),
     s (retired_fd),
-    handle((handle_t)NULL),
-    handle_valid(false),
+    handle ((handle_t) NULL),
+    handle_valid (false),
     delayed_start (delayed_start_),
-    timer_started(false),
+    timer_started (false),
     session (session_),
     current_reconnect_ivl (options.reconnect_ivl)
 {
@@ -74,7 +77,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
 zmq::socks_connecter_t::~socks_connecter_t ()
 {
     zmq_assert (s == retired_fd);
-    LIBZMQ_DELETE(proxy_addr);
+    LIBZMQ_DELETE (proxy_addr);
 }
 
 void zmq::socks_connecter_t::process_plug ()
@@ -109,49 +112,44 @@ void zmq::socks_connecter_t::process_term (int linger_)
 
 void zmq::socks_connecter_t::in_event ()
 {
-    zmq_assert (status != unplugged
-             && status != waiting_for_reconnect_time);
+    zmq_assert (status != unplugged && status != waiting_for_reconnect_time);
 
     if (status == waiting_for_choice) {
         int rc = choice_decoder.input (s);
         if (rc == 0 || rc == -1)
             error ();
-        else
-        if (choice_decoder.message_ready ()) {
-             const socks_choice_t choice = choice_decoder.decode ();
-             rc = process_server_response (choice);
-             if (rc == -1)
-                 error ();
-             else {
-                 std::string hostname = "";
-                 uint16_t port = 0;
-                 if (parse_address (addr->address, hostname, port) == -1)
-                     error ();
-                 else {
-                     request_encoder.encode (
-                         socks_request_t (1, hostname, port));
-                     reset_pollin (handle);
-                     set_pollout (handle);
-                     status = sending_request;
-                 }
-             }
+        else if (choice_decoder.message_ready ()) {
+            const socks_choice_t choice = choice_decoder.decode ();
+            rc = process_server_response (choice);
+            if (rc == -1)
+                error ();
+            else {
+                std::string hostname = "";
+                uint16_t port = 0;
+                if (parse_address (addr->address, hostname, port) == -1)
+                    error ();
+                else {
+                    request_encoder.encode (
+                      socks_request_t (1, hostname, port));
+                    reset_pollin (handle);
+                    set_pollout (handle);
+                    status = sending_request;
+                }
+            }
         }
-    }
-    else
-    if (status == waiting_for_response) {
+    } else if (status == waiting_for_response) {
         int rc = response_decoder.input (s);
         if (rc == 0 || rc == -1)
             error ();
-        else
-        if (response_decoder.message_ready ()) {
+        else if (response_decoder.message_ready ()) {
             const socks_response_t response = response_decoder.decode ();
             rc = process_server_response (response);
             if (rc == -1)
                 error ();
             else {
                 //  Create the engine object for this connection.
-                stream_engine_t *engine = new (std::nothrow)
-                    stream_engine_t (s, options, endpoint);
+                stream_engine_t *engine =
+                  new (std::nothrow) stream_engine_t (s, options, endpoint);
                 alloc_assert (engine);
 
                 //  Attach the engine to the corresponding session object.
@@ -167,47 +165,39 @@ void zmq::socks_connecter_t::in_event ()
                 terminate ();
             }
         }
-    }
-    else
+    } else
         error ();
 }
 
 void zmq::socks_connecter_t::out_event ()
 {
     zmq_assert (status == waiting_for_proxy_connection
-             || status == sending_greeting
-             || status == sending_request);
+                || status == sending_greeting || status == sending_request);
 
     if (status == waiting_for_proxy_connection) {
         const int rc = (int) check_proxy_connection ();
         if (rc == -1)
             error ();
         else {
-            greeting_encoder.encode (
-                socks_greeting_t (socks_no_auth_required));
+            greeting_encoder.encode (socks_greeting_t (socks_no_auth_required));
             status = sending_greeting;
         }
-    }
-    else
-    if (status == sending_greeting) {
+    } else if (status == sending_greeting) {
         zmq_assert (greeting_encoder.has_pending_data ());
         const int rc = greeting_encoder.output (s);
         if (rc == -1 || rc == 0)
             error ();
-        else
-        if (!greeting_encoder.has_pending_data ()) {
+        else if (!greeting_encoder.has_pending_data ()) {
             reset_pollout (handle);
             set_pollin (handle);
             status = waiting_for_choice;
         }
-    }
-    else {
+    } else {
         zmq_assert (request_encoder.has_pending_data ());
         const int rc = request_encoder.output (s);
         if (rc == -1 || rc == 0)
             error ();
-        else
-        if (!request_encoder.has_pending_data ()) {
+        else if (!request_encoder.has_pending_data ()) {
             reset_pollout (handle);
             set_pollin (handle);
             status = waiting_for_response;
@@ -227,8 +217,7 @@ void zmq::socks_connecter_t::initiate_connect ()
         status = sending_greeting;
     }
     //  Connection establishment may be delayed. Poll for its completion.
-    else
-    if (errno == EINPROGRESS) {
+    else if (errno == EINPROGRESS) {
         handle = add_fd (s);
         set_pollout (handle);
         status = waiting_for_proxy_connection;
@@ -243,16 +232,16 @@ void zmq::socks_connecter_t::initiate_connect ()
 }
 
 int zmq::socks_connecter_t::process_server_response (
-        const socks_choice_t &response)
+  const socks_choice_t &response)
 {
     //  We do not support any authentication method for now.
-    return response.method == 0? 0: -1;
+    return response.method == 0 ? 0 : -1;
 }
 
 int zmq::socks_connecter_t::process_server_response (
-        const socks_response_t &response)
+  const socks_response_t &response)
 {
-    return response.response_code == 0? 0: -1;
+    return response.response_code == 0 ? 0 : -1;
 }
 
 void zmq::socks_connecter_t::timer_event (int id_)
@@ -284,16 +273,16 @@ void zmq::socks_connecter_t::start_timer ()
 int zmq::socks_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
-    const int interval = current_reconnect_ivl +
-        generate_random () % options.reconnect_ivl;
+    const int interval =
+      current_reconnect_ivl + generate_random () % options.reconnect_ivl;
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 &&
-        options.reconnect_ivl_max > options.reconnect_ivl)
+    if (options.reconnect_ivl_max > 0
+        && options.reconnect_ivl_max > options.reconnect_ivl)
         //  Calculate the next interval
         current_reconnect_ivl =
-            std::min (current_reconnect_ivl * 2, options.reconnect_ivl_max);
+          std::min (current_reconnect_ivl * 2, options.reconnect_ivl_max);
     return interval;
 }
 
@@ -302,14 +291,14 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (s == retired_fd);
 
     //  Resolve the address
-    LIBZMQ_DELETE(proxy_addr->resolved.tcp_addr);
+    LIBZMQ_DELETE (proxy_addr->resolved.tcp_addr);
     proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (proxy_addr->resolved.tcp_addr);
 
     int rc = proxy_addr->resolved.tcp_addr->resolve (
-        proxy_addr->address.c_str (), false, options.ipv6);
+      proxy_addr->address.c_str (), false, options.ipv6);
     if (rc != 0) {
-        LIBZMQ_DELETE(proxy_addr->resolved.tcp_addr);
+        LIBZMQ_DELETE (proxy_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (proxy_addr->resolved.tcp_addr != NULL);
@@ -367,10 +356,10 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     if (rc == 0)
         return 0;
 
-    //  Translate error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
+        //  Translate error codes indicating asynchronous connect has been
+        //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    const int last_error = WSAGetLastError();
+    const int last_error = WSAGetLastError ();
     if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
     else {
@@ -394,22 +383,18 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     socklen_t len = sizeof err;
 #endif
 
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        wsa_assert (err == WSAECONNREFUSED
-                 || err == WSAETIMEDOUT
-                 || err == WSAECONNABORTED
-                 || err == WSAEHOSTUNREACH
-                 || err == WSAENETUNREACH
-                 || err == WSAENETDOWN
-                 || err == WSAEACCES
-                 || err == WSAEINVAL
-                 || err == WSAEADDRINUSE);
+        wsa_assert (err == WSAECONNREFUSED || err == WSAETIMEDOUT
+                    || err == WSAECONNABORTED || err == WSAEHOSTUNREACH
+                    || err == WSAENETUNREACH || err == WSAENETDOWN
+                    || err == WSAEACCES || err == WSAEINVAL
+                    || err == WSAEADDRINUSE);
         return -1;
     }
 #else
@@ -419,24 +404,22 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
         err = errno;
     if (err != 0) {
         errno = err;
-        errno_assert (
-            errno == ECONNREFUSED ||
-            errno == ECONNRESET ||
-            errno == ETIMEDOUT ||
-            errno == EHOSTUNREACH ||
-            errno == ENETUNREACH ||
-            errno == ENETDOWN ||
-            errno == EINVAL);
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN
+                      || errno == EINVAL);
         return -1;
     }
 #endif
 
     rc = tune_tcp_socket (s);
-    rc = rc | tune_tcp_keepalives (s, options.tcp_keepalive, options.tcp_keepalive_cnt,
-        options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    rc = rc
+         | tune_tcp_keepalives (
+             s, options.tcp_keepalive, options.tcp_keepalive_cnt,
+             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     if (rc != 0)
         return -1;
-    
+
     return 0;
 }
 
@@ -454,8 +437,9 @@ void zmq::socks_connecter_t::close ()
     s = retired_fd;
 }
 
-int zmq::socks_connecter_t::parse_address (
-        const std::string &address_, std::string &hostname_, uint16_t &port_)
+int zmq::socks_connecter_t::parse_address (const std::string &address_,
+                                           std::string &hostname_,
+                                           uint16_t &port_)
 {
     //  Find the ':' at end that separates address from the port number.
     const size_t idx = address_.rfind (':');
@@ -465,7 +449,7 @@ int zmq::socks_connecter_t::parse_address (
     }
 
     //  Extract hostname
-    if (idx < 2 || address_ [0] != '[' || address_ [idx - 1] != ']')
+    if (idx < 2 || address_[0] != '[' || address_[idx - 1] != ']')
         hostname_ = address_.substr (0, idx);
     else
         hostname_ = address_.substr (1, idx - 2);

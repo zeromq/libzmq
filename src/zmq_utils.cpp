@@ -43,9 +43,9 @@
 #include <unistd.h>
 #endif
 
-#if defined (ZMQ_USE_TWEETNACL)
+#if defined(ZMQ_USE_TWEETNACL)
 #include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
+#elif defined(ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
 #endif
 
@@ -60,61 +60,60 @@ void zmq_sleep (int seconds_)
 
 void *zmq_stopwatch_start ()
 {
-    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
+    uint64_t *watch = (uint64_t *) malloc (sizeof (uint64_t));
     alloc_assert (watch);
     *watch = zmq::clock_t::now_us ();
-    return (void*) watch;
+    return (void *) watch;
 }
 
 unsigned long zmq_stopwatch_stop (void *watch_)
 {
     uint64_t end = zmq::clock_t::now_us ();
-    uint64_t start = *(uint64_t*) watch_;
+    uint64_t start = *(uint64_t *) watch_;
     free (watch_);
     return (unsigned long) (end - start);
 }
 
-void *zmq_threadstart(zmq_thread_fn* func, void* arg)
+void *zmq_threadstart (zmq_thread_fn *func, void *arg)
 {
-    zmq::thread_t* thread = new (std::nothrow) zmq::thread_t;
-    alloc_assert(thread);
-    thread->start(func, arg);
+    zmq::thread_t *thread = new (std::nothrow) zmq::thread_t;
+    alloc_assert (thread);
+    thread->start (func, arg);
     return thread;
 }
 
-void zmq_threadclose(void* thread)
+void zmq_threadclose (void *thread)
 {
-    zmq::thread_t* pThread = static_cast<zmq::thread_t*>(thread);
-    pThread->stop();
-    LIBZMQ_DELETE(pThread);
+    zmq::thread_t *pThread = static_cast<zmq::thread_t *> (thread);
+    pThread->stop ();
+    LIBZMQ_DELETE (pThread);
 }
 
 //  Z85 codec, taken from 0MQ RFC project, implements RFC32 Z85 encoding
 
 //  Maps base 256 to base 85
-static char encoder [85 + 1] = {
-    "0123456789" "abcdefghij" "klmnopqrst" "uvwxyzABCD"
-    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{"
-    "}@%$#"
-};
+static char encoder[85 + 1] = {"0123456789"
+                               "abcdefghij"
+                               "klmnopqrst"
+                               "uvwxyzABCD"
+                               "EFGHIJKLMN"
+                               "OPQRSTUVWX"
+                               "YZ.-:+=^!/"
+                               "*?&<>()[]{"
+                               "}@%$#"};
 
 //  Maps base 85 to base 256
 //  We chop off lower 32 and higher 128 ranges
 //  0xFF denotes invalid characters within this range
-static uint8_t decoder [96] = {
-    0xFF, 0x44, 0xFF, 0x54, 0x53, 0x52, 0x48, 0xFF, 
-    0x4B, 0x4C, 0x46, 0x41, 0xFF, 0x3F, 0x3E, 0x45, 
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
-    0x08, 0x09, 0x40, 0xFF, 0x49, 0x42, 0x4A, 0x47, 
-    0x51, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 
-    0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 
-    0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 
-    0x3B, 0x3C, 0x3D, 0x4D, 0xFF, 0x4E, 0x43, 0xFF, 
-    0xFF, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 
-    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 
-    0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 
-    0x21, 0x22, 0x23, 0x4F, 0xFF, 0x50, 0xFF, 0xFF
-};
+static uint8_t decoder[96] = {
+  0xFF, 0x44, 0xFF, 0x54, 0x53, 0x52, 0x48, 0xFF, 0x4B, 0x4C, 0x46, 0x41,
+  0xFF, 0x3F, 0x3E, 0x45, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+  0x08, 0x09, 0x40, 0xFF, 0x49, 0x42, 0x4A, 0x47, 0x51, 0x24, 0x25, 0x26,
+  0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32,
+  0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x4D,
+  0xFF, 0x4E, 0x43, 0xFF, 0xFF, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+  0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C,
+  0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x4F, 0xFF, 0x50, 0xFF, 0xFF};
 
 //  --------------------------------------------------------------------------
 //  Encode a binary frame as a string; destination string MUST be at least
@@ -133,19 +132,19 @@ char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size)
     uint32_t value = 0;
     while (byte_nbr < size) {
         //  Accumulate value in base 256 (binary)
-        value = value * 256 + data [byte_nbr++];
+        value = value * 256 + data[byte_nbr++];
         if (byte_nbr % 4 == 0) {
             //  Output value in base 85
             unsigned int divisor = 85 * 85 * 85 * 85;
             while (divisor) {
-                dest [char_nbr++] = encoder [value / divisor % 85];
+                dest[char_nbr++] = encoder[value / divisor % 85];
                 divisor /= 85;
             }
             value = 0;
         }
     }
     assert (char_nbr == size * 5 / 4);
-    dest [char_nbr] = 0;
+    dest[char_nbr] = 0;
     return dest;
 }
 
@@ -168,12 +167,12 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
             goto error_inval;
         }
         value *= 85;
-        uint8_t index = string [char_nbr++] - 32;
-        if (index >= sizeof(decoder)) {
+        uint8_t index = string[char_nbr++] - 32;
+        if (index >= sizeof (decoder)) {
             //  Invalid z85 encoding, character outside range
             goto error_inval;
         }
-        uint32_t summand = decoder [index];
+        uint32_t summand = decoder[index];
         if (summand == 0xFF || summand > (UINT32_MAX - value)) {
             //  Invalid z85 encoding, invalid character or represented value exceeds 0xffffffff
             goto error_inval;
@@ -183,7 +182,7 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
             //  Output value in base 256
             unsigned int divisor = 256 * 256 * 256;
             while (divisor) {
-                dest [byte_nbr++] = value / divisor % 256;
+                dest[byte_nbr++] = value / divisor % 256;
                 divisor /= 256;
             }
             value = 0;
@@ -208,14 +207,13 @@ error_inval:
 
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 {
-#if defined (ZMQ_HAVE_CURVE)
-#   if crypto_box_PUBLICKEYBYTES != 32 \
-    || crypto_box_SECRETKEYBYTES != 32
-#       error "CURVE encryption library not built correctly"
-#   endif
+#if defined(ZMQ_HAVE_CURVE)
+#if crypto_box_PUBLICKEYBYTES != 32 || crypto_box_SECRETKEYBYTES != 32
+#error "CURVE encryption library not built correctly"
+#endif
 
-    uint8_t public_key [32];
-    uint8_t secret_key [32];
+    uint8_t public_key[32];
+    uint8_t secret_key[32];
 
     zmq::random_open ();
 
@@ -241,11 +239,10 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 
 int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
 {
-#if defined (ZMQ_HAVE_CURVE)
-#   if crypto_box_PUBLICKEYBYTES != 32 \
-    || crypto_box_SECRETKEYBYTES != 32
-#       error "CURVE encryption library not built correctly"
-#   endif
+#if defined(ZMQ_HAVE_CURVE)
+#if crypto_box_PUBLICKEYBYTES != 32 || crypto_box_SECRETKEYBYTES != 32
+#error "CURVE encryption library not built correctly"
+#endif
 
     uint8_t public_key[32];
     uint8_t secret_key[32];
@@ -299,7 +296,7 @@ int zmq_atomic_counter_inc (void *counter_)
 
 int zmq_atomic_counter_dec (void *counter_)
 {
-    return ((zmq::atomic_counter_t *) counter_)->sub (1)? 1: 0;
+    return ((zmq::atomic_counter_t *) counter_)->sub (1) ? 1 : 0;
 }
 
 //  Return actual value of atomic counter

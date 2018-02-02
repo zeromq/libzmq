@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-int msg_send (zmq_msg_t *msg_, void *s_, const char* group_, const char* body_)
+int msg_send (zmq_msg_t *msg_, void *s_, const char *group_, const char *body_)
 {
     int rc = zmq_msg_init_size (msg_, strlen (body_));
     if (rc != 0)
@@ -50,7 +50,10 @@ int msg_send (zmq_msg_t *msg_, void *s_, const char* group_, const char* body_)
     return rc;
 }
 
-int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* body_)
+int msg_recv_cmp (zmq_msg_t *msg_,
+                  void *s_,
+                  const char *group_,
+                  const char *body_)
 {
     int rc = zmq_msg_init (msg_);
     if (rc != 0)
@@ -60,24 +63,22 @@ int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* bod
     if (recv_rc == -1)
         return -1;
 
-    if (strcmp (zmq_msg_group (msg_), group_) != 0)
-    {
+    if (strcmp (zmq_msg_group (msg_), group_) != 0) {
         zmq_msg_close (msg_);
         return -1;
     }
 
-    char * body = (char*) malloc (sizeof(char) * (zmq_msg_size (msg_) + 1));
+    char *body = (char *) malloc (sizeof (char) * (zmq_msg_size (msg_) + 1));
     memcpy (body, zmq_msg_data (msg_), zmq_msg_size (msg_));
-    body [zmq_msg_size (msg_)] = '\0';
+    body[zmq_msg_size (msg_)] = '\0';
 
-    if (strcmp (body, body_) != 0)
-    {
+    if (strcmp (body, body_) != 0) {
         zmq_msg_close (msg_);
         return -1;
     }
 
     zmq_msg_close (msg_);
-    free(body);
+    free (body);
     return recv_rc;
 }
 
@@ -166,11 +167,11 @@ int main (void)
     assert (rc == 9);
 
     // test zmq_poll with dish
-    zmq_pollitem_t items [] = {
-        { radio, 0, ZMQ_POLLIN, 0 }, // read publications
-        { dish, 0, ZMQ_POLLIN, 0 }, // read subscriptions
+    zmq_pollitem_t items[] = {
+      {radio, 0, ZMQ_POLLIN, 0}, // read publications
+      {dish, 0, ZMQ_POLLIN, 0},  // read subscriptions
     };
-    rc = zmq_poll(items, 2, 2000);
+    rc = zmq_poll (items, 2, 2000);
     assert (rc == 1);
     assert (items[1].revents == ZMQ_POLLIN);
 
@@ -187,5 +188,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

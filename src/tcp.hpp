@@ -34,36 +34,38 @@
 
 namespace zmq
 {
+//  Tunes the supplied TCP socket for the best latency.
+int tune_tcp_socket (fd_t s_);
 
-    //  Tunes the supplied TCP socket for the best latency.
-    int tune_tcp_socket (fd_t s_);
+//  Sets the socket send buffer size.
+int set_tcp_send_buffer (fd_t sockfd_, int bufsize_);
 
-    //  Sets the socket send buffer size.
-    int set_tcp_send_buffer (fd_t sockfd_, int bufsize_);
+//  Sets the socket receive buffer size.
+int set_tcp_receive_buffer (fd_t sockfd_, int bufsize_);
 
-    //  Sets the socket receive buffer size.
-    int set_tcp_receive_buffer (fd_t sockfd_, int bufsize_);
+//  Tunes TCP keep-alives
+int tune_tcp_keepalives (fd_t s_,
+                         int keepalive_,
+                         int keepalive_cnt_,
+                         int keepalive_idle_,
+                         int keepalive_intvl_);
 
-    //  Tunes TCP keep-alives
-    int tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
-                              int keepalive_idle_, int keepalive_intvl_);
+//  Tunes TCP max retransmit timeout
+int tune_tcp_maxrt (fd_t sockfd_, int timeout_);
 
-    //  Tunes TCP max retransmit timeout
-    int tune_tcp_maxrt (fd_t sockfd_, int timeout_);
+//  Writes data to the socket. Returns the number of bytes actually
+//  written (even zero is to be considered to be a success). In case
+//  of error or orderly shutdown by the other peer -1 is returned.
+int tcp_write (fd_t s_, const void *data_, size_t size_);
 
-    //  Writes data to the socket. Returns the number of bytes actually
-    //  written (even zero is to be considered to be a success). In case
-    //  of error or orderly shutdown by the other peer -1 is returned.
-    int tcp_write (fd_t s_, const void *data_, size_t size_);
+//  Reads data from the socket (up to 'size' bytes).
+//  Returns the number of bytes actually read or -1 on error.
+//  Zero indicates the peer has closed the connection.
+int tcp_read (fd_t s_, void *data_, size_t size_);
 
-    //  Reads data from the socket (up to 'size' bytes).
-    //  Returns the number of bytes actually read or -1 on error.
-    //  Zero indicates the peer has closed the connection.
-    int tcp_read (fd_t s_, void *data_, size_t size_);
-
-    //  Asserts that an internal error did not occur.  Does not assert
-    //  on network errors such as reset or aborted connections.
-    void tcp_assert_tuning_error (fd_t s_, int rc_);
+//  Asserts that an internal error did not occur.  Does not assert
+//  on network errors such as reset or aborted connections.
+void tcp_assert_tuning_error (fd_t s_, int rc_);
 }
 
 #endif

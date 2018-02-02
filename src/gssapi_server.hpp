@@ -37,57 +37,54 @@
 
 namespace zmq
 {
+class msg_t;
+class session_base_t;
 
-    class msg_t;
-    class session_base_t;
+class gssapi_server_t : public gssapi_mechanism_base_t, public zap_client_t
+{
+  public:
+    gssapi_server_t (session_base_t *session_,
+                     const std::string &peer_address,
+                     const options_t &options_);
+    virtual ~gssapi_server_t ();
 
-    class gssapi_server_t 
-      : public gssapi_mechanism_base_t, public zap_client_t
+    // mechanism implementation
+    virtual int next_handshake_command (msg_t *msg_);
+    virtual int process_handshake_command (msg_t *msg_);
+    virtual int encode (msg_t *msg_);
+    virtual int decode (msg_t *msg_);
+    virtual int zap_msg_available ();
+    virtual status_t status () const;
+
+  private:
+    enum state_t
     {
-    public:
-      gssapi_server_t (session_base_t *session_,
-                       const std::string &peer_address,
-                       const options_t &options_);
-      virtual ~gssapi_server_t ();
-
-      // mechanism implementation
-      virtual int next_handshake_command (msg_t *msg_);
-      virtual int process_handshake_command (msg_t *msg_);
-      virtual int encode (msg_t *msg_);
-      virtual int decode (msg_t *msg_);
-      virtual int zap_msg_available ();
-      virtual status_t status () const;
-
-    private:
-
-        enum state_t {
-            send_next_token,
-            recv_next_token,
-            expect_zap_reply,
-            send_ready,
-            recv_ready,
-            connected
-        };
-
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        //  Current FSM state
-        state_t state;
-
-        //  True iff server considers the client authenticated
-        bool security_context_established;
-
-        //  The underlying mechanism type (ignored)
-        gss_OID doid;
-
-        void accept_context ();
-        int produce_next_token (msg_t *msg_);
-        int process_next_token (msg_t *msg_);
-        void send_zap_request ();
+        send_next_token,
+        recv_next_token,
+        expect_zap_reply,
+        send_ready,
+        recv_ready,
+        connected
     };
 
+    session_base_t *const session;
+
+    const std::string peer_address;
+
+    //  Current FSM state
+    state_t state;
+
+    //  True iff server considers the client authenticated
+    bool security_context_established;
+
+    //  The underlying mechanism type (ignored)
+    gss_OID doid;
+
+    void accept_context ();
+    int produce_next_token (msg_t *msg_);
+    int process_next_token (msg_t *msg_);
+    void send_zap_request ();
+};
 }
 
 #endif

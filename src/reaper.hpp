@@ -37,58 +37,54 @@
 
 namespace zmq
 {
+class ctx_t;
+class socket_base_t;
 
-    class ctx_t;
-    class socket_base_t;
+class reaper_t : public object_t, public i_poll_events
+{
+  public:
+    reaper_t (zmq::ctx_t *ctx_, uint32_t tid_);
+    ~reaper_t ();
 
-    class reaper_t : public object_t, public i_poll_events
-    {
-    public:
+    mailbox_t *get_mailbox ();
 
-        reaper_t (zmq::ctx_t *ctx_, uint32_t tid_);
-        ~reaper_t ();
+    void start ();
+    void stop ();
 
-        mailbox_t *get_mailbox ();
+    //  i_poll_events implementation.
+    void in_event ();
+    void out_event ();
+    void timer_event (int id_);
 
-        void start ();
-        void stop ();
+  private:
+    //  Command handlers.
+    void process_stop ();
+    void process_reap (zmq::socket_base_t *socket_);
+    void process_reaped ();
 
-        //  i_poll_events implementation.
-        void in_event ();
-        void out_event ();
-        void timer_event (int id_);
+    //  Reaper thread accesses incoming commands via this mailbox.
+    mailbox_t mailbox;
 
-    private:
+    //  Handle associated with mailbox' file descriptor.
+    poller_t::handle_t mailbox_handle;
 
-        //  Command handlers.
-        void process_stop ();
-        void process_reap (zmq::socket_base_t *socket_);
-        void process_reaped ();
+    //  I/O multiplexing is performed using a poller object.
+    poller_t *poller;
 
-        //  Reaper thread accesses incoming commands via this mailbox.
-        mailbox_t mailbox;
+    //  Number of sockets being reaped at the moment.
+    int sockets;
 
-        //  Handle associated with mailbox' file descriptor.
-        poller_t::handle_t mailbox_handle;
+    //  If true, we were already asked to terminate.
+    bool terminating;
 
-        //  I/O multiplexing is performed using a poller object.
-        poller_t *poller;
-
-        //  Number of sockets being reaped at the moment.
-        int sockets;
-
-        //  If true, we were already asked to terminate.
-        bool terminating;
-
-        reaper_t (const reaper_t&);
-        const reaper_t &operator = (const reaper_t&);
+    reaper_t (const reaper_t &);
+    const reaper_t &operator= (const reaper_t &);
 
 #ifdef HAVE_FORK
-        // the process that created this context. Used to detect forking.
-        pid_t pid;
+    // the process that created this context. Used to detect forking.
+    pid_t pid;
 #endif
-    };
-
+};
 }
 
 #endif

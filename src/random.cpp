@@ -40,9 +40,9 @@
 #include "mutex.hpp"
 #include "macros.hpp"
 
-#if defined (ZMQ_USE_TWEETNACL)
+#if defined(ZMQ_USE_TWEETNACL)
 #include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
+#elif defined(ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
 #endif
 
@@ -88,8 +88,9 @@ static zmq::mutex_t random_sync;
 
 void zmq::random_open (void)
 {
-#if defined (ZMQ_USE_LIBSODIUM) || \
-        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_GETRANDOM))
+#if defined(ZMQ_USE_LIBSODIUM)                                                 \
+  || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
+      && !defined(ZMQ_HAVE_GETRANDOM))
     scoped_lock_t locker (random_sync);
 
     if (random_refcount == 0) {
@@ -105,8 +106,9 @@ void zmq::random_open (void)
 
 void zmq::random_close (void)
 {
-#if defined (ZMQ_USE_LIBSODIUM) || \
-        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_GETRANDOM))
+#if defined(ZMQ_USE_LIBSODIUM)                                                 \
+  || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
+      && !defined(ZMQ_HAVE_GETRANDOM))
     scoped_lock_t locker (random_sync);
     --random_refcount;
 
@@ -115,4 +117,3 @@ void zmq::random_close (void)
     }
 #endif
 }
-

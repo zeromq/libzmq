@@ -52,42 +52,41 @@
 #include <sys/stat.h>
 
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED
-#   include <sys/types.h>
-#   include <sys/ucred.h>
+#include <sys/types.h>
+#include <sys/ucred.h>
 #endif
 #ifdef ZMQ_HAVE_SO_PEERCRED
-#   include <sys/types.h>
-#   include <pwd.h>
-#   include <grp.h>
-#   if defined ZMQ_HAVE_OPENBSD
-#       define ucred sockpeercred
-#   endif
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
+#if defined ZMQ_HAVE_OPENBSD
+#define ucred sockpeercred
+#endif
 #endif
 
 const char *zmq::ipc_listener_t::tmp_env_vars[] = {
-  "TMPDIR",
-  "TEMPDIR",
-  "TMP",
-  0  // Sentinel
+  "TMPDIR", "TEMPDIR", "TMP",
+  0 // Sentinel
 };
 
-int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
-        std::string& file_)
+int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
+                                                  std::string &file_)
 {
     std::string tmp_path;
 
     // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
     // the socket directory there.
     const char **tmp_env = tmp_env_vars;
-    while ( tmp_path.empty() && *tmp_env != 0 ) {
-        char *tmpdir = getenv(*tmp_env);
+    while (tmp_path.empty () && *tmp_env != 0) {
+        char *tmpdir = getenv (*tmp_env);
         struct stat statbuf;
 
         // Confirm it is actually a directory before trying to use
-        if ( tmpdir != 0 && ::stat(tmpdir, &statbuf) == 0 && S_ISDIR(statbuf.st_mode) ) {
-            tmp_path.assign(tmpdir);
-            if ( *(tmp_path.rbegin()) != '/' ) {
-                tmp_path.push_back('/');
+        if (tmpdir != 0 && ::stat (tmpdir, &statbuf) == 0
+            && S_ISDIR (statbuf.st_mode)) {
+            tmp_path.assign (tmpdir);
+            if (*(tmp_path.rbegin ()) != '/') {
+                tmp_path.push_back ('/');
             }
         }
 
@@ -96,10 +95,10 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
     }
 
     // Append a directory name
-    tmp_path.append("tmpXXXXXX");
+    tmp_path.append ("tmpXXXXXX");
 
     // We need room for tmp_path + trailing NUL
-    std::vector<char> buffer(tmp_path.length()+1);
+    std::vector<char> buffer (tmp_path.length () + 1);
     strcpy (&buffer[0], tmp_path.c_str ());
 
 #ifdef HAVE_MKDTEMP
@@ -121,7 +120,7 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
     (void) path_;
     int fd = mkstemp (&buffer[0]);
     if (fd == -1)
-         return -1;
+        return -1;
     ::close (fd);
 
     file_.assign (&buffer[0]);
@@ -131,7 +130,8 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
 }
 
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
-      socket_base_t *socket_, const options_t &options_) :
+                                     socket_base_t *socket_,
+                                     const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     has_file (false),
@@ -166,13 +166,13 @@ void zmq::ipc_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint, zmq_errno());
+        socket->event_accept_failed (endpoint, zmq_errno ());
         return;
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -181,8 +181,8 @@ void zmq::ipc_listener_t::in_event ()
     zmq_assert (io_thread);
 
     //  Create and launch a session object.
-    session_base_t *session = session_base_t::create (io_thread, false, socket,
-        options, NULL);
+    session_base_t *session =
+      session_base_t::create (io_thread, false, socket, options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
@@ -214,8 +214,8 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     std::string addr (addr_);
 
     //  Allow wildcard file
-    if (options.use_fd == -1 && addr [0] == '*') {
-        if ( create_wildcard_address(tmp_socket_dirname, addr) < 0 ) {
+    if (options.use_fd == -1 && addr[0] == '*') {
+        if (create_wildcard_address (tmp_socket_dirname, addr) < 0) {
             return -1;
         }
     }
@@ -226,19 +226,19 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  working after the first client connects. The user will take care of
     //  cleaning up the file after the service is stopped.
     if (options.use_fd == -1) {
-        ::unlink (addr.c_str());
+        ::unlink (addr.c_str ());
     }
     filename.clear ();
 
     //  Initialise the address structure.
     ipc_address_t address;
-    int rc = address.resolve (addr.c_str());
+    int rc = address.resolve (addr.c_str ());
     if (rc != 0) {
-        if ( !tmp_socket_dirname.empty() ) {
+        if (!tmp_socket_dirname.empty ()) {
             // We need to preserve errno to return to the user
             int errno_ = errno;
-            ::rmdir(tmp_socket_dirname.c_str ());
-            tmp_socket_dirname.clear();
+            ::rmdir (tmp_socket_dirname.c_str ());
+            tmp_socket_dirname.clear ();
             errno = errno_;
         }
         return -1;
@@ -252,11 +252,11 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         //  Create a listening socket.
         s = open_socket (AF_UNIX, SOCK_STREAM, 0);
         if (s == -1) {
-            if ( !tmp_socket_dirname.empty() ) {
+            if (!tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
                 int errno_ = errno;
-                ::rmdir(tmp_socket_dirname.c_str ());
-                tmp_socket_dirname.clear();
+                ::rmdir (tmp_socket_dirname.c_str ());
+                tmp_socket_dirname.clear ();
                 errno = errno_;
             }
             return -1;
@@ -273,7 +273,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
             goto error;
     }
 
-    filename.assign (addr.c_str());
+    filename.assign (addr.c_str ());
     has_file = true;
 
     socket->event_listening (endpoint, s);
@@ -298,13 +298,13 @@ int zmq::ipc_listener_t::close ()
     if (has_file && options.use_fd == -1) {
         rc = 0;
 
-        if ( rc == 0 && !tmp_socket_dirname.empty() ) {
-            rc = ::rmdir(tmp_socket_dirname.c_str ());
-            tmp_socket_dirname.clear();
+        if (rc == 0 && !tmp_socket_dirname.empty ()) {
+            rc = ::rmdir (tmp_socket_dirname.c_str ());
+            tmp_socket_dirname.clear ();
         }
 
         if (rc != 0) {
-            socket->event_close_failed (endpoint, zmq_errno());
+            socket->event_close_failed (endpoint, zmq_errno ());
             return -1;
         }
     }
@@ -317,9 +317,9 @@ int zmq::ipc_listener_t::close ()
 
 bool zmq::ipc_listener_t::filter (fd_t sock)
 {
-    if (options.ipc_uid_accept_filters.empty () &&
-        options.ipc_pid_accept_filters.empty () &&
-        options.ipc_gid_accept_filters.empty ())
+    if (options.ipc_uid_accept_filters.empty ()
+        && options.ipc_pid_accept_filters.empty ()
+        && options.ipc_gid_accept_filters.empty ())
         return true;
 
     struct ucred cred;
@@ -327,9 +327,12 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
 
     if (getsockopt (sock, SOL_SOCKET, SO_PEERCRED, &cred, &size))
         return false;
-    if (options.ipc_uid_accept_filters.find (cred.uid) != options.ipc_uid_accept_filters.end () ||
-            options.ipc_gid_accept_filters.find (cred.gid) != options.ipc_gid_accept_filters.end () ||
-            options.ipc_pid_accept_filters.find (cred.pid) != options.ipc_pid_accept_filters.end ())
+    if (options.ipc_uid_accept_filters.find (cred.uid)
+          != options.ipc_uid_accept_filters.end ()
+        || options.ipc_gid_accept_filters.find (cred.gid)
+             != options.ipc_gid_accept_filters.end ()
+        || options.ipc_pid_accept_filters.find (cred.pid)
+             != options.ipc_pid_accept_filters.end ())
         return true;
 
     struct passwd *pw;
@@ -337,8 +340,9 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
 
     if (!(pw = getpwuid (cred.uid)))
         return false;
-    for (options_t::ipc_gid_accept_filters_t::const_iterator it = options.ipc_gid_accept_filters.begin ();
-            it != options.ipc_gid_accept_filters.end (); it++) {
+    for (options_t::ipc_gid_accept_filters_t::const_iterator it =
+           options.ipc_gid_accept_filters.begin ();
+         it != options.ipc_gid_accept_filters.end (); it++) {
         if (!(gr = getgrgid (*it)))
             continue;
         for (char **mem = gr->gr_mem; *mem; mem++) {
@@ -353,8 +357,8 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
 
 bool zmq::ipc_listener_t::filter (fd_t sock)
 {
-    if (options.ipc_uid_accept_filters.empty () &&
-        options.ipc_gid_accept_filters.empty ())
+    if (options.ipc_uid_accept_filters.empty ()
+        && options.ipc_gid_accept_filters.empty ())
         return true;
 
     struct xucred cred;
@@ -364,10 +368,12 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
         return false;
     if (cred.cr_version != XUCRED_VERSION)
         return false;
-    if (options.ipc_uid_accept_filters.find (cred.cr_uid) != options.ipc_uid_accept_filters.end ())
+    if (options.ipc_uid_accept_filters.find (cred.cr_uid)
+        != options.ipc_uid_accept_filters.end ())
         return true;
     for (int i = 0; i < cred.cr_ngroups; i++) {
-        if (options.ipc_gid_accept_filters.find (cred.cr_groups[i]) != options.ipc_gid_accept_filters.end ())
+        if (options.ipc_gid_accept_filters.find (cred.cr_groups[i])
+            != options.ipc_gid_accept_filters.end ())
             return true;
     }
 
@@ -388,13 +394,14 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     fd_t sock = ::accept (s, NULL, NULL);
 #endif
     if (sock == -1) {
-        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
-            errno == ENFILE);
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
+                      || errno == ECONNABORTED || errno == EPROTO
+                      || errno == ENFILE);
         return retired_fd;
     }
 
-#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4) && defined FD_CLOEXEC
+#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
+  && defined FD_CLOEXEC
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);

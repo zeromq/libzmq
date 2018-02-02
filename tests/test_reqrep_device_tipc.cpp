@@ -80,7 +80,7 @@ int main (void)
     }
 
     //  Receive the request.
-    char buff [3];
+    char buff[3];
     rc = zmq_recv (rep, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "ABC", 3) == 0);
@@ -142,5 +142,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

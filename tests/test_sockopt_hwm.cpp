@@ -31,76 +31,78 @@
 
 const int MAX_SENDS = 10000;
 
-void test_change_before_connected()
+void test_change_before_connected ()
 {
     int rc;
-    void *ctx = zmq_ctx_new();
+    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket(ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket(ctx, ZMQ_PULL);
+    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
+    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
 
     int val = 2;
-    rc = zmq_setsockopt(connect_socket, ZMQ_RCVHWM, &val, sizeof(val));
-    assert(rc == 0);
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &val, sizeof(val));
-    assert(rc == 0);
+    rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
+    assert (rc == 0);
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
+    assert (rc == 0);
 
-    zmq_connect(connect_socket, "inproc://a");
-    zmq_bind(bind_socket, "inproc://a");
+    zmq_connect (connect_socket, "inproc://a");
+    zmq_bind (bind_socket, "inproc://a");
 
-    size_t placeholder = sizeof(val);
+    size_t placeholder = sizeof (val);
     val = 0;
-    rc = zmq_getsockopt(bind_socket, ZMQ_SNDHWM, &val, &placeholder);
-    assert(rc == 0);
-    assert(val == 2);
+    rc = zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &val, &placeholder);
+    assert (rc == 0);
+    assert (val == 2);
 
     int send_count = 0;
-    while (send_count < MAX_SENDS && zmq_send(bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < MAX_SENDS
+           && zmq_send (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
-    assert(send_count == 4);
+    assert (send_count == 4);
 
-    zmq_close(bind_socket);
-    zmq_close(connect_socket);
-    zmq_ctx_term(ctx);
+    zmq_close (bind_socket);
+    zmq_close (connect_socket);
+    zmq_ctx_term (ctx);
 }
 
-void test_change_after_connected()
+void test_change_after_connected ()
 {
     int rc;
-    void *ctx = zmq_ctx_new();
+    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket(ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket(ctx, ZMQ_PULL);
+    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
+    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
 
     int val = 1;
-    rc = zmq_setsockopt(connect_socket, ZMQ_RCVHWM, &val, sizeof(val));
-    assert(rc == 0);
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &val, sizeof(val));
-    assert(rc == 0);
+    rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
+    assert (rc == 0);
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
+    assert (rc == 0);
 
-    zmq_connect(connect_socket, "inproc://a");
-    zmq_bind(bind_socket, "inproc://a");
+    zmq_connect (connect_socket, "inproc://a");
+    zmq_bind (bind_socket, "inproc://a");
 
     val = 5;
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &val, sizeof(val));
-    assert(rc == 0);
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
+    assert (rc == 0);
 
-    size_t placeholder = sizeof(val);
+    size_t placeholder = sizeof (val);
     val = 0;
-    rc = zmq_getsockopt(bind_socket, ZMQ_SNDHWM, &val, &placeholder);
-    assert(rc == 0);
-    assert(val == 5);
+    rc = zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &val, &placeholder);
+    assert (rc == 0);
+    assert (val == 5);
 
     int send_count = 0;
-    while (send_count < MAX_SENDS && zmq_send(bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < MAX_SENDS
+           && zmq_send (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
-    assert(send_count == 6);
+    assert (send_count == 6);
 
-    zmq_close(bind_socket);
-    zmq_close(connect_socket);
-    zmq_ctx_term(ctx);
+    zmq_close (bind_socket);
+    zmq_close (connect_socket);
+    zmq_ctx_term (ctx);
 }
 
 int send_until_wouldblock (void *socket)
@@ -117,43 +119,44 @@ int send_until_wouldblock (void *socket)
 int test_fill_up_to_hwm (void *socket, int sndhwm)
 {
     int send_count = send_until_wouldblock (socket);
-    fprintf(stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
+    fprintf (stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
     assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 10));
     return send_count;
 }
 
-void test_decrease_when_full()
+void test_decrease_when_full ()
 {
     int rc;
-    void *ctx = zmq_ctx_new();
+    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket(ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket(ctx, ZMQ_PULL);
+    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
+    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
 
     int val = 1;
-    rc = zmq_setsockopt(connect_socket, ZMQ_RCVHWM, &val, sizeof(val));
-    assert(rc == 0);
+    rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
+    assert (rc == 0);
 
     int sndhwm = 100;
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
     assert (rc == 0);
 
-    zmq_bind(bind_socket, "inproc://a");
-    zmq_connect(connect_socket, "inproc://a");
+    zmq_bind (bind_socket, "inproc://a");
+    zmq_connect (connect_socket, "inproc://a");
 
     // Fill up to hwm
     int send_count = test_fill_up_to_hwm (bind_socket, sndhwm);
 
     // Decrease snd hwm
     sndhwm = 70;
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof(sndhwm));
-    assert(rc == 0);
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
+    assert (rc == 0);
 
     int sndhwm_read = 0;
-    size_t sndhwm_read_size = sizeof(sndhwm_read);
-    rc = zmq_getsockopt(bind_socket, ZMQ_SNDHWM, &sndhwm_read, &sndhwm_read_size);
-    assert(rc == 0);
-    assert(sndhwm_read == sndhwm);
+    size_t sndhwm_read_size = sizeof (sndhwm_read);
+    rc =
+      zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm_read, &sndhwm_read_size);
+    assert (rc == 0);
+    assert (sndhwm_read == sndhwm);
 
     msleep (SETTLE_TIME);
 
@@ -164,11 +167,11 @@ void test_decrease_when_full()
       read_count < MAX_SENDS
       && zmq_recv (connect_socket, &read_data, sizeof (read_data), ZMQ_DONTWAIT)
            == sizeof (read_data)) {
-        assert(read_count == read_data);
+        assert (read_count == read_data);
         ++read_count;
     }
 
-    assert(read_count == send_count);
+    assert (read_count == send_count);
 
     // Give io thread some time to catch up
     msleep (SETTLE_TIME);
@@ -176,15 +179,15 @@ void test_decrease_when_full()
     // Fill up to new hwm
     test_fill_up_to_hwm (bind_socket, sndhwm);
 
-    zmq_close(bind_socket);
-    zmq_close(connect_socket);
-    zmq_ctx_term(ctx);
+    zmq_close (bind_socket);
+    zmq_close (connect_socket);
+    zmq_ctx_term (ctx);
 }
 
 
-int main()
+int main ()
 {
-    test_change_before_connected();
-    test_change_after_connected();
-    test_decrease_when_full();
+    test_change_before_connected ();
+    test_change_after_connected ();
+    test_decrease_when_full ();
 }

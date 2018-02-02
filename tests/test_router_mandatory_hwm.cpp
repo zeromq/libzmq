@@ -39,8 +39,9 @@
 int main (void)
 {
     int rc;
-    if (TRACE_ENABLED) fprintf(stderr, "Staring router mandatory HWM test ...\n");
-    setup_test_environment();
+    if (TRACE_ENABLED)
+        fprintf (stderr, "Staring router mandatory HWM test ...\n");
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
@@ -50,7 +51,8 @@ int main (void)
 
     // Configure router socket to mandatory routing and set HWM and linger
     int mandatory = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
+    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory,
+                         sizeof (mandatory));
     assert (rc == 0);
     int sndhwm = 1;
     rc = zmq_setsockopt (router, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
@@ -77,22 +79,24 @@ int main (void)
     assert (rc == 0);
 
     //  Get message from dealer to know when connection is ready
-    char buffer [255];
+    char buffer[255];
     rc = zmq_send (dealer, "Hello", 5, 0);
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    assert (buffer[0] == 'X');
 
     int i;
     const int BUF_SIZE = 65536;
     char buf[BUF_SIZE];
-    memset(buf, 0, BUF_SIZE);
+    memset (buf, 0, BUF_SIZE);
     // Send first batch of messages
-    for(i = 0; i < 100000; ++i) {
-        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
+    for (i = 0; i < 100000; ++i) {
+        if (TRACE_ENABLED)
+            fprintf (stderr, "Sending message %d ...\n", i);
         rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EAGAIN) break;
+        if (rc == -1 && zmq_errno () == EAGAIN)
+            break;
         assert (rc == 1);
         rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
         assert (rc == BUF_SIZE);
@@ -102,10 +106,12 @@ int main (void)
     assert (i < 10);
     msleep (1000);
     // Send second batch of messages
-    for(; i < 100000; ++i) {
-        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);
+    for (; i < 100000; ++i) {
+        if (TRACE_ENABLED)
+            fprintf (stderr, "Sending message %d (part 2) ...\n", i);
         rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EAGAIN) break;
+        if (rc == -1 && zmq_errno () == EAGAIN)
+            break;
         assert (rc == 1);
         rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
         assert (rc == BUF_SIZE);
@@ -114,7 +120,8 @@ int main (void)
     // skew results
     assert (i < 20);
 
-    if (TRACE_ENABLED) fprintf(stderr, "Done sending messages.\n");
+    if (TRACE_ENABLED)
+        fprintf (stderr, "Done sending messages.\n");
 
     rc = zmq_close (router);
     assert (rc == 0);
@@ -125,5 +132,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

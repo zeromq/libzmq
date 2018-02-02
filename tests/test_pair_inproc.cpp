@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -44,28 +44,28 @@ int main (void)
     assert (sc);
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
-    
+
     bounce (sb, sc);
-    
+
     // Test zmq_send_const
     rc = zmq_send_const (sb, "foo", 3, ZMQ_SNDMORE);
     assert (rc == 3);
     rc = zmq_send_const (sb, "foobar", 6, 0);
     assert (rc == 6);
-    
+
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
     rc = zmq_msg_recv (&msg, sc, 0);
     assert (rc == 3);
     assert (zmq_msg_size (&msg) == 3);
-    void* data = zmq_msg_data (&msg);
+    void *data = zmq_msg_data (&msg);
     assert (memcmp ("foo", data, 3) == 0);
     rc = zmq_msg_recv (&msg, sc, 0);
     assert (rc == 6);
     data = zmq_msg_data (&msg);
     assert (memcmp ("foobar", data, 6) == 0);
-    
+
     // Cleanup
 
     rc = zmq_close (sc);
@@ -77,5 +77,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

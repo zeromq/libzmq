@@ -80,7 +80,7 @@ int zmq::curve_client_t::next_handshake_command (msg_t *msg_)
 int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
 {
     const unsigned char *msg_data =
-        static_cast <unsigned char *> (msg_->data ());
+      static_cast<unsigned char *> (msg_->data ());
     const size_t msg_size = msg_->size ();
 
     int rc = 0;
@@ -94,8 +94,7 @@ int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
         rc = process_error (msg_data, msg_size);
     else {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         rc = -1;
     }
@@ -126,8 +125,7 @@ zmq::mechanism_t::status_t zmq::curve_client_t::status () const
 {
     if (state == connected)
         return mechanism_t::ready;
-    else
-    if (state == error_received)
+    else if (state == error_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;
@@ -141,11 +139,10 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
     rc = tools.produce_hello (msg_->data (), cn_nonce);
     if (rc == -1) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
-      
-        // TODO this is somewhat inconsistent: we call init_size, but we may 
-        // not close msg_; i.e. we assume that msg_ is initialized but empty 
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+
+        // TODO this is somewhat inconsistent: we call init_size, but we may
+        // not close msg_; i.e. we assume that msg_ is initialized but empty
         // (if it were non-empty, calling init_size might cause a leak!)
 
         // msg_->close ();
@@ -164,8 +161,7 @@ int zmq::curve_client_t::process_welcome (const uint8_t *msg_data,
 
     if (rc == -1) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 
         errno = EPROTO;
         return -1;
@@ -196,8 +192,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 
     if (-1 == rc) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 
         // TODO see comment in produce_hello
         return -1;
@@ -208,8 +203,8 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
     return 0;
 }
 
-int zmq::curve_client_t::process_ready (
-        const uint8_t *msg_data, size_t msg_size)
+int zmq::curve_client_t::process_ready (const uint8_t *msg_data,
+                                        size_t msg_size)
 {
     if (msg_size < 30) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -221,7 +216,7 @@ int zmq::curve_client_t::process_ready (
 
     const size_t clen = (msg_size - 14) + crypto_box_BOXZEROBYTES;
 
-    uint8_t ready_nonce [crypto_box_NONCEBYTES];
+    uint8_t ready_nonce[crypto_box_NONCEBYTES];
     uint8_t *ready_plaintext = (uint8_t *) malloc (crypto_box_ZEROBYTES + clen);
     alloc_assert (ready_plaintext);
     uint8_t *ready_box =
@@ -229,21 +224,20 @@ int zmq::curve_client_t::process_ready (
     alloc_assert (ready_box);
 
     memset (ready_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (ready_box + crypto_box_BOXZEROBYTES,
-            msg_data + 14, clen - crypto_box_BOXZEROBYTES);
+    memcpy (ready_box + crypto_box_BOXZEROBYTES, msg_data + 14,
+            clen - crypto_box_BOXZEROBYTES);
 
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
     memcpy (ready_nonce + 16, msg_data + 6, 8);
-    cn_peer_nonce = get_uint64(msg_data + 6);
+    cn_peer_nonce = get_uint64 (msg_data + 6);
 
-    int rc = crypto_box_open_afternm (ready_plaintext, ready_box,
-                                      clen, ready_nonce, cn_precom);
+    int rc = crypto_box_open_afternm (ready_plaintext, ready_box, clen,
+                                      ready_nonce, cn_precom);
     free (ready_box);
 
     if (rc != 0) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
@@ -254,8 +248,7 @@ int zmq::curve_client_t::process_ready (
 
     if (rc == 0)
         state = connected;
-    else
-    {
+    else {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_METADATA);
         errno = EPROTO;
@@ -264,8 +257,8 @@ int zmq::curve_client_t::process_ready (
     return rc;
 }
 
-int zmq::curve_client_t::process_error (
-        const uint8_t *msg_data, size_t msg_size)
+int zmq::curve_client_t::process_error (const uint8_t *msg_data,
+                                        size_t msg_size)
 {
     if (state != expect_welcome && state != expect_ready) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -280,7 +273,7 @@ int zmq::curve_client_t::process_error (
         errno = EPROTO;
         return -1;
     }
-    const size_t error_reason_len = static_cast <size_t> (msg_data [6]);
+    const size_t error_reason_len = static_cast<size_t> (msg_data[6]);
     if (error_reason_len > msg_size - 7) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),

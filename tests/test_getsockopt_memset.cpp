@@ -27,9 +27,9 @@
 int main (void)
 {
     int64_t more;
-    size_t more_size = sizeof(more);
+    size_t more_size = sizeof (more);
 
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -43,9 +43,9 @@ int main (void)
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
 
-    memset(&more, 0xFF, sizeof(int64_t));
-    zmq_getsockopt(sc, ZMQ_RCVMORE, &more, &more_size);
-    assert (more_size == sizeof(int));
+    memset (&more, 0xFF, sizeof (int64_t));
+    zmq_getsockopt (sc, ZMQ_RCVMORE, &more, &more_size);
+    assert (more_size == sizeof (int));
     assert (more == 0);
 
 
@@ -60,5 +60,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

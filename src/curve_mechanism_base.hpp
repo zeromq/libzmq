@@ -70,7 +70,7 @@ class curve_mechanism_base_t : public virtual mechanism_base_t
     uint64_t cn_peer_nonce;
 
     //  Intermediary buffer used to speed up boxing and unboxing.
-    uint8_t cn_precom [crypto_box_BEFORENMBYTES];
+    uint8_t cn_precom[crypto_box_BEFORENMBYTES];
 };
 }
 

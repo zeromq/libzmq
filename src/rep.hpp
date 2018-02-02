@@ -34,40 +34,35 @@
 
 namespace zmq
 {
+class ctx_t;
+class msg_t;
+class io_thread_t;
+class socket_base_t;
 
-    class ctx_t;
-    class msg_t;
-    class io_thread_t;
-    class socket_base_t;
+class rep_t : public router_t
+{
+  public:
+    rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    ~rep_t ();
 
-    class rep_t : public router_t
-    {
-    public:
+    //  Overrides of functions from socket_base_t.
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
 
-        rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
-        ~rep_t ();
+  private:
+    //  If true, we are in process of sending the reply. If false we are
+    //  in process of receiving a request.
+    bool sending_reply;
 
-        //  Overrides of functions from socket_base_t.
-        int xsend (zmq::msg_t *msg_);
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        bool xhas_out ();
+    //  If true, we are starting to receive a request. The beginning
+    //  of the request is the backtrace stack.
+    bool request_begins;
 
-    private:
-
-        //  If true, we are in process of sending the reply. If false we are
-        //  in process of receiving a request.
-        bool sending_reply;
-
-        //  If true, we are starting to receive a request. The beginning
-        //  of the request is the backtrace stack.
-        bool request_begins;
-
-        rep_t (const rep_t&);
-        const rep_t &operator = (const rep_t&);
-
-    };
-
+    rep_t (const rep_t &);
+    const rep_t &operator= (const rep_t &);
+};
 }
 
 #endif

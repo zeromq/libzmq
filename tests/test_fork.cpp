@@ -36,11 +36,11 @@ char connect_address[MAX_SOCKET_STRING];
 
 int main (void)
 {
-#if !defined (ZMQ_HAVE_WINDOWS)
+#if !defined(ZMQ_HAVE_WINDOWS)
     setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     //  Create and bind pull socket to receive messages
     void *pull = zmq_socket (ctx, ZMQ_PULL);
     assert (pull);
@@ -67,23 +67,22 @@ int main (void)
         int count;
         for (count = 0; count < NUM_MESSAGES; count++)
             zmq_send (push, "Hello", 5, 0);
-        
+
         zmq_close (push);
         zmq_ctx_destroy (child_ctx);
         exit (0);
-    } 
-    else {
+    } else {
         //  Parent process
         int count;
         for (count = 0; count < NUM_MESSAGES; count++) {
-            char buffer [5];
+            char buffer[5];
             int num_bytes = zmq_recv (pull, buffer, 5, 0);
             assert (num_bytes == 5);
         }
         int child_status;
         while (true) {
             rc = waitpid (pid, &child_status, 0);
-            if (rc == -1 && errno == EINTR) 
+            if (rc == -1 && errno == EINTR)
                 continue;
             assert (rc > 0);
             //  Verify the status code of the child was zero

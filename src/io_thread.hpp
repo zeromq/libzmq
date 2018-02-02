@@ -40,60 +40,56 @@
 
 namespace zmq
 {
+class ctx_t;
 
-    class ctx_t;
+//  Generic part of the I/O thread. Polling-mechanism-specific features
+//  are implemented in separate "polling objects".
 
-    //  Generic part of the I/O thread. Polling-mechanism-specific features
-    //  are implemented in separate "polling objects".
+class io_thread_t : public object_t, public i_poll_events
+{
+  public:
+    io_thread_t (zmq::ctx_t *ctx_, uint32_t tid_);
 
-    class io_thread_t : public object_t, public i_poll_events
-    {
-    public:
+    //  Clean-up. If the thread was started, it's necessary to call 'stop'
+    //  before invoking destructor. Otherwise the destructor would hang up.
+    ~io_thread_t ();
 
-        io_thread_t (zmq::ctx_t *ctx_, uint32_t tid_);
+    //  Launch the physical thread.
+    void start ();
 
-        //  Clean-up. If the thread was started, it's necessary to call 'stop'
-        //  before invoking destructor. Otherwise the destructor would hang up.
-        ~io_thread_t ();
+    //  Ask underlying thread to stop.
+    void stop ();
 
-        //  Launch the physical thread.
-        void start ();
+    //  Returns mailbox associated with this I/O thread.
+    mailbox_t *get_mailbox ();
 
-        //  Ask underlying thread to stop.
-        void stop ();
+    //  i_poll_events implementation.
+    void in_event ();
+    void out_event ();
+    void timer_event (int id_);
 
-        //  Returns mailbox associated with this I/O thread.
-        mailbox_t *get_mailbox ();
+    //  Used by io_objects to retrieve the associated poller object.
+    poller_t *get_poller ();
 
-        //  i_poll_events implementation.
-        void in_event ();
-        void out_event ();
-        void timer_event (int id_);
+    //  Command handlers.
+    void process_stop ();
 
-        //  Used by io_objects to retrieve the associated poller object.
-        poller_t *get_poller ();
+    //  Returns load experienced by the I/O thread.
+    int get_load ();
 
-        //  Command handlers.
-        void process_stop ();
+  private:
+    //  I/O thread accesses incoming commands via this mailbox.
+    mailbox_t mailbox;
 
-        //  Returns load experienced by the I/O thread.
-        int get_load ();
+    //  Handle associated with mailbox' file descriptor.
+    poller_t::handle_t mailbox_handle;
 
-    private:
+    //  I/O multiplexing is performed using a poller object.
+    poller_t *poller;
 
-        //  I/O thread accesses incoming commands via this mailbox.
-        mailbox_t mailbox;
-
-        //  Handle associated with mailbox' file descriptor.
-        poller_t::handle_t mailbox_handle;
-
-        //  I/O multiplexing is performed using a poller object.
-        poller_t *poller;
-
-        io_thread_t (const io_thread_t&);
-        const io_thread_t &operator = (const io_thread_t&);
-    };
-
+    io_thread_t (const io_thread_t &);
+    const io_thread_t &operator= (const io_thread_t &);
+};
 }
 
 #endif

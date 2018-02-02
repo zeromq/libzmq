@@ -58,11 +58,12 @@
 #endif
 
 zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
-      socket_base_t *socket_, const options_t &options_) :
+                                     socket_base_t *socket_,
+                                     const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     s (retired_fd),
-    handle((handle_t)NULL),
+    handle ((handle_t) NULL),
     socket (socket_)
 {
 }
@@ -93,22 +94,24 @@ void zmq::tcp_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint, zmq_errno());
+        socket->event_accept_failed (endpoint, zmq_errno ());
         return;
     }
 
     int rc = tune_tcp_socket (fd);
-    rc = rc | tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-        options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    rc = rc
+         | tune_tcp_keepalives (
+             fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
-        socket->event_accept_failed (endpoint, zmq_errno());
+        socket->event_accept_failed (endpoint, zmq_errno ());
         return;
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -117,8 +120,8 @@ void zmq::tcp_listener_t::in_event ()
     zmq_assert (io_thread);
 
     //  Create and launch a session object.
-    session_base_t *session = session_base_t::create (io_thread, false, socket,
-        options, NULL);
+    session_base_t *session =
+      session_base_t::create (io_thread, false, socket, options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
@@ -180,8 +183,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
     if (s == zmq::retired_fd && address.family () == AF_INET6
-    && errno == EAFNOSUPPORT
-    && options.ipv6) {
+        && errno == EAFNOSUPPORT && options.ipv6) {
         rc = address.resolve (addr_, true, false);
         if (rc != 0)
             return rc;
@@ -225,8 +227,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     //  Allow reusing of the address.
     int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS
-    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
-        (const char*) &flag, sizeof (int));
+    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (const char *) &flag,
+                     sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
 #else
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
@@ -289,11 +291,9 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-        const int last_error = WSAGetLastError();
-        wsa_assert (last_error == WSAEWOULDBLOCK ||
-            last_error == WSAECONNRESET ||
-            last_error == WSAEMFILE ||
-            last_error == WSAENOBUFS);
+        const int last_error = WSAGetLastError ();
+        wsa_assert (last_error == WSAEWOULDBLOCK || last_error == WSAECONNRESET
+                    || last_error == WSAEMFILE || last_error == WSAENOBUFS);
         return retired_fd;
     }
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
@@ -303,15 +303,16 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #endif
 #else
     if (sock == -1) {
-        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
-            errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
-            errno == ENFILE);
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
+                      || errno == ECONNABORTED || errno == EPROTO
+                      || errno == ENOBUFS || errno == ENOMEM || errno == EMFILE
+                      || errno == ENFILE);
         return retired_fd;
     }
 #endif
 
-#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4) && defined FD_CLOEXEC
+#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
+  && defined FD_CLOEXEC
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
@@ -320,8 +321,10 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
-        for (options_t::tcp_accept_filters_t::size_type i = 0; i != options.tcp_accept_filters.size (); ++i) {
-            if (options.tcp_accept_filters[i].match_address ((struct sockaddr *) &ss, ss_len)) {
+        for (options_t::tcp_accept_filters_t::size_type i = 0;
+             i != options.tcp_accept_filters.size (); ++i) {
+            if (options.tcp_accept_filters[i].match_address (
+                  (struct sockaddr *) &ss, ss_len)) {
                 matched = true;
                 break;
             }

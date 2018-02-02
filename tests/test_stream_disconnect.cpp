@@ -32,68 +32,71 @@
 static const int SERVER = 0;
 static const int CLIENT = 1;
 
-struct test_message_t {
+struct test_message_t
+{
     int turn;
-    const char * text;
+    const char *text;
 };
 
 // NOTE: messages are sent without null terminator.
-const test_message_t dialog [] = {
-    {CLIENT, "i can haz cheez burger?"},
-    {SERVER, "y u no disonnect?"},
-    {CLIENT, ""},
+const test_message_t dialog[] = {
+  {CLIENT, "i can haz cheez burger?"},
+  {SERVER, "y u no disonnect?"},
+  {CLIENT, ""},
 };
-const int steps = sizeof(dialog) / sizeof(dialog[0]);
+const int steps = sizeof (dialog) / sizeof (dialog[0]);
 
-bool has_more (void* socket)
+bool has_more (void *socket)
 {
     int more = 0;
-    size_t more_size = sizeof(more);
+    size_t more_size = sizeof (more);
     int rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
     if (rc != 0)
         return false;
     return more != 0;
 }
 
-bool get_routing_id (void* socket, char* data, size_t* size)
+bool get_routing_id (void *socket, char *data, size_t *size)
 {
     int rc = zmq_getsockopt (socket, ZMQ_ROUTING_ID, data, size);
     return rc == 0;
 }
 
-int main(int, char**)
+int main (int, char **)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
     size_t len = MAX_SOCKET_STRING;
     char bind_endpoint[MAX_SOCKET_STRING];
     char connect_endpoint[MAX_SOCKET_STRING];
     void *context = zmq_ctx_new ();
-    void *sockets [2];
+    void *sockets[2];
     int rc = 0;
 
-    sockets [SERVER] = zmq_socket (context, ZMQ_STREAM);
+    sockets[SERVER] = zmq_socket (context, ZMQ_STREAM);
     int enabled = 1;
-    rc = zmq_setsockopt (sockets [SERVER], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    rc = zmq_setsockopt (sockets[SERVER], ZMQ_STREAM_NOTIFY, &enabled,
+                         sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_bind (sockets [SERVER], "tcp://0.0.0.0:*");
+    rc = zmq_bind (sockets[SERVER], "tcp://0.0.0.0:*");
     assert (rc == 0);
-    rc = zmq_getsockopt (sockets [SERVER], ZMQ_LAST_ENDPOINT, bind_endpoint,
-                         &len);
+    rc =
+      zmq_getsockopt (sockets[SERVER], ZMQ_LAST_ENDPOINT, bind_endpoint, &len);
     assert (rc == 0);
 
     //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
 #ifdef ZMQ_HAVE_WINDOWS
     sprintf (connect_endpoint, "tcp://127.0.0.1:%s",
-                    strrchr(bind_endpoint, ':') + 1);
+             strrchr (bind_endpoint, ':') + 1);
 #else
     strcpy (connect_endpoint, bind_endpoint);
 #endif
 
-    sockets [CLIENT] = zmq_socket (context, ZMQ_STREAM);
-    rc = zmq_setsockopt (sockets [CLIENT], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    sockets[CLIENT] = zmq_socket (context, ZMQ_STREAM);
+    rc = zmq_setsockopt (sockets[CLIENT], ZMQ_STREAM_NOTIFY, &enabled,
+                         sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_connect (sockets [CLIENT], connect_endpoint);
+    rc = zmq_connect (sockets[CLIENT], connect_endpoint);
     assert (rc == 0);
 
     // wait for connect notification
@@ -101,10 +104,10 @@ int main(int, char**)
     zmq_msg_t peer_frame;
     rc = zmq_msg_init (&peer_frame);
     assert (rc == 0);
-    rc = zmq_msg_recv (&peer_frame, sockets [SERVER], 0);
+    rc = zmq_msg_recv (&peer_frame, sockets[SERVER], 0);
     assert (rc != -1);
-    assert(zmq_msg_size (&peer_frame) > 0);
-    assert (has_more (sockets [SERVER]));
+    assert (zmq_msg_size (&peer_frame) > 0);
+    assert (has_more (sockets[SERVER]));
     rc = zmq_msg_close (&peer_frame);
     assert (rc == 0);
 
@@ -112,49 +115,50 @@ int main(int, char**)
     zmq_msg_t data_frame;
     rc = zmq_msg_init (&data_frame);
     assert (rc == 0);
-    rc = zmq_msg_recv (&data_frame, sockets [SERVER], 0);
+    rc = zmq_msg_recv (&data_frame, sockets[SERVER], 0);
     assert (rc != -1);
-    assert(zmq_msg_size (&data_frame) == 0);
+    assert (zmq_msg_size (&data_frame) == 0);
     rc = zmq_msg_close (&data_frame);
     assert (rc == 0);
 
     // Client: Grab the 1st frame (peer routing id).
     rc = zmq_msg_init (&peer_frame);
     assert (rc == 0);
-    rc = zmq_msg_recv (&peer_frame, sockets [CLIENT], 0);
+    rc = zmq_msg_recv (&peer_frame, sockets[CLIENT], 0);
     assert (rc != -1);
-    assert(zmq_msg_size (&peer_frame) > 0);
-    assert (has_more (sockets [CLIENT]));
+    assert (zmq_msg_size (&peer_frame) > 0);
+    assert (has_more (sockets[CLIENT]));
     rc = zmq_msg_close (&peer_frame);
     assert (rc == 0);
 
     // Client: Grab the 2nd frame (actual payload).
     rc = zmq_msg_init (&data_frame);
     assert (rc == 0);
-    rc = zmq_msg_recv (&data_frame, sockets [CLIENT], 0);
+    rc = zmq_msg_recv (&data_frame, sockets[CLIENT], 0);
     assert (rc != -1);
-    assert(zmq_msg_size (&data_frame) == 0);
+    assert (zmq_msg_size (&data_frame) == 0);
     rc = zmq_msg_close (&data_frame);
     assert (rc == 0);
 
     // Send initial message.
-    char blob_data [256];
-    size_t blob_size = sizeof(blob_data);
-    rc = zmq_getsockopt (sockets [CLIENT], ZMQ_ROUTING_ID, blob_data, &blob_size);
+    char blob_data[256];
+    size_t blob_size = sizeof (blob_data);
+    rc =
+      zmq_getsockopt (sockets[CLIENT], ZMQ_ROUTING_ID, blob_data, &blob_size);
     assert (rc != -1);
-    assert(blob_size > 0);
+    assert (blob_size > 0);
     zmq_msg_t msg;
     rc = zmq_msg_init_size (&msg, blob_size);
     assert (rc == 0);
     memcpy (zmq_msg_data (&msg), blob_data, blob_size);
-    rc = zmq_msg_send (&msg, sockets [dialog [0].turn], ZMQ_SNDMORE);
+    rc = zmq_msg_send (&msg, sockets[dialog[0].turn], ZMQ_SNDMORE);
     assert (rc != -1);
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
-    rc = zmq_msg_init_size (&msg, strlen(dialog [0].text));
+    rc = zmq_msg_init_size (&msg, strlen (dialog[0].text));
     assert (rc == 0);
-    memcpy (zmq_msg_data (&msg), dialog [0].text, strlen(dialog [0].text));
-    rc = zmq_msg_send (&msg, sockets [dialog [0].turn], ZMQ_SNDMORE);
+    memcpy (zmq_msg_data (&msg), dialog[0].text, strlen (dialog[0].text));
+    rc = zmq_msg_send (&msg, sockets[dialog[0].turn], ZMQ_SNDMORE);
     assert (rc != -1);
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -165,45 +169,44 @@ int main(int, char**)
     int step = 0;
     while (step < steps) {
         // Wait until something happens.
-        zmq_pollitem_t items [] = {
-            { sockets [SERVER], 0, ZMQ_POLLIN, 0 },
-            { sockets [CLIENT], 0, ZMQ_POLLIN, 0 },
+        zmq_pollitem_t items[] = {
+          {sockets[SERVER], 0, ZMQ_POLLIN, 0},
+          {sockets[CLIENT], 0, ZMQ_POLLIN, 0},
         };
         int rc = zmq_poll (items, 2, 100);
         assert (rc >= 0);
 
         // Check for data received by the server.
-        if (items [SERVER].revents & ZMQ_POLLIN) {
-            assert (dialog [step].turn == CLIENT);
+        if (items[SERVER].revents & ZMQ_POLLIN) {
+            assert (dialog[step].turn == CLIENT);
 
             // Grab the 1st frame (peer routing id).
             zmq_msg_t peer_frame;
             rc = zmq_msg_init (&peer_frame);
             assert (rc == 0);
-            rc = zmq_msg_recv (&peer_frame, sockets [SERVER], 0);
+            rc = zmq_msg_recv (&peer_frame, sockets[SERVER], 0);
             assert (rc != -1);
-            assert(zmq_msg_size (&peer_frame) > 0);
-            assert (has_more (sockets [SERVER]));
+            assert (zmq_msg_size (&peer_frame) > 0);
+            assert (has_more (sockets[SERVER]));
 
             // Grab the 2nd frame (actual payload).
             zmq_msg_t data_frame;
             rc = zmq_msg_init (&data_frame);
             assert (rc == 0);
-            rc = zmq_msg_recv (&data_frame, sockets [SERVER], 0);
+            rc = zmq_msg_recv (&data_frame, sockets[SERVER], 0);
             assert (rc != -1);
 
             // Make sure payload matches what we expect.
-            const char * const data = (const char*)zmq_msg_data (&data_frame);
+            const char *const data = (const char *) zmq_msg_data (&data_frame);
             const int size = zmq_msg_size (&data_frame);
             // 0-length frame is a disconnection notification.  The server
             // should receive it as the last step in the dialogue.
             if (size == 0) {
                 ++step;
                 assert (step == steps);
-            }
-            else {
-                assert ((size_t) size == strlen (dialog [step].text));
-                int cmp = memcmp (dialog [step].text, data, size);
+            } else {
+                assert ((size_t) size == strlen (dialog[step].text));
+                int cmp = memcmp (dialog[step].text, data, size);
                 assert (cmp == 0);
 
                 ++step;
@@ -213,16 +216,16 @@ int main(int, char**)
                 // Prepare the response.
                 rc = zmq_msg_close (&data_frame);
                 assert (rc == 0);
-                rc = zmq_msg_init_size (&data_frame,
-                                        strlen (dialog [step].text));
+                rc =
+                  zmq_msg_init_size (&data_frame, strlen (dialog[step].text));
                 assert (rc == 0);
-                memcpy (zmq_msg_data (&data_frame), dialog [step].text,
+                memcpy (zmq_msg_data (&data_frame), dialog[step].text,
                         zmq_msg_size (&data_frame));
 
                 // Send the response.
-                rc = zmq_msg_send (&peer_frame, sockets [SERVER], ZMQ_SNDMORE);
+                rc = zmq_msg_send (&peer_frame, sockets[SERVER], ZMQ_SNDMORE);
                 assert (rc != -1);
-                rc = zmq_msg_send (&data_frame, sockets [SERVER], ZMQ_SNDMORE);
+                rc = zmq_msg_send (&data_frame, sockets[SERVER], ZMQ_SNDMORE);
                 assert (rc != -1);
             }
 
@@ -234,31 +237,31 @@ int main(int, char**)
         }
 
         // Check for data received by the client.
-        if (items [CLIENT].revents & ZMQ_POLLIN) {
-            assert (dialog [step].turn == SERVER);
+        if (items[CLIENT].revents & ZMQ_POLLIN) {
+            assert (dialog[step].turn == SERVER);
 
             // Grab the 1st frame (peer routing id).
             zmq_msg_t peer_frame;
             rc = zmq_msg_init (&peer_frame);
             assert (rc == 0);
-            rc = zmq_msg_recv (&peer_frame, sockets [CLIENT], 0);
+            rc = zmq_msg_recv (&peer_frame, sockets[CLIENT], 0);
             assert (rc != -1);
-            assert(zmq_msg_size (&peer_frame) > 0);
-            assert (has_more (sockets [CLIENT]));
+            assert (zmq_msg_size (&peer_frame) > 0);
+            assert (has_more (sockets[CLIENT]));
 
             // Grab the 2nd frame (actual payload).
             zmq_msg_t data_frame;
             rc = zmq_msg_init (&data_frame);
             assert (rc == 0);
-            rc = zmq_msg_recv (&data_frame, sockets [CLIENT], 0);
+            rc = zmq_msg_recv (&data_frame, sockets[CLIENT], 0);
             assert (rc != -1);
-            assert(zmq_msg_size (&data_frame) > 0);
+            assert (zmq_msg_size (&data_frame) > 0);
 
             // Make sure payload matches what we expect.
-            const char * const data = (const char*)zmq_msg_data (&data_frame);
+            const char *const data = (const char *) zmq_msg_data (&data_frame);
             const int size = zmq_msg_size (&data_frame);
-            assert ((size_t)size == strlen(dialog [step].text));
-            int cmp = memcmp(dialog [step].text, data, size);
+            assert ((size_t) size == strlen (dialog[step].text));
+            int cmp = memcmp (dialog[step].text, data, size);
             assert (cmp == 0);
 
             ++step;
@@ -267,14 +270,15 @@ int main(int, char**)
             assert (step < steps);
             rc = zmq_msg_close (&data_frame);
             assert (rc == 0);
-            rc = zmq_msg_init_size (&data_frame, strlen (dialog [step].text));
+            rc = zmq_msg_init_size (&data_frame, strlen (dialog[step].text));
             assert (rc == 0);
-            memcpy (zmq_msg_data (&data_frame), dialog [step].text, zmq_msg_size (&data_frame));
+            memcpy (zmq_msg_data (&data_frame), dialog[step].text,
+                    zmq_msg_size (&data_frame));
 
             // Send the response.
-            rc = zmq_msg_send (&peer_frame, sockets [CLIENT], ZMQ_SNDMORE);
+            rc = zmq_msg_send (&peer_frame, sockets[CLIENT], ZMQ_SNDMORE);
             assert (rc != -1);
-            rc = zmq_msg_send (&data_frame, sockets [CLIENT], ZMQ_SNDMORE);
+            rc = zmq_msg_send (&data_frame, sockets[CLIENT], ZMQ_SNDMORE);
             assert (rc != -1);
 
             // Release resources.
@@ -285,9 +289,9 @@ int main(int, char**)
         }
     }
     assert (step == steps);
-    rc = zmq_close (sockets [CLIENT]);
+    rc = zmq_close (sockets[CLIENT]);
     assert (rc == 0);
-    rc = zmq_close (sockets [SERVER]);
+    rc = zmq_close (sockets[SERVER]);
     assert (rc == 0);
     rc = zmq_ctx_term (context);
     assert (rc == 0);

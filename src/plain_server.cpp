@@ -50,7 +50,7 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
     //  Given this is a backward-incompatible change, it's behind a socket
     //  option disabled by default.
     if (options.zap_enforce_domain)
-        zmq_assert (zap_required());
+        zmq_assert (zap_required ());
 }
 
 zmq::plain_server_t::~plain_server_t ()
@@ -116,9 +116,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
 {
     int rc = check_basic_command_structure (msg_);
     if (rc == -1)
-      return -1;
+        return -1;
 
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
@@ -133,7 +133,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (bytes_left < 1) {
         //  PLAIN I: invalid PLAIN client, did not send username
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -143,7 +144,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (bytes_left < username_length) {
         //  PLAIN I: invalid PLAIN client, sent malformed username
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -153,7 +155,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (bytes_left < 1) {
         //  PLAIN I: invalid PLAIN client, did not send password
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -163,7 +166,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (bytes_left < password_length) {
         //  PLAIN I: invalid PLAIN client, sent malformed password
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -174,7 +178,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (bytes_left > 0) {
         //  PLAIN I: invalid PLAIN client, sent extraneous data
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -190,9 +195,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     send_zap_request (username, password);
     state = waiting_for_zap_reply;
 
-    //  TODO actually, it is quite unlikely that we can read the ZAP 
+    //  TODO actually, it is quite unlikely that we can read the ZAP
     //  reply already, but removing this has some strange side-effect
-    //  (probably because the pipe's in_active flag is true until a read 
+    //  (probably because the pipe's in_active flag is true until a read
     //  is attempted)
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
@@ -207,7 +212,7 @@ int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 
 int zmq::plain_server_t::process_initiate (msg_t *msg_)
 {
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     const size_t bytes_left = msg_->size ();
 
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
@@ -234,9 +239,9 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     zmq_assert (status_code.length () == 3);
     const int rc = msg_->init_size (6 + 1 + status_code.length ());
     zmq_assert (rc == 0);
-    char *msg_data = static_cast <char *> (msg_->data ());
+    char *msg_data = static_cast<char *> (msg_->data ());
     memcpy (msg_data, "\5ERROR", 6);
-    msg_data [6] = (char) status_code.length ();
+    msg_data[6] = (char) status_code.length ();
     memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
     return 0;
 }

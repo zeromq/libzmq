@@ -34,36 +34,31 @@
 
 namespace zmq
 {
-    //  Decoder for ZMTP/1.0 protocol. Converts data batches into messages.
+//  Decoder for ZMTP/1.0 protocol. Converts data batches into messages.
 
-    class v1_decoder_t :
-            public zmq::c_single_allocator,
-            public decoder_base_t <v1_decoder_t>
-    {
-    public:
+class v1_decoder_t : public zmq::c_single_allocator,
+                     public decoder_base_t<v1_decoder_t>
+{
+  public:
+    v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_);
+    ~v1_decoder_t ();
 
-        v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_);
-        ~v1_decoder_t ();
+    virtual msg_t *msg () { return &in_progress; }
 
-        virtual msg_t *msg () { return &in_progress; }
+  private:
+    int one_byte_size_ready (unsigned char const *);
+    int eight_byte_size_ready (unsigned char const *);
+    int flags_ready (unsigned char const *);
+    int message_ready (unsigned char const *);
 
-    private:
+    unsigned char tmpbuf[8];
+    msg_t in_progress;
 
-        int one_byte_size_ready (unsigned char const*);
-        int eight_byte_size_ready (unsigned char const*);
-        int flags_ready (unsigned char const*);
-        int message_ready (unsigned char const*);
+    int64_t maxmsgsize;
 
-        unsigned char tmpbuf [8];
-        msg_t in_progress;
-
-        int64_t maxmsgsize;
-
-        v1_decoder_t (const v1_decoder_t&);
-        void operator = (const v1_decoder_t&);
-    };
-
+    v1_decoder_t (const v1_decoder_t &);
+    void operator= (const v1_decoder_t &);
+};
 }
 
 #endif
-

@@ -31,12 +31,12 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     //  Create server and bind to endpoint
     void *server = zmq_socket (ctx, ZMQ_ROUTER);
     assert (server);
@@ -57,10 +57,10 @@ int main (void)
     assert (rc == 0);
 
     //  We expect a routing id=X + empty message from client
-    unsigned char buffer [255];
+    unsigned char buffer[255];
     rc = zmq_recv (server, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    assert (buffer[0] == 'X');
     rc = zmq_recv (server, buffer, 255, 0);
     assert (rc == 0);
 
@@ -69,10 +69,10 @@ int main (void)
     assert (rc == 1);
     rc = zmq_send (server, "Hello", 5, 0);
     assert (rc == 5);
-    
+
     rc = zmq_recv (client, buffer, 255, 0);
     assert (rc == 5);
-    
+
     rc = zmq_close (server);
     assert (rc == 0);
 
@@ -82,5 +82,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

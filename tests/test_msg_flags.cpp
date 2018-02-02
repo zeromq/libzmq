@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -77,40 +77,40 @@ int main (void)
 
     // Test ZMQ_SHARED property (case 1, refcounted messages)
     zmq_msg_t msg_a;
-    rc = zmq_msg_init_size(&msg_a, 1024); // large enough to be a type_lmsg
+    rc = zmq_msg_init_size (&msg_a, 1024); // large enough to be a type_lmsg
     assert (rc == 0);
 
     // Message is not shared
-    rc = zmq_msg_get(&msg_a, ZMQ_SHARED);
+    rc = zmq_msg_get (&msg_a, ZMQ_SHARED);
     assert (rc == 0);
 
     zmq_msg_t msg_b;
-    rc = zmq_msg_init(&msg_b);
+    rc = zmq_msg_init (&msg_b);
     assert (rc == 0);
 
-    rc = zmq_msg_copy(&msg_b, &msg_a);
+    rc = zmq_msg_copy (&msg_b, &msg_a);
     assert (rc == 0);
 
     // Message is now shared
-    rc = zmq_msg_get(&msg_b, ZMQ_SHARED);
+    rc = zmq_msg_get (&msg_b, ZMQ_SHARED);
     assert (rc == 1);
 
     // cleanup
-    rc = zmq_msg_close(&msg_a);
+    rc = zmq_msg_close (&msg_a);
     assert (rc == 0);
-    rc = zmq_msg_close(&msg_b);
+    rc = zmq_msg_close (&msg_b);
     assert (rc == 0);
 
     // Test ZMQ_SHARED property (case 2, constant data messages)
-    rc = zmq_msg_init_data(&msg_a, (void*) "TEST", 5, 0, 0);
+    rc = zmq_msg_init_data (&msg_a, (void *) "TEST", 5, 0, 0);
     assert (rc == 0);
 
     // Message reports as shared
-    rc = zmq_msg_get(&msg_a, ZMQ_SHARED);
+    rc = zmq_msg_get (&msg_a, ZMQ_SHARED);
     assert (rc == 1);
 
     // cleanup
-    rc = zmq_msg_close(&msg_a);
+    rc = zmq_msg_close (&msg_a);
     assert (rc == 0);
 
     //  Deallocate the infrastructure.
@@ -122,6 +122,5 @@ int main (void)
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-    return 0 ;
+    return 0;
 }
-

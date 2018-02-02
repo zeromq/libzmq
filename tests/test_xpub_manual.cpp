@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-int test_basic()
+int test_basic ()
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -38,7 +38,7 @@ int test_basic()
     void *pub = zmq_socket (ctx, ZMQ_XPUB);
     assert (pub);
     int manual = 1;
-    int rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    int rc = zmq_setsockopt (pub, ZMQ_XPUB_MANUAL, &manual, 4);
     assert (rc == 0);
     rc = zmq_bind (pub, "inproc://soname");
     assert (rc == 0);
@@ -50,32 +50,32 @@ int test_basic()
     assert (rc == 0);
 
     //  Subscribe for A
-    char subscription[2] = { 1, 'A'};
-    rc = zmq_send_const(sub, subscription, 2, 0);
+    char subscription[2] = {1, 'A'};
+    rc = zmq_send_const (sub, subscription, 2, 0);
     assert (rc == 2);
 
     char buffer[2];
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 1);
-    assert(buffer[1] == 'A');
+    rc = zmq_recv (pub, buffer, 2, 0);
+    assert (rc == 2);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == 'A');
 
     // Subscribe socket for B instead
-    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "B", 1);
-    assert(rc == 0);
+    rc = zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "B", 1);
+    assert (rc == 0);
 
     // Sending A message and B Message
-    rc = zmq_send_const(pub, "A", 1, 0);
-    assert(rc == 1);
+    rc = zmq_send_const (pub, "A", 1, 0);
+    assert (rc == 1);
 
-    rc = zmq_send_const(pub, "B", 1, 0);
-    assert(rc == 1);
+    rc = zmq_send_const (pub, "B", 1, 0);
+    assert (rc == 1);
 
-    rc = zmq_recv(sub, buffer, 1, ZMQ_DONTWAIT);
-    assert(rc == 1);
-    assert(buffer[0] == 'B');
+    rc = zmq_recv (sub, buffer, 1, ZMQ_DONTWAIT);
+    assert (rc == 1);
+    assert (buffer[0] == 'B');
 
     //  Clean up.
     rc = zmq_close (pub);
@@ -85,11 +85,11 @@ int test_basic()
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }
 
 
-int test_unsubscribe_manual()
+int test_unsubscribe_manual ()
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -102,7 +102,7 @@ int test_unsubscribe_manual()
 
     //  set pub socket options
     int manual = 1;
-    rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    rc = zmq_setsockopt (pub, ZMQ_XPUB_MANUAL, &manual, 4);
     assert (rc == 0);
 
     //  Create a subscriber
@@ -112,77 +112,77 @@ int test_unsubscribe_manual()
     assert (rc == 0);
 
     //  Subscribe for A
-    char subscription1[2] = { 1, 'A'};
-    rc = zmq_send_const(sub, subscription1, 2, 0);
+    char subscription1[2] = {1, 'A'};
+    rc = zmq_send_const (sub, subscription1, 2, 0);
     assert (rc == 2);
 
     //  Subscribe for B
-    char subscription2[2] = { 1, 'B'};
-    rc = zmq_send_const(sub, subscription2, 2, 0);
+    char subscription2[2] = {1, 'B'};
+    rc = zmq_send_const (sub, subscription2, 2, 0);
     assert (rc == 2);
 
     char buffer[3];
 
     // Receive subscription "A" from subscriber
-    rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 1);
-    assert(buffer[1] == 'A');
+    rc = zmq_recv (pub, buffer, 2, 0);
+    assert (rc == 2);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == 'A');
 
     // Subscribe socket for XA instead
-    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "XA", 2);
-    assert(rc == 0);
+    rc = zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "XA", 2);
+    assert (rc == 0);
 
     // Receive subscription "B" from subscriber
-    rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 1);
-    assert(buffer[1] == 'B');
+    rc = zmq_recv (pub, buffer, 2, 0);
+    assert (rc == 2);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == 'B');
 
     // Subscribe socket for XB instead
-    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "XB", 2);
-    assert(rc == 0);
+    rc = zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "XB", 2);
+    assert (rc == 0);
 
     //  Unsubscribe from A
-    char unsubscription1[2] = { 0, 'A'};
-    rc = zmq_send_const(sub, unsubscription1, 2, 0);
+    char unsubscription1[2] = {0, 'A'};
+    rc = zmq_send_const (sub, unsubscription1, 2, 0);
     assert (rc == 2);
 
     // Receive unsubscription "A" from subscriber
-    rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 0);
-    assert(buffer[1] == 'A');
+    rc = zmq_recv (pub, buffer, 2, 0);
+    assert (rc == 2);
+    assert (buffer[0] == 0);
+    assert (buffer[1] == 'A');
 
     // Unsubscribe socket from XA instead
-    rc = zmq_setsockopt(pub, ZMQ_UNSUBSCRIBE, "XA", 2);
-    assert(rc == 0);
+    rc = zmq_setsockopt (pub, ZMQ_UNSUBSCRIBE, "XA", 2);
+    assert (rc == 0);
 
     // Sending messages XA, XB
-    rc = zmq_send_const(pub, "XA", 2, 0);
-    assert(rc == 2);
-    rc = zmq_send_const(pub, "XB", 2, 0);
-    assert(rc == 2);
+    rc = zmq_send_const (pub, "XA", 2, 0);
+    assert (rc == 2);
+    rc = zmq_send_const (pub, "XB", 2, 0);
+    assert (rc == 2);
 
     // Subscriber should receive XB only
-    rc = zmq_recv(sub, buffer, 2, ZMQ_DONTWAIT);
-    assert(rc == 2);
-    assert(buffer[0] == 'X');
-    assert(buffer[1] == 'B');
+    rc = zmq_recv (sub, buffer, 2, ZMQ_DONTWAIT);
+    assert (rc == 2);
+    assert (buffer[0] == 'X');
+    assert (buffer[1] == 'B');
 
     // Close subscriber
     rc = zmq_close (sub);
     assert (rc == 0);
 
     // Receive unsubscription "B"
-    rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 0);
-    assert(buffer[1] == 'B');
+    rc = zmq_recv (pub, buffer, 2, 0);
+    assert (rc == 2);
+    assert (buffer[0] == 0);
+    assert (buffer[1] == 'B');
 
     // Unsubscribe socket from XB instead
-    rc = zmq_setsockopt(pub, ZMQ_UNSUBSCRIBE, "XB", 2);
-    assert(rc == 0);
+    rc = zmq_setsockopt (pub, ZMQ_UNSUBSCRIBE, "XB", 2);
+    assert (rc == 0);
 
     //  Clean up.
     rc = zmq_close (pub);
@@ -190,14 +190,14 @@ int test_unsubscribe_manual()
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }
 
 
-int test_xpub_proxy_unsubscribe_on_disconnect(void)
+int test_xpub_proxy_unsubscribe_on_disconnect (void)
 {
-    const char* topic = "1";
-    const char* payload = "X";
+    const char *topic = "1";
+    const char *payload = "X";
 
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint_backend[MAX_SOCKET_STRING];
@@ -212,8 +212,8 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     void *xsub_proxy = zmq_socket (ctx, ZMQ_XSUB);
     assert (xsub_proxy);
     assert (zmq_bind (xsub_proxy, "tcp://127.0.0.1:*") == 0);
-    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_frontend,
-            &len);
+    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT,
+                             my_endpoint_frontend, &len);
     assert (rc == 0);
 
     // proxy backend
@@ -222,8 +222,8 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     assert (zmq_setsockopt (xpub_proxy, ZMQ_XPUB_MANUAL, &manual, 4) == 0);
     assert (zmq_bind (xpub_proxy, "tcp://127.0.0.1:*") == 0);
     len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend,
-            &len);
+    rc =
+      zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend, &len);
     assert (rc == 0);
 
     // publisher
@@ -242,8 +242,8 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     // proxy reroutes and confirms subscriptions
     char sub_buff[2];
     assert (zmq_recv (xpub_proxy, sub_buff, 2, ZMQ_DONTWAIT) == 2);
-    assert (sub_buff [0] == 1);
-    assert (sub_buff [1] == *topic);
+    assert (sub_buff[0] == 1);
+    assert (sub_buff[1] == *topic);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic, 1) == 0);
     assert (zmq_send (xsub_proxy, sub_buff, 2, 0) == 2);
 
@@ -258,8 +258,8 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
 
     // proxy reroutes
     assert (zmq_recv (xpub_proxy, sub_buff, 2, ZMQ_DONTWAIT) == 2);
-    assert (sub_buff [0] == 1);
-    assert (sub_buff [1] == *topic);
+    assert (sub_buff[0] == 1);
+    assert (sub_buff[1] == *topic);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic, 1) == 0);
     assert (zmq_send (xsub_proxy, sub_buff, 2, 0) == 2);
 
@@ -277,9 +277,9 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     char topic_buff[1];
     char data_buff[1];
     assert (zmq_recv (xsub_proxy, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic);
+    assert (topic_buff[0] == *topic);
     assert (zmq_recv (xsub_proxy, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
     assert (zmq_send (xpub_proxy, topic_buff, 1, ZMQ_SNDMORE) == 1);
     assert (zmq_send (xpub_proxy, data_buff, 1, 0) == 1);
 
@@ -288,14 +288,14 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
 
     // each subscriber should now get a message
     assert (zmq_recv (sub2, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic);
+    assert (topic_buff[0] == *topic);
     assert (zmq_recv (sub2, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
 
     assert (zmq_recv (sub1, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic);
+    assert (topic_buff[0] == *topic);
     assert (zmq_recv (sub1, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
 
     //  Disconnect both subscribers
     assert (zmq_close (sub1) == 0);
@@ -306,16 +306,16 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
 
     // unsubscribe messages are passed from proxy to publisher
     assert (zmq_recv (xpub_proxy, sub_buff, 2, 0) == 2);
-    assert (sub_buff [0] == 0);
-    assert (sub_buff [1] == *topic);
+    assert (sub_buff[0] == 0);
+    assert (sub_buff[1] == *topic);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_UNSUBSCRIBE, topic, 1) == 0);
     assert (zmq_send (xsub_proxy, sub_buff, 2, 0) == 2);
 
     // should receive another unsubscribe msg
     assert (zmq_recv (xpub_proxy, sub_buff, 2, 0) == 2
-        && "Should receive the second unsubscribe message.");
-    assert (sub_buff [0] == 0);
-    assert (sub_buff [1] == *topic);
+            && "Should receive the second unsubscribe message.");
+    assert (sub_buff[0] == 0);
+    assert (sub_buff[1] == *topic);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_UNSUBSCRIBE, topic, 1) == 0);
     assert (zmq_send (xsub_proxy, sub_buff, 2, 0) == 2);
 
@@ -326,7 +326,7 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     assert (zmq_send (pub, topic, 1, ZMQ_SNDMORE) == 1);
     assert (zmq_send (pub, payload, 1, 0) == 1);
 
-     // wait
+    // wait
     msleep (SETTLE_TIME);
 
     // nothing should come to the proxy
@@ -341,11 +341,11 @@ int test_xpub_proxy_unsubscribe_on_disconnect(void)
     return 0;
 }
 
-int test_missing_subscriptions(void)
+int test_missing_subscriptions (void)
 {
-    const char* topic1 = "1";
-    const char* topic2 = "2";
-    const char* payload = "X";
+    const char *topic1 = "1";
+    const char *topic2 = "2";
+    const char *payload = "X";
 
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint_backend[MAX_SOCKET_STRING];
@@ -360,8 +360,8 @@ int test_missing_subscriptions(void)
     void *xsub_proxy = zmq_socket (ctx, ZMQ_XSUB);
     assert (xsub_proxy);
     assert (zmq_bind (xsub_proxy, "tcp://127.0.0.1:*") == 0);
-    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_frontend,
-            &len);
+    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT,
+                             my_endpoint_frontend, &len);
     assert (rc == 0);
 
     // proxy backend
@@ -370,8 +370,8 @@ int test_missing_subscriptions(void)
     assert (zmq_setsockopt (xpub_proxy, ZMQ_XPUB_MANUAL, &manual, 4) == 0);
     assert (zmq_bind (xpub_proxy, "tcp://127.0.0.1:*") == 0);
     len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend,
-            &len);
+    rc =
+      zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend, &len);
     assert (rc == 0);
 
     // publisher
@@ -400,14 +400,14 @@ int test_missing_subscriptions(void)
     // proxy now reroutes and confirms subscriptions
     char buffer[2];
     assert (zmq_recv (xpub_proxy, buffer, 2, ZMQ_DONTWAIT) == 2);
-    assert (buffer [0] == 1);
-    assert (buffer [1] == *topic1);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == *topic1);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic1, 1) == 0);
     assert (zmq_send (xsub_proxy, buffer, 2, 0) == 2);
 
     assert (zmq_recv (xpub_proxy, buffer, 2, ZMQ_DONTWAIT) == 2);
-    assert (buffer [0] == 1);
-    assert (buffer [1] == *topic2);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == *topic2);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic2, 1) == 0);
     assert (zmq_send (xsub_proxy, buffer, 2, 0) == 2);
 
@@ -424,19 +424,19 @@ int test_missing_subscriptions(void)
     msleep (SETTLE_TIME);
 
     // proxy reroutes data messages to subscribers
-    char topic_buff [1];
-    char data_buff [1];
+    char topic_buff[1];
+    char data_buff[1];
     assert (zmq_recv (xsub_proxy, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic1);
+    assert (topic_buff[0] == *topic1);
     assert (zmq_recv (xsub_proxy, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
     assert (zmq_send (xpub_proxy, topic_buff, 1, ZMQ_SNDMORE) == 1);
     assert (zmq_send (xpub_proxy, data_buff, 1, 0) == 1);
 
     assert (zmq_recv (xsub_proxy, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic2);
+    assert (topic_buff[0] == *topic2);
     assert (zmq_recv (xsub_proxy, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
     assert (zmq_send (xpub_proxy, topic_buff, 1, ZMQ_SNDMORE) == 1);
     assert (zmq_send (xpub_proxy, data_buff, 1, 0) == 1);
 
@@ -445,14 +445,14 @@ int test_missing_subscriptions(void)
 
     // each subscriber should now get a message
     assert (zmq_recv (sub2, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic2);
+    assert (topic_buff[0] == *topic2);
     assert (zmq_recv (sub2, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
 
     assert (zmq_recv (sub1, topic_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (topic_buff [0] == *topic1);
+    assert (topic_buff[0] == *topic1);
     assert (zmq_recv (sub1, data_buff, 1, ZMQ_DONTWAIT) == 1);
-    assert (data_buff [0] == *payload);
+    assert (data_buff[0] == *payload);
 
     //  Clean up
     assert (zmq_close (sub1) == 0);
@@ -492,14 +492,14 @@ int test_unsubscribe_cleanup (void)
     assert (rc == 0);
 
     //  Subscribe for A
-    char subscription[2] = { 1, 'A'};
+    char subscription[2] = {1, 'A'};
     rc = zmq_send_const (sub, subscription, 2, 0);
     assert (rc == 2);
 
     char buffer[2];
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv(pub, buffer, 2, 0);
+    rc = zmq_recv (pub, buffer, 2, 0);
     assert (rc == 2);
     assert (buffer[0] == 1);
     assert (buffer[1] == 'A');
@@ -552,7 +552,7 @@ int test_unsubscribe_cleanup (void)
     rc = zmq_recv (pub, buffer, 2, 0);
     assert (rc == 2);
     assert (buffer[0] == 1);
-    assert(buffer[1] == 'B');
+    assert (buffer[1] == 'B');
     rc = zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "XB", 2);
     assert (rc == 0);
 
@@ -566,7 +566,7 @@ int test_unsubscribe_cleanup (void)
     rc = zmq_recv (sub, buffer, 2, 0);
     assert (rc == 2);
     assert (buffer[0] == 'X');
-    assert (buffer[1] == 'B');  // this assertion will fail
+    assert (buffer[1] == 'B'); // this assertion will fail
 
     // should be nothing left in the queue
     rc = zmq_recv (sub, buffer, 2, ZMQ_DONTWAIT);
@@ -580,11 +580,11 @@ int test_unsubscribe_cleanup (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }
 
 
-int main(void)
+int main (void)
 {
     setup_test_environment ();
     test_basic ();

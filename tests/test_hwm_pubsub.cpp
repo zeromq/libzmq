@@ -51,11 +51,12 @@ int test_defaults (int send_hwm, int msgCnt)
 
     //set a hwm on publisher
     rc = zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
-    rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
+    rc = zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0);
 
     // Send until we block
     int send_count = 0;
-    while (send_count < msgCnt && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < msgCnt
+           && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
     msleep (SETTLE_TIME);
@@ -81,17 +82,15 @@ int test_defaults (int send_hwm, int msgCnt)
     return recv_count;
 }
 
-int receive( void* socket)
+int receive (void *socket)
 {
-  int recv_count = 0;
-  // Now receive all sent messages
-  while (0 == zmq_recv (socket, NULL, 0, ZMQ_DONTWAIT))
-  {
-      ++recv_count;
-  }
+    int recv_count = 0;
+    // Now receive all sent messages
+    while (0 == zmq_recv (socket, NULL, 0, ZMQ_DONTWAIT)) {
+        ++recv_count;
+    }
 
-  return recv_count;
-
+    return recv_count;
 }
 
 
@@ -116,28 +115,24 @@ int test_blocking (int send_hwm, int msgCnt)
     //set a hwm on publisher
     rc = zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
     int wait = 1;
-    rc = zmq_setsockopt (pub_socket, ZMQ_XPUB_NODROP, &wait, sizeof(wait));
-    rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
+    rc = zmq_setsockopt (pub_socket, ZMQ_XPUB_NODROP, &wait, sizeof (wait));
+    rc = zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0);
 
     // Send until we block
     int send_count = 0;
     int recv_count = 0;
-    while (send_count < msgCnt )
-    {
+    while (send_count < msgCnt) {
         rc = zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT);
-        if( rc == 0)
-        {
+        if (rc == 0) {
             ++send_count;
-        }
-        else if( -1 == rc)
-        {
-            assert(EAGAIN == errno);
-            recv_count += receive(sub_socket);
-            assert(recv_count == send_count);
+        } else if (-1 == rc) {
+            assert (EAGAIN == errno);
+            recv_count += receive (sub_socket);
+            assert (recv_count == send_count);
         }
     }
 
-    recv_count += receive(sub_socket);
+    recv_count += receive (sub_socket);
 
     // Clean up
     rc = zmq_close (sub_socket);
@@ -182,14 +177,15 @@ void test_reset_hwm ()
     assert (rc == 0);
     rc = zmq_connect (sub_socket, my_endpoint);
     assert (rc == 0);
-    rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
+    rc = zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
 
     // Send messages
     int send_count = 0;
-    while (send_count < first_count && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < first_count
+           && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
     assert (first_count == send_count);
 
@@ -197,8 +193,7 @@ void test_reset_hwm ()
 
     // Now receive all sent messages
     int recv_count = 0;
-    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT))
-    {
+    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT)) {
         ++recv_count;
     }
     assert (first_count == recv_count);
@@ -207,7 +202,8 @@ void test_reset_hwm ()
 
     // Send messages
     send_count = 0;
-    while (send_count < second_count && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < second_count
+           && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
     assert (second_count == send_count);
 
@@ -215,8 +211,7 @@ void test_reset_hwm ()
 
     // Now receive all sent messages
     recv_count = 0;
-    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT))
-    {
+    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT)) {
         ++recv_count;
     }
     assert (second_count == recv_count);
@@ -234,16 +229,16 @@ void test_reset_hwm ()
 
 int main (void)
 {
-    setup_test_environment();
-    
+    setup_test_environment ();
+
     int count;
 
     // send 1000 msg on hwm 1000, receive 1000
-    count = test_defaults (1000,1000);
+    count = test_defaults (1000, 1000);
     assert (count == 1000);
 
-   // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
-    count = test_blocking (2000,6000);
+    // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
+    count = test_blocking (2000, 6000);
     assert (count == 6000);
 
     // hwm should apply to the messages that have already been received

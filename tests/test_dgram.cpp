@@ -54,8 +54,8 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    char* message_string;
-    char* address;
+    char *message_string;
+    char *address;
 
     void *sender = zmq_socket (ctx, ZMQ_DGRAM);
     void *listener = zmq_socket (ctx, ZMQ_DGRAM);
@@ -73,16 +73,16 @@ int main (void)
     str_send_to (sender, "Is someone there ?", strrchr (ENDPOINT_4, '/') + 1);
 
     str_recv_from (listener, &message_string, &address);
-    assert (strcmp(message_string, "Is someone there ?") == 0);
-    assert (strcmp(address, strrchr (ENDPOINT_5, '/') + 1) == 0);
+    assert (strcmp (message_string, "Is someone there ?") == 0);
+    assert (strcmp (address, strrchr (ENDPOINT_5, '/') + 1) == 0);
     free (message_string);
 
     str_send_to (listener, "Yes, there is !", address);
     free (address);
 
     str_recv_from (sender, &message_string, &address);
-    assert (strcmp(message_string, "Yes, there is !") == 0);
-    assert (strcmp(address, strrchr (ENDPOINT_4, '/') + 1) == 0);
+    assert (strcmp (message_string, "Yes, there is !") == 0);
+    assert (strcmp (address, strrchr (ENDPOINT_4, '/') + 1) == 0);
     free (message_string);
     free (address);
 
@@ -95,5 +95,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

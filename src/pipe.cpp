@@ -38,44 +38,50 @@
 #include "ypipe.hpp"
 #include "ypipe_conflate.hpp"
 
-int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
-    int hwms_ [2], bool conflate_ [2])
+int zmq::pipepair (class object_t *parents_[2],
+                   class pipe_t *pipes_[2],
+                   int hwms_[2],
+                   bool conflate_[2])
 {
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
 
-    typedef ypipe_t <msg_t, message_pipe_granularity> upipe_normal_t;
-    typedef ypipe_conflate_t <msg_t> upipe_conflate_t;
+    typedef ypipe_t<msg_t, message_pipe_granularity> upipe_normal_t;
+    typedef ypipe_conflate_t<msg_t> upipe_conflate_t;
 
     pipe_t::upipe_t *upipe1;
-    if(conflate_ [0])
+    if (conflate_[0])
         upipe1 = new (std::nothrow) upipe_conflate_t ();
     else
         upipe1 = new (std::nothrow) upipe_normal_t ();
     alloc_assert (upipe1);
 
     pipe_t::upipe_t *upipe2;
-    if(conflate_ [1])
+    if (conflate_[1])
         upipe2 = new (std::nothrow) upipe_conflate_t ();
     else
         upipe2 = new (std::nothrow) upipe_normal_t ();
     alloc_assert (upipe2);
 
-    pipes_ [0] = new (std::nothrow) pipe_t (parents_ [0], upipe1, upipe2,
-        hwms_ [1], hwms_ [0], conflate_ [0]);
-    alloc_assert (pipes_ [0]);
-    pipes_ [1] = new (std::nothrow) pipe_t (parents_ [1], upipe2, upipe1,
-        hwms_ [0], hwms_ [1], conflate_ [1]);
-    alloc_assert (pipes_ [1]);
+    pipes_[0] = new (std::nothrow)
+      pipe_t (parents_[0], upipe1, upipe2, hwms_[1], hwms_[0], conflate_[0]);
+    alloc_assert (pipes_[0]);
+    pipes_[1] = new (std::nothrow)
+      pipe_t (parents_[1], upipe2, upipe1, hwms_[0], hwms_[1], conflate_[1]);
+    alloc_assert (pipes_[1]);
 
-    pipes_ [0]->set_peer (pipes_ [1]);
-    pipes_ [1]->set_peer (pipes_ [0]);
+    pipes_[0]->set_peer (pipes_[1]);
+    pipes_[1]->set_peer (pipes_[0]);
 
     return 0;
 }
 
-zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
-      int inhwm_, int outhwm_, bool conflate_) :
+zmq::pipe_t::pipe_t (object_t *parent_,
+                     upipe_t *inpipe_,
+                     upipe_t *outpipe_,
+                     int inhwm_,
+                     int outhwm_,
+                     bool conflate_) :
     object_t (parent_),
     inpipe (inpipe_),
     outpipe (outpipe_),
@@ -83,8 +89,8 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     out_active (true),
     hwm (outhwm_),
     lwm (compute_lwm (inhwm_)),
-    inhwmboost(-1),
-    outhwmboost(-1),
+    inhwmboost (-1),
+    outhwmboost (-1),
     msgs_read (0),
     msgs_written (0),
     peers_msgs_read (0),
@@ -115,7 +121,8 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
-void zmq::pipe_t::set_server_socket_routing_id (uint32_t server_socket_routing_id_)
+void zmq::pipe_t::set_server_socket_routing_id (
+  uint32_t server_socket_routing_id_)
 {
     server_socket_routing_id = server_socket_routing_id_;
 }
@@ -125,7 +132,8 @@ uint32_t zmq::pipe_t::get_server_socket_routing_id ()
     return server_socket_routing_id;
 }
 
-void zmq::pipe_t::set_router_socket_routing_id (const blob_t &router_socket_routing_id_)
+void zmq::pipe_t::set_router_socket_routing_id (
+  const blob_t &router_socket_routing_id_)
 {
     router_socket_routing_id.set_deep_copy (router_socket_routing_id_);
 }
@@ -181,7 +189,8 @@ read_message:
 
     //  If this is a credential, save a copy and receive next message.
     if (unlikely (msg_->is_credential ())) {
-        const unsigned char *data = static_cast <const unsigned char *> (msg_->data ());
+        const unsigned char *data =
+          static_cast<const unsigned char *> (msg_->data ());
         credential.set (data, msg_->size ());
         const int rc = msg_->close ();
         zmq_assert (rc == 0);
@@ -208,7 +217,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = !check_hwm();
+    bool full = !check_hwm ();
 
     if (unlikely (full)) {
         out_active = false;
@@ -282,16 +291,16 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
     outpipe->flush ();
     msg_t msg;
     while (outpipe->read (&msg)) {
-       if (!(msg.flags () & msg_t::more))
+        if (!(msg.flags () & msg_t::more))
             msgs_written--;
-       int rc = msg.close ();
-       errno_assert (rc == 0);
+        int rc = msg.close ();
+        errno_assert (rc == 0);
     }
-    LIBZMQ_DELETE(outpipe);
+    LIBZMQ_DELETE (outpipe);
 
     //  Plug in the new outpipe.
     zmq_assert (pipe_);
-    outpipe = (upipe_t*) pipe_;
+    outpipe = (upipe_t *) pipe_;
     out_active = true;
 
     //  If appropriate, notify the user about the hiccup.
@@ -301,9 +310,8 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
 
 void zmq::pipe_t::process_pipe_term ()
 {
-    zmq_assert (state == active
-            ||  state == delimiter_received
-            ||  state == term_req_sent1);
+    zmq_assert (state == active || state == delimiter_received
+                || state == term_req_sent1);
 
     //  This is the simple case of peer-induced termination. If there are no
     //  more pending messages to read, or if the pipe was configured to drop
@@ -322,8 +330,7 @@ void zmq::pipe_t::process_pipe_term ()
 
     //  Delimiter happened to arrive before the term command. Now we have the
     //  term command as well, so we can move straight to term_ack_sent state.
-    else
-    if (state == delimiter_received) {
+    else if (state == delimiter_received) {
         state = term_ack_sent;
         outpipe = NULL;
         send_pipe_term_ack (peer);
@@ -332,8 +339,7 @@ void zmq::pipe_t::process_pipe_term ()
     //  This is the case where both ends of the pipe are closed in parallel.
     //  We simply reply to the request by ack and continue waiting for our
     //  own ack.
-    else
-    if (state == term_req_sent1) {
+    else if (state == term_req_sent1) {
         state = term_req_sent2;
         outpipe = NULL;
         send_pipe_term_ack (peer);
@@ -353,8 +359,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
     if (state == term_req_sent1) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
-    }
-    else
+    } else
         zmq_assert (state == term_ack_sent || state == term_req_sent2);
 
     //  We'll deallocate the inbound pipe, the peer will deallocate the outbound
@@ -371,7 +376,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
         }
     }
 
-    LIBZMQ_DELETE(inpipe);
+    LIBZMQ_DELETE (inpipe);
 
     //  Deallocate the pipe object
     delete this;
@@ -379,7 +384,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
 
 void zmq::pipe_t::process_pipe_hwm (int inhwm_, int outhwm_)
 {
-    set_hwms(inhwm_, outhwm_);
+    set_hwms (inhwm_, outhwm_);
 }
 
 void zmq::pipe_t::set_nodelay ()
@@ -435,7 +440,6 @@ void zmq::pipe_t::terminate (bool delay_)
     out_active = false;
 
     if (outpipe) {
-
         //  Drop any unfinished outbound messages.
         rollback ();
 
@@ -478,8 +482,7 @@ int zmq::pipe_t::compute_lwm (int hwm_)
 
 void zmq::pipe_t::process_delimiter ()
 {
-    zmq_assert (state == active
-            ||  state == waiting_for_delimiter);
+    zmq_assert (state == active || state == waiting_for_delimiter);
 
     if (state == active)
         state = delimiter_received;
@@ -502,15 +505,15 @@ void zmq::pipe_t::hiccup ()
 
     //  Create new inpipe.
     if (conflate)
-        inpipe = new (std::nothrow)ypipe_conflate_t <msg_t>();
+        inpipe = new (std::nothrow) ypipe_conflate_t<msg_t> ();
     else
-        inpipe = new (std::nothrow)ypipe_t <msg_t, message_pipe_granularity>();
+        inpipe = new (std::nothrow) ypipe_t<msg_t, message_pipe_granularity> ();
 
     alloc_assert (inpipe);
     in_active = true;
 
     //  Notify the peer about the hiccup.
-    send_hiccup (peer, (void*) inpipe);
+    send_hiccup (peer, (void *) inpipe);
 }
 
 void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
@@ -525,11 +528,11 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
     if (outhwm_ <= 0 || outhwmboost == 0)
         out = 0;
 
-    lwm = compute_lwm(in);
+    lwm = compute_lwm (in);
     hwm = out;
 }
 
-void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
+void zmq::pipe_t::set_hwms_boost (int inhwmboost_, int outhwmboost_)
 {
     inhwmboost = inhwmboost_;
     outhwmboost = outhwmboost_;
@@ -538,10 +541,10 @@ void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
 bool zmq::pipe_t::check_hwm () const
 {
     bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
-    return( !full );
+    return (!full);
 }
 
-void zmq::pipe_t::send_hwms_to_peer(int inhwm_, int outhwm_)
+void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
 {
-    send_pipe_hwm(peer, inhwm_, outhwm_);
+    send_pipe_hwm (peer, inhwm_, outhwm_);
 }

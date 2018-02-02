@@ -36,100 +36,98 @@
 
 namespace zmq
 {
+struct socks_greeting_t
+{
+    socks_greeting_t (uint8_t method);
+    socks_greeting_t (uint8_t *methods_, uint8_t num_methods_);
 
-    struct socks_greeting_t
-    {
-        socks_greeting_t (uint8_t method);
-        socks_greeting_t (uint8_t *methods_, uint8_t num_methods_);
+    uint8_t methods[UINT8_MAX];
+    const size_t num_methods;
+};
 
-        uint8_t methods [UINT8_MAX];
-        const size_t num_methods;
-    };
+class socks_greeting_encoder_t
+{
+  public:
+    socks_greeting_encoder_t ();
+    void encode (const socks_greeting_t &greeting_);
+    int output (fd_t fd_);
+    bool has_pending_data () const;
+    void reset ();
 
-    class socks_greeting_encoder_t
-    {
-        public:
-            socks_greeting_encoder_t ();
-            void encode (const socks_greeting_t &greeting_);
-            int output (fd_t fd_);
-            bool has_pending_data () const;
-            void reset ();
+  private:
+    size_t bytes_encoded;
+    size_t bytes_written;
+    uint8_t buf[2 + UINT8_MAX];
+};
 
-        private:
-            size_t bytes_encoded;
-            size_t bytes_written;
-            uint8_t buf [2 + UINT8_MAX];
-    };
+struct socks_choice_t
+{
+    socks_choice_t (uint8_t method_);
 
-    struct socks_choice_t
-    {
-        socks_choice_t (uint8_t method_);
+    uint8_t method;
+};
 
-        uint8_t method;
-    };
+class socks_choice_decoder_t
+{
+  public:
+    socks_choice_decoder_t ();
+    int input (fd_t fd_);
+    bool message_ready () const;
+    socks_choice_t decode ();
+    void reset ();
 
-    class socks_choice_decoder_t
-    {
-        public:
-            socks_choice_decoder_t ();
-            int input (fd_t fd_);
-            bool message_ready () const;
-            socks_choice_t decode ();
-            void reset ();
+  private:
+    unsigned char buf[2];
+    size_t bytes_read;
+};
 
-        private:
-            unsigned char buf [2];
-            size_t bytes_read;
-    };
+struct socks_request_t
+{
+    socks_request_t (uint8_t command_, std::string hostname_, uint16_t port_);
 
-    struct socks_request_t
-    {
-        socks_request_t (
-            uint8_t command_, std::string hostname_, uint16_t port_);
+    const uint8_t command;
+    const std::string hostname;
+    const uint16_t port;
+};
 
-        const uint8_t command;
-        const std::string hostname;
-        const uint16_t port;
-    };
+class socks_request_encoder_t
+{
+  public:
+    socks_request_encoder_t ();
+    void encode (const socks_request_t &req);
+    int output (fd_t fd_);
+    bool has_pending_data () const;
+    void reset ();
 
-    class socks_request_encoder_t
-    {
-        public:
-            socks_request_encoder_t ();
-            void encode (const socks_request_t &req);
-            int output (fd_t fd_);
-            bool has_pending_data () const;
-            void reset ();
+  private:
+    size_t bytes_encoded;
+    size_t bytes_written;
+    uint8_t buf[4 + UINT8_MAX + 1 + 2];
+};
 
-        private:
-            size_t bytes_encoded;
-            size_t bytes_written;
-            uint8_t buf [4 + UINT8_MAX + 1 + 2];
-    };
+struct socks_response_t
+{
+    socks_response_t (uint8_t response_code_,
+                      std::string address_,
+                      uint16_t port_);
+    uint8_t response_code;
+    std::string address;
+    uint16_t port;
+};
 
-    struct socks_response_t
-    {
-        socks_response_t (
-            uint8_t response_code_, std::string address_, uint16_t port_);
-        uint8_t response_code;
-        std::string address;
-        uint16_t port;
-    };
+class socks_response_decoder_t
+{
+  public:
+    socks_response_decoder_t ();
+    int input (fd_t fd_);
+    bool message_ready () const;
+    socks_response_t decode ();
+    void reset ();
 
-    class socks_response_decoder_t
-    {
-        public:
-            socks_response_decoder_t ();
-            int input (fd_t fd_);
-            bool message_ready () const;
-            socks_response_t decode ();
-            void reset ();
-
-        private:
-            int8_t buf [4 + UINT8_MAX + 1 + 2];
-            size_t bytes_read;
-    };
-
+  private:
+    int8_t buf[4 + UINT8_MAX + 1 + 2];
+    size_t bytes_read;
+};
 }
 
 #endif

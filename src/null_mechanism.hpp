@@ -36,42 +36,36 @@
 
 namespace zmq
 {
+class msg_t;
+class session_base_t;
 
-    class msg_t;
-    class session_base_t;
+class null_mechanism_t : public zap_client_t
+{
+  public:
+    null_mechanism_t (session_base_t *session_,
+                      const std::string &peer_address,
+                      const options_t &options_);
+    virtual ~null_mechanism_t ();
 
-    class null_mechanism_t : public zap_client_t
-    {
-    public:
+    // mechanism implementation
+    virtual int next_handshake_command (msg_t *msg_);
+    virtual int process_handshake_command (msg_t *msg_);
+    virtual int zap_msg_available ();
+    virtual status_t status () const;
 
-        null_mechanism_t (session_base_t *session_,
-                          const std::string &peer_address,
-                          const options_t &options_);
-        virtual ~null_mechanism_t ();
+  private:
+    bool ready_command_sent;
+    bool error_command_sent;
+    bool ready_command_received;
+    bool error_command_received;
+    bool zap_request_sent;
+    bool zap_reply_received;
 
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-        virtual int zap_msg_available ();
-        virtual status_t status () const;
+    int process_ready_command (const unsigned char *cmd_data, size_t data_size);
+    int process_error_command (const unsigned char *cmd_data, size_t data_size);
 
-    private:
-
-        bool ready_command_sent;
-        bool error_command_sent;
-        bool ready_command_received;
-        bool error_command_received;
-        bool zap_request_sent;
-        bool zap_reply_received;
-
-        int process_ready_command (
-            const unsigned char *cmd_data, size_t data_size);
-        int process_error_command (
-            const unsigned char *cmd_data, size_t data_size);
-
-        void send_zap_request ();
-    };
-
+    void send_zap_request ();
+};
 }
 
 #endif

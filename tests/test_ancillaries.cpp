@@ -41,9 +41,8 @@ int main (void)
     int major, minor, patch;
 
     zmq_version (&major, &minor, &patch);
-    assert (major == ZMQ_VERSION_MAJOR &&
-            minor == ZMQ_VERSION_MINOR &&
-            patch == ZMQ_VERSION_PATCH);
+    assert (major == ZMQ_VERSION_MAJOR && minor == ZMQ_VERSION_MINOR
+            && patch == ZMQ_VERSION_PATCH);
 
     assert (zmq_strerror (EINVAL));
 

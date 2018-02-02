@@ -41,56 +41,50 @@
 
 namespace zmq
 {
+class ctx_t;
+class pipe_t;
 
-    class ctx_t;
-    class pipe_t;
+//  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
+class server_t : public socket_base_t
+{
+  public:
+    server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    ~server_t ();
 
-    //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
-    class server_t :
-        public socket_base_t
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
+
+  protected:
+    const blob_t &get_credential () const;
+
+  private:
+    //  Fair queueing object for inbound pipes.
+    fq_t fq;
+
+    struct outpipe_t
     {
-    public:
-
-        server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
-        ~server_t ();
-
-        //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
-        int xsend (zmq::msg_t *msg_);
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        bool xhas_out ();
-        void xread_activated (zmq::pipe_t *pipe_);
-        void xwrite_activated (zmq::pipe_t *pipe_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
-
-    protected:
-
-        const blob_t &get_credential () const;
-
-    private:
-
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
-
-        struct outpipe_t
-        {
-            zmq::pipe_t *pipe;
-            bool active;
-        };
-
-        //  Outbound pipes indexed by the peer IDs.
-        typedef std::map <uint32_t, outpipe_t> outpipes_t;
-        outpipes_t outpipes;
-
-        //  Routing IDs are generated. It's a simple increment and wrap-over
-        //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_routing_id;
-
-        server_t (const server_t&);
-        const server_t &operator = (const server_t&);
+        zmq::pipe_t *pipe;
+        bool active;
     };
 
+    //  Outbound pipes indexed by the peer IDs.
+    typedef std::map<uint32_t, outpipe_t> outpipes_t;
+    outpipes_t outpipes;
+
+    //  Routing IDs are generated. It's a simple increment and wrap-over
+    //  algorithm. This value is the next ID to use (if not used already).
+    uint32_t next_routing_id;
+
+    server_t (const server_t &);
+    const server_t &operator= (const server_t &);
+};
 }
 
 #endif

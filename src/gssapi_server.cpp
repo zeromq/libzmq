@@ -54,12 +54,13 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     security_context_established (false)
 {
     maj_stat = GSS_S_CONTINUE_NEEDED;
-    if(!options_.gss_principal.empty())
-    {
-        const std::string::size_type principal_size = options_.gss_principal.size();
-        principal_name = static_cast <char *>(malloc(principal_size+1));
-        assert(principal_name);
-        memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
+    if (!options_.gss_principal.empty ()) {
+        const std::string::size_type principal_size =
+          options_.gss_principal.size ();
+        principal_name = static_cast<char *> (malloc (principal_size + 1));
+        assert (principal_name);
+        memcpy (principal_name, options_.gss_principal.c_str (),
+                principal_size + 1);
         gss_OID name_type = convert_nametype (options_.gss_principal_nt);
         if (acquire_credentials (principal_name, &cred, name_type) != 0)
             maj_stat = GSS_S_FAILURE;
@@ -68,17 +69,17 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
 
 zmq::gssapi_server_t::~gssapi_server_t ()
 {
-    if(cred)
-        gss_release_cred(&min_stat, &cred);
+    if (cred)
+        gss_release_cred (&min_stat, &cred);
 
-    if(target_name)
-        gss_release_name(&min_stat, &target_name);
+    if (target_name)
+        gss_release_name (&min_stat, &target_name);
 }
 
 int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
 {
     if (state == send_ready) {
-        int rc = produce_ready(msg_);
+        int rc = produce_ready (msg_);
         if (rc == 0)
             state = recv_ready;
 
@@ -108,7 +109,7 @@ int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
 int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 {
     if (state == recv_ready) {
-        int rc = process_ready(msg_);
+        int rc = process_ready (msg_);
         if (rc == 0)
             state = connected;
 
@@ -117,8 +118,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 
     if (state != recv_next_token) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -138,7 +138,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
                 expecting_zap_reply = true;
             }
         }
-        state = expecting_zap_reply? expect_zap_reply: send_ready;
+        state = expecting_zap_reply ? expect_zap_reply : send_ready;
         return 0;
     }
 
@@ -158,9 +158,9 @@ void zmq::gssapi_server_t::send_zap_request ()
 {
     gss_buffer_desc principal;
     gss_display_name (&min_stat, target_name, &principal, NULL);
-    zap_client_t::send_zap_request ("GSSAPI", 6,
-                                    reinterpret_cast<const uint8_t *> (principal.value),
-                                    principal.length);
+    zap_client_t::send_zap_request (
+      "GSSAPI", 6, reinterpret_cast<const uint8_t *> (principal.value),
+      principal.length);
 
     gss_release_buffer (&min_stat, &principal);
 }
@@ -170,7 +170,7 @@ int zmq::gssapi_server_t::encode (msg_t *msg_)
     zmq_assert (state == connected);
 
     if (do_encryption)
-      return encode_message (msg_);
+        return encode_message (msg_);
 
     return 0;
 }
@@ -180,7 +180,7 @@ int zmq::gssapi_server_t::decode (msg_t *msg_)
     zmq_assert (state == connected);
 
     if (do_encryption)
-      return decode_message (msg_);
+        return decode_message (msg_);
 
     return 0;
 }
@@ -199,21 +199,21 @@ int zmq::gssapi_server_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::gssapi_server_t::status () const
 {
-    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
+    return state == connected ? mechanism_t::ready : mechanism_t::handshaking;
 }
 
 int zmq::gssapi_server_t::produce_next_token (msg_t *msg_)
 {
     if (send_tok.length != 0) { // Client expects another token
-        if (produce_initiate(msg_, send_tok.value, send_tok.length) < 0)
+        if (produce_initiate (msg_, send_tok.value, send_tok.length) < 0)
             return -1;
-        gss_release_buffer(&min_stat, &send_tok);
+        gss_release_buffer (&min_stat, &send_tok);
     }
 
     if (maj_stat != GSS_S_COMPLETE && maj_stat != GSS_S_CONTINUE_NEEDED) {
-        gss_release_name(&min_stat, &target_name);
+        gss_release_name (&min_stat, &target_name);
         if (context != GSS_C_NO_CONTEXT)
-            gss_delete_sec_context(&min_stat, &context, GSS_C_NO_BUFFER);
+            gss_delete_sec_context (&min_stat, &context, GSS_C_NO_BUFFER);
         return -1;
     }
 
@@ -223,9 +223,9 @@ int zmq::gssapi_server_t::produce_next_token (msg_t *msg_)
 int zmq::gssapi_server_t::process_next_token (msg_t *msg_)
 {
     if (maj_stat == GSS_S_CONTINUE_NEEDED) {
-        if (process_initiate(msg_, &recv_tok.value, recv_tok.length) < 0) {
+        if (process_initiate (msg_, &recv_tok.value, recv_tok.length) < 0) {
             if (target_name != GSS_C_NO_NAME)
-                gss_release_name(&min_stat, &target_name);
+                gss_release_name (&min_stat, &target_name);
             return -1;
         }
     }
@@ -235,10 +235,9 @@ int zmq::gssapi_server_t::process_next_token (msg_t *msg_)
 
 void zmq::gssapi_server_t::accept_context ()
 {
-    maj_stat = gss_accept_sec_context(&init_sec_min_stat, &context, cred,
-                                      &recv_tok, GSS_C_NO_CHANNEL_BINDINGS,
-                                      &target_name, &doid, &send_tok,
-                                      &ret_flags, NULL, NULL);
+    maj_stat = gss_accept_sec_context (
+      &init_sec_min_stat, &context, cred, &recv_tok, GSS_C_NO_CHANNEL_BINDINGS,
+      &target_name, &doid, &send_tok, &ret_flags, NULL, NULL);
 
     if (recv_tok.value) {
         free (recv_tok.value);

@@ -34,14 +34,14 @@
 int main (void)
 {
     struct addrinfo *addr, hint;
-    hint.ai_flags=AI_NUMERICHOST;
-    hint.ai_family=AF_INET;
-    hint.ai_socktype=SOCK_DGRAM;
-    hint.ai_protocol=IPPROTO_UDP;
-    hint.ai_addrlen=0;
-    hint.ai_canonname=NULL;
-    hint.ai_addr=NULL;
-    hint.ai_next=NULL;
+    hint.ai_flags = AI_NUMERICHOST;
+    hint.ai_family = AF_INET;
+    hint.ai_socktype = SOCK_DGRAM;
+    hint.ai_protocol = IPPROTO_UDP;
+    hint.ai_addrlen = 0;
+    hint.ai_canonname = NULL;
+    hint.ai_addr = NULL;
+    hint.ai_next = NULL;
 
     int rc = getaddrinfo ("127.0.0.1", "6650", &hint, &addr);
     assert (rc == 0);
@@ -50,7 +50,8 @@ int main (void)
     assert (recv_socket != -1);
 
     int flag = 1;
-    rc = setsockopt (recv_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+    rc =
+      setsockopt (recv_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     assert (rc == 0);
 
     rc = bind (recv_socket, addr->ai_addr, addr->ai_addrlen);
@@ -65,9 +66,9 @@ int main (void)
     rc = zmq_bind (sb, "tcp://127.0.0.1:*");
     assert (rc == 0);
 
-    zmq_pollitem_t pollitems [] = {
-        { sb, 0, ZMQ_POLLIN, 0 },
-        { NULL, recv_socket, ZMQ_POLLIN, 0 },
+    zmq_pollitem_t pollitems[] = {
+      {sb, 0, ZMQ_POLLIN, 0},
+      {NULL, recv_socket, ZMQ_POLLIN, 0},
     };
 
     int send_socket = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -80,8 +81,8 @@ int main (void)
     assert (rc >= 0);
 
     assert (zmq_poll (pollitems, 2, 1) == 1);
-    assert ((pollitems [0].revents & ZMQ_POLLIN) == 0);
-    assert (pollitems [1].revents & ZMQ_POLLIN);
+    assert ((pollitems[0].revents & ZMQ_POLLIN) == 0);
+    assert (pollitems[1].revents & ZMQ_POLLIN);
 
     rc = zmq_close (sb);
     assert (rc == 0);
@@ -92,7 +93,7 @@ int main (void)
     close (send_socket);
     close (recv_socket);
 
-    freeaddrinfo(addr);
+    freeaddrinfo (addr);
 
-    return 0 ;
+    return 0;
 }

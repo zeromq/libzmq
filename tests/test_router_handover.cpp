@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
@@ -47,7 +47,8 @@ int main (void)
 
     // Enable the handover flag
     int handover = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER, &handover, sizeof (handover));
+    rc = zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER, &handover,
+                         sizeof (handover));
     assert (rc == 0);
 
     //  Create dealer called "X" and connect it to our router
@@ -57,14 +58,14 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (dealer_one, my_endpoint);
     assert (rc == 0);
-    
+
     //  Get message from dealer to know when connection is ready
-    char buffer [255];
+    char buffer[255];
     rc = zmq_send (dealer_one, "Hello", 5, 0);
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    assert (buffer[0] == 'X');
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
@@ -81,11 +82,11 @@ int main (void)
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    assert (buffer[0] == 'X');
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
-    //  Send a message to 'X' routing id. This should be delivered 
+    //  Send a message to 'X' routing id. This should be delivered
     //  to the second dealer, instead of the first beccause of the handover.
     rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
     assert (rc == 1);
@@ -93,13 +94,13 @@ int main (void)
     assert (rc == 5);
 
     //  Ensure that the first dealer doesn't receive the message
-    //  but the second one does 
+    //  but the second one does
     rc = zmq_recv (dealer_one, buffer, 255, ZMQ_NOBLOCK);
     assert (rc == -1);
 
     rc = zmq_recv (dealer_two, buffer, 255, 0);
     assert (rc == 5);
- 
+
     rc = zmq_close (router);
     assert (rc == 0);
 
@@ -112,5 +113,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }
