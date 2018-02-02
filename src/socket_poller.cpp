@@ -130,8 +130,7 @@ int zmq::socket_poller_t::add (socket_base_t *socket_,
             }
         }
 
-        rc = socket_->add_signaler (signaler);
-        zmq_assert (rc == 0);
+        socket_->add_signaler (signaler);
     }
 
     item_t item = {

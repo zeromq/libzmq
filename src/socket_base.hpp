@@ -86,8 +86,8 @@ class socket_base_t : public own_t,
     int term_endpoint (const char *addr_);
     int send (zmq::msg_t *msg_, int flags_);
     int recv (zmq::msg_t *msg_, int flags_);
-    int add_signaler (signaler_t *s);
-    int remove_signaler (signaler_t *s);
+    void add_signaler (signaler_t *s);
+    void remove_signaler (signaler_t *s);
     int close ();
 
     //  These functions are used by the polling mechanism to determine

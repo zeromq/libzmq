@@ -312,9 +312,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 
-        //  Check whether socket type and transport protocol match.
-        //  Specifically, multicast protocols can't be combined with
-        //  bi-directional messaging patterns (socket types).
+    //  Check whether socket type and transport protocol match.
+    //  Specifically, multicast protocols can't be combined with
+    //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
@@ -487,32 +487,20 @@ int zmq::socket_base_t::leave (const char *group_)
     return rc;
 }
 
-int zmq::socket_base_t::add_signaler (signaler_t *s_)
+void zmq::socket_base_t::add_signaler (signaler_t *s_)
 {
-    scoped_optional_lock_t sync_lock (thread_safe ? &sync : NULL);
+    zmq_assert (thread_safe);
 
-    if (!thread_safe) {
-        errno = EINVAL;
-        return -1;
-    }
-
+    scoped_lock_t sync_lock (sync);
     ((mailbox_safe_t *) mailbox)->add_signaler (s_);
-
-    return 0;
 }
 
-int zmq::socket_base_t::remove_signaler (signaler_t *s_)
+void zmq::socket_base_t::remove_signaler (signaler_t *s_)
 {
-    scoped_optional_lock_t sync_lock (thread_safe ? &sync : NULL);
+    zmq_assert (thread_safe);
 
-    if (!thread_safe) {
-        errno = EINVAL;
-        return -1;
-    }
-
+    scoped_lock_t sync_lock (sync);
     ((mailbox_safe_t *) mailbox)->remove_signaler (s_);
-
-    return 0;
 }
 
 int zmq::socket_base_t::bind (const char *addr_)
@@ -923,7 +911,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 
-        // TBD - Should we check address for ZMQ_HAVE_NORM???
+    // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
