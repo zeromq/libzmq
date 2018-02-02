@@ -285,14 +285,19 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
         return 0;
     }
     else {
+        const char *group_setting = msg_->group();
+        int rc;
+        if(group_setting[0] != 0)
+          goto has_group;
+
         //  Set the message group
-        int rc = msg_->set_group ((char*)group_msg.data (), group_msg. size());
+        rc = msg_->set_group ((char*)group_msg.data (), group_msg. size());
         errno_assert (rc == 0);
 
         //  We set the group, so we don't need the group_msg anymore
         rc = group_msg.close ();
         errno_assert (rc == 0);
-
+has_group:
         //  Thread safe socket doesn't support multipart messages
         if ((msg_->flags() & msg_t::more) == msg_t::more) {
             errno = EFAULT;
