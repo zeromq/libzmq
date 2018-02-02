@@ -205,7 +205,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
 {
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
-    options.linger = parent_->get (ZMQ_BLOCKY) ? -1 : 0;
+    options.linger.store (parent_->get (ZMQ_BLOCKY) ? -1 : 0);
 
     if (thread_safe) {
         mailbox = new (std::nothrow) mailbox_safe_t (&sync);
@@ -312,9 +312,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 
-        //  Check whether socket type and transport protocol match.
-        //  Specifically, multicast protocols can't be combined with
-        //  bi-directional messaging patterns (socket types).
+    //  Check whether socket type and transport protocol match.
+    //  Specifically, multicast protocols can't be combined with
+    //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
@@ -923,7 +923,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 
-        // TBD - Should we check address for ZMQ_HAVE_NORM???
+    // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {

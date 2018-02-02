@@ -216,7 +216,7 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_LINGER:
             if (is_int && value >= -1) {
-                linger = value;
+                linger.store (value);
                 return 0;
             }
             break;
@@ -733,7 +733,7 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_LINGER:
             if (is_int) {
-                *value = linger;
+                *value = linger.load ();
                 return 0;
             }
             break;
