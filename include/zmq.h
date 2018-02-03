@@ -542,7 +542,11 @@ ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p);
 ZMQ_EXPORT void *zmq_stopwatch_start (void);
 
 /*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
-/*  the stopwatch was started.                                                */
+/*  the stopwatch was started, but does not stop or deallocate the stopwatch. */
+ZMQ_EXPORT unsigned long zmq_stopwatch_intermediate (void *watch_);
+
+/*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
+/*  the stopwatch was started, and deallocates that watch.                    */
 ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 
 /*  Sleeps for specified number of seconds.                                   */

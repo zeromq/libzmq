@@ -154,13 +154,19 @@ int main (void)
 
     bool timer_invoked = false;
 
-    int timer_id = zmq_timers_add (timers, 100, handler, &timer_invoked);
+    const int full_timeout = 100;
+    void *const stopwatch = zmq_stopwatch_start ();
+
+    int timer_id =
+      zmq_timers_add (timers, full_timeout, handler, &timer_invoked);
     assert (timer_id);
 
-    //  Timer should be invoked yet
+    //  Timer should not have been invoked yet
     int rc = zmq_timers_execute (timers);
     assert (rc == 0);
-    assert (!timer_invoked);
+    if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
+        assert (!timer_invoked);
+    }
 
     //  Wait half the time and check again
     long timeout = zmq_timers_timeout (timers);
@@ -168,7 +174,9 @@ int main (void)
     msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
-    assert (!timer_invoked);
+    if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
+        assert (!timer_invoked);
+    }
 
     // Wait until the end
     rc = sleep_and_execute (timers);
@@ -182,7 +190,9 @@ int main (void)
     msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
-    assert (!timer_invoked);
+    if (zmq_stopwatch_intermediate (stopwatch) < 2 * full_timeout) {
+        assert (!timer_invoked);
+    }
 
     // Reset timer and wait half of the time left
     rc = zmq_timers_reset (timers, timer_id);
@@ -190,7 +200,9 @@ int main (void)
     msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
-    assert (!timer_invoked);
+    if (zmq_stopwatch_stop (stopwatch) < 2 * full_timeout) {
+        assert (!timer_invoked);
+    }
 
     // Wait until the end
     rc = sleep_and_execute (timers);
