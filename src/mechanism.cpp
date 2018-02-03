@@ -70,13 +70,44 @@ const zmq::blob_t &zmq::mechanism_t::get_user_id () const
     return user_id;
 }
 
+const char socket_type_pair[] = "PAIR";
+const char socket_type_pub[] = "PUB";
+const char socket_type_sub[] = "SUB";
+const char socket_type_req[] = "REQ";
+const char socket_type_rep[] = "REP";
+const char socket_type_dealer[] = "DEALER";
+const char socket_type_router[] = "ROUTER";
+const char socket_type_pull[] = "PULL";
+const char socket_type_push[] = "PUSH";
+const char socket_type_xpub[] = "XPUB";
+const char socket_type_xsub[] = "XSUB";
+const char socket_type_stream[] = "STREAM";
+#ifdef ZMQ_BUILD_DRAFT_API
+const char socket_type_server[] = "SERVER";
+const char socket_type_client[] = "CLIENT";
+const char socket_type_radio[] = "RADIO";
+const char socket_type_dish[] = "DISH";
+const char socket_type_gather[] = "GATHER";
+const char socket_type_scatter[] = "SCATTER";
+const char socket_type_dgram[] = "DGRAM";
+#endif
+
 const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
+    // TODO the order must of the names must correspond to the values resp. order of ZMQ_* socket type definitions in zmq.h!
     static const char *names[] = {
-      "PAIR",  "PUB",  "SUB",    "REQ",     "REP",    "DEALER", "ROUTER",
-      "PULL",  "PUSH", "XPUB",   "XSUB",    "STREAM", "SERVER", "CLIENT",
-      "RADIO", "DISH", "GATHER", "SCATTER", "DGRAM"};
-    zmq_assert (socket_type >= 0 && socket_type <= 18);
+      socket_type_pair,   socket_type_pub,    socket_type_sub,
+      socket_type_req,    socket_type_rep,    socket_type_dealer,
+      socket_type_router, socket_type_pull,   socket_type_push,
+      socket_type_xpub,   socket_type_xsub,   socket_type_stream,
+#ifdef ZMQ_BUILD_DRAFT_API
+      socket_type_server, socket_type_client, socket_type_radio,
+      socket_type_dish,   socket_type_gather, socket_type_scatter,
+      socket_type_dgram
+#endif
+    };
+    static const size_t names_count = sizeof (names) / sizeof (names[0]);
+    zmq_assert (socket_type >= 0 && socket_type < (int) names_count);
     return names[socket_type];
 }
 
@@ -133,10 +164,11 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
 
     //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
-        || options.type == ZMQ_ROUTER)
+        || options.type == ZMQ_ROUTER) {
         ptr +=
           add_property (ptr, buf_capacity - (ptr - buf), ZMTP_PROPERTY_IDENTITY,
                         options.routing_id, options.routing_id_size);
+    }
 
     return ptr - buf;
 }
@@ -152,17 +184,17 @@ size_t zmq::mechanism_t::basic_properties_len () const
 }
 
 void zmq::mechanism_t::make_command_with_basic_properties (
-  msg_t *msg_, const char *prefix, size_t prefix_len) const
+  msg_t *msg_, const char *prefix_, size_t prefix_len_) const
 {
-    const size_t command_size = prefix_len + basic_properties_len ();
+    const size_t command_size = prefix_len_ + basic_properties_len ();
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
     unsigned char *ptr = (unsigned char *) msg_->data ();
 
     //  Add prefix
-    memcpy (ptr, prefix, prefix_len);
-    ptr += prefix_len;
+    memcpy (ptr, prefix_, prefix_len_);
+    ptr += prefix_len_;
 
     add_basic_properties (ptr, command_size
                                  - (ptr - (unsigned char *) msg_->data ()));
@@ -170,7 +202,7 @@ void zmq::mechanism_t::make_command_with_basic_properties (
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
                                       size_t length_,
-                                      bool zap_flag)
+                                      bool zap_flag_)
 {
     size_t bytes_left = length_;
 
@@ -200,8 +232,7 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         if (name == ZMTP_PROPERTY_IDENTITY && options.recv_routing_id)
             set_peer_routing_id (value, value_length);
         else if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
-            const std::string socket_type ((char *) value, value_length);
-            if (!check_socket_type (socket_type)) {
+            if (!check_socket_type ((const char *) value, value_length)) {
                 errno = EINVAL;
                 return -1;
             }
@@ -210,12 +241,9 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
             if (rc == -1)
                 return -1;
         }
-        if (zap_flag)
-            zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
-              name, std::string ((char *) value, value_length));
-        else
-            zmtp_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
-              name, std::string ((char *) value, value_length));
+        (zap_flag_ ? zap_properties : zmtp_properties)
+          .ZMQ_MAP_INSERT_OR_EMPLACE (
+            name, std::string ((char *) value, value_length));
     }
     if (bytes_left > 0) {
         errno = EPROTO;
@@ -233,45 +261,67 @@ int zmq::mechanism_t::property (const std::string & /* name_ */,
     return 0;
 }
 
-bool zmq::mechanism_t::check_socket_type (const std::string &type_) const
+template <size_t N>
+static bool strequals (const char *actual_type_,
+                       const size_t actual_len_,
+                       const char (&expected_type_)[N])
+{
+    return actual_len_ == N - 1
+           && memcmp (actual_type_, expected_type_, N - 1) == 0;
+}
+
+bool zmq::mechanism_t::check_socket_type (const char *type_,
+                                          const size_t len_) const
 {
     switch (options.type) {
         case ZMQ_REQ:
-            return type_ == "REP" || type_ == "ROUTER";
+            return strequals (type_, len_, socket_type_rep)
+                   || strequals (type_, len_, socket_type_router);
         case ZMQ_REP:
-            return type_ == "REQ" || type_ == "DEALER";
+            return strequals (type_, len_, socket_type_req)
+                   || strequals (type_, len_, socket_type_dealer);
         case ZMQ_DEALER:
-            return type_ == "REP" || type_ == "DEALER" || type_ == "ROUTER";
+            return strequals (type_, len_, socket_type_rep)
+                   || strequals (type_, len_, socket_type_dealer)
+                   || strequals (type_, len_, socket_type_router);
         case ZMQ_ROUTER:
-            return type_ == "REQ" || type_ == "DEALER" || type_ == "ROUTER";
+            return strequals (type_, len_, socket_type_req)
+                   || strequals (type_, len_, socket_type_dealer)
+                   || strequals (type_, len_, socket_type_router);
         case ZMQ_PUSH:
-            return type_ == "PULL";
+            return strequals (type_, len_, socket_type_pull);
         case ZMQ_PULL:
-            return type_ == "PUSH";
+            return strequals (type_, len_, socket_type_push);
         case ZMQ_PUB:
-            return type_ == "SUB" || type_ == "XSUB";
+            return strequals (type_, len_, socket_type_sub)
+                   || strequals (type_, len_, socket_type_xsub);
         case ZMQ_SUB:
-            return type_ == "PUB" || type_ == "XPUB";
+            return strequals (type_, len_, socket_type_pub)
+                   || strequals (type_, len_, socket_type_xpub);
         case ZMQ_XPUB:
-            return type_ == "SUB" || type_ == "XSUB";
+            return strequals (type_, len_, socket_type_sub)
+                   || strequals (type_, len_, socket_type_xsub);
         case ZMQ_XSUB:
-            return type_ == "PUB" || type_ == "XPUB";
+            return strequals (type_, len_, socket_type_pub)
+                   || strequals (type_, len_, socket_type_xpub);
         case ZMQ_PAIR:
-            return type_ == "PAIR";
+            return strequals (type_, len_, socket_type_pair);
+#ifdef ZMQ_BUILD_DRAFT_API
         case ZMQ_SERVER:
-            return type_ == "CLIENT";
+            return strequals (type_, len_, socket_type_client);
         case ZMQ_CLIENT:
-            return type_ == "SERVER";
+            return strequals (type_, len_, socket_type_server);
         case ZMQ_RADIO:
-            return type_ == "DISH";
+            return strequals (type_, len_, socket_type_dish);
         case ZMQ_DISH:
-            return type_ == "RADIO";
+            return strequals (type_, len_, socket_type_radio);
         case ZMQ_GATHER:
-            return type_ == "SCATTER";
+            return strequals (type_, len_, socket_type_scatter);
         case ZMQ_SCATTER:
-            return type_ == "GATHER";
+            return strequals (type_, len_, socket_type_gather);
         case ZMQ_DGRAM:
-            return type_ == "DGRAM";
+            return strequals (type_, len_, socket_type_dgram);
+#endif
         default:
             break;
     }

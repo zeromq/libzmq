@@ -137,7 +137,7 @@ class mechanism_t
 
     //  Returns true iff socket associated with the mechanism
     //  is compatible with a given socket type 'type_'.
-    bool check_socket_type (const std::string &type_) const;
+    bool check_socket_type (const char *type_, size_t len_) const;
 };
 }
 
