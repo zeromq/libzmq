@@ -312,9 +312,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 
-        //  Check whether socket type and transport protocol match.
-        //  Specifically, multicast protocols can't be combined with
-        //  bi-directional messaging patterns (socket types).
+    //  Check whether socket type and transport protocol match.
+    //  Specifically, multicast protocols can't be combined with
+    //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
@@ -923,7 +923,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 
-        // TBD - Should we check address for ZMQ_HAVE_NORM???
+    // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
@@ -1045,13 +1045,15 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return -1;
     }
 
+    const std::string addr_str = std::string (addr_);
+
     // Disconnect an inproc socket
     if (protocol == "inproc") {
-        if (unregister_endpoint (std::string (addr_), this) == 0) {
+        if (unregister_endpoint (addr_str, this) == 0) {
             return 0;
         }
         std::pair<inprocs_t::iterator, inprocs_t::iterator> range =
-          inprocs.equal_range (std::string (addr_));
+          inprocs.equal_range (addr_str);
         if (range.first == range.second) {
             errno = ENOENT;
             return -1;
@@ -1063,8 +1065,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return 0;
     }
 
-    std::string resolved_addr = std::string (addr_);
-    std::pair<endpoints_t::iterator, endpoints_t::iterator> range;
+    std::string resolved_addr = addr_;
 
     // The resolved last_endpoint is used as a key in the endpoints map.
     // The address passed by the user might not match in the TCP case due to
@@ -1072,17 +1073,14 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     // resolve before giving up. Given at this stage we don't know whether a
     // socket is connected or bound, try with both.
     if (protocol == "tcp") {
-        range = endpoints.equal_range (resolved_addr);
-        if (range.first == range.second) {
+        if (endpoints.find (resolved_addr) == endpoints.end ()) {
             tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
             alloc_assert (tcp_addr);
             rc = tcp_addr->resolve (address.c_str (), false, options.ipv6);
 
             if (rc == 0) {
                 tcp_addr->to_string (resolved_addr);
-                range = endpoints.equal_range (resolved_addr);
-
-                if (range.first == range.second) {
+                if (endpoints.find (resolved_addr) == endpoints.end ()) {
                     rc =
                       tcp_addr->resolve (address.c_str (), true, options.ipv6);
                     if (rc == 0) {
@@ -1095,7 +1093,8 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     }
 
     //  Find the endpoints range (if any) corresponding to the addr_ string.
-    range = endpoints.equal_range (resolved_addr);
+    const std::pair<endpoints_t::iterator, endpoints_t::iterator> range =
+      endpoints.equal_range (resolved_addr);
     if (range.first == range.second) {
         errno = ENOENT;
         return -1;
