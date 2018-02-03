@@ -166,10 +166,6 @@ class select_t : public poller_base_t
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
 
-    static size_t
-    count_non_retired (const zmq::select_t::fd_entries_t &fd_entries);
-    void assert_load_consistent () const;
-
     //  If true, start has been called.
     bool started;
 
