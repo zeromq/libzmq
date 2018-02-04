@@ -29,54 +29,118 @@
 
 #include "testutil.hpp"
 
+#include <unity.h>
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
+
 //  tests all socket-related functions with a NULL socket argument
-int main (void)
+void test_zmq_socket_null_context ()
 {
     void *s = zmq_socket (NULL, ZMQ_PAIR);
-    assert (s == NULL);
-    assert (errno == EFAULT); // TODO use EINVAL instead?
+    TEST_ASSERT_NULL (s);
+    TEST_ASSERT_EQUAL_INT (EFAULT, errno); // TODO use EINVAL instead?
+}
 
+void test_zmq_close_null_socket ()
+{
     int rc = zmq_close (NULL);
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
+void test_zmq_setsockopt_null_socket ()
+{
     int hwm = 100;
     size_t hwm_size = sizeof hwm;
-    rc = zmq_setsockopt (NULL, ZMQ_SNDHWM, &hwm, hwm_size);
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+    int rc = zmq_setsockopt (NULL, ZMQ_SNDHWM, &hwm, hwm_size);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
-    rc = zmq_getsockopt (NULL, ZMQ_SNDHWM, &hwm, &hwm_size);
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_getsockopt_null_socket ()
+{
+    int hwm;
+    size_t hwm_size = sizeof hwm;
+    int rc = zmq_getsockopt (NULL, ZMQ_SNDHWM, &hwm, &hwm_size);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
-    rc = zmq_socket_monitor (NULL, "inproc://monitor", ZMQ_EVENT_ALL);
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_socket_monitor_null_socket ()
+{
+    int rc = zmq_socket_monitor (NULL, "inproc://monitor", ZMQ_EVENT_ALL);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    rc = zmq_join (NULL, "group");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_join_null_socket ()
+{
+    int rc = zmq_join (NULL, "group");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
-    rc = zmq_leave (NULL, "group");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_leave_null_socket ()
+{
+    int rc = zmq_leave (NULL, "group");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 #endif
 
-    rc = zmq_bind (NULL, "inproc://socket");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
 
-    rc = zmq_connect (NULL, "inproc://socket");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_bind_null_socket ()
+{
+    int rc = zmq_bind (NULL, "inproc://socket");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
-    rc = zmq_unbind (NULL, "inproc://socket");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_connect_null_socket ()
+{
+    int rc = zmq_connect (NULL, "inproc://socket");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
 
-    rc = zmq_disconnect (NULL, "inproc://socket");
-    assert (rc == -1);
-    assert (errno == ENOTSOCK); // TODO use EINVAL instead?
+void test_zmq_unbind_null_socket ()
+{
+    int rc = zmq_unbind (NULL, "inproc://socket");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
+
+void test_zmq_disconnect_null_socket ()
+{
+    int rc = zmq_disconnect (NULL, "inproc://socket");
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
+}
+
+int main (void)
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test_zmq_socket_null_context);
+    RUN_TEST (test_zmq_close_null_socket);
+    RUN_TEST (test_zmq_setsockopt_null_socket);
+    RUN_TEST (test_zmq_getsockopt_null_socket);
+    RUN_TEST (test_zmq_socket_monitor_null_socket);
+    RUN_TEST (test_zmq_bind_null_socket);
+    RUN_TEST (test_zmq_connect_null_socket);
+    RUN_TEST (test_zmq_unbind_null_socket);
+    RUN_TEST (test_zmq_disconnect_null_socket);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    RUN_TEST (test_zmq_join_null_socket);
+    RUN_TEST (test_zmq_leave_null_socket);
+#endif
+
+    return UNITY_END ();
 }
