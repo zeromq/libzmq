@@ -144,11 +144,21 @@ if(WIN32)
     link_libraries(ws2_32.lib)
 endif()
 
+add_library (unity 
+    STATIC 
+    "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.c" 
+    "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h" 
+    "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity_internals.h")
+set_target_properties (unity PROPERTIES
+    PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h")
+target_include_directories (unity
+    PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
+
 # add library and include dirs for all targets
 if (BUILD_SHARED)
-link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
 else ()
-link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
 endif ()
 include_directories("${CMAKE_SOURCE_DIR}/../include" "${CMAKE_BINARY_DIR}")
 
