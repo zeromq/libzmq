@@ -384,6 +384,33 @@ void zmq::signaler_t::forked ()
 }
 #endif
 
+#if defined ZMQ_HAVE_WINDOWS
+static void tune_socket (const SOCKET socket)
+{
+    BOOL tcp_nodelay = 1;
+    int rc = setsockopt (socket, IPPROTO_TCP, TCP_NODELAY,
+                         (char *) &tcp_nodelay, sizeof tcp_nodelay);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    int sio_loopback_fastpath = 1;
+    DWORD numberOfBytesReturned = 0;
+
+    rc = WSAIoctl (socket, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
+                   sizeof sio_loopback_fastpath, NULL, 0,
+                   &numberOfBytesReturned, 0, 0);
+
+    if (SOCKET_ERROR == rc) {
+        DWORD lastError = ::WSAGetLastError ();
+
+        if (WSAEOPNOTSUPP == lastError) {
+            // This system is not Windows 8 or Server 2012, and the call is not supported.
+        } else {
+            wsa_assert (false);
+        }
+    }
+}
+#endif
+
 //  Returns -1 if we could not make the socket pair successfully
 int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 {
@@ -483,10 +510,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     int rc = setsockopt (listener, SOL_SOCKET, SO_REUSEADDR,
                          (char *) &so_reuseaddr, sizeof so_reuseaddr);
     wsa_assert (rc != SOCKET_ERROR);
-    BOOL tcp_nodelay = 1;
-    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, (char *) &tcp_nodelay,
-                     sizeof tcp_nodelay);
-    wsa_assert (rc != SOCKET_ERROR);
+
+    tune_socket (listener);
 
     //  Init sockaddr to signaler port.
     struct sockaddr_in addr;
@@ -500,9 +525,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     wsa_assert (*w_ != INVALID_SOCKET);
 
     //  Set TCP_NODELAY on writer socket.
-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *) &tcp_nodelay,
-                     sizeof tcp_nodelay);
-    wsa_assert (rc != SOCKET_ERROR);
+    tune_socket (*w_);
 
     if (sync != NULL) {
         //  Enter the critical section.
