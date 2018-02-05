@@ -248,6 +248,9 @@ struct options_t
 
     //  Enforce a non-empty ZAP domain requirement for PLAIN auth
     bool zap_enforce_domain;
+
+    // Use of loopback fastpath.
+    bool loopback_fastpath;
 };
 }
 

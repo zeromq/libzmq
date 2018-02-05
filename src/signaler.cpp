@@ -65,6 +65,7 @@
 #include "err.hpp"
 #include "fd.hpp"
 #include "ip.hpp"
+#include "tcp.hpp"
 
 #if defined ZMQ_HAVE_EVENTFD
 #include <sys/eventfd.h>
@@ -392,22 +393,7 @@ static void tune_socket (const SOCKET socket)
                          (char *) &tcp_nodelay, sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
-    int sio_loopback_fastpath = 1;
-    DWORD numberOfBytesReturned = 0;
-
-    rc = WSAIoctl (socket, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
-                   sizeof sio_loopback_fastpath, NULL, 0,
-                   &numberOfBytesReturned, 0, 0);
-
-    if (SOCKET_ERROR == rc) {
-        DWORD lastError = ::WSAGetLastError ();
-
-        if (WSAEOPNOTSUPP == lastError) {
-            // This system is not Windows 8 or Server 2012, and the call is not supported.
-        } else {
-            wsa_assert (false);
-        }
-    }
+    zmq::tcp_tune_loopback_fast_path (socket);
 }
 #endif
 
