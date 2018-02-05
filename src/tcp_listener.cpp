@@ -71,6 +71,7 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
 zmq::tcp_listener_t::~tcp_listener_t ()
 {
     zmq_assert (s == retired_fd);
+    zmq_assert (!handle);
 }
 
 void zmq::tcp_listener_t::process_plug ()
@@ -83,6 +84,7 @@ void zmq::tcp_listener_t::process_plug ()
 void zmq::tcp_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
+    handle = (handle_t) NULL;
     close ();
     own_t::process_term (linger_);
 }
