@@ -42,7 +42,7 @@ zmq::poller_base_t::~poller_base_t ()
     zmq_assert (get_load () == 0);
 }
 
-int zmq::poller_base_t::get_load ()
+int zmq::poller_base_t::get_load () const
 {
     return load.get ();
 }

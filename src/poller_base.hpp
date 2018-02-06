@@ -47,7 +47,7 @@ class poller_base_t
 
     //  Returns load of the poller. Note that this function can be
     //  invoked from a different thread!
-    int get_load ();
+    int get_load () const;
 
     //  Add a timeout to expire in timeout_ milliseconds. After the
     //  expiration timer_event on sink_ object will be called with
