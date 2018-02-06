@@ -61,6 +61,7 @@ class radio_t : public socket_base_t
     bool xhas_in ();
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
+    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
@@ -74,6 +75,9 @@ class radio_t : public socket_base_t
 
     //  Distributor of messages holding the list of outbound pipes.
     dist_t dist;
+
+    //  Drop messages if HWM reached, otherwise return with EAGAIN
+    bool lossy;
 
     radio_t (const radio_t &);
     const radio_t &operator= (const radio_t &);

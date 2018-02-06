@@ -37,7 +37,8 @@
 #include "msg.hpp"
 
 zmq::radio_t::radio_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_, true)
+    socket_base_t (parent_, tid_, sid_, true),
+    lossy (true)
 {
     options.type = ZMQ_RADIO;
 }
@@ -99,6 +100,22 @@ void zmq::radio_t::xwrite_activated (pipe_t *pipe_)
 {
     dist.activated (pipe_);
 }
+int zmq::radio_t::xsetsockopt (int option_,
+                               const void *optval_,
+                               size_t optvallen_)
+{
+    if (optvallen_ != sizeof (int) || *static_cast<const int *> (optval_) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (option_ == ZMQ_XPUB_NODROP)
+        lossy = (*static_cast<const int *> (optval_) == 0);
+    else {
+        errno = EINVAL;
+        return -1;
+    }
+    return 0;
+}
 
 void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
@@ -141,7 +158,13 @@ int zmq::radio_t::xsend (msg_t *msg_)
          ++it)
         dist.match (*it);
 
-    int rc = dist.send_to_matching (msg_);
+    int rc = -1;
+    if (lossy || dist.check_hwm ()) {
+        if (dist.send_to_matching (msg_) == 0) {
+            rc = 0; //  Yay, sent successfully
+        }
+    } else
+        errno = EAGAIN;
 
     return rc;
 }
