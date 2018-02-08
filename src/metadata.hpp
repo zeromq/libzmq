@@ -62,7 +62,7 @@ class metadata_t
     atomic_counter_t ref_cnt;
 
     //  Dictionary holding metadata.
-    dict_t dict;
+    const dict_t dict;
 };
 }
 

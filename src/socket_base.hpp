@@ -285,7 +285,7 @@ class socket_base_t : public own_t,
     std::string last_endpoint;
 
     // Indicate if the socket is thread safe
-    bool thread_safe;
+    const bool thread_safe;
 
     // Signaler to be used in the reaping stage
     signaler_t *reaper_signaler;

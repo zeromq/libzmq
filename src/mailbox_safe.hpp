@@ -77,7 +77,7 @@ class mailbox_safe_t : public i_mailbox
     condition_variable_t cond_var;
 
     //  Synchronize access to the mailbox from receivers and senders
-    mutex_t *sync;
+    mutex_t *const sync;
 
     std::vector<zmq::signaler_t *> signalers;
 

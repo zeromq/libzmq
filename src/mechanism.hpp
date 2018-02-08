@@ -128,7 +128,7 @@ class mechanism_t
     //  Properties received from ZAP server.
     metadata_t::dict_t zap_properties;
 
-    options_t options;
+    const options_t options;
 
   private:
     blob_t routing_id;

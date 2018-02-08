@@ -97,7 +97,7 @@ class tcp_connecter_t : public own_t, public io_object_t
     fd_t connect ();
 
     //  Address to connect to. Owned by session_base_t.
-    address_t *addr;
+    address_t *const addr;
 
     //  Underlying socket.
     fd_t s;
@@ -117,7 +117,7 @@ class tcp_connecter_t : public own_t, public io_object_t
     bool reconnect_timer_started;
 
     //  Reference to the session we belong to.
-    zmq::session_base_t *session;
+    zmq::session_base_t *const session;
 
     //  Current reconnect ivl, updated for backoff strategy
     int current_reconnect_ivl;
@@ -126,7 +126,7 @@ class tcp_connecter_t : public own_t, public io_object_t
     std::string endpoint;
 
     // Socket
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *const socket;
 
     tcp_connecter_t (const tcp_connecter_t &);
     const tcp_connecter_t &operator= (const tcp_connecter_t &);

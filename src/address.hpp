@@ -56,7 +56,7 @@ struct address_t
 
     const std::string protocol;
     const std::string address;
-    ctx_t *parent;
+    ctx_t *const parent;
 
     //  Protocol specific resolved address
     union
