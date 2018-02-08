@@ -36,8 +36,8 @@
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_COUNTER_INTRINSIC
-#elif (defined __cplusplus && __cplusplus >= 201103L) || (defined _MSC_VER && _MSC_VER >= 1700)
-#define ZMQ_ATOMIC_COUNTER_CXX11
+#elif (defined __cplusplus && __cplusplus >= 201103L)                          \
+  || (defined _MSC_VER && _MSC_VER >= 1700)#define ZMQ_ATOMIC_COUNTER_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
