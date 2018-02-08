@@ -66,12 +66,18 @@ void *zmq_stopwatch_start ()
     return (void *) watch;
 }
 
-unsigned long zmq_stopwatch_stop (void *watch_)
+unsigned long zmq_stopwatch_intermediate (void *watch_)
 {
     uint64_t end = zmq::clock_t::now_us ();
     uint64_t start = *(uint64_t *) watch_;
-    free (watch_);
     return (unsigned long) (end - start);
+}
+
+unsigned long zmq_stopwatch_stop (void *watch_)
+{
+    unsigned long res = zmq_stopwatch_intermediate (watch_);
+    free (watch_);
+    return res;
 }
 
 void *zmq_threadstart (zmq_thread_fn *func, void *arg)

@@ -47,7 +47,8 @@ int main (void)
     assert (zmq_errno () == EAGAIN);
 
     //  Check whether receive timeout is honored
-    int timeout = 250;
+    const int timeout = 250;
+    const int jitter = 50;
     rc = zmq_setsockopt (frontend, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 
@@ -56,7 +57,14 @@ int main (void)
     assert (rc == -1);
     assert (zmq_errno () == EAGAIN);
     unsigned int elapsed = zmq_stopwatch_stop (stopwatch) / 1000;
-    assert (elapsed > 200 && elapsed < 300);
+    assert (elapsed > timeout - jitter);
+    if (elapsed >= timeout + jitter) {
+        // we cannot assert this on a non-RT system
+        fprintf (stderr,
+                 "zmq_recv took quite long, with a timeout of %i ms, it took "
+                 "actually %i ms\n",
+                 timeout, elapsed);
+    }
 
     //  Check that normal message flow works as expected
     void *backend = zmq_socket (ctx, ZMQ_DEALER);
