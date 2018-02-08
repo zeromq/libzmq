@@ -44,7 +44,9 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::epoll_t::epoll_t (const zmq::ctx_t &ctx_) : ctx (ctx_), stopping (false)
+zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
+    ctx (ctx_),
+    stopping (false)
 {
 #ifdef ZMQ_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions

@@ -49,7 +49,7 @@
 
 #include <algorithm>
 
-zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
+zmq::select_t::select_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
 #if defined ZMQ_HAVE_WINDOWS
     //  Fine as long as map is not cleared.

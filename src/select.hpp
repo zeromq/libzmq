@@ -63,7 +63,7 @@ class select_t : public poller_base_t
   public:
     typedef fd_t handle_t;
 
-    select_t (const ctx_t &ctx_);
+    select_t (const thread_ctx_t &ctx_);
     ~select_t ();
 
     //  "poller" concept.
@@ -86,7 +86,7 @@ class select_t : public poller_base_t
     void loop ();
 
     //  Reference to ZMQ context.
-    const ctx_t &ctx;
+    const thread_ctx_t &ctx;
 
     //  Internal state.
     struct fds_set_t

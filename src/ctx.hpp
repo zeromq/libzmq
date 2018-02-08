@@ -61,10 +61,32 @@ struct endpoint_t
     options_t options;
 };
 
+class thread_ctx_t
+{
+  public:
+    thread_ctx_t ();
+
+    //  Start a new thread with proper scheduling parameters.
+    void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
+
+    int set (int option_, int optval_);
+
+  protected:
+    //  Synchronisation of access to context options.
+    mutex_t opt_sync;
+
+  private:
+    //  Thread parameters.
+    int thread_priority;
+    int thread_sched_policy;
+    std::set<int> thread_affinity_cpus;
+    std::string thread_name_prefix;
+};
+
 //  Context object encapsulates all the global state associated with
 //  the library.
 
-class ctx_t
+class ctx_t : public thread_ctx_t
 {
   public:
     //  Create the context object.
@@ -95,9 +117,6 @@ class ctx_t
     //  Create and destroy a socket.
     zmq::socket_base_t *create_socket (int type_);
     void destroy_socket (zmq::socket_base_t *socket_);
-
-    //  Start a new thread with proper scheduling parameters.
-    void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
 
     //  Send command to the destination thread.
     void send_command (uint32_t tid_, const command_t &command_);
@@ -214,15 +233,6 @@ class ctx_t
 
     //  Is IPv6 enabled on this context?
     bool ipv6;
-
-    //  Thread parameters.
-    int thread_priority;
-    int thread_sched_policy;
-    std::set<int> thread_affinity_cpus;
-    std::string thread_name_prefix;
-
-    //  Synchronisation of access to context options.
-    mutex_t opt_sync;
 
     ctx_t (const ctx_t &);
     const ctx_t &operator= (const ctx_t &);
