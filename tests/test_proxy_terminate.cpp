@@ -34,8 +34,7 @@
 // but there is no pull on the other side, previously the proxy blocks
 // in writing to the backend, preventing the proxy from terminating
 
-void
-server_task (void *ctx)
+void server_task (void *ctx)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -86,7 +85,7 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *thread = zmq_threadstart(&server_task, ctx);
+    void *thread = zmq_threadstart (&server_task, ctx);
 
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_REP);

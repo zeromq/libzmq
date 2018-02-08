@@ -34,11 +34,7 @@
 #include "msg.hpp"
 #include "likely.hpp"
 
-zmq::dist_t::dist_t () :
-    matching (0),
-    active (0),
-    eligible (0),
-    more (false)
+zmq::dist_t::dist_t () : matching (0), active (0), eligible (0), more (false)
 {
 }
 
@@ -56,8 +52,7 @@ void zmq::dist_t::attach (pipe_t *pipe_)
         pipes.push_back (pipe_);
         pipes.swap (eligible, pipes.size () - 1);
         eligible++;
-    }
-    else {
+    } else {
         pipes.push_back (pipe_);
         pipes.swap (active, pipes.size () - 1);
         active++;
@@ -85,14 +80,14 @@ void zmq::dist_t::reverse_match ()
     pipes_t::size_type prev_matching = matching;
 
     // Reset matching to 0
-    unmatch();
+    unmatch ();
 
     // Mark all matching pipes as not matching and vice-versa.
     // To do this, push all pipes that are eligible but not
     // matched - i.e. between "matching" and "eligible" -
     // to the beginning of the queue.
     for (pipes_t::size_type i = prev_matching; i < eligible; ++i) {
-        pipes.swap(i, matching++);
+        pipes.swap (i, matching++);
     }
 }
 
@@ -173,9 +168,9 @@ void zmq::dist_t::distribute (msg_t *msg_)
 
     if (msg_->is_vsm ()) {
         for (pipes_t::size_type i = 0; i < matching; ++i)
-            if(!write (pipes [i], msg_))
+            if (!write (pipes[i], msg_))
                 --i; //  Retry last write because index will have been swapped
-        int rc = msg_->close();
+        int rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
@@ -189,7 +184,7 @@ void zmq::dist_t::distribute (msg_t *msg_)
     //  Push copy of the message to each matching pipe.
     int failed = 0;
     for (pipes_t::size_type i = 0; i < matching; ++i)
-        if (!write (pipes [i], msg_)) {
+        if (!write (pipes[i], msg_)) {
             ++failed;
             --i; //  Retry last write because index will have been swapped
         }
@@ -226,10 +221,8 @@ bool zmq::dist_t::write (pipe_t *pipe_, msg_t *msg_)
 bool zmq::dist_t::check_hwm ()
 {
     for (pipes_t::size_type i = 0; i < matching; ++i)
-        if (!pipes [i]->check_hwm ())
+        if (!pipes[i]->check_hwm ())
             return false;
 
     return true;
 }
-
-

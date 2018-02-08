@@ -76,12 +76,14 @@ void zmq::radio_t::xread_activated (pipe_t *pipe_)
             std::string group = std::string (msg.group ());
 
             if (msg.is_join ())
-                subscriptions.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE(group), pipe_);
+                subscriptions.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (group),
+                                                         pipe_);
             else {
-                std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
-                    subscriptions.equal_range (group);
+                std::pair<subscriptions_t::iterator, subscriptions_t::iterator>
+                  range = subscriptions.equal_range (group);
 
-                for (subscriptions_t::iterator it = range.first; it != range.second; ++it) {
+                for (subscriptions_t::iterator it = range.first;
+                     it != range.second; ++it) {
                     if (it->second == pipe_) {
                         subscriptions.erase (it);
                         break;
@@ -102,7 +104,8 @@ void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
     //  NOTE: erase invalidates an iterator, and that's why it's not incrementing in post-loop
     //  read-after-free caught by Valgrind, see https://github.com/zeromq/libzmq/pull/1771
-    for (subscriptions_t::iterator it = subscriptions.begin (); it != subscriptions.end (); ) {
+    for (subscriptions_t::iterator it = subscriptions.begin ();
+         it != subscriptions.end ();) {
         if (it->second == pipe_) {
             subscriptions.erase (it++);
         } else {
@@ -110,8 +113,8 @@ void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
         }
     }
 
-    udp_pipes_t::iterator it = std::find(udp_pipes.begin(),
-        udp_pipes.end (), pipe_);
+    udp_pipes_t::iterator it =
+      std::find (udp_pipes.begin (), udp_pipes.end (), pipe_);
     if (it != udp_pipes.end ())
         udp_pipes.erase (it);
 
@@ -129,12 +132,13 @@ int zmq::radio_t::xsend (msg_t *msg_)
     dist.unmatch ();
 
     std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
-        subscriptions.equal_range (std::string(msg_->group ()));
+      subscriptions.equal_range (std::string (msg_->group ()));
 
     for (subscriptions_t::iterator it = range.first; it != range.second; ++it)
-        dist.match (it-> second);
+        dist.match (it->second);
 
-    for (udp_pipes_t::iterator it = udp_pipes.begin (); it != udp_pipes.end (); ++it)
+    for (udp_pipes_t::iterator it = udp_pipes.begin (); it != udp_pipes.end ();
+         ++it)
         dist.match (*it);
 
     int rc = dist.send_to_matching (msg_);
@@ -160,9 +164,11 @@ bool zmq::radio_t::xhas_in ()
     return false;
 }
 
-zmq::radio_session_t::radio_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      address_t *addr_) :
+zmq::radio_session_t::radio_session_t (io_thread_t *io_thread_,
+                                       bool connect_,
+                                       socket_base_t *socket_,
+                                       const options_t &options_,
+                                       address_t *addr_) :
     session_base_t (io_thread_, connect_, socket_, options_, addr_),
     state (group)
 {
@@ -174,13 +180,12 @@ zmq::radio_session_t::~radio_session_t ()
 
 int zmq::radio_session_t::push_msg (msg_t *msg_)
 {
-    if (msg_->flags() & msg_t::command) {
-        char *command_data =
-            static_cast <char *> (msg_->data ());
+    if (msg_->flags () & msg_t::command) {
+        char *command_data = static_cast<char *> (msg_->data ());
         const size_t data_size = msg_->size ();
 
         int group_length;
-        char * group;
+        char *group;
 
         msg_t join_leave_msg;
         int rc;
@@ -190,8 +195,7 @@ int zmq::radio_session_t::push_msg (msg_t *msg_)
             group_length = (int) data_size - 5;
             group = command_data + 5;
             rc = join_leave_msg.init_join ();
-        }
-        else if (data_size >= 6 && memcmp (command_data, "\5LEAVE", 6) == 0) {
+        } else if (data_size >= 6 && memcmp (command_data, "\5LEAVE", 6) == 0) {
             group_length = (int) data_size - 6;
             group = command_data + 6;
             rc = join_leave_msg.init_leave ();
@@ -213,8 +217,7 @@ int zmq::radio_session_t::push_msg (msg_t *msg_)
         //  Push the join or leave command
         *msg_ = join_leave_msg;
         return session_base_t::push_msg (msg_);
-    }
-    else
+    } else
         return session_base_t::push_msg (msg_);
 }
 
@@ -230,15 +233,14 @@ int zmq::radio_session_t::pull_msg (msg_t *msg_)
 
         //  First frame is the group
         rc = msg_->init_size (length);
-        errno_assert(rc == 0);
-        msg_->set_flags(msg_t::more);
+        errno_assert (rc == 0);
+        msg_->set_flags (msg_t::more);
         memcpy (msg_->data (), group, length);
 
         //  Next status is the body
         state = body;
         return 0;
-    }
-    else {
+    } else {
         *msg_ = pending_msg;
         state = group;
         return 0;

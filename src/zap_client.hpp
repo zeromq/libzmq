@@ -54,6 +54,7 @@ class zap_client_t : public virtual mechanism_base_t
 
     virtual int receive_and_process_zap_reply ();
     virtual void handle_zap_status_code ();
+
   protected:
     const std::string peer_address;
 

@@ -53,7 +53,8 @@
 #endif
 
 zmq::vmci_listener_t::vmci_listener_t (io_thread_t *io_thread_,
-      socket_base_t *socket_, const options_t &options_) :
+                                       socket_base_t *socket_,
+                                       const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     s (retired_fd),
@@ -86,16 +87,18 @@ void zmq::vmci_listener_t::in_event ()
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint, zmq_errno());
+        socket->event_accept_failed (endpoint, zmq_errno ());
         return;
     }
 
-    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size, options.vmci_buffer_min_size, options.vmci_buffer_max_size);
+    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size,
+                           options.vmci_buffer_min_size,
+                           options.vmci_buffer_max_size);
 
-    if (options.vmci_connect_timeout > 0)
-    {
+    if (options.vmci_connect_timeout > 0) {
 #if defined ZMQ_HAVE_WINDOWS
-        tune_vmci_connect_timeout (this->get_ctx (), fd, options.vmci_connect_timeout);
+        tune_vmci_connect_timeout (this->get_ctx (), fd,
+                                   options.vmci_connect_timeout);
 #else
         struct timeval timeout = {0, options.vmci_connect_timeout * 1000};
         tune_vmci_connect_timeout (this->get_ctx (), fd, timeout);
@@ -103,8 +106,8 @@ void zmq::vmci_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -113,8 +116,8 @@ void zmq::vmci_listener_t::in_event ()
     zmq_assert (io_thread);
 
     //  Create and launch a session object.
-    session_base_t *session = session_base_t::create (io_thread, false, socket,
-        options, NULL);
+    session_base_t *session =
+      session_base_t::create (io_thread, false, socket, options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
@@ -146,22 +149,23 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
     std::string addr (addr_);
 
     //  Initialise the address structure.
-    vmci_address_t address(this->get_ctx ());
-    int rc = address.resolve (addr.c_str());
+    vmci_address_t address (this->get_ctx ());
+    int rc = address.resolve (addr.c_str ());
     if (rc != 0)
         return -1;
 
     //  Create a listening socket.
-    s = open_socket (this->get_ctx ()->get_vmci_socket_family (), SOCK_STREAM, 0);
+    s =
+      open_socket (this->get_ctx ()->get_vmci_socket_family (), SOCK_STREAM, 0);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
-        errno = wsa_error_to_errno(WSAGetLastError());
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
 #if !defined _WIN32_WCE
     //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation((HANDLE)s, HANDLE_FLAG_INHERIT, 0);
-    win_assert(brc);
+    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
 #endif
 #else
     if (s == -1)
@@ -174,7 +178,7 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
     rc = bind (s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        errno = wsa_error_to_errno(WSAGetLastError());
+        errno = wsa_error_to_errno (WSAGetLastError ());
         goto error;
     }
 #else
@@ -186,7 +190,7 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        errno = wsa_error_to_errno(WSAGetLastError());
+        errno = wsa_error_to_errno (WSAGetLastError ());
         goto error;
     }
 #else
@@ -197,7 +201,7 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
     socket->event_listening (endpoint, s);
     return 0;
 
-    error:
+error:
     int err = errno;
     close ();
     errno = err;
@@ -228,23 +232,23 @@ zmq::fd_t zmq::vmci_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-        wsa_assert(WSAGetLastError() == WSAEWOULDBLOCK ||
-            WSAGetLastError() == WSAECONNRESET ||
-            WSAGetLastError() == WSAEMFILE ||
-            WSAGetLastError() == WSAENOBUFS);
+        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK
+                    || WSAGetLastError () == WSAECONNRESET
+                    || WSAGetLastError () == WSAEMFILE
+                    || WSAGetLastError () == WSAENOBUFS);
         return retired_fd;
     }
 #if !defined _WIN32_WCE
     //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation((HANDLE)sock, HANDLE_FLAG_INHERIT, 0);
-    win_assert(brc);
+    BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
 #endif
 #else
     if (sock == -1) {
-        errno_assert(errno == EAGAIN || errno == EWOULDBLOCK ||
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
-            errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
-            errno == ENFILE);
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
+                      || errno == ECONNABORTED || errno == EPROTO
+                      || errno == ENOBUFS || errno == ENOMEM || errno == EMFILE
+                      || errno == ENFILE);
         return retired_fd;
     }
 #endif

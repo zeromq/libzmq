@@ -104,14 +104,11 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         //  when there are forwarding devices involved.
         subscriptions.add (data + 1, size - 1);
         return dist.send_to_all (msg_);
-    }
-    else
-    if (size > 0 && *data == 0) {
+    } else if (size > 0 && *data == 0) {
         //  Process unsubscribe message
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_);
-    }
-    else
+    } else
         //  User message sent upstream to XPUB socket
         return dist.send_to_all (msg_);
 
@@ -145,7 +142,6 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
     //  stream of non-matching messages which breaks the non-blocking recv
     //  semantics.
     while (true) {
-
         //  Get a message using fair queueing algorithm.
         int rc = fq.recv (msg_);
 
@@ -184,7 +180,6 @@ bool zmq::xsub_t::xhas_in ()
     //  TODO: This can result in infinite loop in the case of continuous
     //  stream of non-matching messages.
     while (true) {
-
         //  Get a message using fair queueing algorithm.
         int rc = fq.recv (&message);
 
@@ -217,22 +212,24 @@ const zmq::blob_t &zmq::xsub_t::get_credential () const
 
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    bool matching = subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+    bool matching =
+      subscriptions.check ((unsigned char *) msg_->data (), msg_->size ());
 
     return matching ^ options.invert_matching;
 }
 
-void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
-    void *arg_)
+void zmq::xsub_t::send_subscription (unsigned char *data_,
+                                     size_t size_,
+                                     void *arg_)
 {
-    pipe_t *pipe = (pipe_t*) arg_;
+    pipe_t *pipe = (pipe_t *) arg_;
 
     //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
     errno_assert (rc == 0);
-    unsigned char *data = (unsigned char*) msg.data ();
-    data [0] = 1;
+    unsigned char *data = (unsigned char *) msg.data ();
+    data[0] = 1;
 
     //  We explicitly allow a NULL subscription with size zero
     if (size_) {

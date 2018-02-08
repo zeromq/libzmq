@@ -36,8 +36,8 @@
 
 int main (void)
 {
-    setup_test_environment();
-    
+    setup_test_environment ();
+
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx1 = zmq_ctx_new ();
@@ -46,7 +46,7 @@ int main (void)
     void *ctx2 = zmq_ctx_new ();
     assert (ctx2);
 
-    void *router = zmq_socket (ctx1, ZMQ_ROUTER);    
+    void *router = zmq_socket (ctx1, ZMQ_ROUTER);
     int on = 1;
     int rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &on, sizeof (on));
     assert (rc == 0);
@@ -54,13 +54,13 @@ int main (void)
     assert (rc != -1);
     rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
- 
+
     //  Repeat often enough to be sure this works as it should
     for (int cycle = 0; cycle < 100; cycle++) {
         //  Create dealer with unique explicit routing id
         //  We assume the router learns this out-of-band
         void *dealer = zmq_socket (ctx2, ZMQ_DEALER);
-        char routing_id [10];
+        char routing_id[10];
         sprintf (routing_id, "%09d", cycle);
         rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, routing_id, 10);
         assert (rc == 0);
@@ -85,7 +85,7 @@ int main (void)
             assert (rc == 5);
             break;
         }
-        uint8_t buffer [5];
+        uint8_t buffer[5];
         rc = zmq_recv (dealer, buffer, 5, 0);
         assert (rc == 5);
         assert (memcmp (buffer, "HELLO", 5) == 0);

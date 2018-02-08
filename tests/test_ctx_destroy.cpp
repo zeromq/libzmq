@@ -33,17 +33,17 @@ static void receiver (void *socket)
 {
     char buffer[16];
     int rc = zmq_recv (socket, &buffer, sizeof (buffer), 0);
-    assert(rc == -1);
+    assert (rc == -1);
 }
 
-void test_ctx_destroy()
+void test_ctx_destroy ()
 {
     int rc;
-    
+
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     void *socket = zmq_socket (ctx, ZMQ_PULL);
     assert (socket);
 
@@ -62,14 +62,14 @@ void test_ctx_destroy()
     assert (rc == 0);
 }
 
-void test_ctx_shutdown()
+void test_ctx_shutdown ()
 {
     int rc;
-    
+
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     void *socket = zmq_socket (ctx, ZMQ_PULL);
     assert (socket);
 
@@ -101,10 +101,10 @@ void test_ctx_shutdown()
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
-    test_ctx_destroy();
-    test_ctx_shutdown();
+    test_ctx_destroy ();
+    test_ctx_shutdown ();
 
     return 0;
 }

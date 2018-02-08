@@ -100,10 +100,10 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
             rc = process_initiate (msg_);
             break;
         default:
-            // TODO I think this is not a case reachable with a misbehaving 
-            // client. It is not an "invalid handshake command", but would be 
-            // trying to process a handshake command in an invalid state, 
-            // which is purely under control of this peer. 
+            // TODO I think this is not a case reachable with a misbehaving
+            // client. It is not an "invalid handshake command", but would be
+            // trying to process a handshake command in an invalid state,
+            // which is purely under control of this peer.
             // Therefore, it should be changed to zmq_assert (false);
 
             // CURVE I: invalid handshake command
@@ -138,10 +138,10 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
     int rc = check_basic_command_structure (msg_);
     if (rc == -1)
-      return -1;
+        return -1;
 
     const size_t size = msg_->size ();
-    const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
+    const uint8_t *const hello = static_cast<uint8_t *> (msg_->data ());
 
     if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -152,18 +152,20 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     if (size != 200) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
 
-    const uint8_t major = hello [6];
-    const uint8_t minor = hello [7];
+    const uint8_t major = hello[6];
+    const uint8_t minor = hello[7];
 
     if (major != 1 || minor != 0) {
         // CURVE I: client HELLO has unknown version number
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -171,13 +173,13 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     //  Save client's short-term public key (C')
     memcpy (cn_client, hello + 80, 32);
 
-    uint8_t hello_nonce [crypto_box_NONCEBYTES];
-    uint8_t hello_plaintext [crypto_box_ZEROBYTES + 64];
-    uint8_t hello_box [crypto_box_BOXZEROBYTES + 80];
+    uint8_t hello_nonce[crypto_box_NONCEBYTES];
+    uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
+    uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
 
     memcpy (hello_nonce, "CurveZMQHELLO---", 16);
     memcpy (hello_nonce + 16, hello + 112, 8);
-    cn_peer_nonce = get_uint64(hello + 112);
+    cn_peer_nonce = get_uint64 (hello + 112);
 
     memset (hello_box, 0, crypto_box_BOXZEROBYTES);
     memcpy (hello_box + crypto_box_BOXZEROBYTES, hello + 120, 80);
@@ -199,9 +201,9 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
 int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 {
-    uint8_t cookie_nonce [crypto_secretbox_NONCEBYTES];
-    uint8_t cookie_plaintext [crypto_secretbox_ZEROBYTES + 64];
-    uint8_t cookie_ciphertext [crypto_secretbox_BOXZEROBYTES + 80];
+    uint8_t cookie_nonce[crypto_secretbox_NONCEBYTES];
+    uint8_t cookie_plaintext[crypto_secretbox_ZEROBYTES + 64];
+    uint8_t cookie_ciphertext[crypto_secretbox_BOXZEROBYTES + 80];
 
     //  Create full nonce for encryption
     //  8-byte prefix plus 16-byte random nonce
@@ -210,23 +212,21 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
     //  Generate cookie = Box [C' + s'](t)
     memset (cookie_plaintext, 0, crypto_secretbox_ZEROBYTES);
-    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES,
-            cn_client, 32);
-    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32,
-            cn_secret, 32);
+    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32);
+    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32);
 
     //  Generate fresh cookie key
     randombytes (cookie_key, crypto_secretbox_KEYBYTES);
 
     //  Encrypt using symmetric cookie key
-    int rc = crypto_secretbox (cookie_ciphertext, cookie_plaintext,
-                               sizeof cookie_plaintext,
-                               cookie_nonce, cookie_key);
+    int rc =
+      crypto_secretbox (cookie_ciphertext, cookie_plaintext,
+                        sizeof cookie_plaintext, cookie_nonce, cookie_key);
     zmq_assert (rc == 0);
 
-    uint8_t welcome_nonce [crypto_box_NONCEBYTES];
-    uint8_t welcome_plaintext [crypto_box_ZEROBYTES + 128];
-    uint8_t welcome_ciphertext [crypto_box_BOXZEROBYTES + 144];
+    uint8_t welcome_nonce[crypto_box_NONCEBYTES];
+    uint8_t welcome_plaintext[crypto_box_ZEROBYTES + 128];
+    uint8_t welcome_ciphertext[crypto_box_BOXZEROBYTES + 144];
 
     //  Create full nonce for encryption
     //  8-byte prefix plus 16-byte random nonce
@@ -236,8 +236,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     //  Create 144-byte Box [S' + cookie](S->C')
     memset (welcome_plaintext, 0, crypto_box_ZEROBYTES);
     memcpy (welcome_plaintext + crypto_box_ZEROBYTES, cn_public, 32);
-    memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 32,
-            cookie_nonce + 8, 16);
+    memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 32, cookie_nonce + 8,
+            16);
     memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 48,
             cookie_ciphertext + crypto_secretbox_BOXZEROBYTES, 80);
 
@@ -257,7 +257,7 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     rc = msg_->init_size (168);
     errno_assert (rc == 0);
 
-    uint8_t * const welcome = static_cast <uint8_t *> (msg_->data ());
+    uint8_t *const welcome = static_cast<uint8_t *> (msg_->data ());
     memcpy (welcome, "\x07WELCOME", 8);
     memcpy (welcome + 8, welcome_nonce + 8, 16);
     memcpy (welcome + 24, welcome_ciphertext + crypto_box_BOXZEROBYTES, 144);
@@ -269,10 +269,10 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
     int rc = check_basic_command_structure (msg_);
     if (rc == -1)
-      return -1;
+        return -1;
 
     const size_t size = msg_->size ();
-    const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
+    const uint8_t *initiate = static_cast<uint8_t *> (msg_->data ());
 
     if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -289,9 +289,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         return -1;
     }
 
-    uint8_t cookie_nonce [crypto_secretbox_NONCEBYTES];
-    uint8_t cookie_plaintext [crypto_secretbox_ZEROBYTES + 64];
-    uint8_t cookie_box [crypto_secretbox_BOXZEROBYTES + 80];
+    uint8_t cookie_nonce[crypto_secretbox_NONCEBYTES];
+    uint8_t cookie_plaintext[crypto_secretbox_ZEROBYTES + 64];
+    uint8_t cookie_box[crypto_secretbox_BOXZEROBYTES + 80];
 
     //  Open Box [C' + s'](t)
     memset (cookie_box, 0, crypto_secretbox_BOXZEROBYTES);
@@ -312,7 +312,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
-    ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
+        || memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32,
+                   cn_secret, 32)) {
         // TODO this case is very hard to test, as it would require a modified
         //  client that knows the server's secret temporary cookie key
 
@@ -325,21 +326,21 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     const size_t clen = (size - 113) + crypto_box_BOXZEROBYTES;
 
-    uint8_t initiate_nonce [crypto_box_NONCEBYTES];
-    uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
-    uint8_t initiate_box [crypto_box_BOXZEROBYTES + 144 + 256];
+    uint8_t initiate_nonce[crypto_box_NONCEBYTES];
+    uint8_t initiate_plaintext[crypto_box_ZEROBYTES + 128 + 256];
+    uint8_t initiate_box[crypto_box_BOXZEROBYTES + 144 + 256];
 
     //  Open Box [C + vouch + metadata](C'->S')
     memset (initiate_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (initiate_box + crypto_box_BOXZEROBYTES,
-            initiate + 113, clen - crypto_box_BOXZEROBYTES);
+    memcpy (initiate_box + crypto_box_BOXZEROBYTES, initiate + 113,
+            clen - crypto_box_BOXZEROBYTES);
 
     memcpy (initiate_nonce, "CurveZMQINITIATE", 16);
     memcpy (initiate_nonce + 16, initiate + 105, 8);
-    cn_peer_nonce = get_uint64(initiate + 105);
+    cn_peer_nonce = get_uint64 (initiate + 105);
 
-    rc = crypto_box_open (initiate_plaintext, initiate_box,
-                          clen, initiate_nonce, cn_client, cn_secret);
+    rc = crypto_box_open (initiate_plaintext, initiate_box, clen,
+                          initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE
         session->get_socket ()->event_handshake_failed_protocol (
@@ -350,9 +351,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     const uint8_t *client_key = initiate_plaintext + crypto_box_ZEROBYTES;
 
-    uint8_t vouch_nonce [crypto_box_NONCEBYTES];
-    uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 64];
-    uint8_t vouch_box [crypto_box_BOXZEROBYTES + 80];
+    uint8_t vouch_nonce[crypto_box_NONCEBYTES];
+    uint8_t vouch_plaintext[crypto_box_ZEROBYTES + 64];
+    uint8_t vouch_box[crypto_box_BOXZEROBYTES + 80];
 
     //  Open Box Box [C',S](C->S') and check contents
     memset (vouch_box, 0, crypto_box_BOXZEROBYTES);
@@ -360,11 +361,10 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
             initiate_plaintext + crypto_box_ZEROBYTES + 48, 80);
 
     memcpy (vouch_nonce, "VOUCH---", 8);
-    memcpy (vouch_nonce + 8,
-            initiate_plaintext + crypto_box_ZEROBYTES + 32, 16);
+    memcpy (vouch_nonce + 8, initiate_plaintext + crypto_box_ZEROBYTES + 32,
+            16);
 
-    rc = crypto_box_open (vouch_plaintext, vouch_box,
-                          sizeof vouch_box,
+    rc = crypto_box_open (vouch_plaintext, vouch_box, sizeof vouch_box,
                           vouch_nonce, client_key, cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE vouch
@@ -399,9 +399,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
             send_zap_request (client_key);
             state = waiting_for_zap_reply;
 
-            //  TODO actually, it is quite unlikely that we can read the ZAP 
+            //  TODO actually, it is quite unlikely that we can read the ZAP
             //  reply already, but removing this has some strange side-effect
-            //  (probably because the pipe's in_active flag is true until a read 
+            //  (probably because the pipe's in_active flag is true until a read
             //  is attempted)
             rc = receive_and_process_zap_reply ();
             if (rc == -1)
@@ -427,7 +427,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 int zmq::curve_server_t::produce_ready (msg_t *msg_)
 {
     const size_t metadata_length = basic_properties_len ();
-    uint8_t ready_nonce [crypto_box_NONCEBYTES];
+    uint8_t ready_nonce[crypto_box_NONCEBYTES];
 
     uint8_t *ready_plaintext =
       (uint8_t *) malloc (crypto_box_ZEROBYTES + metadata_length);
@@ -456,7 +456,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     rc = msg_->init_size (14 + mlen - crypto_box_BOXZEROBYTES);
     errno_assert (rc == 0);
 
-    uint8_t *ready = static_cast <uint8_t *> (msg_->data ());
+    uint8_t *ready = static_cast<uint8_t *> (msg_->data ());
 
     memcpy (ready, "\x05READY", 6);
     //  Short nonce, prefixed by "CurveZMQREADY---"
@@ -477,9 +477,9 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     zmq_assert (status_code.length () == 3);
     const int rc = msg_->init_size (6 + 1 + expected_status_code_length);
     zmq_assert (rc == 0);
-    char *msg_data = static_cast <char *> (msg_->data ());
+    char *msg_data = static_cast<char *> (msg_->data ());
     memcpy (msg_data, "\5ERROR", 6);
-    msg_data [6] = expected_status_code_length;
+    msg_data[6] = expected_status_code_length;
     memcpy (msg_data + 7, status_code.c_str (), expected_status_code_length);
     return 0;
 }

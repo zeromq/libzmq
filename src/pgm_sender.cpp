@@ -42,7 +42,7 @@
 #include "macros.hpp"
 
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_,
-      const options_t &options_) :
+                                 const options_t &options_) :
     io_object_t (parent_),
     has_tx_timer (false),
     has_rx_timer (false),
@@ -66,7 +66,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
         return rc;
 
     out_buffer_size = pgm_socket.get_max_tsdu_size ();
-    out_buffer = (unsigned char*) malloc (out_buffer_size);
+    out_buffer = (unsigned char *) malloc (out_buffer_size);
     alloc_assert (out_buffer);
 
     return rc;
@@ -85,7 +85,7 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
     //  Fill fds from PGM transport and add them to the poller.
     pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd,
-        &rdata_notify_fd, &pending_notify_fd);
+                               &rdata_notify_fd, &pending_notify_fd);
 
     handle = add_fd (downlink_socket_fd);
     uplink_handle = add_fd (uplink_socket_fd);
@@ -175,7 +175,6 @@ void zmq::pgm_sender_t::out_event ()
     //  POLLOUT event from send socket. If write buffer is empty,
     //  try to read new data from the encoder.
     if (write_size == 0) {
-
         //  First two bytes (sizeof uint16_t) are used to store message
         //  offset in following steps. Note that by passing our buffer to
         //  the get data function we prevent it from returning its own buffer.
@@ -186,7 +185,7 @@ void zmq::pgm_sender_t::out_event ()
         size_t bytes = encoder.encode (&bf, bfsz);
         while (bytes < bfsz) {
             if (!more_flag && offset == 0xffff)
-                offset = static_cast <uint16_t> (bytes);
+                offset = static_cast<uint16_t> (bytes);
             int rc = session->pull_msg (&msg);
             if (rc == -1)
                 break;
@@ -229,8 +228,7 @@ void zmq::pgm_sender_t::out_event ()
             add_timer (timeout, tx_timer_id);
             reset_pollout (handle);
             has_tx_timer = true;
-        }
-        else
+        } else
             errno_assert (errno == EBUSY);
     }
 }
@@ -241,17 +239,13 @@ void zmq::pgm_sender_t::timer_event (int token)
     if (token == rx_timer_id) {
         has_rx_timer = false;
         in_event ();
-    }
-    else
-    if (token == tx_timer_id) {
+    } else if (token == tx_timer_id) {
         // Restart polling handle and retry sending
         has_tx_timer = false;
         set_pollout (handle);
         out_event ();
-    }
-    else
+    } else
         zmq_assert (false);
 }
 
 #endif
-

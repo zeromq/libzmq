@@ -29,9 +29,9 @@
 
 #include "testutil.hpp"
 
-#if !defined (ZMQ_HAVE_WINDOWS)
-#   include <sys/socket.h>
-#   include <sys/un.h>
+#if !defined(ZMQ_HAVE_WINDOWS)
+#include <sys/socket.h>
+#include <sys/un.h>
 
 void pre_allocate_sock (void *zmq_socket, const char *path)
 {
@@ -44,16 +44,15 @@ void pre_allocate_sock (void *zmq_socket, const char *path)
     int s_pre = socket (AF_UNIX, SOCK_STREAM, 0);
     assert (s_pre != -1);
 
-    int rc = bind (s_pre, (struct sockaddr *) &addr,
-            sizeof (struct sockaddr_un));
+    int rc =
+      bind (s_pre, (struct sockaddr *) &addr, sizeof (struct sockaddr_un));
     assert (rc == 0);
 
     rc = listen (s_pre, SOMAXCONN);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre,
-            sizeof (s_pre));
-    assert(rc == 0);
+    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
+    assert (rc == 0);
 }
 
 void test_req_rep ()
@@ -64,7 +63,7 @@ void test_req_rep ()
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
+    pre_allocate_sock (sb, "/tmp/test_use_fd_ipc");
 
     int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
@@ -97,7 +96,7 @@ void test_pair ()
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
+    pre_allocate_sock (sb, "/tmp/test_use_fd_ipc");
 
     int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
@@ -131,7 +130,7 @@ void test_client_server ()
     void *sb = zmq_socket (ctx, ZMQ_SERVER);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
+    pre_allocate_sock (sb, "/tmp/test_use_fd_ipc");
 
     int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
@@ -146,7 +145,7 @@ void test_client_server ()
     assert (rc == 0);
 
     char *data = (char *) zmq_msg_data (&msg);
-    data [0] = 1;
+    data[0] = 1;
 
     rc = zmq_msg_send (&msg, sc, ZMQ_SNDMORE);
     assert (rc == -1);
@@ -169,7 +168,7 @@ void test_client_server ()
     rc = zmq_msg_init_size (&msg, 1);
     assert (rc == 0);
 
-    data = (char *)zmq_msg_data (&msg);
+    data = (char *) zmq_msg_data (&msg);
     data[0] = 2;
 
     rc = zmq_msg_set_routing_id (&msg, routing_id);
@@ -206,18 +205,18 @@ void test_client_server ()
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
-    test_req_rep();
-    test_pair();
-    test_client_server();
+    test_req_rep ();
+    test_pair ();
+    test_client_server ();
 
-    return 0 ;
+    return 0;
 }
 
 #else
 int main (void)
 {
-    return 0 ;
+    return 0;
 }
 #endif

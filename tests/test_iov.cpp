@@ -33,13 +33,14 @@
 #if defined ZMQ_HAVE_UIO
 #include <sys/uio.h>
 #else
-struct iovec {
+struct iovec
+{
     void *iov_base;
     size_t iov_len;
 };
 #endif
 
-void do_check(void* sb, void* sc, size_t msg_size)
+void do_check (void *sb, void *sc, size_t msg_size)
 {
     assert (sb && sc && msg_size > 0);
 
@@ -58,8 +59,7 @@ void do_check(void* sb, void* sc, size_t msg_size)
     struct iovec send_iov[num_messages];
     char *buf = (char *) malloc (msg_size * num_messages);
 
-    for (int i = 0; i < num_messages; i++)
-    {
+    for (int i = 0; i < num_messages; i++) {
         send_iov[i].iov_base = &buf[i * msg_size];
         send_iov[i].iov_len = msg_size;
         memcpy (send_iov[i].iov_base, ref_msg, msg_size);
@@ -83,7 +83,7 @@ void do_check(void* sb, void* sc, size_t msg_size)
     // so, whilst the former sends the number of bytes successfully sent from
     // the last message, which does not hold much sense from a batch send
     // perspective; hence the assert checks if rc is same as msg_size.
-    assert ((size_t)rc == msg_size);
+    assert ((size_t) rc == msg_size);
 
     // zmq_recviov(3) single-shot
     struct iovec recv_iov[num_messages];
@@ -105,11 +105,10 @@ void do_check(void* sb, void* sc, size_t msg_size)
     rc = zmq_recviov (sb, recv_iov, &recv_count, 0);
     assert (rc == num_messages);
 
-    for (int i = 0; i < num_messages; i++)
-    {
+    for (int i = 0; i < num_messages; i++) {
         assert (recv_iov[i].iov_base);
         assert (memcmp (ref_msg, recv_iov[i].iov_base, msg_size) == 0);
-        free(recv_iov[i].iov_base);
+        free (recv_iov[i].iov_base);
     }
 
     assert (send_count == recv_count);
@@ -124,16 +123,16 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     int rc;
-   
+
     void *sb = zmq_socket (ctx, ZMQ_PULL);
     assert (sb);
-  
+
     rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
     void *sc = zmq_socket (ctx, ZMQ_PUSH);
-  
+
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
 

@@ -39,7 +39,7 @@ void test_leak (void)
     assert (sb);
     int rc = zmq_bind (sb, "ipc://*");
     assert (rc == 0);
-    size_t len = sizeof(my_endpoint);
+    size_t len = sizeof (my_endpoint);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
@@ -79,7 +79,7 @@ void test_simple (void)
     assert (sb);
     int rc = zmq_bind (sb, "ipc://*");
     assert (rc == 0);
-    size_t len = sizeof(my_endpoint);
+    size_t len = sizeof (my_endpoint);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
@@ -87,7 +87,7 @@ void test_simple (void)
     assert (sc);
     rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
-    
+
     bounce (sb, sc);
 
     rc = zmq_close (sc);
@@ -102,11 +102,11 @@ void test_simple (void)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
     test_simple ();
 
     test_leak ();
 
-    return 0 ;
+    return 0;
 }

@@ -40,30 +40,30 @@
 
 namespace zmq
 {
-    class vmci_address_t
-    {
-    public:
-        vmci_address_t (ctx_t *parent_);
-        vmci_address_t (const sockaddr *sa, socklen_t sa_len, ctx_t *parent_);
-        ~vmci_address_t ();
+class vmci_address_t
+{
+  public:
+    vmci_address_t (ctx_t *parent_);
+    vmci_address_t (const sockaddr *sa, socklen_t sa_len, ctx_t *parent_);
+    ~vmci_address_t ();
 
-        //  This function sets up the address for VMCI transport.
-        int resolve (const char *path_);
+    //  This function sets up the address for VMCI transport.
+    int resolve (const char *path_);
 
-        //  The opposite to resolve()
-        int to_string (std::string &addr_);
+    //  The opposite to resolve()
+    int to_string (std::string &addr_);
 
-        const sockaddr *addr () const;
-        socklen_t addrlen () const;
+    const sockaddr *addr () const;
+    socklen_t addrlen () const;
 
-    private:
-        struct sockaddr_vm address;
-        ctx_t *parent;
+  private:
+    struct sockaddr_vm address;
+    ctx_t *parent;
 
-        vmci_address_t ();
-        vmci_address_t (const vmci_address_t&);
-        const vmci_address_t &operator = (const vmci_address_t&);
-    };
+    vmci_address_t ();
+    vmci_address_t (const vmci_address_t &);
+    const vmci_address_t &operator= (const vmci_address_t &);
+};
 }
 
 #endif

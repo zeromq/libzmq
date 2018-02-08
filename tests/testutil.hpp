@@ -31,9 +31,9 @@
 #define __TESTUTIL_HPP_INCLUDED__
 
 #if defined ZMQ_CUSTOM_PLATFORM_HPP
-#   include "platform.hpp"
+#include "platform.hpp"
 #else
-#   include "../src/platform.hpp"
+#include "../src/platform.hpp"
 #endif
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
@@ -41,9 +41,9 @@
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
-#define SETTLE_TIME 300         //  In msec
+#define SETTLE_TIME 300 //  In msec
 //  Commonly used buffer size for ZMQ_LAST_ENDPOINT
-#define MAX_SOCKET_STRING sizeof("tcp://127.0.0.1:65536")
+#define MAX_SOCKET_STRING sizeof ("tcp://127.0.0.1:65536")
 
 //  We need to test codepaths with non-random bind ports. List them here to
 //  keep them unique, to allow parallel test runs.
@@ -62,36 +62,35 @@
 #include <string.h>
 
 #if defined _WIN32
-#   include "../src/windows.hpp"
-#   if defined _MSC_VER
-#       include <crtdbg.h>
-#       pragma warning(disable:4996)
+#include "../src/windows.hpp"
+#if defined _MSC_VER
+#include <crtdbg.h>
+#pragma warning(disable : 4996)
 // iphlpapi is needed for if_nametoindex (not on Windows XP)
-#       if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
-#           pragma comment(lib,"iphlpapi")
-#       endif
-#   endif
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#pragma comment(lib, "iphlpapi")
+#endif
+#endif
 #else
-#   include <pthread.h>
-#   include <unistd.h>
-#   include <signal.h>
-#   include <stdlib.h>
-#   include <sys/wait.h>
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#   include <arpa/inet.h>
-#   if defined (ZMQ_HAVE_AIX)
-#      include <sys/types.h>
-#      include <sys/socketvar.h>
-#   endif
+#include <pthread.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#if defined(ZMQ_HAVE_AIX)
+#include <sys/types.h>
+#include <sys/socketvar.h>
+#endif
 #endif
 
-#define LIBZMQ_UNUSED(object) (void)object
+#define LIBZMQ_UNUSED(object) (void) object
 
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
-void
-bounce (void *server, void *client)
+void bounce (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
 
@@ -102,7 +101,7 @@ bounce (void *server, void *client)
     assert (rc == 32);
 
     //  Receive message at server side
-    char buffer [32];
+    char buffer[32];
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
     //  Check that message is still the same
@@ -145,11 +144,10 @@ bounce (void *server, void *client)
 
 //  Same as bounce, but expect messages to never arrive
 //  for security or subscriber reasons.
-void
-expect_bounce_fail (void *server, void *client)
+void expect_bounce_fail (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
-    char buffer [32];
+    char buffer[32];
     int timeout = 250;
 
     //  Send message from client to server
@@ -187,34 +185,34 @@ expect_bounce_fail (void *server, void *client)
 //  Receive 0MQ string from socket and convert into C string
 //  Caller must free returned string. Returns NULL if the context
 //  is being terminated.
-char *
-s_recv (void *socket) {
-    char buffer [256];
+char *s_recv (void *socket)
+{
+    char buffer[256];
     int size = zmq_recv (socket, buffer, 255, 0);
     if (size == -1)
         return NULL;
     if (size > 255)
         size = 255;
-    buffer [size] = 0;
+    buffer[size] = 0;
     return strdup (buffer);
 }
 
 //  Convert C string to 0MQ string and send to socket
-int
-s_send (void *socket, const char *string) {
+int s_send (void *socket, const char *string)
+{
     int size = zmq_send (socket, string, strlen (string), 0);
     return size;
 }
 
 //  Sends string as 0MQ string, as multipart non-terminal
-int
-s_sendmore (void *socket, const char *string) {
+int s_sendmore (void *socket, const char *string)
+{
     int size = zmq_send (socket, string, strlen (string), ZMQ_SNDMORE);
     return size;
 }
 
-#define streq(s1,s2)    (!strcmp ((s1), (s2)))
-#define strneq(s1,s2)   (strcmp ((s1), (s2)))
+#define streq(s1, s2) (!strcmp ((s1), (s2)))
+#define strneq(s1, s2) (strcmp ((s1), (s2)))
 
 const char *SEQ_END = (const char *) 1;
 
@@ -222,24 +220,22 @@ const char *SEQ_END = (const char *) 1;
 //  The list must be terminated by SEQ_END.
 //  Example: s_send_seq (req, "ABC", 0, "DEF", SEQ_END);
 
-void
-s_send_seq (void *socket, ...)
+void s_send_seq (void *socket, ...)
 {
     va_list ap;
     va_start (ap, socket);
-    const char * data = va_arg (ap, const char *);
-    while (true)
-    {
-        const char * prev = data;
+    const char *data = va_arg (ap, const char *);
+    while (true) {
+        const char *prev = data;
         data = va_arg (ap, const char *);
         bool end = data == SEQ_END;
 
         if (!prev) {
             int rc = zmq_send (socket, 0, 0, end ? 0 : ZMQ_SNDMORE);
             assert (rc != -1);
-        }
-        else {
-            int rc = zmq_send (socket, prev, strlen (prev)+1, end ? 0 : ZMQ_SNDMORE);
+        } else {
+            int rc =
+              zmq_send (socket, prev, strlen (prev) + 1, end ? 0 : ZMQ_SNDMORE);
             assert (rc != -1);
         }
         if (end)
@@ -253,18 +249,17 @@ s_send_seq (void *socket, ...)
 //  The list must be terminated by SEQ_END.
 //  Example: s_recv_seq (rep, "ABC", 0, "DEF", SEQ_END);
 
-void
-s_recv_seq (void *socket, ...)
+void s_recv_seq (void *socket, ...)
 {
     zmq_msg_t msg;
     zmq_msg_init (&msg);
 
     int more;
-    size_t more_size = sizeof(more);
+    size_t more_size = sizeof (more);
 
     va_list ap;
     va_start (ap, socket);
-    const char * data = va_arg (ap, const char *);
+    const char *data = va_arg (ap, const char *);
 
     while (true) {
         int rc = zmq_msg_recv (&msg, socket, 0);
@@ -273,7 +268,7 @@ s_recv_seq (void *socket, ...)
         if (!data)
             assert (zmq_msg_size (&msg) == 0);
         else
-            assert (strcmp (data, (const char *)zmq_msg_data (&msg)) == 0);
+            assert (strcmp (data, (const char *) zmq_msg_data (&msg)) == 0);
 
         data = va_arg (ap, const char *);
         bool end = data == SEQ_END;
@@ -292,40 +287,38 @@ s_recv_seq (void *socket, ...)
 
 
 //  Sets a zero linger period on a socket and closes it.
-void
-close_zero_linger (void *socket)
+void close_zero_linger (void *socket)
 {
     int linger = 0;
-    int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof(linger));
+    int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0 || errno == ETERM);
     rc = zmq_close (socket);
     assert (rc == 0);
 }
 
-void
-setup_test_environment (void)
+void setup_test_environment (void)
 {
 #if defined _WIN32
-#   if defined _MSC_VER
-    _set_abort_behavior( 0, _WRITE_ABORT_MSG);
-    _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
-    _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
-#   endif
+#if defined _MSC_VER
+    _set_abort_behavior (0, _WRITE_ABORT_MSG);
+    _CrtSetReportMode (_CRT_ASSERT, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile (_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+#endif
 #else
 #if defined ZMQ_HAVE_CYGWIN
     // abort test after 121 seconds
-    alarm(121);
+    alarm (121);
 #else
-#   if !defined ZMQ_DISABLE_TEST_TIMEOUT
+#if !defined ZMQ_DISABLE_TEST_TIMEOUT
     // abort test after 60 seconds
-    alarm(60);
-#   endif
+    alarm (60);
+#endif
 #endif
 #endif
 #if defined __MVS__
     // z/OS UNIX System Services: Ignore SIGPIPE during test runs, as a
     // workaround for no SO_NOGSIGPIPE socket option.
-    signal(SIGPIPE, SIG_IGN);
+    signal (SIGPIPE, SIG_IGN);
 #endif
 }
 
@@ -333,22 +326,20 @@ setup_test_environment (void)
 //  http://www.cplusplus.com/forum/unices/60161/
 //  http://en.cppreference.com/w/cpp/thread/sleep_for
 
-void
-msleep (int milliseconds)
+void msleep (int milliseconds)
 {
 #ifdef ZMQ_HAVE_WINDOWS
     Sleep (milliseconds);
 #else
-    usleep (static_cast <useconds_t> (milliseconds) * 1000);
+    usleep (static_cast<useconds_t> (milliseconds) * 1000);
 #endif
 }
 
 // check if IPv6 is available (0/false if not, 1/true if it is)
 // only way to reliably check is to actually open a socket and try to bind it
-int
-is_ipv6_available(void)
+int is_ipv6_available (void)
 {
-#if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
+#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     return 0;
 #else
     int rc, ipv6 = 1;
@@ -363,12 +354,14 @@ is_ipv6_available(void)
     if (fd == INVALID_SOCKET)
         ipv6 = 0;
     else {
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&ipv6, sizeof(int));
-        rc = setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&ipv6, sizeof(int));
+        setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (const char *) &ipv6,
+                    sizeof (int));
+        rc = setsockopt (fd, IPPROTO_IPV6, IPV6_V6ONLY, (const char *) &ipv6,
+                         sizeof (int));
         if (rc == SOCKET_ERROR)
             ipv6 = 0;
         else {
-            rc = bind (fd, (struct sockaddr *)&test_addr, sizeof (test_addr));
+            rc = bind (fd, (struct sockaddr *) &test_addr, sizeof (test_addr));
             if (rc == SOCKET_ERROR)
                 ipv6 = 0;
         }
@@ -379,12 +372,12 @@ is_ipv6_available(void)
     if (fd == -1)
         ipv6 = 0;
     else {
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &ipv6, sizeof(int));
-        rc = setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6, sizeof(int));
+        setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, &ipv6, sizeof (int));
+        rc = setsockopt (fd, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6, sizeof (int));
         if (rc != 0)
             ipv6 = 0;
         else {
-            rc = bind (fd, (struct sockaddr *)&test_addr, sizeof (test_addr));
+            rc = bind (fd, (struct sockaddr *) &test_addr, sizeof (test_addr));
             if (rc != 0)
                 ipv6 = 0;
         }
@@ -396,7 +389,7 @@ is_ipv6_available(void)
 #endif // _WIN32_WINNT < 0x0600
 }
 
-#if defined (ZMQ_HAVE_WINDOWS)
+#if defined(ZMQ_HAVE_WINDOWS)
 
 int close (int fd)
 {

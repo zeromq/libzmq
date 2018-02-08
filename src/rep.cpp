@@ -92,8 +92,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
 
                 if (bottom)
                     break;
-            }
-            else {
+            } else {
                 //  If the traceback stack is malformed, discard anything
                 //  already sent to pipe (we're at end of invalid message).
                 rc = router_t::rollback ();
@@ -106,7 +105,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
     //  Get next message part to return to the user.
     int rc = router_t::xrecv (msg_);
     if (rc != 0)
-       return rc;
+        return rc;
 
     //  If whole request is read, flip the FSM to reply-sending state.
     if (!(msg_->flags () & msg_t::more)) {

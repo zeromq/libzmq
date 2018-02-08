@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -40,8 +40,8 @@ int main (void)
     assert (pub);
 
     int hwm = 2000;
-    int rc = zmq_setsockopt(pub, ZMQ_SNDHWM, &hwm, 4);
-    assert(rc == 0);
+    int rc = zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4);
+    assert (rc == 0);
 
     rc = zmq_bind (pub, "inproc://soname");
     assert (rc == 0);
@@ -64,7 +64,7 @@ int main (void)
 
     int hwmlimit = hwm - 1;
     int send_count = 0;
-    
+
     //  Send an empty message
     for (int i = 0; i < hwmlimit; i++) {
         rc = zmq_send (pub, NULL, 0, 0);
@@ -82,11 +82,10 @@ int main (void)
             assert (rc == 0);
             recv_count++;
         }
-    }
-    while (rc == 0);
+    } while (rc == 0);
 
     assert (send_count == recv_count);
-    
+
     //  Now test real blocking behavior
     //  Set a timeout, default is infinite
     int timeout = 0;
@@ -96,7 +95,7 @@ int main (void)
     send_count = 0;
     recv_count = 0;
     hwmlimit = hwm;
-    
+
     //  Send an empty message until we get an error, which must be EAGAIN
     while (zmq_send (pub, "", 0, 0) == 0)
         send_count++;
@@ -114,5 +113,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

@@ -56,7 +56,7 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
     uint32_t routing_id = next_routing_id++;
     if (!routing_id)
-        routing_id = next_routing_id++;        //  Never use Routing ID zero
+        routing_id = next_routing_id++; //  Never use Routing ID zero
 
     pipe_->set_server_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
@@ -69,7 +69,8 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::server_t::xpipe_terminated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it = outpipes.find (pipe_->get_server_socket_routing_id ());
+    outpipes_t::iterator it =
+      outpipes.find (pipe_->get_server_socket_routing_id ());
     zmq_assert (it != outpipes.end ());
     outpipes.erase (it);
     fq.pipe_terminated (pipe_);
@@ -109,8 +110,7 @@ int zmq::server_t::xsend (msg_t *msg_)
             errno = EAGAIN;
             return -1;
         }
-    }
-    else {
+    } else {
         errno = EHOSTUNREACH;
         return -1;
     }
@@ -124,8 +124,7 @@ int zmq::server_t::xsend (msg_t *msg_)
         // Message failed to send - we must close it ourselves.
         rc = msg_->close ();
         errno_assert (rc == 0);
-    }
-    else
+    } else
         it->second.pipe->flush ();
 
     //  Detach the message from the data buffer.
@@ -142,7 +141,6 @@ int zmq::server_t::xrecv (msg_t *msg_)
 
     // Drop any messages with more flag
     while (rc == 0 && msg_->flags () & msg_t::more) {
-
         // drop all frames of the current multi-frame message
         rc = fq.recvpipe (msg_, NULL);
 

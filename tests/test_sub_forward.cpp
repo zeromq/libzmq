@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char endpoint1[MAX_SOCKET_STRING];
     char endpoint2[MAX_SOCKET_STRING];
@@ -70,7 +70,7 @@ int main (void)
     assert (rc == 0);
 
     //  Pass the subscription upstream through the device
-    char buff [32];
+    char buff[32];
     rc = zmq_recv (xpub, buff, sizeof (buff), 0);
     assert (rc >= 0);
     rc = zmq_send (xsub, buff, rc, 0);
@@ -105,5 +105,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

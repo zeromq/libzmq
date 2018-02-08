@@ -36,38 +36,32 @@
 
 namespace zmq
 {
+class ctx_t;
+class pipe_t;
+class msg_t;
+class io_thread_t;
 
-    class ctx_t;
-    class pipe_t;
-    class msg_t;
-    class io_thread_t;
+class scatter_t : public socket_base_t
+{
+  public:
+    scatter_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+    ~scatter_t ();
 
-    class scatter_t :
-        public socket_base_t
-    {
-    public:
+  protected:
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    int xsend (zmq::msg_t *msg_);
+    bool xhas_out ();
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
-        scatter_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-        ~scatter_t ();
+  private:
+    //  Load balancer managing the outbound pipes.
+    lb_t lb;
 
-    protected:
-
-        //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
-        int xsend (zmq::msg_t *msg_);
-        bool xhas_out ();
-        void xwrite_activated (zmq::pipe_t *pipe_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
-
-    private:
-
-        //  Load balancer managing the outbound pipes.
-        lb_t lb;
-
-        scatter_t (const scatter_t&);
-        const scatter_t &operator = (const scatter_t&);
-    };
-
+    scatter_t (const scatter_t &);
+    const scatter_t &operator= (const scatter_t &);
+};
 }
 
 #endif

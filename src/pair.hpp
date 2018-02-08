@@ -36,43 +36,38 @@
 
 namespace zmq
 {
+class ctx_t;
+class msg_t;
+class pipe_t;
+class io_thread_t;
 
-    class ctx_t;
-    class msg_t;
-    class pipe_t;
-    class io_thread_t;
+class pair_t : public socket_base_t
+{
+  public:
+    pair_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    ~pair_t ();
 
-    class pair_t :
-        public socket_base_t
-    {
-    public:
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
+    const blob_t &get_credential () const;
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
-        pair_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
-        ~pair_t ();
+  private:
+    zmq::pipe_t *pipe;
 
-        //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
-        int xsend (zmq::msg_t *msg_);
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        bool xhas_out ();
-        const blob_t &get_credential () const;
-        void xread_activated (zmq::pipe_t *pipe_);
-        void xwrite_activated (zmq::pipe_t *pipe_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
+    zmq::pipe_t *last_in;
 
-    private:
+    blob_t saved_credential;
 
-        zmq::pipe_t *pipe;
-
-        zmq::pipe_t *last_in;
-
-        blob_t saved_credential;
-
-        pair_t (const pair_t&);
-        const pair_t &operator = (const pair_t&);
-    };
-
+    pair_t (const pair_t &);
+    const pair_t &operator= (const pair_t &);
+};
 }
 
 #endif

@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
@@ -48,7 +48,7 @@ int main (void)
     assert (sc);
     rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
-    
+
     bounce (sb, sc);
 
     rc = zmq_close (sc);
@@ -60,5 +60,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

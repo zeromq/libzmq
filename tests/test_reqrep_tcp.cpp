@@ -37,9 +37,9 @@ void test_single_connect (const char *address)
     assert (ctx);
 
     int ipv6;
-    if (streq(address, "tcp://127.0.0.1:*"))
+    if (streq (address, "tcp://127.0.0.1:*"))
         ipv6 = 0;
-    else if (streq(address, "tcp://[::1]:*"))
+    else if (streq (address, "tcp://[::1]:*"))
         ipv6 = 1;
     else
         assert (false);
@@ -94,9 +94,9 @@ void test_multi_connect (const char *address)
     assert (ctx);
 
     int ipv6;
-    if (streq(address, "tcp://127.0.0.1:*"))
+    if (streq (address, "tcp://127.0.0.1:*"))
         ipv6 = 0;
-    else if (streq(address, "tcp://[::1]:*"))
+    else if (streq (address, "tcp://[::1]:*"))
         ipv6 = 1;
     else
         assert (false);
@@ -113,7 +113,7 @@ void test_multi_connect (const char *address)
     rc = zmq_bind (sb0, address);
     assert (rc == 0);
     rc = zmq_getsockopt (sb0, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len);
-     assert (rc == 0);
+    assert (rc == 0);
 
     void *sb1 = zmq_socket (ctx, ZMQ_REP);
     assert (sb1);
@@ -123,7 +123,7 @@ void test_multi_connect (const char *address)
     assert (rc == 0);
     len = MAX_SOCKET_STRING;
     rc = zmq_getsockopt (sb1, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len);
-     assert (rc == 0);
+    assert (rc == 0);
 
     void *sb2 = zmq_socket (ctx, ZMQ_REP);
     assert (sb2);
@@ -133,7 +133,7 @@ void test_multi_connect (const char *address)
     assert (rc == 0);
     len = MAX_SOCKET_STRING;
     rc = zmq_getsockopt (sb2, ZMQ_LAST_ENDPOINT, my_endpoint_2, &len);
-     assert (rc == 0);
+    assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
@@ -145,10 +145,10 @@ void test_multi_connect (const char *address)
     assert (rc == 0);
     if (!ipv6)
         sprintf (my_endpoint_3, "tcp://127.0.0.1:5564;%s",
-                strrchr(my_endpoint_2, '/') + 1);
+                 strrchr (my_endpoint_2, '/') + 1);
     else
         sprintf (my_endpoint_3, "tcp://[::1]:5564;%s",
-                strrchr(my_endpoint_2, '/') + 1);
+                 strrchr (my_endpoint_2, '/') + 1);
     rc = zmq_connect (sc, my_endpoint_3);
     assert (rc == 0);
 
@@ -205,9 +205,9 @@ void test_multi_connect_same_port (const char *address)
     assert (ctx);
 
     int ipv6;
-    if (streq(address, "tcp://127.0.0.1:*"))
+    if (streq (address, "tcp://127.0.0.1:*"))
         ipv6 = 0;
-    else if (streq(address, "tcp://[::1]:*"))
+    else if (streq (address, "tcp://[::1]:*"))
         ipv6 = 1;
     else
         assert (false);
@@ -224,7 +224,7 @@ void test_multi_connect_same_port (const char *address)
     rc = zmq_bind (sb0, address);
     assert (rc == 0);
     rc = zmq_getsockopt (sb0, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len);
-     assert (rc == 0);
+    assert (rc == 0);
 
     void *sb1 = zmq_socket (ctx, ZMQ_REP);
     assert (sb1);
@@ -234,7 +234,7 @@ void test_multi_connect_same_port (const char *address)
     assert (rc == 0);
     len = MAX_SOCKET_STRING;
     rc = zmq_getsockopt (sb1, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len);
-     assert (rc == 0);
+    assert (rc == 0);
 
     void *sc0 = zmq_socket (ctx, ZMQ_REQ);
     assert (sc0);
@@ -242,18 +242,18 @@ void test_multi_connect_same_port (const char *address)
     assert (rc == 0);
     if (!ipv6)
         sprintf (my_endpoint_2, "tcp://127.0.0.1:5564;%s",
-                strrchr(my_endpoint_0, '/') + 1);
+                 strrchr (my_endpoint_0, '/') + 1);
     else
         sprintf (my_endpoint_2, "tcp://[::1]:5564;%s",
-                strrchr(my_endpoint_0, '/') + 1);
+                 strrchr (my_endpoint_0, '/') + 1);
     rc = zmq_connect (sc0, my_endpoint_2);
     assert (rc == 0);
     if (!ipv6)
         sprintf (my_endpoint_3, "tcp://127.0.0.1:5565;%s",
-                strrchr(my_endpoint_1, '/') + 1);
+                 strrchr (my_endpoint_1, '/') + 1);
     else
         sprintf (my_endpoint_3, "tcp://[::1]:5565;%s",
-                strrchr(my_endpoint_1, '/') + 1);
+                 strrchr (my_endpoint_1, '/') + 1);
     rc = zmq_connect (sc0, my_endpoint_3);
     assert (rc == 0);
 
@@ -263,18 +263,18 @@ void test_multi_connect_same_port (const char *address)
     assert (rc == 0);
     if (!ipv6)
         sprintf (my_endpoint_4, "tcp://127.0.0.1:5565;%s",
-                strrchr(my_endpoint_0, '/') + 1);
+                 strrchr (my_endpoint_0, '/') + 1);
     else
         sprintf (my_endpoint_4, "tcp://[::1]:5565;%s",
-                strrchr(my_endpoint_0, '/') + 1);
+                 strrchr (my_endpoint_0, '/') + 1);
     rc = zmq_connect (sc1, my_endpoint_4);
     assert (rc == 0);
     if (!ipv6)
         sprintf (my_endpoint_5, "tcp://127.0.0.1:5564;%s",
-                strrchr(my_endpoint_1, '/') + 1);
+                 strrchr (my_endpoint_1, '/') + 1);
     else
         sprintf (my_endpoint_5, "tcp://[::1]:5564;%s",
-                strrchr(my_endpoint_1, '/') + 1);
+                 strrchr (my_endpoint_1, '/') + 1);
     rc = zmq_connect (sc1, my_endpoint_5);
     assert (rc == 0);
 
@@ -332,5 +332,5 @@ int main (void)
 
     test_multi_connect_same_port ("tcp://[::1]:*");
 
-    return 0 ;
+    return 0;
 }

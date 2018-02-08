@@ -43,19 +43,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "err.hpp"
 #include "ip.hpp"
 
-zmq::udp_engine_t::udp_engine_t(const options_t &options_) :
+zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     plugged (false),
-    fd(-1),
-    session(NULL),
-    handle((handle_t)NULL),
-    address(NULL),
-    options(options_),
-    send_enabled(false),
-    recv_enabled(false)
+    fd (-1),
+    session (NULL),
+    handle ((handle_t) NULL),
+    address (NULL),
+    options (options_),
+    send_enabled (false),
+    recv_enabled (false)
 {
 }
 
-zmq::udp_engine_t::~udp_engine_t()
+zmq::udp_engine_t::~udp_engine_t ()
 {
     zmq_assert (!plugged);
 
@@ -79,7 +79,8 @@ int zmq::udp_engine_t::init (address_t *address_, bool send_, bool recv_)
     recv_enabled = recv_;
     address = address_;
 
-    fd = open_socket (address->resolved.udp_addr->family (), SOCK_DGRAM, IPPROTO_UDP);
+    fd = open_socket (address->resolved.udp_addr->family (), SOCK_DGRAM,
+                      IPPROTO_UDP);
     if (fd == retired_fd)
         return -1;
 
@@ -88,7 +89,7 @@ int zmq::udp_engine_t::init (address_t *address_, bool send_, bool recv_)
     return 0;
 }
 
-void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
+void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 {
     zmq_assert (!plugged);
     plugged = true;
@@ -109,8 +110,7 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
         if (!options.raw_socket) {
             out_address = address->resolved.udp_addr->dest_addr ();
             out_addrlen = address->resolved.udp_addr->dest_addrlen ();
-        }
-        else {
+        } else {
             out_address = (sockaddr *) &raw_address;
             out_addrlen = sizeof (sockaddr_in);
         }
@@ -120,7 +120,8 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
 
     if (recv_enabled) {
         int on = 1;
-        int rc = setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
+        int rc =
+          setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -128,7 +129,7 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
 #endif
 
         rc = bind (fd, address->resolved.udp_addr->bind_addr (),
-                       address->resolved.udp_addr->bind_addrlen ());
+                   address->resolved.udp_addr->bind_addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -139,7 +140,8 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
             struct ip_mreq mreq;
             mreq.imr_multiaddr = address->resolved.udp_addr->multicast_ip ();
             mreq.imr_interface = address->resolved.udp_addr->interface_ip ();
-            rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof (mreq));
+            rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq,
+                             sizeof (mreq));
 #ifdef ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -153,7 +155,7 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
     }
 }
 
-void zmq::udp_engine_t::terminate()
+void zmq::udp_engine_t::terminate ()
 {
     zmq_assert (plugged);
     plugged = false;
@@ -166,18 +168,19 @@ void zmq::udp_engine_t::terminate()
     delete this;
 }
 
-void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr)
+void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in *addr)
 {
-    char* name = inet_ntoa(addr->sin_addr);
+    char *name = inet_ntoa (addr->sin_addr);
 
     char port[6];
     sprintf (port, "%d", (int) ntohs (addr->sin_port));
 
-    int size = (int) strlen (name) + (int) strlen (port) + 1 + 1; //  Colon + NULL
+    int size =
+      (int) strlen (name) + (int) strlen (port) + 1 + 1; //  Colon + NULL
     int rc = msg->init_size (size);
     errno_assert (rc == 0);
     msg->set_flags (msg_t::more);
-    char *address = (char*)msg->data ();
+    char *address = (char *) msg->data ();
 
     strcpy (address, name);
     strcat (address, ":");
@@ -229,7 +232,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
     return 0;
 }
 
-void zmq::udp_engine_t::out_event()
+void zmq::udp_engine_t::out_event ()
 {
     msg_t group_msg;
     int rc = session->pull_msg (&group_msg);
@@ -244,7 +247,7 @@ void zmq::udp_engine_t::out_event()
         size_t size;
 
         if (options.raw_socket) {
-            rc = resolve_raw_address ((char*) group_msg.data(), group_size);
+            rc = resolve_raw_address ((char *) group_msg.data (), group_size);
 
             //  We discard the message if address is not valid
             if (rc != 0) {
@@ -260,8 +263,7 @@ void zmq::udp_engine_t::out_event()
             size = body_size;
 
             memcpy (out_buffer, body_msg.data (), body_size);
-        }
-        else {
+        } else {
             size = group_size + body_size + 1;
 
             // TODO: check if larger than maximum size
@@ -277,16 +279,15 @@ void zmq::udp_engine_t::out_event()
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = sendto (fd, (const char *) out_buffer, (int) size, 0,
-            out_address, (int) out_addrlen);
+        rc = sendto (fd, (const char *) out_buffer, (int) size, 0, out_address,
+                     (int) out_addrlen);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         rc = sendto (fd, out_buffer, size, 0, out_address, out_addrlen);
         errno_assert (rc != -1);
 #endif
-    }
-    else
-       reset_pollout (handle);
+    } else
+        reset_pollout (handle);
 }
 
 const char *zmq::udp_engine_t::get_endpoint () const
@@ -294,41 +295,38 @@ const char *zmq::udp_engine_t::get_endpoint () const
     return "";
 }
 
-void zmq::udp_engine_t::restart_output()
+void zmq::udp_engine_t::restart_output ()
 {
     //  If we don't support send we just drop all messages
     if (!send_enabled) {
         msg_t msg;
         while (session->pull_msg (&msg) == 0)
             msg.close ();
-    }
-    else {
-        set_pollout(handle);
+    } else {
+        set_pollout (handle);
         out_event ();
     }
 }
 
-void zmq::udp_engine_t::in_event()
+void zmq::udp_engine_t::in_event ()
 {
-  struct sockaddr_in in_address;
-  socklen_t in_addrlen = sizeof(sockaddr_in);
+    struct sockaddr_in in_address;
+    socklen_t in_addrlen = sizeof (sockaddr_in);
 #ifdef ZMQ_HAVE_WINDOWS
-    int nbytes = recvfrom(fd, (char*) in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
-    const int last_error = WSAGetLastError();
+    int nbytes = recvfrom (fd, (char *) in_buffer, MAX_UDP_MSG, 0,
+                           (sockaddr *) &in_address, &in_addrlen);
+    const int last_error = WSAGetLastError ();
     if (nbytes == SOCKET_ERROR) {
-        wsa_assert(
-            last_error == WSAENETDOWN ||
-            last_error == WSAENETRESET ||
-            last_error == WSAEWOULDBLOCK);
+        wsa_assert (last_error == WSAENETDOWN || last_error == WSAENETRESET
+                    || last_error == WSAEWOULDBLOCK);
         return;
     }
 #else
-    int nbytes = recvfrom(fd, in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
+    int nbytes = recvfrom (fd, in_buffer, MAX_UDP_MSG, 0,
+                           (sockaddr *) &in_address, &in_addrlen);
     if (nbytes == -1) {
-        errno_assert(errno != EBADF
-            && errno != EFAULT
-            && errno != ENOMEM
-            && errno != ENOTSOCK);
+        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
+                      && errno != ENOTSOCK);
         return;
     }
 #endif
@@ -342,9 +340,8 @@ void zmq::udp_engine_t::in_event()
 
         body_size = nbytes;
         body_offset = 0;
-    }
-    else {
-        char* group_buffer = (char *)in_buffer + 1;
+    } else {
+        char *group_buffer = (char *) in_buffer + 1;
         int group_size = in_buffer[0];
 
         rc = msg.init_size (group_size);
@@ -384,7 +381,7 @@ void zmq::udp_engine_t::in_event()
     session->flush ();
 }
 
-void zmq::udp_engine_t::restart_input()
+void zmq::udp_engine_t::restart_input ()
 {
     if (!recv_enabled)
         return;

@@ -38,61 +38,58 @@
 
 namespace zmq
 {
+class io_thread_t;
+class socket_base_t;
 
-    class io_thread_t;
-    class socket_base_t;
+class tcp_listener_t : public own_t, public io_object_t
+{
+  public:
+    tcp_listener_t (zmq::io_thread_t *io_thread_,
+                    zmq::socket_base_t *socket_,
+                    const options_t &options_);
+    ~tcp_listener_t ();
 
-    class tcp_listener_t : public own_t, public io_object_t
-    {
-    public:
+    //  Set address to listen on.
+    int set_address (const char *addr_);
 
-        tcp_listener_t (zmq::io_thread_t *io_thread_,
-            zmq::socket_base_t *socket_, const options_t &options_);
-        ~tcp_listener_t ();
+    // Get the bound address for use with wildcard
+    int get_address (std::string &addr_);
 
-        //  Set address to listen on.
-        int set_address (const char *addr_);
+  private:
+    //  Handlers for incoming commands.
+    void process_plug ();
+    void process_term (int linger_);
 
-        // Get the bound address for use with wildcard
-        int get_address (std::string &addr_);
+    //  Handlers for I/O events.
+    void in_event ();
 
-    private:
+    //  Close the listening socket.
+    void close ();
 
-        //  Handlers for incoming commands.
-        void process_plug ();
-        void process_term (int linger_);
+    //  Accept the new connection. Returns the file descriptor of the
+    //  newly created connection. The function may return retired_fd
+    //  if the connection was dropped while waiting in the listen backlog
+    //  or was denied because of accept filters.
+    fd_t accept ();
 
-        //  Handlers for I/O events.
-        void in_event ();
+    //  Address to listen on.
+    tcp_address_t address;
 
-        //  Close the listening socket.
-        void close ();
+    //  Underlying socket.
+    fd_t s;
 
-        //  Accept the new connection. Returns the file descriptor of the
-        //  newly created connection. The function may return retired_fd
-        //  if the connection was dropped while waiting in the listen backlog
-        //  or was denied because of accept filters.
-        fd_t accept ();
+    //  Handle corresponding to the listening socket.
+    handle_t handle;
 
-        //  Address to listen on.
-        tcp_address_t address;
+    //  Socket the listener belongs to.
+    zmq::socket_base_t *socket;
 
-        //  Underlying socket.
-        fd_t s;
+    // String representation of endpoint to bind to
+    std::string endpoint;
 
-        //  Handle corresponding to the listening socket.
-        handle_t handle;
-
-        //  Socket the listener belongs to.
-        zmq::socket_base_t *socket;
-
-       // String representation of endpoint to bind to
-        std::string endpoint;
-
-        tcp_listener_t (const tcp_listener_t&);
-        const tcp_listener_t &operator = (const tcp_listener_t&);
-    };
-
+    tcp_listener_t (const tcp_listener_t &);
+    const tcp_listener_t &operator= (const tcp_listener_t &);
+};
 }
 
 #endif

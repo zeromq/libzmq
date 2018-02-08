@@ -30,16 +30,17 @@
 #include <limits>
 #include "testutil.hpp"
 
-#define WAIT_FOR_BACKGROUND_THREAD_INSPECTION             (0)
+#define WAIT_FOR_BACKGROUND_THREAD_INSPECTION (0)
 
 #ifdef ZMQ_HAVE_LINUX
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <unistd.h>         // for sleep()
+#include <unistd.h> // for sleep()
 
-#define TEST_POLICY                                       (SCHED_OTHER)    // NOTE: SCHED_OTHER is the default Linux scheduler
+#define TEST_POLICY                                                            \
+    (SCHED_OTHER) // NOTE: SCHED_OTHER is the default Linux scheduler
 
-bool is_allowed_to_raise_priority()
+bool is_allowed_to_raise_priority ()
 {
     // NOTE1: if setrlimit() fails with EPERM, this means that current user has not enough permissions.
     // NOTE2: even for privileged users (e.g., root) getrlimit() would usually return 0 as nice limit; the only way to
@@ -47,24 +48,25 @@ bool is_allowed_to_raise_priority()
     struct rlimit rlim;
     rlim.rlim_cur = 40;
     rlim.rlim_max = 40;
-    if (setrlimit(RLIMIT_NICE, &rlim) == 0)
-    {
+    if (setrlimit (RLIMIT_NICE, &rlim) == 0) {
         // rlim_cur == 40 means that this process is allowed to set a nice value of -20
         if (WAIT_FOR_BACKGROUND_THREAD_INSPECTION)
-            printf ("This process has enough permissions to raise ZMQ background thread priority!\n");
+            printf ("This process has enough permissions to raise ZMQ "
+                    "background thread priority!\n");
         return true;
     }
 
     if (WAIT_FOR_BACKGROUND_THREAD_INSPECTION)
-        printf ("This process has NOT enough permissions to raise ZMQ background thread priority.\n");
+        printf ("This process has NOT enough permissions to raise ZMQ "
+                "background thread priority.\n");
     return false;
 }
 
 #else
 
-#define TEST_POLICY                                       (0)
+#define TEST_POLICY (0)
 
-bool is_allowed_to_raise_priority()
+bool is_allowed_to_raise_priority ()
 {
     return false;
 }
@@ -72,14 +74,15 @@ bool is_allowed_to_raise_priority()
 #endif
 
 
-void test_ctx_thread_opts(void* ctx)
+void test_ctx_thread_opts (void *ctx)
 {
     int rc;
 
     // verify that setting negative values (e.g., default values) fail:
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_SCHED_POLICY, ZMQ_THREAD_SCHED_POLICY_DFLT);
+    rc =
+      zmq_ctx_set (ctx, ZMQ_THREAD_SCHED_POLICY, ZMQ_THREAD_SCHED_POLICY_DFLT);
     assert (rc == -1 && errno == EINVAL);
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
+    rc = zmq_ctx_set (ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
 
 
@@ -87,7 +90,7 @@ void test_ctx_thread_opts(void* ctx)
 
     // set context options that alter the background thread CPU scheduling/affinity settings;
     // as of ZMQ 4.2.3 this has an effect only on POSIX systems (nothing happens on Windows, but still it should return success):
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_SCHED_POLICY, TEST_POLICY);
+    rc = zmq_ctx_set (ctx, ZMQ_THREAD_SCHED_POLICY, TEST_POLICY);
     assert (rc == 0);
 
 
@@ -102,9 +105,10 @@ void test_ctx_thread_opts(void* ctx)
     // ZMQ will internally use nice(2) to set the nice value when using SCHED_OTHER.
     // However changing the nice value of a process requires appropriate permissions...
     // check that the current effective user is able to do that:
-    if (is_allowed_to_raise_priority())
-    {
-        rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, 1 /* any positive value different than the default will be ok */);
+    if (is_allowed_to_raise_priority ()) {
+        rc = zmq_ctx_set (
+          ctx, ZMQ_THREAD_PRIORITY,
+          1 /* any positive value different than the default will be ok */);
         assert (rc == 0);
     }
 
@@ -112,22 +116,23 @@ void test_ctx_thread_opts(void* ctx)
 #ifdef ZMQ_THREAD_AFFINITY_CPU_ADD
     // test affinity:
 
-     // this should result in background threads being placed only on the
-     // first CPU available on this system; try experimenting with other values
-     // (e.g., 5 to use CPU index 5) and use "top -H" or "taskset -pc" to see the result
+    // this should result in background threads being placed only on the
+    // first CPU available on this system; try experimenting with other values
+    // (e.g., 5 to use CPU index 5) and use "top -H" or "taskset -pc" to see the result
 
-    int cpus_add[] = { 0, 1 };
-    for (unsigned int idx=0; idx < sizeof(cpus_add)/sizeof(cpus_add[0]); idx++)
-    {
-        rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY_CPU_ADD, cpus_add[idx]);
+    int cpus_add[] = {0, 1};
+    for (unsigned int idx = 0; idx < sizeof (cpus_add) / sizeof (cpus_add[0]);
+         idx++) {
+        rc = zmq_ctx_set (ctx, ZMQ_THREAD_AFFINITY_CPU_ADD, cpus_add[idx]);
         assert (rc == 0);
     }
 
     // you can also remove CPUs from list of affinities:
-    int cpus_remove[] = { 1 };
-    for (unsigned int idx=0; idx < sizeof(cpus_remove)/sizeof(cpus_remove[0]); idx++)
-    {
-        rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY_CPU_REMOVE, cpus_remove[idx]);
+    int cpus_remove[] = {1};
+    for (unsigned int idx = 0;
+         idx < sizeof (cpus_remove) / sizeof (cpus_remove[0]); idx++) {
+        rc =
+          zmq_ctx_set (ctx, ZMQ_THREAD_AFFINITY_CPU_REMOVE, cpus_remove[idx]);
         assert (rc == 0);
     }
 #endif
@@ -136,7 +141,7 @@ void test_ctx_thread_opts(void* ctx)
 #ifdef ZMQ_THREAD_NAME_PREFIX
     // test thread name prefix:
 
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_NAME_PREFIX, 1234);
+    rc = zmq_ctx_set (ctx, ZMQ_THREAD_NAME_PREFIX, 1234);
     assert (rc == 0);
 #endif
 }
@@ -144,7 +149,7 @@ void test_ctx_thread_opts(void* ctx)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     int rc;
 
     //  Set up our context and sockets
@@ -154,20 +159,20 @@ int main (void)
     assert (zmq_ctx_get (ctx, ZMQ_MAX_SOCKETS) == ZMQ_MAX_SOCKETS_DFLT);
 #if defined(ZMQ_USE_SELECT)
     assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == FD_SETSIZE - 1);
-#elif    defined(ZMQ_USE_POLL) || defined(ZMQ_USE_EPOLL)     \
-      || defined(ZMQ_USE_DEVPOLL) || defined(ZMQ_USE_KQUEUE)
+#elif defined(ZMQ_USE_POLL) || defined(ZMQ_USE_EPOLL)                          \
+  || defined(ZMQ_USE_DEVPOLL) || defined(ZMQ_USE_KQUEUE)
     assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == 65535);
 #endif
     assert (zmq_ctx_get (ctx, ZMQ_IO_THREADS) == ZMQ_IO_THREADS_DFLT);
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 0);
-#if defined (ZMQ_MSG_T_SIZE)
+#if defined(ZMQ_MSG_T_SIZE)
     assert (zmq_ctx_get (ctx, ZMQ_MSG_T_SIZE) == sizeof (zmq_msg_t));
 #endif
 
     rc = zmq_ctx_set (ctx, ZMQ_IPV6, true);
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
 
-    test_ctx_thread_opts(ctx);
+    test_ctx_thread_opts (ctx);
 
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     int value;
@@ -184,8 +189,10 @@ int main (void)
 #if WAIT_FOR_BACKGROUND_THREAD_INSPECTION
     // this is useful when you want to use an external tool (like top or taskset) to view
     // properties of the background threads
-    printf ("Sleeping for 100sec. You can now use 'top -H -p $(pgrep -f test_ctx_options)' and 'taskset -pc <ZMQ background thread PID>' to view ZMQ background thread properties.\n");
-    sleep(100);
+    printf ("Sleeping for 100sec. You can now use 'top -H -p $(pgrep -f "
+            "test_ctx_options)' and 'taskset -pc <ZMQ background thread PID>' "
+            "to view ZMQ background thread properties.\n");
+    sleep (100);
 #endif
 
     rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);

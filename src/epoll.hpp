@@ -45,73 +45,69 @@
 
 namespace zmq
 {
+struct i_poll_events;
 
-    struct i_poll_events;
+//  This class implements socket polling mechanism using the Linux-specific
+//  epoll mechanism.
 
-    //  This class implements socket polling mechanism using the Linux-specific
-    //  epoll mechanism.
+class epoll_t : public poller_base_t
+{
+  public:
+    typedef void *handle_t;
 
-    class epoll_t : public poller_base_t
+    epoll_t (const ctx_t &ctx_);
+    ~epoll_t ();
+
+    //  "poller" concept.
+    handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
+    void rm_fd (handle_t handle_);
+    void set_pollin (handle_t handle_);
+    void reset_pollin (handle_t handle_);
+    void set_pollout (handle_t handle_);
+    void reset_pollout (handle_t handle_);
+    void start ();
+    void stop ();
+
+    static int max_fds ();
+
+  private:
+    //  Main worker thread routine.
+    static void worker_routine (void *arg_);
+
+    //  Main event loop.
+    void loop ();
+
+    // Reference to ZMQ context.
+    const ctx_t &ctx;
+
+    //  Main epoll file descriptor
+    fd_t epoll_fd;
+
+    struct poll_entry_t
     {
-    public:
-
-        typedef void* handle_t;
-
-        epoll_t (const ctx_t &ctx_);
-        ~epoll_t ();
-
-        //  "poller" concept.
-        handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
-        void rm_fd (handle_t handle_);
-        void set_pollin (handle_t handle_);
-        void reset_pollin (handle_t handle_);
-        void set_pollout (handle_t handle_);
-        void reset_pollout (handle_t handle_);
-        void start ();
-        void stop ();
-
-        static int max_fds ();
-
-    private:
-
-        //  Main worker thread routine.
-        static void worker_routine (void *arg_);
-
-        //  Main event loop.
-        void loop ();
-
-        // Reference to ZMQ context.
-        const ctx_t &ctx;
-
-        //  Main epoll file descriptor
-        fd_t epoll_fd;
-
-        struct poll_entry_t
-        {
-            fd_t fd;
-            epoll_event ev;
-            zmq::i_poll_events *events;
-        };
-
-        //  List of retired event sources.
-        typedef std::vector <poll_entry_t*> retired_t;
-        retired_t retired;
-
-        //  If true, thread is in the process of shutting down.
-        bool stopping;
-
-        //  Handle of the physical thread doing the I/O work.
-        thread_t worker;
-
-        //  Synchronisation of retired event sources
-        mutex_t retired_sync;
-
-        epoll_t (const epoll_t&);
-        const epoll_t &operator = (const epoll_t&);
+        fd_t fd;
+        epoll_event ev;
+        zmq::i_poll_events *events;
     };
 
-    typedef epoll_t poller_t;
+    //  List of retired event sources.
+    typedef std::vector<poll_entry_t *> retired_t;
+    retired_t retired;
 
+    //  If true, thread is in the process of shutting down.
+    bool stopping;
+
+    //  Handle of the physical thread doing the I/O work.
+    thread_t worker;
+
+    //  Synchronisation of retired event sources
+    mutex_t retired_sync;
+
+    epoll_t (const epoll_t &);
+    const epoll_t &operator= (const epoll_t &);
+};
+
+typedef epoll_t poller_t;
 }
 
 #endif

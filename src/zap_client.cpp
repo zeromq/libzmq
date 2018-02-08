@@ -44,22 +44,22 @@ zap_client_t::zap_client_t (session_base_t *const session_,
 }
 
 void zap_client_t::send_zap_request (const char *mechanism,
-                                    size_t mechanism_length,
-                                    const uint8_t *credentials,
-                                    size_t credentials_size)
+                                     size_t mechanism_length,
+                                     const uint8_t *credentials,
+                                     size_t credentials_size)
 {
     send_zap_request (mechanism, mechanism_length, &credentials,
                       &credentials_size, 1);
 }
 
 void zap_client_t::send_zap_request (const char *mechanism,
-                                    size_t mechanism_length,
-                                    const uint8_t **credentials,
-                                    size_t *credentials_sizes,
-                                    size_t credentials_count)
+                                     size_t mechanism_length,
+                                     const uint8_t **credentials,
+                                     size_t *credentials_sizes,
+                                     size_t credentials_count)
 {
-    // write_zap_msg cannot fail. It could only fail if the HWM was exceeded, 
-    // but on the ZAP socket, the HWM is disabled. 
+    // write_zap_msg cannot fail. It could only fail if the HWM was exceeded,
+    // but on the ZAP socket, the HWM is disabled.
 
     int rc;
     msg_t msg;

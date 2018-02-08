@@ -43,75 +43,71 @@
 
 namespace zmq
 {
+struct i_poll_events;
 
-    struct i_poll_events;
+//  Implements socket polling mechanism using the "/dev/poll" interface.
 
-    //  Implements socket polling mechanism using the "/dev/poll" interface.
+class devpoll_t : public poller_base_t
+{
+  public:
+    typedef fd_t handle_t;
 
-    class devpoll_t : public poller_base_t
+    devpoll_t (const ctx_t &ctx_);
+    ~devpoll_t ();
+
+    //  "poller" concept.
+    handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
+    void rm_fd (handle_t handle_);
+    void set_pollin (handle_t handle_);
+    void reset_pollin (handle_t handle_);
+    void set_pollout (handle_t handle_);
+    void reset_pollout (handle_t handle_);
+    void start ();
+    void stop ();
+
+    static int max_fds ();
+
+  private:
+    //  Main worker thread routine.
+    static void worker_routine (void *arg_);
+
+    //  Main event loop.
+    void loop ();
+
+    // Reference to ZMQ context.
+    const ctx_t &ctx;
+
+    //  File descriptor referring to "/dev/poll" pseudo-device.
+    fd_t devpoll_fd;
+
+    struct fd_entry_t
     {
-    public:
-
-        typedef fd_t handle_t;
-
-        devpoll_t (const ctx_t &ctx_);
-        ~devpoll_t ();
-
-        //  "poller" concept.
-        handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
-        void rm_fd (handle_t handle_);
-        void set_pollin (handle_t handle_);
-        void reset_pollin (handle_t handle_);
-        void set_pollout (handle_t handle_);
-        void reset_pollout (handle_t handle_);
-        void start ();
-        void stop ();
-
-        static int max_fds ();
-
-    private:
-
-        //  Main worker thread routine.
-        static void worker_routine (void *arg_);
-
-        //  Main event loop.
-        void loop ();
-
-        // Reference to ZMQ context.
-        const ctx_t &ctx;
-
-        //  File descriptor referring to "/dev/poll" pseudo-device.
-        fd_t devpoll_fd;
-
-        struct fd_entry_t
-        {
-            short events;
-            zmq::i_poll_events *reactor;
-            bool valid;
-            bool accepted;
-        };
-
-        typedef std::vector <fd_entry_t> fd_table_t;
-        fd_table_t fd_table;
-
-        typedef std::vector <fd_t> pending_list_t;
-        pending_list_t pending_list;
-
-        //  Pollset manipulation function.
-        void devpoll_ctl (fd_t fd_, short events_);
-
-        //  If true, thread is in the process of shutting down.
-        bool stopping;
-
-        //  Handle of the physical thread doing the I/O work.
-        thread_t worker;
-
-        devpoll_t (const devpoll_t&);
-        const devpoll_t &operator = (const devpoll_t&);
+        short events;
+        zmq::i_poll_events *reactor;
+        bool valid;
+        bool accepted;
     };
 
-    typedef devpoll_t poller_t;
+    typedef std::vector<fd_entry_t> fd_table_t;
+    fd_table_t fd_table;
 
+    typedef std::vector<fd_t> pending_list_t;
+    pending_list_t pending_list;
+
+    //  Pollset manipulation function.
+    void devpoll_ctl (fd_t fd_, short events_);
+
+    //  If true, thread is in the process of shutting down.
+    bool stopping;
+
+    //  Handle of the physical thread doing the I/O work.
+    thread_t worker;
+
+    devpoll_t (const devpoll_t &);
+    const devpoll_t &operator= (const devpoll_t &);
+};
+
+typedef devpoll_t poller_t;
 }
 
 #endif

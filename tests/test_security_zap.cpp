@@ -343,10 +343,10 @@ void test_zap_errors (socket_config_fn server_socket_config_,
 #endif
 
     //  ZAP handler disconnecting on first message
-    fprintf(stderr, "test_zap_unsuccessful ZAP handler disconnects\n");
-    setup_context_and_server_side(&ctx, &handler, &zap_thread, &server,
-        &server_mon, my_endpoint, &zap_handler_disconnect,
-        server_socket_config_);
+    fprintf (stderr, "test_zap_unsuccessful ZAP handler disconnects\n");
+    setup_context_and_server_side (
+      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      &zap_handler_disconnect, server_socket_config_);
     test_zap_unsuccessful_no_handler (
       ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -361,9 +361,9 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     //  ZAP handler does not read request
     fprintf (stderr,
              "test_zap_unsuccessful ZAP handler does not read request\n");
-    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
-        &server_mon, my_endpoint, &zap_handler_do_not_recv,
-        server_socket_config_);
+    setup_context_and_server_side (
+      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      &zap_handler_do_not_recv, server_socket_config_);
     test_zap_unsuccessful_no_handler (
       ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API

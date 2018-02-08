@@ -44,16 +44,16 @@ void test_round_robin_out (void *ctx)
     assert (rc == 0);
 
     const size_t services = 5;
-    void *rep [services];
+    void *rep[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        rep [peer] = zmq_socket (ctx, ZMQ_REP);
-        assert (rep [peer]);
+        rep[peer] = zmq_socket (ctx, ZMQ_REP);
+        assert (rep[peer]);
 
         int timeout = 250;
-        rc = zmq_setsockopt (rep [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
+        rc = zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
-        rc = zmq_connect (rep [peer], connect_address);
+        rc = zmq_connect (rep[peer], connect_address);
         assert (rc == 0);
     }
 
@@ -69,7 +69,7 @@ void test_round_robin_out (void *ctx)
     zmq_msg_init (&msg);
 
     for (size_t peer = 0; peer < services; ++peer)
-        s_recv_seq (rep [peer], "ABC", SEQ_END);
+        s_recv_seq (rep[peer], "ABC", SEQ_END);
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -77,7 +77,7 @@ void test_round_robin_out (void *ctx)
     close_zero_linger (dealer);
 
     for (size_t peer = 0; peer < services; ++peer)
-        close_zero_linger (rep [peer]);
+        close_zero_linger (rep[peer]);
 
     // Wait for disconnects.
     msleep (SETTLE_TIME);
@@ -99,15 +99,16 @@ void test_fair_queue_in (void *ctx)
     assert (rc == 0);
 
     const size_t services = 5;
-    void *senders [services];
+    void *senders[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        senders [peer] = zmq_socket (ctx, ZMQ_DEALER);
-        assert (senders [peer]);
+        senders[peer] = zmq_socket (ctx, ZMQ_DEALER);
+        assert (senders[peer]);
 
-        rc = zmq_setsockopt (senders [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
+        rc =
+          zmq_setsockopt (senders[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
-        rc = zmq_connect (senders [peer], connect_address);
+        rc = zmq_connect (senders[peer], connect_address);
         assert (rc == 0);
     }
 
@@ -115,15 +116,15 @@ void test_fair_queue_in (void *ctx)
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
 
-    s_send_seq (senders [0], "A", SEQ_END);
+    s_send_seq (senders[0], "A", SEQ_END);
     s_recv_seq (receiver, "A", SEQ_END);
 
-    s_send_seq (senders [0], "A", SEQ_END);
+    s_send_seq (senders[0], "A", SEQ_END);
     s_recv_seq (receiver, "A", SEQ_END);
 
     // send our requests
     for (size_t peer = 0; peer < services; ++peer)
-        s_send_seq (senders [peer], "B", SEQ_END);
+        s_send_seq (senders[peer], "B", SEQ_END);
 
     // Wait for data.
     msleep (SETTLE_TIME);
@@ -138,7 +139,7 @@ void test_fair_queue_in (void *ctx)
     close_zero_linger (receiver);
 
     for (size_t peer = 0; peer < services; ++peer)
-        close_zero_linger (senders [peer]);
+        close_zero_linger (senders[peer]);
 
     // Wait for disconnects.
     msleep (SETTLE_TIME);
@@ -169,7 +170,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (rc == 0);
 
     // Disconnect may take time and need command processing.
-    zmq_pollitem_t poller [2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
+    zmq_pollitem_t poller[2] = {{A, 0, 0, 0}, {B, 0, 0, 0}};
     rc = zmq_poll (poller, 2, 100);
     assert (rc == 0);
     rc = zmq_poll (poller, 2, 100);
@@ -232,14 +233,14 @@ void test_block_on_send_no_peers (void *ctx)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    const char *binds [] = { "inproc://a", "tcp://127.0.0.1:*" };
+    const char *binds[] = {"inproc://a", "tcp://127.0.0.1:*"};
 
     for (int transports = 0; transports < 2; ++transports) {
-        bind_address = binds [transports];
+        bind_address = binds[transports];
 
         // SHALL route outgoing messages to available peers using a round-robin
         // strategy.
@@ -262,5 +263,5 @@ int main (void)
     int rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

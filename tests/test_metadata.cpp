@@ -29,19 +29,16 @@
 
 #include "testutil.hpp"
 
-static void
-zap_handler (void *handler)
+static void zap_handler (void *handler)
 {
-    uint8_t metadata [] = {
-        5, 'H', 'e', 'l', 'l', 'o',
-        0, 0, 0, 5, 'W', 'o', 'r', 'l', 'd'
-    };
+    uint8_t metadata[] = {5, 'H', 'e', 'l', 'l', 'o', 0,  0,
+                          0, 5,   'W', 'o', 'r', 'l', 'd'};
 
     //  Process ZAP requests forever
     while (true) {
         char *version = s_recv (handler);
         if (!version)
-            break;          //  Terminating
+            break; //  Terminating
 
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
@@ -59,12 +56,11 @@ zap_handler (void *handler)
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
             zmq_send (handler, metadata, sizeof (metadata), 0);
-        }
-        else {
+        } else {
             s_sendmore (handler, "400");
             s_sendmore (handler, "BAD DOMAIN");
             s_sendmore (handler, "");
-            s_send     (handler, "");
+            s_send (handler, "");
         }
         free (version);
         free (sequence);
@@ -78,7 +74,7 @@ zap_handler (void *handler)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();

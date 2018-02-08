@@ -31,11 +31,11 @@
 #include "testutil.hpp"
 
 /* Use the worst case filename size for the buffer (+1 for trailing NUL) */
-#define BUF_SIZE (FILENAME_MAX+1)
+#define BUF_SIZE (FILENAME_MAX + 1)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     int rc;
     char buf[BUF_SIZE];
     size_t buf_size;
@@ -54,7 +54,7 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     void *pull = zmq_socket (ctx, ZMQ_PULL);
@@ -69,7 +69,7 @@ int main (void)
     assert (rc == 3);
 
     //  Unbind the listening endpoint
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (push, buf);
@@ -97,7 +97,7 @@ int main (void)
     assert (pull);
     rc = zmq_bind (pull, ep_wc_tcp);
     assert (rc == 0);
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     push = zmq_socket (ctx, ZMQ_PUSH);
@@ -112,7 +112,7 @@ int main (void)
     assert (rc == 3);
 
     //  Disconnect the bound endpoint
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_disconnect (push, buf);
@@ -140,8 +140,8 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
-    pull = zmq_socket(ctx, ZMQ_PULL);
-    assert(pull);
+    pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (pull);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
@@ -154,23 +154,23 @@ int main (void)
 #endif
 
     // Unbind sockets binded by wild-card address
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (push, buf);
     assert (rc == 0);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (pull, buf);
     assert (rc == 0);
 #endif
 #if defined ZMQ_HAVE_VMCI
-    buf_size = sizeof(buf);
+    buf_size = sizeof (buf);
     rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
-    rc = zmq_unbind(req, buf);
+    rc = zmq_unbind (req, buf);
     assert (rc == 0);
 #endif
 
@@ -189,9 +189,9 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
-    pull = zmq_socket(ctx, ZMQ_PULL);
-    assert(pull);
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS    
+    pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (pull);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
 #endif

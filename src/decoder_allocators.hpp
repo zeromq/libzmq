@@ -39,117 +39,93 @@
 
 namespace zmq
 {
-    // Static buffer policy.
-    class c_single_allocator
+// Static buffer policy.
+class c_single_allocator
+{
+  public:
+    explicit c_single_allocator (std::size_t bufsize_) :
+        bufsize (bufsize_),
+        buf (static_cast<unsigned char *> (std::malloc (bufsize)))
     {
-    public:
-        explicit c_single_allocator (std::size_t bufsize_) :
-                bufsize(bufsize_),
-                buf(static_cast <unsigned char*> (std::malloc (bufsize)))
-        {
-            alloc_assert (buf);
-        }
+        alloc_assert (buf);
+    }
 
-        ~c_single_allocator ()
-        {
-            std::free (buf);
-        }
+    ~c_single_allocator () { std::free (buf); }
 
-        unsigned char* allocate ()
-        {
-            return buf;
-        }
+    unsigned char *allocate () { return buf; }
 
-        void deallocate ()
-        {
-        }
+    void deallocate () {}
 
-        std::size_t size () const
-        {
-            return bufsize;
-        }
+    std::size_t size () const { return bufsize; }
 
-        void resize (std::size_t new_size)
-        {
-            bufsize = new_size;
-        }
-    private:
-        std::size_t bufsize;
-        unsigned char* buf;
+    void resize (std::size_t new_size) { bufsize = new_size; }
 
-        c_single_allocator (c_single_allocator const&);
-        c_single_allocator& operator = (c_single_allocator const&);
-    };
+  private:
+    std::size_t bufsize;
+    unsigned char *buf;
 
-    // This allocator allocates a reference counted buffer which is used by v2_decoder_t
-    // to use zero-copy msg::init_data to create messages with memory from this buffer as
-    // data storage.
+    c_single_allocator (c_single_allocator const &);
+    c_single_allocator &operator= (c_single_allocator const &);
+};
+
+// This allocator allocates a reference counted buffer which is used by v2_decoder_t
+// to use zero-copy msg::init_data to create messages with memory from this buffer as
+// data storage.
+//
+// The buffer is allocated with a reference count of 1 to make sure that is is alive while
+// decoding messages. Otherwise, it is possible that e.g. the first message increases the count
+// from zero to one, gets passed to the user application, processed in the user thread and deleted
+// which would then deallocate the buffer. The drawback is that the buffer may be allocated longer
+// than necessary because it is only deleted when allocate is called the next time.
+class shared_message_memory_allocator
+{
+  public:
+    explicit shared_message_memory_allocator (std::size_t bufsize_);
+
+    // Create an allocator for a maximum number of messages
+    shared_message_memory_allocator (std::size_t bufsize_,
+                                     std::size_t maxMessages);
+
+    ~shared_message_memory_allocator ();
+
+    // Allocate a new buffer
     //
-    // The buffer is allocated with a reference count of 1 to make sure that is is alive while
-    // decoding messages. Otherwise, it is possible that e.g. the first message increases the count
-    // from zero to one, gets passed to the user application, processed in the user thread and deleted
-    // which would then deallocate the buffer. The drawback is that the buffer may be allocated longer
-    // than necessary because it is only deleted when allocate is called the next time.
-    class shared_message_memory_allocator
-    {
-    public:
-        explicit shared_message_memory_allocator (std::size_t bufsize_);
+    // This releases the current buffer to be bound to the lifetime of the messages
+    // created on this buffer.
+    unsigned char *allocate ();
 
-        // Create an allocator for a maximum number of messages
-        shared_message_memory_allocator (std::size_t bufsize_, std::size_t maxMessages);
+    // force deallocation of buffer.
+    void deallocate ();
 
-        ~shared_message_memory_allocator ();
+    // Give up ownership of the buffer. The buffer's lifetime is now coupled to
+    // the messages constructed on top of it.
+    unsigned char *release ();
 
-        // Allocate a new buffer
-        //
-        // This releases the current buffer to be bound to the lifetime of the messages
-        // created on this buffer.
-        unsigned char* allocate ();
+    void inc_ref ();
 
-        // force deallocation of buffer.
-        void deallocate ();
+    static void call_dec_ref (void *, void *buffer);
 
-        // Give up ownership of the buffer. The buffer's lifetime is now coupled to
-        // the messages constructed on top of it.
-        unsigned char* release ();
+    std::size_t size () const;
 
-        void inc_ref ();
+    // Return pointer to the first message data byte.
+    unsigned char *data ();
 
-        static void call_dec_ref (void*, void* buffer);
+    // Return pointer to the first byte of the buffer.
+    unsigned char *buffer () { return buf; }
 
-        std::size_t size () const;
+    void resize (std::size_t new_size) { bufsize = new_size; }
 
-        // Return pointer to the first message data byte.
-        unsigned char* data ();
+    zmq::msg_t::content_t *provide_content () { return msg_content; }
 
-        // Return pointer to the first byte of the buffer.
-        unsigned char* buffer ()
-        {
-            return buf;
-        }
+    void advance_content () { msg_content++; }
 
-        void resize (std::size_t new_size)
-        {
-            bufsize = new_size;
-        }
-
-        zmq::msg_t::content_t* provide_content ()
-        {
-            return msg_content;
-        }
-
-        void advance_content ()
-        {
-            msg_content++;
-        }
-
-    private:
-        unsigned char* buf;
-        std::size_t bufsize;
-        std::size_t max_size;
-        zmq::msg_t::content_t* msg_content;
-        std::size_t maxCounters;
-    };
+  private:
+    unsigned char *buf;
+    std::size_t bufsize;
+    std::size_t max_size;
+    zmq::msg_t::content_t *msg_content;
+    std::size_t maxCounters;
+};
 }
 
 #endif

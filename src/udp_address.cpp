@@ -44,8 +44,7 @@
 #include <ctype.h>
 #endif
 
-zmq::udp_address_t::udp_address_t ()
-        : is_multicast(false)
+zmq::udp_address_t::udp_address_t () : is_multicast (false)
 {
     memset (&bind_address, 0, sizeof bind_address);
     memset (&dest_address, 0, sizeof dest_address);
@@ -93,11 +92,10 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
     // and if it from 224 to 239, then it can
     // represent multicast IP.
     int i = dest_address.sin_addr.s_addr & 0xFF;
-    if(i >=  224 && i <= 239) {
+    if (i >= 224 && i <= 239) {
         multicast = dest_address.sin_addr;
         is_multicast = true;
-    }
-    else
+    } else
         is_multicast = false;
 
     iface.s_addr = htonl (INADDR_ANY);
@@ -132,7 +130,7 @@ bool zmq::udp_address_t::is_mcast () const
     return is_multicast;
 }
 
-const sockaddr* zmq::udp_address_t::bind_addr () const
+const sockaddr *zmq::udp_address_t::bind_addr () const
 {
     return (sockaddr *) &bind_address;
 }
@@ -142,7 +140,7 @@ socklen_t zmq::udp_address_t::bind_addrlen () const
     return sizeof (sockaddr_in);
 }
 
-const sockaddr* zmq::udp_address_t::dest_addr () const
+const sockaddr *zmq::udp_address_t::dest_addr () const
 {
     return (sockaddr *) &dest_address;
 }

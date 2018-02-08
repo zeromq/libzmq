@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -40,7 +40,7 @@ int main (void)
     int rc = zmq_bind (sb, "ipc://*");
     assert (rc == 0);
 
-    char endpoint [200];
+    char endpoint[200];
     size_t size = sizeof (endpoint);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size);
     assert (rc == 0);
@@ -49,7 +49,7 @@ int main (void)
     assert (sc);
     rc = zmq_connect (sc, endpoint);
     assert (rc == 0);
-    
+
     bounce (sb, sc);
 
     rc = zmq_close (sc);
@@ -61,5 +61,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

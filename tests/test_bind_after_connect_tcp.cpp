@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -63,7 +63,7 @@ int main (void)
     assert (rc == 6);
     void *data = zmq_msg_data (&msg);
     assert (memcmp ("foobar", data, 6) == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     rc = zmq_msg_init (&msg);
@@ -72,7 +72,7 @@ int main (void)
     assert (rc == 3);
     data = zmq_msg_data (&msg);
     assert (memcmp ("baz", data, 3) == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     rc = zmq_msg_init (&msg);
@@ -81,7 +81,7 @@ int main (void)
     assert (rc == 4);
     data = zmq_msg_data (&msg);
     assert (memcmp ("buzz", data, 4) == 0);
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     rc = zmq_close (sc);

@@ -29,21 +29,21 @@
 
 #include "testutil.hpp"
 
-#if !defined (ZMQ_HAVE_WINDOWS)
+#if !defined(ZMQ_HAVE_WINDOWS)
 #include <netdb.h>
 
-uint16_t pre_allocate_sock (void *zmq_socket, const char *address,
-        const char *port)
+uint16_t
+pre_allocate_sock (void *zmq_socket, const char *address, const char *port)
 {
     struct addrinfo *addr, hint;
-    hint.ai_flags=0;
-    hint.ai_family=AF_INET;
-    hint.ai_socktype=SOCK_STREAM;
-    hint.ai_protocol=IPPROTO_TCP;
-    hint.ai_addrlen=0;
-    hint.ai_canonname=NULL;
-    hint.ai_addr=NULL;
-    hint.ai_next=NULL;
+    hint.ai_flags = 0;
+    hint.ai_family = AF_INET;
+    hint.ai_socktype = SOCK_STREAM;
+    hint.ai_protocol = IPPROTO_TCP;
+    hint.ai_addrlen = 0;
+    hint.ai_canonname = NULL;
+    hint.ai_addr = NULL;
+    hint.ai_next = NULL;
 
     int rc = getaddrinfo (address, port, &hint, &addr);
     assert (rc == 0);
@@ -61,18 +61,17 @@ uint16_t pre_allocate_sock (void *zmq_socket, const char *address,
     rc = listen (s_pre, SOMAXCONN);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre,
-            sizeof (s_pre));
-    assert(rc == 0);
+    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
+    assert (rc == 0);
 
     struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    rc = getsockname(s_pre, (struct sockaddr *)&sin, &len);
+    socklen_t len = sizeof (sin);
+    rc = getsockname (s_pre, (struct sockaddr *) &sin, &len);
     assert (rc != -1);
 
-    freeaddrinfo(addr);
+    freeaddrinfo (addr);
 
-    return ntohs(sin.sin_port);
+    return ntohs (sin.sin_port);
 }
 
 void test_req_rep ()
@@ -84,7 +83,7 @@ void test_req_rep ()
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
 
-    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    uint16_t port = pre_allocate_sock (sb, "127.0.0.1", "0");
     sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
     int rc = zmq_bind (sb, my_endpoint);
@@ -116,7 +115,7 @@ void test_pair ()
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
 
-    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    uint16_t port = pre_allocate_sock (sb, "127.0.0.1", "0");
     sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
     int rc = zmq_bind (sb, my_endpoint);
@@ -149,7 +148,7 @@ void test_client_server ()
     void *sb = zmq_socket (ctx, ZMQ_SERVER);
     assert (sb);
 
-    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    uint16_t port = pre_allocate_sock (sb, "127.0.0.1", "0");
     sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
     int rc = zmq_bind (sb, my_endpoint);
@@ -165,7 +164,7 @@ void test_client_server ()
     assert (rc == 0);
 
     char *data = (char *) zmq_msg_data (&msg);
-    data [0] = 1;
+    data[0] = 1;
 
     rc = zmq_msg_send (&msg, sc, ZMQ_SNDMORE);
     assert (rc == -1);
@@ -188,7 +187,7 @@ void test_client_server ()
     rc = zmq_msg_init_size (&msg, 1);
     assert (rc == 0);
 
-    data = (char *)zmq_msg_data (&msg);
+    data = (char *) zmq_msg_data (&msg);
     data[0] = 2;
 
     rc = zmq_msg_set_routing_id (&msg, routing_id);
@@ -222,17 +221,17 @@ void test_client_server ()
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
 
-    test_req_rep();
-    test_pair();
-    test_client_server();
+    test_req_rep ();
+    test_pair ();
+    test_client_server ();
 
-    return 0 ;
+    return 0;
 }
 #else
 int main (void)
 {
-    return 0 ;
+    return 0;
 }
 #endif

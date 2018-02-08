@@ -58,13 +58,15 @@
 #endif
 
 zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
-      class session_base_t *session_, const options_t &options_,
-      address_t *addr_, bool delayed_start_) :
+                                       class session_base_t *session_,
+                                       const options_t &options_,
+                                       address_t *addr_,
+                                       bool delayed_start_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     addr (addr_),
     s (retired_fd),
-    handle((handle_t)NULL),
+    handle ((handle_t) NULL),
     handle_valid (false),
     delayed_start (delayed_start_),
     connect_timer_started (false),
@@ -145,8 +147,10 @@ void zmq::tcp_connecter_t::out_event ()
     }
 
     int rc = tune_tcp_socket (fd);
-    rc = rc | tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-        options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    rc = rc
+         | tune_tcp_keepalives (
+             fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
         close ();
@@ -155,8 +159,8 @@ void zmq::tcp_connecter_t::out_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -179,8 +183,7 @@ void zmq::tcp_connecter_t::timer_event (int id_)
 
         close ();
         add_reconnect_timer ();
-    }
-    else if (id_ == reconnect_timer_id) {
+    } else if (id_ == reconnect_timer_id) {
         reconnect_timer_started = false;
         start_connecting ();
     }
@@ -199,12 +202,11 @@ void zmq::tcp_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
-    else
-    if (rc == -1 && errno == EINPROGRESS) {
+    else if (rc == -1 && errno == EINPROGRESS) {
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);
-        socket->event_connect_delayed (endpoint, zmq_errno());
+        socket->event_connect_delayed (endpoint, zmq_errno ());
 
         //  add userspace connect timeout
         add_connect_timer ();
@@ -237,16 +239,16 @@ void zmq::tcp_connecter_t::add_reconnect_timer ()
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
-    const int interval = current_reconnect_ivl +
-        generate_random () % options.reconnect_ivl;
+    const int interval =
+      current_reconnect_ivl + generate_random () % options.reconnect_ivl;
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 &&
-        options.reconnect_ivl_max > options.reconnect_ivl)
+    if (options.reconnect_ivl_max > 0
+        && options.reconnect_ivl_max > options.reconnect_ivl)
         //  Calculate the next interval
         current_reconnect_ivl =
-            std::min (current_reconnect_ivl * 2, options.reconnect_ivl_max);
+          std::min (current_reconnect_ivl * 2, options.reconnect_ivl_max);
     return interval;
 }
 
@@ -256,31 +258,30 @@ int zmq::tcp_connecter_t::open ()
 
     //  Resolve the address
     if (addr->resolved.tcp_addr != NULL) {
-        LIBZMQ_DELETE(addr->resolved.tcp_addr);
+        LIBZMQ_DELETE (addr->resolved.tcp_addr);
     }
 
     addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (addr->resolved.tcp_addr);
-    int rc = addr->resolved.tcp_addr->resolve (
-        addr->address.c_str (), false, options.ipv6);
+    int rc = addr->resolved.tcp_addr->resolve (addr->address.c_str (), false,
+                                               options.ipv6);
     if (rc != 0) {
-        LIBZMQ_DELETE(addr->resolved.tcp_addr);
+        LIBZMQ_DELETE (addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (addr->resolved.tcp_addr != NULL);
-    tcp_address_t * const tcp_addr = addr->resolved.tcp_addr;
+    tcp_address_t *const tcp_addr = addr->resolved.tcp_addr;
 
     //  Create the socket.
     s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
     if (s == zmq::retired_fd && tcp_addr->family () == AF_INET6
-    && errno == EAFNOSUPPORT
-    && options.ipv6) {
-        rc = addr->resolved.tcp_addr->resolve (
-            addr->address.c_str (), false, false);
+        && errno == EAFNOSUPPORT && options.ipv6) {
+        rc = addr->resolved.tcp_addr->resolve (addr->address.c_str (), false,
+                                               false);
         if (rc != 0) {
-            LIBZMQ_DELETE(addr->resolved.tcp_addr);
+            LIBZMQ_DELETE (addr->resolved.tcp_addr);
             return -1;
         }
         s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -328,8 +329,8 @@ int zmq::tcp_connecter_t::open ()
         //  using the same source port on the client.
         int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (const char*) &flag,
-                sizeof (int));
+        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (const char *) &flag,
+                         sizeof (int));
         wsa_assert (rc != SOCKET_ERROR);
 #else
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
@@ -348,10 +349,10 @@ int zmq::tcp_connecter_t::open ()
     if (rc == 0)
         return 0;
 
-    //  Translate error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
+        //  Translate error codes indicating asynchronous connect has been
+        //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    const int last_error = WSAGetLastError();
+    const int last_error = WSAGetLastError ();
     if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
     else
@@ -373,18 +374,15 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     socklen_t len = sizeof err;
 #endif
 
-    const int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    const int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        if (err == WSAEBADF ||
-            err == WSAENOPROTOOPT ||
-            err == WSAENOTSOCK ||
-            err == WSAENOBUFS)
-        {
+        if (err == WSAEBADF || err == WSAENOPROTOOPT || err == WSAENOTSOCK
+            || err == WSAENOBUFS) {
             wsa_assert_no (err);
         }
         return retired_fd;
@@ -396,11 +394,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         err = errno;
     if (err != 0) {
         errno = err;
-        errno_assert (
-            errno != EBADF &&
-            errno != ENOPROTOOPT &&
-            errno != ENOTSOCK &&
-            errno != ENOBUFS);
+        errno_assert (errno != EBADF && errno != ENOPROTOOPT
+                      && errno != ENOTSOCK && errno != ENOBUFS);
         return retired_fd;
     }
 #endif

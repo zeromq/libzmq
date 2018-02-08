@@ -53,7 +53,8 @@ int main (void)
     int mandatory = 1;
 
     // Set mandatory routing on socket
-    rc = zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
+    rc =
+      zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
     assert (rc == 0);
 
     // Send a message and check that it fails
@@ -66,5 +67,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
+    return 0;
 }

@@ -93,18 +93,18 @@ void test_setsockopt_use_fd ()
     size_t placeholder = sizeof (val);
 
     rc = zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder);
-    assert(rc == 0);
-    assert(val == -1);
+    assert (rc == 0);
+    assert (val == -1);
 
     val = 3;
 
-    rc = zmq_setsockopt (socket, ZMQ_USE_FD, &val, sizeof(val));
-    assert(rc == 0);
-    assert(val == 3);
+    rc = zmq_setsockopt (socket, ZMQ_USE_FD, &val, sizeof (val));
+    assert (rc == 0);
+    assert (val == 3);
 
     rc = zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder);
-    assert(rc == 0);
-    assert(val == 3);
+    assert (rc == 0);
+    assert (val == 3);
 
     zmq_close (socket);
     zmq_ctx_term (ctx);
@@ -122,22 +122,22 @@ void test_setsockopt_bindtodevice ()
     size_t buflen = BOUNDDEVBUFSZ;
 
     rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
-    assert(rc == 0);
-    assert(devname[0] == '\0');
-    assert(buflen == 1);
+    assert (rc == 0);
+    assert (devname[0] == '\0');
+    assert (buflen == 1);
 
-    sprintf(devname, "testdev");
-    buflen = strlen(devname);
+    sprintf (devname, "testdev");
+    buflen = strlen (devname);
 
     rc = zmq_setsockopt (socket, ZMQ_BINDTODEVICE, devname, buflen);
-    assert(rc == 0);
+    assert (rc == 0);
 
     buflen = BOUNDDEVBUFSZ;
-    memset(devname, 0, buflen);
+    memset (devname, 0, buflen);
 
     rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
-    assert(rc == 0);
-    assert(!strncmp("testdev", devname, buflen));
+    assert (rc == 0);
+    assert (!strncmp ("testdev", devname, buflen));
 #endif
 
     zmq_close (socket);

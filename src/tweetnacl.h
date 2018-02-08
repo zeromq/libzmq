@@ -30,7 +30,7 @@
 #ifndef TWEETNACL_H
 #define TWEETNACL_H
 
-#if defined (ZMQ_USE_TWEETNACL)
+#if defined(ZMQ_USE_TWEETNACL)
 
 #define crypto_box_SECRETKEYBYTES 32
 #define crypto_box_BOXZEROBYTES 16
@@ -57,15 +57,18 @@ int randombytes_close (void);
 //  Do not call manually! Use random_open from random.hpp
 int sodium_init (void);
 
-int crypto_box_keypair(u8 *y,u8 *x);
-int crypto_box_afternm(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *k);
-int crypto_box_open_afternm(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *k);
-int crypto_box(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *y,const u8 *x);
-int crypto_box_open(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *y,const u8 *x);
-int crypto_box_beforenm(u8 *k,const u8 *y,const u8 *x);
-int crypto_scalarmult_base(u8 *q,const u8 *n);
-int crypto_secretbox(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *k);
-int crypto_secretbox_open(u8 *m,const u8 *c,u64 d,const u8 *n,const u8 *k);
+int crypto_box_keypair (u8 *y, u8 *x);
+int crypto_box_afternm (u8 *c, const u8 *m, u64 d, const u8 *n, const u8 *k);
+int crypto_box_open_afternm (
+  u8 *m, const u8 *c, u64 d, const u8 *n, const u8 *k);
+int crypto_box (
+  u8 *c, const u8 *m, u64 d, const u8 *n, const u8 *y, const u8 *x);
+int crypto_box_open (
+  u8 *m, const u8 *c, u64 d, const u8 *n, const u8 *y, const u8 *x);
+int crypto_box_beforenm (u8 *k, const u8 *y, const u8 *x);
+int crypto_scalarmult_base (u8 *q, const u8 *n);
+int crypto_secretbox (u8 *c, const u8 *m, u64 d, const u8 *n, const u8 *k);
+int crypto_secretbox_open (u8 *m, const u8 *c, u64 d, const u8 *n, const u8 *k);
 #ifdef __cplusplus
 }
 #endif

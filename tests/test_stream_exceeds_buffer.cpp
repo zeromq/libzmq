@@ -29,96 +29,96 @@
 
 #include "testutil.hpp"
 
-#if defined (ZMQ_HAVE_WINDOWS)
-#   include <winsock2.h>
-#   include <ws2tcpip.h>
-#   include <stdexcept>
-#   define close closesocket
+#if defined(ZMQ_HAVE_WINDOWS)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdexcept>
+#define close closesocket
 #endif
 
-int main()
+int main ()
 {
     const int msgsize = 8193;
     char sndbuf[msgsize] = "\xde\xad\xbe\xef";
     unsigned char rcvbuf[msgsize];
     char my_endpoint[MAX_SOCKET_STRING];
 
-    int server_sock = socket(AF_INET, SOCK_STREAM, 0);
-    assert(server_sock!=-1);
+    int server_sock = socket (AF_INET, SOCK_STREAM, 0);
+    assert (server_sock != -1);
     int enable = 1;
-    int rc = setsockopt (server_sock, SOL_SOCKET, SO_REUSEADDR, (char *) &enable, sizeof(enable));
-    assert(rc!=-1);
+    int rc = setsockopt (server_sock, SOL_SOCKET, SO_REUSEADDR,
+                         (char *) &enable, sizeof (enable));
+    assert (rc != -1);
 
     struct sockaddr_in saddr;
-    memset(&saddr, 0, sizeof(saddr));
+    memset (&saddr, 0, sizeof (saddr));
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = INADDR_ANY;
-#if !defined (_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
     saddr.sin_port = 0;
 #else
-    saddr.sin_port = htons(12345);
+    saddr.sin_port = htons (12345);
 #endif
 
-    rc = bind(server_sock, (struct sockaddr *)&saddr, sizeof(saddr));
-    assert(rc!=-1);
-    rc = listen(server_sock, 1);
-    assert(rc!=-1);
+    rc = bind (server_sock, (struct sockaddr *) &saddr, sizeof (saddr));
+    assert (rc != -1);
+    rc = listen (server_sock, 1);
+    assert (rc != -1);
 
-#if !defined (_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
     socklen_t saddr_len = sizeof (saddr);
-    rc = getsockname (server_sock, (struct sockaddr *)&saddr, &saddr_len);
+    rc = getsockname (server_sock, (struct sockaddr *) &saddr, &saddr_len);
     assert (rc != -1);
 #endif
-    sprintf (my_endpoint, "tcp://127.0.0.1:%d", ntohs(saddr.sin_port));
+    sprintf (my_endpoint, "tcp://127.0.0.1:%d", ntohs (saddr.sin_port));
 
-    void *zctx = zmq_ctx_new();
-    assert(zctx);
-    void *zsock = zmq_socket(zctx, ZMQ_STREAM);
-    assert(zsock);
-    rc = zmq_connect(zsock, my_endpoint);
-    assert(rc!=-1);
+    void *zctx = zmq_ctx_new ();
+    assert (zctx);
+    void *zsock = zmq_socket (zctx, ZMQ_STREAM);
+    assert (zsock);
+    rc = zmq_connect (zsock, my_endpoint);
+    assert (rc != -1);
 
-    int client_sock = accept(server_sock, NULL, NULL);
-    assert(client_sock!=-1);
+    int client_sock = accept (server_sock, NULL, NULL);
+    assert (client_sock != -1);
 
-    rc = close(server_sock);
-    assert(rc!=-1);
+    rc = close (server_sock);
+    assert (rc != -1);
 
-    rc = send(client_sock, sndbuf, msgsize, 0);
-    assert(rc==msgsize);
+    rc = send (client_sock, sndbuf, msgsize, 0);
+    assert (rc == msgsize);
 
     zmq_msg_t msg;
-    zmq_msg_init(&msg);
+    zmq_msg_init (&msg);
 
     int rcvbytes = 0;
-    while (rcvbytes==0) // skip connection notification, if any
+    while (rcvbytes == 0) // skip connection notification, if any
     {
-        rc = zmq_msg_recv(&msg, zsock, 0);  // peerid
-        assert(rc!=-1);
-        assert(zmq_msg_more(&msg));
-        rcvbytes = zmq_msg_recv(&msg, zsock, 0);
-        assert(rcvbytes!=-1);
-        assert(!zmq_msg_more(&msg));
+        rc = zmq_msg_recv (&msg, zsock, 0); // peerid
+        assert (rc != -1);
+        assert (zmq_msg_more (&msg));
+        rcvbytes = zmq_msg_recv (&msg, zsock, 0);
+        assert (rcvbytes != -1);
+        assert (!zmq_msg_more (&msg));
     }
 
     // for this test, we only collect the first chunk
     // since the corruption already occurs in the first chunk
-    memcpy(rcvbuf, zmq_msg_data(&msg), zmq_msg_size(&msg));
+    memcpy (rcvbuf, zmq_msg_data (&msg), zmq_msg_size (&msg));
 
-    zmq_msg_close(&msg);
-    zmq_close(zsock);
-    close(client_sock);
+    zmq_msg_close (&msg);
+    zmq_close (zsock);
+    close (client_sock);
 
-    zmq_ctx_destroy(zctx);
+    zmq_ctx_destroy (zctx);
 
-    assert(rcvbytes >= 4);
+    assert (rcvbytes >= 4);
 
     // notice that only the 1st byte gets corrupted
-    assert(rcvbuf[3]==0xef);
-    assert(rcvbuf[2]==0xbe);
-    assert(rcvbuf[1]==0xad);
-    assert(rcvbuf[0]==0xde);
+    assert (rcvbuf[3] == 0xef);
+    assert (rcvbuf[2] == 0xbe);
+    assert (rcvbuf[1] == 0xad);
+    assert (rcvbuf[0] == 0xde);
 
-    (void)(rc); // avoid -Wunused-but-set-variable warning in release build
+    (void) (rc); // avoid -Wunused-but-set-variable warning in release build
 }
-

@@ -60,7 +60,7 @@ zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
 {
 #if defined ZMQ_HAVE_WINDOWS
     for (size_t i = 0; i < fd_family_cache_size; ++i)
-        fd_family_cache [i] = std::make_pair (retired_fd, 0);
+        fd_family_cache[i] = std::make_pair (retired_fd, 0);
 #endif
 }
 
@@ -81,7 +81,7 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (fd_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries [family];
+    family_entry_t &family_entry = family_entries[family];
 #endif
     family_entry.fd_entries.push_back (fd_entry);
     FD_SET (fd_, &family_entry.fds_set.error);
@@ -116,7 +116,7 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
     //  Size is cached to avoid iteration through recently added descriptors.
     for (fd_entries_t::size_type i = 0, size = fd_entries_.size ();
          i < size && event_count_ > 0; ++i) {
-        const fd_entry_t &current_fd_entry = fd_entries_ [i];
+        const fd_entry_t &current_fd_entry = fd_entries_[i];
 
         if (is_retired_fd (current_fd_entry))
             continue;
@@ -223,7 +223,7 @@ void zmq::select_t::set_pollin (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries [family];
+    family_entry_t &family_entry = family_entries[family];
 #endif
     FD_SET (handle_, &family_entry.fds_set.read);
 }
@@ -233,7 +233,7 @@ void zmq::select_t::reset_pollin (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries [family];
+    family_entry_t &family_entry = family_entries[family];
 #endif
     FD_CLR (handle_, &family_entry.fds_set.read);
 }
@@ -243,7 +243,7 @@ void zmq::select_t::set_pollout (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries [family];
+    family_entry_t &family_entry = family_entries[family];
 #endif
     FD_SET (handle_, &family_entry.fds_set.write);
 }
@@ -253,7 +253,7 @@ void zmq::select_t::reset_pollout (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries [family];
+    family_entry_t &family_entry = family_entries[family];
 #endif
     FD_CLR (handle_, &family_entry.fds_set.write);
 }
@@ -332,18 +332,18 @@ void zmq::select_t::loop ()
                     if (FD_ISSET (fd, &family_entry.fds_set.read)
                         && FD_ISSET (fd, &family_entry.fds_set.write))
                         rc =
-                          WSAEventSelect (fd, wsa_events.events [3],
+                          WSAEventSelect (fd, wsa_events.events[3],
                                           FD_READ | FD_ACCEPT | FD_CLOSE
                                             | FD_WRITE | FD_CONNECT | FD_OOB);
                     else if (FD_ISSET (fd, &family_entry.fds_set.read))
-                        rc = WSAEventSelect (fd, wsa_events.events [0],
+                        rc = WSAEventSelect (fd, wsa_events.events[0],
                                              FD_READ | FD_ACCEPT | FD_CLOSE
                                                | FD_OOB);
                     else if (FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc = WSAEventSelect (fd, wsa_events.events [1],
+                        rc = WSAEventSelect (fd, wsa_events.events[1],
                                              FD_WRITE | FD_CONNECT | FD_OOB);
                     else if (FD_ISSET (fd, &family_entry.fds_set.error))
-                        rc = WSAEventSelect (fd, wsa_events.events [2], FD_OOB);
+                        rc = WSAEventSelect (fd, wsa_events.events[2], FD_OOB);
                     else
                         rc = 0;
 
@@ -494,7 +494,7 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
     // for the same sockets, and determine_fd_family is expensive
     size_t i;
     for (i = 0; i < fd_family_cache_size; ++i) {
-        const std::pair<fd_t, u_short> &entry = fd_family_cache [i];
+        const std::pair<fd_t, u_short> &entry = fd_family_cache[i];
         if (entry.first == fd_) {
             return entry.second;
         }
@@ -505,11 +505,11 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
     std::pair<fd_t, u_short> res =
       std::make_pair (fd_, determine_fd_family (fd_));
     if (i < fd_family_cache_size) {
-        fd_family_cache [i] = res;
+        fd_family_cache[i] = res;
     } else {
         // just overwrite a random entry
         // could be optimized by some LRU strategy
-        fd_family_cache [rand () % fd_family_cache_size] = res;
+        fd_family_cache[rand () % fd_family_cache_size] = res;
     }
 
     return res.second;
@@ -550,22 +550,22 @@ zmq::select_t::family_entry_t::family_entry_t () : retired (false)
 
 zmq::select_t::wsa_events_t::wsa_events_t ()
 {
-    events [0] = WSACreateEvent ();
-    wsa_assert (events [0] != WSA_INVALID_EVENT);
-    events [1] = WSACreateEvent ();
-    wsa_assert (events [1] != WSA_INVALID_EVENT);
-    events [2] = WSACreateEvent ();
-    wsa_assert (events [2] != WSA_INVALID_EVENT);
-    events [3] = WSACreateEvent ();
-    wsa_assert (events [3] != WSA_INVALID_EVENT);
+    events[0] = WSACreateEvent ();
+    wsa_assert (events[0] != WSA_INVALID_EVENT);
+    events[1] = WSACreateEvent ();
+    wsa_assert (events[1] != WSA_INVALID_EVENT);
+    events[2] = WSACreateEvent ();
+    wsa_assert (events[2] != WSA_INVALID_EVENT);
+    events[3] = WSACreateEvent ();
+    wsa_assert (events[3] != WSA_INVALID_EVENT);
 }
 
 zmq::select_t::wsa_events_t::~wsa_events_t ()
 {
-    wsa_assert (WSACloseEvent (events [0]));
-    wsa_assert (WSACloseEvent (events [1]));
-    wsa_assert (WSACloseEvent (events [2]));
-    wsa_assert (WSACloseEvent (events [3]));
+    wsa_assert (WSACloseEvent (events[0]));
+    wsa_assert (WSACloseEvent (events[1]));
+    wsa_assert (WSACloseEvent (events[2]));
+    wsa_assert (WSACloseEvent (events[3]));
 }
 #endif
 

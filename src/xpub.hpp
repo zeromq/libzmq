@@ -41,86 +41,81 @@
 
 namespace zmq
 {
+class ctx_t;
+class msg_t;
+class pipe_t;
+class io_thread_t;
 
-    class ctx_t;
-    class msg_t;
-    class pipe_t;
-    class io_thread_t;
+class xpub_t : public socket_base_t
+{
+  public:
+    xpub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+    ~xpub_t ();
 
-    class xpub_t :
-        public socket_base_t
-    {
-    public:
+    //  Implementations of virtual functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_ = false);
+    int xsend (zmq::msg_t *msg_);
+    bool xhas_out ();
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
-        xpub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-        ~xpub_t ();
+  private:
+    //  Function to be applied to the trie to send all the subscriptions
+    //  upstream.
+    static void
+    send_unsubscription (unsigned char *data_, size_t size_, void *arg_);
 
-        //  Implementations of virtual functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_ = false);
-        int xsend (zmq::msg_t *msg_);
-        bool xhas_out ();
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        void xread_activated (zmq::pipe_t *pipe_);
-        void xwrite_activated (zmq::pipe_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
+    //  Function to be applied to each matching pipes.
+    static void mark_as_matching (zmq::pipe_t *pipe_, void *arg_);
 
-    private:
+    //  List of all subscriptions mapped to corresponding pipes.
+    mtrie_t subscriptions;
 
-        //  Function to be applied to the trie to send all the subscriptions
-        //  upstream.
-        static void send_unsubscription (unsigned char *data_, size_t size_,
-            void *arg_);
+    //  List of manual subscriptions mapped to corresponding pipes.
+    mtrie_t manual_subscriptions;
 
-        //  Function to be applied to each matching pipes.
-        static void mark_as_matching (zmq::pipe_t *pipe_, void *arg_);
+    //  Distributor of messages holding the list of outbound pipes.
+    dist_t dist;
 
-        //  List of all subscriptions mapped to corresponding pipes.
-        mtrie_t subscriptions;
+    // If true, send all subscription messages upstream, not just
+    // unique ones
+    bool verbose_subs;
 
-        //  List of manual subscriptions mapped to corresponding pipes.
-        mtrie_t manual_subscriptions;
+    // If true, send all unsubscription messages upstream, not just
+    // unique ones
+    bool verbose_unsubs;
 
-        //  Distributor of messages holding the list of outbound pipes.
-        dist_t dist;
+    //  True if we are in the middle of sending a multi-part message.
+    bool more;
 
-        // If true, send all subscription messages upstream, not just
-        // unique ones
-        bool verbose_subs;
+    //  Drop messages if HWM reached, otherwise return with EAGAIN
+    bool lossy;
 
-        // If true, send all unsubscription messages upstream, not just
-        // unique ones
-        bool verbose_unsubs;
+    //  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
+    bool manual;
 
-        //  True if we are in the middle of sending a multi-part message.
-        bool more;
+    //  Last pipe that sent subscription message, only used if xpub is on manual
+    pipe_t *last_pipe;
 
-        //  Drop messages if HWM reached, otherwise return with EAGAIN
-        bool lossy;
+    // Pipes that sent subscriptions messages that have not yet been processed, only used if xpub is on manual
+    std::deque<pipe_t *> pending_pipes;
 
-        //  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
-        bool manual;
+    //  Welcome message to send to pipe when attached
+    msg_t welcome_msg;
 
-        //  Last pipe that sent subscription message, only used if xpub is on manual
-        pipe_t *last_pipe;
+    //  List of pending (un)subscriptions, ie. those that were already
+    //  applied to the trie, but not yet received by the user.
+    std::deque<blob_t> pending_data;
+    std::deque<metadata_t *> pending_metadata;
+    std::deque<unsigned char> pending_flags;
 
-        // Pipes that sent subscriptions messages that have not yet been processed, only used if xpub is on manual
-        std::deque <pipe_t*> pending_pipes;
-
-        //  Welcome message to send to pipe when attached
-        msg_t welcome_msg;
-
-        //  List of pending (un)subscriptions, ie. those that were already
-        //  applied to the trie, but not yet received by the user.
-        std::deque <blob_t> pending_data;
-        std::deque <metadata_t*> pending_metadata;
-        std::deque <unsigned char> pending_flags;
-
-        xpub_t (const xpub_t&);
-        const xpub_t &operator = (const xpub_t&);
-    };
-
+    xpub_t (const xpub_t &);
+    const xpub_t &operator= (const xpub_t &);
+};
 }
 
 #endif

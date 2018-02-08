@@ -32,7 +32,7 @@
 static void bounce_fail (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
-    char buffer [32];
+    char buffer[32];
 
     //  Send message from client to server
     int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
@@ -68,12 +68,11 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     assert (sb);
 
     if (opt) {
-        rc = zmq_setsockopt(sb, opt, &optval, sizeof (optval));
+        rc = zmq_setsockopt (sb, opt, &optval, sizeof (optval));
         if (expected_error) {
             assert (rc == -1);
             assert (zmq_errno () == expected_error);
-        }
-        else
+        } else
             assert (rc == 0);
     }
 
@@ -95,13 +94,13 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     assert (rc == 0);
 
     if (bounce_test) {
-        const char* endpoint = "ipc://test_filter_ipc.sock";
+        const char *endpoint = "ipc://test_filter_ipc.sock";
         int rc = zmq_bind (sb, endpoint);
         assert (rc == 0);
 
         rc = zmq_connect (sc, endpoint);
         assert (rc == 0);
-        
+
         if (bounce_test > 0)
             bounce (sb, sc);
         else
@@ -116,8 +115,8 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
 
 int main (void)
 {
-#if !defined (ZMQ_HAVE_WINDOWS)
-    setup_test_environment();
+#if !defined(ZMQ_HAVE_WINDOWS)
+    setup_test_environment ();
 
     // No filters
     run_test<int> (0, 0, 0, 1);
@@ -125,9 +124,9 @@ int main (void)
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
     // Get the group and supplimental groups of the process owner
     gid_t groups[100];
-    int ngroups = getgroups(100, groups);
+    int ngroups = getgroups (100, groups);
     assert (ngroups != -1);
-    gid_t group = getgid(), supgroup = group, notgroup = group + 1;
+    gid_t group = getgid (), supgroup = group, notgroup = group + 1;
     for (int i = 0; i < ngroups; i++) {
         if (supgroup == group && group != groups[i])
             supgroup = groups[i];
@@ -136,24 +135,24 @@ int main (void)
     }
 
     // Test filter with UID of process owner
-    run_test<uid_t> (ZMQ_IPC_FILTER_UID, getuid(), 0, 1);
+    run_test<uid_t> (ZMQ_IPC_FILTER_UID, getuid (), 0, 1);
     // Test filter with UID of another (possibly non-existent) user
-    run_test<uid_t> (ZMQ_IPC_FILTER_UID, getuid() + 1, 0, -1);
+    run_test<uid_t> (ZMQ_IPC_FILTER_UID, getuid () + 1, 0, -1);
     // Test filter with GID of process owner
     run_test<gid_t> (ZMQ_IPC_FILTER_GID, group, 0, 1);
     // Test filter with supplimental group of process owner
     run_test<gid_t> (ZMQ_IPC_FILTER_GID, supgroup, 0, 1);
     // Test filter with GID of another (possibly non-existent) group
     run_test<gid_t> (ZMQ_IPC_FILTER_GID, notgroup, 0, -1);
-#   if defined ZMQ_HAVE_SO_PEERCRED
+#if defined ZMQ_HAVE_SO_PEERCRED
     // Test filter with PID of current process
-    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid(), 0, 1);
+    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid (), 0, 1);
     // Test filter with PID of another (possibly non-existent) process
-    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid() + 1, 0, -1);
-#   else
+    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid () + 1, 0, -1);
+#else
     // Setup of PID filter should fail with operation not supported error
-    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid(), EINVAL, 0);
-#   endif
+    run_test<pid_t> (ZMQ_IPC_FILTER_PID, getpid (), EINVAL, 0);
+#endif
 #else
     run_test<uid_t> (ZMQ_IPC_FILTER_UID, 0, EINVAL, 0);
     run_test<gid_t> (ZMQ_IPC_FILTER_GID, 0, EINVAL, 0);
@@ -161,6 +160,5 @@ int main (void)
 #endif // defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
 
 #endif
-    return 0 ;
+    return 0;
 }
-

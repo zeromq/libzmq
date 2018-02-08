@@ -31,16 +31,25 @@
 
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
-#if defined _MSC_VER &&_MSC_VER <= 1400
-    typedef UINT_PTR fd_t;
-    enum {retired_fd = (fd_t)(~0)};
+#if defined _MSC_VER && _MSC_VER <= 1400
+typedef UINT_PTR fd_t;
+enum
+{
+    retired_fd = (fd_t) (~0)
+};
 #else
-    typedef SOCKET fd_t;
-    enum {retired_fd = (fd_t)INVALID_SOCKET};
+typedef SOCKET fd_t;
+enum
+{
+    retired_fd = (fd_t) INVALID_SOCKET
+};
 #endif
 #else
-    typedef int fd_t;
-    enum {retired_fd = -1};
+typedef int fd_t;
+enum
+{
+    retired_fd = -1
+};
 #endif
 
 void test_null_poller_pointers (void *ctx)
@@ -71,7 +80,7 @@ void test_null_poller_pointers (void *ctx)
 
     fd_t fd;
     size_t fd_size = sizeof fd;
-    rc = zmq_getsockopt(socket, ZMQ_FD, &fd, &fd_size);
+    rc = zmq_getsockopt (socket, ZMQ_FD, &fd, &fd_size);
     assert (rc == 0);
 
     rc = zmq_poller_add_fd (NULL, fd, NULL, ZMQ_POLLIN);
@@ -119,7 +128,7 @@ void test_null_socket_pointers ()
     assert (rc == -1 && errno == ENOTSOCK);
 
     fd_t null_socket_fd = retired_fd;
-    
+
     rc = zmq_poller_add_fd (poller, null_socket_fd, NULL, ZMQ_POLLIN);
     assert (rc == -1 && errno == EBADF);
 
@@ -150,8 +159,8 @@ void test_null_event_pointers (void *ctx)
     rc = zmq_poller_wait_all (poller, NULL, 1, 0);
     assert (rc == -1 && errno == EFAULT);
 
-    //  TODO this causes an assertion, which is not consistent if the number 
-    //  of events may be 0, the pointer should be allowed to by NULL in that 
+    //  TODO this causes an assertion, which is not consistent if the number
+    //  of events may be 0, the pointer should be allowed to by NULL in that
     //  case too
 #if 0
     rc = zmq_poller_wait_all (poller, NULL, 0, 0);
@@ -165,7 +174,7 @@ void test_null_event_pointers (void *ctx)
     assert (rc == 0);
 }
 
-void test_add_modify_remove_corner_cases(void *ctx)
+void test_add_modify_remove_corner_cases (void *ctx)
 {
     void *poller = zmq_poller_new ();
     assert (poller != NULL);
@@ -231,11 +240,11 @@ void test_wait_corner_cases (void)
     assert (poller != NULL);
 
     zmq_poller_event_t event;
-    int rc = zmq_poller_wait(poller, &event, 0);
+    int rc = zmq_poller_wait (poller, &event, 0);
     assert (rc == -1 && errno == EAGAIN);
 
     //  this can never return since no socket was registered, and should yield an error
-    rc = zmq_poller_wait(poller, &event, -1);
+    rc = zmq_poller_wait (poller, &event, -1);
     assert (rc == -1 && errno == EFAULT);
 
     rc = zmq_poller_wait_all (poller, &event, -1, 0);

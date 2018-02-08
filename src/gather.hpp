@@ -36,40 +36,33 @@
 
 namespace zmq
 {
+class ctx_t;
+class pipe_t;
+class msg_t;
+class io_thread_t;
 
-    class ctx_t;
-    class pipe_t;
-    class msg_t;
-    class io_thread_t;
+class gather_t : public socket_base_t
+{
+  public:
+    gather_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+    ~gather_t ();
 
-    class gather_t :
-        public socket_base_t
-    {
-    public:
+  protected:
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    const blob_t &get_credential () const;
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
-        gather_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-        ~gather_t ();
+  private:
+    //  Fair queueing object for inbound pipes.
+    fq_t fq;
 
-    protected:
-
-        //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
-        int xrecv (zmq::msg_t *msg_);
-        bool xhas_in ();
-        const blob_t &get_credential () const;
-        void xread_activated (zmq::pipe_t *pipe_);
-        void xpipe_terminated (zmq::pipe_t *pipe_);
-
-    private:
-
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
-
-        gather_t (const gather_t&);
-        const gather_t &operator = (const gather_t&);
-
-    };
-
+    gather_t (const gather_t &);
+    const gather_t &operator= (const gather_t &);
+};
 }
 
 #endif

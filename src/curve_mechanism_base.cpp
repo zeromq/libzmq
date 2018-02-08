@@ -53,7 +53,7 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
 {
     const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
 
-    uint8_t message_nonce [crypto_box_NONCEBYTES];
+    uint8_t message_nonce[crypto_box_NONCEBYTES];
     memcpy (message_nonce, encode_nonce_prefix, 16);
     put_uint64 (message_nonce + 16, cn_nonce);
 
@@ -63,19 +63,19 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     if (msg_->flags () & msg_t::command)
         flags |= 0x02;
 
-    uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (mlen));
+    uint8_t *message_plaintext = static_cast<uint8_t *> (malloc (mlen));
     alloc_assert (message_plaintext);
 
     memset (message_plaintext, 0, crypto_box_ZEROBYTES);
-    message_plaintext [crypto_box_ZEROBYTES] = flags;
-    memcpy (message_plaintext + crypto_box_ZEROBYTES + 1,
-            msg_->data (), msg_->size ());
+    message_plaintext[crypto_box_ZEROBYTES] = flags;
+    memcpy (message_plaintext + crypto_box_ZEROBYTES + 1, msg_->data (),
+            msg_->size ());
 
-    uint8_t *message_box = static_cast <uint8_t *> (malloc (mlen));
+    uint8_t *message_box = static_cast<uint8_t *> (malloc (mlen));
     alloc_assert (message_box);
 
-    int rc = crypto_box_afternm (message_box, message_plaintext,
-                                 mlen, message_nonce, cn_precom);
+    int rc = crypto_box_afternm (message_box, message_plaintext, mlen,
+                                 message_nonce, cn_precom);
     zmq_assert (rc == 0);
 
     rc = msg_->close ();
@@ -84,7 +84,7 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     rc = msg_->init_size (16 + mlen - crypto_box_BOXZEROBYTES);
     zmq_assert (rc == 0);
 
-    uint8_t *message = static_cast <uint8_t *> (msg_->data ());
+    uint8_t *message = static_cast<uint8_t *> (msg_->data ());
 
     memcpy (message, "\x07MESSAGE", 8);
     memcpy (message + 8, message_nonce + 16, 8);
@@ -103,11 +103,11 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
 {
     int rc = check_basic_command_structure (msg_);
     if (rc == -1)
-      return -1;
+        return -1;
 
     const size_t size = msg_->size ();
-    const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    
+    const uint8_t *message = static_cast<uint8_t *> (msg_->data ());
+
     if (size < 8 || memcmp (message, "\x07MESSAGE", 8)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
@@ -123,10 +123,10 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
         return -1;
     }
 
-    uint8_t message_nonce [crypto_box_NONCEBYTES];
+    uint8_t message_nonce[crypto_box_NONCEBYTES];
     memcpy (message_nonce, decode_nonce_prefix, 16);
     memcpy (message_nonce + 16, message + 8, 8);
-    uint64_t nonce = get_uint64(message + 8);
+    uint64_t nonce = get_uint64 (message + 8);
     if (nonce <= cn_peer_nonce) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE);
@@ -137,15 +137,15 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
 
     const size_t clen = crypto_box_BOXZEROBYTES + msg_->size () - 16;
 
-    uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (clen));
+    uint8_t *message_plaintext = static_cast<uint8_t *> (malloc (clen));
     alloc_assert (message_plaintext);
 
-    uint8_t *message_box = static_cast <uint8_t *> (malloc (clen));
+    uint8_t *message_box = static_cast<uint8_t *> (malloc (clen));
     alloc_assert (message_box);
 
     memset (message_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (message_box + crypto_box_BOXZEROBYTES,
-            message + 16, msg_->size () - 16);
+    memcpy (message_box + crypto_box_BOXZEROBYTES, message + 16,
+            msg_->size () - 16);
 
     rc = crypto_box_open_afternm (message_plaintext, message_box, clen,
                                   message_nonce, cn_precom);
@@ -156,17 +156,15 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
         rc = msg_->init_size (clen - 1 - crypto_box_ZEROBYTES);
         zmq_assert (rc == 0);
 
-        const uint8_t flags = message_plaintext [crypto_box_ZEROBYTES];
+        const uint8_t flags = message_plaintext[crypto_box_ZEROBYTES];
         if (flags & 0x01)
             msg_->set_flags (msg_t::more);
         if (flags & 0x02)
             msg_->set_flags (msg_t::command);
 
-        memcpy (msg_->data (),
-                message_plaintext + crypto_box_ZEROBYTES + 1,
+        memcpy (msg_->data (), message_plaintext + crypto_box_ZEROBYTES + 1,
                 msg_->size ());
-    }
-    else {
+    } else {
         // CURVE I : connection key used for MESSAGE is wrong
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);

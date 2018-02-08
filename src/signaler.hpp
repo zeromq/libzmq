@@ -38,59 +38,56 @@
 
 namespace zmq
 {
+//  This is a cross-platform equivalent to signal_fd. However, as opposed
+//  to signal_fd there can be at most one signal in the signaler at any
+//  given moment. Attempt to send a signal before receiving the previous
+//  one will result in undefined behaviour.
 
-    //  This is a cross-platform equivalent to signal_fd. However, as opposed
-    //  to signal_fd there can be at most one signal in the signaler at any
-    //  given moment. Attempt to send a signal before receiving the previous
-    //  one will result in undefined behaviour.
+class signaler_t
+{
+  public:
+    signaler_t ();
+    ~signaler_t ();
 
-    class signaler_t
-    {
-    public:
+    // Returns the socket/file descriptor
+    // May return retired_fd if the signaler could not be initialized.
+    fd_t get_fd () const;
+    void send ();
+    int wait (int timeout_);
+    void recv ();
+    int recv_failable ();
 
-        signaler_t ();
-        ~signaler_t ();
-
-        // Returns the socket/file descriptor 
-        // May return retired_fd if the signaler could not be initialized.
-        fd_t get_fd () const;
-        void send ();
-        int wait (int timeout_);
-        void recv ();
-        int recv_failable ();
-
-        bool valid () const;
+    bool valid () const;
 
 #ifdef HAVE_FORK
-        // close the file descriptors in a forked child process so that they
-        // do not interfere with the context in the parent process.
-        void forked ();
+    // close the file descriptors in a forked child process so that they
+    // do not interfere with the context in the parent process.
+    void forked ();
 #endif
 
-    private:
+  private:
+    //  Creates a pair of file descriptors that will be used
+    //  to pass the signals.
+    static int make_fdpair (fd_t *r_, fd_t *w_);
 
-        //  Creates a pair of file descriptors that will be used
-        //  to pass the signals.
-        static int make_fdpair (fd_t *r_, fd_t *w_);
+    //  Underlying write & read file descriptor
+    //  Will be -1 if an error occurred during initialization, e.g. we
+    //  exceeded the number of available handles
+    fd_t w;
+    fd_t r;
 
-        //  Underlying write & read file descriptor
-        //  Will be -1 if an error occurred during initialization, e.g. we 
-        //  exceeded the number of available handles
-        fd_t w;
-        fd_t r;
-
-        //  Disable copying of signaler_t object.
-        signaler_t (const signaler_t&);
-        const signaler_t &operator = (const signaler_t&);
+    //  Disable copying of signaler_t object.
+    signaler_t (const signaler_t &);
+    const signaler_t &operator= (const signaler_t &);
 
 #ifdef HAVE_FORK
-        // the process that created this context. Used to detect forking.
-        pid_t pid;
-        // idempotent close of file descriptors that is safe to use by destructor
-        // and forked().
-        void close_internal ();
+    // the process that created this context. Used to detect forking.
+    pid_t pid;
+    // idempotent close of file descriptors that is safe to use by destructor
+    // and forked().
+    void close_internal ();
 #endif
-    };
+};
 }
 
 #endif
