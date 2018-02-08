@@ -42,7 +42,7 @@ zmq::dish_t::dish_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 
     //  When socket is being closed down we don't want to wait till pending
     //  subscription commands are sent to the wire.
-    options.linger = 0;
+    options.linger.store (0);
 
     int rc = message.init ();
     errno_assert (rc == 0);

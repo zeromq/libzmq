@@ -34,7 +34,8 @@
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_PTR_INTRINSIC
-#elif (defined __cplusplus && __cplusplus >= 201103L)
+#elif ((defined __cplusplus && __cplusplus >= 201103L)                         \
+       || (defined _MSC_VER && _MSC_VER >= 1700))
 #define ZMQ_ATOMIC_PTR_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
@@ -65,6 +66,110 @@
 
 namespace zmq
 {
+#if !defined ZMQ_ATOMIC_PTR_CXX11
+inline void *atomic_xchg_ptr (void **ptr,
+                              void *const val_
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                              ,
+                              mutex_t &sync
+#endif
+)
+{
+#if defined ZMQ_ATOMIC_PTR_WINDOWS
+    return InterlockedExchangePointer ((PVOID *) ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
+    return __atomic_exchange_n (ptr, val_, __ATOMIC_ACQ_REL);
+#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
+    return atomic_swap_ptr (ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+    return arch_atomic_exchange (ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_X86
+    void *old;
+    __asm__ volatile("lock; xchg %0, %2"
+                     : "=r"(old), "=m"(*ptr)
+                     : "m"(*ptr), "0"(val_));
+    return old;
+#elif defined ZMQ_ATOMIC_PTR_ARM
+    void *old;
+    unsigned int flag;
+    __asm__ volatile("       dmb     sy\n\t"
+                     "1:     ldrex   %1, [%3]\n\t"
+                     "       strex   %0, %4, [%3]\n\t"
+                     "       teq     %0, #0\n\t"
+                     "       bne     1b\n\t"
+                     "       dmb     sy\n\t"
+                     : "=&r"(flag), "=&r"(old), "+Qo"(*ptr)
+                     : "r"(ptr), "r"(val_)
+                     : "cc");
+    return old;
+#elif defined ZMQ_ATOMIC_PTR_MUTEX
+    sync.lock ();
+    void *old = *ptr;
+    *ptr = val_;
+    sync.unlock ();
+    return old;
+#else
+#error atomic_ptr is not implemented for this platform
+#endif
+}
+
+inline void *atomic_cas (void *volatile *ptr_,
+                         void *cmp_,
+                         void *val_
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                         ,
+                         mutex_t &sync
+#endif
+)
+{
+#if defined ZMQ_ATOMIC_PTR_WINDOWS
+    return InterlockedCompareExchangePointer ((volatile PVOID *) ptr_, val_,
+                                              cmp_);
+#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
+    void *old = cmp_;
+    __atomic_compare_exchange_n (ptr_, &old, val_, false, __ATOMIC_RELEASE,
+                                 __ATOMIC_ACQUIRE);
+    return old;
+#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
+    return atomic_cas_ptr (ptr_, cmp_, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+    return arch_atomic_val_compare_and_exchange (ptr_, cmp_, val_);
+#elif defined ZMQ_ATOMIC_PTR_X86
+    void *old;
+    __asm__ volatile("lock; cmpxchg %2, %3"
+                     : "=a"(old), "=m"(*ptr_)
+                     : "r"(val_), "m"(*ptr_), "0"(cmp_)
+                     : "cc");
+    return old;
+#elif defined ZMQ_ATOMIC_PTR_ARM
+    void *old;
+    unsigned int flag;
+    __asm__ volatile("       dmb     sy\n\t"
+                     "1:     ldrex   %1, [%3]\n\t"
+                     "       mov     %0, #0\n\t"
+                     "       teq     %1, %4\n\t"
+                     "       it      eq\n\t"
+                     "       strexeq %0, %5, [%3]\n\t"
+                     "       teq     %0, #0\n\t"
+                     "       bne     1b\n\t"
+                     "       dmb     sy\n\t"
+                     : "=&r"(flag), "=&r"(old), "+Qo"(*ptr_)
+                     : "r"(ptr_), "r"(cmp_), "r"(val_)
+                     : "cc");
+    return old;
+#elif defined ZMQ_ATOMIC_PTR_MUTEX
+    sync.lock ();
+    void *old = *ptr_;
+    if (*ptr_ == cmp_)
+        *ptr_ = val_;
+    sync.unlock ();
+    return old;
+#else
+#error atomic_ptr is not implemented for this platform
+#endif
+}
+#endif
+
 //  This class encapsulates several atomic operations on pointers.
 
 template <typename T> class atomic_ptr_t
@@ -85,43 +190,15 @@ template <typename T> class atomic_ptr_t
     //  to the 'val' value. Old value is returned.
     inline T *xchg (T *val_)
     {
-#if defined ZMQ_ATOMIC_PTR_WINDOWS
-        return (T *) InterlockedExchangePointer ((PVOID *) &ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
-        return (T *) __atomic_exchange_n (&ptr, val_, __ATOMIC_ACQ_REL);
-#elif defined ZMQ_ATOMIC_PTR_CXX11
+#if defined ZMQ_ATOMIC_PTR_CXX11
         return ptr.exchange (val_, std::memory_order_acq_rel);
-#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
-        return (T *) atomic_swap_ptr (&ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_TILE
-        return (T *) arch_atomic_exchange (&ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_X86
-        T *old;
-        __asm__ volatile("lock; xchg %0, %2"
-                         : "=r"(old), "=m"(ptr)
-                         : "m"(ptr), "0"(val_));
-        return old;
-#elif defined ZMQ_ATOMIC_PTR_ARM
-        T *old;
-        unsigned int flag;
-        __asm__ volatile("       dmb     sy\n\t"
-                         "1:     ldrex   %1, [%3]\n\t"
-                         "       strex   %0, %4, [%3]\n\t"
-                         "       teq     %0, #0\n\t"
-                         "       bne     1b\n\t"
-                         "       dmb     sy\n\t"
-                         : "=&r"(flag), "=&r"(old), "+Qo"(ptr)
-                         : "r"(&ptr), "r"(val_)
-                         : "cc");
-        return old;
-#elif defined ZMQ_ATOMIC_PTR_MUTEX
-        sync.lock ();
-        T *old = (T *) ptr;
-        ptr = val_;
-        sync.unlock ();
-        return old;
 #else
-#error atomic_ptr is not implemented for this platform
+        return (T *) atomic_xchg_ptr ((void **) &ptr, val_
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                                      ,
+                                      sync
+#endif
+        );
 #endif
     }
 
@@ -131,53 +208,16 @@ template <typename T> class atomic_ptr_t
     //  is returned.
     inline T *cas (T *cmp_, T *val_)
     {
-#if defined ZMQ_ATOMIC_PTR_WINDOWS
-        return (T *) InterlockedCompareExchangePointer ((volatile PVOID *) &ptr,
-                                                        val_, cmp_);
-#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
-        T *old = cmp_;
-        __atomic_compare_exchange_n (&ptr, (volatile T **) &old, val_, false,
-                                     __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
-        return old;
-#elif defined ZMQ_ATOMIC_PTR_CXX11
+#if defined ZMQ_ATOMIC_PTR_CXX11
         ptr.compare_exchange_strong (cmp_, val_, std::memory_order_acq_rel);
         return cmp_;
-#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
-        return (T *) atomic_cas_ptr (&ptr, cmp_, val_);
-#elif defined ZMQ_ATOMIC_PTR_TILE
-        return (T *) arch_atomic_val_compare_and_exchange (&ptr, cmp_, val_);
-#elif defined ZMQ_ATOMIC_PTR_X86
-        T *old;
-        __asm__ volatile("lock; cmpxchg %2, %3"
-                         : "=a"(old), "=m"(ptr)
-                         : "r"(val_), "m"(ptr), "0"(cmp_)
-                         : "cc");
-        return old;
-#elif defined ZMQ_ATOMIC_PTR_ARM
-        T *old;
-        unsigned int flag;
-        __asm__ volatile("       dmb     sy\n\t"
-                         "1:     ldrex   %1, [%3]\n\t"
-                         "       mov     %0, #0\n\t"
-                         "       teq     %1, %4\n\t"
-                         "       it      eq\n\t"
-                         "       strexeq %0, %5, [%3]\n\t"
-                         "       teq     %0, #0\n\t"
-                         "       bne     1b\n\t"
-                         "       dmb     sy\n\t"
-                         : "=&r"(flag), "=&r"(old), "+Qo"(ptr)
-                         : "r"(&ptr), "r"(cmp_), "r"(val_)
-                         : "cc");
-        return old;
-#elif defined ZMQ_ATOMIC_PTR_MUTEX
-        sync.lock ();
-        T *old = (T *) ptr;
-        if (ptr == cmp_)
-            ptr = val_;
-        sync.unlock ();
-        return old;
 #else
-#error atomic_ptr is not implemented for this platform
+        return (T *) atomic_cas ((void **) &ptr, cmp_, val_
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                                 ,
+                                 sync
+#endif
+        );
 #endif
     }
 
@@ -196,6 +236,55 @@ template <typename T> class atomic_ptr_t
     atomic_ptr_t (const atomic_ptr_t &);
     const atomic_ptr_t &operator= (const atomic_ptr_t &);
 #endif
+};
+
+struct atomic_value_t
+{
+    atomic_value_t (const int value_) : value (value_) {}
+
+    atomic_value_t (const atomic_value_t &src) : value (src.load ()) {}
+
+    void store (const int value_)
+    {
+#if defined ZMQ_ATOMIC_PTR_CXX11
+        value.store (value_, std::memory_order_release);
+#else
+        atomic_xchg_ptr ((void **) &value, (void *) (ptrdiff_t) value_
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                         ,
+                         sync
+#endif
+        );
+#endif
+    }
+
+    int load () const
+    {
+#if defined ZMQ_ATOMIC_PTR_CXX11
+        return value.load (std::memory_order_acquire);
+#else
+        return (int) (ptrdiff_t) atomic_cas ((void **) &value, 0, 0
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+                                             ,
+                                             sync
+#endif
+        );
+#endif
+    }
+
+  private:
+#if defined ZMQ_ATOMIC_PTR_CXX11
+    std::atomic<int> value;
+#else
+    volatile ptrdiff_t value;
+#endif
+
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+    mutex_t sync;
+#endif
+
+  private:
+    atomic_value_t &operator= (const atomic_value_t &src);
 };
 }
 

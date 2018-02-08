@@ -34,6 +34,7 @@
 #include <vector>
 #include <set>
 
+#include "atomic_ptr.hpp"
 #include "stddef.h"
 #include "stdint.hpp"
 #include "tcp_address.hpp"
@@ -100,7 +101,7 @@ struct options_t
     int type;
 
     //  Linger time, in milliseconds.
-    int linger;
+    atomic_value_t linger;
 
     //  Maximum interval in milliseconds beyond which userspace will
     //  timeout connect().

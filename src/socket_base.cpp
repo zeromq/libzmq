@@ -205,7 +205,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
 {
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
-    options.linger = parent_->get (ZMQ_BLOCKY) ? -1 : 0;
+    options.linger.store (parent_->get (ZMQ_BLOCKY) ? -1 : 0);
 
     if (thread_safe) {
         mailbox = new (std::nothrow) mailbox_safe_t (&sync);
