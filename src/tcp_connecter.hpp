@@ -70,6 +70,9 @@ class tcp_connecter_t : public own_t, public io_object_t
     void out_event ();
     void timer_event (int id_);
 
+    //  Removes the handle from the poller.
+    void rm_handle ();
+
     //  Internal function to start the actual connection establishment.
     void start_connecting ();
 
@@ -96,18 +99,18 @@ class tcp_connecter_t : public own_t, public io_object_t
     //  retired_fd if the connection was unsuccessful.
     fd_t connect ();
 
+    //  Tunes a connected socket.
+    bool tune_socket (fd_t fd);
+
     //  Address to connect to. Owned by session_base_t.
     address_t *const addr;
 
     //  Underlying socket.
     fd_t s;
 
-    //  Handle corresponding to the listening socket.
+    //  Handle corresponding to the listening socket, if file descriptor is 
+    //  registered with the poller, or NULL.
     handle_t handle;
-
-    //  If true file descriptor is registered with the poller and 'handle'
-    //  contains valid value.
-    bool handle_valid;
 
     //  If true, connecter is waiting a while before trying to connect.
     const bool delayed_start;
