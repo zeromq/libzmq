@@ -66,10 +66,6 @@ class signaler_t
 #endif
 
   private:
-    //  Creates a pair of file descriptors that will be used
-    //  to pass the signals.
-    static int make_fdpair (fd_t *r_, fd_t *w_);
-
     //  Underlying write & read file descriptor
     //  Will be -1 if an error occurred during initialization, e.g. we
     //  exceeded the number of available handles

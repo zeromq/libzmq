@@ -87,6 +87,7 @@ struct iovec
 #include "signaler.hpp"
 #include "socket_poller.hpp"
 #include "timers.hpp"
+#include "ip.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -121,42 +122,11 @@ int zmq_errno (void)
 
 void *zmq_ctx_new (void)
 {
-#if defined ZMQ_HAVE_OPENPGM
-
-    //  Init PGM transport. Ensure threading and timer are enabled. Find PGM
-    //  protocol ID. Note that if you want to use gettimeofday and sleep for
-    //  openPGM timing, set environment variables PGM_TIMER to "GTOD" and
-    //  PGM_SLEEP to "USLEEP".
-    pgm_error_t *pgm_error = NULL;
-    const bool ok = pgm_init (&pgm_error);
-    if (ok != TRUE) {
-        //  Invalid parameters don't set pgm_error_t
-        zmq_assert (pgm_error != NULL);
-        if (pgm_error->domain == PGM_ERROR_DOMAIN_TIME
-            && (pgm_error->code == PGM_ERROR_FAILED)) {
-            //  Failed to access RTC or HPET device.
-            pgm_error_free (pgm_error);
-            errno = EINVAL;
-            return NULL;
-        }
-
-        //  PGM_ERROR_DOMAIN_ENGINE: WSAStartup errors or missing WSARecvMsg.
-        zmq_assert (false);
-    }
-#endif
-
-#ifdef ZMQ_HAVE_WINDOWS
-    //  Intialise Windows sockets. Note that WSAStartup can be called multiple
-    //  times given that WSACleanup will be called for each WSAStartup.
     //  We do this before the ctx constructor since its embedded mailbox_t
-    //  object needs Winsock to be up and running.
-    WORD version_requested = MAKEWORD (2, 2);
-    WSADATA wsa_data;
-    int rc = WSAStartup (version_requested, &wsa_data);
-    zmq_assert (rc == 0);
-    zmq_assert (LOBYTE (wsa_data.wVersion) == 2
-                && HIBYTE (wsa_data.wVersion) == 2);
-#endif
+    //  object needs the network to be up and running (at least on Windows).
+    if (!zmq::initialize_network ()) {
+        return NULL;
+    }
 
     //  Create 0MQ context.
     zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t;
@@ -181,17 +151,7 @@ int zmq_ctx_term (void *ctx_)
 
     //  Shut down only if termination was not interrupted by a signal.
     if (!rc || en != EINTR) {
-#ifdef ZMQ_HAVE_WINDOWS
-        //  On Windows, uninitialise socket layer.
-        rc = WSACleanup ();
-        wsa_assert (rc != SOCKET_ERROR);
-#endif
-
-#if defined ZMQ_HAVE_OPENPGM
-        //  Shut down the OpenPGM library.
-        if (pgm_shutdown () != TRUE)
-            zmq_assert (false);
-#endif
+        zmq::shutdown_network ();
     }
 
     errno = en;
@@ -722,7 +682,7 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
     }
 }
 
-    // Polling.
+// Polling.
 
 #if defined ZMQ_HAVE_POLLER
 inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
