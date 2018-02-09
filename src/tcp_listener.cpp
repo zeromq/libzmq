@@ -216,6 +216,10 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (options.tos != 0)
         set_ip_type_of_service (s, options.tos);
 
+    // Set the socket to loopback fastpath if configured.
+    if (options.loopback_fastpath)
+        tcp_tune_loopback_fast_path (s);
+
     // Bind the socket to a device if applicable
     if (!options.bound_device.empty ())
         bind_to_device (s, options.bound_device);

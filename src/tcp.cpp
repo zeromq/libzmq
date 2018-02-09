@@ -332,3 +332,27 @@ void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
     }
 #endif
 }
+
+void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
+{
+#if defined ZMQ_HAVE_WINDOWS
+    int sio_loopback_fastpath = 1;
+    DWORD numberOfBytesReturned = 0;
+
+    int rc = WSAIoctl (socket_, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
+                       sizeof sio_loopback_fastpath, NULL, 0,
+                       &numberOfBytesReturned, 0, 0);
+
+    if (SOCKET_ERROR == rc) {
+        DWORD lastError = ::WSAGetLastError ();
+
+        if (WSAEOPNOTSUPP == lastError) {
+            // This system is not Windows 8 or Server 2012, and the call is not supported.
+        } else {
+            wsa_assert (false);
+        }
+    }
+#else
+    LIBZMQ_UNUSED (socket_);
+#endif
+}

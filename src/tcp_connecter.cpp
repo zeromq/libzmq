@@ -302,6 +302,10 @@ int zmq::tcp_connecter_t::open ()
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 
+    // Set the socket to loopback fastpath if configured.
+    if (options.loopback_fastpath)
+        tcp_tune_loopback_fast_path (s);
+
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf >= 0)
         set_tcp_send_buffer (s, options.sndbuf);

@@ -90,7 +90,8 @@ zmq::options_t::options_t () :
     heartbeat_interval (0),
     heartbeat_timeout (-1),
     use_fd (-1),
-    zap_enforce_domain (false)
+    zap_enforce_domain (false),
+    loopback_fastpath (false)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
@@ -627,6 +628,13 @@ int zmq::options_t::setsockopt (int option_,
             }
             break;
 
+        case ZMQ_LOOPBACK_FASTPATH:
+            if (is_int) {
+                loopback_fastpath = (value != 0);
+                return 0;
+            }
+            break;
+
 
         default:
 #if defined(ZMQ_ACT_MILITANT)
@@ -1060,6 +1068,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_ZAP_ENFORCE_DOMAIN:
             if (is_int) {
                 *value = zap_enforce_domain;
+                return 0;
+            }
+            break;
+
+        case ZMQ_LOOPBACK_FASTPATH:
+            if (is_int) {
+                *value = loopback_fastpath;
                 return 0;
             }
             break;
