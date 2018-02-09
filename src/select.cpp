@@ -47,6 +47,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+#include <algorithm>
+
 zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
     ctx (ctx_),
 #if defined ZMQ_HAVE_WINDOWS
@@ -70,10 +72,13 @@ zmq::select_t::~select_t ()
         stop ();
         worker.stop ();
     }
+    zmq_assert (get_load () == 0);
 }
 
 zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
+    zmq_assert (fd_ != retired_fd);
+
     fd_entry_t fd_entry;
     fd_entry.fd = fd_;
     fd_entry.events = events_;
@@ -150,15 +155,20 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
 }
 
 #if defined ZMQ_HAVE_WINDOWS
-bool zmq::select_t::try_remove_fd_entry (
+int zmq::select_t::try_retire_fd_entry (
   family_entries_t::iterator family_entry_it, zmq::fd_t &handle_)
 {
     family_entry_t &family_entry = family_entry_it->second;
 
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
+
     if (fd_entry_it == family_entry.fd_entries.end ())
-        return false;
+        return 0;
+
+    fd_entry_t &fd_entry = *fd_entry_it;
+    zmq_assert (fd_entry.fd != retired_fd);
+
     if (family_entry_it != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
         //  modified in-place. So later it can be skipped without
@@ -167,11 +177,11 @@ bool zmq::select_t::try_remove_fd_entry (
     } else {
         //  Otherwise mark removed entries as retired. It will be cleaned up
         //  at the end of the iteration. See zmq::select_t::loop
-        fd_entry_it->fd = retired_fd;
-        family_entry.retired = true;
+        fd_entry.fd = retired_fd;
+        family_entry.has_retired = true;
     }
     family_entry.fds_set.remove_fd (handle_);
-    return true;
+    return 1;
 }
 #endif
 
@@ -179,12 +189,12 @@ void zmq::select_t::rm_fd (handle_t handle_)
 {
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
+    int retired = 0;
     if (family != AF_UNSPEC) {
         family_entries_t::iterator family_entry_it =
           family_entries.find (family);
 
-        int removed = try_remove_fd_entry (family_entry_it, handle_);
-        assert (removed);
+        retired += try_retire_fd_entry (family_entry_it, handle_);
     } else {
         //  get_fd_family may fail and return AF_UNSPEC if the socket was not
         //  successfully connected. In that case, we need to look for the
@@ -193,8 +203,9 @@ void zmq::select_t::rm_fd (handle_t handle_)
         for (family_entries_t::iterator family_entry_it =
                family_entries.begin ();
              family_entry_it != end; ++family_entry_it) {
-            if (try_remove_fd_entry (family_entry_it, handle_))
+            if (retired += try_retire_fd_entry (family_entry_it, handle_)) {
                 break;
+            }
         }
     }
 #else
@@ -202,8 +213,11 @@ void zmq::select_t::rm_fd (handle_t handle_)
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
     assert (fd_entry_it != fd_entries.end ());
 
+    zmq_assert (fd_entry_it->fd != retired_fd);
     fd_entry_it->fd = retired_fd;
     family_entry.fds_set.remove_fd (handle_);
+
+    ++retired;
 
     if (handle_ == maxfd) {
         maxfd = retired_fd;
@@ -213,8 +227,9 @@ void zmq::select_t::rm_fd (handle_t handle_)
                 maxfd = fd_entry_it->fd;
     }
 
-    family_entry.retired = true;
+    family_entry.has_retired = true;
 #endif
+    zmq_assert (retired == 1);
     adjust_load (-1);
 }
 
@@ -274,11 +289,30 @@ int zmq::select_t::max_fds ()
     return FD_SETSIZE;
 }
 
+//  TODO should this be configurable?
+const int max_shutdown_timeout = 250;
+
 void zmq::select_t::loop ()
 {
-    while (!stopping) {
+    void *stopwatch = NULL;
+    while (!stopwatch || get_load ()) {
+        int max_timeout = INT_MAX;
+        if (stopping) {
+            if (stopwatch) {
+                max_timeout = max_shutdown_timeout
+                              - (int) zmq_stopwatch_intermediate (stopwatch);
+
+                // bail out eventually, when max_shutdown_timeout has reached,
+                // to avoid spinning forever in case of some error
+                zmq_assert (max_timeout > 0);
+            } else {
+                stopwatch = zmq_stopwatch_start ();
+                max_timeout = max_shutdown_timeout;
+            }
+        }
+
         //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+        int timeout = std::min ((int) execute_timers (), max_timeout);
 
 #if defined ZMQ_HAVE_OSX
         struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
@@ -379,6 +413,7 @@ void zmq::select_t::loop ()
         select_family_entry (family_entry, maxfd, timeout > 0, tv);
 #endif
     }
+    zmq_stopwatch_stop (stopwatch);
 }
 
 void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
@@ -406,8 +441,8 @@ void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
 
     trigger_events (fd_entries, local_fds_set, rc);
 
-    if (family_entry_.retired) {
-        family_entry_.retired = false;
+    if (family_entry_.has_retired) {
+        family_entry_.has_retired = false;
         family_entry_.fd_entries.erase (std::remove_if (fd_entries.begin (),
                                                         fd_entries.end (),
                                                         is_retired_fd),
@@ -543,7 +578,7 @@ u_short zmq::select_t::determine_fd_family (fd_t fd_)
     return AF_UNSPEC;
 }
 
-zmq::select_t::family_entry_t::family_entry_t () : retired (false)
+zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
 {
 }
 

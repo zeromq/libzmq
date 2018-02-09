@@ -119,7 +119,7 @@ class select_t : public poller_base_t
 
         fd_entries_t fd_entries;
         fds_set_t fds_set;
-        bool retired;
+        bool has_retired;
     };
 
     void select_family_entry (family_entry_t &family_entry_,
@@ -143,8 +143,8 @@ class select_t : public poller_base_t
     // See loop for details.
     family_entries_t::iterator current_family_entry_it;
 
-    bool try_remove_fd_entry (family_entries_t::iterator family_entry_it,
-                              zmq::fd_t &handle_);
+    int try_retire_fd_entry (family_entries_t::iterator family_entry_it,
+                             zmq::fd_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
     std::pair<fd_t, u_short> fd_family_cache[fd_family_cache_size];
