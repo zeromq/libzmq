@@ -115,11 +115,7 @@ class select_t : public poller_base_t
 
     struct family_entry_t
     {
-#ifndef ZMQ_HAVE_WINDOWS
-        family_entry_t () {};
-#else
         family_entry_t ();
-#endif
 
         fd_entries_t fd_entries;
         fds_set_t fds_set;
@@ -161,7 +157,6 @@ class select_t : public poller_base_t
     //  on non-Windows, we can treat all fds as one family
     family_entry_t family_entry;
     fd_t maxfd;
-    bool retired;
 #endif
 
     //  Checks if an fd_entry_t is retired.

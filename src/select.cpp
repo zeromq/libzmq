@@ -189,9 +189,9 @@ int zmq::select_t::try_retire_fd_entry (
 
 void zmq::select_t::rm_fd (handle_t handle_)
 {
+    int retired = 0;
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
-    int retired = 0;
     if (family != AF_UNSPEC) {
         family_entries_t::iterator family_entry_it =
           family_entries.find (family);
@@ -411,7 +411,7 @@ void zmq::select_t::loop ()
             }
         }
 #else
-        select_family_entry (family_entry, maxfd, timeout > 0, tv);
+        select_family_entry (family_entry, maxfd + 1, timeout > 0, tv);
 #endif
     }
     zmq_stopwatch_stop (stopwatch);
@@ -523,6 +523,11 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
     return (entry.fd == retired_fd);
 }
 
+zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
+{
+}
+
+
 #if defined ZMQ_HAVE_WINDOWS
 u_short zmq::select_t::get_fd_family (fd_t fd_)
 {
@@ -578,11 +583,6 @@ u_short zmq::select_t::determine_fd_family (fd_t fd_)
 
     return AF_UNSPEC;
 }
-
-zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
-{
-}
-
 
 zmq::select_t::wsa_events_t::wsa_events_t ()
 {
