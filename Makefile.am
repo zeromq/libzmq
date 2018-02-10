@@ -882,6 +882,57 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/configure \
 	`find "$(srcdir)" -type f -name Makefile.in -print`
 
+if WITH_CLANG_FORMAT
+ALL_SOURCE_FILES = $(wildcard \
+	$(top_srcdir)/src/*.c \
+	$(top_srcdir)/src/*.cc \
+	$(top_srcdir)/src/*.cpp \
+	$(top_srcdir)/src/*.h \
+	$(top_srcdir)/src/*.hpp \
+	$(top_srcdir)/tests/*.c \
+	$(top_srcdir)/tests/*.cc \
+	$(top_srcdir)/tests/*.cpp \
+	$(top_srcdir)/tests/*.h \
+	$(top_srcdir)/tests/*.hpp \
+	$(top_srcdir)/perf/*.c \
+	$(top_srcdir)/perf/*.cc \
+	$(top_srcdir)/perf/*.cpp \
+	$(top_srcdir)/perf/*.h \
+	$(top_srcdir)/perf/*.hpp \
+	$(top_srcdir)/tools/*.c \
+	$(top_srcdir)/tools/*.cc \
+	$(top_srcdir)/tools/*.cpp \
+	$(top_srcdir)/tools/*.h \
+	$(top_srcdir)/tools/*.hpp \
+	$(top_srcdir)/include/*.h \
+ )
+
+# Check if any sources need to be fixed, report the filenames and an error code
+clang-format-check: $(ALL_SOURCE_FILES)
+	@FAILED=0 ; IFS=";" ; IDS="`printf '\n\b'`" ; export IFS IDS; \
+	 for FILE in $(ALL_SOURCE_FILES) ; do \
+		test -s $$FILE || continue ; \
+		$(CLANG_FORMAT) -style=file -output-replacements-xml "$$FILE" | grep "<replacement " >/dev/null && \
+		{ echo "$$FILE is not correctly formatted" >&2 ; FAILED=1; } ; \
+	 done; \
+	 if test "$$FAILED" != 0 ; then \
+		exit 1 ; \
+	 fi
+
+# Change source formatting
+clang-format: $(ALL_SOURCE_FILES)
+	$(CLANG_FORMAT) -style=file -i $(ALL_SOURCE_FILES)
+
+# Change source formatting AND report the diff
+clang-format-diff: clang-format
+	git diff $(ALL_SOURCE_FILES)
+
+else
+clang-format clang-format-check clang-format-diff:
+	@echo "Install the clang-format program, reconfigure and re-run this request"
+	@exit 1
+endif
+
 @CODE_COVERAGE_RULES@
 
 dist-hook:
