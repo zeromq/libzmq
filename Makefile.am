@@ -426,6 +426,11 @@ test_apps = \
 	tests/test_reconnect_ivl \
 	tests/test_socket_null
 
+UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity
+UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
+noinst_LIBRARIES = external/unity/libunity.a
+external_unity_libunity_a_SOURCES = external/unity/unity.c
+
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
 
@@ -642,7 +647,8 @@ tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la
 
 tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
-tests_test_socket_null_LDADD = src/libzmq.la
+tests_test_socket_null_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_socket_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
 tests_test_reconnect_ivl_LDADD = src/libzmq.la
@@ -670,8 +676,9 @@ tests_test_security_curve_SOURCES += \
 endif
 
 tests_test_security_curve_LDADD = \
-	src/libzmq.la $(LIBUNWIND_LIBS)
+	src/libzmq.la ${UNITY_LIBS} $(LIBUNWIND_LIBS)
 tests_test_security_curve_CPPFLAGS = \
+	${UNITY_CPPFLAGS} \
 	${LIBUNWIND_CFLAGS}
 
 if USE_LIBSODIUM
