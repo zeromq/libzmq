@@ -800,6 +800,19 @@ if test "x$enable_libunwind" != "xno"; then
         ])
 fi
 
+# See if clang-format is in PATH; the result unblocks the relevant recipes
+WITH_CLANG_FORMAT=""
+AS_IF([test x"$CLANG_FORMAT" = x],
+    [AC_PATH_PROG([CLANG_FORMAT], [clang-format], [])],
+    [AC_CHECK_PROG([WITH_CLANG_FORMAT], [$CLANG_FORMAT], [true], [fail])])
+AS_IF([test x"$CLANG_FORMAT" != x && test x"$WITH_CLANG_FORMAT" = x],
+    [AS_IF([test -x "$CLANG_FORMAT"],
+        [WITH_CLANG_FORMAT=true],
+        [AC_CHECK_PROG([WITH_CLANG_FORMAT], [$CLANG_FORMAT], [true], [false])])])
+AS_IF([test "$WITH_CLANG_FORMAT" = fail],
+    [AC_MSG_ERROR([Caller explicitly referenced CLANG_FORMAT=$CLANG_FORMAT which was not found])])
+AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
