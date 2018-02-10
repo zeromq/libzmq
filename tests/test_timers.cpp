@@ -154,7 +154,7 @@ int main (void)
 
     bool timer_invoked = false;
 
-    const int full_timeout = 100;
+    const unsigned long full_timeout = 100;
     void *const stopwatch = zmq_stopwatch_start ();
 
     int timer_id =
