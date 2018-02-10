@@ -118,13 +118,14 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
     //  Size is cached to avoid iteration through recently added descriptors.
     for (fd_entries_t::size_type i = 0, size = fd_entries_.size ();
          i < size && event_count_ > 0; ++i) {
-        const fd_entry_t &current_fd_entry = fd_entries_[i];
+        //  fd_entries_[i] may not be stored, since calls to 
+        //  in_event/out_event may reallocate the vector
 
-        if (is_retired_fd (current_fd_entry))
+        if (is_retired_fd (fd_entries_[i]))
             continue;
 
-        if (FD_ISSET (current_fd_entry.fd, &local_fds_set_.read)) {
-            current_fd_entry.events->in_event ();
+        if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.read)) {
+            fd_entries_[i].events->in_event ();
             --event_count_;
         }
 
@@ -132,20 +133,20 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
         //  was retired before, we would already have continued, and I
         //  don't see where it might have been modified
         //  And if rc == 0, we can break instead of continuing
-        if (is_retired_fd (current_fd_entry) || event_count_ == 0)
+        if (is_retired_fd (fd_entries_[i]) || event_count_ == 0)
             continue;
 
-        if (FD_ISSET (current_fd_entry.fd, &local_fds_set_.write)) {
-            current_fd_entry.events->out_event ();
+        if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.write)) {
+            fd_entries_[i].events->out_event ();
             --event_count_;
         }
 
         //  TODO: same as above
-        if (is_retired_fd (current_fd_entry) || event_count_ == 0)
+        if (is_retired_fd (fd_entries_[i]) || event_count_ == 0)
             continue;
 
-        if (FD_ISSET (current_fd_entry.fd, &local_fds_set_.error)) {
-            current_fd_entry.events->in_event ();
+        if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.error)) {
+            fd_entries_[i].events->in_event ();
             --event_count_;
         }
     }
