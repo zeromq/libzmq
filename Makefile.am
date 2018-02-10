@@ -429,7 +429,9 @@ test_apps = \
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
 noinst_LIBRARIES = external/unity/libunity.a
-external_unity_libunity_a_SOURCES = external/unity/unity.c
+external_unity_libunity_a_SOURCES = external/unity/unity.c \
+	external/unity/unity.h \
+	external/unity/unity_internals.h
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
@@ -858,6 +860,25 @@ tests_test_dgram_SOURCES = tests/test_dgram.cpp
 tests_test_dgram_LDADD = src/libzmq.la
 endif
 
+if ENABLE_STATIC
+# unit tests - these include individual source files and test the internal functions
+test_apps += \
+	unittests/unittest_poller \
+	unittests/unittest_ypipe
+
+unittests_unittest_poller_SOURCES = unittests/unittest_poller.cpp
+unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_poller_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD} \
+	${UNITY_LIBS}
+
+unittests_unittest_ypipe_SOURCES = unittests/unittest_ypipe.cpp
+unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_ypipe_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD} \
+	${UNITY_LIBS}
+endif
+
 check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
@@ -874,6 +895,8 @@ XFAIL_TESTS += test_ipc_wildcard \
 endif
 
 EXTRA_DIST = \
+	external/unity/license.txt \
+	external/unity/version.txt \
 	CMakeLists.txt \
 	autogen.sh	\
 	version.sh	\
@@ -881,6 +904,7 @@ EXTRA_DIST = \
 	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \
+	unittests/CMakeLists.txt \
 	tools/curve_keygen.cpp
 
 MAINTAINERCLEANFILES = \
