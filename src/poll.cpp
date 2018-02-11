@@ -142,6 +142,8 @@ void zmq::poll_t::loop ()
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
 
+        cleanup_retired ();
+
         if (pollset.empty ()) {
             // TODO yield? or sleep for timeout?
             continue;
@@ -174,20 +176,23 @@ void zmq::poll_t::loop ()
             if (pollset[i].revents & POLLIN)
                 fd_table[pollset[i].fd].events->in_event ();
         }
+    }
+}
 
-        //  Clean up the pollset and update the fd_table accordingly.
-        if (retired) {
-            pollset_t::size_type i = 0;
-            while (i < pollset.size ()) {
-                if (pollset[i].fd == retired_fd)
-                    pollset.erase (pollset.begin () + i);
-                else {
-                    fd_table[pollset[i].fd].index = i;
-                    i++;
-                }
+void zmq::poll_t::cleanup_retired ()
+{
+    //  Clean up the pollset and update the fd_table accordingly.
+    if (retired) {
+        pollset_t::size_type i = 0;
+        while (i < pollset.size ()) {
+            if (pollset[i].fd == retired_fd)
+                pollset.erase (pollset.begin () + i);
+            else {
+                fd_table[pollset[i].fd].index = i;
+                i++;
             }
-            retired = false;
         }
+        retired = false;
     }
 }
 
