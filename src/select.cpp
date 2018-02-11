@@ -213,7 +213,7 @@ void zmq::select_t::rm_fd (handle_t handle_)
 #else
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
-    assert (fd_entry_it != fd_entries.end ());
+    assert (fd_entry_it != family_entry.fd_entries.end ());
 
     zmq_assert (fd_entry_it->fd != retired_fd);
     fd_entry_it->fd = retired_fd;
