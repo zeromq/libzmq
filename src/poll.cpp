@@ -151,10 +151,14 @@ void zmq::poll_t::loop ()
 
         //  Wait for events.
         int rc = poll (&pollset[0], pollset.size (), timeout ? timeout : -1);
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
         if (rc == -1) {
             errno_assert (errno == EINTR);
             continue;
         }
+#endif
 
         //  If there are no events (i.e. it's a timeout) there's no point
         //  in checking the pollset.
