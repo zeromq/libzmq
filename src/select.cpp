@@ -48,6 +48,8 @@
 #include "i_poll_events.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <climits>
 
 zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
     ctx (ctx_),
