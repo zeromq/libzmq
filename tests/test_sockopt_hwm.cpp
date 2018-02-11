@@ -29,6 +29,16 @@
 
 #include "testutil.hpp"
 
+#include <unity.h>
+
+void setUp ()
+{
+}
+void tearDown ()
+{
+}
+
+
 const int MAX_SENDS = 10000;
 
 void test_change_before_connected ()
@@ -41,9 +51,9 @@ void test_change_before_connected ()
 
     int val = 2;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     zmq_connect (connect_socket, "inproc://a");
     zmq_bind (bind_socket, "inproc://a");
@@ -51,15 +61,15 @@ void test_change_before_connected ()
     size_t placeholder = sizeof (val);
     val = 0;
     rc = zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 2);
+    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_EQUAL_INT (2, val);
 
     int send_count = 0;
     while (send_count < MAX_SENDS
            && zmq_send (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
-    assert (send_count == 4);
+    TEST_ASSERT_EQUAL_INT (4, send_count);
 
     zmq_close (bind_socket);
     zmq_close (connect_socket);
@@ -76,29 +86,29 @@ void test_change_after_connected ()
 
     int val = 1;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     zmq_connect (connect_socket, "inproc://a");
     zmq_bind (bind_socket, "inproc://a");
 
     val = 5;
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     size_t placeholder = sizeof (val);
     val = 0;
     rc = zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 5);
+    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_EQUAL_INT (5, val);
 
     int send_count = 0;
     while (send_count < MAX_SENDS
            && zmq_send (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
-    assert (send_count == 6);
+    TEST_ASSERT_EQUAL_INT (6, send_count);
 
     zmq_close (bind_socket);
     zmq_close (connect_socket);
@@ -120,7 +130,8 @@ int test_fill_up_to_hwm (void *socket, int sndhwm)
 {
     int send_count = send_until_wouldblock (socket);
     fprintf (stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
-    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 10));
+    TEST_ASSERT_LESS_OR_EQUAL_INT (sndhwm + 1, send_count);
+    TEST_ASSERT_GREATER_THAN_INT (sndhwm / 10, send_count);
     return send_count;
 }
 
@@ -134,11 +145,11 @@ void test_decrease_when_full ()
 
     int val = 1;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     int sndhwm = 100;
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     zmq_bind (bind_socket, "inproc://a");
     zmq_connect (connect_socket, "inproc://a");
@@ -149,14 +160,14 @@ void test_decrease_when_full ()
     // Decrease snd hwm
     sndhwm = 70;
     rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (0, rc);
 
     int sndhwm_read = 0;
     size_t sndhwm_read_size = sizeof (sndhwm_read);
     rc =
       zmq_getsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm_read, &sndhwm_read_size);
-    assert (rc == 0);
-    assert (sndhwm_read == sndhwm);
+    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_EQUAL_INT (sndhwm, sndhwm_read);
 
     msleep (SETTLE_TIME);
 
@@ -167,11 +178,11 @@ void test_decrease_when_full ()
       read_count < MAX_SENDS
       && zmq_recv (connect_socket, &read_data, sizeof (read_data), ZMQ_DONTWAIT)
            == sizeof (read_data)) {
-        assert (read_count == read_data);
+        TEST_ASSERT_EQUAL_INT (read_data, read_count);
         ++read_count;
     }
 
-    assert (read_count == send_count);
+    TEST_ASSERT_EQUAL_INT (send_count, read_count);
 
     // Give io thread some time to catch up
     msleep (SETTLE_TIME);
@@ -187,7 +198,12 @@ void test_decrease_when_full ()
 
 int main ()
 {
-    test_change_before_connected ();
-    test_change_after_connected ();
-    test_decrease_when_full ();
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_change_before_connected);
+    RUN_TEST (test_change_after_connected);
+    RUN_TEST (test_decrease_when_full);
+
+    return UNITY_END ();
 }
