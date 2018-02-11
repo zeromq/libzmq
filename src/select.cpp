@@ -323,8 +323,6 @@ void zmq::select_t::loop ()
                              (long) (timeout % 1000 * 1000)};
 #endif
 
-        int rc = 0;
-
 #if defined ZMQ_HAVE_WINDOWS
         /*
             On Windows select does not allow to mix descriptors from different
@@ -342,6 +340,7 @@ void zmq::select_t::loop ()
         */
 
         //  If there is just one family, there is no reason to use WSA events.
+        int rc = 0;
         const bool use_wsa_events = family_entries.size () > 1;
         if (use_wsa_events) {
             // TODO: I don't really understand why we are doing this. If any of
