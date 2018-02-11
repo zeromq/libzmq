@@ -79,6 +79,8 @@ class poll_t : public poller_base_t
     //  Main event loop.
     void loop ();
 
+    void cleanup_retired();
+
     // Reference to ZMQ context.
     const ctx_t &ctx;
 

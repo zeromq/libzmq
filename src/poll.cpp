@@ -52,6 +52,7 @@ zmq::poll_t::poll_t (const zmq::ctx_t &ctx_) :
 
 zmq::poll_t::~poll_t ()
 {
+    stop ();
     worker.stop ();
 }
 
@@ -141,12 +142,23 @@ void zmq::poll_t::loop ()
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
 
+        cleanup_retired ();
+
+        if (pollset.empty ()) {
+            // TODO yield? or sleep for timeout?
+            continue;
+        }
+
         //  Wait for events.
         int rc = poll (&pollset[0], pollset.size (), timeout ? timeout : -1);
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
         if (rc == -1) {
             errno_assert (errno == EINTR);
             continue;
         }
+#endif
 
         //  If there are no events (i.e. it's a timeout) there's no point
         //  in checking the pollset.
@@ -168,20 +180,23 @@ void zmq::poll_t::loop ()
             if (pollset[i].revents & POLLIN)
                 fd_table[pollset[i].fd].events->in_event ();
         }
+    }
+}
 
-        //  Clean up the pollset and update the fd_table accordingly.
-        if (retired) {
-            pollset_t::size_type i = 0;
-            while (i < pollset.size ()) {
-                if (pollset[i].fd == retired_fd)
-                    pollset.erase (pollset.begin () + i);
-                else {
-                    fd_table[pollset[i].fd].index = i;
-                    i++;
-                }
+void zmq::poll_t::cleanup_retired ()
+{
+    //  Clean up the pollset and update the fd_table accordingly.
+    if (retired) {
+        pollset_t::size_type i = 0;
+        while (i < pollset.size ()) {
+            if (pollset[i].fd == retired_fd)
+                pollset.erase (pollset.begin () + i);
+            else {
+                fd_table[pollset[i].fd].index = i;
+                i++;
             }
-            retired = false;
         }
+        retired = false;
     }
 }
 
