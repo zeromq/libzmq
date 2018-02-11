@@ -48,6 +48,10 @@
 
 char error_message_buffer[256];
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
+
 const char *zmq_errno_message ()
 {
     snprintf (error_message_buffer, sizeof (error_message_buffer),
