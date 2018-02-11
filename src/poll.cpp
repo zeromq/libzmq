@@ -52,6 +52,7 @@ zmq::poll_t::poll_t (const zmq::ctx_t &ctx_) :
 
 zmq::poll_t::~poll_t ()
 {
+    stop ();
     worker.stop ();
 }
 
@@ -140,6 +141,11 @@ void zmq::poll_t::loop ()
     while (!stopping) {
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
+
+        if (pollset.empty ()) {
+            // TODO yield? or sleep for timeout?
+            continue;
+        }
 
         //  Wait for events.
         int rc = poll (&pollset[0], pollset.size (), timeout ? timeout : -1);
