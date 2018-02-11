@@ -78,8 +78,8 @@ int wsa_error_to_errno (int errcode);
         if (unlikely (!(x))) {                                                 \
             const char *errstr = zmq::wsa_error ();                            \
             if (errstr != NULL) {                                              \
-                fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr,     \
-                         __FILE__, __LINE__);                                  \
+                fprintf (stderr, "Assertion failed: %s [%i] (%s:%d)\n",        \
+                         errstr, WSAGetLastError (), __FILE__, __LINE__);      \
                 fflush (stderr);                                               \
                 zmq::zmq_abort (errstr);                                       \
             }                                                                  \
