@@ -52,6 +52,7 @@ class thread_t
     inline thread_t () :
         tfn (NULL),
         arg (NULL),
+        started (false),
         thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
         thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
@@ -81,6 +82,8 @@ class thread_t
     void *arg;
 
   private:
+    bool started;
+
 #ifdef ZMQ_HAVE_WINDOWS
     HANDLE descriptor;
 #else

@@ -57,7 +57,7 @@ class poll_t : public poller_base_t
   public:
     typedef fd_t handle_t;
 
-    poll_t (const ctx_t &ctx_);
+    poll_t (const thread_ctx_t &ctx_);
     ~poll_t ();
 
     //  "poller" concept.
@@ -82,7 +82,7 @@ class poll_t : public poller_base_t
     void cleanup_retired();
 
     // Reference to ZMQ context.
-    const ctx_t &ctx;
+    const thread_ctx_t &ctx;
 
     struct fd_entry_t
     {

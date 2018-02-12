@@ -59,14 +59,17 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
       (HANDLE) _beginthreadex (NULL, 0, &::thread_routine, this, 0, NULL);
 #endif
     win_assert (descriptor != NULL);
+    started = true;
 }
 
 void zmq::thread_t::stop ()
 {
-    DWORD rc = WaitForSingleObject (descriptor, INFINITE);
-    win_assert (rc != WAIT_FAILED);
-    BOOL rc2 = CloseHandle (descriptor);
-    win_assert (rc2 != 0);
+    if (started) {
+        DWORD rc = WaitForSingleObject (descriptor, INFINITE);
+        win_assert (rc != WAIT_FAILED);
+        BOOL rc2 = CloseHandle (descriptor);
+        win_assert (rc2 != 0);
+    }
 }
 
 void zmq::thread_t::setSchedulingParameters (
@@ -116,12 +119,15 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
     arg = arg_;
     int rc = pthread_create (&descriptor, NULL, thread_routine, this);
     posix_assert (rc);
+    started = true;
 }
 
 void zmq::thread_t::stop ()
 {
-    int rc = pthread_join (descriptor, NULL);
-    posix_assert (rc);
+    if (started) {
+        int rc = pthread_join (descriptor, NULL);
+        posix_assert (rc);
+    }
 }
 
 void zmq::thread_t::setSchedulingParameters (

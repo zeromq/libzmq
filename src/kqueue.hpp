@@ -54,7 +54,7 @@ class kqueue_t : public poller_base_t
   public:
     typedef void *handle_t;
 
-    kqueue_t (const ctx_t &ctx_);
+    kqueue_t (const thread_ctx_t &ctx_);
     ~kqueue_t ();
 
     //  "poller" concept.
@@ -77,7 +77,7 @@ class kqueue_t : public poller_base_t
     void loop ();
 
     // Reference to ZMQ context.
-    const ctx_t &ctx;
+    const thread_ctx_t &ctx;
 
     //  File descriptor referring to the kernel event queue.
     fd_t kqueue_fd;

@@ -46,7 +46,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::devpoll_t::devpoll_t (const zmq::ctx_t &ctx_) :
+zmq::devpoll_t::devpoll_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
     stopping (false)
 {

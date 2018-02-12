@@ -42,7 +42,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::pollset_t::pollset_t (const zmq::ctx_t &ctx_) :
+zmq::pollset_t::pollset_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
     stopping (false)
 {

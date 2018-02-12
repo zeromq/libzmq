@@ -813,6 +813,9 @@ AS_IF([test "$WITH_CLANG_FORMAT" = fail],
     [AC_MSG_ERROR([Caller explicitly referenced CLANG_FORMAT=$CLANG_FORMAT which was not found])])
 AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 
+# unittests will not build without the static libzmq.a
+AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)

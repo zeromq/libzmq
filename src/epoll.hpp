@@ -55,7 +55,7 @@ class epoll_t : public poller_base_t
   public:
     typedef void *handle_t;
 
-    epoll_t (const ctx_t &ctx_);
+    epoll_t (const thread_ctx_t &ctx_);
     ~epoll_t ();
 
     //  "poller" concept.
@@ -78,7 +78,7 @@ class epoll_t : public poller_base_t
     void loop ();
 
     // Reference to ZMQ context.
-    const ctx_t &ctx;
+    const thread_ctx_t &ctx;
 
     //  Main epoll file descriptor
     fd_t epoll_fd;

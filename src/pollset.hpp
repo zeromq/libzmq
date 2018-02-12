@@ -55,7 +55,7 @@ class pollset_t : public poller_base_t
   public:
     typedef void *handle_t;
 
-    pollset_t (const ctx_t &ctx_);
+    pollset_t (const thread_ctx_t &ctx_);
     ~pollset_t ();
 
     //  "poller" concept.
@@ -78,7 +78,7 @@ class pollset_t : public poller_base_t
     void loop ();
 
     // Reference to ZMQ context.
-    const ctx_t &ctx;
+    const thread_ctx_t &ctx;
 
     //  Main pollset file descriptor
     ::pollset_t pollset_fd;

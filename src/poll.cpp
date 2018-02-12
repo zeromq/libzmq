@@ -43,7 +43,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::poll_t::poll_t (const zmq::ctx_t &ctx_) :
+zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
     retired (false),
     stopping (false)

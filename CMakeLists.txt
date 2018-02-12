@@ -948,6 +948,11 @@ set (ZMQ_BUILD_TESTS ON CACHE BOOL "Build the tests for ZeroMQ")
 if (ZMQ_BUILD_TESTS)
   enable_testing () # Enable testing only works in root scope
   ADD_SUBDIRECTORY (tests)
+  if (BUILD_STATIC)
+    add_subdirectory (unittests)
+  else ()
+    message (WARNING "Not building unit tests, since BUILD_STATIC is not enabled")
+  endif ()
 endif ()
 
 #-----------------------------------------------------------------------------

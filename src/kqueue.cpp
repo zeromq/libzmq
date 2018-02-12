@@ -54,7 +54,9 @@
 #define kevent_udata_t void *
 #endif
 
-zmq::kqueue_t::kqueue_t (const zmq::ctx_t &ctx_) : ctx (ctx_), stopping (false)
+zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
+    ctx (ctx_),
+    stopping (false)
 {
     //  Create event queue
     kqueue_fd = kqueue ();
