@@ -44,20 +44,19 @@
 #include "i_poll_events.hpp"
 
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
-    ctx (ctx_),
-    retired (false),
-    stopping (false)
+    worker_poller_base_t (ctx_),
+    retired (false)
 {
 }
 
 zmq::poll_t::~poll_t ()
 {
-    stop ();
-    worker.stop ();
+    stop_worker ();
 }
 
 zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
+    check_thread ();
     zmq_assert (fd_ != retired_fd);
 
     //  If the file descriptor table is too small expand it.
@@ -85,6 +84,7 @@ zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 
 void zmq::poll_t::rm_fd (handle_t handle_)
 {
+    check_thread ();
     fd_t index = fd_table[handle_].index;
     zmq_assert (index != retired_fd);
 
@@ -99,36 +99,36 @@ void zmq::poll_t::rm_fd (handle_t handle_)
 
 void zmq::poll_t::set_pollin (handle_t handle_)
 {
+    check_thread ();
     fd_t index = fd_table[handle_].index;
     pollset[index].events |= POLLIN;
 }
 
 void zmq::poll_t::reset_pollin (handle_t handle_)
 {
+    check_thread ();
     fd_t index = fd_table[handle_].index;
     pollset[index].events &= ~((short) POLLIN);
 }
 
 void zmq::poll_t::set_pollout (handle_t handle_)
 {
+    check_thread ();
     fd_t index = fd_table[handle_].index;
     pollset[index].events |= POLLOUT;
 }
 
 void zmq::poll_t::reset_pollout (handle_t handle_)
 {
+    check_thread ();
     fd_t index = fd_table[handle_].index;
     pollset[index].events &= ~((short) POLLOUT);
 }
 
-void zmq::poll_t::start ()
-{
-    ctx.start_thread (worker, worker_routine, this);
-}
-
 void zmq::poll_t::stop ()
 {
-    stopping = true;
+    check_thread ();
+    //  no-op... thread is stopped when no more fds or timers are registered
 }
 
 int zmq::poll_t::max_fds ()
@@ -138,14 +138,19 @@ int zmq::poll_t::max_fds ()
 
 void zmq::poll_t::loop ()
 {
-    while (!stopping) {
+    while (true) {
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
 
         cleanup_retired ();
 
         if (pollset.empty ()) {
-            // TODO yield? or sleep for timeout?
+            zmq_assert (get_load () == 0);
+
+            if (timeout == 0)
+                break;
+
+            // TODO sleep for timeout
             continue;
         }
 
@@ -200,9 +205,5 @@ void zmq::poll_t::cleanup_retired ()
     }
 }
 
-void zmq::poll_t::worker_routine (void *arg_)
-{
-    ((poll_t *) arg_)->loop ();
-}
 
 #endif
