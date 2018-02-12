@@ -48,6 +48,8 @@
 #include "i_poll_events.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <climits>
 
 zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
     ctx (ctx_),
@@ -211,7 +213,7 @@ void zmq::select_t::rm_fd (handle_t handle_)
 #else
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
-    assert (fd_entry_it != fd_entries.end ());
+    assert (fd_entry_it != family_entry.fd_entries.end ());
 
     zmq_assert (fd_entry_it->fd != retired_fd);
     fd_entry_it->fd = retired_fd;
@@ -321,8 +323,6 @@ void zmq::select_t::loop ()
                              (long) (timeout % 1000 * 1000)};
 #endif
 
-        int rc = 0;
-
 #if defined ZMQ_HAVE_WINDOWS
         /*
             On Windows select does not allow to mix descriptors from different
@@ -340,6 +340,7 @@ void zmq::select_t::loop ()
         */
 
         //  If there is just one family, there is no reason to use WSA events.
+        int rc = 0;
         const bool use_wsa_events = family_entries.size () > 1;
         if (use_wsa_events) {
             // TODO: I don't really understand why we are doing this. If any of

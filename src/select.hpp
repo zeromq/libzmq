@@ -115,7 +115,11 @@ class select_t : public poller_base_t
 
     struct family_entry_t
     {
+#ifndef ZMQ_HAVE_WINDOWS
+        family_entry_t () {};
+#else
         family_entry_t ();
+#endif
 
         fd_entries_t fd_entries;
         fds_set_t fds_set;

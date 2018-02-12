@@ -92,8 +92,12 @@ matrix:
         - llvm-toolchain-trusty-5.0
       packages:
         - clang-5.0
+  - env: BUILD_TYPE=default POLLER=poll
+    os: linux
+  - env: BUILD_TYPE=default POLLER=select
+    os: linux
 
-sudo: required
+sudo: false
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
