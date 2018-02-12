@@ -58,7 +58,7 @@ struct i_poll_events;
 //  Implements socket polling mechanism using POSIX.1-2001 select()
 //  function.
 
-class select_t : public poller_base_t
+class select_t : public worker_poller_base_t
 {
   public:
     typedef fd_t handle_t;
@@ -73,20 +73,13 @@ class select_t : public poller_base_t
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void start ();
     void stop ();
 
     static int max_fds ();
 
   private:
-    //  Main worker thread routine.
-    static void worker_routine (void *arg_);
-
     //  Main event loop.
     void loop ();
-
-    //  Reference to ZMQ context.
-    const thread_ctx_t &ctx;
 
     //  Internal state.
     struct fds_set_t
@@ -159,20 +152,14 @@ class select_t : public poller_base_t
     fd_t maxfd;
 #endif
 
+    void cleanup_retired ();
+    bool cleanup_retired (family_entry_t &family_entry_);
+
     //  Checks if an fd_entry_t is retired.
     static bool is_retired_fd (const fd_entry_t &entry);
 
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
-
-    //  If true, start has been called.
-    bool started;
-
-    //  If true, thread is shutting down.
-    bool stopping;
-
-    //  Handle of the physical thread doing the I/O work.
-    thread_t worker;
 
     select_t (const select_t &);
     const select_t &operator= (const select_t &);
