@@ -62,6 +62,13 @@ class thread_t
     //  'arg' as an argument.
     void start (thread_fn *tfn_, void *arg_);
 
+    //  Returns whether the thread was started, i.e. start was called.
+    bool get_started () const;
+
+    //  Returns whether the executing thread is the thread represented by the
+    //  thread object.
+    bool is_current_thread () const;
+
     //  Waits for thread termination.
     void stop ();
 

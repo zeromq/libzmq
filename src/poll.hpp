@@ -52,7 +52,7 @@ struct i_poll_events;
 //  Implements socket polling mechanism using the POSIX.1-2001
 //  poll() system call.
 
-class poll_t : public poller_base_t
+class poll_t : public worker_poller_base_t
 {
   public:
     typedef fd_t handle_t;
@@ -61,28 +61,22 @@ class poll_t : public poller_base_t
     ~poll_t ();
 
     //  "poller" concept.
+    //  These methods may only be called from an event callback; add_fd may also be called before start.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
     void rm_fd (handle_t handle_);
     void set_pollin (handle_t handle_);
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void start ();
     void stop ();
 
     static int max_fds ();
 
   private:
-    //  Main worker thread routine.
-    static void worker_routine (void *arg_);
-
     //  Main event loop.
-    void loop ();
+    virtual void loop ();
 
-    void cleanup_retired();
-
-    // Reference to ZMQ context.
-    const thread_ctx_t &ctx;
+    void cleanup_retired ();
 
     struct fd_entry_t
     {
@@ -100,12 +94,6 @@ class poll_t : public poller_base_t
 
     //  If true, there's at least one retired event source.
     bool retired;
-
-    //  If true, thread is in the process of shutting down.
-    bool stopping;
-
-    //  Handle of the physical thread doing the I/O work.
-    thread_t worker;
 
     poll_t (const poll_t &);
     const poll_t &operator= (const poll_t &);

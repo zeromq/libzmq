@@ -106,3 +106,31 @@ uint64_t zmq::poller_base_t::execute_timers ()
     //  There are no more timers.
     return 0;
 }
+
+zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :
+    ctx (ctx_)
+{
+}
+
+void zmq::worker_poller_base_t::stop_worker ()
+{
+    worker.stop ();
+}
+
+void zmq::worker_poller_base_t::start ()
+{
+    zmq_assert (get_load () > 0);
+    ctx.start_thread (worker, worker_routine, this);
+}
+
+void zmq::worker_poller_base_t::check_thread ()
+{
+#ifdef _DEBUG
+    zmq_assert (!worker.get_started () || worker.is_current_thread ());
+#endif
+}
+
+void zmq::worker_poller_base_t::worker_routine (void *arg_)
+{
+    ((worker_poller_base_t *) arg_)->loop ();
+}

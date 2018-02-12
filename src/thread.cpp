@@ -32,6 +32,11 @@
 #include "thread.hpp"
 #include "err.hpp"
 
+bool zmq::thread_t::get_started () const
+{
+    return started;
+}
+
 #ifdef ZMQ_HAVE_WINDOWS
 
 extern "C" {
@@ -60,6 +65,11 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 #endif
     win_assert (descriptor != NULL);
     started = true;
+}
+
+bool zmq::thread_t::is_current_thread () const
+{
+    return GetCurrentThreadId () == GetThreadId (descriptor);
 }
 
 void zmq::thread_t::stop ()
@@ -128,6 +138,11 @@ void zmq::thread_t::stop ()
         int rc = pthread_join (descriptor, NULL);
         posix_assert (rc);
     }
+}
+
+bool zmq::thread_t::is_current_thread () const
+{
+    return pthread_self () == descriptor;
 }
 
 void zmq::thread_t::setSchedulingParameters (
