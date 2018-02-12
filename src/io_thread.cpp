@@ -112,8 +112,7 @@ zmq::poller_t *zmq::io_thread_t::get_poller ()
 
 void zmq::io_thread_t::process_stop ()
 {
-    if (mailbox_handle) {
-        poller->rm_fd (mailbox_handle);
-    }
+    zmq_assert (mailbox_handle);
+    poller->rm_fd (mailbox_handle);
     poller->stop ();
 }
