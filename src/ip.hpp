@@ -57,6 +57,16 @@ int set_nosigpipe (fd_t s_);
 
 // Binds the underlying socket to the given device, eg. VRF or interface
 void bind_to_device (fd_t s_, std::string &bound_device_);
+
+// Initialize network subsystem. May be called multiple times. Each call must be matched by a call to shutdown_network.
+bool initialize_network ();
+
+// Shutdown network subsystem. Must be called once for each call to initialize_network before terminating.
+void shutdown_network ();
+
+// Creates a pair of sockets (using signaler_port on OS using TCP sockets).
+// Returns -1 if we could not make the socket pair successfully
+int make_fdpair (fd_t *r_, fd_t *w_);
 }
 
 #endif

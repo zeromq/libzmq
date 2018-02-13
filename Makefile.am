@@ -625,7 +625,8 @@ tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
 
 tests_test_sockopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
-tests_test_sockopt_hwm_LDADD = src/libzmq.la
+tests_test_sockopt_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_sockopt_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
 tests_test_setsockopt_LDADD = src/libzmq.la

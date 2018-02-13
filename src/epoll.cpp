@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include <algorithm>
 #include <new>
 
@@ -45,8 +46,7 @@
 #include "i_poll_events.hpp"
 
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
-    ctx (ctx_),
-    stopping (false)
+    worker_poller_base_t (ctx_)
 {
 #ifdef ZMQ_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions
@@ -62,7 +62,7 @@ zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
 zmq::epoll_t::~epoll_t ()
 {
     //  Wait till the worker thread exits.
-    worker.stop ();
+    stop_worker ();
 
     close (epoll_fd);
     for (retired_t::iterator it = retired.begin (); it != retired.end ();
@@ -73,6 +73,7 @@ zmq::epoll_t::~epoll_t ()
 
 zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
+    check_thread ();
     poll_entry_t *pe = new (std::nothrow) poll_entry_t;
     alloc_assert (pe);
 
@@ -96,6 +97,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 
 void zmq::epoll_t::rm_fd (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -110,6 +112,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 
 void zmq::epoll_t::set_pollin (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLIN;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
@@ -118,6 +121,7 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
 
 void zmq::epoll_t::reset_pollin (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLIN);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
@@ -126,6 +130,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
 
 void zmq::epoll_t::set_pollout (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLOUT;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
@@ -134,20 +139,16 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
 
 void zmq::epoll_t::reset_pollout (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLOUT);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
-void zmq::epoll_t::start ()
-{
-    ctx.start_thread (worker, worker_routine, this);
-}
-
 void zmq::epoll_t::stop ()
 {
-    stopping = true;
+    check_thread ();
 }
 
 int zmq::epoll_t::max_fds ()
@@ -159,9 +160,17 @@ void zmq::epoll_t::loop ()
 {
     epoll_event ev_buf[max_io_events];
 
-    while (!stopping) {
+    while (true) {
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
+
+        if (get_load () == 0) {
+            if (timeout == 0)
+                break;
+
+            // TODO sleep for timeout
+            continue;
+        }
 
         //  Wait for events.
         int n = epoll_wait (epoll_fd, &ev_buf[0], max_io_events,
@@ -197,11 +206,6 @@ void zmq::epoll_t::loop ()
         retired.clear ();
         retired_sync.unlock ();
     }
-}
-
-void zmq::epoll_t::worker_routine (void *arg_)
-{
-    ((epoll_t *) arg_)->loop ();
 }
 
 #endif
