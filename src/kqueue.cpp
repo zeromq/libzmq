@@ -55,8 +55,7 @@
 #endif
 
 zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
-    ctx (ctx_),
-    stopping (false)
+    worker_poller_base_t (ctx_)
 {
     //  Create event queue
     kqueue_fd = kqueue ();
@@ -68,12 +67,13 @@ zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
 
 zmq::kqueue_t::~kqueue_t ()
 {
-    worker.stop ();
+    stop_worker ();
     close (kqueue_fd);
 }
 
 void zmq::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
 {
+    check_thread ();
     struct kevent ev;
 
     EV_SET (&ev, fd_, filter_, EV_ADD, 0, 0, (kevent_udata_t) udata_);
@@ -93,6 +93,7 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
 zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
                                                i_poll_events *reactor_)
 {
+    check_thread ();
     poll_entry_t *pe = new (std::nothrow) poll_entry_t;
     alloc_assert (pe);
 
@@ -108,6 +109,7 @@ zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
 
 void zmq::kqueue_t::rm_fd (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     if (pe->flag_pollin)
         kevent_delete (pe->fd, EVFILT_READ);
@@ -121,6 +123,7 @@ void zmq::kqueue_t::rm_fd (handle_t handle_)
 
 void zmq::kqueue_t::set_pollin (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     if (likely (!pe->flag_pollin)) {
         pe->flag_pollin = true;
@@ -130,6 +133,7 @@ void zmq::kqueue_t::set_pollin (handle_t handle_)
 
 void zmq::kqueue_t::reset_pollin (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     if (likely (pe->flag_pollin)) {
         pe->flag_pollin = false;
@@ -139,6 +143,7 @@ void zmq::kqueue_t::reset_pollin (handle_t handle_)
 
 void zmq::kqueue_t::set_pollout (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     if (likely (!pe->flag_pollout)) {
         pe->flag_pollout = true;
@@ -148,6 +153,7 @@ void zmq::kqueue_t::set_pollout (handle_t handle_)
 
 void zmq::kqueue_t::reset_pollout (handle_t handle_)
 {
+    check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     if (likely (pe->flag_pollout)) {
         pe->flag_pollout = false;
@@ -155,14 +161,8 @@ void zmq::kqueue_t::reset_pollout (handle_t handle_)
     }
 }
 
-void zmq::kqueue_t::start ()
-{
-    ctx.start_thread (worker, worker_routine, this);
-}
-
 void zmq::kqueue_t::stop ()
 {
-    stopping = true;
 }
 
 int zmq::kqueue_t::max_fds ()
@@ -172,9 +172,17 @@ int zmq::kqueue_t::max_fds ()
 
 void zmq::kqueue_t::loop ()
 {
-    while (!stopping) {
+    while (true) {
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
+
+        if (get_load () == 0) {
+            if (timeout == 0)
+                break;
+
+            // TODO sleep for timeout
+            continue;
+        }
 
         //  Wait for events.
         struct kevent ev_buf[max_io_events];
@@ -217,11 +225,6 @@ void zmq::kqueue_t::loop ()
         }
         retired.clear ();
     }
-}
-
-void zmq::kqueue_t::worker_routine (void *arg_)
-{
-    ((kqueue_t *) arg_)->loop ();
 }
 
 #endif
