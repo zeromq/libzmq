@@ -108,7 +108,7 @@ class tcp_connecter_t : public own_t, public io_object_t
     //  Underlying socket.
     fd_t s;
 
-    //  Handle corresponding to the listening socket, if file descriptor is 
+    //  Handle corresponding to the listening socket, if file descriptor is
     //  registered with the poller, or NULL.
     handle_t handle;
 

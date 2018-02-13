@@ -118,7 +118,7 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
     //  Size is cached to avoid iteration through recently added descriptors.
     for (fd_entries_t::size_type i = 0, size = fd_entries_.size ();
          i < size && event_count_ > 0; ++i) {
-        //  fd_entries_[i] may not be stored, since calls to 
+        //  fd_entries_[i] may not be stored, since calls to
         //  in_event/out_event may reallocate the vector
 
         if (is_retired_fd (fd_entries_[i]))
