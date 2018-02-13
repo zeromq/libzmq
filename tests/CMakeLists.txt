@@ -208,6 +208,11 @@ if(ZMQ_HAVE_CURVE)
   set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
 endif()
 
+if(WIN32 AND ${POLLER} MATCHES "poll")
+  set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 30)
+  set_tests_properties(test_immediate PROPERTIES TIMEOUT 30)
+endif()
+
 #add additional required flags
 #ZMQ_USE_TWEETNACL will already be defined when not using sodium
 if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
