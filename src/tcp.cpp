@@ -335,7 +335,7 @@ void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
 
 void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 {
-#if defined ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS && defined SIO_LOOPBACK_FAST_PATH
     int sio_loopback_fastpath = 1;
     DWORD numberOfBytesReturned = 0;
 
