@@ -1,6 +1,6 @@
 version: build-{build}
 
-clone_depth: 1
+shallow_clone: true
 
 skip_tags: true
 
