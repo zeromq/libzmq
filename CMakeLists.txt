@@ -1074,7 +1074,9 @@ endif ()
 #-----------------------------------------------------------------------------
 # tests
 
-set (ZMQ_BUILD_TESTS ON CACHE BOOL "Build the tests for ZeroMQ")
+option(BUILD_TESTS "Whether or not to build the tests" ON)
+
+set (ZMQ_BUILD_TESTS ${BUILD_TESTS} CACHE BOOL "Build the tests for ZeroMQ")
 
 if (ZMQ_BUILD_TESTS)
   enable_testing () # Enable testing only works in root scope
