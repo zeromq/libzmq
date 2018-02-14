@@ -63,9 +63,11 @@ struct test_events_t : zmq::i_poll_events
 
     virtual void in_event ()
     {
-        in_events.add (1);
         poller.rm_fd (handle);
         handle = (zmq::poller_t::handle_t) NULL;
+
+        // this must only be incremented after rm_fd
+        in_events.add (1);
     }
 
 
@@ -78,9 +80,11 @@ struct test_events_t : zmq::i_poll_events
     virtual void timer_event (int id_)
     {
         LIBZMQ_UNUSED (id_);
-        timer_events.add (1);
         poller.rm_fd (handle);
         handle = (zmq::poller_t::handle_t) NULL;
+
+        // this must only be incremented after rm_fd
+        timer_events.add (1);
     }
 
     void set_handle (zmq::poller_t::handle_t handle_) { handle = handle_; }
