@@ -64,6 +64,8 @@ src_libzmq_la_SOURCES = \
 	src/fq.hpp \
 	src/gather.cpp \
 	src/gather.hpp \
+	src/generic_mtrie.hpp \
+	src/generic_mtrie_impl.hpp \
 	src/gssapi_mechanism_base.cpp \
 	src/gssapi_mechanism_base.hpp \
 	src/gssapi_client.cpp \
@@ -865,7 +867,8 @@ if ENABLE_STATIC
 # unit tests - these include individual source files and test the internal functions
 test_apps += \
 	unittests/unittest_poller \
-	unittests/unittest_ypipe
+	unittests/unittest_ypipe \
+	unittests/unittest_mtrie
 
 unittests_unittest_poller_SOURCES = unittests/unittest_poller.cpp
 unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
@@ -876,6 +879,12 @@ unittests_unittest_poller_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 unittests_unittest_ypipe_SOURCES = unittests/unittest_ypipe.cpp
 unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
 unittests_unittest_ypipe_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD} \
+	${UNITY_LIBS}
+
+unittests_unittest_mtrie_SOURCES = unittests/unittest_mtrie.cpp
+unittests_unittest_mtrie_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_mtrie_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
 	${UNITY_LIBS}
 endif
