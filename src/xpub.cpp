@@ -188,7 +188,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
     return 0;
 }
 
-static void stub (unsigned char *data_, size_t size_, void *arg_)
+static void stub (zmq::mtrie_t::prefix_t data_, size_t size_, void *arg_)
 {
     LIBZMQ_UNUSED (data_);
     LIBZMQ_UNUSED (size_);
@@ -295,7 +295,7 @@ bool zmq::xpub_t::xhas_in ()
     return !pending_data.empty ();
 }
 
-void zmq::xpub_t::send_unsubscription (unsigned char *data_,
+void zmq::xpub_t::send_unsubscription (zmq::mtrie_t::prefix_t data_,
                                        size_t size_,
                                        void *arg_)
 {

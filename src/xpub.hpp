@@ -66,8 +66,9 @@ class xpub_t : public socket_base_t
   private:
     //  Function to be applied to the trie to send all the subscriptions
     //  upstream.
-    static void
-    send_unsubscription (unsigned char *data_, size_t size_, void *arg_);
+    static void send_unsubscription (zmq::mtrie_t::prefix_t data_,
+                                     size_t size_,
+                                     void *arg_);
 
     //  Function to be applied to each matching pipes.
     static void mark_as_matching (zmq::pipe_t *pipe_, void *arg_);
