@@ -871,22 +871,28 @@ test_apps += \
 	unittests/unittest_mtrie
 
 unittests_unittest_poller_SOURCES = unittests/unittest_poller.cpp
-unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_poller_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_poller_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
-	${UNITY_LIBS}
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
 
 unittests_unittest_ypipe_SOURCES = unittests/unittest_ypipe.cpp
-unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_ypipe_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_ypipe_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
-	${UNITY_LIBS}
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
 
 unittests_unittest_mtrie_SOURCES = unittests/unittest_mtrie.cpp
-unittests_unittest_mtrie_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_mtrie_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_mtrie_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_mtrie_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
-	${UNITY_LIBS}
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
 endif
 
 check_PROGRAMS = ${test_apps}
