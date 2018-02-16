@@ -143,6 +143,21 @@ void test_add_rm_single_entry_match_exact ()
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
+void test_rm_empty ()
+{
+    int pipe;
+    zmq::generic_mtrie_t<int> mtrie;
+    const zmq::generic_mtrie_t<int>::prefix_t test_name =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
+
+    bool res = mtrie.rm (test_name, getlen (test_name), &pipe);
+    TEST_ASSERT_FALSE (res);
+
+    int count = 0;
+    mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
+    TEST_ASSERT_EQUAL_INT (0, count);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -155,6 +170,7 @@ int main (void)
     RUN_TEST (test_add_rm_single_entry_match_exact);
     RUN_TEST (test_add_two_entries_match_prefix_and_exact);
     RUN_TEST (test_add_two_entries_with_same_name_match_exact);
+    RUN_TEST (test_rm_empty);
 
     return UNITY_END ();
 }
