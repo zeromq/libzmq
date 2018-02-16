@@ -34,6 +34,11 @@ void tearDown ()
 {
 }
 
+int getlen (const zmq::generic_mtrie_t<int>::prefix_t &data)
+{
+    return strlen (reinterpret_cast<const char *> (data));
+}
+
 void test_create ()
 {
     zmq::generic_mtrie_t<int> mtrie;
@@ -53,7 +58,7 @@ void test_check_empty_match_nonempty_data ()
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
     int count = 0;
-    mtrie.match (test_name, 3, mtrie_count, &count);
+    mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
@@ -74,12 +79,52 @@ void test_add_single_entry_match_exact ()
     const zmq::generic_mtrie_t<int>::prefix_t test_name =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
-    bool res = mtrie.add (test_name, 3, &pipe);
+    bool res = mtrie.add (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_TRUE (res);
 
     int count = 0;
-    mtrie.match (test_name, 3, mtrie_count, &count);
+    mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
     TEST_ASSERT_EQUAL_INT (1, count);
+}
+
+void test_add_two_entries_with_same_name_match_exact ()
+{
+    int pipe_1, pipe_2;
+
+    zmq::generic_mtrie_t<int> mtrie;
+    const zmq::generic_mtrie_t<int>::prefix_t test_name =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
+
+    bool res = mtrie.add (test_name, getlen (test_name), &pipe_1);
+    TEST_ASSERT_TRUE (res);
+
+    res = mtrie.add (test_name, getlen (test_name), &pipe_2);
+    TEST_ASSERT_FALSE (res);
+
+    int count = 0;
+    mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
+    TEST_ASSERT_EQUAL_INT (2, count);
+}
+
+void test_add_two_entries_match_prefix_and_exact ()
+{
+    int pipe_1, pipe_2;
+
+    zmq::generic_mtrie_t<int> mtrie;
+    const zmq::generic_mtrie_t<int>::prefix_t test_name_prefix =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
+    const zmq::generic_mtrie_t<int>::prefix_t test_name_full =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foobar");
+
+    bool res = mtrie.add (test_name_prefix, getlen (test_name_prefix), &pipe_1);
+    TEST_ASSERT_TRUE (res);
+
+    res = mtrie.add (test_name_full, getlen (test_name_full), &pipe_2);
+    TEST_ASSERT_TRUE (res);
+
+    int count = 0;
+    mtrie.match (test_name_full, getlen (test_name_full), mtrie_count, &count);
+    TEST_ASSERT_EQUAL_INT (2, count);
 }
 
 void test_add_rm_single_entry_match_exact ()
@@ -89,12 +134,12 @@ void test_add_rm_single_entry_match_exact ()
     const zmq::generic_mtrie_t<int>::prefix_t test_name =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
-    mtrie.add (test_name, 3, &pipe);
-    bool res = mtrie.rm (test_name, 3, &pipe);
+    mtrie.add (test_name, getlen (test_name), &pipe);
+    bool res = mtrie.rm (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_TRUE (res);
 
     int count = 0;
-    mtrie.match (test_name, 3, mtrie_count, &count);
+    mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
@@ -108,6 +153,8 @@ int main (void)
     RUN_TEST (test_check_empty_match_empty_data);
     RUN_TEST (test_add_single_entry_match_exact);
     RUN_TEST (test_add_rm_single_entry_match_exact);
+    RUN_TEST (test_add_two_entries_match_prefix_and_exact);
+    RUN_TEST (test_add_two_entries_with_same_name_match_exact);
 
     return UNITY_END ();
 }
