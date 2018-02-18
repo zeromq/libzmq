@@ -158,6 +158,117 @@ void test_rm_empty ()
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
+void test_add_and_rm_other (const char *add_name, const char *rm_name)
+{
+    int addpipe, rmpipe;
+    zmq::generic_mtrie_t<int> mtrie;
+    const zmq::generic_mtrie_t<int>::prefix_t add_name_data =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (add_name);
+    const zmq::generic_mtrie_t<int>::prefix_t rm_name_data =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (rm_name);
+
+    mtrie.add (add_name_data, getlen (add_name_data), &addpipe);
+
+    bool res = mtrie.rm (rm_name_data, getlen (rm_name_data), &rmpipe);
+    TEST_ASSERT_FALSE (res);
+
+    {
+        int count = 0;
+        mtrie.match (add_name_data, getlen (add_name_data), mtrie_count,
+                     &count);
+        TEST_ASSERT_EQUAL_INT (1, count);
+    }
+
+    if (strncmp (add_name, rm_name,
+                 std::min (strlen (add_name), strlen (rm_name) + 1))
+        != 0) {
+        int count = 0;
+        mtrie.match (rm_name_data, getlen (rm_name_data), mtrie_count, &count);
+        TEST_ASSERT_EQUAL_INT (0, count);
+    }
+}
+
+void test_rm_nonexistent_nonempty_samename ()
+{
+    // TODO this triggers an assertion
+    test_add_and_rm_other ("foo", "foo");
+}
+
+void test_rm_nonexistent_nonempty_differentname ()
+{
+    test_add_and_rm_other ("foo", "bar");
+}
+
+void test_rm_nonexistent_nonempty_prefix ()
+{
+    // TODO here, a test assertion fails
+    test_add_and_rm_other ("foobar", "foo");
+}
+
+void test_rm_nonexistent_nonempty_prefixed ()
+{
+    test_add_and_rm_other ("foo", "foobar");
+}
+
+void test_add_multiple ()
+{
+    int pipes[3];
+    const char *names[3] = {"foo1", "foo2", "foo3"};
+
+    zmq::generic_mtrie_t<int> mtrie;
+    for (int i = 0; i < 3; ++i) {
+        const zmq::generic_mtrie_t<int>::prefix_t name_data =
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+        bool res = mtrie.add (name_data, getlen (name_data), &pipes[i]);
+        TEST_ASSERT_TRUE (res);
+    }
+}
+
+void test_rm_multiple_in_order ()
+{
+    int pipes[3];
+    const char *names[3] = {"foo1", "foo2", "foo3"};
+
+    zmq::generic_mtrie_t<int> mtrie;
+    for (int i = 0; i < 3; ++i) {
+        const zmq::generic_mtrie_t<int>::prefix_t name_data =
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+        mtrie.add (name_data, getlen (name_data), &pipes[i]);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        const zmq::generic_mtrie_t<int>::prefix_t name_data =
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+        bool res = mtrie.rm (name_data, getlen (name_data), &pipes[i]);
+        TEST_ASSERT_TRUE (res);
+    }
+}
+
+void test_rm_multiple_reverse_order ()
+{
+    int pipes[3];
+    const char *names[3] = {"foo1", "foo2", "foo3"};
+
+    zmq::generic_mtrie_t<int> mtrie;
+    for (int i = 0; i < 3; ++i) {
+        const zmq::generic_mtrie_t<int>::prefix_t name_data =
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+        mtrie.add (name_data, getlen (name_data), &pipes[i]);
+    }
+
+    for (int i = 2; i >= 0; --i) {
+        const zmq::generic_mtrie_t<int>::prefix_t name_data =
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+        bool res = mtrie.rm (name_data, getlen (name_data), &pipes[i]);
+        TEST_ASSERT_TRUE (res);
+    }
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -170,7 +281,20 @@ int main (void)
     RUN_TEST (test_add_rm_single_entry_match_exact);
     RUN_TEST (test_add_two_entries_match_prefix_and_exact);
     RUN_TEST (test_add_two_entries_with_same_name_match_exact);
+
     RUN_TEST (test_rm_empty);
+#if 0
+    RUN_TEST (test_rm_nonexistent_nonempty_samename);
+#endif
+    RUN_TEST (test_rm_nonexistent_nonempty_differentname);
+#if 0
+    RUN_TEST (test_rm_nonexistent_nonempty_prefix);
+#endif
+    RUN_TEST (test_rm_nonexistent_nonempty_prefixed);
+
+    RUN_TEST (test_add_multiple);
+    RUN_TEST (test_rm_multiple_in_order);
+    RUN_TEST (test_rm_multiple_reverse_order);
 
     return UNITY_END ();
 }
