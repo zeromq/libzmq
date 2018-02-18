@@ -143,7 +143,7 @@ void test_add_rm_single_entry_match_exact ()
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
-void test_rm_empty ()
+void test_rm_nonexistent_empty ()
 {
     int pipe;
     zmq::generic_mtrie_t<int> mtrie;
@@ -210,6 +210,35 @@ void test_rm_nonexistent_nonempty_prefixed ()
     test_add_and_rm_other ("foo", "foobar");
 }
 
+void add_indexed_expect_unique (zmq::generic_mtrie_t<int> &mtrie,
+                                int *pipes,
+                                const char **names,
+                                int i)
+{
+    const zmq::generic_mtrie_t<int>::prefix_t name_data =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+
+    bool res = mtrie.add (name_data, getlen (name_data), &pipes[i]);
+    TEST_ASSERT_TRUE (res);
+}
+
+void test_rm_nonexistent_between ()
+{
+    int pipes[3];
+    const char *names[3] = {"foo1", "foo2", "foo3"};
+
+    zmq::generic_mtrie_t<int> mtrie;
+    add_indexed_expect_unique (mtrie, pipes, names, 0);
+    add_indexed_expect_unique (mtrie, pipes, names, 2);
+
+
+    const zmq::generic_mtrie_t<int>::prefix_t name_data =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[1]);
+
+    bool res = mtrie.rm (name_data, getlen (name_data), &pipes[1]);
+    TEST_ASSERT_FALSE (res);
+}
+
 void test_add_multiple ()
 {
     int pipes[3];
@@ -217,11 +246,7 @@ void test_add_multiple ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 0; i < 3; ++i) {
-        const zmq::generic_mtrie_t<int>::prefix_t name_data =
-          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
-
-        bool res = mtrie.add (name_data, getlen (name_data), &pipes[i]);
-        TEST_ASSERT_TRUE (res);
+        add_indexed_expect_unique (mtrie, pipes, names, i);
     }
 }
 
@@ -232,10 +257,7 @@ void test_rm_multiple_in_order ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 0; i < 3; ++i) {
-        const zmq::generic_mtrie_t<int>::prefix_t name_data =
-          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
-
-        mtrie.add (name_data, getlen (name_data), &pipes[i]);
+        add_indexed_expect_unique (mtrie, pipes, names, i);
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -254,10 +276,7 @@ void test_rm_multiple_reverse_order ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 0; i < 3; ++i) {
-        const zmq::generic_mtrie_t<int>::prefix_t name_data =
-          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
-
-        mtrie.add (name_data, getlen (name_data), &pipes[i]);
+        add_indexed_expect_unique (mtrie, pipes, names, i);
     }
 
     for (int i = 2; i >= 0; --i) {
@@ -282,7 +301,7 @@ int main (void)
     RUN_TEST (test_add_two_entries_match_prefix_and_exact);
     RUN_TEST (test_add_two_entries_with_same_name_match_exact);
 
-    RUN_TEST (test_rm_empty);
+    RUN_TEST (test_rm_nonexistent_empty);
 #if 0
     RUN_TEST (test_rm_nonexistent_nonempty_samename);
 #endif
@@ -291,6 +310,7 @@ int main (void)
     RUN_TEST (test_rm_nonexistent_nonempty_prefix);
 #endif
     RUN_TEST (test_rm_nonexistent_nonempty_prefixed);
+    RUN_TEST (test_rm_nonexistent_between);
 
     RUN_TEST (test_add_multiple);
     RUN_TEST (test_rm_multiple_in_order);
