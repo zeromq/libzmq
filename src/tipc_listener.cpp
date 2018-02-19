@@ -137,12 +137,27 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     if (s == -1)
         return -1;
 
+    // If address was randomly assigned, update address object to reflect the actual address
+    if (address.is_random ()) {
+        struct sockaddr_storage ss;
+        socklen_t sl = sizeof (ss);
+        int rc = getsockname (s, (sockaddr *) &ss, &sl);
+        if (rc != 0) {
+            return rc;
+        }
+
+        tipc_address_t addr ((struct sockaddr *) &ss, sl);
+    }
+
+
     address.to_string (endpoint);
 
-    //  Bind the socket to tipc name.
-    rc = bind (s, address.addr (), address.addrlen ());
-    if (rc != 0)
-        goto error;
+    //  Bind the socket to tipc name
+    if (address.is_service ()) {
+        rc = bind (s, address.addr (), address.addrlen ());
+        if (rc != 0)
+            goto error;
+    }
 
     //  Listen for incoming connections.
     rc = listen (s, options.backlog);

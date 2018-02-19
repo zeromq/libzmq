@@ -204,6 +204,11 @@ int zmq::tipc_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
 
+    // Cannot connect to random tipc addresses
+    if (addr->resolved.tipc_addr->is_random ()) {
+        errno = EINVAL;
+        return -1;
+    }
     //  Create the socket.
     s = open_socket (AF_TIPC, SOCK_STREAM, 0);
     if (s == -1)
