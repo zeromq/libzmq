@@ -54,10 +54,16 @@ class tipc_address_t
     //  The opposite to resolve()
     int to_string (std::string &addr_);
 
+    // Handling different TIPC address types
+    bool is_service () const;
+    bool is_random () const;
+    void set_random ();
+
     const sockaddr *addr () const;
     socklen_t addrlen () const;
 
   private:
+    bool _random;
     struct sockaddr_tipc address;
 
     tipc_address_t (const tipc_address_t &);
