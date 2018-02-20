@@ -83,28 +83,26 @@ int zmq::tipc_address_t::resolve (const char *name)
     unsigned int z = 1, c = 0, n = 0;
     char eof;
     const char *domain;
-    int res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
+    int res;
 
-    if (res == 0)
-        goto portid;
+
+    if (strncmp (name, "<*>", 3) == 0) {
+        set_random ();
+        address.family = AF_TIPC;
+        address.addrtype = TIPC_ADDR_ID;
+        address.addr.id.node = 0;
+        address.addr.id.ref = 0;
+        address.scope = 0;
+        return 0;
+    }
+
+    res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
     /* Fetch optional domain suffix. */
     if ((domain = strchr (name, '@'))) {
         if (sscanf (domain, "@%u.%u.%u%c", &z, &c, &n, &eof) != 3)
             return EINVAL;
     }
-    if (res == 3)
-        goto nameseq;
-    else if (res == 2 && type > TIPC_RESERVED_TYPES) {
-        address.family = AF_TIPC;
-        address.addrtype = TIPC_ADDR_NAME;
-        address.addr.name.name.type = type;
-        address.addr.name.name.instance = lower;
-        address.addr.name.domain = tipc_addr (z, c, n);
-        address.scope = 0;
-        return 0;
-    } else
-        return EINVAL;
-nameseq:
+    if (res == 3) {
     if (type < TIPC_RESERVED_TYPES || upper < lower)
         return EINVAL;
     address.family = AF_TIPC;
@@ -114,7 +112,15 @@ nameseq:
     address.addr.nameseq.upper = upper;
     address.scope = TIPC_ZONE_SCOPE;
     return 0;
-portid:
+    } else if (res == 2 && type > TIPC_RESERVED_TYPES) {
+        address.family = AF_TIPC;
+        address.addrtype = TIPC_ADDR_NAME;
+        address.addr.name.name.type = type;
+        address.addr.name.name.instance = lower;
+        address.addr.name.domain = tipc_addr (z, c, n);
+        address.scope = 0;
+        return 0;
+    } else if (res == 0) {
     res = sscanf (name, "<%u.%u.%u:%u>", &z, &c, &n, &ref);
     if (res == 4) {
         address.family = AF_TIPC;
@@ -123,15 +129,8 @@ portid:
         address.addr.id.ref = ref;
         address.scope = 0;
         return 0;
-    } else if (strncmp (name, "<*>", 3) == 0) {
-        set_random ();
-        address.family = AF_TIPC;
-        address.addrtype = TIPC_ADDR_ID;
-        address.addr.id.node = 0;
-        address.addr.id.ref = 0;
-        address.scope = 0;
-        return 0;
-    } else
+        }
+    }
         return EINVAL;
 }
 
@@ -149,20 +148,16 @@ int zmq::tipc_address_t::to_string (std::string &addr_)
         s << ", " << address.addr.nameseq.lower;
         s << ", " << address.addr.nameseq.upper << "}";
         addr_ = s.str ();
-    } else if (address.addrtype == TIPC_ADDR_ID) {
+    } else if (address.addrtype == TIPC_ADDR_ID || is_random ()) {
         s << "tipc://"
           << "<" << tipc_zone (address.addr.id.node);
         s << "." << tipc_cluster (address.addr.id.node);
         s << "." << tipc_node (address.addr.id.node);
         s << ":" << address.addr.id.ref << ">";
         addr_ = s.str ();
-    } else if (is_random ()) {
-        s << "tipc://"
-          << "<" << tipc_zone (address.addr.id.node);
-        s << "." << tipc_cluster (address.addr.id.node);
-        s << "." << tipc_node (address.addr.id.node);
-        s << ":" << address.addr.id.ref << ">";
-        addr_ = s.str ();
+    } else {
+        addr_.clear ();
+        return -1;
     }
     return 0;
 }

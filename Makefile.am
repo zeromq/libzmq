@@ -773,7 +773,8 @@ test_apps += \
 	tests/test_router_mandatory_tipc \
 	tests/test_shutdown_stress_tipc \
 	tests/test_sub_forward_tipc \
-	tests/test_term_endpoint_tipc
+	tests/test_term_endpoint_tipc \
+	tests/test_address_tipc
 
 tests_test_connect_delay_tipc_SOURCES = tests/test_connect_delay_tipc.cpp
 tests_test_connect_delay_tipc_LDADD = src/libzmq.la
@@ -798,6 +799,10 @@ tests_test_sub_forward_tipc_LDADD = src/libzmq.la
 
 tests_test_term_endpoint_tipc_SOURCES = tests/test_term_endpoint_tipc.cpp
 tests_test_term_endpoint_tipc_LDADD = src/libzmq.la
+
+tests_test_address_tipc_SOURCES = tests/test_address_tipc.cpp
+tests_test_address_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_address_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 endif
 
