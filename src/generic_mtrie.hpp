@@ -48,21 +48,26 @@ template <typename T> class generic_mtrie_t
     ~generic_mtrie_t ();
 
     //  Add key to the trie. Returns true if it's a new subscription
-    //  rather than a duplicate.
+    //  rather than a duplicate (i.e. an entry with the same prefix
+    //  but a different pipe already exists).
+    //  TODO what if this is called with the same prefix AND pipe?
+    //  Is this legal? It is not checked anywhere.
     bool add (prefix_t prefix_, size_t size_, value_t *pipe_);
 
     //  Remove all subscriptions for a specific peer from the trie.
     //  The call_on_uniq_ flag controls if the callback is invoked
-    //  when there are no subscriptions left on some topics or on
-    //  every removal.
+    //  when there are no subscriptions left on a topic only (true)
+    //  or on every removal (false).
     void
     rm (value_t *pipe_,
         void (*func_) (const unsigned char *data_, size_t size_, void *arg_),
         void *arg_,
         bool call_on_uniq_);
 
-    //  Remove specific subscription from the trie. Return true is it was
+    //  Remove specific subscription from the trie. Return true if it was
     //  actually removed rather than de-duplicated.
+    //  TODO this must be made clearer, and the case where the prefix/pipe
+    //  pair was not found must be specified
     bool rm (prefix_t prefix_, size_t size_, value_t *pipe_);
 
     //  Signal all the matching pipes.
