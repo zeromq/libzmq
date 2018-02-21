@@ -35,6 +35,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "macros.hpp"
+#include "generic_mtrie_impl.hpp"
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
@@ -204,7 +205,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  Remove pipe without actually sending the message as it was taken
         //  care of by the manual call above. subscriptions is the real mtrie,
         //  so the pipe must be removed from there or it will be left over.
-        subscriptions.rm (pipe_, stub, NULL, false);
+        subscriptions.rm (pipe_, stub, (void *) NULL, false);
     } else {
         //  Remove the pipe from the trie. If there are topics that nobody
         //  is interested in anymore, send corresponding unsubscriptions
@@ -215,10 +216,9 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
     dist.pipe_terminated (pipe_);
 }
 
-void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
+void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, xpub_t *self_)
 {
-    xpub_t *self = (xpub_t *) arg_;
-    self->dist.match (pipe_);
+    self_->dist.match (pipe_);
 }
 
 int zmq::xpub_t::xsend (msg_t *msg_)
@@ -297,24 +297,22 @@ bool zmq::xpub_t::xhas_in ()
 
 void zmq::xpub_t::send_unsubscription (zmq::mtrie_t::prefix_t data_,
                                        size_t size_,
-                                       void *arg_)
+                                       xpub_t *self_)
 {
-    xpub_t *self = (xpub_t *) arg_;
-
-    if (self->options.type != ZMQ_PUB) {
+    if (self_->options.type != ZMQ_PUB) {
         //  Place the unsubscription to the queue of pending (un)subscriptions
         //  to be retrieved by the user later on.
         blob_t unsub (size_ + 1);
         *unsub.data () = 0;
         if (size_ > 0)
             memcpy (unsub.data () + 1, data_, size_);
-        self->pending_data.ZMQ_PUSH_OR_EMPLACE_BACK (ZMQ_MOVE (unsub));
-        self->pending_metadata.push_back (NULL);
-        self->pending_flags.push_back (0);
+        self_->pending_data.ZMQ_PUSH_OR_EMPLACE_BACK (ZMQ_MOVE (unsub));
+        self_->pending_metadata.push_back (NULL);
+        self_->pending_flags.push_back (0);
 
-        if (self->manual) {
-            self->last_pipe = NULL;
-            self->pending_pipes.push_back (NULL);
+        if (self_->manual) {
+            self_->last_pipe = NULL;
+            self_->pending_pipes.push_back (NULL);
         }
     }
 }

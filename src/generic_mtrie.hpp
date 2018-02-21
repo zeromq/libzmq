@@ -58,11 +58,11 @@ template <typename T> class generic_mtrie_t
     //  The call_on_uniq_ flag controls if the callback is invoked
     //  when there are no subscriptions left on a topic only (true)
     //  or on every removal (false).
-    void
-    rm (value_t *pipe_,
-        void (*func_) (const unsigned char *data_, size_t size_, void *arg_),
-        void *arg_,
-        bool call_on_uniq_);
+    template <typename Arg>
+    void rm (value_t *pipe_,
+             void (*func_) (const unsigned char *data_, size_t size_, Arg arg_),
+             Arg arg_,
+             bool call_on_uniq_);
 
     //  Remove specific subscription from the trie. Return true if it was
     //  actually removed rather than de-duplicated.
@@ -71,19 +71,21 @@ template <typename T> class generic_mtrie_t
     bool rm (prefix_t prefix_, size_t size_, value_t *pipe_);
 
     //  Signal all the matching pipes.
+    template <typename Arg>
     void match (prefix_t data_,
                 size_t size_,
-                void (*func_) (value_t *pipe_, void *arg_),
-                void *arg_);
+                void (*func_) (value_t *pipe_, Arg arg_),
+                Arg arg_);
 
   private:
     bool add_helper (prefix_t prefix_, size_t size_, value_t *pipe_);
+    template <typename Arg>
     void rm_helper (value_t *pipe_,
                     unsigned char **buff_,
                     size_t buffsize_,
                     size_t maxbuffsize_,
-                    void (*func_) (prefix_t data_, size_t size_, void *arg_),
-                    void *arg_,
+                    void (*func_) (prefix_t data_, size_t size_, Arg arg_),
+                    Arg arg_,
                     bool call_on_uniq_);
     bool rm_helper (prefix_t prefix_, size_t size_, value_t *pipe_);
     bool is_redundant () const;

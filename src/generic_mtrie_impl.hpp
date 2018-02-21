@@ -152,11 +152,12 @@ bool zmq::generic_mtrie_t<T>::add_helper (prefix_t prefix_,
 
 
 template <typename T>
+template <typename Arg>
 void zmq::generic_mtrie_t<T>::rm (value_t *pipe_,
                                   void (*func_) (prefix_t data_,
                                                  size_t size_,
-                                                 void *arg_),
-                                  void *arg_,
+                                                 Arg arg_),
+                                  Arg arg_,
                                   bool call_on_uniq_)
 {
     unsigned char *buff = NULL;
@@ -165,14 +166,15 @@ void zmq::generic_mtrie_t<T>::rm (value_t *pipe_,
 }
 
 template <typename T>
-void zmq::generic_mtrie_t<T>::rm_helper (value_t *pipe_,
+template <typename Arg>
+void zmq::generic_mtrie_t<T>::rm_helper(value_t *pipe_,
                                          unsigned char **buff_,
                                          size_t buffsize_,
                                          size_t maxbuffsize_,
                                          void (*func_) (prefix_t data_,
                                                         size_t size_,
-                                                        void *arg_),
-                                         void *arg_,
+                                                        Arg arg_),
+                                         Arg arg_,
                                          bool call_on_uniq_)
 {
     //  Remove the subscription from this node.
@@ -405,10 +407,11 @@ bool zmq::generic_mtrie_t<T>::rm_helper (prefix_t prefix_,
 }
 
 template <typename T>
+template <typename Arg>
 void zmq::generic_mtrie_t<T>::match (prefix_t data_,
                                      size_t size_,
-                                     void (*func_) (value_t *pipe_, void *arg_),
-                                     void *arg_)
+                                     void (*func_) (value_t *pipe_, Arg arg_),
+                                     Arg arg_)
 {
     generic_mtrie_t *current = this;
     while (true) {

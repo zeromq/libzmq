@@ -68,10 +68,10 @@ class xpub_t : public socket_base_t
     //  upstream.
     static void send_unsubscription (zmq::mtrie_t::prefix_t data_,
                                      size_t size_,
-                                     void *arg_);
+                                     xpub_t *self_);
 
     //  Function to be applied to each matching pipes.
-    static void mark_as_matching (zmq::pipe_t *pipe_, void *arg_);
+    static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *arg_);
 
     //  List of all subscriptions mapped to corresponding pipes.
     mtrie_t subscriptions;

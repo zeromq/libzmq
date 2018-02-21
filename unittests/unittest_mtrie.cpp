@@ -44,10 +44,9 @@ void test_create ()
     zmq::generic_mtrie_t<int> mtrie;
 }
 
-void mtrie_count (int *pipe, void *arg)
+void mtrie_count (int *pipe, int *count)
 {
     LIBZMQ_UNUSED (pipe);
-    int *count = static_cast<int *> (arg);
     ++*count;
 }
 
@@ -283,7 +282,7 @@ void test_add_multiple_reverse ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 2; i >= 0; --i) {
-        add_indexed_expect_unique (mtrie, pipes, names, (size_t)i);
+        add_indexed_expect_unique (mtrie, pipes, names, (size_t) i);
     }
 
     for (size_t i = 0; i < 3; ++i) {
@@ -324,10 +323,10 @@ void test_rm_multiple_reverse_order ()
 
 void check_name (zmq::generic_mtrie_t<int>::prefix_t data_,
                  size_t len_,
-                 void *void_name_)
+                 const char *name_)
 {
-    TEST_ASSERT_EQUAL_UINT (strlen ((char *) void_name_), len_);
-    TEST_ASSERT_EQUAL_STRING_LEN (void_name_, data_, len_);
+    TEST_ASSERT_EQUAL_UINT (strlen (name_), len_);
+    TEST_ASSERT_EQUAL_STRING_LEN (name_, data_, len_);
 }
 
 template <size_t N> void add_entries_rm_pipes_unique (const char *(&names)[N])
@@ -337,7 +336,7 @@ template <size_t N> void add_entries_rm_pipes_unique (const char *(&names)[N])
     add_entries (mtrie, pipes, names);
 
     for (size_t i = 0; i < N; ++i) {
-        mtrie.rm (&pipes[i], check_name, const_cast<char *> (names[i]), false);
+        mtrie.rm (&pipes[i], check_name, names[i], false);
     }
 }
 
@@ -357,11 +356,10 @@ void test_rm_with_callback_multiple_reverse_order ()
 
 void check_count (zmq::generic_mtrie_t<int>::prefix_t data_,
                   size_t len_,
-                  void *void_count_)
+                  int *count_)
 {
-    int *count = reinterpret_cast<int *> (void_count_);
-    --count;
-    TEST_ASSERT_GREATER_OR_EQUAL (0, count);
+    --count_;
+    TEST_ASSERT_GREATER_OR_EQUAL (0, count_);
 }
 
 void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie, int (&pipes)[2])
