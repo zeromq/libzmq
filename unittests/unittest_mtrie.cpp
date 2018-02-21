@@ -143,6 +143,17 @@ void test_add_rm_single_entry_match_exact ()
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
+void test_rm_nonexistent_0_size_empty ()
+{
+    int pipe;
+    zmq::generic_mtrie_t<int> mtrie;
+
+    // TODO why does this return true, but test_rm_nonexistent_empty returns false?
+    // or is this not a legal call at all?
+    bool res = mtrie.rm (0, 0, &pipe);
+    TEST_ASSERT_TRUE (res);
+}
+
 void test_rm_nonexistent_empty ()
 {
     int pipe;
@@ -344,6 +355,52 @@ void test_rm_with_callback_multiple_reverse_order ()
     add_entries_rm_pipes_unique (names);
 }
 
+void check_count (zmq::generic_mtrie_t<int>::prefix_t data_,
+                  size_t len_,
+                  void *void_count_)
+{
+    int *count = reinterpret_cast<int *> (void_count_);
+    --count;
+    TEST_ASSERT_GREATER_OR_EQUAL (0, count);
+}
+
+void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie, int (&pipes)[2])
+{
+    const char *name = "foo";
+
+    const zmq::generic_mtrie_t<int>::prefix_t name_data =
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (name);
+
+    bool res = mtrie.add (name_data, getlen (name_data), &pipes[0]);
+    TEST_ASSERT_TRUE (res);
+    res = mtrie.add (name_data, getlen (name_data), &pipes[1]);
+    TEST_ASSERT_FALSE (res);
+}
+
+void test_rm_with_callback_duplicate ()
+{
+    int pipes[2];
+    zmq::generic_mtrie_t<int> mtrie;
+    add_duplicate_entry (mtrie, pipes);
+
+    int count = 1;
+    mtrie.rm (&pipes[0], check_count, &count, false);
+    count = 1;
+    mtrie.rm (&pipes[1], check_count, &count, false);
+}
+
+void test_rm_with_callback_duplicate_uniq_only ()
+{
+    int pipes[2];
+    zmq::generic_mtrie_t<int> mtrie;
+    add_duplicate_entry (mtrie, pipes);
+
+    int count = 0;
+    mtrie.rm (&pipes[0], check_count, &count, true);
+    count = 1;
+    mtrie.rm (&pipes[1], check_count, &count, true);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -357,6 +414,7 @@ int main (void)
     RUN_TEST (test_add_two_entries_match_prefix_and_exact);
     RUN_TEST (test_add_two_entries_with_same_name_match_exact);
 
+    RUN_TEST (test_rm_nonexistent_0_size_empty);
     RUN_TEST (test_rm_nonexistent_empty);
 #if 0
     RUN_TEST (test_rm_nonexistent_nonempty_samename);
@@ -375,6 +433,8 @@ int main (void)
 
     RUN_TEST (test_rm_with_callback_multiple_in_order);
     RUN_TEST (test_rm_with_callback_multiple_reverse_order);
+    RUN_TEST (test_rm_with_callback_duplicate);
+    RUN_TEST (test_rm_with_callback_duplicate_uniq_only);
 
     return UNITY_END ();
 }
