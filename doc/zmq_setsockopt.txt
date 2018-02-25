@@ -1003,11 +1003,12 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
-ZMQ_XPUB_VERBOSE: pass subscribe messages on XPUB socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions. If enabled,
+ZMQ_XPUB_VERBOSE: pass duplicate subscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new duplicated subscriptions. If enabled,
 the socket passes all subscribe messages to the caller. If disabled,
-these are not visible to the caller. The default is 0 (disabled).
+only the first subscription to each filter will be passed. The default is 0
+(disabled).
 
 [horizontal]
 Option value type:: int
@@ -1016,11 +1017,12 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
-ZMQ_XPUB_VERBOSER: pass subscribe and unsubscribe messages on XPUB socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions and ubsubscriptions.
-If enabled, the socket passes all subscribe and unsubscribe messages to the
-caller. If disabled, these are not visible to the caller. The default is 0
+ZMQ_XPUB_VERBOSER: pass duplicate subscribe and unsubscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new duplicated subscriptions and
+unsubscriptions. If enabled, the socket passes all subscribe and unsubscribe
+messages to the caller. If disabled, only the first subscription to each filter and
+the last unsubscription from each filter will be passed. The default is 0
 (disabled).
 
 [horizontal]

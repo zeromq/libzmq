@@ -1,6 +1,9 @@
 0MQ version 4.2.4 stable, released on 20xx/xx/xx
 ================================================
 
+* Fixed #2820 - further clarify ZMQ_XPUB_VERBOSE(R) documentation.
+
+
 0MQ version 4.2.3 stable, released on 2017/12/13
 ================================================
 
