@@ -417,6 +417,7 @@ test_apps = \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \
 	tests/test_xpub_welcome_msg \
+	tests/test_xpub_verbose \
 	tests/test_atomics \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
@@ -622,6 +623,10 @@ tests_test_xpub_manual_LDADD = src/libzmq.la
 
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
 tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
+
+tests_test_xpub_verbose_SOURCES = tests/test_xpub_verbose.cpp
+tests_test_xpub_verbose_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_xpub_verbose_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
