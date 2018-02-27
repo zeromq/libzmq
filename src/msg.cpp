@@ -536,7 +536,7 @@ const char *zmq::msg_t::group ()
 
 int zmq::msg_t::set_group (const char *group_)
 {
-    return set_group (group_, strlen (group_));
+    return set_group (group_, ZMQ_GROUP_MAX_LENGTH);
 }
 
 int zmq::msg_t::set_group (const char *group_, size_t length_)
