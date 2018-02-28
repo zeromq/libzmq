@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace zmq
 {
-//  Multi-trie. Each node in the trie is a set of pointers to pipes.
+//  Multi-trie (prefix tree). Each node in the trie is a set of pointers.
 template <typename T> class generic_mtrie_t
 {
   public:
@@ -47,47 +47,48 @@ template <typename T> class generic_mtrie_t
     generic_mtrie_t ();
     ~generic_mtrie_t ();
 
-    //  Add key to the trie. Returns true if it's a new subscription
+    //  Add key to the trie. Returns true if it's a new entry
     //  rather than a duplicate (i.e. an entry with the same prefix
-    //  but a different pipe already exists).
-    //  TODO what if this is called with the same prefix AND pipe?
-    //  Is this legal? It is not checked anywhere.
-    bool add (prefix_t prefix_, size_t size_, value_t *pipe_);
+    //  and the same or different value already exists).
+    bool add (prefix_t prefix_, size_t size_, value_t *value_);
 
-    //  Remove all subscriptions for a specific peer from the trie.
+    //  Remove all entries with a specific value from the trie.
     //  The call_on_uniq_ flag controls if the callback is invoked
-    //  when there are no subscriptions left on a topic only (true)
-    //  or on every removal (false).
+    //  when there are no entries left on a prefix only (true)
+    //  or on every removal (false). The arg_ argument is passed
+    //  through to the callback function.
     template <typename Arg>
-    void rm (value_t *pipe_,
+    void rm (value_t *value_,
              void (*func_) (const unsigned char *data_, size_t size_, Arg arg_),
              Arg arg_,
              bool call_on_uniq_);
 
-    //  Remove specific subscription from the trie. Return true if it was
+    //  Removes a specific entry from the trie. Return true if it was
     //  actually removed rather than de-duplicated.
-    //  TODO this must be made clearer, and the case where the prefix/pipe
+    //  TODO this must be made clearer, and the case where the prefix/value
     //  pair was not found must be specified
-    bool rm (prefix_t prefix_, size_t size_, value_t *pipe_);
+    bool rm (prefix_t prefix_, size_t size_, value_t *value_);
 
-    //  Signal all the matching pipes.
+    //  Calls a callback function for all matching entries, i.e. any node
+    //  corresponding to data_ or a prefix of it. The arg_ argument
+    //  is passed through to the callback function.
     template <typename Arg>
     void match (prefix_t data_,
                 size_t size_,
-                void (*func_) (value_t *pipe_, Arg arg_),
+                void (*func_) (value_t *value_, Arg arg_),
                 Arg arg_);
 
   private:
-    bool add_helper (prefix_t prefix_, size_t size_, value_t *pipe_);
+    bool add_helper (prefix_t prefix_, size_t size_, value_t *value_);
     template <typename Arg>
-    void rm_helper (value_t *pipe_,
+    void rm_helper (value_t *value_,
                     unsigned char **buff_,
                     size_t buffsize_,
                     size_t maxbuffsize_,
                     void (*func_) (prefix_t data_, size_t size_, Arg arg_),
                     Arg arg_,
                     bool call_on_uniq_);
-    bool rm_helper (prefix_t prefix_, size_t size_, value_t *pipe_);
+    bool rm_helper (prefix_t prefix_, size_t size_, value_t *value_);
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
