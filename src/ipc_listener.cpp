@@ -30,7 +30,7 @@
 #include "precompiled.hpp"
 #include "ipc_listener.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
 
 #include <new>
 
@@ -68,6 +68,7 @@ const char *zmq::ipc_listener_t::tmp_env_vars[] = {
   "TMPDIR", "TEMPDIR", "TMP",
   0 // Sentinel
 };
+
 
 int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
                                                   std::string &file_)
@@ -193,7 +194,7 @@ void zmq::ipc_listener_t::in_event ()
 int zmq::ipc_listener_t::get_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
-#ifdef ZMQ_HAVE_HPUX
+#if defined ZMQ_HAVE_HPUX
     int sl = sizeof (ss);
 #else
     socklen_t sl = sizeof (ss);
@@ -250,7 +251,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         s = options.use_fd;
     } else {
         //  Create a listening socket.
-        s = open_socket (AF_UNIX, SOCK_STREAM, 0);
+        s = open_socket (AF_UNIX, SOCK_STREAM, 0);  
         if (s == -1) {
             if (!tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
@@ -263,7 +264,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         }
 
         //  Bind the socket to the file path.
-        rc = bind (s, address.addr (), address.addrlen ());
+        rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
         if (rc != 0)
             goto error;
 
