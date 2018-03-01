@@ -244,6 +244,12 @@ struct atomic_value_t
 
     atomic_value_t (const atomic_value_t &src) : value (src.load ()) {}
 
+    atomic_value_t &operator= (const atomic_value_t &src)
+    {
+    	store(src.load ());
+    	return *this;
+    }
+    
     void store (const int value_)
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
@@ -280,11 +286,9 @@ struct atomic_value_t
 #endif
 
 #if defined ZMQ_ATOMIC_PTR_MUTEX
-    mutex_t sync;
+    mutable mutex_t sync;
 #endif
 
-  private:
-    atomic_value_t &operator= (const atomic_value_t &src);
 };
 }
 
