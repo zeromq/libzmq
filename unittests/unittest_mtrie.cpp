@@ -380,8 +380,8 @@ void check_count (zmq::generic_mtrie_t<int>::prefix_t data_,
                   size_t len_,
                   int *count_)
 {
-    --count_;
-    TEST_ASSERT_GREATER_OR_EQUAL (0, count_);
+    --(*count_);
+    TEST_ASSERT_GREATER_OR_EQUAL (0, *count_);
 }
 
 void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie, int (&pipes)[2])
