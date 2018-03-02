@@ -107,18 +107,23 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 pending_metadata.push_back (metadata);
                 pending_flags.push_back (0);
             } else {
-                bool unique;
-                if (*data == 0)
-                    unique = subscriptions.rm (data + 1, size - 1, pipe_);
-                else
-                    unique = subscriptions.add (data + 1, size - 1, pipe_);
+                bool notify;
+                if (*data == 0) {
+                    mtrie_t::rm_result rm_result =
+                      subscriptions.rm (data + 1, size - 1, pipe_);
+                    //  TODO reconsider what to do if rm_result == mtrie_t::not_found
+                    notify =
+                      rm_result != mtrie_t::values_remain || verbose_unsubs;
+                } else {
+                    bool first_added =
+                      subscriptions.add (data + 1, size - 1, pipe_);
+                    notify = first_added || verbose_subs;
+                }
 
-                //  If the (un)subscription is not a duplicate store it so that it can be
-                //  passed to the user on next recv call unless verbose mode is enabled
-                //  which makes to pass always these messages.
-                if (options.type == ZMQ_XPUB
-                    && (unique || (*data == 1 && verbose_subs)
-                        || (*data == 0 && verbose_unsubs && verbose_subs))) {
+                //  If the request was a new subscription, or the subscription
+                //  was removed, or verbose mode is enabled, store it so that
+                //  it can be passed to the user on next recv call.
+                if (options.type == ZMQ_XPUB && notify) {
                     pending_data.push_back (blob_t (data, size));
                     if (metadata)
                         metadata->add_ref ();

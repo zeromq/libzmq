@@ -153,8 +153,9 @@ void test_add_rm_single_entry_match_exact ()
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
     mtrie.add (test_name, getlen (test_name), &pipe);
-    bool res = mtrie.rm (test_name, getlen (test_name), &pipe);
-    TEST_ASSERT_TRUE (res);
+    zmq::generic_mtrie_t<int>::rm_result res =
+      mtrie.rm (test_name, getlen (test_name), &pipe);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -166,10 +167,8 @@ void test_rm_nonexistent_0_size_empty ()
     int pipe;
     zmq::generic_mtrie_t<int> mtrie;
 
-    // TODO why does this return true, but test_rm_nonexistent_empty returns false?
-    // or is this not a legal call at all?
-    bool res = mtrie.rm (0, 0, &pipe);
-    TEST_ASSERT_TRUE (res);
+    zmq::generic_mtrie_t<int>::rm_result res = mtrie.rm (0, 0, &pipe);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
 }
 
 void test_rm_nonexistent_empty ()
@@ -179,8 +178,9 @@ void test_rm_nonexistent_empty ()
     const zmq::generic_mtrie_t<int>::prefix_t test_name =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
-    bool res = mtrie.rm (test_name, getlen (test_name), &pipe);
-    TEST_ASSERT_FALSE (res);
+    zmq::generic_mtrie_t<int>::rm_result res =
+      mtrie.rm (test_name, getlen (test_name), &pipe);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -198,8 +198,9 @@ void test_add_and_rm_other (const char *add_name, const char *rm_name)
 
     mtrie.add (add_name_data, getlen (add_name_data), &addpipe);
 
-    bool res = mtrie.rm (rm_name_data, getlen (rm_name_data), &rmpipe);
-    TEST_ASSERT_FALSE (res);
+    zmq::generic_mtrie_t<int>::rm_result res =
+      mtrie.rm (rm_name_data, getlen (rm_name_data), &rmpipe);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
 
     {
         int count = 0;
@@ -248,7 +249,7 @@ void add_indexed_expect_unique (zmq::generic_mtrie_t<int> &mtrie,
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
 
     bool res = mtrie.add (name_data, getlen (name_data), &pipes[i]);
-    TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
 }
 
 void test_rm_nonexistent_between ()
@@ -263,8 +264,9 @@ void test_rm_nonexistent_between ()
     const zmq::generic_mtrie_t<int>::prefix_t name_data =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[1]);
 
-    bool res = mtrie.rm (name_data, getlen (name_data), &pipes[1]);
-    TEST_ASSERT_FALSE (res);
+    zmq::generic_mtrie_t<int>::rm_result res =
+      mtrie.rm (name_data, getlen (name_data), &pipes[1]);
+    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
 }
 
 template <size_t N>
@@ -323,8 +325,9 @@ template <size_t N> void add_and_rm_entries (const char *(&names)[N])
         const zmq::generic_mtrie_t<int>::prefix_t name_data =
           reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
 
-        bool res = mtrie.rm (name_data, getlen (name_data), &pipes[i]);
-        TEST_ASSERT_TRUE (res);
+        zmq::generic_mtrie_t<int>::rm_result res =
+          mtrie.rm (name_data, getlen (name_data), &pipes[i]);
+        TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
     }
 }
 
@@ -434,13 +437,9 @@ int main (void)
 
     RUN_TEST (test_rm_nonexistent_0_size_empty);
     RUN_TEST (test_rm_nonexistent_empty);
-#if 0
     RUN_TEST (test_rm_nonexistent_nonempty_samename);
-#endif
     RUN_TEST (test_rm_nonexistent_nonempty_differentname);
-#if 0
     RUN_TEST (test_rm_nonexistent_nonempty_prefix);
-#endif
     RUN_TEST (test_rm_nonexistent_nonempty_prefixed);
     RUN_TEST (test_rm_nonexistent_between);
 

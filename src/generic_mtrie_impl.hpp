@@ -294,47 +294,39 @@ void zmq::generic_mtrie_t<T>::rm_helper(value_t *pipe_,
 }
 
 template <typename T>
-bool zmq::generic_mtrie_t<T>::rm (prefix_t prefix_,
-                                  size_t size_,
-                                  value_t *pipe_)
+typename zmq::generic_mtrie_t<T>::rm_result
+zmq::generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
 {
     return rm_helper (prefix_, size_, pipe_);
 }
 
 template <typename T>
-bool zmq::generic_mtrie_t<T>::rm_helper (prefix_t prefix_,
-                                         size_t size_,
-                                         value_t *pipe_)
+typename zmq::generic_mtrie_t<T>::rm_result zmq::generic_mtrie_t<T>::rm_helper (
+  prefix_t prefix_, size_t size_, value_t *pipe_)
 {
     if (!size_) {
-        // TODO pipes can only be NULL here, if we are at the top level, i.e.
-        // rm was already called with size_ == 0. This could be checked in rm,
-        // and here we could just have an assertion or naught
-        if (pipes) {
-            typename pipes_t::size_type erased = pipes->erase (pipe_);
-            // TODO this assertion prevents calling rm with a non-existent entry, but
-            // only if there is an entry with the same prefix but a different pipe;
-            // this appears inconsistent, see also unittest_mtrie. It might be
-            // removed (since pipes is a set, in cannot be more than 1), and an
-            // appropriate value must be returned.
+        if (!pipes)
+            return not_found;
+
+        typename pipes_t::size_type erased = pipes->erase (pipe_);
+        if (pipes->empty ()) {
             zmq_assert (erased == 1);
-            if (pipes->empty ()) {
-                LIBZMQ_DELETE (pipes);
-            }
+            LIBZMQ_DELETE (pipes);
+            return last_value_removed;
         }
-        return !pipes;
+        return (erased == 1) ? values_remain : not_found;
     }
 
     unsigned char c = *prefix_;
     if (!count || c < min || c >= min + count)
-        return false;
+        return not_found;
 
     generic_mtrie_t *next_node = count == 1 ? next.node : next.table[c - min];
 
     if (!next_node)
-        return false;
+        return not_found;
 
-    bool ret = next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
+    rm_result ret = next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
 
     if (next_node->is_redundant ()) {
         LIBZMQ_DELETE (next_node);

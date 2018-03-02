@@ -44,12 +44,18 @@ template <typename T> class generic_mtrie_t
     typedef T value_t;
     typedef const unsigned char *prefix_t;
 
+    enum rm_result
+    {
+        not_found,
+        last_value_removed,
+        values_remain
+    };
+
     generic_mtrie_t ();
     ~generic_mtrie_t ();
 
-    //  Add key to the trie. Returns true if it's a new entry
-    //  rather than a duplicate (i.e. an entry with the same prefix
-    //  and the same or different value already exists).
+    //  Add key to the trie. Returns true iff no entry with the same prefix_
+    //  and size_ existed before.
     bool add (prefix_t prefix_, size_t size_, value_t *value_);
 
     //  Remove all entries with a specific value from the trie.
@@ -63,11 +69,9 @@ template <typename T> class generic_mtrie_t
              Arg arg_,
              bool call_on_uniq_);
 
-    //  Removes a specific entry from the trie. Return true if it was
-    //  actually removed rather than de-duplicated.
-    //  TODO this must be made clearer, and the case where the prefix/value
-    //  pair was not found must be specified
-    bool rm (prefix_t prefix_, size_t size_, value_t *value_);
+    //  Removes a specific entry from the trie.
+    //  Returns the result of the operation.
+    rm_result rm (prefix_t prefix_, size_t size_, value_t *value_);
 
     //  Calls a callback function for all matching entries, i.e. any node
     //  corresponding to data_ or a prefix of it. The arg_ argument
@@ -88,7 +92,7 @@ template <typename T> class generic_mtrie_t
                     void (*func_) (prefix_t data_, size_t size_, Arg arg_),
                     Arg arg_,
                     bool call_on_uniq_);
-    bool rm_helper (prefix_t prefix_, size_t size_, value_t *value_);
+    rm_result rm_helper (prefix_t prefix_, size_t size_, value_t *value_);
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
