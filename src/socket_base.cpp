@@ -288,7 +288,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
         && protocol_ != "ipc"
 #endif
         && protocol_ != "tcp"
@@ -627,7 +627,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
     if (protocol == "ipc") {
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
@@ -883,7 +883,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
     }
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
     else if (protocol == "ipc") {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);

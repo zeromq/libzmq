@@ -39,6 +39,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS
@@ -297,7 +300,7 @@ void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
 
     //  Check whether an error occurred
     int err = 0;
-#ifdef ZMQ_HAVE_HPUX
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
     int len = sizeof err;
 #else
     socklen_t len = sizeof err;

@@ -56,6 +56,8 @@ namespace zmq
 struct options_t
 {
     options_t ();
+    
+    options_t (const options_t &from);
 
     int set_curve_key (uint8_t *destination,
                        const void *optval_,

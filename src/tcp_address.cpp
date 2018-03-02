@@ -113,8 +113,11 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_,
     return 0;
 }
 
-#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_ANDROID
+#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_ANDROID || defined ZMQ_HAVE_VXWORKS
 #include <sys/ioctl.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <ioLib.h>
+#endif
 
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_,
                                           bool ipv6_,

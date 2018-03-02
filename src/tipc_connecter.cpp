@@ -49,6 +49,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 
 zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
                                          class session_base_t *session_,

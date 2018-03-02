@@ -55,6 +55,9 @@
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <strings.h>
+#endif
 #endif
 
 // XSI vector I/O

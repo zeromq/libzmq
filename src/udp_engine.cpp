@@ -35,6 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 #endif
 
 #include "udp_engine.hpp"
@@ -128,8 +131,13 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
+#ifdef ZMQ_HAVE_VXWORKS
+        rc = bind (fd, (sockaddr *)address->resolved.udp_addr->bind_addr (),
+                   address->resolved.udp_addr->bind_addrlen ());
+#else
         rc = bind (fd, address->resolved.udp_addr->bind_addr (),
                    address->resolved.udp_addr->bind_addrlen ());
+#endif
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else

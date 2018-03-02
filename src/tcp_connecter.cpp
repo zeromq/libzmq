@@ -52,6 +52,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 #ifdef ZMQ_HAVE_OPENVMS
 #include <ioctl.h>
 #endif
@@ -325,19 +328,29 @@ int zmq::tcp_connecter_t::open ()
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (const char *) &flag,
                          sizeof (int));
         wsa_assert (rc != SOCKET_ERROR);
+#elif defined ZMQ_HAVE_VXWORKS
+		rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(int));
+		errno_assert(rc == 0);
 #else
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
         errno_assert (rc == 0);
 #endif
 
-        rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+#if defined ZMQ_HAVE_VXWORKS
+        rc = ::bind (s, (sockaddr *)tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+#else
+		rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+#endif
         if (rc == -1)
             return -1;
     }
 
     //  Connect to the remote peer.
-    rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
-
+#if defined ZMQ_HAVE_VXWORKS
+    rc = ::connect (s, (sockaddr *)tcp_addr->addr (), tcp_addr->addrlen ());
+#else
+	rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
+#endif
     //  Connect was successful immediately.
     if (rc == 0) {
         return 0;
@@ -362,7 +375,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 {
     //  Async connect has finished. Check whether an error occurred
     int err = 0;
-#ifdef ZMQ_HAVE_HPUX
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
     int len = sizeof err;
 #else
     socklen_t len = sizeof err;
