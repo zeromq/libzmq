@@ -104,6 +104,62 @@ zmq::options_t::options_t () :
 #endif
 }
 
+zmq::options_t::options_t (const options_t &from) :
+sndhwm (from.sndhwm),
+rcvhwm (from.rcvhwm),
+affinity (from.affinity),
+routing_id_size (from.routing_id_size),
+rate (from.rate),
+recovery_ivl (from.recovery_ivl),
+multicast_hops (from.multicast_hops),
+multicast_maxtpdu (from.multicast_maxtpdu),
+sndbuf (from.sndbuf),
+rcvbuf (from.rcvbuf),
+tos (from.tos),
+type (from.type),
+linger (from.linger),
+connect_timeout (from.connect_timeout),
+tcp_maxrt (from.tcp_maxrt),
+reconnect_ivl (from.reconnect_ivl),
+reconnect_ivl_max (from.reconnect_ivl_max),
+backlog (from.backlog),
+maxmsgsize (from.maxmsgsize),
+rcvtimeo (from.rcvtimeo),
+sndtimeo (from.sndtimeo),
+ipv6 (from.ipv6),
+immediate (from.immediate),
+filter (from.filter),
+invert_matching (from.invert_matching),
+recv_routing_id (from.recv_routing_id),
+raw_socket (from.raw_socket),
+raw_notify (from.raw_notify),
+tcp_keepalive (from.tcp_keepalive),
+tcp_keepalive_cnt (from.tcp_keepalive_cnt),
+tcp_keepalive_idle (from.tcp_keepalive_idle),
+tcp_keepalive_intvl (from.tcp_keepalive_intvl),
+tcp_accept_filters (from.tcp_accept_filters),
+mechanism (from.mechanism),
+as_server (from.as_server),
+gss_principal_nt (from.gss_principal_nt),
+gss_service_principal_nt (from.gss_service_principal_nt),
+gss_plaintext (from.gss_plaintext),
+socket_id (from.socket_id),
+conflate (from.conflate),
+handshake_ivl (from.handshake_ivl),
+connected (from.connected),
+heartbeat_ttl (from.heartbeat_ttl),
+heartbeat_interval (from.heartbeat_interval),
+heartbeat_timeout (from.heartbeat_timeout),
+use_fd (from.use_fd),
+zap_enforce_domain (from.zap_enforce_domain),
+loopback_fastpath (from.loopback_fastpath)
+{
+	memcpy (routing_id, from.routing_id, 256);
+    memcpy (curve_public_key, from.curve_public_key, CURVE_KEYSIZE);
+    memcpy (curve_secret_key, from.curve_secret_key, CURVE_KEYSIZE);
+    memcpy (curve_server_key, from.curve_server_key, CURVE_KEYSIZE);
+}
+
 int zmq::options_t::set_curve_key (uint8_t *destination,
                                    const void *optval_,
                                    size_t optvallen_)

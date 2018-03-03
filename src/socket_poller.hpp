@@ -38,6 +38,10 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#elif defined ZMQ_HAVE_VXWORKS
+#include <unistd.h>
+#include <sys/time.h>
+#include <strings.h>
 #else
 #include <unistd.h>
 #endif
