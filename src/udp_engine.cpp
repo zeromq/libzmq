@@ -290,6 +290,9 @@ void zmq::udp_engine_t::out_event ()
         rc = sendto (fd, (const char *) out_buffer, (int) size, 0, out_address,
                      (int) out_addrlen);
         wsa_assert (rc != SOCKET_ERROR);
+#elif defined ZMQ_HAVE_VXWORKS
+        rc = sendto (fd, (caddr_t)out_buffer, size, 0, (sockaddr *)out_address, (int)out_addrlen);
+        errno_assert (rc != -1); 
 #else
         rc = sendto (fd, out_buffer, size, 0, out_address, out_addrlen);
         errno_assert (rc != -1);
@@ -329,6 +332,14 @@ void zmq::udp_engine_t::in_event ()
                     || last_error == WSAEWOULDBLOCK);
         return;
     }
+#elif defined ZMQ_HAVE_VXWORKS
+    int nbytes = recvfrom (fd, (char *)in_buffer, MAX_UDP_MSG, 0,
+                           (sockaddr *) &in_address, (int *)&in_addrlen);
+    if (nbytes == -1) {
+        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
+                      && errno != ENOTSOCK);
+        return;
+    }  
 #else
     int nbytes = recvfrom (fd, in_buffer, MAX_UDP_MSG, 0,
                            (sockaddr *) &in_address, &in_addrlen);

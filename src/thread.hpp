@@ -64,7 +64,10 @@ class thread_t
 #ifdef ZMQ_HAVE_VXWORKS
 	~thread_t()
 	{
-		taskDelete(descriptor);
+		if(descriptor != NULL || descriptor > 0)
+		{
+		    taskDelete(descriptor);
+		}
 	}
 #endif
 

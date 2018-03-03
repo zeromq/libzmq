@@ -149,7 +149,11 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If address was randomly assigned, update address object to reflect the actual address
     if (address.is_random ()) {
         struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_VXWORKS
+        int sl = sizeof (ss);
+#else
         socklen_t sl = sizeof (ss);
+#endif
         int rc = getsockname (s, (sockaddr *) &ss, &sl);
         if (rc != 0) {
             return rc;
@@ -163,7 +167,11 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
 
     //  Bind the socket to tipc name
     if (address.is_service ()) {
+#ifdef ZMQ_HAVE_VXWORKS
+        rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
+#else
         rc = bind (s, address.addr (), address.addrlen ());
+#endif
         if (rc != 0)
             goto error;
     }

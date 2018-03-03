@@ -970,6 +970,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
         Sleep (timeout_ > 0 ? timeout_ : INFINITE);
         return 0;
+#elif defined ZMQ_HAVE_VXWORKS
+        struct timespec ns_;
+        ns_.tv_sec = timeout_ / 1000;
+        ns_.tv_nsec = timeout_ % 1000 * 1000000;
+        return nanosleep(&ns_, 0);
 #else
         return usleep (timeout_ * 1000);
 #endif
