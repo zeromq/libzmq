@@ -128,4 +128,4 @@ int address_t::to_string (std::string &addr_) const
     addr_.clear ();
     return -1;
 }
-};
+}
