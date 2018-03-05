@@ -44,18 +44,17 @@
 #include <string>
 #include <sstream>
 
-namespace zmq
-{
-address_t::address_t (
-    const std::string &protocol_, const std::string &address_, ctx_t *parent_)
-    : protocol (protocol_),
-      address (address_),
-      parent (parent_)
+zmq::address_t::address_t (const std::string &protocol_,
+                           const std::string &address_,
+                           ctx_t *parent_) :
+    protocol (protocol_),
+    address (address_),
+    parent (parent_)
 {
     memset (&resolved, 0, sizeof resolved);
 }
 
-address_t::~address_t ()
+zmq::address_t::~address_t ()
 {
     if (protocol == "tcp") {
         if (resolved.tcp_addr) {
@@ -90,7 +89,7 @@ address_t::~address_t ()
 #endif
 }
 
-int address_t::to_string (std::string &addr_) const
+int zmq::address_t::to_string (std::string &addr_) const
 {
     if (protocol == "tcp") {
         if (resolved.tcp_addr)
@@ -127,5 +126,4 @@ int address_t::to_string (std::string &addr_) const
     }
     addr_.clear ();
     return -1;
-}
 }

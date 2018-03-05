@@ -348,7 +348,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
 #if defined ZMQ_HAVE_VXWORKS
         rc = ::bind (s, (sockaddr *)tcp_addr->src_addr (), tcp_addr->src_addrlen ());
 #else
-		rc = ::bind(s, tcp_addr->src_addr(), tcp_addr->src_addrlen());
+        rc = ::bind(s, tcp_addr->src_addr(), tcp_addr->src_addrlen());
 #endif
         if (rc == -1) {
             close ();
@@ -360,7 +360,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
 #if defined ZMQ_HAVE_VXWORKS
     rc = ::connect (s, (sockaddr *)tcp_addr->addr (), tcp_addr->addrlen ());
 #else
-	rc = ::connect(s, tcp_addr->addr(), tcp_addr->addrlen());
+    rc = ::connect(s, tcp_addr->addr(), tcp_addr->addrlen());
 #endif
     //  Connect was successful immediately.
     if (rc == 0)
@@ -393,7 +393,7 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     socklen_t len = sizeof err;
 #endif
 
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.

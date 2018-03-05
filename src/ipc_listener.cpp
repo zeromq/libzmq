@@ -194,7 +194,7 @@ void zmq::ipc_listener_t::in_event ()
 int zmq::ipc_listener_t::get_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
-#if defined ZMQ_HAVE_HPUX
+#ifdef ZMQ_HAVE_HPUX
     int sl = sizeof (ss);
 #else
     socklen_t sl = sizeof (ss);
@@ -251,7 +251,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         s = options.use_fd;
     } else {
         //  Create a listening socket.
-        s = open_socket (AF_UNIX, SOCK_STREAM, 0);  
+        s = open_socket (AF_UNIX, SOCK_STREAM, 0);
         if (s == -1) {
             if (!tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
