@@ -43,7 +43,7 @@
 //  settled. Tested to work reliably at 1 msec on a fast PC.
 #define SETTLE_TIME 300 //  In msec
 //  Commonly used buffer size for ZMQ_LAST_ENDPOINT
-#define MAX_SOCKET_STRING sizeof ("tcp://127.0.0.1:65536")
+#define MAX_SOCKET_STRING sizeof ("tcp://[::ffff:127.127.127.127]:65536")
 
 //  We need to test codepaths with non-random bind ports. List them here to
 //  keep them unique, to allow parallel test runs.
