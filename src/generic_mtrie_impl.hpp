@@ -167,7 +167,7 @@ void zmq::generic_mtrie_t<T>::rm (value_t *pipe_,
 
 template <typename T>
 template <typename Arg>
-void zmq::generic_mtrie_t<T>::rm_helper(value_t *pipe_,
+void zmq::generic_mtrie_t<T>::rm_helper (value_t *pipe_,
                                          unsigned char **buff_,
                                          size_t buffsize_,
                                          size_t maxbuffsize_,
