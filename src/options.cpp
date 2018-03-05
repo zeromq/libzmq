@@ -91,7 +91,8 @@ zmq::options_t::options_t () :
     heartbeat_timeout (-1),
     use_fd (-1),
     zap_enforce_domain (false),
-    loopback_fastpath (false)
+    loopback_fastpath (false),
+    zero_copy (true)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);

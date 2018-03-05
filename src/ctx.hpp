@@ -234,6 +234,9 @@ class ctx_t : public thread_ctx_t
     //  Is IPv6 enabled on this context?
     bool ipv6;
 
+    // Should we use zero copy message decoding in this context?
+    bool zero_copy;
+
     ctx_t (const ctx_t &);
     const ctx_t &operator= (const ctx_t &);
 

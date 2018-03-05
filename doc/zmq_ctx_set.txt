@@ -127,6 +127,18 @@ Default value:: INT_MAX
 Maximum value:: INT_MAX
 
 
+ZMQ_ZERO_COPY_RCV: Specify message decoding strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ZERO_COPY_RCV' argument specifies whether the message decoder should
+use a zero copy strategy when receiving messages. The zero copy strategy can
+lead to increased memory usage in some cases. This option allows you to use the
+older copying strategy. You can query the value of this option with
+linkzmq:zmq_ctx_get[3] using the 'ZMQ_ZERO_COPY_RECV' option.
+
+[horizontal]
+Default value:: 1
+
+
 ZMQ_MAX_SOCKETS: Set maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed

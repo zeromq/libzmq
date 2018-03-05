@@ -44,7 +44,7 @@ class v2_decoder_t :
   public decoder_base_t<v2_decoder_t, shared_message_memory_allocator>
 {
   public:
-    v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_);
+    v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_, bool zero_copy_);
     virtual ~v2_decoder_t ();
 
     //  i_decoder interface.
@@ -62,6 +62,7 @@ class v2_decoder_t :
     unsigned char msg_flags;
     msg_t in_progress;
 
+    const bool zero_copy;
     const int64_t maxmsgsize;
 
     v2_decoder_t (const v2_decoder_t &);

@@ -628,6 +628,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread);
 #define ZMQ_THREAD_AFFINITY_CPU_ADD 7
 #define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
 #define ZMQ_THREAD_NAME_PREFIX 9
+#define ZMQ_ZERO_COPY_RECV 10
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
