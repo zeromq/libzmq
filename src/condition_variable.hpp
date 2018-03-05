@@ -174,6 +174,13 @@ class condition_variable_t
 
 #include <pthread.h>
 
+#if defined(__ANDROID_API__) && __ANDROID_API__ < 21
+#define ANDROID_LEGACY
+extern "C" int pthread_cond_timedwait_monotonic_np (pthread_cond_t *,
+                                                    pthread_mutex_t *,
+                                                    const struct timespec *);
+#endif
+
 namespace zmq
 {
 class condition_variable_t
@@ -183,7 +190,7 @@ class condition_variable_t
     {
         pthread_condattr_t attr;
         pthread_condattr_init (&attr);
-#ifndef ZMQ_HAVE_OSX
+#if !defined(ZMQ_HAVE_OSX) && !defined(ANDROID_LEGACY)
         pthread_condattr_setclock (&attr, CLOCK_MONOTONIC);
 #endif
         int rc = pthread_cond_init (&cond, &attr);
@@ -219,6 +226,9 @@ class condition_variable_t
             }
 #ifdef ZMQ_HAVE_OSX
             rc = pthread_cond_timedwait_relative_np (
+              &cond, mutex_->get_mutex (), &timeout);
+#elif defined(ANDROID_LEGACY)
+            rc = pthread_cond_timedwait_monotonic_np (
               &cond, mutex_->get_mutex (), &timeout);
 #else
             rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);
