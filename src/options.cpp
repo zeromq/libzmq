@@ -115,7 +115,7 @@ int zmq::do_setsockopt_int_as_bool_strict (const void *const optval_,
     // TODO handling of values other than 0 or 1 is not consistent,
     // here it is disallowed, but for other options such as
     // ZMQ_ROUTER_RAW any positive value is accepted
-    int value;
+    int value = -1;
     if (do_setsockopt (optval_, optvallen_, &value) == -1)
         return -1;
     if (value == 0 || value == 1) {
@@ -129,7 +129,7 @@ int zmq::do_setsockopt_int_as_bool_relaxed (const void *const optval_,
                                             const size_t optvallen_,
                                             bool *const out_value_)
 {
-    int value;
+    int value = -1;
     if (do_setsockopt (optval_, optvallen_, &value) == -1)
         return -1;
     *out_value_ = (value != 0);
