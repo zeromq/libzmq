@@ -106,6 +106,8 @@ int zmq::router_t::xsetsockopt (int option_,
 
     switch (option_) {
         case ZMQ_CONNECT_ROUTING_ID:
+            // TODO why isn't it possible to set an empty connect_routing_id
+            //   (which is the default value)
             if (optval_ && optvallen_) {
                 connect_routing_id.assign ((char *) optval_, optvallen_);
                 return 0;

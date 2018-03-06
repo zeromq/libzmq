@@ -175,13 +175,10 @@ int zmq::stream_t::xsetsockopt (int option_,
                                 const void *optval_,
                                 size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
-    int value = 0;
-    if (is_int)
-        memcpy (&value, optval_, sizeof (int));
-
     switch (option_) {
         case ZMQ_CONNECT_ROUTING_ID:
+            // TODO why isn't it possible to set an empty connect_routing_id
+            //   (which is the default value)
             if (optval_ && optvallen_) {
                 connect_routing_id.assign ((char *) optval_, optvallen_);
                 return 0;
@@ -189,10 +186,8 @@ int zmq::stream_t::xsetsockopt (int option_,
             break;
 
         case ZMQ_STREAM_NOTIFY:
-            if (is_int && (value == 0 || value == 1)) {
-                options.raw_notify = (value != 0);
-                return 0;
-            }
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &options.raw_notify);
             break;
 
         default:
