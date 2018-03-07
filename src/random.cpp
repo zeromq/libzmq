@@ -92,8 +92,9 @@ uint32_t zmq::generate_random ()
 //    configurable via config.h
 
 //  TODO this should probably be done via config.h
-#if (defined(__cpp_threadsafe_static_init)                                     \
-     && __cpp_threadsafe_static_init >= 200806)                                \
+#if __cplusplus >= 201103L                                                     \
+  || (defined(__cpp_threadsafe_static_init)                                    \
+      && __cpp_threadsafe_static_init >= 200806)                               \
   || (defined(_MSC_VER) && _MSC_VER >= 1900)
 #define ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT 1
 //  TODO this might probably also be set if a sufficiently recent gcc is used
