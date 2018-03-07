@@ -103,6 +103,7 @@ if(NOT WIN32)
     )
     if(ZMQ_HAVE_TIPC)
       list(APPEND tests
+            test_address_tipc
             test_pair_tipc
             test_reqrep_device_tipc
             test_reqrep_tipc

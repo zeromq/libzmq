@@ -899,6 +899,15 @@ int zmq::socket_base_t::connect (const char *addr_)
             LIBZMQ_DELETE (paddr);
             return -1;
         }
+        sockaddr_tipc *saddr =
+          (sockaddr_tipc *) paddr->resolved.tipc_addr->addr ();
+        // Cannot connect to random Port Identity
+        if (saddr->addrtype == TIPC_ADDR_ID
+            && paddr->resolved.tipc_addr->is_random ()) {
+            LIBZMQ_DELETE (paddr);
+            errno = EINVAL;
+            return -1;
+        }
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
