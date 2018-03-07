@@ -57,8 +57,9 @@ matrix:
         - libsodium-dev
         - asciidoc
         - xmlto
-  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled
     os: linux
+    sudo: required
     addons:
       apt:
         sources:
