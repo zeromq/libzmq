@@ -32,6 +32,11 @@
 
 int main (void)
 {
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     fprintf (stderr, "test_pair_tipc running...\n");
 
     void *ctx = zmq_init (1);

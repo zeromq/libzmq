@@ -131,6 +131,11 @@ int main ()
 {
     setup_test_environment ();
 
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     UNITY_BEGIN ();
     RUN_TEST (test_tipc_port_name_and_domain);
     RUN_TEST (test_tipc_port_identity);

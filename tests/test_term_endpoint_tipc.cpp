@@ -31,6 +31,11 @@
 
 int main (void)
 {
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     int rc;
     char buf[32];
     const char *ep = "tipc://{5560,0,0}";
