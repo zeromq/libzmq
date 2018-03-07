@@ -103,15 +103,15 @@ int zmq::tipc_address_t::resolve (const char *name)
             return EINVAL;
     }
     if (res == 3) {
-    if (type < TIPC_RESERVED_TYPES || upper < lower)
-        return EINVAL;
-    address.family = AF_TIPC;
-    address.addrtype = TIPC_ADDR_NAMESEQ;
-    address.addr.nameseq.type = type;
-    address.addr.nameseq.lower = lower;
-    address.addr.nameseq.upper = upper;
-    address.scope = TIPC_ZONE_SCOPE;
-    return 0;
+        if (type < TIPC_RESERVED_TYPES || upper < lower)
+            return EINVAL;
+        address.family = AF_TIPC;
+        address.addrtype = TIPC_ADDR_NAMESEQ;
+        address.addr.nameseq.type = type;
+        address.addr.nameseq.lower = lower;
+        address.addr.nameseq.upper = upper;
+        address.scope = TIPC_ZONE_SCOPE;
+        return 0;
     } else if (res == 2 && type > TIPC_RESERVED_TYPES) {
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_NAME;
@@ -121,17 +121,17 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.scope = 0;
         return 0;
     } else if (res == 0) {
-    res = sscanf (name, "<%u.%u.%u:%u>", &z, &c, &n, &ref);
-    if (res == 4) {
-        address.family = AF_TIPC;
-        address.addrtype = TIPC_ADDR_ID;
-        address.addr.id.node = tipc_addr (z, c, n);
-        address.addr.id.ref = ref;
-        address.scope = 0;
-        return 0;
+        res = sscanf (name, "<%u.%u.%u:%u>", &z, &c, &n, &ref);
+        if (res == 4) {
+            address.family = AF_TIPC;
+            address.addrtype = TIPC_ADDR_ID;
+            address.addr.id.node = tipc_addr (z, c, n);
+            address.addr.id.ref = ref;
+            address.scope = 0;
+            return 0;
         }
     }
-        return EINVAL;
+    return EINVAL;
 }
 
 int zmq::tipc_address_t::to_string (std::string &addr_)
