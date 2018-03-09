@@ -96,7 +96,7 @@ static int sleep_ms (unsigned int ms_)
     struct timespec ns_;
     ns_.tv_sec = ms_ / 1000;
     ns_.tv_nsec = ms_ % 1000 * 1000000;
-    return nanosleep(&ns_, 0);
+    return nanosleep (&ns_, 0);
 #else
     return usleep (ms_ * 1000);
 #endif
@@ -205,21 +205,21 @@ void zmq::signaler_t::send ()
         break;
     }
 #elif defined ZMQ_HAVE_VXWORKS
-	unsigned char dummy = 0;
-	while (true) {
-		ssize_t nbytes = ::send(w, (char *)&dummy, sizeof(dummy), 0);
-		if (unlikely(nbytes == -1 && errno == EINTR))
-			continue;
+    unsigned char dummy = 0;
+    while (true) {
+        ssize_t nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
+        if (unlikely (nbytes == -1 && errno == EINTR))
+            continue;
 #if defined(HAVE_FORK)
-		if (unlikely(pid != getpid())) {
-			//printf("Child process %d signaler_t::send returning without sending #2\n", getpid());
-			errno = EINTR;
-			break;
-		}
+        if (unlikely (pid != getpid ())) {
+            //printf("Child process %d signaler_t::send returning without sending #2\n", getpid());
+            errno = EINTR;
+            break;
+        }
 #endif
-		zmq_assert(nbytes == sizeof dummy);
-		break;
-	}
+        zmq_assert (nbytes == sizeof dummy);
+        break;
+    }
 #else
     unsigned char dummy = 0;
     while (true) {
@@ -332,8 +332,8 @@ void zmq::signaler_t::recv ()
     int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-	ssize_t nbytes = ::recv(r, (char *)&dummy, sizeof(dummy), 0);
-	errno_assert(nbytes >= 0);
+    ssize_t nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    errno_assert (nbytes >= 0);
 #else
     ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
     errno_assert (nbytes >= 0);
@@ -379,15 +379,15 @@ int zmq::signaler_t::recv_failable ()
         wsa_assert (last_error == WSAEWOULDBLOCK);
     }
 #elif defined ZMQ_HAVE_VXWORKS
-	ssize_t nbytes = ::recv(r, (char *)&dummy, sizeof(dummy), 0);
-	if (nbytes == -1) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
-			errno = EAGAIN;
-			return -1;
-		}
-		errno_assert(errno == EAGAIN || errno == EWOULDBLOCK
-			|| errno == EINTR);
-	}
+    ssize_t nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    if (nbytes == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+            errno = EAGAIN;
+            return -1;
+        }
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK
+                      || errno == EINTR);
+    }
 #else
     ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
     if (nbytes == -1) {

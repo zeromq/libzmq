@@ -63,7 +63,8 @@ struct address_t
     {
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
         ipc_address_t *ipc_addr;
 #endif
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS

@@ -30,7 +30,8 @@
 #include "precompiled.hpp"
 #include "ipc_listener.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_VXWORKS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include <new>
 
@@ -264,7 +265,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         }
 
         //  Bind the socket to the file path.
-        rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
+        rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
         if (rc != 0)
             goto error;
 

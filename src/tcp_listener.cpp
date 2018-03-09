@@ -240,8 +240,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
                      sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-	rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof (int));
-	errno_assert (rc == 0);
+    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (char *) &flag, sizeof (int));
+    errno_assert (rc == 0);
 #else
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
@@ -249,7 +249,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  Bind the socket to the network interface and port.
 #if defined ZMQ_HAVE_VXWORKS
-    rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
+    rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
 #else
     rc = bind (s, address.addr (), address.addrlen ());
 #endif

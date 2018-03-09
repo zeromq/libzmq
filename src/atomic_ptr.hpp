@@ -243,7 +243,7 @@ struct atomic_value_t
     atomic_value_t (const int value_) : value (value_) {}
 
     atomic_value_t (const atomic_value_t &src) : value (src.load ()) {}
-    
+
     void store (const int value_)
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
@@ -286,7 +286,6 @@ struct atomic_value_t
     mutex_t sync;
 #endif
 #endif
-
 };
 }
 

@@ -685,7 +685,7 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
     }
 }
 
-    // Polling.
+// Polling.
 
 #if defined ZMQ_HAVE_POLLER
 inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
@@ -974,7 +974,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         struct timespec ns_;
         ns_.tv_sec = timeout_ / 1000;
         ns_.tv_nsec = timeout_ % 1000 * 1000000;
-        return nanosleep(&ns_, 0);
+        return nanosleep (&ns_, 0);
 #else
         return usleep (timeout_ * 1000);
 #endif

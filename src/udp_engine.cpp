@@ -132,7 +132,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 #endif
 
 #ifdef ZMQ_HAVE_VXWORKS
-        rc = bind (fd, (sockaddr *)address->resolved.udp_addr->bind_addr (),
+        rc = bind (fd, (sockaddr *) address->resolved.udp_addr->bind_addr (),
                    address->resolved.udp_addr->bind_addrlen ());
 #else
         rc = bind (fd, address->resolved.udp_addr->bind_addr (),
@@ -291,8 +291,9 @@ void zmq::udp_engine_t::out_event ()
                      (int) out_addrlen);
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-        rc = sendto (fd, (caddr_t)out_buffer, size, 0, (sockaddr *)out_address, (int)out_addrlen);
-        errno_assert (rc != -1); 
+        rc = sendto (fd, (caddr_t) out_buffer, size, 0,
+                     (sockaddr *) out_address, (int) out_addrlen);
+        errno_assert (rc != -1);
 #else
         rc = sendto (fd, out_buffer, size, 0, out_address, out_addrlen);
         errno_assert (rc != -1);
@@ -333,13 +334,13 @@ void zmq::udp_engine_t::in_event ()
         return;
     }
 #elif defined ZMQ_HAVE_VXWORKS
-    int nbytes = recvfrom (fd, (char *)in_buffer, MAX_UDP_MSG, 0,
-                           (sockaddr *) &in_address, (int *)&in_addrlen);
+    int nbytes = recvfrom (fd, (char *) in_buffer, MAX_UDP_MSG, 0,
+                           (sockaddr *) &in_address, (int *) &in_addrlen);
     if (nbytes == -1) {
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
                       && errno != ENOTSOCK);
         return;
-    }  
+    }
 #else
     int nbytes = recvfrom (fd, in_buffer, MAX_UDP_MSG, 0,
                            (sockaddr *) &in_address, &in_addrlen);

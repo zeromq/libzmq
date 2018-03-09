@@ -135,8 +135,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (char *) &flag,
-                         sizeof (flag));
+    int rc =
+      setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (char *) &flag, sizeof (flag));
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -150,7 +150,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     int rc;
     struct sockaddr_storage ss;
 
-#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS                          \
+  || defined ZMQ_HAVE_VXWORKS
     int addrlen = static_cast<int> (sizeof ss);
 #else
     socklen_t addrlen = sizeof ss;
@@ -191,9 +192,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 {
-    int rc =
-      setsockopt (s_, IPPROTO_IP, IP_TOS,
-                  reinterpret_cast<char *> (&iptos), sizeof (iptos));
+    int rc = setsockopt (s_, IPPROTO_IP, IP_TOS,
+                         reinterpret_cast<char *> (&iptos), sizeof (iptos));
 
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
@@ -594,7 +594,8 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     errno_assert (listener != -1);
 
     int on = 1;
-    int rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof on);
+    int rc =
+      setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof on);
     errno_assert (rc != -1);
 
     rc = bind (listener, (struct sockaddr *) &lcladdr, sizeof lcladdr);
@@ -602,7 +603,8 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 
     socklen_t lcladdr_len = sizeof lcladdr;
 
-    rc = getsockname (listener, (struct sockaddr *) &lcladdr, (int *)&lcladdr_len);
+    rc = getsockname (listener, (struct sockaddr *) &lcladdr,
+                      (int *) &lcladdr_len);
     errno_assert (rc != -1);
 
     rc = listen (listener, 1);
@@ -611,7 +613,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
     errno_assert (*w_ != -1);
 
-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof on);
+    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof on);
     errno_assert (rc != -1);
 
     rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
@@ -621,7 +623,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     errno_assert (*r_ != -1);
 
     close (listener);
-    
+
     return 0;
 #else
     // All other implementations support socketpair()
@@ -639,9 +641,9 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         *w_ = *r_ = -1;
         return -1;
     } else {
-    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-    //  race condition can cause socket not to be closed (if fork happens
-    //  between socket creation and this point).
+        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+        //  race condition can cause socket not to be closed (if fork happens
+        //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
         rc = fcntl (sv[0], F_SETFD, FD_CLOEXEC);
         errno_assert (rc != -1);

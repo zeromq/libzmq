@@ -221,7 +221,7 @@ int zmq::tipc_connecter_t::open ()
     unblock_socket (s);
     //  Connect to the remote peer.
 #ifdef ZMQ_HAVE_VXWORKS
-    int rc = ::connect (s, (sockaddr *)addr->resolved.tipc_addr->addr (),
+    int rc = ::connect (s, (sockaddr *) addr->resolved.tipc_addr->addr (),
                         addr->resolved.tipc_addr->addrlen ());
 #else
     int rc = ::connect (s, addr->resolved.tipc_addr->addr (),

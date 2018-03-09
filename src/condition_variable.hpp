@@ -176,93 +176,83 @@ class condition_variable_t
 
 namespace zmq
 {
+class condition_variable_t
+{
+  public:
+    inline condition_variable_t () {}
 
-    class condition_variable_t
+    inline ~condition_variable_t ()
     {
-    public:
-        inline condition_variable_t ()
-        {
+        scoped_lock_t l (m_listenersMutex);
+        for (size_t i = 0; i < m_listeners.size (); i++) {
+            semDelete (m_listeners[i]);
+        }
+    }
 
+    inline int wait (mutex_t *mutex_, int timeout_)
+    {
+        //Atomically releases lock, blocks the current executing thread,
+        //and adds it to the list of threads waiting on *this. The thread
+        //will be unblocked when broadcast() is executed.
+        //It may also be unblocked spuriously. When unblocked, regardless
+        //of the reason, lock is reacquired and wait exits.
+
+        SEM_ID sem = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY);
+        {
+            scoped_lock_t l (m_listenersMutex);
+            m_listeners.push_back (sem);
+        }
+        mutex_->unlock ();
+
+        int rc;
+        if (timeout_ < 0)
+            rc = semTake (sem, WAIT_FOREVER);
+        else {
+            int ticksPerSec = sysClkRateGet ();
+            int timeoutTicks = (timeout_ * ticksPerSec) / 1000 + 1;
+            rc = semTake (sem, timeoutTicks);
         }
 
-        inline ~condition_variable_t ()
         {
-        	scoped_lock_t l(m_listenersMutex);
-    		for(size_t i = 0; i < m_listeners.size(); i++)
-    		{
-    			semDelete(m_listeners[i]);
-    		}
-        }
-
-        inline int wait (mutex_t* mutex_, int timeout_)
-        {
-    		//Atomically releases lock, blocks the current executing thread, 
-    		//and adds it to the list of threads waiting on *this. The thread 
-    		//will be unblocked when broadcast() is executed.
-    		//It may also be unblocked spuriously. When unblocked, regardless
-    		//of the reason, lock is reacquired and wait exits.
-
-    	    SEM_ID sem = semBCreate(SEM_Q_PRIORITY, SEM_EMPTY);
-    	    {
-    	    	scoped_lock_t l(m_listenersMutex);
-    	        m_listeners.push_back(sem);       
-    	    }
-    		mutex_->unlock();
-    		
-    		int rc;
-    	    if(timeout_ < 0)
-    	    	rc = semTake(sem, WAIT_FOREVER);
-    	    else
-    	    {
-    	    	int ticksPerSec = sysClkRateGet();
-    	    	int timeoutTicks = (timeout_ * ticksPerSec) / 1000 + 1;
-    	    	rc = semTake(sem, timeoutTicks);
-    	    }
-    	    
-    	    {
-    	    	scoped_lock_t l(m_listenersMutex);
-    	        // remove sem from listeners
-    	        for(size_t i = 0; i < m_listeners.size(); i++)
-    	        {
-    	        	if(m_listeners[i] == sem)
-    	        	{
-    	        		m_listeners.erase(m_listeners.begin()+i);
-    	        		break;
-    	        	}
-    	        }
-    	        semDelete(sem);
-    	    }
-    	    mutex_->lock();
-    	    
-            if (rc == 0)
-                return 0;
-
-            if (rc == S_objLib_OBJ_TIMEOUT)
-            {
-                errno= EAGAIN;
-                return -1;
+            scoped_lock_t l (m_listenersMutex);
+            // remove sem from listeners
+            for (size_t i = 0; i < m_listeners.size (); i++) {
+                if (m_listeners[i] == sem) {
+                    m_listeners.erase (m_listeners.begin () + i);
+                    break;
+                }
             }
-            
+            semDelete (sem);
+        }
+        mutex_->lock ();
+
+        if (rc == 0)
+            return 0;
+
+        if (rc == S_objLib_OBJ_TIMEOUT) {
+            errno = EAGAIN;
             return -1;
         }
 
-        inline void broadcast ()
-        {
-        	scoped_lock_t l(m_listenersMutex);
-    		for(size_t i = 0; i < m_listeners.size(); i++)
-    		{
-    			semGive(m_listeners[i]);
-    		}
+        return -1;
+    }
+
+    inline void broadcast ()
+    {
+        scoped_lock_t l (m_listenersMutex);
+        for (size_t i = 0; i < m_listeners.size (); i++) {
+            semGive (m_listeners[i]);
         }
+    }
 
-    private:
-        mutex_t m_listenersMutex;
-        std::vector<SEM_ID> m_listeners;
+  private:
+    mutex_t m_listenersMutex;
+    std::vector<SEM_ID> m_listeners;
 
-        // Disable copy construction and assignment.
-        condition_variable_t (const condition_variable_t&);
-        const condition_variable_t &operator = (const condition_variable_t&);
-    };
+    // Disable copy construction and assignment.
+    condition_variable_t (const condition_variable_t &);
+    const condition_variable_t &operator= (const condition_variable_t &);
+};
 }
 #else
 

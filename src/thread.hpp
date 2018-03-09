@@ -62,13 +62,12 @@ class thread_t
     }
 
 #ifdef ZMQ_HAVE_VXWORKS
-	~thread_t()
-	{
-		if(descriptor != NULL || descriptor > 0)
-		{
-		    taskDelete(descriptor);
-		}
-	}
+    ~thread_t ()
+    {
+        if (descriptor != NULL || descriptor > 0) {
+            taskDelete (descriptor);
+        }
+    }
 #endif
 
     //  Creates OS thread. 'tfn' is main thread function. It'll be passed

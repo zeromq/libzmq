@@ -346,9 +346,10 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     // Set a source address for conversations
     if (tcp_addr->has_src_addr ()) {
 #if defined ZMQ_HAVE_VXWORKS
-        rc = ::bind (s, (sockaddr *)tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+        rc = ::bind (s, (sockaddr *) tcp_addr->src_addr (),
+                     tcp_addr->src_addrlen ());
 #else
-        rc = ::bind(s, tcp_addr->src_addr(), tcp_addr->src_addrlen());
+        rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
 #endif
         if (rc == -1) {
             close ();
@@ -358,9 +359,9 @@ int zmq::socks_connecter_t::connect_to_proxy ()
 
     //  Connect to the remote peer.
 #if defined ZMQ_HAVE_VXWORKS
-    rc = ::connect (s, (sockaddr *)tcp_addr->addr (), tcp_addr->addrlen ());
+    rc = ::connect (s, (sockaddr *) tcp_addr->addr (), tcp_addr->addrlen ());
 #else
-    rc = ::connect(s, tcp_addr->addr(), tcp_addr->addrlen());
+    rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0)

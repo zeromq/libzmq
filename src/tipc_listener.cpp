@@ -122,9 +122,9 @@ int zmq::tipc_listener_t::get_address (std::string &addr_)
     socklen_t sl = sizeof (ss);
 
 #ifdef ZMQ_HAVE_VXWORKS
-    int rc = getsockname (s, (sockaddr *) &ss, (int *)&sl);
+    int rc = getsockname (s, (sockaddr *) &ss, (int *) &sl);
 #else
-	int rc = getsockname (s, (sockaddr *) &ss, &sl);
+    int rc = getsockname (s, (sockaddr *) &ss, &sl);
 #endif
     if (rc != 0) {
         addr_.clear ();
@@ -175,7 +175,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     //  Bind the socket to tipc name
     if (address.is_service ()) {
 #ifdef ZMQ_HAVE_VXWORKS
-        rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
+        rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
 #else
         rc = bind (s, address.addr (), address.addrlen ());
 #endif
@@ -213,13 +213,13 @@ zmq::fd_t zmq::tipc_listener_t::accept ()
     //  The situation where connection cannot be accepted due to insufficient
     //  resources is considered valid and treated by ignoring the connection.
     struct sockaddr_storage ss = {};
-    socklen_t ss_len = sizeof(ss);
+    socklen_t ss_len = sizeof (ss);
 
     zmq_assert (s != retired_fd);
 #ifdef ZMQ_HAVE_VXWORKS
-    fd_t sock = ::accept (s, (struct sockaddr *) &ss, (int *)&ss_len);
+    fd_t sock = ::accept (s, (struct sockaddr *) &ss, (int *) &ss_len);
 #else
-	fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+    fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
 #endif
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK

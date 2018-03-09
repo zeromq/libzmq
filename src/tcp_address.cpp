@@ -113,7 +113,8 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_,
     return 0;
 }
 
-#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_ANDROID || defined ZMQ_HAVE_VXWORKS
+#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX                            \
+  || defined ZMQ_HAVE_ANDROID || defined ZMQ_HAVE_VXWORKS
 #include <sys/ioctl.h>
 #ifdef ZMQ_HAVE_VXWORKS
 #include <ioLib.h>
@@ -654,7 +655,8 @@ int zmq::tcp_address_t::resolve (const char *name_,
         std::string if_str = addr_str.substr (pos + 1);
         addr_str = addr_str.substr (0, pos);
         if (isalpha (if_str.at (0)))
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP && !defined ZMQ_HAVE_VXWORKS
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+  && !defined ZMQ_HAVE_VXWORKS
             zone_id = if_nametoindex (if_str.c_str ());
 #else
             // The function 'if_nametoindex' is not supported on Windows XP.

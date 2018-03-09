@@ -329,17 +329,19 @@ int zmq::tcp_connecter_t::open ()
                          sizeof (int));
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-		rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(int));
-		errno_assert(rc == 0);
+        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (char *) &flag,
+                         sizeof (int));
+        errno_assert (rc == 0);
 #else
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
         errno_assert (rc == 0);
 #endif
 
 #if defined ZMQ_HAVE_VXWORKS
-        rc = ::bind (s, (sockaddr *)tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+        rc = ::bind (s, (sockaddr *) tcp_addr->src_addr (),
+                     tcp_addr->src_addrlen ());
 #else
-		rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
+        rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
 #endif
         if (rc == -1)
             return -1;
@@ -347,17 +349,17 @@ int zmq::tcp_connecter_t::open ()
 
     //  Connect to the remote peer.
 #if defined ZMQ_HAVE_VXWORKS
-    rc = ::connect (s, (sockaddr *)tcp_addr->addr (), tcp_addr->addrlen ());
+    rc = ::connect (s, (sockaddr *) tcp_addr->addr (), tcp_addr->addrlen ());
 #else
-	rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
+    rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0) {
         return 0;
     }
 
-        //  Translate error codes indicating asynchronous connect has been
-        //  launched to a uniform EINPROGRESS.
+    //  Translate error codes indicating asynchronous connect has been
+    //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
     const int last_error = WSAGetLastError ();
     if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
