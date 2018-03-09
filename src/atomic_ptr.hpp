@@ -287,6 +287,8 @@ struct atomic_value_t
 #endif
 #endif
 
+  private:
+    atomic_value_t &operator= (const atomic_value_t &src);
 };
 }
 
