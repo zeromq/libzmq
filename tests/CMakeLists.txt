@@ -65,6 +65,7 @@ set(tests
         test_stream_timeout
         test_xpub_manual
         test_xpub_welcome_msg
+        test_xpub_verbose
         test_base85
         test_bind_after_connect_tcp
         test_sodium
@@ -102,6 +103,7 @@ if(NOT WIN32)
     )
     if(ZMQ_HAVE_TIPC)
       list(APPEND tests
+            test_address_tipc
             test_pair_tipc
             test_reqrep_device_tipc
             test_reqrep_tipc
@@ -201,6 +203,7 @@ foreach(test ${tests})
     add_test(NAME ${test} COMMAND ${test})
   endif()
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
+  set_tests_properties(${test} PROPERTIES SKIP_RETURN_CODE 77)
 endforeach()
 
 #override timeout for these tests

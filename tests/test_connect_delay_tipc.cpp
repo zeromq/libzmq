@@ -31,6 +31,11 @@
 
 int main (void)
 {
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     int val;
     int rc;
     char buffer[16];

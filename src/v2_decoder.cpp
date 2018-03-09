@@ -38,10 +38,13 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
+zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_,
+                                 int64_t maxmsgsize_,
+                                 bool zero_copy_) :
     shared_message_memory_allocator (bufsize_),
     decoder_base_t<v2_decoder_t, shared_message_memory_allocator> (this),
     msg_flags (0),
+    zero_copy (zero_copy_),
     maxmsgsize (maxmsgsize_)
 {
     int rc = in_progress.init ();
@@ -111,8 +114,9 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size,
     // the current message can exceed the current buffer. We have to copy the buffer
     // data into a new message and complete it in the next receive.
 
-    if (unlikely ((unsigned char *) read_pos + msg_size
-                  > (data () + size ()))) {
+    if (unlikely (
+          !zero_copy
+          || ((unsigned char *) read_pos + msg_size > (data () + size ())))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
         rc = in_progress.init_size (static_cast<size_t> (msg_size));

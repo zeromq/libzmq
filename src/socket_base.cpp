@@ -97,7 +97,6 @@
 #include "scatter.hpp"
 #include "dgram.hpp"
 
-
 bool zmq::socket_base_t::check_tag ()
 {
     return tag == 0xbaddecaf;
@@ -206,6 +205,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
     options.linger.store (parent_->get (ZMQ_BLOCKY) ? -1 : 0);
+    options.zero_copy = parent_->get (ZMQ_ZERO_COPY_RECV);
 
     if (thread_safe) {
         mailbox = new (std::nothrow) mailbox_safe_t (&sync);
@@ -312,9 +312,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 
-    //  Check whether socket type and transport protocol match.
-    //  Specifically, multicast protocols can't be combined with
-    //  bi-directional messaging patterns (socket types).
+        //  Check whether socket type and transport protocol match.
+        //  Specifically, multicast protocols can't be combined with
+        //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
@@ -394,77 +394,41 @@ int zmq::socket_base_t::getsockopt (int option_,
     }
 
     if (option_ == ZMQ_RCVMORE) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        memset (optval_, 0, *optvallen_);
-        *((int *) optval_) = rcvmore ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
+        return do_getsockopt<int> (optval_, optvallen_, rcvmore ? 1 : 0);
     }
 
     if (option_ == ZMQ_FD) {
-        if (*optvallen_ < sizeof (fd_t)) {
-            errno = EINVAL;
-            return -1;
-        }
-
         if (thread_safe) {
             // thread safe socket doesn't provide file descriptor
             errno = EINVAL;
             return -1;
         }
 
-        *((fd_t *) optval_) = ((mailbox_t *) mailbox)->get_fd ();
-        *optvallen_ = sizeof (fd_t);
-
-        return 0;
+        return do_getsockopt<fd_t> (optval_, optvallen_,
+                                    ((mailbox_t *) mailbox)->get_fd ());
     }
 
     if (option_ == ZMQ_EVENTS) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
         int rc = process_commands (0, false);
         if (rc != 0 && (errno == EINTR || errno == ETERM)) {
             return -1;
         }
         errno_assert (rc == 0);
-        *((int *) optval_) = 0;
-        if (has_out ())
-            *((int *) optval_) |= ZMQ_POLLOUT;
-        if (has_in ())
-            *((int *) optval_) |= ZMQ_POLLIN;
-        *optvallen_ = sizeof (int);
-        return 0;
+
+        return do_getsockopt<int> (optval_, optvallen_,
+                                   (has_out () ? ZMQ_POLLOUT : 0)
+                                     | (has_in () ? ZMQ_POLLIN : 0));
     }
 
     if (option_ == ZMQ_LAST_ENDPOINT) {
-        if (*optvallen_ < last_endpoint.size () + 1) {
-            errno = EINVAL;
-            return -1;
-        }
-        strncpy (static_cast<char *> (optval_), last_endpoint.c_str (),
-                 last_endpoint.size () + 1);
-        *optvallen_ = last_endpoint.size () + 1;
-        return 0;
+        return do_getsockopt (optval_, optvallen_, last_endpoint);
     }
 
     if (option_ == ZMQ_THREAD_SAFE) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        memset (optval_, 0, *optvallen_);
-        *((int *) optval_) = thread_safe ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
+        return do_getsockopt<int> (optval_, optvallen_, thread_safe ? 1 : 0);
     }
 
-    int rc = options.getsockopt (option_, optval_, optvallen_);
-    return rc;
+    return options.getsockopt (option_, optval_, optvallen_);
 }
 
 int zmq::socket_base_t::join (const char *group_)
@@ -911,7 +875,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 
-    // TBD - Should we check address for ZMQ_HAVE_NORM???
+        // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
@@ -933,6 +897,15 @@ int zmq::socket_base_t::connect (const char *addr_)
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+        sockaddr_tipc *saddr =
+          (sockaddr_tipc *) paddr->resolved.tipc_addr->addr ();
+        // Cannot connect to random Port Identity
+        if (saddr->addrtype == TIPC_ADDR_ID
+            && paddr->resolved.tipc_addr->is_random ()) {
+            LIBZMQ_DELETE (paddr);
+            errno = EINVAL;
             return -1;
         }
     }

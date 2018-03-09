@@ -611,6 +611,8 @@ set (cxx-sources
 		fd.hpp
 		fq.hpp
 		gather.hpp
+		generic_mtrie.hpp
+		generic_mtrie_impl.hpp
 		gssapi_client.hpp
 		gssapi_mechanism_base.hpp
 		gssapi_server.hpp

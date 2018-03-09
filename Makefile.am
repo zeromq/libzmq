@@ -64,6 +64,8 @@ src_libzmq_la_SOURCES = \
 	src/fq.hpp \
 	src/gather.cpp \
 	src/gather.hpp \
+	src/generic_mtrie.hpp \
+	src/generic_mtrie_impl.hpp \
 	src/gssapi_mechanism_base.cpp \
 	src/gssapi_mechanism_base.hpp \
 	src/gssapi_client.cpp \
@@ -415,6 +417,7 @@ test_apps = \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \
 	tests/test_xpub_welcome_msg \
+	tests/test_xpub_verbose \
 	tests/test_atomics \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
@@ -621,6 +624,10 @@ tests_test_xpub_manual_LDADD = src/libzmq.la
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
 tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
 
+tests_test_xpub_verbose_SOURCES = tests/test_xpub_verbose.cpp
+tests_test_xpub_verbose_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_xpub_verbose_CPPFLAGS = ${UNITY_CPPFLAGS}
+
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
 
@@ -766,7 +773,8 @@ test_apps += \
 	tests/test_router_mandatory_tipc \
 	tests/test_shutdown_stress_tipc \
 	tests/test_sub_forward_tipc \
-	tests/test_term_endpoint_tipc
+	tests/test_term_endpoint_tipc \
+	tests/test_address_tipc
 
 tests_test_connect_delay_tipc_SOURCES = tests/test_connect_delay_tipc.cpp
 tests_test_connect_delay_tipc_LDADD = src/libzmq.la
@@ -791,6 +799,10 @@ tests_test_sub_forward_tipc_LDADD = src/libzmq.la
 
 tests_test_term_endpoint_tipc_SOURCES = tests/test_term_endpoint_tipc.cpp
 tests_test_term_endpoint_tipc_LDADD = src/libzmq.la
+
+tests_test_address_tipc_SOURCES = tests/test_address_tipc.cpp
+tests_test_address_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_address_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 endif
 
@@ -865,19 +877,32 @@ if ENABLE_STATIC
 # unit tests - these include individual source files and test the internal functions
 test_apps += \
 	unittests/unittest_poller \
-	unittests/unittest_ypipe
+	unittests/unittest_ypipe \
+	unittests/unittest_mtrie
 
 unittests_unittest_poller_SOURCES = unittests/unittest_poller.cpp
-unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_poller_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_poller_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
-	${UNITY_LIBS}
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
 
 unittests_unittest_ypipe_SOURCES = unittests/unittest_ypipe.cpp
-unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS}
+unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_ypipe_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_ypipe_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD} \
-	${UNITY_LIBS}
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
+
+unittests_unittest_mtrie_SOURCES = unittests/unittest_mtrie.cpp
+unittests_unittest_mtrie_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_mtrie_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
+unittests_unittest_mtrie_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD} \
+	${UNITY_LIBS} \
+	$(CODE_COVERAGE_LDFLAGS)
 endif
 
 check_PROGRAMS = ${test_apps}

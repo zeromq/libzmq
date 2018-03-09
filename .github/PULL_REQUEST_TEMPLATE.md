@@ -9,6 +9,14 @@ Problem: X is broken
 Solution: do Y and Z to fix X
 ```
 
+Please try to have the code changes conform to our coding style. For your
+convenience, you can install clang-format (at least version 5.0) and then
+run ```make clang-format-check```. Don't fix existing issues, if any - just
+make sure your changes are compliant. ```make clang-format-diff``` will
+automatically apply the required changes.
+To set a specific clang-format binary with autotools, you can for example
+run: ```./configure CLANG_FORMAT=clang-format-5.0```
+
 Please avoid sending a pull request with recursive merge nodes, as they
 are impossible to fix once merged. Please rebase your branch on
 zeromq/libzmq master instead of merging it.

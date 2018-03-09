@@ -146,6 +146,56 @@ void test_ctx_thread_opts (void *ctx)
 #endif
 }
 
+void test_ctx_zero_copy (void *ctx)
+{
+#ifdef ZMQ_ZERO_COPY_RECV
+    int zero_copy;
+    // Default value is 1.
+    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    assert (zero_copy == 1);
+
+    // Test we can set it to 0.
+    assert (0 == zmq_ctx_set (ctx, ZMQ_ZERO_COPY_RECV, 0));
+    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    assert (zero_copy == 0);
+
+    // Create a TCP socket pair using the context and test that messages can be
+    // received. Note that inproc sockets cannot be used for this test.
+    void *pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (0 == zmq_bind (pull, "tcp://127.0.0.1:*"));
+
+    void *push = zmq_socket (ctx, ZMQ_PUSH);
+    size_t endpoint_len = MAX_SOCKET_STRING;
+    char endpoint[MAX_SOCKET_STRING];
+    assert (
+      0 == zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len));
+    assert (0 == zmq_connect (push, endpoint));
+
+    const char *small_str = "abcd";
+    const char *large_str =
+      "01234567890123456789012345678901234567890123456789";
+
+    assert (4 == zmq_send (push, (void *) small_str, 4, 0));
+    assert (40 == zmq_send (push, (void *) large_str, 40, 0));
+
+    zmq_msg_t small_msg, large_msg;
+    zmq_msg_init (&small_msg);
+    zmq_msg_init (&large_msg);
+    assert (4 == zmq_msg_recv (&small_msg, pull, 0));
+    assert (40 == zmq_msg_recv (&large_msg, pull, 0));
+    assert (!strncmp (small_str, (const char *) zmq_msg_data (&small_msg), 4));
+    assert (!strncmp (large_str, (const char *) zmq_msg_data (&large_msg), 40));
+
+    // Clean up.
+    assert (0 == zmq_close (push));
+    assert (0 == zmq_close (pull));
+    assert (0 == zmq_msg_close (&small_msg));
+    assert (0 == zmq_msg_close (&large_msg));
+    assert (0 == zmq_ctx_set (ctx, ZMQ_ZERO_COPY_RECV, 1));
+    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    assert (zero_copy == 1);
+#endif
+}
 
 int main (void)
 {
@@ -173,6 +223,7 @@ int main (void)
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
 
     test_ctx_thread_opts (ctx);
+    test_ctx_zero_copy (ctx);
 
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     int value;

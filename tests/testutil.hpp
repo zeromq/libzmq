@@ -43,7 +43,7 @@
 //  settled. Tested to work reliably at 1 msec on a fast PC.
 #define SETTLE_TIME 300 //  In msec
 //  Commonly used buffer size for ZMQ_LAST_ENDPOINT
-#define MAX_SOCKET_STRING sizeof ("tcp://127.0.0.1:65536")
+#define MAX_SOCKET_STRING sizeof ("tcp://[::ffff:127.127.127.127]:65536")
 
 //  We need to test codepaths with non-random bind ports. List them here to
 //  keep them unique, to allow parallel test runs.
@@ -387,6 +387,29 @@ int is_ipv6_available (void)
 
     return ipv6;
 #endif // _WIN32_WINNT < 0x0600
+}
+
+// check if tipc is available (0/false if not, 1/true if it is)
+// only way to reliably check is to actually open a socket and try to bind it
+// as it depends on a non-default kernel module to be already loaded
+int is_tipc_available (void)
+{
+#ifndef ZMQ_HAVE_TIPC
+    return 0;
+#else
+    int tipc = 0;
+
+    void *ctx = zmq_init (1);
+    assert (ctx);
+    void *rep = zmq_socket (ctx, ZMQ_REP);
+    assert (rep);
+    tipc = zmq_bind (rep, "tipc://{5560,0,0}");
+
+    zmq_close (rep);
+    zmq_ctx_term (ctx);
+
+    return tipc == 0;
+#endif // ZMQ_HAVE_TIPC
 }
 
 #if defined(ZMQ_HAVE_WINDOWS)

@@ -49,6 +49,11 @@ static void *worker (void *s)
 
 int main (void)
 {
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     void *ctx;
     void *s1;
     void *s2;
