@@ -433,7 +433,7 @@ int zmq::options_t::setsockopt (int option_,
             if (rc == 0)
                 ipv6 = !value;
             return rc;
-            }
+        }
 
         /*  To replace the somewhat surprising IPV4ONLY */
         case ZMQ_IPV6:
@@ -486,14 +486,14 @@ int zmq::options_t::setsockopt (int option_,
               optval_, optvallen_, &filter_str, 255);
             if (rc == 0) {
                 if (filter_str.empty ()) {
-                tcp_accept_filters.clear ();
+                    tcp_accept_filters.clear ();
                 } else {
-                tcp_address_mask_t mask;
+                    tcp_address_mask_t mask;
                     rc = mask.resolve (filter_str.c_str (), ipv6);
-                if (rc == 0) {
-                    tcp_accept_filters.push_back (mask);
+                    if (rc == 0) {
+                        tcp_accept_filters.push_back (mask);
+                    }
                 }
-            }
             }
             return rc;
         }

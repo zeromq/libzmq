@@ -126,19 +126,19 @@ static void manage_random (bool init)
     if (init) {
         zmq::scoped_lock_t locker (random_sync);
 
-    if (random_refcount == 0) {
-        int rc = sodium_init ();
-        zmq_assert (rc != -1);
-    }
+        if (random_refcount == 0) {
+            int rc = sodium_init ();
+            zmq_assert (rc != -1);
+        }
 
-    ++random_refcount;
+        ++random_refcount;
     } else {
         zmq::scoped_lock_t locker (random_sync);
-    --random_refcount;
+        --random_refcount;
 
-    if (random_refcount == 0) {
-        randombytes_close ();
-    }
+        if (random_refcount == 0) {
+            randombytes_close ();
+        }
     }
 #endif
 }
