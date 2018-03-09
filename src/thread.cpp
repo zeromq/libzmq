@@ -265,8 +265,9 @@ void zmq::thread_t::
     posix_assert (rc);
 
 #if !defined ZMQ_HAVE_VXWORKS
-    if (use_nice_instead_priority
-        && thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
+    if (use_nice_instead_priority &&
+            thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
+    {
         // assume the user wants to decrease the thread's nice value
         // i.e., increase the chance of this thread being scheduled: try setting that to
         // maximum priority.
@@ -275,6 +276,7 @@ void zmq::thread_t::
         errno_assert (rc != -1);
         // IMPORTANT: EPERM is typically returned for unprivileged processes: that's because
         //            CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be changed to avoid EPERM!
+
     }
 #endif
     

@@ -135,13 +135,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-#ifdef ZMQ_HAVE_VXWORKS
     int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (char *) &flag,
                          sizeof (flag));
-#else
-    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (const char *) &flag,
-                         sizeof (flag));
-#endif
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -196,15 +191,10 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 {
-#ifdef ZMQ_HAVE_VXWORKS
     int rc =
       setsockopt (s_, IPPROTO_IP, IP_TOS,
                   reinterpret_cast<char *> (&iptos), sizeof (iptos));
-#else
-    int rc =
-      setsockopt (s_, IPPROTO_IP, IP_TOS,
-                  reinterpret_cast<const char *> (&iptos), sizeof (iptos));
-#endif
+
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -213,13 +203,8 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 
     //  Windows and Hurd do not support IPV6_TCLASS
 #if !defined(ZMQ_HAVE_WINDOWS) && defined(IPV6_TCLASS)
-#ifdef ZMQ_HAVE_VXWORKS
     rc = setsockopt (s_, IPPROTO_IPV6, IPV6_TCLASS,
                      reinterpret_cast<char *> (&iptos), sizeof (iptos));
-#else
-    rc = setsockopt (s_, IPPROTO_IPV6, IPV6_TCLASS,
-                     reinterpret_cast<const char *> (&iptos), sizeof (iptos));
-#endif
 
     //  If IPv6 is not enabled ENOPROTOOPT will be returned on Linux and
     //  EINVAL on OSX

@@ -76,8 +76,7 @@ zmq::ctx_t::ctx_t () :
     max_msgsz (INT_MAX),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
     blocky (true),
-    ipv6 (false),
-    zero_copy (true)
+    ipv6 (false)
 {
 #ifdef HAVE_FORK
     pid = getpid ();
@@ -246,9 +245,6 @@ int zmq::ctx_t::set (int option_, int optval_)
     } else if (option_ == ZMQ_MAX_MSGSZ && optval_ >= 0) {
         scoped_lock_t locker (opt_sync);
         max_msgsz = optval_ < INT_MAX ? optval_ : INT_MAX;
-    } else if (option_ == ZMQ_ZERO_COPY_RECV && optval_ >= 0) {
-        scoped_lock_t locker (opt_sync);
-        zero_copy = (optval_ != 0);
     } else {
         rc = thread_ctx_t::set (option_, optval_);
     }
@@ -272,9 +268,7 @@ int zmq::ctx_t::get (int option_)
         rc = max_msgsz;
     else if (option_ == ZMQ_MSG_T_SIZE)
         rc = sizeof (zmq_msg_t);
-    else if (option_ == ZMQ_ZERO_COPY_RECV) {
-        rc = zero_copy;
-    } else {
+    else {
         errno = EINVAL;
         rc = -1;
     }

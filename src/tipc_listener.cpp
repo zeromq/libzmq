@@ -137,24 +137,16 @@ int zmq::tipc_listener_t::get_address (std::string &addr_)
 
 int zmq::tipc_listener_t::set_address (const char *addr_)
 {
-    // Convert str to address struct
+    //convert str to address struct
     int rc = address.resolve (addr_);
     if (rc != 0)
         return -1;
-
-    // Cannot bind non-random Port Identity
-    struct sockaddr_tipc *a = (sockaddr_tipc *) address.addr ();
-    if (!address.is_random () && a->addrtype == TIPC_ADDR_ID) {
-        errno = EINVAL;
-        return -1;
-    }
-
     //  Create a listening socket.
     s = open_socket (AF_TIPC, SOCK_STREAM, 0);
     if (s == -1)
         return -1;
 
-    // If random Port Identity, update address object to reflect the assigned address
+    // If address was randomly assigned, update address object to reflect the actual address
     if (address.is_random ()) {
         struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_VXWORKS
@@ -163,8 +155,9 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
         socklen_t sl = sizeof (ss);
 #endif
         int rc = getsockname (s, (sockaddr *) &ss, &sl);
-        if (rc != 0)
-            goto error;
+        if (rc != 0) {
+            return rc;
+        }
 
         tipc_address_t addr ((struct sockaddr *) &ss, sl);
     }

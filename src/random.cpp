@@ -79,52 +79,19 @@ uint32_t zmq::generate_random ()
 //  The context class cannot be used with static variables as the curve
 //  utility APIs like zmq_curve_keypair also call into the crypto
 //  library.
-//  The safest solution for all use cases therefore is to have a
+//  The safest solution for all use cases therefore is to have a global,
 //  static lock to serialize calls into an initialiser and a finaliser,
 //  using refcounts to make sure that a thread does not close the library
-//  while another is still using it. To avoid the static initialization
-//  order fiasco, this is done using function-local statics, if the
-//  compiler implementation supports thread-safe initialization of those.
-//  Otherwise, we fall back to global statics.
-
-//  TODO if there is some other user of libsodium besides libzmq, this must
-//    be synchronized by the application. This should probably also be
-//    configurable via config.h
-
-//  TODO this should probably be done via config.h
-#if __cplusplus >= 201103L                                                     \
-  || (defined(__cpp_threadsafe_static_init)                                    \
-      && __cpp_threadsafe_static_init >= 200806)                               \
-  || (defined(_MSC_VER) && _MSC_VER >= 1900)
-#define ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT 1
-//  TODO this might probably also be set if a sufficiently recent gcc is used
-//  without -fno-threadsafe-statics, but this cannot be determined at
-//  compile-time, so it must be set via config.h
-#else
-#define ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT 0
-#endif
-
-#if !ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT                                     \
-  && (defined(ZMQ_USE_LIBSODIUM)                                               \
-      || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)             \
-          && !defined(ZMQ_HAVE_GETRANDOM)))
+//  while another is still using it.
 static unsigned int random_refcount = 0;
 static zmq::mutex_t random_sync;
-#endif
 
-static void manage_random (bool init)
+void zmq::random_open (void)
 {
 #if defined(ZMQ_USE_LIBSODIUM)                                                 \
   || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
       && !defined(ZMQ_HAVE_GETRANDOM))
-
-#if ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT
-    static int random_refcount = 0;
-    static zmq::mutex_t random_sync;
-#endif
-
-    if (init) {
-        zmq::scoped_lock_t locker (random_sync);
+    scoped_lock_t locker (random_sync);
 
     if (random_refcount == 0) {
         int rc = sodium_init ();
@@ -132,23 +99,21 @@ static void manage_random (bool init)
     }
 
     ++random_refcount;
-    } else {
-        zmq::scoped_lock_t locker (random_sync);
+#else
+    LIBZMQ_UNUSED (random_refcount);
+#endif
+}
+
+void zmq::random_close (void)
+{
+#if defined(ZMQ_USE_LIBSODIUM)                                                 \
+  || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
+      && !defined(ZMQ_HAVE_GETRANDOM))
+    scoped_lock_t locker (random_sync);
     --random_refcount;
 
     if (random_refcount == 0) {
         randombytes_close ();
     }
-    }
 #endif
-}
-
-void zmq::random_open (void)
-{
-    manage_random (true);
-}
-
-void zmq::random_close (void)
-{
-    manage_random (false);
 }

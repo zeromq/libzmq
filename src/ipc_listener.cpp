@@ -69,6 +69,7 @@ const char *zmq::ipc_listener_t::tmp_env_vars[] = {
   0 // Sentinel
 };
 
+
 int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
                                                   std::string &file_)
 {
@@ -263,7 +264,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         }
 
         //  Bind the socket to the file path.
-        rc = bind (s, address.addr (), address.addrlen ());
+        rc = bind (s, (sockaddr *)address.addr (), address.addrlen ());
         if (rc != 0)
             goto error;
 
