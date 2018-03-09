@@ -32,7 +32,7 @@
 
 #include "generic_mtrie.hpp"
 
-#if __cplusplus >= 201103L || defined(_MSC_VER)
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER > 1600)
 #define ZMQ_HAS_EXTERN_TEMPLATE 1
 #else
 #define ZMQ_HAS_EXTERN_TEMPLATE 0
