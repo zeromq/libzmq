@@ -44,6 +44,8 @@
 #   pragma warning (disable:4018 4244 4146)
 #endif
 
+// clang-format off
+
 #include "tweetnacl.h"
 
 #define FOR(i,n) for (i = 0;i < n;++i)
@@ -986,3 +988,4 @@ int sodium_init (void)
 #endif
 
 #endif
+// clang-format on
