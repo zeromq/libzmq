@@ -641,9 +641,9 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         *w_ = *r_ = -1;
         return -1;
     } else {
-        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-        //  race condition can cause socket not to be closed (if fork happens
-        //  between socket creation and this point).
+    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+    //  race condition can cause socket not to be closed (if fork happens
+    //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
         rc = fcntl (sv[0], F_SETFD, FD_CLOEXEC);
         errno_assert (rc != -1);
