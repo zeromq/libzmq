@@ -37,7 +37,11 @@
 #if defined ZMQ_HAVE_TIPC
 
 #include <sys/socket.h>
+#if defined ZMQ_HAVE_VXWORKS
+#include <tipc/tipc.h>
+#else
 #include <linux/tipc.h>
+#endif
 
 namespace zmq
 {

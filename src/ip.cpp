@@ -44,8 +44,14 @@
 #include "tcp.hpp"
 #endif
 
-#if defined ZMQ_HAVE_OPENVMS
+#if defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
 #include <ioctl.h>
+#endif
+
+#if defined ZMQ_HAVE_VXWORKS
+#include <unistd.h>
+#include <sockLib.h>
+#include <ioLib.h>
 #endif
 
 #if defined ZMQ_HAVE_EVENTFD
@@ -106,7 +112,7 @@ void zmq::unblock_socket (fd_t s_)
     u_long nonblock = 1;
     int rc = ioctlsocket (s_, FIONBIO, &nonblock);
     wsa_assert (rc != SOCKET_ERROR);
-#elif defined ZMQ_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
     int nonblock = 1;
     int rc = ioctl (s_, FIONBIO, &nonblock);
     errno_assert (rc != -1);
@@ -129,8 +135,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (const char *) &flag,
-                         sizeof (flag));
+    int rc =
+      setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (char *) &flag, sizeof (flag));
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -144,7 +150,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     int rc;
     struct sockaddr_storage ss;
 
-#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS                          \
+  || defined ZMQ_HAVE_VXWORKS
     int addrlen = static_cast<int> (sizeof ss);
 #else
     socklen_t addrlen = sizeof ss;
@@ -185,9 +192,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 {
-    int rc =
-      setsockopt (s_, IPPROTO_IP, IP_TOS,
-                  reinterpret_cast<const char *> (&iptos), sizeof (iptos));
+    int rc = setsockopt (s_, IPPROTO_IP, IP_TOS,
+                         reinterpret_cast<char *> (&iptos), sizeof (iptos));
 
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
@@ -198,7 +204,7 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
     //  Windows and Hurd do not support IPV6_TCLASS
 #if !defined(ZMQ_HAVE_WINDOWS) && defined(IPV6_TCLASS)
     rc = setsockopt (s_, IPPROTO_IPV6, IPV6_TCLASS,
-                     reinterpret_cast<const char *> (&iptos), sizeof (iptos));
+                     reinterpret_cast<char *> (&iptos), sizeof (iptos));
 
     //  If IPv6 is not enabled ENOPROTOOPT will be returned on Linux and
     //  EINVAL on OSX
@@ -577,7 +583,48 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     close (listener);
 
     return 0;
+#elif defined ZMQ_HAVE_VXWORKS
+    struct sockaddr_in lcladdr;
+    memset (&lcladdr, 0, sizeof lcladdr);
+    lcladdr.sin_family = AF_INET;
+    lcladdr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+    lcladdr.sin_port = 0;
 
+    int listener = open_socket (AF_INET, SOCK_STREAM, 0);
+    errno_assert (listener != -1);
+
+    int on = 1;
+    int rc =
+      setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof on);
+    errno_assert (rc != -1);
+
+    rc = bind (listener, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    errno_assert (rc != -1);
+
+    socklen_t lcladdr_len = sizeof lcladdr;
+
+    rc = getsockname (listener, (struct sockaddr *) &lcladdr,
+                      (int *) &lcladdr_len);
+    errno_assert (rc != -1);
+
+    rc = listen (listener, 1);
+    errno_assert (rc != -1);
+
+    *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
+    errno_assert (*w_ != -1);
+
+    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof on);
+    errno_assert (rc != -1);
+
+    rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    errno_assert (rc != -1);
+
+    *r_ = accept (listener, NULL, NULL);
+    errno_assert (*r_ != -1);
+
+    close (listener);
+
+    return 0;
 #else
     // All other implementations support socketpair()
     int sv[2];
@@ -594,9 +641,9 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         *w_ = *r_ = -1;
         return -1;
     } else {
-    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-    //  race condition can cause socket not to be closed (if fork happens
-    //  between socket creation and this point).
+        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+        //  race condition can cause socket not to be closed (if fork happens
+        //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
         rc = fcntl (sv[0], F_SETFD, FD_CLOEXEC);
         errno_assert (rc != -1);

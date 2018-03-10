@@ -30,7 +30,10 @@
 #ifndef __ZMQ_THREAD_HPP_INCLUDED__
 #define __ZMQ_THREAD_HPP_INCLUDED__
 
-#ifndef ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_VXWORKS
+#include <vxWorks.h>
+#include <taskLib.h>
+#elif !defined ZMQ_HAVE_WINDOWS
 #include <pthread.h>
 #endif
 #include <set>
@@ -57,6 +60,15 @@ class thread_t
         thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
     }
+
+#ifdef ZMQ_HAVE_VXWORKS
+    ~thread_t ()
+    {
+        if (descriptor != NULL || descriptor > 0) {
+            taskDelete (descriptor);
+        }
+    }
+#endif
 
     //  Creates OS thread. 'tfn' is main thread function. It'll be passed
     //  'arg' as an argument.
@@ -93,6 +105,14 @@ class thread_t
 
 #ifdef ZMQ_HAVE_WINDOWS
     HANDLE descriptor;
+#elif defined ZMQ_HAVE_VXWORKS
+    int descriptor;
+    enum
+    {
+        DEFAULT_PRIORITY = 100,
+        DEFAULT_OPTIONS = 0,
+        DEFAULT_STACK_SIZE = 4000
+    };
 #else
     pthread_t descriptor;
 #endif

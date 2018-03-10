@@ -30,7 +30,8 @@
 #include "precompiled.hpp"
 #include "ipc_address.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include "err.hpp"
 

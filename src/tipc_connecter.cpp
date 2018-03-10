@@ -49,6 +49,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 
 zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
                                          class session_base_t *session_,
@@ -217,9 +220,13 @@ int zmq::tipc_connecter_t::open ()
     //  Set the non-blocking flag.
     unblock_socket (s);
     //  Connect to the remote peer.
+#ifdef ZMQ_HAVE_VXWORKS
+    int rc = ::connect (s, (sockaddr *) addr->resolved.tipc_addr->addr (),
+                        addr->resolved.tipc_addr->addrlen ());
+#else
     int rc = ::connect (s, addr->resolved.tipc_addr->addr (),
                         addr->resolved.tipc_addr->addrlen ());
-
+#endif
     //  Connect was successful immediately.
     if (rc == 0)
         return 0;
@@ -248,8 +255,11 @@ zmq::fd_t zmq::tipc_connecter_t::connect ()
     //  Following code should handle both Berkeley-derived socket
     //  implementations and Solaris.
     int err = 0;
+#if ZMQ_HAVE_VXWORKS
+    int len = sizeof (err);
+#else
     socklen_t len = sizeof (err);
-
+#endif
     int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
     if (rc == -1)
         err = errno;

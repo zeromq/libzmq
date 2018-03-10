@@ -97,6 +97,66 @@ void zmq::thread_t::setThreadName (const char *name_)
     LIBZMQ_UNUSED (name_);
 }
 
+#elif defined ZMQ_HAVE_VXWORKS
+
+extern "C" {
+static void *thread_routine (void *arg_)
+{
+    zmq::thread_t *self = (zmq::thread_t *) arg_;
+    self->applySchedulingParameters ();
+    self->tfn (self->arg);
+    return NULL;
+}
+}
+
+void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
+{
+    tfn = tfn_;
+    arg = arg_;
+    descriptor = taskSpawn (NULL, DEFAULT_PRIORITY, DEFAULT_OPTIONS,
+                            DEFAULT_STACK_SIZE, (FUNCPTR) thread_routine,
+                            (int) this, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    if (descriptor != NULL || descriptor > 0)
+        started = true;
+}
+
+void zmq::thread_t::stop ()
+{
+    if (started)
+        while ((descriptor != NULL || descriptor > 0)
+               && taskIdVerify (descriptor) == 0) {
+        }
+}
+
+bool zmq::thread_t::is_current_thread () const
+{
+    return taskIdSelf () == descriptor;
+}
+
+void zmq::thread_t::setSchedulingParameters (
+  int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
+{
+    thread_priority = priority_;
+    thread_sched_policy = schedulingPolicy_;
+    thread_affinity_cpus = affinity_cpus_;
+}
+
+void zmq::thread_t::
+  applySchedulingParameters () // to be called in secondary thread context
+{
+    int priority = (thread_priority >= 0 ? thread_priority : DEFAULT_PRIORITY);
+    priority = (priority < 255 ? priority : DEFAULT_PRIORITY);
+    if (descriptor != NULL || descriptor > 0) {
+        taskPrioritySet (descriptor, priority);
+    }
+}
+
+void zmq::thread_t::setThreadName (const char *name_)
+{
+    // not implemented
+    LIBZMQ_UNUSED (name_);
+}
+
 #else
 
 #include <signal.h>
@@ -206,6 +266,7 @@ void zmq::thread_t::
 
     posix_assert (rc);
 
+#if !defined ZMQ_HAVE_VXWORKS
     if (use_nice_instead_priority
         && thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
         // assume the user wants to decrease the thread's nice value
@@ -217,6 +278,7 @@ void zmq::thread_t::
         // IMPORTANT: EPERM is typically returned for unprivileged processes: that's because
         //            CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be changed to avoid EPERM!
     }
+#endif
 
 #ifdef ZMQ_HAVE_PTHREAD_SET_AFFINITY
     if (!thread_affinity_cpus.empty ()) {

@@ -280,7 +280,11 @@ struct atomic_value_t
 #endif
 
 #if defined ZMQ_ATOMIC_PTR_MUTEX
+#if defined ZMQ_HAVE_VXWORKS
+    mutable mutex_t sync;
+#else
     mutex_t sync;
+#endif
 #endif
 
   private:

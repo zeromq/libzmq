@@ -32,7 +32,8 @@
 
 #include <string>
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include <sys/socket.h>
 #include <sys/un.h>

@@ -67,6 +67,45 @@ class mutex_t
 };
 }
 
+#elif defined ZMQ_HAVE_VXWORKS
+
+#include <vxWorks.h>
+#include <semLib.h>
+
+namespace zmq
+{
+class mutex_t
+{
+  public:
+    inline mutex_t ()
+    {
+        m_semId =
+          semMCreate (SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
+    }
+
+    inline ~mutex_t () { semDelete (m_semId); }
+
+    inline void lock () { semTake (m_semId, WAIT_FOREVER); }
+
+    inline bool try_lock ()
+    {
+        if (semTake (m_semId, NO_WAIT) == OK) {
+            return true;
+        }
+        return false;
+    }
+
+    inline void unlock () { semGive (m_semId); }
+
+  private:
+    SEM_ID m_semId;
+
+    // Disable copy construction and assignment.
+    mutex_t (const mutex_t &);
+    const mutex_t &operator= (const mutex_t &);
+};
+}
+
 #else
 
 #include <pthread.h>

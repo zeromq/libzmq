@@ -576,7 +576,8 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
     if (addr->protocol == "ipc") {
         ipc_connecter_t *connecter = new (std::nothrow)
           ipc_connecter_t (io_thread, this, options, addr, wait_);

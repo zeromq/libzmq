@@ -52,6 +52,10 @@
 #include <time.h>
 #endif
 
+#if defined ZMQ_HAVE_VXWORKS
+#include "timers.h"
+#endif
+
 #if defined ZMQ_HAVE_OSX
 #include <mach/clock.h>
 #include <mach/mach.h>
@@ -154,7 +158,8 @@ uint64_t zmq::clock_t::now_us ()
     double ticks_div = ticksPerSecond.QuadPart / 1000000.0;
     return (uint64_t) (tick.QuadPart / ticks_div);
 
-#elif defined HAVE_CLOCK_GETTIME && defined CLOCK_MONOTONIC
+#elif defined HAVE_CLOCK_GETTIME                                               \
+  && (defined CLOCK_MONOTONIC || defined ZMQ_HAVE_VXWORKS)
 
     //  Use POSIX clock_gettime function to get precise monotonic time.
     struct timespec tv;
@@ -169,11 +174,13 @@ uint64_t zmq::clock_t::now_us ()
     // This should be a configuration check, but I looked into it and writing an
     // AC_FUNC_CLOCK_MONOTONIC seems beyond my powers.
     if (rc != 0) {
+#ifndef ZMQ_HAVE_VXWORKS
         //  Use POSIX gettimeofday function to get precise time.
         struct timeval tv;
         int rc = gettimeofday (&tv, NULL);
         errno_assert (rc == 0);
         return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+#endif
     }
     return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_nsec / 1000);
 

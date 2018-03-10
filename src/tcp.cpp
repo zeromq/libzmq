@@ -39,6 +39,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#endif
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS
@@ -224,7 +227,7 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
     return nbytes;
 
 #else
-    ssize_t nbytes = send (s_, data_, size_, 0);
+    ssize_t nbytes = send (s_, (char *) data_, size_, 0);
 
     //  Several errors are OK. When speculative write is being done we may not
     //  be able to write a single byte from the socket. Also, SIGSTOP issued
@@ -273,7 +276,7 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
 #else
 
-    const ssize_t rc = recv (s_, data_, size_, 0);
+    const ssize_t rc = recv (s_, (char *) data_, size_, 0);
 
     //  Several errors are OK. When speculative read is being done we may not
     //  be able to read a single byte from the socket. Also, SIGSTOP issued
@@ -297,7 +300,7 @@ void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
 
     //  Check whether an error occurred
     int err = 0;
-#ifdef ZMQ_HAVE_HPUX
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
     int len = sizeof err;
 #else
     socklen_t len = sizeof err;

@@ -30,7 +30,8 @@
 #ifndef __IPC_CONNECTER_HPP_INCLUDED__
 #define __IPC_CONNECTER_HPP_INCLUDED__
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include "fd.hpp"
 #include "own.hpp"

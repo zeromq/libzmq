@@ -40,7 +40,7 @@ class udp_address_t;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 class ipc_address_t;
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS
 class tipc_address_t;
 #endif
 #if defined ZMQ_HAVE_VMCI
@@ -63,10 +63,11 @@ struct address_t
     {
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
         ipc_address_t *ipc_addr;
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS
         tipc_address_t *tipc_addr;
 #endif
 #if defined ZMQ_HAVE_VMCI

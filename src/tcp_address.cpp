@@ -113,8 +113,12 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_,
     return 0;
 }
 
-#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_ANDROID
+#elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX                            \
+  || defined ZMQ_HAVE_ANDROID || defined ZMQ_HAVE_VXWORKS
 #include <sys/ioctl.h>
+#ifdef ZMQ_HAVE_VXWORKS
+#include <ioLib.h>
+#endif
 
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_,
                                           bool ipv6_,
@@ -413,7 +417,12 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_,
         sockaddr_in6 ip6_addr;
         memset (&ip6_addr, 0, sizeof (ip6_addr));
         ip6_addr.sin6_family = AF_INET6;
+#ifdef ZMQ_HAVE_VXWORKS
+        struct in6_addr newaddr = IN6ADDR_ANY_INIT;
+        memcpy (&ip6_addr.sin6_addr, &newaddr, sizeof (in6_addr));
+#else
         memcpy (&ip6_addr.sin6_addr, &in6addr_any, sizeof (in6addr_any));
+#endif
         out_addrlen = sizeof (ip6_addr);
         memcpy (out_addr, &ip6_addr, out_addrlen);
     } else {
@@ -646,7 +655,8 @@ int zmq::tcp_address_t::resolve (const char *name_,
         std::string if_str = addr_str.substr (pos + 1);
         addr_str = addr_str.substr (0, pos);
         if (isalpha (if_str.at (0)))
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+  && !defined ZMQ_HAVE_VXWORKS
             zone_id = if_nametoindex (if_str.c_str ());
 #else
             // The function 'if_nametoindex' is not supported on Windows XP.

@@ -66,7 +66,8 @@ zmq::address_t::~address_t ()
             LIBZMQ_DELETE (resolved.udp_addr);
         }
     }
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
     else if (protocol == "ipc") {
         if (resolved.ipc_addr) {
             LIBZMQ_DELETE (resolved.ipc_addr);
@@ -99,7 +100,8 @@ int zmq::address_t::to_string (std::string &addr_) const
         if (resolved.udp_addr)
             return resolved.udp_addr->to_string (addr_);
     }
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
     else if (protocol == "ipc") {
         if (resolved.ipc_addr)
             return resolved.ipc_addr->to_string (addr_);

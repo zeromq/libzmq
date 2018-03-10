@@ -49,7 +49,12 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#if defined ZMQ_HAVE_VXWORKS
+#include <sockLib.h>
+#include <tipc/tipc.h>
+#else
 #include <linux/tipc.h>
+#endif
 
 zmq::tipc_listener_t::tipc_listener_t (io_thread_t *io_thread_,
                                        socket_base_t *socket_,
@@ -116,7 +121,11 @@ int zmq::tipc_listener_t::get_address (std::string &addr_)
     struct sockaddr_storage ss;
     socklen_t sl = sizeof (ss);
 
+#ifdef ZMQ_HAVE_VXWORKS
+    int rc = getsockname (s, (sockaddr *) &ss, (int *) &sl);
+#else
     int rc = getsockname (s, (sockaddr *) &ss, &sl);
+#endif
     if (rc != 0) {
         addr_.clear ();
         return rc;
@@ -148,7 +157,11 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If random Port Identity, update address object to reflect the assigned address
     if (address.is_random ()) {
         struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_VXWORKS
+        int sl = sizeof (ss);
+#else
         socklen_t sl = sizeof (ss);
+#endif
         int rc = getsockname (s, (sockaddr *) &ss, &sl);
         if (rc != 0)
             goto error;
@@ -161,7 +174,11 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
 
     //  Bind the socket to tipc name
     if (address.is_service ()) {
+#ifdef ZMQ_HAVE_VXWORKS
+        rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
+#else
         rc = bind (s, address.addr (), address.addrlen ());
+#endif
         if (rc != 0)
             goto error;
     }
@@ -199,7 +216,11 @@ zmq::fd_t zmq::tipc_listener_t::accept ()
     socklen_t ss_len = sizeof (ss);
 
     zmq_assert (s != retired_fd);
+#ifdef ZMQ_HAVE_VXWORKS
+    fd_t sock = ::accept (s, (struct sockaddr *) &ss, (int *) &ss_len);
+#else
     fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+#endif
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK
                       || errno == ENOBUFS || errno == EINTR

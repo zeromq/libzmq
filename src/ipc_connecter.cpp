@@ -30,7 +30,8 @@
 #include "precompiled.hpp"
 #include "ipc_connecter.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include <new>
 #include <string>
@@ -48,6 +49,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
                                        class session_base_t *session_,
