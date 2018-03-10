@@ -286,6 +286,9 @@ struct atomic_value_t
     mutex_t sync;
 #endif
 #endif
+
+  private:
+    atomic_value_t &operator= (const atomic_value_t &src);
 };
 }
 
