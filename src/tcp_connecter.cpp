@@ -160,7 +160,7 @@ void zmq::tcp_connecter_t::out_event ()
     //  Shut the connecter down.
     terminate ();
 
-    socket->event_connected (endpoint, (int) fd);
+    socket->event_connected (endpoint, fd);
 }
 
 void zmq::tcp_connecter_t::rm_handle ()
