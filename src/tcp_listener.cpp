@@ -275,7 +275,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    socket->event_listening (endpoint, (int) s);
+    socket->event_listening (endpoint, s);
     return 0;
 
 error:
