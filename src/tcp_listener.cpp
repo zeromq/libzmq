@@ -144,7 +144,7 @@ void zmq::tcp_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint, (int) s);
+    socket->event_closed (endpoint, s);
     s = retired_fd;
 }
 
