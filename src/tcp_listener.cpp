@@ -179,7 +179,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     if (options.use_fd != -1) {
         s = options.use_fd;
-        socket->event_listening (endpoint, (int) s);
+        socket->event_listening (endpoint, s);
         return 0;
     }
 
