@@ -144,7 +144,7 @@ void zmq::tcp_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint, (int) s);
+    socket->event_closed (endpoint, s);
     s = retired_fd;
 }
 
@@ -179,7 +179,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     if (options.use_fd != -1) {
         s = options.use_fd;
-        socket->event_listening (endpoint, (int) s);
+        socket->event_listening (endpoint, s);
         return 0;
     }
 
@@ -275,7 +275,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    socket->event_listening (endpoint, (int) s);
+    socket->event_listening (endpoint, s);
     return 0;
 
 error:

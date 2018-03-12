@@ -158,7 +158,7 @@ void zmq::socks_connecter_t::in_event ()
                 //  Attach the engine to the corresponding session object.
                 send_attach (session, engine);
 
-                socket->event_connected (endpoint, (int) s);
+                socket->event_connected (endpoint, s);
 
                 rm_fd (handle);
                 s = -1;
@@ -444,7 +444,7 @@ void zmq::socks_connecter_t::close ()
     const int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint, (int) s);
+    socket->event_closed (endpoint, s);
     s = retired_fd;
 }
 

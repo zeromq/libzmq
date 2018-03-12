@@ -978,7 +978,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         socket->event_handshake_failed_no_detail (endpoint, err);
     }
 #endif
-    socket->event_disconnected (endpoint, (int) s);
+    socket->event_disconnected (endpoint, s);
     session->flush ();
     session->engine_error (reason);
     unplug ();
