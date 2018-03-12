@@ -192,13 +192,13 @@ endif ()
 if (ZMQ_HAVE_WINDOWS)
   # Cannot use check_library_exists because the symbol is always declared as char(*)(void)
   set(CMAKE_REQUIRED_LIBRARIES "ws2_32.lib")
-  check_symbol_exists (WSAStartup "WinSock2.h" HAVE_WS2_32)
+  check_symbol_exists (WSAStartup "winsock2.h" HAVE_WS2_32)
 
   set(CMAKE_REQUIRED_LIBRARIES "rpcrt4.lib")
-  check_symbol_exists (UuidCreateSequential "Rpc.h" HAVE_RPCRT4)
+  check_symbol_exists (UuidCreateSequential "rpc.h" HAVE_RPCRT4)
 
   set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
-  check_symbol_exists (GetAdaptersAddresses "winsock2.h;Iphlpapi.h" HAVE_IPHLAPI)
+  check_symbol_exists (GetAdaptersAddresses "winsock2.h;iphlpapi.h" HAVE_IPHLAPI)
 
   set(CMAKE_REQUIRED_LIBRARIES "")
   # TODO: This not the symbol we're looking for. What is the symbol?
