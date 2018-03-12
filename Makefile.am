@@ -846,7 +846,8 @@ test_apps += tests/test_poller \
 	tests/test_radio_dish \
 	tests/test_udp \
 	tests/test_scatter_gather \
-	tests/test_dgram
+	tests/test_dgram \
+	tests/test_app_meta
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la
@@ -871,6 +872,10 @@ tests_test_scatter_gather_LDADD = src/libzmq.la
 
 tests_test_dgram_SOURCES = tests/test_dgram.cpp
 tests_test_dgram_LDADD = src/libzmq.la
+
+tests_test_app_meta_SOURCES = tests/test_app_meta.cpp
+tests_test_app_meta_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_app_meta_CPPFLAGS = ${UNITY_CPPFLAGS}
 endif
 
 if ENABLE_STATIC
