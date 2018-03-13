@@ -1,6 +1,6 @@
 # CMake build script for ZeroMQ
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.1.3)
 project (ZeroMQ)
 
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -1114,6 +1114,12 @@ if (MSVC)
           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           COMPONENT SDK)
   install (FILES $<TARGET_PDB_FILE:libzmq> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL COMPONENT SDK)
+  if (BUILD_SHARED)
+    install (TARGETS libzmq
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            COMPONENT Runtime)
+  endif ()
 else ()
   install (TARGETS ${target_outputs}
           EXPORT ${PROJECT_NAME}-targets
