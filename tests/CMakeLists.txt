@@ -177,7 +177,7 @@ foreach(test ${tests})
     add_executable(${test} ${test}.cpp
         "testutil_security.hpp")
   else ()
-    add_executable(${test} ${test}.cpp)
+    add_executable(${test} ${test}.cpp "testutil.hpp" "testutil_unity.hpp")
   endif ()
   if(WIN32)
     # This is the output for Debug dynamic builds on Visual Studio 6.0

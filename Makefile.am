@@ -462,8 +462,9 @@ tests_test_reqrep_tcp_SOURCES = \
 	tests/testutil.hpp
 tests_test_reqrep_tcp_LDADD = src/libzmq.la
 
-tests_test_hwm_SOURCES = tests/test_hwm.cpp
-tests_test_hwm_LDADD = src/libzmq.la
+tests_test_hwm_SOURCES = tests/test_hwm.cpp tests/testutil_unity.hpp
+tests_test_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_hwm_pubsub_SOURCES = tests/test_hwm_pubsub.cpp
 tests_test_hwm_pubsub_LDADD = src/libzmq.la
@@ -501,8 +502,9 @@ tests_test_srcfd_LDADD = src/libzmq.la
 tests_test_monitor_SOURCES = tests/test_monitor.cpp
 tests_test_monitor_LDADD = src/libzmq.la
 
-tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp
-tests_test_router_mandatory_LDADD = src/libzmq.la
+tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp tests/testutil_unity.hpp
+tests_test_router_mandatory_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_router_mandatory_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_router_mandatory_hwm_SOURCES = tests/test_router_mandatory_hwm.cpp
 tests_test_router_mandatory_hwm_LDADD = src/libzmq.la
