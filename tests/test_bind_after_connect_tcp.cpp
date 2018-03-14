@@ -28,70 +28,46 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_x ()
+{
+    void *sb = test_context_socket (ZMQ_DEALER);
+    void *sc = test_context_socket (ZMQ_DEALER);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, ENDPOINT_3));
+
+    send_string_expect_success (sc, "foobar", 0);
+    send_string_expect_success (sc, "baz", 0);
+    send_string_expect_success (sc, "buzz", 0);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, ENDPOINT_3));
+
+    recv_string_expect_success (sb, "foobar", 0);
+    recv_string_expect_success (sb, "baz", 0);
+    recv_string_expect_success (sb, "buzz", 0);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
 int main (void)
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sb);
-
-    void *sc = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sc);
-
-    int rc = zmq_connect (sc, ENDPOINT_3);
-    assert (rc == 0);
-
-    rc = zmq_send_const (sc, "foobar", 6, 0);
-    assert (rc == 6);
-
-    rc = zmq_send_const (sc, "baz", 3, 0);
-    assert (rc == 3);
-
-    rc = zmq_send_const (sc, "buzz", 4, 0);
-    assert (rc == 4);
-
-    rc = zmq_bind (sb, ENDPOINT_3);
-    assert (rc == 0);
-
-    zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 6);
-    void *data = zmq_msg_data (&msg);
-    assert (memcmp ("foobar", data, 6) == 0);
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 3);
-    data = zmq_msg_data (&msg);
-    assert (memcmp ("baz", data, 3) == 0);
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 4);
-    data = zmq_msg_data (&msg);
-    assert (memcmp ("buzz", data, 4) == 0);
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_x);
+    return UNITY_END ();
 }
