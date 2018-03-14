@@ -48,7 +48,6 @@ foreach(test ${unittests})
   # TODO prevent libzmq (non-static) being in the list of link libraries at all
   get_target_property(LIBS ${test} LINK_LIBRARIES)
   list(REMOVE_ITEM LIBS libzmq)
-  message("Link libraries of ${test}: ${LIBS}")  
   set_target_properties(${test} PROPERTIES LINK_LIBRARIES "${LIBS}")
 endforeach()
 

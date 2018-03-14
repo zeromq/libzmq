@@ -28,6 +28,17 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 const int MAX_SENDS = 10000;
 
@@ -37,23 +48,22 @@ enum TestType
     CONNECT_FIRST
 };
 
-int test_defaults ()
+void test_defaults ()
 {
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    int rc;
+    TEST_ASSERT_NOT_NULL (ctx);
 
     // Set up bind socket
     void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
-    assert (bind_socket);
-    rc = zmq_bind (bind_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL (bind_socket);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Set up connect socket
     void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-    assert (connect_socket);
-    rc = zmq_connect (connect_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL (connect_socket);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
     // Send until we block
     int send_count = 0;
@@ -68,65 +78,52 @@ int test_defaults ()
     while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++recv_count;
 
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Clean up
-    rc = zmq_close (connect_socket);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
-    rc = zmq_close (bind_socket);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return send_count;
+    // Default values are 1000 on send and 1000 one receive, so 2000 total
+    TEST_ASSERT_EQUAL_INT (2000, send_count);
 }
 
 int count_msg (int send_hwm, int recv_hwm, TestType testType)
 {
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    int rc;
+    TEST_ASSERT_NOT_NULL (ctx);
 
     void *bind_socket;
     void *connect_socket;
     if (testType == BIND_FIRST) {
         // Set up bind socket
         bind_socket = zmq_socket (ctx, ZMQ_PULL);
-        assert (bind_socket);
-        rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm,
-                             sizeof (recv_hwm));
-        assert (rc == 0);
-        rc = zmq_bind (bind_socket, "inproc://a");
-        assert (rc == 0);
+        TEST_ASSERT_NOT_NULL (bind_socket);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
         // Set up connect socket
         connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-        assert (connect_socket);
-        rc = zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm,
-                             sizeof (send_hwm));
-        assert (rc == 0);
-        rc = zmq_connect (connect_socket, "inproc://a");
-        assert (rc == 0);
+        TEST_ASSERT_NOT_NULL (connect_socket);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
     } else {
         // Set up connect socket
         connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-        assert (connect_socket);
-        rc = zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm,
-                             sizeof (send_hwm));
-        assert (rc == 0);
-        rc = zmq_connect (connect_socket, "inproc://a");
-        assert (rc == 0);
+        TEST_ASSERT_NOT_NULL (connect_socket);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
         // Set up bind socket
         bind_socket = zmq_socket (ctx, ZMQ_PULL);
-        assert (bind_socket);
-        rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm,
-                             sizeof (recv_hwm));
-        assert (rc == 0);
-        rc = zmq_bind (bind_socket, "inproc://a");
-        assert (rc == 0);
+        TEST_ASSERT_NOT_NULL (bind_socket);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
     }
 
     // Send until we block
@@ -140,25 +137,18 @@ int count_msg (int send_hwm, int recv_hwm, TestType testType)
     while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++recv_count;
 
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Now it should be possible to send one more.
-    rc = zmq_send (connect_socket, NULL, 0, 0);
-    assert (rc == 0);
+    send_string_expect_success (connect_socket, NULL, 0);
 
     //  Consume the remaining message.
-    rc = zmq_recv (bind_socket, NULL, 0, 0);
-    assert (rc == 0);
+    recv_string_expect_success (bind_socket, NULL, 0);
 
     // Clean up
-    rc = zmq_close (connect_socket);
-    assert (rc == 0);
-
-    rc = zmq_close (bind_socket);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
     return send_count;
 }
@@ -176,17 +166,14 @@ int test_inproc_connect_first (int send_hwm, int recv_hwm)
 int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
 {
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    int rc;
+    TEST_ASSERT_NOT_NULL (ctx);
 
     // Set up connect socket
     void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-    assert (connect_socket);
-    rc =
-      zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
-    assert (rc == 0);
-    rc = zmq_connect (connect_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL (connect_socket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (connect_socket, ZMQ_SNDHWM,
+                                               &send_hwm, sizeof (send_hwm)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
     // Send until we block
     int send_count = 0;
@@ -195,30 +182,25 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
         ++send_count;
 
     // Close connect
-    rc = zmq_close (connect_socket);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
 
     // Set up bind socket
     void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
-    assert (bind_socket);
-    rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
-    assert (rc == 0);
-    rc = zmq_bind (bind_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL (bind_socket);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Now receive all sent messages
     int recv_count = 0;
     while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++recv_count;
 
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Clean up
-    rc = zmq_close (bind_socket);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
     return send_count;
 }
@@ -226,16 +208,14 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
 int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
 {
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    int rc;
+    TEST_ASSERT_NOT_NULL (ctx);
 
     // Set up bind socket
     void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
-    assert (bind_socket);
-    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
-    assert (rc == 0);
-    rc = zmq_bind (bind_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL (bind_socket);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Send until we block
     int send_count = 0;
@@ -244,78 +224,116 @@ int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
         ++send_count;
 
     // Close bind
-    rc = zmq_close (bind_socket);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
 
-    /* Can't currently do connect without then wiring up a bind as things hang, this needs top be fixed.
+    /* TODO Can't currently do connect without then wiring up a bind as things hang, this needs top be fixed.
     // Set up connect socket
     void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
-    assert (connect_socket);
-    rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
-    assert (rc == 0);
-    rc = zmq_connect (connect_socket, "inproc://a");
-    assert (rc == 0);
+    TEST_ASSERT_NOT_NULL(connect_socket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
     // Now receive all sent messages
     int recv_count = 0;
     while (zmq_recv (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++recv_count;
 
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT(send_count, recv_count);
     */
 
     // Clean up
-    //rc = zmq_close (connect_socket);
-    //assert (rc == 0);
+    //TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
     return send_count;
+}
+
+void test_infinite_both_inproc_bind_first ()
+{
+    int count = test_inproc_bind_first (0, 0);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_infinite_both_inproc_connect_first ()
+{
+    int count = test_inproc_connect_first (0, 0);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_infinite_receive_inproc_bind_first ()
+{
+    int count = test_inproc_bind_first (1, 0);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_infinite_receive_inproc_connect_first ()
+{
+    int count = test_inproc_connect_first (1, 0);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_infinite_send_inproc_bind_first ()
+{
+    int count = test_inproc_bind_first (0, 1);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_infinite_send_inproc_connect_first ()
+{
+    int count = test_inproc_connect_first (0, 1);
+    TEST_ASSERT_EQUAL_INT (MAX_SENDS, count);
+}
+
+void test_finite_both_bind_first ()
+{
+    // Send and recv buffers hwm 1, so total that can be queued is 2
+    int count = test_inproc_bind_first (1, 1);
+    TEST_ASSERT_EQUAL_INT (2, count);
+}
+void test_finite_both_connect_first ()
+{
+    // Send and recv buffers hwm 1, so total that can be queued is 2
+    int count = test_inproc_connect_first (1, 1);
+    TEST_ASSERT_EQUAL_INT (2, count);
+}
+
+void test_infinite_recv_connect_and_close_first ()
+{
+    // Send hwm of 1, send before bind so total that can be queued is 1
+    int count = test_inproc_connect_and_close_first (1, 0);
+    TEST_ASSERT_EQUAL_INT (1, count);
+}
+
+void test_infinite_recv_bind_and_close_first ()
+{
+    // Send hwm of 1, send from bind side before connect so total that can be queued should be 1,
+    // however currently all messages get thrown away before the connect.  BUG?
+    /*int count = */ test_inproc_bind_and_close_first (1, 0);
+    // TEST_ASSERT_EQUAL_INT (1, count);
 }
 
 int main (void)
 {
     setup_test_environment ();
 
-    int count;
+    UNITY_BEGIN ();
+    RUN_TEST (test_defaults);
 
-    // Default values are 1000 on send and 1000 one receive, so 2000 total
-    count = test_defaults ();
-    assert (count == 2000);
+    RUN_TEST (test_infinite_both_inproc_bind_first);
+    RUN_TEST (test_infinite_both_inproc_connect_first);
 
-    // Infinite send and receive buffer
-    count = test_inproc_bind_first (0, 0);
-    assert (count == MAX_SENDS);
-    count = test_inproc_connect_first (0, 0);
-    assert (count == MAX_SENDS);
+    RUN_TEST (test_infinite_receive_inproc_bind_first);
+    RUN_TEST (test_infinite_receive_inproc_connect_first);
 
-    // Infinite receive buffer
-    count = test_inproc_bind_first (1, 0);
-    assert (count == MAX_SENDS);
-    count = test_inproc_connect_first (1, 0);
-    assert (count == MAX_SENDS);
+    RUN_TEST (test_infinite_send_inproc_bind_first);
+    RUN_TEST (test_infinite_send_inproc_connect_first);
 
-    // Infinite send buffer
-    count = test_inproc_bind_first (0, 1);
-    assert (count == MAX_SENDS);
-    count = test_inproc_connect_first (0, 1);
-    assert (count == MAX_SENDS);
+    RUN_TEST (test_finite_both_bind_first);
+    RUN_TEST (test_finite_both_connect_first);
 
-    // Send and recv buffers hwm 1, so total that can be queued is 2
-    count = test_inproc_bind_first (1, 1);
-    assert (count == 2);
-    count = test_inproc_connect_first (1, 1);
-    assert (count == 2);
+    RUN_TEST (test_infinite_recv_connect_and_close_first);
+    RUN_TEST (test_infinite_recv_bind_and_close_first);
 
-    // Send hwm of 1, send before bind so total that can be queued is 1
-    count = test_inproc_connect_and_close_first (1, 0);
-    assert (count == 1);
-
-    // Send hwm of 1, send from bind side before connect so total that can be queued should be 1,
-    // however currently all messages get thrown away before the connect.  BUG?
-    count = test_inproc_bind_and_close_first (1, 0);
-    //assert (count == 1);
-
-    return 0;
+    return UNITY_END ();
 }
