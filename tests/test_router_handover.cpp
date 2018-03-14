@@ -29,89 +29,84 @@
 
 #include "testutil.hpp"
 
-int main (void)
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
 {
-    setup_test_environment ();
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_x ()
+{
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (router);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
-    int rc = zmq_bind (router, "tcp://127.0.0.1:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
 
-    rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 
     // Enable the handover flag
     int handover = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER, &handover,
-                         sizeof (handover));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER,
+                                               &handover, sizeof (handover)));
 
     //  Create dealer called "X" and connect it to our router
-    void *dealer_one = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer_one);
-    rc = zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1);
-    assert (rc == 0);
-    rc = zmq_connect (dealer_one, my_endpoint);
-    assert (rc == 0);
+    void *dealer_one = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_one, my_endpoint));
 
     //  Get message from dealer to know when connection is ready
     char buffer[255];
-    rc = zmq_send (dealer_one, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer[0] == 'X');
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 5);
+    send_string_expect_success (dealer_one, "Hello", 0);
+
+    recv_string_expect_success (router, "X", 0);
+    recv_string_expect_success (router, "Hello", 0);
 
     // Now create a second dealer that uses the same routing id
-    void *dealer_two = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer_two);
-    rc = zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1);
-    assert (rc == 0);
-    rc = zmq_connect (dealer_two, my_endpoint);
-    assert (rc == 0);
+    void *dealer_two = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_two, my_endpoint));
 
     //  Get message from dealer to know when connection is ready
-    rc = zmq_send (dealer_two, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer[0] == 'X');
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 5);
+    send_string_expect_success (dealer_two, "Hello", 0);
+
+    recv_string_expect_success (router, "X", 0);
+    recv_string_expect_success (router, "Hello", 0);
 
     //  Send a message to 'X' routing id. This should be delivered
     //  to the second dealer, instead of the first beccause of the handover.
-    rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
-    assert (rc == 1);
-    rc = zmq_send (router, "Hello", 5, 0);
-    assert (rc == 5);
+    send_string_expect_success (router, "X", ZMQ_SNDMORE);
+    send_string_expect_success (router, "Hello", 0);
 
     //  Ensure that the first dealer doesn't receive the message
     //  but the second one does
-    rc = zmq_recv (dealer_one, buffer, 255, ZMQ_NOBLOCK);
-    assert (rc == -1);
+    int rc = zmq_recv (dealer_one, buffer, 255, ZMQ_NOBLOCK);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
 
-    rc = zmq_recv (dealer_two, buffer, 255, 0);
-    assert (rc == 5);
+    recv_string_expect_success (dealer_two, "Hello", 0);
 
-    rc = zmq_close (router);
-    assert (rc == 0);
+    test_context_socket_close (router);
+    test_context_socket_close (dealer_one);
+    test_context_socket_close (dealer_two);
+}
 
-    rc = zmq_close (dealer_one);
-    assert (rc == 0);
+int main (void)
+{
+    setup_test_environment ();
 
-    rc = zmq_close (dealer_two);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_x);
+    return UNITY_END ();
 }

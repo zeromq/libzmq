@@ -28,79 +28,118 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void create_inproc_client_server_pair (void **server, void **client)
+{
+    *server = test_context_socket (ZMQ_SERVER);
+    *client = test_context_socket (ZMQ_CLIENT);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_bind (*server, "inproc://test-client-server"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (*client, "inproc://test-client-server"));
+}
+
+void send_sndmore_expect_failure (void *socket)
+{
+    int rc = zmq_send (socket, "X", 1, ZMQ_SNDMORE);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+}
+
+void test_client_sndmore_fails ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
+
+    send_sndmore_expect_failure (client);
+
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
+
+void test_server_sndmore_fails ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
+
+    send_sndmore_expect_failure (server);
+
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
+
+void test_routing_id ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
+
+    send_string_expect_success (client, "X", 0);
+
+    uint32_t routing_id;
+    {
+        zmq_msg_t msg;
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
+
+        int rc = TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, server, 0));
+        TEST_ASSERT_EQUAL_INT (1, rc);
+
+        routing_id = zmq_msg_routing_id (&msg);
+        TEST_ASSERT_NOT_EQUAL (0, routing_id);
+
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
+    }
+
+    {
+        zmq_msg_t msg;
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
+
+        char *data = (char *) zmq_msg_data (&msg);
+        data[0] = 2;
+
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_routing_id (&msg, routing_id));
+
+        int rc = zmq_msg_send (&msg, server, 0);
+        TEST_ASSERT_EQUAL_INT (1, rc);
+    }
+
+    {
+        zmq_msg_t msg;
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
+
+        int rc = zmq_msg_recv (&msg, client, 0);
+        TEST_ASSERT_EQUAL_INT (1, rc);
+
+        routing_id = zmq_msg_routing_id (&msg);
+        TEST_ASSERT_EQUAL_UINT32 (0, routing_id);
+
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
+    }
+
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
 
 int main (void)
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *server = zmq_socket (ctx, ZMQ_SERVER);
-    void *client = zmq_socket (ctx, ZMQ_CLIENT);
-
-    int rc = zmq_bind (server, "inproc://test-client-server");
-    assert (rc == 0);
-
-    rc = zmq_connect (client, "inproc://test-client-server");
-    assert (rc == 0);
-
-    zmq_msg_t msg;
-    rc = zmq_msg_init_size (&msg, 1);
-    assert (rc == 0);
-
-    char *data = (char *) zmq_msg_data (&msg);
-    data[0] = 1;
-
-    rc = zmq_msg_send (&msg, client, ZMQ_SNDMORE);
-    assert (rc == -1);
-
-    rc = zmq_msg_send (&msg, client, 0);
-    assert (rc == 1);
-
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-
-    rc = zmq_msg_recv (&msg, server, 0);
-    assert (rc == 1);
-
-    uint32_t routing_id = zmq_msg_routing_id (&msg);
-    assert (routing_id != 0);
-
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_msg_init_size (&msg, 1);
-    assert (rc == 0);
-
-    data = (char *) zmq_msg_data (&msg);
-    data[0] = 2;
-
-    rc = zmq_msg_set_routing_id (&msg, routing_id);
-    assert (rc == 0);
-
-    rc = zmq_msg_send (&msg, server, ZMQ_SNDMORE);
-    assert (rc == -1);
-
-    rc = zmq_msg_send (&msg, server, 0);
-    assert (rc == 1);
-
-    rc = zmq_msg_recv (&msg, client, 0);
-    assert (rc == 1);
-
-    routing_id = zmq_msg_routing_id (&msg);
-    assert (routing_id == 0);
-
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_close (server);
-    assert (rc == 0);
-
-    rc = zmq_close (client);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_client_sndmore_fails);
+    RUN_TEST (test_server_sndmore_fails);
+    RUN_TEST (test_routing_id);
+    return UNITY_END ();
 }

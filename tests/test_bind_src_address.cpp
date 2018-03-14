@@ -28,30 +28,39 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_x ()
+{
+    void *sock = test_context_socket (ZMQ_PUB);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (sock, "tcp://127.0.0.1:0;localhost:1234"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (sock, "tcp://localhost:5555;localhost:1235"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (sock, "tcp://lo:5555;localhost:1235"));
+
+    test_context_socket_close (sock);
+}
 
 int main (void)
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sock = zmq_socket (ctx, ZMQ_PUB);
-    assert (sock);
-
-    int rc = zmq_connect (sock, "tcp://127.0.0.1:0;localhost:1234");
-    assert (rc == 0);
-
-    rc = zmq_connect (sock, "tcp://localhost:5555;localhost:1235");
-    assert (rc == 0);
-
-    rc = zmq_connect (sock, "tcp://lo:5555;localhost:1235");
-    assert (rc == 0);
-
-    rc = zmq_close (sock);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_x);
+    return UNITY_END ();
 }
