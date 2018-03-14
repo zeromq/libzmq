@@ -18,6 +18,27 @@ On many slower environments, like embedded systems, VMs or CI systems, tests mig
 fail because it takes time for sockets to settle after a connect. If you need
 to add a sleep, please be consistent with all the other tests and use:
   msleep (SETTLE_TIME);
+  
+#   Ensure proper cleanup
+
+If a test program uses unity, it will execute test cases individually, and will continue to run further test cases if an assertion in one test case fails. However, the test case that had an assertion failure will be aborted.
+To ensure that the resources of the test case are properly cleaned up, use appropriate setUp and tearDown functions. These are run by unity before each test case starts resp. after it ended (whether successfully or not).
+The same setUp and tearDown function is used for all test cases in a test program.
+
+For many test cases, the following setUp and tearDown functions will be appropriate:
+	void setUp ()
+	{
+		setup_test_context ();
+	}
+
+	void tearDown ()
+	{
+		teardown_test_context ();
+	}
+
+Within the tests, do not use zmq_socket and zmq_close then but test_context_socket and test_context_socket_close instead. These functions will register/unregister sockets with the test_context. 
+All sockets not closed when tearDown is executed, with forcibly be closed with linger=0 before terminating the context. Note that it is a misuse not to close sockets during successful test execution, 
+and a warning will be output.
 
 #   Building tests in Windows
 
