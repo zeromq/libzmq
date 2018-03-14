@@ -28,8 +28,21 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (int, char *[])
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_x ()
 {
     const char *bind_to = "tcp://127.0.0.1:*";
     size_t len = MAX_SOCKET_STRING;
@@ -37,50 +50,41 @@ int main (int, char *[])
 
     int rc;
 
-    void *ctx = zmq_init (1);
-    assert (ctx);
-
-    void *s_in = zmq_socket (ctx, ZMQ_PULL);
-    assert (s_in);
+    void *s_in = test_context_socket (ZMQ_PULL);
 
     int conflate = 1;
-    rc = zmq_setsockopt (s_in, ZMQ_CONFLATE, &conflate, sizeof (conflate));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (s_in, ZMQ_CONFLATE, &conflate, sizeof (conflate)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s_in, bind_to));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (s_in, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 
-    rc = zmq_bind (s_in, bind_to);
-    assert (rc == 0);
-    rc = zmq_getsockopt (s_in, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    void *s_out = test_context_socket (ZMQ_PUSH);
 
-    void *s_out = zmq_socket (ctx, ZMQ_PUSH);
-    assert (s_out);
-
-    rc = zmq_connect (s_out, my_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s_out, my_endpoint));
 
     int message_count = 20;
     for (int j = 0; j < message_count; ++j) {
-        rc = zmq_send (s_out, (void *) &j, sizeof (int), 0);
-        if (rc < 0) {
-            printf ("error in zmq_sendmsg: %s\n", zmq_strerror (errno));
-            return -1;
-        }
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_send (s_out, (void *) &j, sizeof (int), 0));
     }
     msleep (SETTLE_TIME);
 
     int payload_recved = 0;
-    rc = zmq_recv (s_in, (void *) &payload_recved, sizeof (int), 0);
-    assert (rc > 0);
-    assert (payload_recved == message_count - 1);
+    rc = TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_recv (s_in, (void *) &payload_recved, sizeof (int), 0));
+    TEST_ASSERT_GREATER_THAN_INT (0, rc);
+    TEST_ASSERT_EQUAL_INT (message_count - 1, payload_recved);
 
-    rc = zmq_close (s_in);
-    assert (rc == 0);
+    test_context_socket_close (s_in);
+    test_context_socket_close (s_out);
+}
 
-    rc = zmq_close (s_out);
-    assert (rc == 0);
+int main (int, char *[])
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_x);
+    return UNITY_END ();
 }
