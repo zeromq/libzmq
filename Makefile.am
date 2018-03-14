@@ -485,7 +485,8 @@ tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
 tests_test_msg_ffn_LDADD = src/libzmq.la
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
-tests_test_connect_resolve_LDADD = src/libzmq.la
+tests_test_connect_resolve_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_connect_resolve_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_immediate_SOURCES = tests/test_immediate.cpp
 tests_test_immediate_LDADD = src/libzmq.la
@@ -510,7 +511,8 @@ tests_test_router_mandatory_hwm_SOURCES = tests/test_router_mandatory_hwm.cpp
 tests_test_router_mandatory_hwm_LDADD = src/libzmq.la
 
 tests_test_router_handover_SOURCES = tests/test_router_handover.cpp
-tests_test_router_handover_LDADD = src/libzmq.la
+tests_test_router_handover_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_router_handover_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_probe_router_SOURCES = tests/test_probe_router.cpp
 tests_test_probe_router_LDADD = src/libzmq.la
@@ -579,7 +581,8 @@ tests_test_req_relaxed_SOURCES = tests/test_req_relaxed.cpp
 tests_test_req_relaxed_LDADD = src/libzmq.la
 
 tests_test_conflate_SOURCES = tests/test_conflate.cpp
-tests_test_conflate_LDADD = src/libzmq.la
+tests_test_conflate_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_conflate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_inproc_connect_SOURCES = tests/test_inproc_connect.cpp
 tests_test_inproc_connect_LDADD = src/libzmq.la
@@ -609,7 +612,8 @@ tests_test_connect_rid_SOURCES = tests/test_connect_rid.cpp
 tests_test_connect_rid_LDADD = src/libzmq.la
 
 tests_test_bind_src_address_SOURCES = tests/test_bind_src_address.cpp
-tests_test_bind_src_address_LDADD = src/libzmq.la
+tests_test_bind_src_address_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_bind_src_address_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_metadata_SOURCES = tests/test_metadata.cpp
 tests_test_metadata_LDADD = src/libzmq.la
@@ -650,7 +654,8 @@ tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
 tests_test_pub_invert_matching_LDADD = src/libzmq.la
 
 tests_test_bind_after_connect_tcp_SOURCES = tests/test_bind_after_connect_tcp.cpp
-tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la
+tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_bind_after_connect_tcp_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_base85_SOURCES = tests/test_base85.cpp
 tests_test_base85_LDADD = src/libzmq.la
@@ -854,7 +859,8 @@ tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
-tests_test_client_server_LDADD = src/libzmq.la
+tests_test_client_server_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_client_server_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
 tests_test_thread_safe_LDADD = src/libzmq.la
