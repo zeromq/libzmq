@@ -28,26 +28,28 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
 #include <unity.h>
 
 void setUp ()
 {
-}
-void tearDown ()
-{
+    setup_test_context ();
 }
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 const int MAX_SENDS = 10000;
 
 void test_change_before_connected ()
 {
     int rc;
-    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
+    void *bind_socket = test_context_socket (ZMQ_PUSH);
+    void *connect_socket = test_context_socket (ZMQ_PULL);
 
     int val = 2;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
@@ -71,18 +73,16 @@ void test_change_before_connected ()
 
     TEST_ASSERT_EQUAL_INT (4, send_count);
 
-    zmq_close (bind_socket);
-    zmq_close (connect_socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (bind_socket);
+    test_context_socket_close (connect_socket);
 }
 
 void test_change_after_connected ()
 {
     int rc;
-    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
+    void *bind_socket = test_context_socket (ZMQ_PUSH);
+    void *connect_socket = test_context_socket (ZMQ_PULL);
 
     int val = 1;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
@@ -110,9 +110,8 @@ void test_change_after_connected ()
 
     TEST_ASSERT_EQUAL_INT (6, send_count);
 
-    zmq_close (bind_socket);
-    zmq_close (connect_socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (bind_socket);
+    test_context_socket_close (connect_socket);
 }
 
 int send_until_wouldblock (void *socket)
@@ -138,10 +137,9 @@ int test_fill_up_to_hwm (void *socket, int sndhwm)
 void test_decrease_when_full ()
 {
     int rc;
-    void *ctx = zmq_ctx_new ();
 
-    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
-    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
+    void *bind_socket = test_context_socket (ZMQ_PUSH);
+    void *connect_socket = test_context_socket (ZMQ_PULL);
 
     int val = 1;
     rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &val, sizeof (val));
@@ -190,9 +188,8 @@ void test_decrease_when_full ()
     // Fill up to new hwm
     test_fill_up_to_hwm (bind_socket, sndhwm);
 
-    zmq_close (bind_socket);
-    zmq_close (connect_socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (bind_socket);
+    test_context_socket_close (connect_socket);
 }
 
 
