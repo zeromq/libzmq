@@ -42,31 +42,52 @@ void tearDown ()
     teardown_test_context ();
 }
 
-/** \todo this should be split up into separate test cases */
-void test_x ()
+void create_inproc_client_server_pair (void **server, void **client)
 {
-    void *server = test_context_socket (ZMQ_SERVER);
-    void *client = test_context_socket (ZMQ_CLIENT);
+    *server = test_context_socket (ZMQ_SERVER);
+    *client = test_context_socket (ZMQ_CLIENT);
 
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_bind (server, "inproc://test-client-server"));
+      zmq_bind (*server, "inproc://test-client-server"));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (client, "inproc://test-client-server"));
+      zmq_connect (*client, "inproc://test-client-server"));
+}
 
-    {
-        zmq_msg_t msg;
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
+void send_sndmore_expect_failure (void *socket)
+{
+    int rc = zmq_send (socket, "X", 1, ZMQ_SNDMORE);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+}
 
-        char *data = (char *) zmq_msg_data (&msg);
-        data[0] = 1;
+void test_client_sndmore_fails ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
 
-        int rc = zmq_msg_send (&msg, client, ZMQ_SNDMORE);
-        TEST_ASSERT_EQUAL_INT (-1, rc);
-        TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+    send_sndmore_expect_failure (client);
 
-        rc = TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&msg, client, 0));
-        TEST_ASSERT_EQUAL_INT (1, rc);
-    }
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
+
+void test_server_sndmore_fails ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
+
+    send_sndmore_expect_failure (server);
+
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
+
+void test_routing_id ()
+{
+    void *server, *client;
+    create_inproc_client_server_pair (&server, &client);
+
+    send_string_expect_success (client, "X", 0);
 
     uint32_t routing_id;
     {
@@ -91,11 +112,7 @@ void test_x ()
 
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_routing_id (&msg, routing_id));
 
-        int rc = zmq_msg_send (&msg, server, ZMQ_SNDMORE);
-        TEST_ASSERT_EQUAL_INT (-1, rc);
-        TEST_ASSERT_EQUAL_INT (EINVAL, errno);
-
-        rc = zmq_msg_send (&msg, server, 0);
+        int rc = zmq_msg_send (&msg, server, 0);
         TEST_ASSERT_EQUAL_INT (1, rc);
     }
 
@@ -121,6 +138,8 @@ int main (void)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_x);
+    RUN_TEST (test_client_sndmore_fails);
+    RUN_TEST (test_server_sndmore_fails);
+    RUN_TEST (test_routing_id);
     return UNITY_END ();
 }
