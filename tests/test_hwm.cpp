@@ -34,10 +34,12 @@
 
 void setUp ()
 {
+    setup_test_context ();
 }
 
 void tearDown ()
 {
+    teardown_test_context ();
 }
 
 const int MAX_SENDS = 10000;
@@ -50,19 +52,12 @@ enum TestType
 
 void test_defaults ()
 {
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     // Set up bind socket
-    void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
-    TEST_ASSERT_NOT_NULL (bind_socket);
-
+    void *bind_socket = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Set up connect socket
-    void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-    TEST_ASSERT_NOT_NULL (connect_socket);
-
+    void *connect_socket = test_context_socket (ZMQ_PUSH);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
     // Send until we block
@@ -81,9 +76,8 @@ void test_defaults ()
     TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Clean up
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket);
 
     // Default values are 1000 on send and 1000 one receive, so 2000 total
     TEST_ASSERT_EQUAL_INT (2000, send_count);
@@ -91,36 +85,29 @@ void test_defaults ()
 
 int count_msg (int send_hwm, int recv_hwm, TestType testType)
 {
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     void *bind_socket;
     void *connect_socket;
     if (testType == BIND_FIRST) {
         // Set up bind socket
-        bind_socket = zmq_socket (ctx, ZMQ_PULL);
-        TEST_ASSERT_NOT_NULL (bind_socket);
+        bind_socket = test_context_socket (ZMQ_PULL);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
         // Set up connect socket
-        connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-        TEST_ASSERT_NOT_NULL (connect_socket);
+        connect_socket = test_context_socket (ZMQ_PUSH);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
     } else {
         // Set up connect socket
-        connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-        TEST_ASSERT_NOT_NULL (connect_socket);
+        connect_socket = test_context_socket (ZMQ_PUSH);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
         // Set up bind socket
-        bind_socket = zmq_socket (ctx, ZMQ_PULL);
-        TEST_ASSERT_NOT_NULL (bind_socket);
+        bind_socket = test_context_socket (ZMQ_PULL);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
@@ -146,9 +133,8 @@ int count_msg (int send_hwm, int recv_hwm, TestType testType)
     recv_string_expect_success (bind_socket, NULL, 0);
 
     // Clean up
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket);
 
     return send_count;
 }
@@ -165,12 +151,8 @@ int test_inproc_connect_first (int send_hwm, int recv_hwm)
 
 int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
 {
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     // Set up connect socket
-    void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
-    TEST_ASSERT_NOT_NULL (connect_socket);
+    void *connect_socket = test_context_socket (ZMQ_PUSH);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (connect_socket, ZMQ_SNDHWM,
                                                &send_hwm, sizeof (send_hwm)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
@@ -182,11 +164,10 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
         ++send_count;
 
     // Close connect
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
+    test_context_socket_close (connect_socket);
 
     // Set up bind socket
-    void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
-    TEST_ASSERT_NOT_NULL (bind_socket);
+    void *bind_socket = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
@@ -199,8 +180,7 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
     TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Clean up
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (bind_socket);
 
     return send_count;
 }

@@ -34,10 +34,12 @@
 
 void setUp ()
 {
+    setup_test_context ();
 }
 
 void tearDown ()
 {
+    teardown_test_context ();
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -59,10 +61,7 @@ bool send_msg_to_peer_if_ready (void *router, const char *peer_routing_id)
 void test_get_peer_state ()
 {
 #ifdef ZMQ_BUILD_DRAFT_API
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    TEST_ASSERT_NOT_NULL (router);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     int mandatory = 1;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY,
@@ -71,11 +70,8 @@ void test_get_peer_state ()
     const char *my_endpoint = "inproc://test_get_peer_state";
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, my_endpoint));
 
-    void *dealer1 = zmq_socket (ctx, ZMQ_DEALER);
-    TEST_ASSERT_NOT_NULL (dealer1);
-
-    void *dealer2 = zmq_socket (ctx, ZMQ_DEALER);
-    TEST_ASSERT_NOT_NULL (dealer2);
+    void *dealer1 = test_context_socket (ZMQ_DEALER);
+    void *dealer2 = test_context_socket (ZMQ_DEALER);
 
     //  Lower HWMs to allow doing the test with fewer messages
     const int hwm = 100;
@@ -156,10 +152,9 @@ void test_get_peer_state ()
     TEST_ASSERT_TRUE (dealer2_blocked);
     zmq_poller_destroy (&poller);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (router));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (dealer1));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (dealer2));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (router);
+    test_context_socket_close (dealer1);
+    test_context_socket_close (dealer2);
 #endif
 }
 
@@ -174,12 +169,8 @@ void test_get_peer_state_corner_cases ()
     TEST_ASSERT_EQUAL_INT (-1, rc);
     TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno);
 
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    TEST_ASSERT_NOT_NULL (dealer);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    TEST_ASSERT_NOT_NULL (router);
+    void *dealer = test_context_socket (ZMQ_DEALER);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     //  call get_peer_state with a non-ROUTER socket
     rc = zmq_socket_get_peer_state (dealer, peer_routing_id,
@@ -193,9 +184,8 @@ void test_get_peer_state_corner_cases ()
     TEST_ASSERT_EQUAL_INT (-1, rc);
     TEST_ASSERT_EQUAL_INT (EHOSTUNREACH, errno);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (router));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (dealer));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (router);
+    test_context_socket_close (dealer);
 #endif
 }
 
@@ -203,10 +193,7 @@ void test_basic ()
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    TEST_ASSERT_NOT_NULL (router);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -227,8 +214,7 @@ void test_basic ()
     TEST_ASSERT_EQUAL_INT (EHOSTUNREACH, errno);
 
     //  Create dealer called "X" and connect it to our router
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    TEST_ASSERT_NOT_NULL (dealer);
+    void *dealer = test_context_socket (ZMQ_DEALER);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (dealer, ZMQ_ROUTING_ID, "X", 1));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, my_endpoint));
 
@@ -241,9 +227,8 @@ void test_basic ()
     send_string_expect_success (router, "X", ZMQ_SNDMORE);
     send_string_expect_success (router, "Hello", 0);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (router));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (dealer));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    test_context_socket_close (router);
+    test_context_socket_close (dealer);
 }
 
 int main (void)

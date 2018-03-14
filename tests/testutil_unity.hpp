@@ -85,3 +85,102 @@ void recv_string_expect_success (void *socket, const char *str, int flags)
     if (str)
         TEST_ASSERT_EQUAL_STRING_LEN (str, buffer, len);
 }
+
+// do not call from tests directly, use setup_test_context, get_test_context and teardown_test_context only
+void *internal_manage_test_context (bool init, bool clear)
+{
+    static void *test_context = NULL;
+    if (clear) {
+        TEST_ASSERT_NOT_NULL (test_context);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (test_context));
+        test_context = NULL;
+    } else {
+        if (init) {
+            TEST_ASSERT_NULL (test_context);
+            test_context = zmq_ctx_new ();
+            TEST_ASSERT_NOT_NULL (test_context);
+        }
+    }
+    return test_context;
+}
+
+#define MAX_TEST_SOCKETS 128
+
+void internal_manage_test_sockets (void *socket, bool add)
+{
+    static void *test_sockets[MAX_TEST_SOCKETS];
+    static size_t test_socket_count = 0;
+    if (!socket) {
+        assert (!add);
+
+        // force-close all sockets
+        if (test_socket_count) {
+            for (size_t i = 0; i < test_socket_count; ++i) {
+                close_zero_linger (test_sockets[i]);
+            }
+            fprintf (stderr,
+                     "WARNING: Forced closure of %i sockets, this is an "
+                     "implementation error unless the test case failed\n",
+                     (int) test_socket_count);
+            test_socket_count = 0;
+        }
+    } else {
+        if (add) {
+            ++test_socket_count;
+            TEST_ASSERT_LESS_THAN_MESSAGE (MAX_TEST_SOCKETS, test_socket_count,
+                                           "MAX_TEST_SOCKETS must be "
+                                           "increased, or you cannot use the "
+                                           "test context");
+            test_sockets[test_socket_count - 1] = socket;
+        } else {
+            bool found = false;
+            for (size_t i = 0; i < test_socket_count; ++i) {
+                if (test_sockets[i] == socket) {
+                    found = true;
+                }
+                if (found) {
+                    if (i < test_socket_count)
+                        test_sockets[i] = test_sockets[i + 1];
+                }
+            }
+            TEST_ASSERT_TRUE (found);
+            --test_socket_count;
+        }
+    }
+}
+
+void setup_test_context ()
+{
+    internal_manage_test_context (true, false);
+}
+
+void *get_test_context ()
+{
+    return internal_manage_test_context (false, false);
+}
+
+void teardown_test_context ()
+{
+    // this condition allows an explicit call to teardown_test_context from a
+    // test. if this is never used, it should probably be removed, to detect
+    // misuses
+    if (get_test_context ()) {
+        internal_manage_test_sockets (NULL, false);
+        internal_manage_test_context (false, true);
+    }
+}
+
+void *test_context_socket (int type)
+{
+    void *const socket = zmq_socket (get_test_context (), type);
+    TEST_ASSERT_NOT_NULL (socket);
+    internal_manage_test_sockets (socket, true);
+    return socket;
+}
+
+void *test_context_socket_close (void *socket)
+{
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
+    internal_manage_test_sockets (socket, false);
+    return socket;
+}
