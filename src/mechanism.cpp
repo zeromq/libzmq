@@ -170,13 +170,30 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
                         options.routing_id, options.routing_id_size);
     }
 
+
+    for (std::map<std::string, std::string>::const_iterator it =
+           options.app_metadata.begin ();
+         it != options.app_metadata.end (); ++it)
+        ptr +=
+          add_property (ptr, buf_capacity - (ptr - buf), it->first.c_str (),
+                        it->second.c_str (), strlen (it->second.c_str ()));
+
     return ptr - buf;
 }
 
 size_t zmq::mechanism_t::basic_properties_len () const
 {
     const char *socket_type = socket_type_string (options.type);
+    int meta_len = 0;
+
+    for (std::map<std::string, std::string>::const_iterator it =
+           options.app_metadata.begin ();
+         it != options.app_metadata.end (); ++it)
+        meta_len +=
+          property_len (it->first.c_str (), strlen (it->second.c_str ()));
+
     return property_len (ZMTP_PROPERTY_SOCKET_TYPE, strlen (socket_type))
+           + meta_len
            + ((options.type == ZMQ_REQ || options.type == ZMQ_DEALER
                || options.type == ZMQ_ROUTER)
                 ? property_len (ZMTP_PROPERTY_IDENTITY, options.routing_id_size)

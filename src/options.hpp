@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 
 #include "atomic_ptr.hpp"
 #include "stddef.h"
@@ -258,6 +259,9 @@ struct options_t
 
     // Use zero copy strategy for storing message content when decoding.
     bool zero_copy;
+
+    // Application metadata
+    std::map<std::string, std::string> app_metadata;
 };
 
 int do_getsockopt (void *const optval_,

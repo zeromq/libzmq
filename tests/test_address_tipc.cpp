@@ -30,20 +30,17 @@
 #include "testutil.hpp"
 #include <unity.h>
 
-void *ctx;
 
 void setUp ()
 {
-    ctx = zmq_ctx_new ();
 }
 void tearDown ()
 {
-    zmq_ctx_term (ctx);
-    ctx = NULL;
 }
 
 void test_tipc_port_name_and_domain ()
 {
+    void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
 
     // test Port Name addressing
@@ -64,6 +61,8 @@ void test_tipc_port_name_and_domain ()
 
     rc = zmq_close (sb);
     TEST_ASSERT_EQUAL_INT (0, rc);
+
+    zmq_ctx_term (ctx);
 }
 
 void test_tipc_port_identity ()
@@ -72,6 +71,7 @@ void test_tipc_port_identity ()
     size_t size = 256;
     unsigned int z, c, n, ref;
 
+    void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_REP);
@@ -101,10 +101,13 @@ void test_tipc_port_identity ()
 
     rc = zmq_close (sb);
     TEST_ASSERT_EQUAL_INT (0, rc);
+
+    zmq_ctx_term (ctx);
 }
 
 void test_tipc_bad_addresses ()
 {
+    void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
 
     // Test Port Name addressing
@@ -124,6 +127,8 @@ void test_tipc_bad_addresses ()
     // Clean up
     rc = zmq_close (sb);
     TEST_ASSERT_EQUAL_INT (0, rc);
+
+    zmq_ctx_term (ctx);
 }
 
 

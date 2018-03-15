@@ -135,6 +135,7 @@ IF (ENABLE_DRAFTS)
         test_udp
         test_scatter_gather
         test_dgram
+        test_app_meta
     )
 ENDIF (ENABLE_DRAFTS)
 

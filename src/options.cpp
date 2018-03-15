@@ -706,6 +706,26 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
                                                       &loopback_fastpath);
 
+        case ZMQ_METADATA:
+            if (optvallen_ > 0 && !is_int) {
+                std::string s ((char *) optval_);
+                size_t pos = 0;
+                std::string key, val, delimiter = ":";
+                pos = s.find (delimiter);
+                if (pos != std::string::npos && pos != 0
+                    && pos != s.length () - 1) {
+                    key = s.substr (0, pos);
+                    if (key.compare (0, 2, "X-") == 0 && key.length () < 256) {
+                        val = s.substr (pos + 1, s.length ());
+                        app_metadata.insert (
+                          std::pair<std::string, std::string> (key, val));
+                        return 0;
+                    }
+                }
+            }
+            errno = EINVAL;
+            return -1;
+            break;
         default:
 #if defined(ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
