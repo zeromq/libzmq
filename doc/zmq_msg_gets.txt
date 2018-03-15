@@ -20,10 +20,12 @@ the 'message' argument. Both the 'property' argument and the 'value'
 shall be NULL-terminated UTF8-encoded strings.
 
 Metadata is defined on a per-connection basis during the ZeroMQ connection
-handshake as specified in <rfc.zeromq.org/spec:37>.
+handshake as specified in <rfc.zeromq.org/spec:37>. Applications can set
+metadata properties using linkzmq:zmq_setsockopt[3] option ZMQ_METADATA.
+Application metadata properties must be prefixed with 'X-'.
 
-The following ZMTP properties can be retrieved with the _zmq_msg_gets()_
-function:
+In addition to application metadata, the following ZMTP properties can be
+retrieved with the _zmq_msg_gets()_ function:
 
     Socket-Type
     Routing-Id
@@ -73,7 +75,7 @@ zmq_msg_close (&msg);
 SEE ALSO
 --------
 linkzmq:zmq[7]
-
+linkzmq:zmq_setsockopt[3]
 
 AUTHORS
 -------

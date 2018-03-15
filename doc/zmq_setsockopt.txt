@@ -469,6 +469,26 @@ Default value:: -1
 Applicable socket types:: all
 
 
+ZMQ_METADATA: Add application metadata properties to a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The _ZMQ_METADATA_ option shall add application metadata to the specified _socket_,
+the metadata is exchanged with peers during connection setup. A metadata property is
+specfied as a string, delimited by a colon, starting with the metadata _property_
+followed by the metadata value, for example "X-key:value".
+_Property_ names are restrited to maximum 255 characters and must be prefixed by "X-".
+Multiple application metadata properties can be added to a socket by executing zmq_setsockopt()
+multiple times. As the argument is a null-terminated string, binary data must be encoded
+before it is added e.g. using Z85 (linkzmq:zmq_z85_encode[3]).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all
+
+
 ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the time-to-live field in every multicast packet sent from this socket.
