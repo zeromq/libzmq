@@ -545,7 +545,8 @@ tests_test_iov_SOURCES = tests/test_iov.cpp
 tests_test_iov_LDADD = src/libzmq.la
 
 tests_test_ctx_destroy_SOURCES = tests/test_ctx_destroy.cpp
-tests_test_ctx_destroy_LDADD = src/libzmq.la
+tests_test_ctx_destroy_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_ctx_destroy_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_null_SOURCES = tests/test_security_null.cpp
 tests_test_security_null_LDADD = src/libzmq.la
