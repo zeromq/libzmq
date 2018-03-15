@@ -247,9 +247,25 @@ void test_null_socket_pointers ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
 }
 
-typedef void (*extra_func_t) (void *poller);
+typedef void (*extra_poller_socket_func_t) (void *poller, void *socket);
 
-void test_with_valid_poller (extra_func_t extra_func)
+void test_with_empty_poller (extra_poller_socket_func_t extra_func)
+{
+    void *socket = test_context_socket (ZMQ_PAIR);
+
+    void *poller = zmq_poller_new ();
+    TEST_ASSERT_NOT_NULL (poller);
+
+    extra_func (poller, socket);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+
+    test_context_socket_close (socket);
+}
+
+typedef void (*extra_poller_func_t) (void *poller);
+
+void test_with_valid_poller (extra_poller_func_t extra_func)
 {
     void *socket = test_context_socket (ZMQ_PAIR);
 
@@ -287,51 +303,49 @@ void call_poller_wait_all_null_event_fails_event_count_zero (void *poller)
 #endif
 }
 
-void test_poller_wait_null_event_fails ()
+#define TEST_CASE_FUNC_PARAM(name, func)                                       \
+    void test_##name () { func (name); }
+
+TEST_CASE_FUNC_PARAM (call_poller_wait_null_event_fails, test_with_valid_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_null_event_fails_event_count_nonzero,
+                      test_with_valid_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_null_event_fails_event_count_zero,
+                      test_with_valid_poller)
+
+void call_poller_add_twice_fails (void *poller, void *socket)
 {
-    test_with_valid_poller (call_poller_wait_null_event_fails);
-}
-
-void test_poller_wait_all_null_event_fails_event_count_nonzero ()
-{
-    test_with_valid_poller (
-      call_poller_wait_all_null_event_fails_event_count_nonzero);
-}
-
-void test_poller_wait_all_null_event_fails_event_count_zero ()
-{
-    test_with_valid_poller (
-      call_poller_wait_all_null_event_fails_event_count_zero);
-}
-
-void test_add_modify_remove_corner_cases ()
-{
-    void *poller = zmq_poller_new ();
-    TEST_ASSERT_NOT_NULL (poller);
-
-    void *zeromq_socket = test_context_socket (ZMQ_PAIR);
-
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_poller_add (poller, zeromq_socket, NULL, ZMQ_POLLIN));
+      zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
 
     //  attempt to add the same socket twice
     TEST_ASSERT_FAILURE_ERRNO (
-      EINVAL, zmq_poller_add (poller, zeromq_socket, NULL, ZMQ_POLLIN));
+      EINVAL, zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove (poller, zeromq_socket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove (poller, socket));
+}
 
+void call_poller_remove_unregistered_fails (void *poller, void *socket)
+{
     //  attempt to remove socket that is not present
-    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
-                               zmq_poller_remove (poller, zeromq_socket));
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_poller_remove (poller, socket));
+}
 
+void call_poller_modify_unregistered_fails (void *poller, void *socket)
+{
     //  attempt to modify socket that is not present
-    TEST_ASSERT_FAILURE_ERRNO (
-      EINVAL, zmq_poller_modify (poller, zeromq_socket, ZMQ_POLLIN));
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
+                               zmq_poller_modify (poller, socket, ZMQ_POLLIN));
+}
 
+void call_poller_add_no_events (void *poller, void *socket)
+{
     //  add a socket with no events
     //  TODO should this really be legal? it does not make any sense...
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_add (poller, zeromq_socket, NULL, 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_add (poller, socket, NULL, 0));
+}
 
+void call_poller_add_fd_twice_fails (void *poller, void * /*zeromq_socket*/)
+{
     fd_t plain_socket = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_poller_add_fd (poller, plain_socket, NULL, ZMQ_POLLIN));
@@ -342,20 +356,44 @@ void test_add_modify_remove_corner_cases ()
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove_fd (poller, plain_socket));
 
+    TEST_ASSERT_SUCCESS_ERRNO (close (plain_socket));
+}
+
+void call_poller_remove_fd_unregistered_fails (void *poller,
+                                               void * /*zeromq_socket*/)
+{
+    fd_t plain_socket = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
     //  attempt to remove plain socket that is not present
     TEST_ASSERT_FAILURE_ERRNO (EINVAL,
                                zmq_poller_remove_fd (poller, plain_socket));
 
-    //  attempt to modify plain socket that is not present
+    TEST_ASSERT_SUCCESS_ERRNO (close (plain_socket));
+}
+
+void call_poller_modify_fd_unregistered_fails (void *poller,
+                                               void * /*zeromq_socket*/)
+{
+    fd_t plain_socket = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+    //  attempt to remove plain socket that is not present
     TEST_ASSERT_FAILURE_ERRNO (
       EINVAL, zmq_poller_modify_fd (poller, plain_socket, ZMQ_POLLIN));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
-
-    test_context_socket_close (zeromq_socket);
-
     TEST_ASSERT_SUCCESS_ERRNO (close (plain_socket));
 }
+
+TEST_CASE_FUNC_PARAM (call_poller_add_twice_fails, test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_remove_unregistered_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_modify_unregistered_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_add_no_events, test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_add_fd_twice_fails, test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_remove_fd_unregistered_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_modify_fd_unregistered_fails,
+                      test_with_empty_poller)
 
 void test_wait_corner_cases (void)
 {
@@ -511,11 +549,18 @@ int main (void)
 
     RUN_TEST (test_null_socket_pointers);
 
-    RUN_TEST (test_poller_wait_null_event_fails);
-    RUN_TEST (test_poller_wait_all_null_event_fails_event_count_nonzero);
-    RUN_TEST (test_poller_wait_all_null_event_fails_event_count_zero);
+    RUN_TEST (test_call_poller_wait_null_event_fails);
+    RUN_TEST (test_call_poller_wait_all_null_event_fails_event_count_nonzero);
+    RUN_TEST (test_call_poller_wait_all_null_event_fails_event_count_zero);
 
-    RUN_TEST (test_add_modify_remove_corner_cases);
+    RUN_TEST (test_call_poller_add_twice_fails);
+    RUN_TEST (test_call_poller_remove_unregistered_fails);
+    RUN_TEST (test_call_poller_modify_unregistered_fails);
+    RUN_TEST (test_call_poller_add_no_events);
+    RUN_TEST (test_call_poller_add_fd_twice_fails);
+    RUN_TEST (test_call_poller_remove_fd_unregistered_fails);
+    RUN_TEST (test_call_poller_modify_fd_unregistered_fails);
+
     RUN_TEST (test_wait_corner_cases);
 
     RUN_TEST (test_x);
