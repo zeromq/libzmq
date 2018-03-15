@@ -669,7 +669,8 @@ tests_test_socket_null_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_socket_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
-tests_test_reconnect_ivl_LDADD = src/libzmq.la
+tests_test_reconnect_ivl_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_reconnect_ivl_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 if HAVE_CURVE
 
