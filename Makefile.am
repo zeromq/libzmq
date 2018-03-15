@@ -865,7 +865,8 @@ tests_test_client_server_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_client_server_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
-tests_test_thread_safe_LDADD = src/libzmq.la
+tests_test_thread_safe_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_thread_safe_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la
