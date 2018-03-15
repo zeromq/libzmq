@@ -395,30 +395,56 @@ TEST_CASE_FUNC_PARAM (call_poller_remove_fd_unregistered_fails,
 TEST_CASE_FUNC_PARAM (call_poller_modify_fd_unregistered_fails,
                       test_with_empty_poller)
 
-void test_wait_corner_cases (void)
+void call_poller_wait_empty_with_timeout_fails (void *poller, void * /*socket*/)
 {
-    void *poller = zmq_poller_new ();
-    TEST_ASSERT_NOT_NULL (poller);
-
     zmq_poller_event_t event;
     // waiting on poller with no registered sockets should report error
     TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_poller_wait (poller, &event, 0));
+}
 
+void call_poller_wait_empty_without_timeout_fails (void *poller,
+                                                   void * /*socket*/)
+{
+    zmq_poller_event_t event;
     //  this would never be able to return since no socket was registered, and should yield an error
     TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_poller_wait (poller, &event, -1));
+}
 
+void call_poller_wait_all_empty_negative_count_fails (void *poller,
+                                                      void * /*socket*/)
+{
+    zmq_poller_event_t event;
     TEST_ASSERT_FAILURE_ERRNO (EINVAL,
                                zmq_poller_wait_all (poller, &event, -1, 0));
+}
 
+void call_poller_wait_all_empty_without_timeout_fails (void *poller,
+                                                       void * /*socket*/)
+{
+    zmq_poller_event_t event;
     TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
                                zmq_poller_wait_all (poller, &event, 0, 0));
+}
 
+void call_poller_wait_all_empty_with_timeout_fails (void *poller,
+                                                    void * /*socket*/)
+{
+    zmq_poller_event_t event;
     //  this would never be able to return since no socket was registered, and should yield an error
     TEST_ASSERT_FAILURE_ERRNO (EFAULT,
                                zmq_poller_wait_all (poller, &event, 0, -1));
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
 }
+
+TEST_CASE_FUNC_PARAM (call_poller_wait_empty_with_timeout_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_empty_without_timeout_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_negative_count_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_without_timeout_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_with_timeout_fails,
+                      test_with_empty_poller)
 
 void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
 {
@@ -588,7 +614,11 @@ int main (void)
     RUN_TEST (test_call_poller_remove_fd_unregistered_fails);
     RUN_TEST (test_call_poller_modify_fd_unregistered_fails);
 
-    RUN_TEST (test_wait_corner_cases);
+    RUN_TEST (test_call_poller_wait_empty_with_timeout_fails);
+    RUN_TEST (test_call_poller_wait_empty_without_timeout_fails);
+    RUN_TEST (test_call_poller_wait_all_empty_negative_count_fails);
+    RUN_TEST (test_call_poller_wait_all_empty_without_timeout_fails);
+    RUN_TEST (test_call_poller_wait_all_empty_with_timeout_fails);
 
     RUN_TEST (test_poll_basic);
     RUN_TEST (test_poll_fd);
