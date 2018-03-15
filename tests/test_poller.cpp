@@ -420,37 +420,27 @@ void test_wait_corner_cases (void)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
 }
 
-void test_x ()
+void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
 {
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint_0[MAX_SOCKET_STRING];
-    char my_endpoint_1[MAX_SOCKET_STRING];
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+}
 
+void test_poll_basic ()
+{
     //  Create few sockets
     void *vent = test_context_socket (ZMQ_PUSH);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (vent, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (vent, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len));
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (vent, my_endpoint, len);
 
     void *sink = test_context_socket (ZMQ_PULL);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sink, my_endpoint_0));
-
-    void *bowl = test_context_socket (ZMQ_PULL);
-
-#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
-    void *server = test_context_socket (ZMQ_SERVER);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "tcp://127.0.0.1:*"));
-
-    len = MAX_SOCKET_STRING;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len));
-
-    void *client = test_context_socket (ZMQ_CLIENT);
-#endif
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sink, my_endpoint));
 
     //  Set up poller
     void *poller = zmq_poller_new ();
-    zmq_poller_event_t event;
 
     // register sink
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_add (poller, sink, sink, ZMQ_POLLIN));
@@ -460,6 +450,7 @@ void test_x ()
     send_string_expect_success (vent, vent_sink_msg, 0);
 
     //  We expect a message only on the sink
+    zmq_poller_event_t event;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_wait (poller, &event, -1));
     TEST_ASSERT_EQUAL_PTR (sink, event.socket);
     TEST_ASSERT_EQUAL_PTR (sink, event.user_data);
@@ -471,29 +462,70 @@ void test_x ()
     //  Stop polling sink
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove (poller, sink));
 
+    //  Clean up
+    test_context_socket_close (vent);
+    test_context_socket_close (sink);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+}
+
+void test_poll_fd ()
+{
+    //  Create sockets
+    void *vent = test_context_socket (ZMQ_PUSH);
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (vent, my_endpoint, len);
+
+    void *bowl = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (bowl, my_endpoint));
+
+    //  Set up poller
+    void *poller = zmq_poller_new ();
+
     //  Check we can poll an FD
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (bowl, my_endpoint_0));
-
-    fd_t fd;
-    size_t fd_size = sizeof (fd);
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (bowl, ZMQ_FD, &fd, &fd_size));
+    const fd_t fd = get_fd (bowl);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_poller_add_fd (poller, fd, bowl, ZMQ_POLLIN));
+
+    zmq_poller_event_t event;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_wait (poller, &event, 500));
     TEST_ASSERT_NULL (event.socket);
     TEST_ASSERT_EQUAL (fd, event.fd);
     TEST_ASSERT_EQUAL_PTR (bowl, event.user_data);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove_fd (poller, fd));
 
+    //  Clean up
+    test_context_socket_close (vent);
+    test_context_socket_close (bowl);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+}
+
+void test_poll_client_server ()
+{
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
+    //  Create sockets
+    void *server = test_context_socket (ZMQ_SERVER);
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, len);
+
+    void *client = test_context_socket (ZMQ_CLIENT);
+
+    //  Set up poller
+    void *poller = zmq_poller_new ();
+
     //  Polling on thread safe sockets
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_poller_add (poller, server, NULL, ZMQ_POLLIN));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint_1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
     const char *client_server_msg = "I";
     send_string_expect_success (client, client_server_msg, 0);
+
+    zmq_poller_event_t event;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_wait (poller, &event, 500));
     TEST_ASSERT_EQUAL_PTR (server, event.socket);
     TEST_ASSERT_NULL (event.user_data);
@@ -509,18 +541,13 @@ void test_x ()
 
     //  Stop polling server
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_remove (poller, server));
-#endif
 
-    //  Destroy sockets, poller and ctx
-    test_context_socket_close (sink);
-    test_context_socket_close (vent);
-    test_context_socket_close (bowl);
-#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
+    //  Clean up
     test_context_socket_close (server);
     test_context_socket_close (client);
-#endif
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+#endif
 }
 
 int main (void)
@@ -563,7 +590,9 @@ int main (void)
 
     RUN_TEST (test_wait_corner_cases);
 
-    RUN_TEST (test_x);
+    RUN_TEST (test_poll_basic);
+    RUN_TEST (test_poll_fd);
+    RUN_TEST (test_poll_client_server);
 
     return UNITY_END ();
 }
