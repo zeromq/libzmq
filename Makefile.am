@@ -429,7 +429,7 @@ test_apps = \
 	tests/test_reconnect_ivl \
 	tests/test_socket_null
 
-UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity
+UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
 noinst_LIBRARIES = external/unity/libunity.a
 external_unity_libunity_a_SOURCES = external/unity/unity.c \
