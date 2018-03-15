@@ -28,6 +28,17 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 static void receiver (void *socket)
 {
@@ -38,40 +49,28 @@ static void receiver (void *socket)
 
 void test_ctx_destroy ()
 {
-    int rc;
-
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    TEST_ASSERT_NOT_NULL (ctx);
 
     void *socket = zmq_socket (ctx, ZMQ_PULL);
-    assert (socket);
+    TEST_ASSERT_NOT_NULL (socket);
 
     // Close the socket
-    rc = zmq_close (socket);
-    assert (rc == 0);
-
-    // Test error - API has multiple ways to kill Contexts
-    rc = zmq_ctx_term (NULL);
-    assert (rc == -1 && errno == EFAULT);
-    rc = zmq_term (NULL);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
 
     // Destroy the context
-    rc = zmq_ctx_destroy (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (ctx));
 }
 
 void test_ctx_shutdown ()
 {
-    int rc;
-
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    TEST_ASSERT_NOT_NULL (ctx);
 
     void *socket = zmq_socket (ctx, ZMQ_PULL);
-    assert (socket);
+    TEST_ASSERT_NOT_NULL (socket);
 
     // Spawn a thread to receive on socket
     void *receiver_thread = zmq_threadstart (&receiver, socket);
@@ -79,32 +78,49 @@ void test_ctx_shutdown ()
     // Wait for thread to start up and block
     msleep (SETTLE_TIME);
 
-    // Test error - Shutdown context
-    rc = zmq_ctx_shutdown (NULL);
-    assert (rc == -1 && errno == EFAULT);
-
     // Shutdown context, if we used destroy here we would deadlock.
-    rc = zmq_ctx_shutdown (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_shutdown (ctx));
 
     // Wait for thread to finish
     zmq_threadclose (receiver_thread);
 
     // Close the socket.
-    rc = zmq_close (socket);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
 
     // Destory the context, will now not hang as we have closed the socket.
-    rc = zmq_ctx_destroy (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (ctx));
+}
+
+void test_zmq_ctx_term_null_fails ()
+{
+    int rc = zmq_ctx_term (NULL);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EFAULT, errno);
+}
+
+void test_zmq_term_null_fails ()
+{
+    int rc = zmq_term (NULL);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EFAULT, errno);
+}
+
+void test_zmq_ctx_shutdown_null_fails ()
+{
+    int rc = zmq_ctx_shutdown (NULL);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EFAULT, errno);
 }
 
 int main (void)
 {
     setup_test_environment ();
 
-    test_ctx_destroy ();
-    test_ctx_shutdown ();
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_ctx_destroy);
+    RUN_TEST (test_ctx_shutdown);
+    RUN_TEST (test_zmq_ctx_term_null_fails);
+    RUN_TEST (test_zmq_term_null_fails);
+    RUN_TEST (test_zmq_ctx_shutdown_null_fails);
+    return UNITY_END ();
 }

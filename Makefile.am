@@ -429,7 +429,7 @@ test_apps = \
 	tests/test_reconnect_ivl \
 	tests/test_socket_null
 
-UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity
+UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
 noinst_LIBRARIES = external/unity/libunity.a
 external_unity_libunity_a_SOURCES = external/unity/unity.c \
@@ -545,7 +545,8 @@ tests_test_iov_SOURCES = tests/test_iov.cpp
 tests_test_iov_LDADD = src/libzmq.la
 
 tests_test_ctx_destroy_SOURCES = tests/test_ctx_destroy.cpp
-tests_test_ctx_destroy_LDADD = src/libzmq.la
+tests_test_ctx_destroy_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_ctx_destroy_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_null_SOURCES = tests/test_security_null.cpp
 tests_test_security_null_LDADD = src/libzmq.la
@@ -668,7 +669,8 @@ tests_test_socket_null_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_socket_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
-tests_test_reconnect_ivl_LDADD = src/libzmq.la
+tests_test_reconnect_ivl_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_reconnect_ivl_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 if HAVE_CURVE
 
@@ -857,14 +859,16 @@ test_apps += tests/test_poller \
 	tests/test_app_meta
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
-tests_test_poller_LDADD = src/libzmq.la
+tests_test_poller_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_poller_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_client_server_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
-tests_test_thread_safe_LDADD = src/libzmq.la
+tests_test_thread_safe_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_thread_safe_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la

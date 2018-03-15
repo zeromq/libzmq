@@ -63,6 +63,13 @@ int test_assert_success_message_errno_helper (int rc,
 #define TEST_ASSERT_SUCCESS_ERRNO(expr)                                        \
     test_assert_success_message_errno_helper (expr, NULL, #expr)
 
+#define TEST_ASSERT_FAILURE_ERRNO(error_code, expr)                            \
+    {                                                                          \
+        int rc = (expr);                                                       \
+        TEST_ASSERT_EQUAL_INT (-1, rc);                                        \
+        TEST_ASSERT_EQUAL_INT (error_code, errno);                             \
+    }
+
 void send_string_expect_success (void *socket, const char *str, int flags)
 {
     const size_t len = str ? strlen (str) : 0;

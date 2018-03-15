@@ -28,52 +28,54 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_reconnect_ivl_against_pair_socket (const char *my_endpoint, void *sb)
+{
+    void *sc = test_context_socket (ZMQ_PAIR);
+    int interval = -1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+
+    bounce (sb, sc);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, my_endpoint));
+
+    expect_bounce_fail (sb, sc);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, my_endpoint));
+
+    expect_bounce_fail (sb, sc);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+}
 
 #ifndef ZMQ_HAVE_WINDOWS
 void test_reconnect_ivl_ipc (void)
 {
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    const char *ipc_endpoint = "ipc:///tmp/test_reconnect_ivl";
+    void *sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, ipc_endpoint));
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc:///tmp/test_reconnect_ivl");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
-    int interval = -1;
-    rc = zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_connect (sc, "ipc:///tmp/test_reconnect_ivl");
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_unbind (sb, "ipc:///tmp/test_reconnect_ivl");
-    assert (rc == 0);
-
-    expect_bounce_fail (sb, sc);
-
-    rc = zmq_bind (sb, "ipc:///tmp/test_reconnect_ivl");
-    assert (rc == 0);
-
-    expect_bounce_fail (sb, sc);
-
-    rc = zmq_connect (sc, "ipc:///tmp/test_reconnect_ivl");
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_reconnect_ivl_against_pair_socket (ipc_endpoint, sb);
+    test_context_socket_close (sb);
 }
 #endif
 
@@ -81,69 +83,39 @@ void test_reconnect_ivl_tcp (const char *address)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    if (streq (address, "tcp://[::1]:*")) {
-        if (is_ipv6_available ()) {
-            zmq_ctx_set (ctx, ZMQ_IPV6, 1);
-        } else {
-            zmq_ctx_term (ctx);
-            return;
-        }
+    void *sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, address));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+
+    test_reconnect_ivl_against_pair_socket (my_endpoint, sb);
+    test_context_socket_close (sb);
+}
+
+void test_reconnect_ivl_tcp_ipv4 ()
+{
+    test_reconnect_ivl_tcp ("tcp://127.0.0.1:*");
+}
+
+void test_reconnect_ivl_tcp_ipv6 ()
+{
+    if (is_ipv6_available ()) {
+        zmq_ctx_set (get_test_context (), ZMQ_IPV6, 1);
+        test_reconnect_ivl_tcp ("tcp://[::1]:*");
     }
-
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
-    int rc = zmq_bind (sb, address);
-    assert (rc == 0);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
-    int interval = -1;
-    rc = zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_unbind (sb, my_endpoint);
-    assert (rc == 0);
-
-    expect_bounce_fail (sb, sc);
-
-    rc = zmq_bind (sb, my_endpoint);
-    assert (rc == 0);
-
-    expect_bounce_fail (sb, sc);
-
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
 }
 
 int main (void)
 {
     setup_test_environment ();
 
+    UNITY_BEGIN ();
 #ifndef ZMQ_HAVE_WINDOWS
-    test_reconnect_ivl_ipc ();
+    RUN_TEST (test_reconnect_ivl_ipc);
 #endif
-    test_reconnect_ivl_tcp ("tcp://127.0.0.1:*");
-    test_reconnect_ivl_tcp ("tcp://[::1]:*");
+    RUN_TEST (test_reconnect_ivl_tcp_ipv4);
+    RUN_TEST (test_reconnect_ivl_tcp_ipv6);
 
-    return 0;
+    return UNITY_END ();
 }
