@@ -858,7 +858,8 @@ test_apps += tests/test_poller \
 	tests/test_dgram
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
-tests_test_poller_LDADD = src/libzmq.la
+tests_test_poller_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_poller_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = src/libzmq.la ${UNITY_LIBS}
