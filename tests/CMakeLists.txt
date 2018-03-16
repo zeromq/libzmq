@@ -158,6 +158,10 @@ target_compile_definitions (unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EX
 target_include_directories (unity
     PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
 
+IF (MSVC_VERSION LESS 1700)
+    SET_SOURCE_FILES_PROPERTIES("${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.c" PROPERTIES LANGUAGE CXX)
+ENDIF()
+
 # add library and include dirs for all targets
 if (BUILD_SHARED)
 link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
