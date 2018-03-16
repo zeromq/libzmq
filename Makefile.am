@@ -493,7 +493,8 @@ tests_test_immediate_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_immediate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_last_endpoint_SOURCES = tests/test_last_endpoint.cpp
-tests_test_last_endpoint_LDADD = src/libzmq.la
+tests_test_last_endpoint_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_last_endpoint_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_term_endpoint_SOURCES = tests/test_term_endpoint.cpp
 tests_test_term_endpoint_LDADD = src/libzmq.la
