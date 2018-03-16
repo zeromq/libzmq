@@ -191,3 +191,10 @@ void *test_context_socket_close (void *socket)
     internal_manage_test_sockets (socket, false);
     return socket;
 }
+
+void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
+{
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+}

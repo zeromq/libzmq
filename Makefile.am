@@ -489,10 +489,12 @@ tests_test_connect_resolve_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_connect_resolve_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_immediate_SOURCES = tests/test_immediate.cpp
-tests_test_immediate_LDADD = src/libzmq.la
+tests_test_immediate_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_immediate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_last_endpoint_SOURCES = tests/test_last_endpoint.cpp
-tests_test_last_endpoint_LDADD = src/libzmq.la
+tests_test_last_endpoint_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_last_endpoint_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_term_endpoint_SOURCES = tests/test_term_endpoint.cpp
 tests_test_term_endpoint_LDADD = src/libzmq.la
@@ -853,7 +855,6 @@ test_apps += tests/test_poller \
 	tests/test_thread_safe \
 	tests/test_timers \
 	tests/test_radio_dish \
-	tests/test_udp \
 	tests/test_scatter_gather \
 	tests/test_dgram \
 	tests/test_app_meta
@@ -874,10 +875,8 @@ tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la
 
 tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
-tests_test_radio_dish_LDADD = src/libzmq.la
-
-tests_test_udp_SOURCES = tests/test_udp.cpp
-tests_test_udp_LDADD = src/libzmq.la
+tests_test_radio_dish_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_radio_dish_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
 tests_test_scatter_gather_LDADD = src/libzmq.la

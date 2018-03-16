@@ -28,165 +28,208 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int msg_send (zmq_msg_t *msg_, void *s_, const char *group_, const char *body_)
+#include <unity.h>
+
+void setUp ()
 {
-    int rc = zmq_msg_init_size (msg_, strlen (body_));
-    if (rc != 0)
-        return rc;
-
-    memcpy (zmq_msg_data (msg_), body_, strlen (body_));
-
-    rc = zmq_msg_set_group (msg_, group_);
-    if (rc != 0) {
-        zmq_msg_close (msg_);
-        return rc;
-    }
-
-    rc = zmq_msg_send (msg_, s_, 0);
-
-    zmq_msg_close (msg_);
-
-    return rc;
+    setup_test_context ();
 }
 
-int msg_recv_cmp (zmq_msg_t *msg_,
-                  void *s_,
-                  const char *group_,
-                  const char *body_)
+void tearDown ()
 {
-    int rc = zmq_msg_init (msg_);
-    if (rc != 0)
-        return -1;
-
-    int recv_rc = zmq_msg_recv (msg_, s_, 0);
-    if (recv_rc == -1)
-        return -1;
-
-    if (strcmp (zmq_msg_group (msg_), group_) != 0) {
-        zmq_msg_close (msg_);
-        return -1;
-    }
-
-    char *body = (char *) malloc (sizeof (char) * (zmq_msg_size (msg_) + 1));
-    memcpy (body, zmq_msg_data (msg_), zmq_msg_size (msg_));
-    body[zmq_msg_size (msg_)] = '\0';
-
-    if (strcmp (body, body_) != 0) {
-        zmq_msg_close (msg_);
-        return -1;
-    }
-
-    zmq_msg_close (msg_);
-    free (body);
-    return recv_rc;
+    teardown_test_context ();
 }
 
-int main (void)
+void msg_send_expect_success (void *s_, const char *group_, const char *body_)
 {
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    zmq_msg_t msg;
+    const size_t len = strlen (body_);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, len));
 
-    void *radio = zmq_socket (ctx, ZMQ_RADIO);
-    void *dish = zmq_socket (ctx, ZMQ_DISH);
+    memcpy (zmq_msg_data (&msg), body_, len);
 
-    int rc = zmq_bind (radio, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (radio, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_group (&msg, group_));
+
+    int rc = zmq_msg_send (&msg, s_, 0);
+    TEST_ASSERT_EQUAL_INT ((int) len, rc);
+
+    // TODO isn't the msg closed by zmq_msg_send?
+    zmq_msg_close (&msg);
+}
+
+void msg_recv_cmp (void *s_, const char *group_, const char *body_)
+{
+    zmq_msg_t msg;
+    const size_t len = strlen (body_);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
+
+    int recv_rc = TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, s_, 0));
+    TEST_ASSERT_EQUAL_INT (len, recv_rc);
+
+    TEST_ASSERT_EQUAL_STRING (group_, zmq_msg_group (&msg));
+
+    TEST_ASSERT_EQUAL_STRING_LEN (body_, zmq_msg_data (&msg), len);
+
+    zmq_msg_close (&msg);
+}
+
+void test_leave_unjoined_fails ()
+{
+    void *dish = test_context_socket (ZMQ_DISH);
 
     //  Leaving a group which we didn't join
-    rc = zmq_leave (dish, "Movies");
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_leave (dish, "Movies"));
+
+    test_context_socket_close (dish);
+}
+
+void test_join_too_long_fails ()
+{
+    void *dish = test_context_socket (ZMQ_DISH);
 
     //  Joining too long group
     char too_long_group[ZMQ_GROUP_MAX_LENGTH + 2];
     for (int index = 0; index < ZMQ_GROUP_MAX_LENGTH + 2; index++)
         too_long_group[index] = 'A';
     too_long_group[ZMQ_GROUP_MAX_LENGTH + 1] = '\0';
-    rc = zmq_join (dish, too_long_group);
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_join (dish, too_long_group));
 
-    // Joining
-    rc = zmq_join (dish, "Movies");
-    assert (rc == 0);
+    test_context_socket_close (dish);
+}
+
+void test_join_twice_fails ()
+{
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "Movies"));
 
     // Duplicate Joining
-    rc = zmq_join (dish, "Movies");
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_join (dish, "Movies"));
+
+    test_context_socket_close (dish);
+}
+
+void test_radio_dish_tcp_poll ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *radio = test_context_socket (ZMQ_RADIO);
+    bind_loopback_ipv4 (radio, my_endpoint, len);
+
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    // Joining
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "Movies"));
 
     // Connecting
-    rc = zmq_connect (dish, my_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dish, my_endpoint));
 
     msleep (SETTLE_TIME);
 
-    zmq_msg_t msg;
-
     //  This is not going to be sent as dish only subscribe to "Movies"
-    rc = msg_send (&msg, radio, "TV", "Friends");
-    assert (rc == 7);
+    msg_send_expect_success (radio, "TV", "Friends");
 
     //  This is going to be sent to the dish
-    rc = msg_send (&msg, radio, "Movies", "Godfather");
-    assert (rc == 9);
+    msg_send_expect_success (radio, "Movies", "Godfather");
 
     //  Check the correct message arrived
-    rc = msg_recv_cmp (&msg, dish, "Movies", "Godfather");
-    assert (rc == 9);
+    msg_recv_cmp (dish, "Movies", "Godfather");
 
     //  Join group during connection optvallen
-    rc = zmq_join (dish, "TV");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "TV"));
 
     zmq_sleep (1);
 
     //  This should arrive now as we joined the group
-    rc = msg_send (&msg, radio, "TV", "Friends");
-    assert (rc == 7);
+    msg_send_expect_success (radio, "TV", "Friends");
 
     //  Check the correct message arrived
-    rc = msg_recv_cmp (&msg, dish, "TV", "Friends");
-    assert (rc == 7);
+    msg_recv_cmp (dish, "TV", "Friends");
 
-    //  Leaving groupr
-    rc = zmq_leave (dish, "TV");
-    assert (rc == 0);
+    //  Leaving group
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_leave (dish, "TV"));
 
     zmq_sleep (1);
 
     //  This is not going to be sent as dish only subscribe to "Movies"
-    rc = msg_send (&msg, radio, "TV", "Friends");
-    assert (rc == 7);
+    msg_send_expect_success (radio, "TV", "Friends");
 
     //  This is going to be sent to the dish
-    rc = msg_send (&msg, radio, "Movies", "Godfather");
-    assert (rc == 9);
+    msg_send_expect_success (radio, "Movies", "Godfather");
 
     // test zmq_poll with dish
     zmq_pollitem_t items[] = {
       {radio, 0, ZMQ_POLLIN, 0}, // read publications
       {dish, 0, ZMQ_POLLIN, 0},  // read subscriptions
     };
-    rc = zmq_poll (items, 2, 2000);
-    assert (rc == 1);
-    assert (items[1].revents == ZMQ_POLLIN);
+    int rc = zmq_poll (items, 2, 2000);
+    TEST_ASSERT_EQUAL_INT (1, rc);
+    TEST_ASSERT_EQUAL_INT (ZMQ_POLLIN, items[1].revents);
 
     //  Check the correct message arrived
-    rc = msg_recv_cmp (&msg, dish, "Movies", "Godfather");
-    assert (rc == 9);
+    msg_recv_cmp (dish, "Movies", "Godfather");
 
-    rc = zmq_close (dish);
-    assert (rc == 0);
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
 
-    rc = zmq_close (radio);
-    assert (rc == 0);
+void test_dish_connect_fails ()
+{
+    void *dish = test_context_socket (ZMQ_DISH);
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    //  Connecting dish should fail
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
+                               zmq_connect (dish, "udp://127.0.0.1:5556"));
 
-    return 0;
+    test_context_socket_close (dish);
+}
+
+void test_radio_bind_fails ()
+{
+    void *radio = test_context_socket (ZMQ_RADIO);
+
+    //  Connecting dish should fail
+    //  Bind radio should fail
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
+                               zmq_bind (radio, "udp://*:5556"));
+
+    test_context_socket_close (radio);
+}
+
+void test_radio_dish_udp ()
+{
+    void *radio = test_context_socket (ZMQ_RADIO);
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dish, "udp://*:5556"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (radio, "udp://127.0.0.1:5556"));
+
+    msleep (SETTLE_TIME);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "TV"));
+
+    msg_send_expect_success (radio, "TV", "Friends");
+    msg_recv_cmp (dish, "TV", "Friends");
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
+int main (void)
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_leave_unjoined_fails);
+    RUN_TEST (test_join_too_long_fails);
+    RUN_TEST (test_join_twice_fails);
+    RUN_TEST (test_radio_bind_fails);
+    RUN_TEST (test_dish_connect_fails);
+    RUN_TEST (test_radio_dish_tcp_poll);
+    RUN_TEST (test_radio_dish_udp);
+
+    return UNITY_END ();
 }

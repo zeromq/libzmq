@@ -28,6 +28,19 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 static void do_bind_and_verify (void *s, const char *endpoint)
 {
@@ -39,27 +52,24 @@ static void do_bind_and_verify (void *s, const char *endpoint)
     assert (rc == 0 && strcmp (reported, endpoint) == 0);
 }
 
-int main (void)
+void test_last_endpoint ()
 {
-    setup_test_environment ();
-    //  Create the infrastructure
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (sb);
+    void *sb = test_context_socket (ZMQ_ROUTER);
     int val = 0;
-    int rc = zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val)));
 
     do_bind_and_verify (sb, ENDPOINT_1);
     do_bind_and_verify (sb, ENDPOINT_2);
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+int main (void)
+{
+    setup_test_environment ();
 
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_last_endpoint);
+    return UNITY_END ();
 }

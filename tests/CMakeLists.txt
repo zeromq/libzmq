@@ -132,7 +132,6 @@ IF (ENABLE_DRAFTS)
         test_client_server
         test_timers
         test_radio_dish
-        test_udp
         test_scatter_gather
         test_dgram
         test_app_meta
