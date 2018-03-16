@@ -111,7 +111,7 @@ void test_join_twice_fails ()
     test_context_socket_close (dish);
 }
 
-void test_radio_dish ()
+void test_radio_dish_tcp_poll ()
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -176,6 +176,48 @@ void test_radio_dish ()
     test_context_socket_close (radio);
 }
 
+void test_dish_connect_fails ()
+{
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    //  Connecting dish should fail
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
+                               zmq_connect (dish, "udp://127.0.0.1:5556"));
+
+    test_context_socket_close (dish);
+}
+
+void test_radio_bind_fails ()
+{
+    void *radio = test_context_socket (ZMQ_RADIO);
+
+    //  Connecting dish should fail
+    //  Bind radio should fail
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
+                               zmq_bind (radio, "udp://*:5556"));
+
+    test_context_socket_close (radio);
+}
+
+void test_radio_dish_udp ()
+{
+    void *radio = test_context_socket (ZMQ_RADIO);
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dish, "udp://*:5556"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (radio, "udp://127.0.0.1:5556"));
+
+    msleep (SETTLE_TIME);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "TV"));
+
+    msg_send_expect_success (radio, "TV", "Friends");
+    msg_recv_cmp (dish, "TV", "Friends");
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -184,6 +226,10 @@ int main (void)
     RUN_TEST (test_leave_unjoined_fails);
     RUN_TEST (test_join_too_long_fails);
     RUN_TEST (test_join_twice_fails);
-    RUN_TEST (test_radio_dish);
+    RUN_TEST (test_radio_bind_fails);
+    RUN_TEST (test_dish_connect_fails);
+    RUN_TEST (test_radio_dish_tcp_poll);
+    RUN_TEST (test_radio_dish_udp);
+
     return UNITY_END ();
 }
