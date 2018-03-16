@@ -446,13 +446,6 @@ TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_without_timeout_fails,
 TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_with_timeout_fails,
                       test_with_empty_poller)
 
-void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
-{
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
-}
-
 void test_poll_basic ()
 {
     //  Create few sockets
