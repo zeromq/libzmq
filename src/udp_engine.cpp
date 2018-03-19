@@ -376,11 +376,11 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes - 1 - group_size;
         body_offset = 1 + group_size;
     }
-
+    // Push group description to session
     rc = session->push_msg (&msg);
     errno_assert (rc == 0 || (rc == -1 && errno == EAGAIN));
 
-    //  Pipe is full
+    //  Group description message doesn't fit in the pipe, drop
     if (rc != 0) {
         rc = msg.close ();
         errno_assert (rc == 0);
@@ -394,7 +394,19 @@ void zmq::udp_engine_t::in_event ()
     rc = msg.init_size (body_size);
     errno_assert (rc == 0);
     memcpy (msg.data (), in_buffer + body_offset, body_size);
+
+    // Push message body to session
     rc = session->push_msg (&msg);
+    // Message body message doesn't fit in the pipe, drop and reset session state
+    if (rc != 0) {
+        rc = msg.close ();
+        errno_assert (rc == 0);
+
+        session->reset ();
+        reset_pollin (handle);
+        return;
+    }
+
     errno_assert (rc == 0);
     rc = msg.close ();
     errno_assert (rc == 0);
