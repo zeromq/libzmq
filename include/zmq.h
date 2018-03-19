@@ -40,8 +40,8 @@
 
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 4
-#define ZMQ_VERSION_MINOR 2
-#define ZMQ_VERSION_PATCH 5
+#define ZMQ_VERSION_MINOR 3
+#define ZMQ_VERSION_PATCH 1
 
 #define ZMQ_MAKE_VERSION(major, minor, patch)                                  \
     ((major) *10000 + (minor) *100 + (patch))
@@ -215,6 +215,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #define ZMQ_THREAD_PRIORITY 3
 #define ZMQ_THREAD_SCHED_POLICY 4
 #define ZMQ_MAX_MSGSZ 5
+#define ZMQ_MSG_T_SIZE 6
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT 1
@@ -625,7 +626,6 @@ ZMQ_EXPORT void zmq_threadclose (void *thread);
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
 
 /*  DRAFT Context options                                                     */
-#define ZMQ_MSG_T_SIZE 6
 #define ZMQ_THREAD_AFFINITY_CPU_ADD 7
 #define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
 #define ZMQ_THREAD_NAME_PREFIX 9
