@@ -86,6 +86,14 @@ uint32_t zmq::generate_random ()
 //  order fiasco, this is done using function-local statics, if the
 //  compiler implementation supports thread-safe initialization of those.
 //  Otherwise, we fall back to global statics.
+//  HOWEVER, this initialisation code imposes ordering constraints, which
+//  are not obvious to users of libzmq, and may lead to problems if atexit
+//  or similar methods are used for cleanup.
+//  In that case, a strict ordering is imposed whereas the contexts MUST
+//  be initialised BEFORE registering the cleanup with atexit. CZMQ is an
+//  example. Hence we make the choice to restrict this global transition
+//  mechanism ONLY to Tweenacl + *NIX (when using /dev/urandom) as it is
+//  the less risky option.
 
 //  TODO if there is some other user of libsodium besides libzmq, this must
 //    be synchronized by the application. This should probably also be
@@ -105,18 +113,16 @@ uint32_t zmq::generate_random ()
 #endif
 
 #if !ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT                                     \
-  && (defined(ZMQ_USE_LIBSODIUM)                                               \
-      || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)             \
-          && !defined(ZMQ_HAVE_GETRANDOM)))
+  && (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
+      && !defined(ZMQ_HAVE_GETRANDOM))
 static unsigned int random_refcount = 0;
 static zmq::mutex_t random_sync;
 #endif
 
 static void manage_random (bool init)
 {
-#if defined(ZMQ_USE_LIBSODIUM)                                                 \
-  || (defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                 \
-      && !defined(ZMQ_HAVE_GETRANDOM))
+#if defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                   \
+  && !defined(ZMQ_HAVE_GETRANDOM)
 
 #if ZMQ_HAVE_THREADSAFE_STATIC_LOCAL_INIT
     static int random_refcount = 0;
@@ -139,6 +145,14 @@ static void manage_random (bool init)
         if (random_refcount == 0) {
             randombytes_close ();
         }
+    }
+
+#elif defined(ZMQ_USE_LIBSODIUM)
+    if (init) {
+        int rc = sodium_init ();
+        zmq_assert (rc != -1);
+    } else {
+        randombytes_close ();
     }
 #endif
 }
