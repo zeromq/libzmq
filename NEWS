@@ -4,6 +4,13 @@
 * The following DRAFT APIs have been marked as STABLE and will not change
   anymore:
   - ZMQ_MSG_T_SIZE context option (see doc/zmq_ctx_get.txt)
+  - ZMQ_GSSAPI_PRINCIPAL_NAMETYPE and ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE
+    socket options, for the corresponding GSSAPI features. Additional
+    definitions for principal name types:
+    - ZMQ_GSSAPI_NT_HOSTBASED
+    - ZMQ_GSSAPI_NT_USER_NAME
+    - ZMQ_GSSAPI_NT_KRB5_PRINCIPAL
+    See doc/zmq_gssapi.txt for details.
 
 
 0MQ version 4.2.4 stable, released on 2018/03/21

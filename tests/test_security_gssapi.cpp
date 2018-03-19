@@ -156,12 +156,10 @@ void test_valid_creds (void *ctx,
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_GSSAPI_PRINCIPAL, name, strlen (name) + 1);
     assert (rc == 0);
-#ifdef ZMQ_BUILD_DRAFT_API
     int name_type = ZMQ_GSSAPI_NT_HOSTBASED;
     rc = zmq_setsockopt (client, ZMQ_GSSAPI_PRINCIPAL_NAMETYPE, &name_type,
                          sizeof (name_type));
     assert (rc == 0);
-#endif
     rc = zmq_connect (client, endpoint);
     assert (rc == 0);
 
@@ -190,12 +188,10 @@ void test_unauth_creds (void *ctx,
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_GSSAPI_PRINCIPAL, name, strlen (name) + 1);
     assert (rc == 0);
-#ifdef ZMQ_BUILD_DRAFT_API
     int name_type = ZMQ_GSSAPI_NT_HOSTBASED;
     rc = zmq_setsockopt (client, ZMQ_GSSAPI_PRINCIPAL_NAMETYPE, &name_type,
                          sizeof (name_type));
     assert (rc == 0);
-#endif
     zap_deny_all = 1;
     rc = zmq_connect (client, endpoint);
     assert (rc == 0);
@@ -316,12 +312,10 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_GSSAPI_PRINCIPAL, name, strlen (name) + 1);
     assert (rc == 0);
-#ifdef ZMQ_BUILD_DRAFT_API
     int name_type = ZMQ_GSSAPI_NT_HOSTBASED;
     rc = zmq_setsockopt (server, ZMQ_GSSAPI_PRINCIPAL_NAMETYPE, &name_type,
                          sizeof (name_type));
     assert (rc == 0);
-#endif
     rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
     rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
