@@ -134,6 +134,7 @@ use a zero copy strategy when receiving messages. The zero copy strategy can
 lead to increased memory usage in some cases. This option allows you to use the
 older copying strategy. You can query the value of this option with
 linkzmq:zmq_ctx_get[3] using the 'ZMQ_ZERO_COPY_RECV' option.
+NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Default value:: 1

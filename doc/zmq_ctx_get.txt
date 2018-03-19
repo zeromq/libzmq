@@ -43,6 +43,7 @@ ZMQ_ZERO_COPY_RCV: Get message decoding strategy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_ZERO_COPY_RCV' argument return whether message decoder uses a zero copy
 strategy when receiving messages. Default value is 1.
+NOTE: in DRAFT state, not yet available in stable releases.
 
 
 ZMQ_SOCKET_LIMIT: Get largest configurable number of sockets
