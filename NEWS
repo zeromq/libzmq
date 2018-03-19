@@ -11,6 +11,10 @@
     - ZMQ_GSSAPI_NT_USER_NAME
     - ZMQ_GSSAPI_NT_KRB5_PRINCIPAL
     See doc/zmq_gssapi.txt for details.
+  - ZMQ_BINDTODEVICE socket option (Linux only), which will bind the
+    socket(s) to the specified interface. Allows to use Linux VRF, see:
+    https://www.kernel.org/doc/Documentation/networking/vrf.txt
+    NOTE: requires the program to be ran as root OR with CAP_NET_RAW
 
 * Fixed #2820 - further clarify ZMQ_XPUB_VERBOSE(R) documentation.
 
