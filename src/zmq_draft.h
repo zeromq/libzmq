@@ -96,7 +96,6 @@ unsigned long zmq_stopwatch_intermediate (void *watch_);
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
 
 /*  DRAFT Context options                                                     */
-#define ZMQ_MSG_T_SIZE 6
 #define ZMQ_THREAD_AFFINITY_CPU_ADD 7
 #define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
 #define ZMQ_THREAD_NAME_PREFIX 9
