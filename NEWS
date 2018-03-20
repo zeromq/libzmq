@@ -1,7 +1,74 @@
 0MQ version 4.2.4 stable, released on 20xx/xx/xx
 ================================================
 
+* New DRAFT (see NEWS for 4.2.0) socket options:
+  - ZMQ_LOOPBACK_FASTPATH to enable faster TCP loopback on Windows
+  - ZMQ_METADATA to set application-specific metadata on a socket
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) context options:
+  - ZMQ_ZERO_COPY_RECV to disable zero-copy receive to save memory
+    at the expense of slower performance
+  See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
+
+* New DRAFT API zmq_stopwatch_intermediate which returns the time
+  elapsed without stopping the stopwatch.
+
+* TIPC: support addressing TIPC Port Identity addresses.
+
+* Added CMake option to disable tests: BUILD_TESTS
+
+* Added CMake and autotools make targets to support clang-formatter:
+  make clang-format, clang-format-check and clang-format-diff to
+  help developers make sure their code conforms to the style guidelines
+
+* For distributors: a new test framework has been added, which
+  includes a copy of the Unity source code. This source code library is
+  distributed under the MIT license and thus is compatible with
+  libzmq's LGPL3.
+
+* Fixed #2867 - add ZeroMQConfig.cmake.in to distributable tarball
+
+* Fixed #2868 - fix OpenBSD build
+
+* Fixed #2870 - fix VC++ 11.0 (VS2012) build
+
+* Fixed #2879 - prevent duplicate connections on PUB sockets
+
+* Fixed #2872 - fix CMake tests on Windows
+
+* Fixed #2895 - fix assert on Windows with POLL
+
+* Fixed #2920 - fix Windows build with Intel compiler
+
+* Fixed #2930 - use std::atomic when available with VC++ and VS2015
+
+* Fixed #2910 - fix race condition with ZMQ_LINGER socket option
+
+* Fixed #2927 - add support for ZMQ_XPUB_NODROP on ZMQ_RADIO
+
 * Fixed #2820 - further clarify ZMQ_XPUB_VERBOSE(R) documentation.
+
+* Fixed #2911 - ZMQ_DISH over UDP triggers errno_assert() after hitting
+                watermark
+
+* Fixed #2946 - fix Windows CMake build when BUILD_SHARED is off
+
+* Fixed #2960 - fix build with GCC 8
+
+* Fixed #2967 - fix race condition on thread safe sockets due to pthread
+                condvar timeouts on OSX
+
+* Fixed #2977 - fix TIPC build-time availability check to be more relaxed
+
+* Fixed #2966 - add support for WindRiver VxWorks 6.x
+
+* Fixed #2963 - fix some PVS Studio static analysis warnings
+
+* Fixed #2983 - fix MinGW cross-compilation
+
+* Fixed #2991 - fix mutex assert at shutdown when the zmq context is part
+                of a class declared as a global static
 
 
 0MQ version 4.2.3 stable, released on 2017/12/13
