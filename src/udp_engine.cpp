@@ -397,7 +397,7 @@ void zmq::udp_engine_t::in_event ()
 
     // Push message body to session
     rc = session->push_msg (&msg);
-    // Message body message doesn't fit in the pipe, drop and reset session state
+    // Message body doesn't fit in the pipe, drop and reset session state
     if (rc != 0) {
         rc = msg.close ();
         errno_assert (rc == 0);
@@ -407,7 +407,6 @@ void zmq::udp_engine_t::in_event ()
         return;
     }
 
-    errno_assert (rc == 0);
     rc = msg.close ();
     errno_assert (rc == 0);
     session->flush ();
