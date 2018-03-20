@@ -51,9 +51,6 @@ unsigned long zmq_stopwatch_intermediate (void *watch_);
 #define ZMQ_DGRAM 18
 
 /*  DRAFT Socket options.                                                     */
-#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
-#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
-#define ZMQ_BINDTODEVICE 92
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
 #define ZMQ_LOOPBACK_FASTPATH 94
 #define ZMQ_METADATA 95
@@ -96,7 +93,6 @@ unsigned long zmq_stopwatch_intermediate (void *watch_);
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
 
 /*  DRAFT Context options                                                     */
-#define ZMQ_MSG_T_SIZE 6
 #define ZMQ_THREAD_AFFINITY_CPU_ADD 7
 #define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
 #define ZMQ_THREAD_NAME_PREFIX 9
@@ -176,15 +172,6 @@ int zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
 int zmq_timers_reset (void *timers, int timer_id);
 long zmq_timers_timeout (void *timers);
 int zmq_timers_execute (void *timers);
-
-/******************************************************************************/
-/*  GSSAPI definitions                                                        */
-/******************************************************************************/
-
-/*  GSSAPI principal name types                                               */
-#define ZMQ_GSSAPI_NT_HOSTBASED 0
-#define ZMQ_GSSAPI_NT_USER_NAME 1
-#define ZMQ_GSSAPI_NT_KRB5_PRINCIPAL 2
 
 #endif // ZMQ_BUILD_DRAFT_API
 

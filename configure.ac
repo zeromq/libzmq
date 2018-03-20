@@ -41,7 +41,7 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.2.1: 6:1:1 (ABI version 5)
 # ZeroMQ version 4.2.2: 6:2:1 (ABI version 5)
 # ZeroMQ version 4.2.3: 6:3:1 (ABI version 5)
-# ZeroMQ version 4.2.4: 6:4:1 (ABI version 5)
+# ZeroMQ version 4.3.1: 6:4:1 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
 LTVER="6:4:1"
