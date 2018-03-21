@@ -460,7 +460,8 @@ tests_test_reqrep_inproc_LDADD = src/libzmq.la
 tests_test_reqrep_tcp_SOURCES = \
 	tests/test_reqrep_tcp.cpp \
 	tests/testutil.hpp
-tests_test_reqrep_tcp_LDADD = src/libzmq.la
+tests_test_reqrep_tcp_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_reqrep_tcp_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_hwm_SOURCES = tests/test_hwm.cpp tests/testutil_unity.hpp
 tests_test_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
