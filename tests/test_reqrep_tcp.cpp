@@ -55,8 +55,9 @@ void test_single_connect (int ipv6)
 
     bounce (sb, sc);
 
-    // TODO is explicit disconnect/unbind essential for the test? if not,
-    // these calls should probably be left out, for clarity/readability
+    // the sockets are disconnected and unbound explicitly in this test case
+    // to check that this can be done successfully with the expected
+    // endpoints/addresses
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, my_endpoint));
 
@@ -107,6 +108,8 @@ void test_multi_connect (int ipv6)
     bounce (sb1, sc);
     bounce (sb2, sc);
     bounce (sb0, sc);
+
+    /// see comment on zmq_disconnect/zmq_unbind in test_single_connect
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, my_endpoint_0));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, my_endpoint_3));
@@ -160,6 +163,8 @@ void test_multi_connect_same_port (int ipv6)
     bounce (sb1, sc1);
     bounce (sb0, sc0);
     bounce (sb1, sc0);
+
+    /// see comment on zmq_disconnect/zmq_unbind in test_single_connect
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc1, my_endpoint_4));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc1, my_endpoint_5));
