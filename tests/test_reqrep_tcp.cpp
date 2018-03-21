@@ -66,6 +66,15 @@ void test_single_connect (int ipv6)
     test_context_socket_close (sb);
 }
 
+void make_connect_address (char *connect_address,
+                           const int ipv6,
+                           const int port,
+                           const char *bind_address)
+{
+    sprintf (connect_address, "tcp://%s:%i;%s", ipv6 ? "[::1]" : "127.0.0.1",
+             port, strrchr (bind_address, '/') + 1);
+}
+
 void test_multi_connect (int ipv6)
 {
     size_t len = MAX_SOCKET_STRING;
@@ -88,12 +97,7 @@ void test_multi_connect (int ipv6)
       zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint_0));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint_1));
-    if (!ipv6)
-        sprintf (my_endpoint_3, "tcp://127.0.0.1:5564;%s",
-                 strrchr (my_endpoint_2, '/') + 1);
-    else
-        sprintf (my_endpoint_3, "tcp://[::1]:5564;%s",
-                 strrchr (my_endpoint_2, '/') + 1);
+    make_connect_address (my_endpoint_3, ipv6, 5564, my_endpoint_2);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint_3));
 
     bounce (sb0, sc);
@@ -137,37 +141,17 @@ void test_multi_connect_same_port (int ipv6)
     void *sc0 = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sc0, ZMQ_IPV6, &ipv6, sizeof (int)));
-    if (!ipv6)
-        sprintf (my_endpoint_2, "tcp://127.0.0.1:5564;%s",
-                 strrchr (my_endpoint_0, '/') + 1);
-    else
-        sprintf (my_endpoint_2, "tcp://[::1]:5564;%s",
-                 strrchr (my_endpoint_0, '/') + 1);
+    make_connect_address (my_endpoint_2, ipv6, 5564, my_endpoint_0);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc0, my_endpoint_2));
-    if (!ipv6)
-        sprintf (my_endpoint_3, "tcp://127.0.0.1:5565;%s",
-                 strrchr (my_endpoint_1, '/') + 1);
-    else
-        sprintf (my_endpoint_3, "tcp://[::1]:5565;%s",
-                 strrchr (my_endpoint_1, '/') + 1);
+    make_connect_address (my_endpoint_3, ipv6, 5565, my_endpoint_1);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc0, my_endpoint_3));
 
     void *sc1 = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sc1, ZMQ_IPV6, &ipv6, sizeof (int)));
-    if (!ipv6)
-        sprintf (my_endpoint_4, "tcp://127.0.0.1:5565;%s",
-                 strrchr (my_endpoint_0, '/') + 1);
-    else
-        sprintf (my_endpoint_4, "tcp://[::1]:5565;%s",
-                 strrchr (my_endpoint_0, '/') + 1);
+    make_connect_address (my_endpoint_4, ipv6, 5565, my_endpoint_0);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc1, my_endpoint_4));
-    if (!ipv6)
-        sprintf (my_endpoint_5, "tcp://127.0.0.1:5564;%s",
-                 strrchr (my_endpoint_1, '/') + 1);
-    else
-        sprintf (my_endpoint_5, "tcp://[::1]:5564;%s",
-                 strrchr (my_endpoint_1, '/') + 1);
+    make_connect_address (my_endpoint_5, ipv6, 5564, my_endpoint_1);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc1, my_endpoint_5));
 
     bounce (sb0, sc0);
