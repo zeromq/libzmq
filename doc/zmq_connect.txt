@@ -38,9 +38,8 @@ immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
 does not mean that the connection was or could actually be established.
 Because of this, for most transports and socket types the order in which
 a 'server' socket is bound and a 'client' socket is connected to it does not
-matter. The first exception is when using the inproc:// transport: you must
-call _zmq_bind()_ before calling _zmq_connect()_. The second exception are
-_ZMQ_PAIR_ sockets, which do not automatically reconnect to endpoints.
+matter. The _ZMQ_PAIR_ sockets are an exception, as they do not automatically
+reconnect to endpoints.
 
 NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,
 the socket enters its normal 'ready' state. By contrast, following a
