@@ -52,6 +52,10 @@
 * Fixed #2911 - ZMQ_DISH over UDP triggers errno_assert() after hitting
                 watermark
 
+* Fixed #2942 - ZMQ_PUB crash when due to high volume of subscribe and
+                unsubscribe messages, an unmatched unsubscribe message is
+                received in certain conditions
+
 * Fixed #2946 - fix Windows CMake build when BUILD_SHARED is off
 
 * Fixed #2960 - fix build with GCC 8
