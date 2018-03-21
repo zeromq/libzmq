@@ -40,31 +40,13 @@ void tearDown ()
     teardown_test_context ();
 }
 
-const char *bind_address_loopback_ipv4 = "tcp://127.0.0.1:*";
-const char *bind_address_loopback_ipv6 = "tcp://[::1]:*";
-
-const char *get_loopback_bin_address (bool ipv6)
-{
-    if (ipv6 && !is_ipv6_available ()) {
-        TEST_IGNORE_MESSAGE ("ipv6 is not available");
-    }
-
-    return ipv6 ? bind_address_loopback_ipv6 : bind_address_loopback_ipv4;
-}
-
 void test_single_connect (int ipv6)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
-    const char *address = get_loopback_bin_address (ipv6);
-
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, address));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback (sb, ipv6, my_endpoint, len);
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -72,6 +54,9 @@ void test_single_connect (int ipv6)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
     bounce (sb, sc);
+
+    // TODO is explicit disconnect/unbind essential for the test? if not,
+    // these calls should probably be left out, for clarity/readability
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, my_endpoint));
 
@@ -89,30 +74,14 @@ void test_multi_connect (int ipv6)
     char my_endpoint_2[MAX_SOCKET_STRING];
     char my_endpoint_3[MAX_SOCKET_STRING * 2];
 
-    const char *address = get_loopback_bin_address (ipv6);
-
     void *sb0 = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb0, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, address));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb0, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len));
+    bind_loopback (sb0, ipv6, my_endpoint_0, len);
 
     void *sb1 = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb1, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb1, address));
-    len = MAX_SOCKET_STRING;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb1, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len));
+    bind_loopback (sb1, ipv6, my_endpoint_1, len);
 
     void *sb2 = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb2, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb2, address));
-    len = MAX_SOCKET_STRING;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb2, ZMQ_LAST_ENDPOINT, my_endpoint_2, &len));
+    bind_loopback (sb2, ipv6, my_endpoint_2, len);
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -159,22 +128,11 @@ void test_multi_connect_same_port (int ipv6)
     char my_endpoint_4[MAX_SOCKET_STRING * 2];
     char my_endpoint_5[MAX_SOCKET_STRING * 2];
 
-    const char *address = get_loopback_bin_address (ipv6);
-
     void *sb0 = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb0, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, address));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb0, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len));
+    bind_loopback (sb0, ipv6, my_endpoint_0, len);
 
     void *sb1 = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (sb1, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb1, address));
-    len = MAX_SOCKET_STRING;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb1, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len));
+    bind_loopback (sb1, ipv6, my_endpoint_1, len);
 
     void *sc0 = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
