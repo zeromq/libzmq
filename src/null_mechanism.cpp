@@ -69,24 +69,27 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             errno = EAGAIN;
             return -1;
         }
+        //  Given this is a backward-incompatible change, it's behind a socket
+        //  option disabled by default.
         int rc = session->zap_connect ();
-        if (rc == -1) {
+        if (rc == -1 && options.zap_enforce_domain) {
             session->get_socket ()->event_handshake_failed_no_detail (
               session->get_endpoint (), EFAULT);
             return -1;
+        } else if (rc == 0) {
+            send_zap_request ();
+            zap_request_sent = true;
+
+            //  TODO actually, it is quite unlikely that we can read the ZAP
+            //  reply already, but removing this has some strange side-effect
+            //  (probably because the pipe's in_active flag is true until a read
+            //  is attempted)
+            rc = receive_and_process_zap_reply ();
+            if (rc != 0)
+                return -1;
+
+            zap_reply_received = true;
         }
-        send_zap_request ();
-        zap_request_sent = true;
-
-        //  TODO actually, it is quite unlikely that we can read the ZAP
-        //  reply already, but removing this has some strange side-effect
-        //  (probably because the pipe's in_active flag is true until a read
-        //  is attempted)
-        rc = receive_and_process_zap_reply ();
-        if (rc != 0)
-            return -1;
-
-        zap_reply_received = true;
     }
 
     if (zap_reply_received && status_code != "200") {

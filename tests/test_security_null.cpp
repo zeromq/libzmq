@@ -88,12 +88,55 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
+    //  We first test client/server with a ZAP domain but with no handler
+    //  If there is no handler, libzmq should ignore the ZAP option unless
+    //  ZMQ_ZAP_ENFORCE_DOMAIN is set
+    void *server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
+    assert (rc == 0);
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    bounce (server, client);
+    close_zero_linger (client);
+    close_zero_linger (server);
+
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
+    //  Now set ZMQ_ZAP_ENFORCE_DOMAIN which strictly enforces the ZAP
+    //  RFC but is backward-incompatible, now it should fail
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int required = 1;
+    rc =
+      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
+    assert (rc == 0);
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+    close_zero_linger (server);
+#endif
+
     //  Spawn ZAP handler
     //  We create and bind ZAP socket in main thread to avoid case
     //  where child thread does not start up fast enough.
     void *handler = zmq_socket (ctx, ZMQ_REP);
     assert (handler);
-    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
+    rc = zmq_bind (handler, "inproc://zeromq.zap.01");
     assert (rc == 0);
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
@@ -101,9 +144,9 @@ int main (void)
 
     //  We first test client/server with no ZAP domain
     //  Libzmq does not call our ZAP handler, the connect must succeed
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
+    server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);

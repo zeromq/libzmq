@@ -326,10 +326,12 @@ void test_zap_errors (socket_config_fn server_socket_config_,
 
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
     //  no ZAP handler
+    int enforce = 1;
     fprintf (stderr, "test_zap_unsuccessful no ZAP handler started\n");
-    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
-                                   &server_mon, my_endpoint, NULL,
-                                   server_socket_config_);
+    setup_context_and_server_side (
+      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint, NULL,
+      server_socket_config_,
+      server_socket_config_data_ ? server_socket_config_data_ : &enforce);
     test_zap_unsuccessful_no_handler (
       ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
