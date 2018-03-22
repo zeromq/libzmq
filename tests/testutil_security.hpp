@@ -47,11 +47,17 @@ void socket_config_null_client (void *server, void *server_secret)
 
 void socket_config_null_server (void *server, void *server_secret)
 {
-    LIBZMQ_UNUSED (server_secret);
-
     int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
                              strlen (test_zap_domain));
     assert (rc == 0);
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
+    int required = server_secret ? *(int *) server_secret : 0;
+    rc =
+      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
+    assert (rc == 0);
+#else
+    LIBZMQ_UNUSED (server_secret);
+#endif
 }
 
 //  PLAIN specific functions
