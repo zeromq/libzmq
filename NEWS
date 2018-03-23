@@ -1,6 +1,16 @@
 0MQ version 4.2.5 stable, released on 20xx/xx/xx
 ================================================
 
+* Fixed #3018 - fix backward-incompatible change in the NULL auth
+                mechanism that slipped in 4.2.3 and made connections
+                with a ZAP domain set on a socket but without a working
+                ZAP handler fail. See ZMQ_ZAP_ENFORCE_DOMAIN and RFC27.
+
+* Fixed #3016 - clarify in zmq_close manpage that the operation will
+                complete asynchronously.
+
+* Fixed #3012 - fix CMake build problem when using LIBZMQ_WERROR and a
+                compiler other than GCC.
 
 0MQ version 4.2.4 stable, released on 2018/03/21
 ================================================
