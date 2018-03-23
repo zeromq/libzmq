@@ -1,3 +1,22 @@
+0MQ version 4.3.1 stable, released on 20xx/xx/xx
+================================================
+
+* The following DRAFT APIs have been marked as STABLE and will not change
+  anymore:
+  - ZMQ_MSG_T_SIZE context option (see doc/zmq_ctx_get.txt)
+  - ZMQ_GSSAPI_PRINCIPAL_NAMETYPE and ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE
+    socket options, for the corresponding GSSAPI features. Additional
+    definitions for principal name types:
+    - ZMQ_GSSAPI_NT_HOSTBASED
+    - ZMQ_GSSAPI_NT_USER_NAME
+    - ZMQ_GSSAPI_NT_KRB5_PRINCIPAL
+    See doc/zmq_gssapi.txt for details.
+  - ZMQ_BINDTODEVICE socket option (Linux only), which will bind the
+    socket(s) to the specified interface. Allows to use Linux VRF, see:
+    https://www.kernel.org/doc/Documentation/networking/vrf.txt
+    NOTE: requires the program to be ran as root OR with CAP_NET_RAW
+
+
 0MQ version 4.2.5 stable, released on 2018/03/23
 ================================================
 
