@@ -406,12 +406,15 @@ int zmq::select_base_t::wait (int timeout)
         }
 
         rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
-                                       timeout >= 0 ? timeout : INFINITE, FALSE);
+                                       timeout >= 0 ? timeout : INFINITE, TRUE);
         wsa_assert (rc != (int) WSA_WAIT_FAILED);
-            zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
 
         if (rc == WSA_WAIT_TIMEOUT)
             return 0;
+        if (rc == WSA_WAIT_IO_COMPLETION) {
+            errno = EINTR;
+            return -1;
+        }
     }
 
     rc = 0;
