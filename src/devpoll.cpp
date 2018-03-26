@@ -46,6 +46,9 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+const zmq::devpoll_base_t::handle_t zmq::devpoll_base_t::handle_invalid =
+    (zmq::devpoll_base_t::handle_t)(intptr_t)zmq::retired_fd;
+
 zmq::devpoll_t::devpoll_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
     stopping (false)
@@ -182,15 +185,15 @@ void zmq::devpoll_t::loop ()
             if (!fd_ptr->valid || !fd_ptr->accepted)
                 continue;
             if (ev_buf[i].revents & (POLLERR | POLLHUP))
-                fd_ptr->reactor->in_event ();
+                fd_ptr->reactor->err_event (ev_buf[i].fd);
             if (!fd_ptr->valid || !fd_ptr->accepted)
                 continue;
             if (ev_buf[i].revents & POLLOUT)
-                fd_ptr->reactor->out_event ();
+                fd_ptr->reactor->out_event (ev_buf[i].fd);
             if (!fd_ptr->valid || !fd_ptr->accepted)
                 continue;
             if (ev_buf[i].revents & POLLIN)
-                fd_ptr->reactor->in_event ();
+                fd_ptr->reactor->in_event (ev_buf[i].fd);
         }
     }
 }

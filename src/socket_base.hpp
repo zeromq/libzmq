@@ -108,9 +108,11 @@ class socket_base_t : public own_t,
 
     //  i_poll_events implementation. This interface is used when socket
     //  is handled by the poller in the reaper thread.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
+    virtual void timer_event (int id_);
 
     //  i_pipe_events interface implementation.
     void read_activated (pipe_t *pipe_);

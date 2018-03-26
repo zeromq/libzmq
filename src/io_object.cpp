@@ -100,12 +100,22 @@ void zmq::io_object_t::cancel_timer (int id_)
     poller->cancel_timer (this, id_);
 }
 
-void zmq::io_object_t::in_event ()
+void zmq::io_object_t::in_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (false);
 }
 
-void zmq::io_object_t::out_event ()
+void zmq::io_object_t::out_event (i_poll_events::handle_t handle_)
+{
+    zmq_assert (false);
+}
+
+void zmq::io_object_t::err_event (i_poll_events::handle_t handle_)
+{
+    zmq_assert (false);
+}
+
+void zmq::io_object_t::pri_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (false);
 }

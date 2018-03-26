@@ -63,8 +63,10 @@ class pgm_receiver_t : public io_object_t, public i_engine
     const char *get_endpoint () const;
 
     //  i_poll_events interface implementation.
-    void in_event ();
-    void timer_event (int token);
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
+    virtual void timer_event (int token);
 
   private:
     //  Unplug the engine from the session.

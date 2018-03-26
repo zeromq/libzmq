@@ -55,6 +55,9 @@
 #include <limits>
 #include <climits>
 
+const zmq::select_base_t::handle_t zmq::select_base_t::handle_invalid =
+    (zmq::select_base_t::handle_t)(intptr_t)zmq::retired_fd;
+
 zmq::select_t::select_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     select_base_t ()
@@ -131,17 +134,18 @@ zmq::select_base_t::handle_t zmq::select_base_t::add_fd (fd_t fd_, i_poll_events
 
     adjust_load (1);
 
-    return fd_;
+    return (handle_t)(intptr_t)fd_;
 }
 
 zmq::select_base_t::fd_entries_t::iterator
 zmq::select_base_t::find_fd_entry_by_handle (fd_entries_t &fd_entries,
                                         handle_t handle_)
 {
+    fd_t fd = (fd_t) (intptr_t) handle_;
     fd_entries_t::iterator fd_entry_it;
     for (fd_entry_it = fd_entries.begin (); fd_entry_it != fd_entries.end ();
          ++fd_entry_it)
-        if (fd_entry_it->fd == handle_)
+        if (fd_entry_it->fd == fd)
             break;
 
     return fd_entry_it;
@@ -161,7 +165,9 @@ void zmq::select_base_t::trigger_events (const fd_entries_t &fd_entries_,
             continue;
 
         if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.read)) {
-            fd_entries_[i].events->in_event ();
+            fd_entries_[i].events->in_event (
+                (i_poll_events::handle_t)(intptr_t)fd_entries_[i].fd
+            );
             --event_count_;
         }
 
@@ -173,7 +179,9 @@ void zmq::select_base_t::trigger_events (const fd_entries_t &fd_entries_,
             continue;
 
         if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.write)) {
-            fd_entries_[i].events->out_event ();
+            fd_entries_[i].events->out_event (
+                (i_poll_events::handle_t)(intptr_t)fd_entries_[i].fd
+            );
             --event_count_;
         }
 
@@ -182,7 +190,9 @@ void zmq::select_base_t::trigger_events (const fd_entries_t &fd_entries_,
             continue;
 
         if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.error)) {
-            fd_entries_[i].events->in_event ();
+            fd_entries_[i].events->err_event (
+                (i_poll_events::handle_t)(intptr_t)fd_entries_[i].fd
+            );
             --event_count_;
         }
     }
@@ -190,8 +200,9 @@ void zmq::select_base_t::trigger_events (const fd_entries_t &fd_entries_,
 
 #if defined ZMQ_HAVE_WINDOWS
 int zmq::select_base_t::try_retire_fd_entry (
-  family_entries_t::iterator family_entry_it, zmq::fd_t &handle_)
+  family_entries_t::iterator family_entry_it, handle_t &handle_)
 {
+    fd_t fd = (fd_t) (intptr_t) handle_;
     family_entry_t &family_entry = family_entry_it->second;
 
     fd_entries_t::iterator fd_entry_it =
@@ -214,7 +225,7 @@ int zmq::select_base_t::try_retire_fd_entry (
         fd_entry.fd = retired_fd;
         family_entry.has_retired = true;
     }
-    family_entry.fds_set.remove_fd (handle_);
+    family_entry.fds_set.remove_fd (fd);
     return 1;
 }
 #endif
@@ -222,9 +233,10 @@ int zmq::select_base_t::try_retire_fd_entry (
 void zmq::select_base_t::rm_fd (handle_t handle_)
 {
     check_thread ();
+    fd_t fd = (fd_t) (intptr_t) handle_;
     int retired = 0;
 #if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
+    u_short family = get_fd_family (fd);
     if (family != AF_UNSPEC) {
         family_entries_t::iterator family_entry_it =
           family_entries.find (family);
@@ -250,11 +262,11 @@ void zmq::select_base_t::rm_fd (handle_t handle_)
 
     zmq_assert (fd_entry_it->fd != retired_fd);
     fd_entry_it->fd = retired_fd;
-    family_entry.fds_set.remove_fd (handle_);
+    family_entry.fds_set.remove_fd (fd);
 
     ++retired;
 
-    if (handle_ == maxfd) {
+    if (fd == maxfd) {
         maxfd = retired_fd;
         for (fd_entry_it = family_entry.fd_entries.begin ();
              fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
@@ -271,45 +283,49 @@ void zmq::select_base_t::rm_fd (handle_t handle_)
 void zmq::select_base_t::set_pollin (handle_t handle_)
 {
     check_thread ();
+    fd_t fd = (fd_t) (intptr_t) handle_;
 #if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
+    u_short family = get_fd_family (fd);
     wsa_assert (family != AF_UNSPEC);
     family_entry_t &family_entry = family_entries[family];
 #endif
-    FD_SET (handle_, &family_entry.fds_set.read);
+    FD_SET (fd, &family_entry.fds_set.read);
 }
 
 void zmq::select_base_t::reset_pollin (handle_t handle_)
 {
     check_thread ();
+    fd_t fd = (fd_t) (intptr_t) handle_;
 #if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
+    u_short family = get_fd_family (fd);
     wsa_assert (family != AF_UNSPEC);
     family_entry_t &family_entry = family_entries[family];
 #endif
-    FD_CLR (handle_, &family_entry.fds_set.read);
+    FD_CLR (fd, &family_entry.fds_set.read);
 }
 
 void zmq::select_base_t::set_pollout (handle_t handle_)
 {
     check_thread ();
+    fd_t fd = (fd_t) (intptr_t) handle_;
 #if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
+    u_short family = get_fd_family (fd);
     wsa_assert (family != AF_UNSPEC);
     family_entry_t &family_entry = family_entries[family];
 #endif
-    FD_SET (handle_, &family_entry.fds_set.write);
+    FD_SET (fd, &family_entry.fds_set.write);
 }
 
 void zmq::select_base_t::reset_pollout (handle_t handle_)
 {
     check_thread ();
+    fd_t fd = (fd_t) (intptr_t) handle_;
 #if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
+    u_short family = get_fd_family (fd);
     wsa_assert (family != AF_UNSPEC);
     family_entry_t &family_entry = family_entries[family];
 #endif
-    FD_CLR (handle_, &family_entry.fds_set.write);
+    FD_CLR (fd, &family_entry.fds_set.write);
 }
 
 int zmq::select_base_t::max_fds ()

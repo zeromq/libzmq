@@ -64,9 +64,11 @@ class io_thread_t : public object_t, public i_poll_events
     mailbox_t *get_mailbox ();
 
     //  i_poll_events implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
+    virtual void timer_event (int id_);
 
     //  Used by io_objects to retrieve the associated poller object.
     poller_t *get_poller ();

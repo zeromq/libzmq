@@ -45,6 +45,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+const zmq::epoll_base_t::handle_t zmq::epoll_base_t::handle_invalid = NULL;
+
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     epoll_base_t ()
@@ -122,7 +124,7 @@ zmq::epoll_base_t::handle_t zmq::epoll_base_t::add_fd (fd_t fd_, i_poll_events *
     //  Increase the load metric of the thread.
     adjust_load (1);
 
-    return pe;
+    return (handle_t) (intptr_t) pe;
 }
 
 void zmq::epoll_base_t::rm_fd (handle_t handle_)
@@ -206,15 +208,15 @@ int zmq::epoll_base_t::wait (int timeout)
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
-            pe->events->in_event ();
+            pe->events->err_event ((i_poll_events::handle_t) pe);
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].events & EPOLLOUT)
-            pe->events->out_event ();
+            pe->events->out_event ((i_poll_events::handle_t) pe);
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].events & EPOLLIN)
-            pe->events->in_event ();
+            pe->events->in_event ((i_poll_events::handle_t) pe);
     }
 
     //  Destroy retired event sources.

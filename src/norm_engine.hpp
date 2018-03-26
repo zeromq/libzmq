@@ -51,7 +51,9 @@ class norm_engine_t : public io_object_t, public i_engine
     // i_poll_events interface implementation.
     // (we only need in_event() for NormEvent notification)
     // (i.e., don't have any output events or timers (yet))
-    void in_event ();
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
 
   private:
     void unplug ();

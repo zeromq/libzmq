@@ -43,6 +43,9 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+const zmq::poll_base_t::handle_t zmq::poll_base_t::handle_invalid =
+    (zmq::poll_base_t::handle_t)(intptr_t)zmq::retired_fd;
+
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     poll_base_t ()
@@ -111,18 +114,19 @@ zmq::poll_base_t::handle_t zmq::poll_base_t::add_fd (fd_t fd_, i_poll_events *ev
     //  Increase the load metric of the thread.
     adjust_load (1);
 
-    return fd_;
+    return (handle_t)(intptr_t)fd_;
 }
 
 void zmq::poll_base_t::rm_fd (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     zmq_assert (index != retired_fd);
 
     //  Mark the fd as unused.
     pollset[index].fd = retired_fd;
-    fd_table[handle_].index = retired_fd;
+    fd_table[fd].index = retired_fd;
     retired = true;
 
     //  Decrease the load metric of the thread.
@@ -132,28 +136,32 @@ void zmq::poll_base_t::rm_fd (handle_t handle_)
 void zmq::poll_base_t::set_pollin (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events |= POLLIN;
 }
 
 void zmq::poll_base_t::reset_pollin (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events &= ~((short) POLLIN);
 }
 
 void zmq::poll_base_t::set_pollout (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events |= POLLOUT;
 }
 
 void zmq::poll_base_t::reset_pollout (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events &= ~((short) POLLOUT);
 }
 
@@ -197,15 +205,21 @@ int zmq::poll_base_t::wait (int timeout)
         if (pollset[i].fd == retired_fd)
             continue;
         if (pollset[i].revents & (POLLERR | POLLHUP))
-            fd_table[pollset[i].fd].events->in_event ();
+            fd_table[pollset[i].fd].events->err_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
         if (pollset[i].fd == retired_fd)
             continue;
         if (pollset[i].revents & POLLOUT)
-            fd_table[pollset[i].fd].events->out_event ();
+            fd_table[pollset[i].fd].events->out_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
         if (pollset[i].fd == retired_fd)
             continue;
         if (pollset[i].revents & POLLIN)
-            fd_table[pollset[i].fd].events->in_event ();
+            fd_table[pollset[i].fd].events->in_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
     }
     return rc;
 }

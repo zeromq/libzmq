@@ -239,7 +239,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     set_pollin (handle);
     set_pollout (handle);
     //  Flush all the data that may have been already received downstream.
-    in_event ();
+    in_event (handle);
 }
 
 void zmq::stream_engine_t::unplug ()
@@ -283,7 +283,7 @@ void zmq::stream_engine_t::terminate ()
     delete this;
 }
 
-void zmq::stream_engine_t::in_event ()
+void zmq::stream_engine_t::in_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (!io_error);
 
@@ -359,7 +359,7 @@ void zmq::stream_engine_t::in_event ()
     session->flush ();
 }
 
-void zmq::stream_engine_t::out_event ()
+void zmq::stream_engine_t::out_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (!io_error);
 
@@ -421,6 +421,16 @@ void zmq::stream_engine_t::out_event ()
             reset_pollout (handle);
 }
 
+void zmq::stream_engine_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::stream_engine_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
 void zmq::stream_engine_t::restart_output ()
 {
     if (unlikely (io_error))
@@ -435,7 +445,7 @@ void zmq::stream_engine_t::restart_output ()
     //  was sent by the user the socket is probably available for writing.
     //  Thus we try to write the data to socket avoiding polling for POLLOUT.
     //  Consequently, the latency should be better in request/reply scenarios.
-    out_event ();
+    out_event (handle);
 }
 
 void zmq::stream_engine_t::restart_input ()
@@ -478,7 +488,7 @@ void zmq::stream_engine_t::restart_input ()
         session->flush ();
 
         //  Speculative read.
-        in_event ();
+        in_event (handle);
     }
 }
 
@@ -1018,7 +1028,7 @@ void zmq::stream_engine_t::timer_event (int id_)
         error (timeout_error);
     } else if (id_ == heartbeat_ivl_timer_id) {
         next_msg = &stream_engine_t::produce_ping_message;
-        out_event ();
+        out_event (handle);
         add_timer (options.heartbeat_interval, heartbeat_ivl_timer_id);
     } else if (id_ == heartbeat_ttl_timer_id) {
         has_ttl_timer = false;
@@ -1088,7 +1098,7 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
         }
 
         next_msg = &stream_engine_t::produce_pong_message;
-        out_event ();
+        out_event (handle);
     }
 
     return 0;

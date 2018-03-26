@@ -688,7 +688,7 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
     // Polling.
 
 #if defined ZMQ_HAVE_POLLER
-inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
+int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
     // implement zmq_poll on top of zmq_poller
     int rc;

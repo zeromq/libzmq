@@ -42,6 +42,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+const zmq::pollset_base_t::handle_t zmq::pollset_base_t::handle_invalid = NULL;
+
 zmq::pollset_t::pollset_t (const zmq::thread_ctx_t &ctx_) :
     ctx (ctx_),
     stopping (false)
@@ -227,15 +229,15 @@ void zmq::pollset_t::loop ()
             if (pe->fd == retired_fd)
                 continue;
             if (polldata_array[i].revents & (POLLERR | POLLHUP))
-                pe->events->in_event ();
+                pe->events->err_event (pe->fd);
             if (pe->fd == retired_fd)
                 continue;
             if (polldata_array[i].revents & POLLOUT)
-                pe->events->out_event ();
+                pe->events->out_event (pe->fd);
             if (pe->fd == retired_fd)
                 continue;
             if (polldata_array[i].revents & POLLIN)
-                pe->events->in_event ();
+                pe->events->in_event (pe->fd);
         }
 
         //  Destroy retired event sources.

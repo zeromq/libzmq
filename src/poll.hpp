@@ -55,7 +55,8 @@ struct i_poll_events;
 class poll_base_t : public virtual poller_base_t
 {
   public:
-    typedef fd_t handle_t;
+    typedef void* handle_t;
+    static const handle_t handle_invalid;
 
     poll_base_t ();
     virtual ~poll_base_t ();

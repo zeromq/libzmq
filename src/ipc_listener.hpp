@@ -65,7 +65,9 @@ class ipc_listener_t : public own_t, public io_object_t
     void process_term (int linger_);
 
     //  Handlers for I/O events.
-    void in_event ();
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
 
     //  Close the listening socket.
     int close ();

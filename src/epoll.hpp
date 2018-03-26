@@ -54,6 +54,7 @@ class epoll_base_t : public virtual poller_base_t
 {
   public:
     typedef void *handle_t;
+    static const handle_t handle_invalid;
 
     epoll_base_t ();
     virtual ~epoll_base_t ();

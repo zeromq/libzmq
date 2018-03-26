@@ -61,7 +61,8 @@ struct i_poll_events;
 class select_base_t : public virtual poller_base_t
 {
   public:
-    typedef fd_t handle_t;
+    typedef void* handle_t;
+    static const handle_t handle_invalid;
 
     select_base_t ();
     virtual ~select_base_t ();
@@ -136,7 +137,7 @@ class select_base_t : public virtual poller_base_t
     family_entries_t::iterator current_family_entry_it;
 
     int try_retire_fd_entry (family_entries_t::iterator family_entry_it,
-                             zmq::fd_t &handle_);
+                             handle_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
     std::pair<fd_t, u_short> fd_family_cache[fd_family_cache_size];

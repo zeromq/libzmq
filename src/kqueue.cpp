@@ -53,6 +53,9 @@
 #else
 #define kevent_udata_t void *
 #endif
+
+const zmq::kqueue_base_t::handle_t zmq::kqueue_base_t::handle_invalid = NULL;
+
 zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     kqueue_base_t ()
@@ -133,7 +136,7 @@ zmq::kqueue_base_t::handle_t zmq::kqueue_base_t::add_fd (fd_t fd_,
 
     adjust_load (1);
 
-    return pe;
+    return (handle_t) (intptr_t) pe;
 }
 
 void zmq::kqueue_base_t::rm_fd (handle_t handle_)
@@ -228,15 +231,15 @@ int zmq::kqueue_base_t::wait (int timeout)
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].flags & EV_EOF)
-            pe->reactor->in_event ();
+            pe->reactor->err_event ((i_poll_events::handle_t)pe);
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].filter == EVFILT_WRITE)
-            pe->reactor->out_event ();
+            pe->reactor->out_event ((i_poll_events::handle_t)pe);
         if (pe->fd == retired_fd)
             continue;
         if (ev_buf[i].filter == EVFILT_READ)
-            pe->reactor->in_event ();
+            pe->reactor->in_event ((i_poll_events::handle_t)pe);
     }
 
     //  Destroy retired event sources.

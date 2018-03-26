@@ -84,8 +84,10 @@ class socks_connecter_t : public own_t, public io_object_t
     virtual void process_term (int linger_);
 
     //  Handlers for I/O events.
-    virtual void in_event ();
-    virtual void out_event ();
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
     virtual void timer_event (int id_);
 
     //  Internal function to start the actual connection establishment.

@@ -325,7 +325,7 @@ void zmq::norm_engine_t::send_data ()
     } // end while (zmq_output_ready && norm_tx_ready)
 } // end zmq::norm_engine_t::send_data()
 
-void zmq::norm_engine_t::in_event ()
+void zmq::norm_engine_t::in_event (i_poll_events::handle_t handle_)
 {
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
@@ -381,6 +381,16 @@ void zmq::norm_engine_t::in_event ()
             break;
     }
 } // zmq::norm_engine_t::in_event()
+
+void zmq::norm_engine_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
+}
+
+void zmq::norm_engine_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
+}
 
 void zmq::norm_engine_t::restart_input ()
 {

@@ -61,7 +61,7 @@ struct test_events_t : zmq::i_poll_events
     {
     }
 
-    virtual void in_event ()
+    virtual void in_event (zmq::i_poll_events::handle_t handle_)
     {
         poller.rm_fd (handle);
         handle = (zmq::poller_t::handle_t) NULL;
@@ -71,11 +71,20 @@ struct test_events_t : zmq::i_poll_events
     }
 
 
-    virtual void out_event ()
+    virtual void out_event (zmq::i_poll_events::handle_t handle_)
     {
         // TODO
     }
 
+    virtual void err_event (zmq::i_poll_events::handle_t handle_)
+    {
+        in_event(handle_);
+    }
+
+    virtual void pri_event (zmq::i_poll_events::handle_t handle_)
+    {
+        in_event(handle_);
+    }
 
     virtual void timer_event (int id_)
     {

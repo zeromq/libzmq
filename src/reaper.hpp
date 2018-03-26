@@ -52,9 +52,11 @@ class reaper_t : public object_t, public i_poll_events
     void stop ();
 
     //  i_poll_events implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
+    virtual void timer_event (int id_);
 
   private:
     //  Command handlers.

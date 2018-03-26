@@ -53,6 +53,7 @@ class kqueue_base_t : public virtual poller_base_t
 {
   public:
     typedef void *handle_t;
+    static const handle_t handle_invalid;
 
     kqueue_base_t ();
     virtual ~kqueue_base_t ();

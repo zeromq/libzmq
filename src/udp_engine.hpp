@@ -41,8 +41,10 @@ class udp_engine_t : public io_object_t, public i_engine
 
     void zap_msg_available (){};
 
-    void in_event ();
-    void out_event ();
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
 
     const char *get_endpoint () const;
 

@@ -123,15 +123,15 @@ void zmq::tcp_connecter_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
-void zmq::tcp_connecter_t::in_event ()
+void zmq::tcp_connecter_t::in_event (i_poll_events::handle_t handle_)
 {
     //  We are not polling for incoming data, so we are actually called
     //  because of error here. However, we can get error on out event as well
     //  on some platforms, so we'll simply handle both events in the same way.
-    out_event ();
+    out_event (handle_);
 }
 
-void zmq::tcp_connecter_t::out_event ()
+void zmq::tcp_connecter_t::out_event (i_poll_events::handle_t handle_)
 {
     if (connect_timer_started) {
         cancel_timer (connect_timer_id);
@@ -163,6 +163,16 @@ void zmq::tcp_connecter_t::out_event ()
     socket->event_connected (endpoint, fd);
 }
 
+void zmq::tcp_connecter_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event (handle_);
+}
+
+void zmq::tcp_connecter_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event (handle_);
+}
+
 void zmq::tcp_connecter_t::rm_handle ()
 {
     rm_fd (handle);
@@ -191,7 +201,7 @@ void zmq::tcp_connecter_t::start_connecting ()
     //  Connect may succeed in synchronous manner.
     if (rc == 0) {
         handle = add_fd (s);
-        out_event ();
+        out_event (handle);
     }
 
     //  Connection establishment may be delayed. Poll for its completion.

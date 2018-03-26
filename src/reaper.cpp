@@ -81,7 +81,7 @@ void zmq::reaper_t::stop ()
     }
 }
 
-void zmq::reaper_t::in_event ()
+void zmq::reaper_t::in_event (i_poll_events::handle_t handle_)
 {
     while (true) {
 #ifdef HAVE_FORK
@@ -105,9 +105,19 @@ void zmq::reaper_t::in_event ()
     }
 }
 
-void zmq::reaper_t::out_event ()
+void zmq::reaper_t::out_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (false);
+}
+
+void zmq::reaper_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::reaper_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
 }
 
 void zmq::reaper_t::timer_event (int)
