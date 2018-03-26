@@ -52,13 +52,13 @@ struct i_poll_events;
 //  Implements socket polling mechanism using the POSIX.1-2001
 //  poll() system call.
 
-class poll_t : public worker_poller_base_t
+class poll_base_t : public virtual poller_base_t
 {
   public:
     typedef fd_t handle_t;
 
-    poll_t (const thread_ctx_t &ctx_);
-    ~poll_t ();
+    poll_base_t ();
+    virtual ~poll_base_t ();
 
     //  "poller" concept.
     //  These methods may only be called from an event callback; add_fd may also be called before start.
@@ -68,13 +68,13 @@ class poll_t : public worker_poller_base_t
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void stop ();
 
     static int max_fds ();
 
+    virtual int wait (int timeout);
+
   private:
-    //  Main event loop.
-    virtual void loop ();
+    virtual void check_thread ();
 
     void cleanup_retired ();
 
@@ -95,11 +95,26 @@ class poll_t : public worker_poller_base_t
     //  If true, there's at least one retired event source.
     bool retired;
 
-    poll_t (const poll_t &);
-    const poll_t &operator= (const poll_t &);
+    poll_base_t (const poll_base_t &);
+    const poll_base_t &operator= (const poll_base_t &);
+};
+
+class poll_t : public worker_poller_base_t, public poll_base_t
+{
+  public:
+    poll_t (const thread_ctx_t &ctx_);
+    virtual ~poll_t ();
+
+    void stop ();
+
+  private:
+    //  Main event loop.
+    virtual void loop ();
+    virtual void check_thread ();
 };
 
 typedef poll_t poller_t;
+typedef poll_base_t base_poller_t;
 }
 
 #endif

@@ -53,9 +53,39 @@
 #else
 #define kevent_udata_t void *
 #endif
-
 zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
-    worker_poller_base_t (ctx_)
+    worker_poller_base_t (ctx_),
+    kqueue_base_t ()
+{
+}
+
+zmq::kqueue_t::~kqueue_t ()
+{
+    stop_worker ();
+}
+
+void zmq::kqueue_t::stop ()
+{
+}
+
+void zmq::kqueue_t::loop ()
+{
+    int timeout;
+    do
+    {
+      //  Execute any due timers.
+      timeout = (int) execute_timers ();
+      timeout = timeout ? timeout : -1;
+    }
+    while (wait (timeout) != -2);
+}
+
+void zmq::kqueue_t::check_thread ()
+{
+    worker_poller_base_t::check_thread();
+}
+
+zmq::kqueue_base_t::kqueue_base_t ()
 {
     //  Create event queue
     kqueue_fd = kqueue ();
@@ -65,13 +95,12 @@ zmq::kqueue_t::kqueue_t (const zmq::thread_ctx_t &ctx_) :
 #endif
 }
 
-zmq::kqueue_t::~kqueue_t ()
+zmq::kqueue_base_t::~kqueue_base_t ()
 {
-    stop_worker ();
     close (kqueue_fd);
 }
 
-void zmq::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
+void zmq::kqueue_base_t::kevent_add (fd_t fd_, short filter_, void *udata_)
 {
     check_thread ();
     struct kevent ev;
@@ -81,7 +110,7 @@ void zmq::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
     errno_assert (rc != -1);
 }
 
-void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
+void zmq::kqueue_base_t::kevent_delete (fd_t fd_, short filter_)
 {
     struct kevent ev;
 
@@ -90,7 +119,7 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
     errno_assert (rc != -1);
 }
 
-zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
+zmq::kqueue_base_t::handle_t zmq::kqueue_base_t::add_fd (fd_t fd_,
                                                i_poll_events *reactor_)
 {
     check_thread ();
@@ -107,7 +136,7 @@ zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
     return pe;
 }
 
-void zmq::kqueue_t::rm_fd (handle_t handle_)
+void zmq::kqueue_base_t::rm_fd (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
@@ -121,7 +150,7 @@ void zmq::kqueue_t::rm_fd (handle_t handle_)
     adjust_load (-1);
 }
 
-void zmq::kqueue_t::set_pollin (handle_t handle_)
+void zmq::kqueue_base_t::set_pollin (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
@@ -131,7 +160,7 @@ void zmq::kqueue_t::set_pollin (handle_t handle_)
     }
 }
 
-void zmq::kqueue_t::reset_pollin (handle_t handle_)
+void zmq::kqueue_base_t::reset_pollin (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
@@ -141,7 +170,7 @@ void zmq::kqueue_t::reset_pollin (handle_t handle_)
     }
 }
 
-void zmq::kqueue_t::set_pollout (handle_t handle_)
+void zmq::kqueue_base_t::set_pollout (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
@@ -151,7 +180,7 @@ void zmq::kqueue_t::set_pollout (handle_t handle_)
     }
 }
 
-void zmq::kqueue_t::reset_pollout (handle_t handle_)
+void zmq::kqueue_base_t::reset_pollout (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
@@ -161,70 +190,67 @@ void zmq::kqueue_t::reset_pollout (handle_t handle_)
     }
 }
 
-void zmq::kqueue_t::stop ()
-{
-}
-
-int zmq::kqueue_t::max_fds ()
+int zmq::kqueue_base_t::max_fds ()
 {
     return -1;
 }
 
-void zmq::kqueue_t::loop ()
+int zmq::kqueue_base_t::wait (int timeout)
 {
-    while (true) {
-        //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+    if (get_load () == 0) {
+        if (timeout <= 0)
+            return -2;
 
-        if (get_load () == 0) {
-            if (timeout == 0)
-                break;
-
-            // TODO sleep for timeout
-            continue;
-        }
-
-        //  Wait for events.
-        struct kevent ev_buf[max_io_events];
-        timespec ts = {timeout / 1000, (timeout % 1000) * 1000000};
-        int n = kevent (kqueue_fd, NULL, 0, &ev_buf[0], max_io_events,
-                        timeout ? &ts : NULL);
-#ifdef HAVE_FORK
-        if (unlikely (pid != getpid ())) {
-            //printf("zmq::kqueue_t::loop aborting on forked child %d\n", (int)getpid());
-            // simply exit the loop in a forked process.
-            return;
-        }
-#endif
-        if (n == -1) {
-            errno_assert (errno == EINTR);
-            continue;
-        }
-
-        for (int i = 0; i < n; i++) {
-            poll_entry_t *pe = (poll_entry_t *) ev_buf[i].udata;
-
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].flags & EV_EOF)
-                pe->reactor->in_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].filter == EVFILT_WRITE)
-                pe->reactor->out_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].filter == EVFILT_READ)
-                pe->reactor->in_event ();
-        }
-
-        //  Destroy retired event sources.
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
-             ++it) {
-            LIBZMQ_DELETE (*it);
-        }
-        retired.clear ();
+        // TODO sleep for timeout
+        return 0;
     }
+
+    //  Wait for events.
+    struct kevent ev_buf[max_io_events];
+    timespec ts = {timeout / 1000, (timeout % 1000) * 1000000};
+    int n = kevent (kqueue_fd, NULL, 0, &ev_buf[0], max_io_events,
+                    timeout >= 0 ? &ts : NULL);
+#ifdef HAVE_FORK
+    if (unlikely (pid != getpid ())) {
+        //printf("zmq::kqueue_base_t::loop aborting on forked child %d\n", (int)getpid());
+        // simply exit the loop in a forked process.
+        return -EPERM;
+    }
+#endif
+    if (n == -1) {
+        errno_assert (errno == EINTR);
+        return -1;
+    }
+
+    for (int i = 0; i < n; i++) {
+        poll_entry_t *pe = (poll_entry_t *) ev_buf[i].udata;
+
+        if (pe->fd == retired_fd)
+            continue;
+        if (ev_buf[i].flags & EV_EOF)
+            pe->reactor->in_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (ev_buf[i].filter == EVFILT_WRITE)
+            pe->reactor->out_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (ev_buf[i].filter == EVFILT_READ)
+            pe->reactor->in_event ();
+    }
+
+    //  Destroy retired event sources.
+    for (retired_t::iterator it = retired.begin (); it != retired.end ();
+         ++it) {
+        LIBZMQ_DELETE (*it);
+    }
+    retired.clear ();
+
+    return n;
+}
+
+void zmq::kqueue_base_t::check_thread ()
+{
 }
 
 #endif
