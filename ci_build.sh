@@ -3,6 +3,16 @@
 set -x
 set -e
 
+# always run tests from dist
+# to make sure that `make dist` doesn't omit any files required for the tests
+./autogen.sh
+./configure
+make -j5 dist-gzip
+V=$(./version.sh)
+tar -xzf zeromq-$V.tar.gz
+cd zeromq-$V
+
+
 if [ $BUILD_TYPE == "default" ]; then
     mkdir tmp
     BUILD_PREFIX=$PWD/tmp
