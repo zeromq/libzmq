@@ -3,16 +3,6 @@
 set -x
 set -e
 
-# always run tests from dist
-# to make sure that `make dist` doesn't omit any files required for the tests
-./autogen.sh
-./configure
-make -j5 dist-gzip
-V=$(./version.sh)
-tar -xzf zeromq-$V.tar.gz
-cd zeromq-$V
-
-
 if [ $BUILD_TYPE == "default" ]; then
     mkdir tmp
     BUILD_PREFIX=$PWD/tmp
@@ -80,5 +70,15 @@ if [ $BUILD_TYPE == "default" ]; then
         make VERBOSE=1 -j5 distcheck
     ) || exit 1
 else
+    # always install from dist
+    # to make sure that `make dist` doesn't omit any files required to build & test
+    ./autogen.sh
+    ./configure
+    make -j5 dist-gzip
+    V=$(./version.sh)
+    tar -xzf zeromq-$V.tar.gz
+    cd zeromq-$V
+
+    # start the actual build
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
