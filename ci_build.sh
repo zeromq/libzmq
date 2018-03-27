@@ -82,6 +82,6 @@ else
         cd zeromq-$V
     fi
 
-    # start the actual build
+    # start the actual build from inside the dist
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
