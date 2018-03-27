@@ -944,6 +944,7 @@ EXTRA_DIST = \
 	autogen.sh	\
 	version.sh	\
 	src/libzmq.pc.cmake.in \
+	ci_build.sh \
 	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \

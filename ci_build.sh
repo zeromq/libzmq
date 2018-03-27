@@ -70,5 +70,18 @@ if [ $BUILD_TYPE == "default" ]; then
         make VERBOSE=1 -j5 distcheck
     ) || exit 1
 else
+    # always install custom builds from dist
+    # to make sure that `make dist` doesn't omit any files required to build & test
+    # coverage, valgrind are special-case tests that aren't meant to be runnable from releases
+    if [ ${BUILD_TYPE} != "coverage" ] && [ ${BUILD_TYPE} != "valgrind" ]; then
+        ./autogen.sh
+        ./configure
+        make -j5 dist-gzip
+        V=$(./version.sh)
+        tar -xzf zeromq-$V.tar.gz
+        cd zeromq-$V
+    fi
+
+    # start the actual build from inside the dist
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
