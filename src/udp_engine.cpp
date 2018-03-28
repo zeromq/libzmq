@@ -240,7 +240,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
     return 0;
 }
 
-void zmq::udp_engine_t::out_event ()
+void zmq::udp_engine_t::out_event (i_poll_events::handle_t handle_)
 {
     msg_t group_msg;
     int rc = session->pull_msg (&group_msg);
@@ -316,11 +316,11 @@ void zmq::udp_engine_t::restart_output ()
             msg.close ();
     } else {
         set_pollout (handle);
-        out_event ();
+        out_event (handle);
     }
 }
 
-void zmq::udp_engine_t::in_event ()
+void zmq::udp_engine_t::in_event (i_poll_events::handle_t handle_)
 {
     struct sockaddr_in in_address;
     socklen_t in_addrlen = sizeof (sockaddr_in);
@@ -412,11 +412,21 @@ void zmq::udp_engine_t::in_event ()
     session->flush ();
 }
 
+void zmq::udp_engine_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::udp_engine_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
 void zmq::udp_engine_t::restart_input ()
 {
     if (!recv_enabled)
         return;
 
     set_pollin (handle);
-    in_event ();
+    in_event (handle);
 }

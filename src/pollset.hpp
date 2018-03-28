@@ -54,6 +54,7 @@ class pollset_t : public poller_base_t
 {
   public:
     typedef void *handle_t;
+    static const handle_t handle_invalid;
 
     pollset_t (const thread_ctx_t &ctx_);
     ~pollset_t ();

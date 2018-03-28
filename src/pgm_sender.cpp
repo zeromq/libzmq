@@ -154,7 +154,7 @@ zmq::pgm_sender_t::~pgm_sender_t ()
     }
 }
 
-void zmq::pgm_sender_t::in_event ()
+void zmq::pgm_sender_t::in_event (i_poll_events::handle_t handle_)
 {
     if (has_rx_timer) {
         cancel_timer (rx_timer_id);
@@ -170,7 +170,7 @@ void zmq::pgm_sender_t::in_event ()
     }
 }
 
-void zmq::pgm_sender_t::out_event ()
+void zmq::pgm_sender_t::out_event (i_poll_events::handle_t handle_)
 {
     //  POLLOUT event from send socket. If write buffer is empty,
     //  try to read new data from the encoder.
@@ -231,6 +231,16 @@ void zmq::pgm_sender_t::out_event ()
         } else
             errno_assert (errno == EBUSY);
     }
+}
+
+void zmq::pgm_sender_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
+}
+
+void zmq::pgm_sender_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
 }
 
 void zmq::pgm_sender_t::timer_event (int token)

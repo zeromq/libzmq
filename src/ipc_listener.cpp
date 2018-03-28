@@ -161,7 +161,7 @@ void zmq::ipc_listener_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
-void zmq::ipc_listener_t::in_event ()
+void zmq::ipc_listener_t::in_event (i_poll_events::handle_t handle_)
 {
     fd_t fd = accept ();
 
@@ -190,6 +190,16 @@ void zmq::ipc_listener_t::in_event ()
     launch_child (session);
     send_attach (session, engine, false);
     socket->event_accepted (endpoint, fd);
+}
+
+void zmq::ipc_listener_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::ipc_listener_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
 }
 
 int zmq::ipc_listener_t::get_address (std::string &addr_)

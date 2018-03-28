@@ -1482,7 +1482,7 @@ void zmq::socket_base_t::xhiccuped (pipe_t *)
     zmq_assert (false);
 }
 
-void zmq::socket_base_t::in_event ()
+void zmq::socket_base_t::in_event (i_poll_events::handle_t handle_)
 {
     //  This function is invoked only once the socket is running in the context
     //  of the reaper thread. Process any commands from other threads/sockets
@@ -1500,9 +1500,19 @@ void zmq::socket_base_t::in_event ()
     check_destroy ();
 }
 
-void zmq::socket_base_t::out_event ()
+void zmq::socket_base_t::out_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (false);
+}
+
+void zmq::socket_base_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::socket_base_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
 }
 
 void zmq::socket_base_t::timer_event (int)

@@ -113,7 +113,7 @@ void zmq::socks_connecter_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
-void zmq::socks_connecter_t::in_event ()
+void zmq::socks_connecter_t::in_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (status != unplugged && status != waiting_for_reconnect_time);
 
@@ -172,7 +172,7 @@ void zmq::socks_connecter_t::in_event ()
         error ();
 }
 
-void zmq::socks_connecter_t::out_event ()
+void zmq::socks_connecter_t::out_event (i_poll_events::handle_t handle_)
 {
     zmq_assert (status == waiting_for_proxy_connection
                 || status == sending_greeting || status == sending_request);
@@ -206,6 +206,16 @@ void zmq::socks_connecter_t::out_event ()
             status = waiting_for_response;
         }
     }
+}
+
+void zmq::socks_connecter_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::socks_connecter_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
 }
 
 void zmq::socks_connecter_t::initiate_connect ()

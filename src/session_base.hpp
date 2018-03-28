@@ -115,7 +115,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     void process_term (int linger_);
 
     //  i_poll_events handlers.
-    void timer_event (int id_);
+    virtual void timer_event (int id_);
 
     //  Remove any half processed messages. Flush unflushed messages.
     //  Call this function when engine disconnect to get rid of leftovers.

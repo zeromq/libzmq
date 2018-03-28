@@ -51,6 +51,7 @@ class devpoll_t : public poller_base_t
 {
   public:
     typedef fd_t handle_t;
+    static const handle_t handle_invalid;
 
     devpoll_t (const thread_ctx_t &ctx_);
     ~devpoll_t ();

@@ -58,13 +58,14 @@ struct i_poll_events;
 //  Implements socket polling mechanism using POSIX.1-2001 select()
 //  function.
 
-class select_t : public worker_poller_base_t
+class select_base_t : public virtual poller_base_t
 {
   public:
-    typedef fd_t handle_t;
+    typedef void* handle_t;
+    static const handle_t handle_invalid;
 
-    select_t (const thread_ctx_t &ctx_);
-    ~select_t ();
+    select_base_t ();
+    virtual ~select_base_t ();
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -73,13 +74,12 @@ class select_t : public worker_poller_base_t
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void stop ();
 
     static int max_fds ();
 
+    virtual int wait (int timeout);
   private:
-    //  Main event loop.
-    void loop ();
+    virtual void check_thread ();
 
     //  Internal state.
     struct fds_set_t
@@ -115,7 +115,7 @@ class select_t : public worker_poller_base_t
         bool has_retired;
     };
 
-    void select_family_entry (family_entry_t &family_entry_,
+    int select_family_entry (family_entry_t &family_entry_,
                               int max_fd_,
                               bool use_timeout_,
                               struct timeval &tv_);
@@ -137,7 +137,7 @@ class select_t : public worker_poller_base_t
     family_entries_t::iterator current_family_entry_it;
 
     int try_retire_fd_entry (family_entries_t::iterator family_entry_it,
-                             zmq::fd_t &handle_);
+                             handle_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
     std::pair<fd_t, u_short> fd_family_cache[fd_family_cache_size];
@@ -161,11 +161,26 @@ class select_t : public worker_poller_base_t
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
 
-    select_t (const select_t &);
-    const select_t &operator= (const select_t &);
+    select_base_t (const select_base_t &);
+    const select_base_t &operator= (const select_base_t &);
+};
+
+class select_t : public worker_poller_base_t, public select_base_t
+{
+  public:
+    select_t (const thread_ctx_t &ctx_);
+    virtual ~select_t ();
+
+    void stop();
+
+  private:
+    //  Main event loop.
+    virtual void loop ();
+    virtual void check_thread ();
 };
 
 typedef select_t poller_t;
+typedef select_base_t base_poller_t;
 }
 
 #endif

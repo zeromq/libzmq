@@ -158,7 +158,7 @@ const char *zmq::pgm_receiver_t::get_endpoint () const
     return "";
 }
 
-void zmq::pgm_receiver_t::in_event ()
+void zmq::pgm_receiver_t::in_event (i_poll_events::handle_t handle_)
 {
     // Read data from the underlying pgm_socket.
     const pgm_tsi_t *tsi = NULL;
@@ -259,6 +259,16 @@ void zmq::pgm_receiver_t::in_event ()
 
     //  Flush any messages decoder may have produced.
     session->flush ();
+}
+
+void zmq::pgm_receiver_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
+}
+
+void zmq::pgm_receiver_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(fd_);
 }
 
 int zmq::pgm_receiver_t::process_input (v1_decoder_t *decoder)

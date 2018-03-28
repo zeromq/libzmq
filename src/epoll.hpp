@@ -50,13 +50,14 @@ struct i_poll_events;
 //  This class implements socket polling mechanism using the Linux-specific
 //  epoll mechanism.
 
-class epoll_t : public worker_poller_base_t
+class epoll_base_t : public virtual poller_base_t
 {
   public:
     typedef void *handle_t;
+    static const handle_t handle_invalid;
 
-    epoll_t (const thread_ctx_t &ctx_);
-    ~epoll_t ();
+    epoll_base_t ();
+    virtual ~epoll_base_t ();
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -65,13 +66,13 @@ class epoll_t : public worker_poller_base_t
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void stop ();
 
     static int max_fds ();
 
+    virtual int wait (int timeout);
+
   private:
-    //  Main event loop.
-    void loop ();
+    virtual void check_thread ();
 
     //  Main epoll file descriptor
     fd_t epoll_fd;
@@ -87,17 +88,29 @@ class epoll_t : public worker_poller_base_t
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t retired;
 
-    //  Handle of the physical thread doing the I/O work.
-    thread_t worker;
-
     //  Synchronisation of retired event sources
     mutex_t retired_sync;
 
-    epoll_t (const epoll_t &);
-    const epoll_t &operator= (const epoll_t &);
+    epoll_base_t (const epoll_base_t &);
+    const epoll_base_t &operator= (const epoll_base_t &);
+};
+
+class epoll_t : public worker_poller_base_t, public epoll_base_t
+{
+  public:
+    epoll_t (const thread_ctx_t &ctx_);
+    virtual ~epoll_t ();
+
+    void stop ();
+
+  private:
+    //  Main event loop.
+    virtual void loop ();
+    virtual void check_thread ();
 };
 
 typedef epoll_t poller_t;
+typedef epoll_base_t base_poller_t;
 }
 
 #endif

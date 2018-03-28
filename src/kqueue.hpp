@@ -49,13 +49,14 @@ struct i_poll_events;
 //  Implements socket polling mechanism using the BSD-specific
 //  kqueue interface.
 
-class kqueue_t : public worker_poller_base_t
+class kqueue_base_t : public virtual poller_base_t
 {
   public:
     typedef void *handle_t;
+    static const handle_t handle_invalid;
 
-    kqueue_t (const thread_ctx_t &ctx_);
-    ~kqueue_t ();
+    kqueue_base_t ();
+    virtual ~kqueue_base_t ();
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -64,13 +65,13 @@ class kqueue_t : public worker_poller_base_t
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void stop ();
 
     static int max_fds ();
 
+    virtual int wait (int timeout);
+
   private:
-    //  Main event loop.
-    void loop ();
+    virtual void check_thread ();
 
     //  File descriptor referring to the kernel event queue.
     fd_t kqueue_fd;
@@ -93,8 +94,8 @@ class kqueue_t : public worker_poller_base_t
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t retired;
 
-    kqueue_t (const kqueue_t &);
-    const kqueue_t &operator= (const kqueue_t &);
+    kqueue_base_t (const kqueue_base_t &);
+    const kqueue_base_t &operator= (const kqueue_base_t &);
 
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.
@@ -102,7 +103,22 @@ class kqueue_t : public worker_poller_base_t
 #endif
 };
 
+class kqueue_t : public worker_poller_base_t, public kqueue_base_t
+{
+  public:
+    kqueue_t (const thread_ctx_t &ctx_);
+    virtual ~kqueue_t ();
+
+    void stop ();
+
+  private:
+    //  Main event loop.
+    virtual void loop ();
+    virtual void check_thread ();
+};
+
 typedef kqueue_t poller_t;
+typedef kqueue_base_t base_poller_t;
 }
 
 #endif

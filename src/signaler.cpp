@@ -239,8 +239,17 @@ void zmq::signaler_t::send ()
 #endif
 }
 
+int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_);
+
 int zmq::signaler_t::wait (int timeout_)
 {
+#if defined ZMQ_HAVE_POLLER
+    zmq_pollitem_t items[1];
+    items[0].socket = NULL;
+    items[0].fd = r;
+    items[0].events = ZMQ_POLLIN;
+    return zmq_poller_poll (items, 1, timeout_);
+#else
 #ifdef HAVE_FORK
     if (unlikely (pid != getpid ())) {
         // we have forked and the file descriptor is closed. Emulate an interrupt
@@ -305,6 +314,7 @@ int zmq::signaler_t::wait (int timeout_)
 
 #else
 #error
+#endif
 #endif
 }
 

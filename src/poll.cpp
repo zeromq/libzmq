@@ -43,9 +43,12 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+const zmq::poll_base_t::handle_t zmq::poll_base_t::handle_invalid =
+    (zmq::poll_base_t::handle_t)(intptr_t)zmq::retired_fd;
+
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
-    retired (false)
+    poll_base_t ()
 {
 }
 
@@ -54,7 +57,39 @@ zmq::poll_t::~poll_t ()
     stop_worker ();
 }
 
-zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
+void zmq::poll_t::stop ()
+{
+    check_thread ();
+    //  no-op... thread is stopped when no more fds or timers are registered
+}
+
+void zmq::poll_t::loop ()
+{
+    int timeout;
+    do
+    {
+      //  Execute any due timers.
+      timeout = (int) execute_timers ();
+      timeout = timeout ? timeout : -1;
+    }
+    while (wait (timeout) != -2);
+}
+
+void zmq::poll_t::check_thread ()
+{
+    worker_poller_base_t::check_thread();
+}
+
+zmq::poll_base_t::poll_base_t () :
+    retired (false)
+{
+}
+
+zmq::poll_base_t::~poll_base_t ()
+{
+}
+
+zmq::poll_base_t::handle_t zmq::poll_base_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     check_thread ();
     zmq_assert (fd_ != retired_fd);
@@ -79,116 +114,117 @@ zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
     //  Increase the load metric of the thread.
     adjust_load (1);
 
-    return fd_;
+    return (handle_t)(intptr_t)fd_;
 }
 
-void zmq::poll_t::rm_fd (handle_t handle_)
+void zmq::poll_base_t::rm_fd (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     zmq_assert (index != retired_fd);
 
     //  Mark the fd as unused.
     pollset[index].fd = retired_fd;
-    fd_table[handle_].index = retired_fd;
+    fd_table[fd].index = retired_fd;
     retired = true;
 
     //  Decrease the load metric of the thread.
     adjust_load (-1);
 }
 
-void zmq::poll_t::set_pollin (handle_t handle_)
+void zmq::poll_base_t::set_pollin (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events |= POLLIN;
 }
 
-void zmq::poll_t::reset_pollin (handle_t handle_)
+void zmq::poll_base_t::reset_pollin (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events &= ~((short) POLLIN);
 }
 
-void zmq::poll_t::set_pollout (handle_t handle_)
+void zmq::poll_base_t::set_pollout (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events |= POLLOUT;
 }
 
-void zmq::poll_t::reset_pollout (handle_t handle_)
+void zmq::poll_base_t::reset_pollout (handle_t handle_)
 {
     check_thread ();
-    fd_t index = fd_table[handle_].index;
+    fd_t fd = (fd_t) (intptr_t) handle_;
+    fd_t index = fd_table[fd].index;
     pollset[index].events &= ~((short) POLLOUT);
 }
 
-void zmq::poll_t::stop ()
-{
-    check_thread ();
-    //  no-op... thread is stopped when no more fds or timers are registered
-}
-
-int zmq::poll_t::max_fds ()
+int zmq::poll_base_t::max_fds ()
 {
     return -1;
 }
 
-void zmq::poll_t::loop ()
+int zmq::poll_base_t::wait (int timeout)
 {
-    while (true) {
-        //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+    cleanup_retired ();
 
-        cleanup_retired ();
+    if (pollset.empty ()) {
+        zmq_assert (get_load () == 0);
 
-        if (pollset.empty ()) {
-            zmq_assert (get_load () == 0);
+        if (timeout <= 0)
+            return -2;
 
-            if (timeout == 0)
-                break;
+        // TODO sleep for timeout
+        return 0;
+    }
 
-            // TODO sleep for timeout
-            continue;
-        }
-
-        //  Wait for events.
-        int rc = poll (&pollset[0], pollset.size (), timeout ? timeout : -1);
-#ifdef ZMQ_HAVE_WINDOWS
-        wsa_assert (rc != SOCKET_ERROR);
+    //  Wait for events.
+    int rc = poll (&pollset[0], pollset.size (), timeout);
+#if ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
 #else
-        if (rc == -1) {
-            errno_assert (errno == EINTR);
-            continue;
-        }
+    if (rc == -1) {
+        errno_assert (errno == EINTR);
+        return -1;
+    }
 #endif
 
-        //  If there are no events (i.e. it's a timeout) there's no point
-        //  in checking the pollset.
-        if (rc == 0)
-            continue;
+    //  If there are no events (i.e. it's a timeout) there's no point
+    //  in checking the pollset.
+    if (rc == 0)
+        return rc;
 
-        for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
-            zmq_assert (!(pollset[i].revents & POLLNVAL));
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & (POLLERR | POLLHUP))
-                fd_table[pollset[i].fd].events->in_event ();
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & POLLOUT)
-                fd_table[pollset[i].fd].events->out_event ();
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & POLLIN)
-                fd_table[pollset[i].fd].events->in_event ();
-        }
+    for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
+        zmq_assert (!(pollset[i].revents & POLLNVAL));
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & (POLLERR | POLLHUP))
+            fd_table[pollset[i].fd].events->err_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & POLLOUT)
+            fd_table[pollset[i].fd].events->out_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & POLLIN)
+            fd_table[pollset[i].fd].events->in_event (
+                (i_poll_events::handle_t)(intptr_t)pollset[i].fd
+            );
     }
+    return rc;
 }
 
-void zmq::poll_t::cleanup_retired ()
+void zmq::poll_base_t::cleanup_retired ()
 {
     //  Clean up the pollset and update the fd_table accordingly.
     if (retired) {
@@ -203,6 +239,10 @@ void zmq::poll_t::cleanup_retired ()
         }
         retired = false;
     }
+}
+
+void zmq::poll_base_t::check_thread ()
+{
 }
 
 

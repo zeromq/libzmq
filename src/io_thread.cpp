@@ -75,7 +75,7 @@ int zmq::io_thread_t::get_load ()
     return poller->get_load ();
 }
 
-void zmq::io_thread_t::in_event ()
+void zmq::io_thread_t::in_event (i_poll_events::handle_t handle_)
 {
     //  TODO: Do we want to limit number of commands I/O thread can
     //  process in a single go?
@@ -92,10 +92,20 @@ void zmq::io_thread_t::in_event ()
     errno_assert (rc != 0 && errno == EAGAIN);
 }
 
-void zmq::io_thread_t::out_event ()
+void zmq::io_thread_t::out_event (i_poll_events::handle_t handle_)
 {
     //  We are never polling for POLLOUT here. This function is never called.
     zmq_assert (false);
+}
+
+void zmq::io_thread_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::io_thread_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
 }
 
 void zmq::io_thread_t::timer_event (int)

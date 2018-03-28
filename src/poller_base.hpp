@@ -130,6 +130,8 @@ class poller_base_t
     void add_timer (int timeout_, zmq::i_poll_events *sink_, int id_);
     void cancel_timer (zmq::i_poll_events *sink_, int id_);
 
+    virtual int wait (int timeout) = 0;
+
   protected:
     //  Called by individual poller implementations to manage the load.
     void adjust_load (int amount_);
@@ -160,7 +162,7 @@ class poller_base_t
 };
 
 //  Base class for a poller with a single worker thread.
-class worker_poller_base_t : public poller_base_t
+class worker_poller_base_t : public virtual poller_base_t
 {
   public:
     worker_poller_base_t (const thread_ctx_t &ctx_);

@@ -105,15 +105,15 @@ void zmq::ipc_connecter_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
-void zmq::ipc_connecter_t::in_event ()
+void zmq::ipc_connecter_t::in_event (i_poll_events::handle_t handle_)
 {
     //  We are not polling for incoming data, so we are actually called
     //  because of error here. However, we can get error on out event as well
     //  on some platforms, so we'll simply handle both events in the same way.
-    out_event ();
+    out_event (handle_);
 }
 
-void zmq::ipc_connecter_t::out_event ()
+void zmq::ipc_connecter_t::out_event (i_poll_events::handle_t handle_)
 {
     fd_t fd = connect ();
     rm_fd (handle);
@@ -139,6 +139,16 @@ void zmq::ipc_connecter_t::out_event ()
     socket->event_connected (endpoint, fd);
 }
 
+void zmq::ipc_connecter_t::err_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
+void zmq::ipc_connecter_t::pri_event (i_poll_events::handle_t handle_)
+{
+    in_event(handle_);
+}
+
 void zmq::ipc_connecter_t::timer_event (int id_)
 {
     zmq_assert (id_ == reconnect_timer_id);
@@ -155,7 +165,7 @@ void zmq::ipc_connecter_t::start_connecting ()
     if (rc == 0) {
         handle = add_fd (s);
         handle_valid = true;
-        out_event ();
+        out_event (handle);
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
