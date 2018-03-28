@@ -112,6 +112,69 @@ void test_zmq_ctx_shutdown_null_fails ()
     TEST_ASSERT_EQUAL_INT (EFAULT, errno);
 }
 
+#ifdef ZMQ_HAVE_POLLER
+struct poller_test_data_t
+{
+    void *ctx;
+    void *counter;
+};
+
+void run_poller (void *data_)
+{
+    struct poller_test_data_t *poller_test_data =
+      (struct poller_test_data_t *) data_;
+
+    void *socket = zmq_socket (poller_test_data->ctx, ZMQ_PULL);
+    TEST_ASSERT_NOT_NULL (socket);
+
+    void *poller = zmq_poller_new ();
+    TEST_ASSERT_NOT_NULL (poller);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
+
+    zmq_atomic_counter_set (poller_test_data->counter, 1);
+
+    zmq_poller_event_t event;
+    TEST_ASSERT_FAILURE_ERRNO (ETERM, zmq_poller_wait (poller, &event, -1));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+
+    // Close the socket
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
+}
+#endif
+
+void test_poller_exists_with_socket_on_zmq_ctx_term ()
+{
+#ifdef ZMQ_HAVE_POLLER
+    struct poller_test_data_t poller_test_data;
+
+    //  Set up our context and sockets
+    poller_test_data.ctx = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (poller_test_data.ctx);
+
+    poller_test_data.counter = zmq_atomic_counter_new ();
+    TEST_ASSERT_NOT_NULL (poller_test_data.counter);
+
+    void *thread = zmq_threadstart (run_poller, &poller_test_data);
+    TEST_ASSERT_NOT_NULL (thread);
+
+    while (zmq_atomic_counter_value (poller_test_data.counter) == 0) {
+        msleep (10);
+    }
+
+    // Destroy the context
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (poller_test_data.ctx));
+
+    zmq_threadclose (thread);
+
+    zmq_atomic_counter_destroy (&poller_test_data.counter);
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without zmq_poller_* support, ignoring test");
+#endif
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -122,5 +185,8 @@ int main (void)
     RUN_TEST (test_zmq_ctx_term_null_fails);
     RUN_TEST (test_zmq_term_null_fails);
     RUN_TEST (test_zmq_ctx_shutdown_null_fails);
+
+    RUN_TEST (test_poller_exists_with_socket_on_zmq_ctx_term);
+
     return UNITY_END ();
 }
