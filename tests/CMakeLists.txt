@@ -216,6 +216,11 @@ if(ZMQ_HAVE_CURVE)
   set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
 endif()
 
+if(WIN32)
+  set_tests_properties(test_shutdown_stress PROPERTIES TIMEOUT 15)
+  set_tests_properties(test_router_mandatory PROPERTIES TIMEOUT 15)
+endif()
+
 if(WIN32 AND ${POLLER} MATCHES "poll")
   set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 30)
   set_tests_properties(test_immediate PROPERTIES TIMEOUT 30)

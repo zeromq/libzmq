@@ -51,10 +51,15 @@
 
 #include "socket_base.hpp"
 #include "signaler.hpp"
+#include "i_poll_events.hpp"
 
 namespace zmq
 {
+#if defined ZMQ_HAVE_POLLER
+class socket_poller_t: public i_poll_events
+#else
 class socket_poller_t
+#endif
 {
   public:
     socket_poller_t ();
@@ -83,10 +88,23 @@ class socket_poller_t
     //  Return false if object is not a socket.
     bool check_tag ();
 
+#if defined ZMQ_HAVE_POLLER
+protected:
+    //  i_poll_events interface implementation.
+    virtual void in_event (i_poll_events::handle_t handle_);
+    virtual void out_event (i_poll_events::handle_t handle_);
+    virtual void err_event (i_poll_events::handle_t handle_);
+    virtual void pri_event (i_poll_events::handle_t handle_);
+    virtual void timer_event (int id_);
+#endif
+
   private:
     void zero_trail_events (zmq::socket_poller_t::event_t *events_,
                             int n_events_,
                             int found);
+#if defined ZMQ_HAVE_POLLER
+    int check_events (zmq::socket_poller_t::event_t *events_, int n_events_);
+#else
 #if defined ZMQ_POLL_BASED_ON_POLL
     int check_events (zmq::socket_poller_t::event_t *events_, int n_events_);
 #elif defined ZMQ_POLL_BASED_ON_SELECT
@@ -95,6 +113,7 @@ class socket_poller_t
                       fd_set &inset,
                       fd_set &outset,
                       fd_set &errset);
+#endif
 #endif
     int adjust_timeout (zmq::clock_t &clock,
                         long timeout_,
@@ -108,6 +127,10 @@ class socket_poller_t
 
     //  Signaler used for thread safe sockets polling
     signaler_t *signaler;
+#if defined ZMQ_HAVE_POLLER
+    short signaler_revents;
+    base_poller_t::handle_t signaler_handle;
+#endif
 
     typedef struct item_t
     {
@@ -115,8 +138,13 @@ class socket_poller_t
         fd_t fd;
         void *user_data;
         short events;
+#if defined ZMQ_HAVE_POLLER
+        short revents;
+        base_poller_t::handle_t handle;
+#else
 #if defined ZMQ_POLL_BASED_ON_POLL
         int pollfd_index;
+#endif
 #endif
     } item_t;
 
@@ -133,6 +161,9 @@ class socket_poller_t
     //  Size of the pollset
     int poll_size;
 
+#if defined ZMQ_HAVE_POLLER
+    base_poller_t poller;
+#else
 #if defined ZMQ_POLL_BASED_ON_POLL
     pollfd *pollfds;
 #elif defined ZMQ_POLL_BASED_ON_SELECT
@@ -140,6 +171,7 @@ class socket_poller_t
     fd_set pollset_out;
     fd_set pollset_err;
     zmq::fd_t maxfd;
+#endif
 #endif
 
     socket_poller_t (const socket_poller_t &);
