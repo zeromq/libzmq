@@ -115,6 +115,7 @@ void test_zmq_ctx_shutdown_null_fails ()
 #ifdef ZMQ_HAVE_POLLER
 struct poller_test_data_t
 {
+    int socket_type;
     void *ctx;
     void *counter;
 };
@@ -124,7 +125,8 @@ void run_poller (void *data_)
     struct poller_test_data_t *poller_test_data =
       (struct poller_test_data_t *) data_;
 
-    void *socket = zmq_socket (poller_test_data->ctx, ZMQ_PULL);
+    void *socket =
+      zmq_socket (poller_test_data->ctx, poller_test_data->socket_type);
     TEST_ASSERT_NOT_NULL (socket);
 
     void *poller = zmq_poller_new ();
@@ -145,10 +147,12 @@ void run_poller (void *data_)
 }
 #endif
 
-void test_poller_exists_with_socket_on_zmq_ctx_term ()
+void test_poller_exists_with_socket_on_zmq_ctx_term (const int socket_type)
 {
 #ifdef ZMQ_HAVE_POLLER
     struct poller_test_data_t poller_test_data;
+
+    poller_test_data.socket_type = socket_type;
 
     //  Set up our context and sockets
     poller_test_data.ctx = zmq_ctx_new ();
@@ -175,6 +179,20 @@ void test_poller_exists_with_socket_on_zmq_ctx_term ()
 #endif
 }
 
+void test_poller_exists_with_socket_on_zmq_ctx_term_thread_safe_socket ()
+{
+#ifdef ZMQ_BUILD_DRAFT_API
+    test_poller_exists_with_socket_on_zmq_ctx_term (ZMQ_CLIENT);
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
+#endif
+}
+
+void test_poller_exists_with_socket_on_zmq_ctx_term_non_thread_safe_socket ()
+{
+    test_poller_exists_with_socket_on_zmq_ctx_term (ZMQ_DEALER);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -186,7 +204,10 @@ int main (void)
     RUN_TEST (test_zmq_term_null_fails);
     RUN_TEST (test_zmq_ctx_shutdown_null_fails);
 
-    RUN_TEST (test_poller_exists_with_socket_on_zmq_ctx_term);
+    RUN_TEST (
+      test_poller_exists_with_socket_on_zmq_ctx_term_non_thread_safe_socket);
+    RUN_TEST (
+      test_poller_exists_with_socket_on_zmq_ctx_term_thread_safe_socket);
 
     return UNITY_END ();
 }
