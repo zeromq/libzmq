@@ -2,6 +2,19 @@
 
 set -x
 
+cd ../..
+
+# always install custom builds from dist
+# to make sure that `make dist` doesn't omit any files required to build & test
+if [ -z $DO_CLANG_FORMAT_CHECK ]; then
+    ./autogen.sh
+    ./configure
+    make -j5 dist-gzip
+    V=$(./version.sh)
+    tar -xzf zeromq-$V.tar.gz
+    cd zeromq-$V
+fi
+
 mkdir tmp
 BUILD_PREFIX=$PWD/tmp
 
@@ -35,7 +48,6 @@ elif [ $CURVE == "libsodium" ]; then
 fi
 
 # Build, check, and install from local source
-cd ../..
 mkdir build_cmake
 cd build_cmake
 if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
