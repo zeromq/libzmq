@@ -421,13 +421,49 @@ int zmq::select_base_t::wait (int timeout)
             }
         }
 
-        rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
+        int wsa_rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
                                        timeout >= 0 ? timeout : INFINITE, TRUE);
-        wsa_assert (rc != (int) WSA_WAIT_FAILED);
 
-        if (rc == WSA_WAIT_TIMEOUT)
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms741576(v=vs.85).aspx
+        // We need to put the sockets in blocking mode again
+        for (family_entries_t::iterator family_entry_it =
+               family_entries.begin ();
+             family_entry_it != family_entries.end (); ++family_entry_it) {
+            family_entry_t &family_entry = family_entry_it->second;
+
+            for (fd_entries_t::iterator fd_entry_it =
+                   family_entry.fd_entries.begin ();
+                 fd_entry_it != family_entry.fd_entries.end ();
+                 ++fd_entry_it) {
+                fd_t fd = fd_entry_it->fd;
+
+                // Unselect socket
+                if (FD_ISSET (fd, &family_entry.fds_set.read)
+                    && FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[3], NULL);
+                else if (FD_ISSET (fd, &family_entry.fds_set.read))
+                    rc = WSAEventSelect (fd, wsa_events.events[0], NULL);
+                else if (FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[1], NULL);
+                else if (FD_ISSET (fd, &family_entry.fds_set.error))
+                    rc = WSAEventSelect (fd, wsa_events.events[2], NULL);
+                else
+                    rc = 0;
+
+                wsa_assert (rc != SOCKET_ERROR);
+
+                // Set the socket in blocking mode
+                u_long arg = 1;
+                rc = ioctlsocket(fd, FIONBIO, &arg);
+                assert(rc == 0);
+            }
+        }
+
+        wsa_assert (wsa_rc != (int) WSA_WAIT_FAILED);
+
+        if (wsa_rc == WSA_WAIT_TIMEOUT)
             return 0;
-        if (rc == WSA_WAIT_IO_COMPLETION) {
+        if (wsa_rc == WSA_WAIT_IO_COMPLETION) {
             errno = EINTR;
             return -1;
         }
