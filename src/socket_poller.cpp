@@ -33,13 +33,8 @@
 
 static bool is_thread_safe (zmq::socket_base_t &socket)
 {
-    int thread_safe;
-    size_t thread_safe_size = sizeof (int);
-
-    int rc =
-      socket.getsockopt (ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size);
-    zmq_assert (rc == 0);
-    return thread_safe;
+    // do not use getsockopt here, since that would fail during context termination
+    return socket.is_thread_safe ();
 }
 
 zmq::socket_poller_t::socket_poller_t () :

@@ -102,6 +102,11 @@ bool zmq::socket_base_t::check_tag ()
     return tag == 0xbaddecaf;
 }
 
+bool zmq::socket_base_t::is_thread_safe () const
+{
+    return thread_safe;
+}
+
 zmq::socket_base_t *zmq::socket_base_t::create (int type_,
                                                 class ctx_t *parent_,
                                                 uint32_t tid_,

@@ -67,6 +67,9 @@ class socket_base_t : public own_t,
     //  Returns false if object is not a socket.
     bool check_tag ();
 
+    //  Returns whether the socket is thread-safe.
+    bool is_thread_safe () const;
+
     //  Create a socket of a specified type.
     static socket_base_t *
     create (int type_, zmq::ctx_t *parent_, uint32_t tid_, int sid_);
