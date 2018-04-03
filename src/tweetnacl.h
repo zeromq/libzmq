@@ -52,9 +52,9 @@ typedef i64 gf[16];
 extern "C" {
 #endif
 void randombytes (unsigned char *, unsigned long long);
-//  Do not call manually! Use random_close from random.hpp
+/* Do not call manually! Use random_close from random.hpp */
 int randombytes_close (void);
-//  Do not call manually! Use random_open from random.hpp
+/* Do not call manually! Use random_open from random.hpp */
 int sodium_init (void);
 
 int crypto_box_keypair (u8 *y, u8 *x);
