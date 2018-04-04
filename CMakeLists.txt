@@ -1,6 +1,6 @@
 # CMake build script for ZeroMQ
 
-cmake_minimum_required (VERSION 3.1.3)
+cmake_minimum_required (VERSION 2.8.12)
 project (ZeroMQ)
 
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -478,6 +478,9 @@ if (MSVC)
   # Parallel make.
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
+  # Compile the static lib with debug information included
+  string (REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+
   # Optimization flags.
   # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
   if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
@@ -890,6 +893,8 @@ if (MSVC)
   # Suppress linker warnings caused by #ifdef omission
   # of file content.
   set( CMAKE_STATIC_LINKER_FLAGS /ignore:4221 )
+  set (PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+  set (PDB_NAME "libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
   if (BUILD_SHARED)
     add_library (libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     set_target_properties (libzmq PROPERTIES
@@ -1115,7 +1120,11 @@ if (MSVC)
           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           COMPONENT SDK)
-  install (FILES $<TARGET_PDB_FILE:libzmq> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL COMPONENT SDK)
+  if (MSVC_IDE)
+    install (FILES ${PDB_OUTPUT_DIRECTORY}/\${CMAKE_INSTALL_CONFIG_NAME}/${PDB_NAME}.pdb DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT SDK OPTIONAL)
+  else()
+    install (FILES ${PDB_OUTPUT_DIRECTORY}/${PDB_NAME}.pdb DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT SDK OPTIONAL)
+  endif()
   if (BUILD_SHARED)
     install (TARGETS libzmq
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
