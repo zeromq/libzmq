@@ -1,6 +1,6 @@
 # CMake build script for ZeroMQ
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.1.3)
 project (ZeroMQ)
 
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -988,7 +988,7 @@ endforeach()
 
 if (BUILD_SHARED)
   target_link_libraries (libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  
+
   if (SODIUM_FOUND)
     target_link_libraries (libzmq ${SODIUM_LIBRARIES})
 	# On Solaris, libsodium depends on libssp
@@ -996,7 +996,7 @@ if (BUILD_SHARED)
       target_link_libraries (libzmq ssp)
     endif ()
   endif ()
-  
+
   if (HAVE_WS2_32)
     target_link_libraries (libzmq ws2_32)
   elseif (HAVE_WS2)
@@ -1018,7 +1018,7 @@ endif ()
 
 if (BUILD_STATIC)
   target_link_libraries (libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  
+
   if (SODIUM_FOUND)
     target_link_libraries (libzmq-static ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
@@ -1026,7 +1026,7 @@ if (BUILD_STATIC)
       target_link_libraries (libzmq-static ssp)
     endif ()
   endif ()
-  
+
   if (HAVE_WS2_32)
     target_link_libraries (libzmq-static ws2_32)
   elseif (HAVE_WS2)
@@ -1115,17 +1115,8 @@ if (MSVC)
           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           COMPONENT SDK)
-  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    install (TARGETS ${target_outputs}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            COMPONENT SDK)
-    if (NOT CMAKE_PDB_OUTPUT_DIRECTORY AND BUILD_SHARED)
-      install (FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
-            COMPONENT SDK)
-    endif ()
-  elseif (BUILD_SHARED)
+  install (FILES $<TARGET_PDB_FILE:libzmq> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL COMPONENT SDK)
+  if (BUILD_SHARED)
     install (TARGETS libzmq
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
