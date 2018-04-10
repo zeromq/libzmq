@@ -551,6 +551,14 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
+The 'ZMQ_RCVHWM' and 'ZMQ_SNDHWM' options are logical extensions to one
+another. In general, when a socket's receive high water mark has reached its
+limit and enters an exceptional state, 1) the socket will stop picking up
+messages from the wire, 2) the wire buffer will get full and force the sending
+peer to stop sending messages to the socket, and 3) the sending peer will queue
+outbound messages until its send high water mark reaches its limit and the
+sending peer itself enters an exceptional state.
+
 [horizontal]
 Option value type:: int
 Option value unit:: messages
@@ -682,6 +690,14 @@ depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
+
+The 'ZMQ_SNDHWM' and 'ZMQ_RCVHWM' options are logical extensions to one
+another. In general, when a receiving peer's receive high water mark has
+reached its limit and enters an exceptional state, 1) the receiving peer will
+stop picking up messages from the wire, 2) the wire buffer will get full and
+force the socket to stop sending messages to the peer, and 3) the socket will
+queue outbound messages until its send high water mark reaches its limit and
+the socket itself enters an an exceptional state.
 
 [horizontal]
 Option value type:: int
