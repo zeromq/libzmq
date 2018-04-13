@@ -100,7 +100,7 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string)
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
     //         automatically (wsaError->HRESULT->string?).
-    switch(no_) {
+    switch (no_) {
         case WSABASEERR:
             return "No Error";
         case WSAEINTR:
