@@ -100,128 +100,112 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string)
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
     //         automatically (wsaError->HRESULT->string?).
-    return (no_ == WSABASEERR)
-             ? "No Error"
-             : (no_ == WSAEINTR)
-                 ? "Interrupted system call"
-                 : (no_ == WSAEBADF)
-                     ? "Bad file number"
-                     : (no_ == WSAEACCES)
-                         ? "Permission denied"
-                         : (no_ == WSAEFAULT)
-                             ? "Bad address"
-                             : (no_ == WSAEINVAL)
-                                 ? "Invalid argument"
-                                 : (no_ == WSAEMFILE)
-                                     ? "Too many open files"
-                                     : (no_ == WSAEWOULDBLOCK)
-                                         ? wsae_wouldblock_string
-                                         : (no_ == WSAEINPROGRESS)
-                                             ? "Operation now in progress"
-                                             : (no_ == WSAEALREADY)
-                                                 ? "Operation already in "
-                                                   "progress"
-                                                 : (no_ == WSAENOTSOCK)
-                                                     ? "Socket operation on "
-                                                       "non-socket"
-                                                     : (no_ == WSAEDESTADDRREQ)
-                                                         ? "Destination "
-                                                           "address required"
-                                                         : (no_ == WSAEMSGSIZE)
-                                                             ? "Message too "
-                                                               "long"
-                                                             : (no_
-                                                                == WSAEPROTOTYPE)
-                                                                 ? "Protocol "
-                                                                   "wrong type "
-                                                                   "for socket"
-                                                                 : (no_
-                                                                    == WSAENOPROTOOPT)
-                                                                     ? "Bad "
-                                                                       "protoco"
-                                                                       "l "
-                                                                       "option"
-                                                                     : (no_
-                                                                        == WSAEPROTONOSUPPORT)
-                                                                         ? "Pro"
-                                                                           "toc"
-                                                                           "ol "
-                                                                           "not"
-                                                                           " su"
-                                                                           "ppo"
-                                                                           "rte"
-                                                                           "d"
-                                                                         : (no_
-                                                                            == WSAESOCKTNOSUPPORT)
-                                                                             ? "Socket type not supported"
-                                                                             : (no_
-                                                                                == WSAEOPNOTSUPP)
-                                                                                 ? "Operation not supported on socket"
-                                                                                 : (no_
-                                                                                    == WSAEPFNOSUPPORT)
-                                                                                     ? "Protocol family not supported"
-                                                                                     : (no_
-                                                                                        == WSAEAFNOSUPPORT)
-                                                                                         ? "Address family not supported by protocol family"
-                                                                                         : (no_ == WSAEADDRINUSE) ? "Address already in use"
-                                                                                                                  : (no_ == WSAEADDRNOTAVAIL) ? "Can't assign requested address"
-                                                                                                                                              : (no_ == WSAENETDOWN) ? "Network is down"
-                                                                                                                                                                     : (no_ == WSAENETUNREACH) ? "Network is unreachable"
-                                                                                                                                                                                               : (no_ == WSAENETRESET) ? "Net dropped connection or reset"
-                                                                                                                                                                                                                       : (no_ == WSAECONNABORTED) ? "Software caused connection abort"
-                                                                                                                                                                                                                                                  : (no_ == WSAECONNRESET) ? "Connection reset by peer"
-                                                                                                                                                                                                                                                                           : (no_
-                                                                                                                                                                                                                                                                              == WSAENOBUFS)
-                                                                                                                                                                                                                                                                               ? "No buffer space available"
-                                                                                                                                                                                                                                                                               : (no_ == WSAEISCONN) ? "Socket is already connected"
-                                                                                                                                                                                                                                                                                                     : (no_
-                                                                                                                                                                                                                                                                                                        == WSAENOTCONN)
-                                                                                                                                                                                                                                                                                                         ? "Socket is not connected"
-                                                                                                                                                                                                                                                                                                         : (no_ == WSAESHUTDOWN) ? "Can't send after socket shutdown"
-                                                                                                                                                                                                                                                                                                                                 : (no_ == WSAETOOMANYREFS) ? "Too many references can't splice"
-                                                                                                                                                                                                                                                                                                                                                            : (no_ == WSAETIMEDOUT) ? "Connection timed out"
-                                                                                                                                                                                                                                                                                                                                                                                    : (no_
-                                                                                                                                                                                                                                                                                                                                                                                       == WSAECONNREFUSED)
-                                                                                                                                                                                                                                                                                                                                                                                        ? "Connection refused"
-                                                                                                                                                                                                                                                                                                                                                                                        : (no_
-                                                                                                                                                                                                                                                                                                                                                                                           == WSAELOOP)
-                                                                                                                                                                                                                                                                                                                                                                                            ? "Too many levels of symbolic links"
-                                                                                                                                                                                                                                                                                                                                                                                            : (no_
-                                                                                                                                                                                                                                                                                                                                                                                               == WSAENAMETOOLONG)
-                                                                                                                                                                                                                                                                                                                                                                                                ? "File name too long"
-                                                                                                                                                                                                                                                                                                                                                                                                : (no_ == WSAEHOSTDOWN) ? "Host is down"
-                                                                                                                                                                                                                                                                                                                                                                                                                        : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                           == WSAEHOSTUNREACH)
-                                                                                                                                                                                                                                                                                                                                                                                                                            ? "No Route to Host"
-                                                                                                                                                                                                                                                                                                                                                                                                                            : (no_ == WSAENOTEMPTY) ? "Directory not empty"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    : (no_ == WSAEPROCLIM) ? "Too many processes"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                           : (
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               == WSAEUSERS)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               ? "Too many users"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  == WSAEDQUOT)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ? "Disc Quota Exceeded"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      == WSAESTALE)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ? "Stale NFS file handle"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       : (no_ == WSAEREMOTE) ? "Too many levels of remote in path"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                == WSASYSNOTREADY)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ? "Network SubSystem is unavailable"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 : (no_ == WSAVERNOTSUPPORTED) ? "WINSOCK DLL Version out of range"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  == WSANOTINITIALISED)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   ? "Successful WSASTARTUP not yet performed"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   : (no_ == WSAHOST_NOT_FOUND) ? "Host not found"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   == WSATRY_AGAIN)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ? "Non-Authoritative Host not found"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    : (no_ == WSANO_RECOVERY) ? "Non-Recoverable errors: FORMERR REFUSED NOTIMP"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              : (no_
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 == WSANO_DATA)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ? "Valid name no data record of requested"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  : "error not defined";
+    switch(no_) {
+        case WSABASEERR:
+            return "No Error";
+        case WSAEINTR:
+            return "Interrupted system call";
+        case WSAEBADF:
+            return "Bad file number";
+        case WSAEACCES:
+            return "Permission denied";
+        case WSAEFAULT:
+            return "Bad address";
+        case WSAEINVAL:
+            return "Invalid argument";
+        case WSAEMFILE:
+            return "Too many open files";
+        case WSAEWOULDBLOCK:
+            return wsae_wouldblock_string;
+        case WSAEINPROGRESS:
+            return "Operation now in progress";
+        case WSAEALREADY:
+            return "Operation already in progress";
+        case WSAENOTSOCK:
+            return "Socket operation on non-socket";
+        case WSAEDESTADDRREQ:
+            return "Destination address required";
+        case WSAEMSGSIZE:
+            return "Message too long";
+        case WSAEPROTOTYPE:
+            return "Protocol wrong type for socket";
+        case WSAENOPROTOOPT:
+            return "Bas protocol option";
+        case WSAEPROTONOSUPPORT:
+            return "Protocol not supported";
+        case WSAESOCKTNOSUPPORT:
+            return "Socket type not supported";
+        case WSAEOPNOTSUPP:
+            return "Operation not supported on socket";
+        case WSAEPFNOSUPPORT:
+            return "Protocol family not supported";
+        case WSAEAFNOSUPPORT:
+            return "Address family not supported by protocol family";
+        case WSAEADDRINUSE:
+            return "Address already in use";
+        case WSAEADDRNOTAVAIL:
+            return "Can't assign requested address";
+        case WSAENETDOWN:
+            return "Network is down";
+        case WSAENETUNREACH:
+            return "Network is unreachable";
+        case WSAENETRESET:
+            return "Net dropped connection or reset";
+        case WSAECONNABORTED:
+            return "Software caused connection abort";
+        case WSAECONNRESET:
+            return "Connection reset by peer";
+        case WSAENOBUFS:
+            return "No buffer space available";
+        case WSAEISCONN:
+            return "Socket is already connected";
+        case WSAENOTCONN:
+            return "Socket is not connected";
+        case WSAESHUTDOWN:
+            return "Can't send after socket shutdown";
+        case WSAETOOMANYREFS:
+            return "Too many references can't splice";
+        case WSAETIMEDOUT:
+            return "Connection timed out";
+        case WSAECONNREFUSED:
+            return "Connection refused";
+        case WSAELOOP:
+            return "Too many levels of symbolic links";
+        case WSAENAMETOOLONG:
+            return "File name too long";
+        case WSAEHOSTDOWN:
+            return "Host is down";
+        case WSAEHOSTUNREACH:
+            return "No Route to Host";
+        case WSAENOTEMPTY:
+            return "Directory not empty";
+        case WSAEPROCLIM:
+            return "Too many processes";
+        case WSAEUSERS:
+            return "Too many users";
+        case WSAEDQUOT:
+            return "Disc Quota Exceeded";
+        case WSAESTALE:
+            return "Stale NFS file handle";
+        case WSAEREMOTE:
+            return "Too many levels of remote in path";
+        case WSASYSNOTREADY:
+            return "Network SubSystem is unavailable";
+        case WSAVERNOTSUPPORTED:
+            return "WINSOCK DLL Version out of range";
+        case WSANOTINITIALISED:
+            return "Successful WSASTARTUP not yet performed";
+        case WSAHOST_NOT_FOUND:
+            return "Host not found";
+        case WSATRY_AGAIN:
+            return "Non-Authoritative Host not found";
+        case WSANO_RECOVERY:
+            return "Non-Recoverable errors: FORMERR REFUSED NOTIMP";
+        case WSANO_DATA:
+            return "Valid name no data record of requested";
+        default:
+            return "error not defined";
+    }
 }
 
 void zmq::win_error (char *buffer_, size_t buffer_size_)
