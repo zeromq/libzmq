@@ -175,11 +175,6 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         libzmq_on_linux="yes"
 
-        # dladdr/dlopen is in libdl on glibc
-        AC_SEARCH_LIBS([dladdr], [dl dld], [], [
-          AC_MSG_ERROR([unable to find the dladdr() function])
-        ])
-
         if test "x$libzmq_tipc_support" = "xyes"; then
             AC_DEFINE(ZMQ_HAVE_TIPC, 1, [Have TIPC support])
         fi
@@ -784,7 +779,7 @@ if test "x$enable_libunwind" != "xno"; then
             AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
             AC_SUBST([LIBUNWIND_CFLAGS])
             AC_SUBST([LIBUNWIND_LIBS])
-            AC_CHECK_LIB([dl], [dladdr])
+            AC_SEARCH_LIBS([dladdr], [dl dld])
         ],
         [
             if test "x$enable_libunwind" = "xyes"; then
