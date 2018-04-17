@@ -51,6 +51,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
 #endif
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     plugged (false),
     fd (-1),
@@ -448,8 +452,13 @@ void zmq::udp_engine_t::in_event ()
     int nbytes = recvfrom (fd, in_buffer, MAX_UDP_MSG, 0,
                            (sockaddr *) &in_address, &in_addrlen);
     if (nbytes == -1) {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
                       && errno != ENOTSOCK);
+#else
+        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
+                      && errno != ENOTSOCK);
+#endif
         return;
     }
 #endif
