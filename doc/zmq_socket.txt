@@ -74,6 +74,8 @@ after which either peer can send messages asynchronously, to the other.
 
 The client-server pattern is formally defined by http://rfc.zeromq.org/spec:41.
 
+NOTE: Server-client is still in draft phase.
+
 ZMQ_CLIENT
 ^^^^^^^^^^
 A 'ZMQ_CLIENT' socket talks to a 'ZMQ_SERVER' socket. Either peer can connect,
