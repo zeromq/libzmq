@@ -7,6 +7,23 @@ list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
 set (ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 list (APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
+# Apply CMP0042: MACOSX_RPATH is enabled by default
+cmake_policy (SET CMP0042 NEW)
+
+include(GNUInstallDirs)
+if (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+  # Find more information: https://cmake.org/Wiki/CMake_RPATH_handling
+
+  # Add an install rpath if it is not a system directory
+  list (FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
+  if ("${isSystemDir}" STREQUAL "-1")
+    set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+  endif ()
+
+  # Add linker search paths pointing to external dependencies
+  set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif ()
+
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
@@ -1109,8 +1126,6 @@ endif ()
 
 #-----------------------------------------------------------------------------
 # installer
-
-include(GNUInstallDirs)
 
 if (MSVC)
   install (TARGETS ${target_outputs}
