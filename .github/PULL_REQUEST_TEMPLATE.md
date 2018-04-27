@@ -21,14 +21,18 @@ Please avoid sending a pull request with recursive merge nodes, as they
 are impossible to fix once merged. Please rebase your branch on
 zeromq/libzmq master instead of merging it.
 
+```
 git remote add upstream git@github.com:zeromq/libzmq.git
 git fetch upstream
 git rebase upstream/master
 git push -f
+```
 
 In case you already merged instead of rebasing you can drop the merge commit.
 
+```
 git rebase -i HEAD~10
+```
 
 Now, find your merge commit and mark it as drop and save. Finally rebase!
 
