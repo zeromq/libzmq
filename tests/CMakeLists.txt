@@ -215,6 +215,7 @@ endforeach()
 if(ZMQ_HAVE_CURVE)
   set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
 endif()
+set_tests_properties(test_heartbeats PROPERTIES TIMEOUT 60)
 
 if(WIN32 AND ${POLLER} MATCHES "poll")
   set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 30)
