@@ -139,6 +139,8 @@ class stream_engine_t : public io_object_t, public i_engine
     bool as_server;
 
     msg_t tx_msg;
+    //  Need to store PING payload for PONG
+    msg_t pong_msg;
 
     handle_t handle;
 
