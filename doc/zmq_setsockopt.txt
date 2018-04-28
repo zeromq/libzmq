@@ -344,7 +344,7 @@ traffic will cancel the timeout.
 [horizontal]
 Option value type:: int
 Option value unit:: milliseconds
-Default value:: 0
+Default value:: 0 normally, ZMQ_HEARTBEAT_IVL if it is set
 Applicable socket types:: all, when using connection-oriented transports
 
 
