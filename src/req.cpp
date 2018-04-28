@@ -285,6 +285,11 @@ zmq::req_session_t::~req_session_t ()
 
 int zmq::req_session_t::push_msg (msg_t *msg_)
 {
+    //  Ignore commands, they are processed by the engine and should not
+    //  affect the state machine.
+    if (unlikely (msg_->flags () & msg_t::command))
+        return 0;
+
     switch (state) {
         case bottom:
             if (msg_->flags () == msg_t::more) {
