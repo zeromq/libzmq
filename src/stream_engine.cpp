@@ -98,6 +98,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
 {
     int rc = tx_msg.init ();
     errno_assert (rc == 0);
+    rc = pong_msg.init ();
+    errno_assert (rc == 0);
 
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
@@ -1058,11 +1060,8 @@ int zmq::stream_engine_t::produce_pong_message (msg_t *msg_)
     int rc = 0;
     zmq_assert (mechanism != NULL);
 
-    rc = msg_->init_size (5);
+    rc = msg_->move (pong_msg);
     errno_assert (rc == 0);
-    msg_->set_flags (msg_t::command);
-
-    memcpy (msg_->data (), "\4PONG", 5);
 
     rc = mechanism->encode (msg_);
     next_msg = &stream_engine_t::pull_and_encode;
@@ -1084,6 +1083,20 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
             add_timer (remote_heartbeat_ttl, heartbeat_ttl_timer_id);
             has_ttl_timer = true;
         }
+
+        //  As per ZMTP 3.1 the PING command might contain an up to 16 bytes
+        //  context which needs to be PONGed back, so build the pong message
+        //  here and store it. Truncate it if it's too long.
+        //  Given the engine goes straight to out_event, sequential PINGs will
+        //  not be a problem.
+        size_t context_len = msg_->size () - 7 > 16 ? 16 : msg_->size () - 7;
+        int rc = pong_msg.init_size (5 + context_len);
+        errno_assert (rc == 0);
+        pong_msg.set_flags (msg_t::command);
+        memcpy (pong_msg.data (), "\4PONG", 5);
+        if (context_len > 0)
+            memcpy (((uint8_t *) pong_msg.data ()) + 5,
+                    ((uint8_t *) msg_->data ()) + 7, context_len);
 
         next_msg = &stream_engine_t::produce_pong_message;
         out_event ();
