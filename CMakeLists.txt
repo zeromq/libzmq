@@ -494,6 +494,7 @@ endif ()
 if (MSVC)
   # Parallel make.
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 
   # Compile the static lib with debug information included
   string (REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
