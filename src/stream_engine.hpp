@@ -127,6 +127,7 @@ class stream_engine_t : public io_object_t, public i_engine
     typedef metadata_t::dict_t properties_t;
     bool init_properties (properties_t &properties);
 
+    int process_command_message (msg_t *msg_);
     int produce_ping_message (msg_t *msg_);
     int process_heartbeat_message (msg_t *msg_);
     int produce_pong_message (msg_t *msg_);
