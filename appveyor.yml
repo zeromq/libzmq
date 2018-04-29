@@ -102,5 +102,5 @@ after_build:
 
 test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: ctest -C "%Configuration%" -V
+  - cmd: ctest -C "%Configuration%" -V -j5
 
