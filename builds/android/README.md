@@ -12,15 +12,15 @@ To launch the android build, you have to first install the android-ndk first in 
     $ #check the hashes before executing this binary
     $ md5sum android-ndk-r10e-linux-x86_64.bin
     # 19af543b068bdb7f27787c2bc69aba7f  android-ndk-r10e-linux-x86_64.bin
-    sha256sum android-ndk-r10e-linux-x86_64.bin
+    $ sha256sum android-ndk-r10e-linux-x86_64.bin
     # 102d6723f67ff1384330d12c45854315d6452d6510286f4e5891e00a5a8f1d5a  android-ndk-r10e-linux-x86_64.bin
     $ chmod +x android-ndk-${ANDROID_NDK_VERSION}-linux-x86_64.bin
     $ ./android-ndk-r10e-linux-x86_64.bin
-    $ export ANDROID_NDK_ROOT ${HOME}/android-ndk-r10e
-    $ export TOOLCHAIN_NAME arm-linux-androideabi-4.9
-    $ export TOOLCHAIN_HOST arm-linux-androideabi
-    $ export TOOLCHAIN_PATH ${ANDROID_NDK_ROOT}/toolchains/${TOOLCHAIN_NAME}/prebuilt/linux-x86_64/bin
-    $ export TOOLCHAIN_ARCH arm
+    $ export ANDROID_NDK_ROOT=${HOME}/android-ndk-r10e
+    $ export TOOLCHAIN_NAME=arm-linux-androideabi-4.9
+    $ export TOOLCHAIN_HOST=arm-linux-androideabi
+    $ export TOOLCHAIN_PATH=${ANDROID_NDK_ROOT}/toolchains/${TOOLCHAIN_NAME}/prebuilt/linux-x86_64/bin
+    $ export TOOLCHAIN_ARCH=arm
 
 Then you can launch the build:
 
