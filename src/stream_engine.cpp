@@ -935,9 +935,7 @@ int zmq::stream_engine_t::decode_and_push (msg_t *msg_)
     }
 
     if (msg_->flags () & msg_t::command) {
-        uint8_t cmd_id = *((uint8_t *) msg_->data ());
-        if (cmd_id == 4)
-            process_heartbeat_message (msg_);
+        process_command_message (msg_);
     }
 
     if (metadata)
@@ -1090,6 +1088,22 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
         next_msg = &stream_engine_t::produce_pong_message;
         out_event ();
     }
+
+    return 0;
+}
+
+int zmq::stream_engine_t::process_command_message (msg_t *msg_)
+{
+    uint8_t cmd_name_size = *((uint8_t *) msg_->data ());
+    //  Malformed command
+    if (msg_->size () < cmd_name_size + sizeof (cmd_name_size))
+        return -1;
+
+    uint8_t *cmd_name = ((uint8_t *) msg_->data ()) + 1;
+    if (cmd_name_size == 4
+        && (memcmp (cmd_name, "PING", cmd_name_size) == 0
+            || memcmp (cmd_name, "PONG", cmd_name_size) == 0))
+        return process_heartbeat_message (msg_);
 
     return 0;
 }
