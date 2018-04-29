@@ -116,7 +116,7 @@ function android_build_env {
     ##
     # Set up some local variables and check them
     
-    ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-9/arch-${TOOLCHAIN_ARCH}"
+    ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-14/arch-${TOOLCHAIN_ARCH}"
     
     if [ ! -d "$ANDROID_BUILD_SYSROOT" ]; then
         ANDROID_BUILD_FAIL+=("The ANDROID_BUILD_SYSROOT directory does not exist")
