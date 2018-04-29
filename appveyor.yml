@@ -70,16 +70,26 @@ init:
   - msbuild /version
   - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
 
+cache:
+    - C:\projects\libsodium -> appveyor.yml
+
 install:
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
-  - cmd: if "%WITH_LIBSODIUM%"=="ON" git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+  - if "%WITH_LIBSODIUM%"=="ON" (
+      if not exist %LIBSODIUMDIR% (
+      git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+      ) else (
+      cd "%LIBSODIUMDIR%" &&
+      git pull
+      )
+    )
   - cmd: if "%WITH_LIBSODIUM%"=="ON" msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
-  - cmd: if "%WITH_LIBSODIUM%"=="ON" move "%SODIUM_LIBRARY_DIR%\libsodium.lib" "%SODIUM_LIBRARY_DIR%\sodium.lib"
+  - ps: if (${env:WITH_LIBSODIUM} -eq "ON") { Copy-Item "C:\projects\libsodium\bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "C:\projects\libsodium\bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib" }
 
 clone_folder: C:\projects\libzmq
 
@@ -102,5 +112,5 @@ after_build:
 
 test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: ctest -C "%Configuration%" -V
+  - cmd: ctest -C "%Configuration%" -V -j5
 
