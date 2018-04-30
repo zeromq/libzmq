@@ -80,6 +80,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/if.h>
+#include <netdb.h>
 #if defined(ZMQ_HAVE_AIX)
 #include <sys/types.h>
 #include <sys/socketvar.h>
@@ -410,6 +412,34 @@ int is_tipc_available (void)
 
     return tipc == 0;
 #endif // ZMQ_HAVE_TIPC
+}
+
+//  Wrapper around 'inet_pton' for systems that don't support it (e.g. Windows
+//  XP)
+int test_inet_pton (int af_, const char *src_, void *dst_)
+{
+#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
+    if (af_ == AF_INET) {
+        struct in_addr *ip4addr = (struct in_addr *) dst_;
+
+        ip4addr->s_addr = inet_addr (src_);
+
+        //  INADDR_NONE is -1 which is also a valid representation for IP
+        //  255.255.255.255
+        if (ip4addr->s_addr == INADDR_NONE
+            && strcmp (src_, "255.255.255.255") != 0) {
+            return 0;
+        }
+
+        //  Success
+        return 1;
+    } else {
+        //  Not supported.
+        return 0;
+    }
+#else
+    return inet_pton (af_, src_, dst_);
+#endif
 }
 
 #if defined(ZMQ_HAVE_WINDOWS)

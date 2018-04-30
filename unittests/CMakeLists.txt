@@ -5,6 +5,7 @@ set(unittests
   unittest_ypipe
   unittest_poller
   unittest_mtrie
+  unittest_ip_resolver
 )
 
 #IF (ENABLE_DRAFTS)

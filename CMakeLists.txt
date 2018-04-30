@@ -603,6 +603,7 @@ set (cxx-sources
         udp_address.cpp
         scatter.cpp
         gather.cpp
+	ip_resolver.cpp
 		zap_client.cpp
 		# at least for VS, the header files must also be listed
 		address.hpp
