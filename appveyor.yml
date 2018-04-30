@@ -4,12 +4,12 @@ shallow_clone: true
 
 skip_tags: true
 
-os: Visual Studio 2015
+os: Visual Studio 2013
 
 environment:
-  CMAKE_GENERATOR: "Visual Studio 14 2015"
-  MSVCVERSION: "v140"
-  MSVCYEAR: "vs2015"
+  CMAKE_GENERATOR: "Visual Studio 12 2013"
+  MSVCVERSION: "v120"
+  MSVCYEAR: "vs2013"
   matrix:
     - platform: Win32
       configuration: Release
@@ -20,10 +20,6 @@ environment:
       POLLER: poll
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      CMAKE_GENERATOR: "Visual Studio 15 2017"
-      MSVCVERSION: "v141"
-      MSVCYEAR: "vs2017"
     - platform: Win32
       configuration: Debug
       WITH_LIBSODIUM: ON
@@ -48,10 +44,10 @@ environment:
       configuration: Release
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-      CMAKE_GENERATOR: "Visual Studio 12 2013"
-      MSVCVERSION: "v120"
-      MSVCYEAR: "vs2013"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GENERATOR: "Visual Studio 14 2015"
+      MSVCVERSION: "v140"
+      MSVCYEAR: "vs2015"
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: ON
