@@ -135,6 +135,7 @@ IF (ENABLE_DRAFTS)
         test_scatter_gather
         test_dgram
         test_app_meta
+        test_peer_funcs
     )
 ENDIF (ENABLE_DRAFTS)
 
