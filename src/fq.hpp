@@ -56,6 +56,11 @@ class fq_t
     bool has_in ();
     const blob_t &get_credential () const;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    int mute_peer (const void *routing_id, const int routing_id_len,
+                                const bool mute);
+#endif // ZMQ_BUILD_DRAFT_API
+
   private:
     //  Inbound pipes.
     typedef array_t<pipe_t, 1> pipes_t;

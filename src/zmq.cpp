@@ -496,6 +496,12 @@ int zmq_mute_peer (void *s_, const void *routing_id, const int routing_id_len,
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
         return -1;
+
+    if (!routing_id || routing_id_len == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
     return s->mute_peer (routing_id, routing_id_len, mute);
 }
 

@@ -154,3 +154,35 @@ const zmq::blob_t &zmq::fq_t::get_credential () const
 {
     return last_in ? last_in->get_credential () : saved_credential;
 }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+int zmq::fq_t::mute_peer (const void *routing_id, const int routing_id_len,
+                                const bool mute)
+{
+    size_t i;
+
+    //  Locate pipe that handled routing_id
+    //  NOTE: performance could be improved by having a map by routing_id
+    for (i = 0; i < pipes.size(); ++i) {
+        const blob_t& it_rid = pipes[i]->get_routing_id ();
+
+        if (it_rid.size() != (size_t)routing_id_len)
+            continue;
+
+        if (memcmp(routing_id, it_rid.data(), routing_id_len) != 0)
+            continue;
+
+        //  Found
+        pipes[i]->set_mute (mute);
+
+	//  Make sure pipe is marked as active
+	if (mute == false)
+	    activated (pipes[i]);
+
+        return 0;
+    }
+
+    errno = EHOSTUNREACH;
+    return -1;
+}
+#endif // ZMQ_BUILD_DRAFT_API

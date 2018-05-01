@@ -100,6 +100,9 @@ zmq::pipe_t::pipe_t (object_t *parent_,
     delay (true),
     server_socket_routing_id (0),
     conflate (conflate_)
+#ifdef ZMQ_BUILD_DRAFT_API
+    , in_mute(false)
+#endif // ZMQ_BUILD_DRAFT_API
 {
 }
 
@@ -155,6 +158,12 @@ bool zmq::pipe_t::check_read ()
     if (unlikely (state != active && state != waiting_for_delimiter))
         return false;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Socket is muted (incoming direction)
+    if (in_mute)
+        return false;
+#endif // ZMQ_BUILD_DRAFT_API
+
     //  Check if there's an item in the pipe.
     if (!inpipe->check_read ()) {
         in_active = false;
@@ -182,6 +191,13 @@ bool zmq::pipe_t::read (msg_t *msg_)
         return false;
 
 read_message:
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Socket is muted (incoming direction)
+    if (in_mute)
+        return false;
+#endif // ZMQ_BUILD_DRAFT_API
+
     if (!inpipe->read (msg_)) {
         in_active = false;
         return false;

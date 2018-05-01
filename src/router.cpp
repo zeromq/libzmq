@@ -443,6 +443,12 @@ const zmq::blob_t &zmq::router_t::get_credential () const
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
+int zmq::router_t::mute_peer (const void *routing_id, const int routing_id_len,
+                                const bool mute)
+{
+    return fq.mute_peer (routing_id, routing_id_len, mute);
+}
+
 int zmq::router_t::get_peer_state (const void *routing_id_,
                                    size_t routing_id_size_) const
 {

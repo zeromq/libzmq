@@ -143,6 +143,13 @@ class pipe_t : public object_t,
     //  Returns true if HWM is not reached
     bool check_hwm () const;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    void set_mute (const bool mute)
+    {
+        in_mute = mute;
+    };
+#endif // ZMQ_BUILD_DRAFT_API
+
   private:
     //  Type of the underlying lock-free pipe.
     typedef ypipe_base_t<msg_t> upipe_t;
@@ -248,6 +255,11 @@ class pipe_t : public object_t,
     static int compute_lwm (int hwm_);
 
     const bool conflate;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Mute pipe (in)
+    bool in_mute;
+#endif // ZMQ_BUILD_DRAFT_API
 
     //  Disable copying.
     pipe_t (const pipe_t &);

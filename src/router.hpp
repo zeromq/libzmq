@@ -62,6 +62,8 @@ class router_t : public socket_base_t
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 #ifdef ZMQ_BUILD_DRAFT_API
+    int mute_peer (const void *routing_id, const int routing_id_len,
+                                const bool mute);
     int get_peer_state (const void *identity, size_t identity_size) const;
 #endif // ZMQ_BUILD_DRAFT_API
 
