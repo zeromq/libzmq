@@ -44,6 +44,8 @@
 #include <ctype.h>
 #endif
 
+#include "ip_resolver.hpp"
+
 zmq::udp_address_t::udp_address_t () : is_multicast (false)
 {
     memset (&bind_address, 0, sizeof bind_address);
@@ -56,37 +58,28 @@ zmq::udp_address_t::~udp_address_t ()
 
 int zmq::udp_address_t::resolve (const char *name_, bool bind_)
 {
-    //  Find the ':' at end that separates address from the port number.
-    const char *delimiter = strrchr (name_, ':');
-    if (!delimiter) {
-        errno = EINVAL;
+    ip_resolver_options_t resolver_opts;
+
+    resolver_opts.bindable (bind_)
+      .allow_dns (!bind_)
+      .allow_nic_name (bind_)
+      .expect_port (true)
+      .ipv6 (false);
+
+    ip_resolver_t resolver (resolver_opts);
+    ip_addr_t addr;
+
+    int rc = resolver.resolve (&addr, name_);
+    if (rc != 0) {
         return -1;
     }
 
-    //  Separate the address/port.
-    std::string addr_str (name_, delimiter - name_);
-    std::string port_str (delimiter + 1);
-
-    //  Parse the port number (0 is not a valid port).
-    uint16_t port = (uint16_t) atoi (port_str.c_str ());
-    if (port == 0) {
-        errno = EINVAL;
+    if (addr.generic.sa_family != AF_INET) {
+        //  Shouldn't happen
         return -1;
     }
 
-    dest_address.sin_family = AF_INET;
-    dest_address.sin_port = htons (port);
-
-    //  Only when the udp should bind we allow * as the address
-    if (addr_str == "*" && bind_)
-        dest_address.sin_addr.s_addr = htonl (INADDR_ANY);
-    else
-        dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
-
-    if (dest_address.sin_addr.s_addr == INADDR_NONE) {
-        errno = EINVAL;
-        return -1;
-    }
+    dest_address = addr.ipv4;
 
     // we will check only first byte of IP
     // and if it from 224 to 239, then it can
@@ -110,7 +103,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
         bind_address = dest_address;
     else {
         bind_address.sin_family = AF_INET;
-        bind_address.sin_port = htons (port);
+        bind_address.sin_port = dest_address.sin_port;
         bind_address.sin_addr.s_addr = htonl (INADDR_ANY);
     }
 

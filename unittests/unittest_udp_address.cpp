@@ -89,14 +89,12 @@ static void test_resolve_ipv4_bind ()
 
 static void test_resolve_ipv4_bind_any ()
 {
-    //  Wildcard port not supported
-    test_resolve ("*:*", NULL, 0, "0.0.0.0");
+    test_resolve ("*:*", "0.0.0.0", 0, "0.0.0.0");
 }
 
 static void test_resolve_ipv4_bind_anyport ()
 {
-    //  Wildcard port not supported
-    test_resolve ("127.0.0.1:*", NULL, 0, "127.0.0.1");
+    test_resolve ("127.0.0.1:*", "127.0.0.1", 0, "127.0.0.1");
 }
 
 static void test_resolve_ipv4_bind_any_port ()
@@ -113,6 +111,11 @@ static void test_resolve_ipv4_connect_any ()
 static void test_resolve_ipv4_connect_anyport ()
 {
     test_resolve ("127.0.0.1:*", NULL);
+}
+
+static void test_resolve_ipv4_connect_port0 ()
+{
+    test_resolve ("127.0.0.1:0", "127.0.0.1", 0);
 }
 
 static void test_resolve_ipv4_bind_mcast ()
@@ -149,6 +152,7 @@ int main (void)
     RUN_TEST (test_resolve_ipv4_bind_any_port);
     RUN_TEST (test_resolve_ipv4_connect_any);
     RUN_TEST (test_resolve_ipv4_connect_anyport);
+    RUN_TEST (test_resolve_ipv4_connect_port0);
     RUN_TEST (test_resolve_ipv4_bind_mcast);
     RUN_TEST (test_resolve_ipv4_connect_mcast);
     RUN_TEST (test_resolve_ipv6_simple);
