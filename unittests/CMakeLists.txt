@@ -6,6 +6,7 @@ set(unittests
   unittest_poller
   unittest_mtrie
   unittest_ip_resolver
+  unittest_udp_address
 )
 
 #IF (ENABLE_DRAFTS)
