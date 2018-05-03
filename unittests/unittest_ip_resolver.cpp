@@ -210,6 +210,18 @@ static void test_bind_any (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_bind_any)
 
+static void test_bind_any_port0 (int ipv6_)
+{
+    zmq::ip_resolver_options_t resolver_opts;
+
+    resolver_opts.bindable (true).expect_port (true).ipv6 (ipv6_);
+
+    //  Should be equivalent to "*:*"
+    const char *expected = ipv6_ ? "::" : "0.0.0.0";
+    test_resolve (resolver_opts, "*:0", expected, 0);
+}
+MAKE_TEST_V4V6 (test_bind_any_port0)
+
 static void test_nobind_any (int ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
@@ -240,14 +252,24 @@ static void test_nobind_addr_anyport (int ipv6_)
 
     resolver_opts.expect_port (true).ipv6 (ipv6_);
 
-    // This however works. Should it ? For the time being I'm going to
-    // keep it that way for backcompat but I can't imagine why you'd
-    // want a wildcard port if you're not binding.
-    const char *expected = ipv6_ ? "::ffff:127.0.0.1" : "127.0.0.1";
-    const char *fallback = ipv6_ ? "127.0.0.1" : NULL;
-    test_resolve (resolver_opts, "127.0.0.1:*", expected, 0, 0, fallback);
+    //  Wildcard port should be rejected for non-bindable addresses
+    test_resolve (resolver_opts, "127.0.0.1:*", NULL);
 }
 MAKE_TEST_V4V6 (test_nobind_addr_anyport)
+
+static void test_nobind_addr_port0 (int ipv6_)
+{
+    zmq::ip_resolver_options_t resolver_opts;
+
+    resolver_opts.expect_port (true).ipv6 (ipv6_);
+
+    //  Connecting to port 0 is allowed, although it might not be massively
+    //  useful
+    const char *expected = ipv6_ ? "::ffff:127.0.0.1" : "127.0.0.1";
+    const char *fallback = ipv6_ ? "127.0.0.1" : NULL;
+    test_resolve (resolver_opts, "127.0.0.1:0", expected, 0, 0, fallback);
+}
+MAKE_TEST_V4V6 (test_nobind_addr_port0)
 
 static void test_parse_ipv4_simple ()
 {
@@ -501,7 +523,7 @@ static void test_parse_ipv6_port_any ()
 {
     zmq::ip_resolver_options_t resolver_opts;
 
-    resolver_opts.ipv6 (true).expect_port (true);
+    resolver_opts.ipv6 (true).expect_port (true).bindable (true);
 
     test_resolve (resolver_opts, "[1234::1]:*", "1234::1", 0);
 }
@@ -810,12 +832,16 @@ int main (void)
 
     RUN_TEST (test_bind_any_ipv4);
     RUN_TEST (test_bind_any_ipv6);
+    RUN_TEST (test_bind_any_port0_ipv4);
+    RUN_TEST (test_bind_any_port0_ipv6);
     RUN_TEST (test_nobind_any_ipv4);
     RUN_TEST (test_nobind_any_ipv6);
     RUN_TEST (test_nobind_any_port_ipv4);
     RUN_TEST (test_nobind_any_port_ipv6);
     RUN_TEST (test_nobind_addr_anyport_ipv4);
     RUN_TEST (test_nobind_addr_anyport_ipv6);
+    RUN_TEST (test_nobind_addr_port0_ipv4);
+    RUN_TEST (test_nobind_addr_port0_ipv6);
     RUN_TEST (test_parse_ipv4_simple);
     RUN_TEST (test_parse_ipv4_zero);
     RUN_TEST (test_parse_ipv4_max);
