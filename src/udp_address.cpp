@@ -79,17 +79,12 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
         return -1;
     }
 
+    is_multicast = addr.is_multicast ();
     dest_address = addr.ipv4;
 
-    // we will check only first byte of IP
-    // and if it from 224 to 239, then it can
-    // represent multicast IP.
-    int i = dest_address.sin_addr.s_addr & 0xFF;
-    if (i >= 224 && i <= 239) {
+    if (is_multicast) {
         multicast = dest_address.sin_addr;
-        is_multicast = true;
-    } else
-        is_multicast = false;
+    }
 
     iface.s_addr = htonl (INADDR_ANY);
     if (iface.s_addr == INADDR_NONE) {

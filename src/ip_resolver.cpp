@@ -20,6 +20,27 @@
 
 #include "ip_resolver.hpp"
 
+int zmq::ip_addr_t::family () const
+{
+    return generic.sa_family;
+}
+
+bool zmq::ip_addr_t::is_multicast () const
+{
+    if (family () == AF_INET) {
+        uint32_t addr = ntohl (ipv4.sin_addr.s_addr);
+
+        //  IPv4 Multicast: address MSBs are 1110
+        //  Range: 224.0.0.0 - 239.255.255.255
+        return (addr & 0xf0000000) == 0xe0000000;
+    } else {
+        const uint8_t *addr = (const uint8_t *) &ipv6.sin6_addr;
+
+        //  IPv6 Multicast: ff00::/8
+        return addr[0] == 0xff;
+    }
+}
+
 zmq::ip_resolver_options_t::ip_resolver_options_t () :
     bindable_wanted (false),
     nic_name_allowed (false),
@@ -221,7 +242,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     //  for us but since we don't resolve service names it's a bit overkill and
     //  we'd still have to do it manually when the address is resolved by
     //  'resolve_nic_name'
-    if (ip_addr_->generic.sa_family == AF_INET6) {
+    if (ip_addr_->family () == AF_INET6) {
         ip_addr_->ipv6.sin6_port = htons (port);
         ip_addr_->ipv6.sin6_scope_id = zone_id;
     } else {

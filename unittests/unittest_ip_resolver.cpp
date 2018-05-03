@@ -157,7 +157,7 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
 
 #if defined ZMQ_HAVE_WINDOWS
     if (family == AF_INET6 && expected_addr_v4_failover_ != NULL &&
-        addr.generic.sa_family == AF_INET) {
+        addr.family () == AF_INET) {
         //  We've requested an IPv6 but the system gave us an IPv4, use the
         //  failover address
         family = AF_INET;
@@ -167,7 +167,7 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
     (void)expected_addr_v4_failover_;
 #endif
 
-    TEST_ASSERT_EQUAL (family, addr.generic.sa_family);
+    TEST_ASSERT_EQUAL (family, addr.family ());
 
     if (family == AF_INET6) {
         struct in6_addr expected_addr;
@@ -187,7 +187,6 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
 
         assert (test_inet_pton (AF_INET, expected_addr_, &expected_addr) == 1);
 
-        TEST_ASSERT_EQUAL (AF_INET, addr.generic.sa_family);
         TEST_ASSERT_EQUAL (expected_addr.s_addr, ip4_addr->sin_addr.s_addr);
         TEST_ASSERT_EQUAL (htons (expected_port_), ip4_addr->sin_port);
     }
@@ -823,6 +822,82 @@ void test_dns_ipv6_scope_port_brackets ()
                   "fdf5:d058:d656::1", 4444, 1);
 }
 
+static void test_addr (int family_, const char *addr_, bool multicast_)
+{
+    if (family_ == AF_INET6 && !is_ipv6_available ()) {
+        TEST_IGNORE_MESSAGE ("ipv6 is not available");
+    }
+
+    zmq::ip_resolver_options_t resolver_opts;
+
+    resolver_opts.ipv6 (family_ == AF_INET6);
+
+    test_ip_resolver_t resolver (resolver_opts);
+    zmq::ip_addr_t addr;
+
+    int rc = resolver.resolve (&addr, addr_);
+
+    assert (rc == 0);
+
+    TEST_ASSERT_EQUAL (family_, addr.family ());
+    TEST_ASSERT_EQUAL (multicast_, addr.is_multicast ());
+}
+
+static void test_addr_unicast_ipv4 ()
+{
+    test_addr (AF_INET, "1.2.3.4", false);
+}
+
+static void test_addr_unicast_ipv6 ()
+{
+    test_addr (AF_INET6, "abcd::1", false);
+}
+
+static void test_addr_multicast_ipv4 ()
+{
+    test_addr (AF_INET, "230.1.2.3", true);
+}
+
+static void test_addr_multicast_ipv6 ()
+{
+    test_addr (AF_INET6, "ffab::1234", true);
+}
+
+static void test_addr_multicast_ipv4_min ()
+{
+    test_addr (AF_INET, "224.0.0.0", true);
+}
+
+static void test_addr_multicast_ipv6_min ()
+{
+    test_addr (AF_INET6, "ff00::", true);
+}
+
+static void test_addr_multicast_ipv4_max ()
+{
+    test_addr (AF_INET, "239.255.255.255", true);
+}
+
+static void test_addr_multicast_ipv6_max ()
+{
+    test_addr (AF_INET6, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", true);
+}
+
+static void test_addr_multicast_ipv4_sub ()
+{
+    test_addr (AF_INET, "223.255.255.255", false);
+}
+
+static void test_addr_multicast_ipv6_sub ()
+{
+    test_addr (AF_INET6, "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", false);
+}
+
+static void test_addr_multicast_ipv4_over ()
+{
+    test_addr (AF_INET, "240.0.0.0", false);
+}
+
 int main (void)
 {
     zmq::initialize_network ();
@@ -901,6 +976,17 @@ int main (void)
     RUN_TEST (test_dns_ipv6_scope);
     RUN_TEST (test_dns_ipv6_scope_port);
     RUN_TEST (test_dns_ipv6_scope_port_brackets);
+    RUN_TEST (test_addr_unicast_ipv4);
+    RUN_TEST (test_addr_unicast_ipv6);
+    RUN_TEST (test_addr_multicast_ipv4);
+    RUN_TEST (test_addr_multicast_ipv6);
+    RUN_TEST (test_addr_multicast_ipv4_min);
+    RUN_TEST (test_addr_multicast_ipv6_min);
+    RUN_TEST (test_addr_multicast_ipv4_max);
+    RUN_TEST (test_addr_multicast_ipv6_max);
+    RUN_TEST (test_addr_multicast_ipv4_sub);
+    RUN_TEST (test_addr_multicast_ipv6_sub);
+    RUN_TEST (test_addr_multicast_ipv4_over);
 
     zmq::shutdown_network ();
 

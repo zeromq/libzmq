@@ -42,6 +42,9 @@ union ip_addr_t
     sockaddr generic;
     sockaddr_in ipv4;
     sockaddr_in6 ipv6;
+
+    int family () const;
+    bool is_multicast () const;
 };
 
 class ip_resolver_options_t
