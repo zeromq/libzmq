@@ -117,8 +117,17 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         addr = std::string (name_, delim - name_);
         std::string port_str = std::string (delim + 1);
 
-        if (port_str == "*" || port_str == "0") {
-            //  Resolve wildcard to 0 to allow autoselection of port
+        if (port_str == "*") {
+            if (options.bindable ()) {
+                //  Resolve wildcard to 0 to allow autoselection of port
+                port = 0;
+            } else {
+                errno = EINVAL;
+                return -1;
+            }
+        } else if (port_str == "0") {
+            //  Using "0" for a bind address is equivalent to using "*". For a
+            //  connectable address it could be used to connect to port 0.
             port = 0;
         } else {
             //  Parse the port number (0 is not a valid port).
