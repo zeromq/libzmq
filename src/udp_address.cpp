@@ -41,28 +41,26 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <net/if.h>
 #include <ctype.h>
 #endif
 
-#include "ip_resolver.hpp"
-
-zmq::udp_address_t::udp_address_t () : is_multicast (false)
+zmq::udp_address_t::udp_address_t () : bind_interface (-1), is_multicast (false)
 {
-    memset (&bind_address, 0, sizeof bind_address);
-    memset (&dest_address, 0, sizeof dest_address);
+    bind_address = ip_addr_t::any (AF_INET);
+    target_address = ip_addr_t::any (AF_INET);
 }
 
 zmq::udp_address_t::~udp_address_t ()
 {
 }
 
-int zmq::udp_address_t::resolve (const char *name_, bool bind_)
+int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
 {
     //  No IPv6 support yet
-    int family = AF_INET;
-    bool ipv6 = family == AF_INET6;
     bool has_interface = false;
-    ip_addr_t interface_addr;
+
+    address = name_;
 
     //  If we have a semicolon then we should have an interface specifier in the
     //  URL
@@ -79,22 +77,36 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
           //  indeterminate socktype.
           .allow_dns (false)
           .allow_nic_name (true)
-          .ipv6 (ipv6)
+          .ipv6 (ipv6_)
           .expect_port (false);
 
         ip_resolver_t src_resolver (src_resolver_opts);
 
-        const int rc =
-          src_resolver.resolve (&interface_addr, src_name.c_str ());
+        const int rc = src_resolver.resolve (&bind_address, src_name.c_str ());
 
         if (rc != 0) {
             return -1;
         }
 
-        if (interface_addr.is_multicast ()) {
+        if (bind_address.is_multicast ()) {
             //  It doesn't make sense to have a multicast address as a source
             errno = EINVAL;
             return -1;
+        }
+
+        //  This is a hack because we need the interface index when binding
+        //  multicast IPv6, we can't do it by address. Unfortunately for the
+        //  time being we don't have a generic platform-independent function to
+        //  resolve an interface index from an address, so we only support it
+        //  when an actual interface name is provided.
+        if (src_name == "*") {
+            bind_interface = 0;
+        } else {
+            bind_interface = if_nametoindex (src_name.c_str ());
+            if (bind_interface == 0) {
+                //  Error, probably not an interface name.
+                bind_interface = -1;
+            }
         }
 
         has_interface = true;
@@ -107,19 +119,17 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
       .allow_dns (!bind_)
       .allow_nic_name (bind_)
       .expect_port (true)
-      .ipv6 (ipv6);
+      .ipv6 (ipv6_);
 
     ip_resolver_t resolver (resolver_opts);
 
-    ip_addr_t target_addr;
-
-    int rc = resolver.resolve (&target_addr, name_);
+    int rc = resolver.resolve (&target_address, name_);
     if (rc != 0) {
         return -1;
     }
 
-    is_multicast = target_addr.is_multicast ();
-    uint16_t port = target_addr.port ();
+    is_multicast = target_address.is_multicast ();
+    uint16_t port = target_address.port ();
 
     if (has_interface) {
         //  If we have an interface specifier then the target address must be a
@@ -129,46 +139,43 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
             return -1;
         }
 
-        interface_addr.set_port (port);
-
-        dest_address = target_addr.ipv4;
-        bind_address = interface_addr.ipv4;
+        bind_address.set_port (port);
     } else {
         //  If we don't have an explicit interface specifier then the URL is
         //  ambiguous: if the target address is multicast then it's the
         //  destination address and the bind address is ANY, if it's unicast
         //  then it's the bind address when 'bind_' is true and the destination
         //  otherwise
-        ip_addr_t any = ip_addr_t::any (family);
-        any.set_port (port);
-
-        if (is_multicast) {
-            dest_address = target_addr.ipv4;
-            bind_address = any.ipv4;
+        if (is_multicast || !bind_) {
+            bind_address = ip_addr_t::any (target_address.family ());
+            bind_address.set_port (port);
+            bind_interface = 0;
         } else {
-            if (bind_) {
-                dest_address = target_addr.ipv4;
-                bind_address = target_addr.ipv4;
-            } else {
-                dest_address = target_addr.ipv4;
-                bind_address = any.ipv4;
-            }
+            //  If we were asked for a bind socket and the address
+            //  provided was not multicast then it was really meant as
+            //  a bind address and the target_address is useless.
+            bind_address = target_address;
         }
     }
 
-    if (is_multicast) {
-        multicast = dest_address.sin_addr;
+    if (bind_address.family () != target_address.family ()) {
+        errno = EINVAL;
+        return -1;
     }
 
-    address = name_;
+    //  For IPv6 multicast we *must* have an interface index since we can't
+    //  bind by address.
+    if (ipv6_ && is_multicast && bind_interface < 0) {
+        errno = ENODEV;
+        return -1;
+    }
 
     return 0;
 }
 
-int zmq::udp_address_t::to_string (std::string &addr_)
+int zmq::udp_address_t::family () const
 {
-    addr_ = address;
-    return 0;
+    return bind_address.family ();
 }
 
 bool zmq::udp_address_t::is_mcast () const
@@ -176,41 +183,24 @@ bool zmq::udp_address_t::is_mcast () const
     return is_multicast;
 }
 
-const sockaddr *zmq::udp_address_t::bind_addr () const
+const zmq::ip_addr_t *zmq::udp_address_t::bind_addr () const
 {
-    return (sockaddr *) &bind_address;
+    return &bind_address;
 }
 
-socklen_t zmq::udp_address_t::bind_addrlen () const
+int zmq::udp_address_t::bind_if () const
 {
-    return sizeof (sockaddr_in);
+    return bind_interface;
 }
 
-const sockaddr *zmq::udp_address_t::dest_addr () const
+const zmq::ip_addr_t *zmq::udp_address_t::target_addr () const
 {
-    return (sockaddr *) &dest_address;
+    return &target_address;
 }
 
-socklen_t zmq::udp_address_t::dest_addrlen () const
+int zmq::udp_address_t::to_string (std::string &addr_)
 {
-    return sizeof (sockaddr_in);
-}
-
-const in_addr zmq::udp_address_t::multicast_ip () const
-{
-    return multicast;
-}
-
-const in_addr zmq::udp_address_t::interface_ip () const
-{
-    return iface;
-}
-
-#if defined ZMQ_HAVE_WINDOWS
-unsigned short zmq::udp_address_t::family () const
-#else
-sa_family_t zmq::udp_address_t::family () const
-#endif
-{
-    return AF_INET;
+    // XXX what do (factor TCP code?)
+    addr_ = address;
+    return 0;
 }

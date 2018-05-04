@@ -925,7 +925,7 @@ unittests_unittest_mtrie_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${UNITY_LIBS} \
 	$(CODE_COVERAGE_LDFLAGS)
 
-unittests_unittest_ip_resolver_SOURCES = unittests/unittest_ip_resolver.cpp
+unittests_unittest_ip_resolver_SOURCES = unittests/unittest_ip_resolver.cpp unittests/unittest_resolver_common.hpp
 unittests_unittest_ip_resolver_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
 unittests_unittest_ip_resolver_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_ip_resolver_LDADD = $(top_builddir)/src/.libs/libzmq.a \
@@ -933,7 +933,7 @@ unittests_unittest_ip_resolver_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${UNITY_LIBS} \
 	$(CODE_COVERAGE_LDFLAGS)
 
-unittests_unittest_udp_address_SOURCES = unittests/unittest_udp_address.cpp
+unittests_unittest_udp_address_SOURCES = unittests/unittest_udp_address.cpp unittests/unittest_resolver_common.hpp
 unittests_unittest_udp_address_CPPFLAGS = -I$(top_srcdir)/src ${UNITY_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
 unittests_unittest_udp_address_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_udp_address_LDADD = $(top_builddir)/src/.libs/libzmq.a \

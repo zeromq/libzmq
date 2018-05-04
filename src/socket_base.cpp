@@ -534,7 +534,8 @@ int zmq::socket_base_t::bind (const char *addr_)
 
         paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
         alloc_assert (paddr->resolved.udp_addr);
-        rc = paddr->resolved.udp_addr->resolve (address.c_str (), true);
+        rc = paddr->resolved.udp_addr->resolve (address.c_str (), true,
+                                                options.ipv6);
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -876,7 +877,8 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
         alloc_assert (paddr->resolved.udp_addr);
-        rc = paddr->resolved.udp_addr->resolve (address.c_str (), false);
+        rc = paddr->resolved.udp_addr->resolve (address.c_str (), false,
+                                                options.ipv6);
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;

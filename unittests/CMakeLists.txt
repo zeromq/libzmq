@@ -26,7 +26,7 @@ include_directories("${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/src" "${C
 
 foreach(test ${unittests})
   # target_sources not supported before CMake 3.1
-  add_executable(${test} ${test}.cpp)
+  add_executable(${test} ${test}.cpp "unittest_resolver_common.hpp")
 
   # per-test directories not generated on OS X / Darwin
   if (NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang.*")

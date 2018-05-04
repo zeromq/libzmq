@@ -32,6 +32,18 @@
 
 #include <unity.h>
 
+// Helper macro to define the v4/v6 function pairs
+#define MAKE_TEST_V4V6(_test)                                                  \
+    static void _test##_ipv4 () { _test (false); }                             \
+                                                                               \
+    static void _test##_ipv6 ()                                                \
+    {                                                                          \
+        if (!is_ipv6_available ()) {                                           \
+            TEST_IGNORE_MESSAGE ("ipv6 is not available");                     \
+        }                                                                      \
+        _test (true);                                                          \
+    }
+
 void setUp ()
 {
     setup_test_context ();
@@ -111,15 +123,18 @@ void test_join_twice_fails ()
     test_context_socket_close (dish);
 }
 
-void test_radio_dish_tcp_poll ()
+void test_radio_dish_tcp_poll (int ipv6_)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *radio = test_context_socket (ZMQ_RADIO);
-    bind_loopback_ipv4 (radio, my_endpoint, len);
+    bind_loopback (radio, ipv6_, my_endpoint, len);
 
     void *dish = test_context_socket (ZMQ_DISH);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dish, ZMQ_IPV6, &ipv6_, sizeof (int)));
 
     // Joining
     TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "Movies"));
@@ -175,21 +190,30 @@ void test_radio_dish_tcp_poll ()
     test_context_socket_close (dish);
     test_context_socket_close (radio);
 }
+MAKE_TEST_V4V6 (test_radio_dish_tcp_poll)
 
-void test_dish_connect_fails ()
+void test_dish_connect_fails (int ipv6_)
 {
     void *dish = test_context_socket (ZMQ_DISH);
 
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dish, ZMQ_IPV6, &ipv6_, sizeof (int)));
+
+    const char *url = ipv6_ ? "udp://[::1]:5556" : "udp://127.0.0.1:5556";
+
     //  Connecting dish should fail
-    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
-                               zmq_connect (dish, "udp://127.0.0.1:5556"));
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO, zmq_connect (dish, url));
 
     test_context_socket_close (dish);
 }
+MAKE_TEST_V4V6 (test_dish_connect_fails)
 
-void test_radio_bind_fails ()
+void test_radio_bind_fails (int ipv6_)
 {
     void *radio = test_context_socket (ZMQ_RADIO);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (radio, ZMQ_IPV6, &ipv6_, sizeof (int)));
 
     //  Connecting dish should fail
     //  Bind radio should fail
@@ -198,14 +222,22 @@ void test_radio_bind_fails ()
 
     test_context_socket_close (radio);
 }
+MAKE_TEST_V4V6 (test_radio_bind_fails)
 
-void test_radio_dish_udp ()
+void test_radio_dish_udp (int ipv6_)
 {
     void *radio = test_context_socket (ZMQ_RADIO);
     void *dish = test_context_socket (ZMQ_DISH);
 
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (radio, ZMQ_IPV6, &ipv6_, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dish, ZMQ_IPV6, &ipv6_, sizeof (int)));
+
+    const char *radio_url = ipv6_ ? "udp://[::1]:5556" : "udp://127.0.0.1:5556";
+
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dish, "udp://*:5556"));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (radio, "udp://127.0.0.1:5556"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (radio, radio_url));
 
     msleep (SETTLE_TIME);
 
@@ -217,6 +249,7 @@ void test_radio_dish_udp ()
     test_context_socket_close (dish);
     test_context_socket_close (radio);
 }
+MAKE_TEST_V4V6 (test_radio_dish_udp)
 
 int main (void)
 {
@@ -226,10 +259,14 @@ int main (void)
     RUN_TEST (test_leave_unjoined_fails);
     RUN_TEST (test_join_too_long_fails);
     RUN_TEST (test_join_twice_fails);
-    RUN_TEST (test_radio_bind_fails);
-    RUN_TEST (test_dish_connect_fails);
-    RUN_TEST (test_radio_dish_tcp_poll);
-    RUN_TEST (test_radio_dish_udp);
+    RUN_TEST (test_radio_bind_fails_ipv4);
+    RUN_TEST (test_radio_bind_fails_ipv6);
+    RUN_TEST (test_dish_connect_fails_ipv4);
+    RUN_TEST (test_dish_connect_fails_ipv6);
+    RUN_TEST (test_radio_dish_tcp_poll_ipv4);
+    RUN_TEST (test_radio_dish_tcp_poll_ipv6);
+    RUN_TEST (test_radio_dish_udp_ipv4);
+    RUN_TEST (test_radio_dish_udp_ipv6);
 
     return UNITY_END ();
 }
