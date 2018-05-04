@@ -58,53 +58,106 @@ zmq::udp_address_t::~udp_address_t ()
 
 int zmq::udp_address_t::resolve (const char *name_, bool bind_)
 {
+    //  No IPv6 support yet
+    int family = AF_INET;
+    bool ipv6 = family == AF_INET6;
+    bool has_interface = false;
+    ip_addr_t interface_addr;
+
+    //  If we have a semicolon then we should have an interface specifier in the
+    //  URL
+    const char *src_delimiter = strrchr (name_, ';');
+    if (src_delimiter) {
+        std::string src_name (name_, src_delimiter - name_);
+
+        ip_resolver_options_t src_resolver_opts;
+
+        src_resolver_opts
+          .bindable (true)
+          //  Restrict hostname/service to literals to avoid any DNS
+          //  lookups or service-name irregularity due to
+          //  indeterminate socktype.
+          .allow_dns (false)
+          .allow_nic_name (true)
+          .ipv6 (ipv6)
+          .expect_port (false);
+
+        ip_resolver_t src_resolver (src_resolver_opts);
+
+        const int rc =
+          src_resolver.resolve (&interface_addr, src_name.c_str ());
+
+        if (rc != 0) {
+            return -1;
+        }
+
+        if (interface_addr.is_multicast ()) {
+            //  It doesn't make sense to have a multicast address as a source
+            errno = EINVAL;
+            return -1;
+        }
+
+        has_interface = true;
+        name_ = src_delimiter + 1;
+    }
+
     ip_resolver_options_t resolver_opts;
 
     resolver_opts.bindable (bind_)
       .allow_dns (!bind_)
       .allow_nic_name (bind_)
       .expect_port (true)
-      .ipv6 (false);
+      .ipv6 (ipv6);
 
     ip_resolver_t resolver (resolver_opts);
-    ip_addr_t addr;
 
-    int rc = resolver.resolve (&addr, name_);
+    ip_addr_t target_addr;
+
+    int rc = resolver.resolve (&target_addr, name_);
     if (rc != 0) {
         return -1;
     }
 
-    if (addr.generic.sa_family != AF_INET) {
-        //  Shouldn't happen
-        return -1;
+    is_multicast = target_addr.is_multicast ();
+    uint16_t port = target_addr.port ();
+
+    if (has_interface) {
+        //  If we have an interface specifier then the target address must be a
+        //  multicast address
+        if (!is_multicast) {
+            errno = EINVAL;
+            return -1;
+        }
+
+        interface_addr.set_port (port);
+
+        dest_address = target_addr.ipv4;
+        bind_address = interface_addr.ipv4;
+    } else {
+        //  If we don't have an explicit interface specifier then the URL is
+        //  ambiguous: if the target address is multicast then it's the
+        //  destination address and the bind address is ANY, if it's unicast
+        //  then it's the bind address when 'bind_' is true and the destination
+        //  otherwise
+        ip_addr_t any = ip_addr_t::any (family);
+        any.set_port (port);
+
+        if (is_multicast) {
+            dest_address = target_addr.ipv4;
+            bind_address = any.ipv4;
+        } else {
+            if (bind_) {
+                dest_address = target_addr.ipv4;
+                bind_address = target_addr.ipv4;
+            } else {
+                dest_address = target_addr.ipv4;
+                bind_address = any.ipv4;
+            }
+        }
     }
 
-    dest_address = addr.ipv4;
-
-    // we will check only first byte of IP
-    // and if it from 224 to 239, then it can
-    // represent multicast IP.
-    int i = dest_address.sin_addr.s_addr & 0xFF;
-    if (i >= 224 && i <= 239) {
+    if (is_multicast) {
         multicast = dest_address.sin_addr;
-        is_multicast = true;
-    } else
-        is_multicast = false;
-
-    iface.s_addr = htonl (INADDR_ANY);
-    if (iface.s_addr == INADDR_NONE) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    //  If a should bind and not a multicast, the dest address
-    //  is actually the bind address
-    if (bind_ && !is_multicast)
-        bind_address = dest_address;
-    else {
-        bind_address.sin_family = AF_INET;
-        bind_address.sin_port = dest_address.sin_port;
-        bind_address.sin_addr.s_addr = htonl (INADDR_ANY);
     }
 
     address = name_;

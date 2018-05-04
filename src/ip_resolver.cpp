@@ -20,6 +20,69 @@
 
 #include "ip_resolver.hpp"
 
+int zmq::ip_addr_t::family () const
+{
+    return generic.sa_family;
+}
+
+bool zmq::ip_addr_t::is_multicast () const
+{
+    if (family () == AF_INET) {
+        //  IPv4 Multicast: address MSBs are 1110
+        //  Range: 224.0.0.0 - 239.255.255.255
+        return IN_MULTICAST (ntohl (ipv4.sin_addr.s_addr));
+    } else {
+        //  IPv6 Multicast: ff00::/8
+        return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr);
+    }
+}
+
+uint16_t zmq::ip_addr_t::port () const
+{
+    if (family () == AF_INET6) {
+        return ntohs (ipv6.sin6_port);
+    } else {
+        return ntohs (ipv4.sin_port);
+    }
+}
+
+void zmq::ip_addr_t::set_port (uint16_t port)
+{
+    if (family () == AF_INET6) {
+        ipv6.sin6_port = htons (port);
+    } else {
+        ipv4.sin_port = htons (port);
+    }
+}
+
+//  Construct an "ANY" address for the given family
+zmq::ip_addr_t zmq::ip_addr_t::any (int family)
+{
+    ip_addr_t addr;
+
+    if (family == AF_INET) {
+        sockaddr_in *ip4_addr = &addr.ipv4;
+        memset (ip4_addr, 0, sizeof (*ip4_addr));
+        ip4_addr->sin_family = AF_INET;
+        ip4_addr->sin_addr.s_addr = htonl (INADDR_ANY);
+    } else if (family == AF_INET6) {
+        sockaddr_in6 *ip6_addr = &addr.ipv6;
+
+        memset (ip6_addr, 0, sizeof (*ip6_addr));
+        ip6_addr->sin6_family = AF_INET6;
+#ifdef ZMQ_HAVE_VXWORKS
+        struct in6_addr newaddr = IN6ADDR_ANY_INIT;
+        memcpy (&ip6_addr->sin6_addr, &newaddr, sizeof (in6_addr));
+#else
+        memcpy (&ip6_addr->sin6_addr, &in6addr_any, sizeof (in6addr_any));
+#endif
+    } else {
+        assert (0 == "unsupported address family");
+    }
+
+    return addr;
+}
+
 zmq::ip_resolver_options_t::ip_resolver_options_t () :
     bindable_wanted (false),
     nic_name_allowed (false),
@@ -176,25 +239,8 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     if (options.bindable () && addr == "*") {
         //  Return an ANY address
+        *ip_addr_ = ip_addr_t::any (options.ipv6 () ? AF_INET6 : AF_INET);
         resolved = true;
-
-        if (options.ipv6 ()) {
-            sockaddr_in6 *ip6_addr = &ip_addr_->ipv6;
-
-            memset (ip6_addr, 0, sizeof (*ip6_addr));
-            ip6_addr->sin6_family = AF_INET6;
-#ifdef ZMQ_HAVE_VXWORKS
-            struct in6_addr newaddr = IN6ADDR_ANY_INIT;
-            memcpy (&ip6_addr->sin6_addr, &newaddr, sizeof (in6_addr));
-#else
-            memcpy (&ip6_addr->sin6_addr, &in6addr_any, sizeof (in6addr_any));
-#endif
-        } else {
-            sockaddr_in *ip4_addr = &ip_addr_->ipv4;
-            memset (ip4_addr, 0, sizeof (*ip4_addr));
-            ip4_addr->sin_family = AF_INET;
-            ip4_addr->sin_addr.s_addr = htonl (INADDR_ANY);
-        }
     }
 
     if (!resolved && options.allow_nic_name ()) {
@@ -221,11 +267,10 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     //  for us but since we don't resolve service names it's a bit overkill and
     //  we'd still have to do it manually when the address is resolved by
     //  'resolve_nic_name'
-    if (ip_addr_->generic.sa_family == AF_INET6) {
-        ip_addr_->ipv6.sin6_port = htons (port);
+    ip_addr_->set_port (port);
+
+    if (ip_addr_->family () == AF_INET6) {
         ip_addr_->ipv6.sin6_scope_id = zone_id;
-    } else {
-        ip_addr_->ipv4.sin_port = htons (port);
     }
 
     assert (resolved == true);

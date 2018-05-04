@@ -116,8 +116,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 
 int zmq::tcp_address_t::to_string (std::string &addr_)
 {
-    if (address.generic.sa_family != AF_INET
-        && address.generic.sa_family != AF_INET6) {
+    if (address.family () != AF_INET && address.family () != AF_INET6) {
         addr_.clear ();
         return -1;
     }
@@ -132,7 +131,7 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         return rc;
     }
 
-    if (address.generic.sa_family == AF_INET6) {
+    if (address.family () == AF_INET6) {
         std::stringstream s;
         s << "tcp://[" << hbuf << "]:" << ntohs (address.ipv6.sin6_port);
         addr_ = s.str ();
@@ -164,7 +163,7 @@ const sockaddr *zmq::tcp_address_t::src_addr () const
 
 socklen_t zmq::tcp_address_t::src_addrlen () const
 {
-    if (address.generic.sa_family == AF_INET6)
+    if (address.family () == AF_INET6)
         return (socklen_t) sizeof (source_address.ipv6);
     else
         return (socklen_t) sizeof (source_address.ipv4);
@@ -181,7 +180,7 @@ unsigned short zmq::tcp_address_t::family () const
 sa_family_t zmq::tcp_address_t::family () const
 #endif
 {
-    return address.generic.sa_family;
+    return address.family ();
 }
 
 zmq::tcp_address_mask_t::tcp_address_mask_t () :
@@ -228,7 +227,7 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 
     // Parse the cidr mask number.
     if (mask_str.empty ()) {
-        if (address.generic.sa_family == AF_INET6)
+        if (address.family () == AF_INET6)
             address_mask = 128;
         else
             address_mask = 32;
@@ -236,8 +235,8 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
         address_mask = 0;
     else {
         const int mask = atoi (mask_str.c_str ());
-        if ((mask < 1) || (address.generic.sa_family == AF_INET6 && mask > 128)
-            || (address.generic.sa_family != AF_INET6 && mask > 32)) {
+        if ((mask < 1) || (address.family () == AF_INET6 && mask > 128)
+            || (address.family () != AF_INET6 && mask > 32)) {
             errno = EINVAL;
             return -1;
         }
@@ -249,8 +248,7 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 
 int zmq::tcp_address_mask_t::to_string (std::string &addr_)
 {
-    if (address.generic.sa_family != AF_INET
-        && address.generic.sa_family != AF_INET6) {
+    if (address.family () != AF_INET && address.family () != AF_INET6) {
         addr_.clear ();
         return -1;
     }
@@ -267,7 +265,7 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
         return rc;
     }
 
-    if (address.generic.sa_family == AF_INET6) {
+    if (address.family () == AF_INET6) {
         std::stringstream s;
         s << "[" << hbuf << "]/" << address_mask;
         addr_ = s.str ();
