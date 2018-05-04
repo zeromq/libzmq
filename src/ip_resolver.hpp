@@ -45,6 +45,10 @@ union ip_addr_t
 
     int family () const;
     bool is_multicast () const;
+    uint16_t port () const;
+    void set_port (uint16_t);
+
+    static ip_addr_t any (int family);
 };
 
 class ip_resolver_options_t
