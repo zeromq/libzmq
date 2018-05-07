@@ -668,7 +668,7 @@ dnl # Check if compiler supoorts __atomic_Xxx intrinsics                        
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_ATOMIC_INTRINSICS], [{
     AC_MSG_CHECKING(whether compiler supports __atomic_Xxx intrinsics)
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+    AC_LINK_IFELSE([AC_LANG_SOURCE([
 /* atomic intrinsics test */
 int v = 0;
 int main (int, char **)
@@ -677,9 +677,24 @@ int main (int, char **)
     return t;
 }
     ])],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_has_atomic_instrisics="no"  ; $2]
-    )
+    [AC_MSG_RESULT(yes) ; GCC_ATOMIC_BUILTINS_SUPPORTED=1 libzmq_cv_has_atomic_instrisics="yes" ; $1])
+
+    if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
+        save_LDFLAGS=$LDFLAGS
+        LDFLAGS="$LDFLAGS -latomic"
+        AC_LINK_IFELSE([AC_LANG_SOURCE([
+        /* atomic intrinsics test */
+        int v = 0;
+        int main (int, char **)
+        {
+            int t = __atomic_add_fetch (&v, 1, __ATOMIC_ACQ_REL);
+            return t;
+        }
+        ])],
+        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" LIBS="-latomic" ; $1],
+        [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no"; $2])
+        LDFLAGS=$save_LDFLAGS
+    fi
 }])
 
 dnl ################################################################################
