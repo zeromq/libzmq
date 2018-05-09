@@ -287,7 +287,8 @@ macro(zmq_check_getrandom)
 int main (int argc, char *argv [])
 {
     char buf[4];
-    getrandom(buf, 4, 0);
+    int rc = getrandom(buf, 4, 0);
+    return rc == -1 ? 1 : 0;
 }
 "
     ZMQ_HAVE_GETRANDOM)

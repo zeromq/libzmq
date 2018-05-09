@@ -883,7 +883,8 @@ AC_DEFUN([LIBZMQ_CHECK_GETRANDOM], [{
 int main (int argc, char *argv [])
 {
     char buf[4];
-    getrandom(buf, 4, 0);
+    int rc = getrandom(buf, 4, 0);
+    return rc == -1 ? 1 : 0;
 }
         ],
         [libzmq_cv_getrandom="yes"],
