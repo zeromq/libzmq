@@ -46,6 +46,20 @@ uint16_t zmq::ip_addr_t::port () const
     }
 }
 
+const struct sockaddr *zmq::ip_addr_t::as_sockaddr () const
+{
+    return &generic;
+}
+
+size_t zmq::ip_addr_t::sockaddr_len () const
+{
+    if (family () == AF_INET6) {
+        return sizeof (ipv6);
+    } else {
+        return sizeof (ipv4);
+    }
+}
+
 void zmq::ip_addr_t::set_port (uint16_t port)
 {
     if (family () == AF_INET6) {

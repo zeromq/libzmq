@@ -46,6 +46,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "err.hpp"
 #include "ip.hpp"
 
+//  OSX uses a different name for this socket option
+#ifndef IPV6_ADD_MEMBERSHIP
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+
 zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     plugged (false),
     fd (-1),
@@ -111,9 +116,11 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
     if (send_enabled) {
         if (!options.raw_socket) {
-            out_address = address->resolved.udp_addr->dest_addr ();
-            out_addrlen = address->resolved.udp_addr->dest_addrlen ();
+            const ip_addr_t *out = address->resolved.udp_addr->target_addr ();
+            out_address = out->as_sockaddr ();
+            out_addrlen = out->sockaddr_len ();
         } else {
+            /// XXX fixme ?
             out_address = (sockaddr *) &raw_address;
             out_addrlen = sizeof (sockaddr_in);
         }
@@ -131,12 +138,29 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
+        const ip_addr_t *bind_addr = address->resolved.udp_addr->bind_addr ();
+        ip_addr_t any = ip_addr_t::any (bind_addr->family ());
+        const ip_addr_t *real_bind_addr;
+
+        bool multicast = address->resolved.udp_addr->is_mcast ();
+
+        if (multicast) {
+            //  In multicast we should bind ANY and use the mreq struct to
+            //  specify the interface
+            any.set_port (bind_addr->port ());
+
+            real_bind_addr = &any;
+        } else {
+            real_bind_addr = bind_addr;
+        }
+
 #ifdef ZMQ_HAVE_VXWORKS
-        rc = bind (fd, (sockaddr *) address->resolved.udp_addr->bind_addr (),
-                   address->resolved.udp_addr->bind_addrlen ());
+        rc = bind (fd, (sockaddr *) real_bind_addr->as_sockaddr (),
+                   real_bind_addr->sockaddr_len ());
 #else
-        rc = bind (fd, address->resolved.udp_addr->bind_addr (),
-                   address->resolved.udp_addr->bind_addrlen ());
+        rc = bind (fd, real_bind_addr->as_sockaddr (),
+                   real_bind_addr->sockaddr_len ());
+
 #endif
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
@@ -144,12 +168,37 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
-        if (address->resolved.udp_addr->is_mcast ()) {
-            struct ip_mreq mreq;
-            mreq.imr_multiaddr = address->resolved.udp_addr->multicast_ip ();
-            mreq.imr_interface = address->resolved.udp_addr->interface_ip ();
-            rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *) &mreq,
-                             sizeof (mreq));
+        if (multicast) {
+            const ip_addr_t *mcast_addr =
+              address->resolved.udp_addr->target_addr ();
+
+            if (mcast_addr->family () == AF_INET) {
+                struct ip_mreq mreq;
+                mreq.imr_multiaddr = mcast_addr->ipv4.sin_addr;
+                mreq.imr_interface = bind_addr->ipv4.sin_addr;
+
+                rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                                 (char *) &mreq, sizeof (mreq));
+
+                errno_assert (rc == 0);
+            } else if (mcast_addr->family () == AF_INET6) {
+                struct ipv6_mreq mreq;
+                int iface = address->resolved.udp_addr->bind_if ();
+
+                zmq_assert (iface >= -1);
+
+                mreq.ipv6mr_multiaddr = mcast_addr->ipv6.sin6_addr;
+                mreq.ipv6mr_interface = iface;
+
+                rc = setsockopt (fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+                                 (char *) &mreq, sizeof (mreq));
+
+                errno_assert (rc == 0);
+            } else {
+                //  Shouldn't happen
+                abort ();
+            }
+
 #ifdef ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
 #else

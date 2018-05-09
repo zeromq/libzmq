@@ -35,6 +35,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "ip_resolver.hpp"
+
 namespace zmq
 {
 class udp_address_t
@@ -43,32 +45,24 @@ class udp_address_t
     udp_address_t ();
     virtual ~udp_address_t ();
 
-    int resolve (const char *name_, bool receiver_);
+    int resolve (const char *name_, bool receiver_, bool ipv6_);
 
     //  The opposite to resolve()
     virtual int to_string (std::string &addr_);
 
-#if defined ZMQ_HAVE_WINDOWS
-    unsigned short family () const;
-#else
-    sa_family_t family () const;
-#endif
-    const sockaddr *bind_addr () const;
-    socklen_t bind_addrlen () const;
 
-    const sockaddr *dest_addr () const;
-    socklen_t dest_addrlen () const;
+    int family () const;
 
     bool is_mcast () const;
 
-    const in_addr multicast_ip () const;
-    const in_addr interface_ip () const;
+    const ip_addr_t *bind_addr () const;
+    int bind_if () const;
+    const ip_addr_t *target_addr () const;
 
   private:
-    in_addr multicast;
-    in_addr iface;
-    sockaddr_in bind_address;
-    sockaddr_in dest_address;
+    ip_addr_t bind_address;
+    int bind_interface;
+    ip_addr_t target_address;
     bool is_multicast;
     std::string address;
 };

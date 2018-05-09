@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <unity.h>
 #include "../tests/testutil.hpp"
+#include "../unittests/unittest_resolver_common.hpp"
 
 #include <ip_resolver.hpp>
 #include <ip.hpp>
@@ -155,41 +156,9 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
         TEST_ASSERT_EQUAL (0, rc);
     }
 
-#if defined ZMQ_HAVE_WINDOWS
-    if (family == AF_INET6 && expected_addr_v4_failover_ != NULL &&
-        addr.family () == AF_INET) {
-        //  We've requested an IPv6 but the system gave us an IPv4, use the
-        //  failover address
-        family = AF_INET;
-        expected_addr_ = expected_addr_v4_failover_;
-    }
-#else
-    (void)expected_addr_v4_failover_;
-#endif
-
-    TEST_ASSERT_EQUAL (family, addr.family ());
-
-    if (family == AF_INET6) {
-        struct in6_addr expected_addr;
-        const sockaddr_in6 *ip6_addr = &addr.ipv6;
-
-        assert (test_inet_pton (AF_INET6, expected_addr_, &expected_addr) == 1);
-
-        int neq = memcmp (&ip6_addr->sin6_addr, &expected_addr,
-                          sizeof (expected_addr_));
-
-        TEST_ASSERT_EQUAL (0, neq);
-        TEST_ASSERT_EQUAL (htons (expected_port_), ip6_addr->sin6_port);
-        TEST_ASSERT_EQUAL (expected_zone_, ip6_addr->sin6_scope_id);
-    } else {
-        struct in_addr expected_addr;
-        const sockaddr_in *ip4_addr = &addr.ipv4;
-
-        assert (test_inet_pton (AF_INET, expected_addr_, &expected_addr) == 1);
-
-        TEST_ASSERT_EQUAL (expected_addr.s_addr, ip4_addr->sin_addr.s_addr);
-        TEST_ASSERT_EQUAL (htons (expected_port_), ip4_addr->sin_port);
-    }
+    validate_address (family, &addr, expected_addr_,
+                      expected_port_, expected_zone_,
+                      expected_addr_v4_failover_);
 }
 
 // Helper macro to define the v4/v6 function pairs
