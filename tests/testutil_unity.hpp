@@ -86,8 +86,8 @@ void recv_string_expect_success (void *socket, const char *str, int flags)
                                        "used for strings longer than 255 "
                                        "characters");
 
-    const int rc =
-      TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (socket, buffer, sizeof (buffer), 0));
+    const int rc = TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_recv (socket, buffer, sizeof (buffer), flags));
     TEST_ASSERT_EQUAL_INT ((int) len, rc);
     if (str)
         TEST_ASSERT_EQUAL_STRING_LEN (str, buffer, len);
