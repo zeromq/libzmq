@@ -54,6 +54,7 @@ unsigned long zmq_stopwatch_intermediate (void *watch_);
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
 #define ZMQ_LOOPBACK_FASTPATH 94
 #define ZMQ_METADATA 95
+#define ZMQ_MULTICAST_LOOP 96
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 /*  Unspecified system errors during handshake. Event value is an errno.      */

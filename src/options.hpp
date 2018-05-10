@@ -257,6 +257,9 @@ struct options_t
     // Use of loopback fastpath.
     bool loopback_fastpath;
 
+    //  Loop sent multicast packets to local sockets
+    bool multicast_loop;
+
     // Use zero copy strategy for storing message content when decoding.
     bool zero_copy;
 

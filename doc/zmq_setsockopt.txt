@@ -1273,6 +1273,17 @@ Default value:: -1
 Applicable socket types:: all, when using VMCI transport
 
 
+ZMQ_MULTICAST_LOOP: Control multicast local loopback
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For multicast UDP sender sockets this option sets whether the data
+sent should be looped back on local listening sockets.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 1
+Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
