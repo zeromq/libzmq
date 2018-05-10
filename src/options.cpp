@@ -232,6 +232,7 @@ zmq::options_t::options_t () :
     use_fd (-1),
     zap_enforce_domain (false),
     loopback_fastpath (false),
+    multicast_loop (true),
     zero_copy (true)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
@@ -726,6 +727,11 @@ int zmq::options_t::setsockopt (int option_,
             errno = EINVAL;
             return -1;
             break;
+
+        case ZMQ_MULTICAST_LOOP:
+            return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
+                                                      &multicast_loop);
+
         default:
 #if defined(ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -1116,6 +1122,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_LOOPBACK_FASTPATH:
             if (is_int) {
                 *value = loopback_fastpath;
+                return 0;
+            }
+            break;
+
+        case ZMQ_MULTICAST_LOOP:
+            if (is_int) {
+                *value = multicast_loop;
                 return 0;
             }
             break;

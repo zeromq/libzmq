@@ -892,6 +892,18 @@ Default value:: -1
 Applicable socket types:: all, when using VMCI transport
 
 
+ZMQ_MULTICAST_LOOP: Retrieve multicast local loopback configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the current multicast loopback configuration. A value of `1`
+means that the multicast packets sent on this socket will be looped
+back to local listening interface.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 1
+Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
+
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it

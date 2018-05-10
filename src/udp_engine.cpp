@@ -119,6 +119,29 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
             const ip_addr_t *out = address->resolved.udp_addr->target_addr ();
             out_address = out->as_sockaddr ();
             out_addrlen = out->sockaddr_len ();
+
+            if (out->is_multicast ()) {
+                int level;
+                int optname;
+
+                if (out->family () == AF_INET6) {
+                    level = IPPROTO_IPV6;
+                    optname = IPV6_MULTICAST_LOOP;
+                } else {
+                    level = IPPROTO_IP;
+                    optname = IP_MULTICAST_LOOP;
+                }
+
+                int loop = options.multicast_loop;
+                int rc = setsockopt (fd, level, optname, (char *) &loop,
+                                     sizeof (loop));
+
+#ifdef ZMQ_HAVE_WINDOWS
+                wsa_assert (rc != SOCKET_ERROR);
+#else
+                errno_assert (rc == 0);
+#endif
+            }
         } else {
             /// XXX fixme ?
             out_address = (sockaddr *) &raw_address;
