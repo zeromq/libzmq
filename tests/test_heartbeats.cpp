@@ -72,10 +72,6 @@ static void recv_with_retry (raw_socket fd, char *buffer, int bytes)
         assert (received <= bytes);
         if (received == bytes)
             break;
-        // ZMQ_REP READY message is shorter, check the actual socket type
-        if (received >= 3 && buffer[received - 1] == 'P'
-            && buffer[received - 2] == 'E' && buffer[received - 3] == 'R')
-            break;
     }
 }
 
@@ -345,7 +341,6 @@ int main (void)
     setup_test_environment ();
 
     test_heartbeat_timeout (ZMQ_ROUTER);
-    test_heartbeat_timeout (ZMQ_REP);
 
     test_heartbeat_ttl (ZMQ_DEALER, ZMQ_ROUTER);
     test_heartbeat_ttl (ZMQ_REQ, ZMQ_REP);
