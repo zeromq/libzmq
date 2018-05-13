@@ -67,7 +67,7 @@ int tcp_read (fd_t s_, void *data_, size_t size_);
 //  on network errors such as reset or aborted connections.
 void tcp_assert_tuning_error (fd_t s_, int rc_);
 
-void tcp_tune_loopback_fast_path (fd_t socket_);
+void tcp_tune_loopback_fast_path (const fd_t socket_);
 }
 
 #endif
