@@ -110,13 +110,15 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     io_object_t::plug (io_thread_);
     handle = add_fd (fd);
 
+    const struct udp_address_t *udp_addr = address->resolved.udp_addr;
+
     // Bind the socket to a device if applicable
     if (!options.bound_device.empty ())
         bind_to_device (fd, options.bound_device);
 
     if (send_enabled) {
         if (!options.raw_socket) {
-            const ip_addr_t *out = address->resolved.udp_addr->target_addr ();
+            const ip_addr_t *out = udp_addr->target_addr ();
             out_address = out->as_sockaddr ();
             out_addrlen = out->sockaddr_len ();
 
@@ -135,6 +137,36 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 int loop = options.multicast_loop;
                 int rc = setsockopt (fd, level, optname, (char *) &loop,
                                      sizeof (loop));
+
+#ifdef ZMQ_HAVE_WINDOWS
+                wsa_assert (rc != SOCKET_ERROR);
+#else
+                errno_assert (rc == 0);
+#endif
+
+                if (out->family () == AF_INET6) {
+                    int bind_if = udp_addr->bind_if ();
+
+                    if (bind_if > 0) {
+                        //  If a bind interface is provided we tell the
+                        //  kernel to use it to send multicast packets
+                        rc = setsockopt (fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+                                         (char *) &bind_if, sizeof (bind_if));
+                    } else {
+                        rc = 0;
+                    }
+                } else {
+                    struct in_addr bind_addr =
+                      udp_addr->bind_addr ()->ipv4.sin_addr;
+
+                    if (bind_addr.s_addr != INADDR_ANY) {
+                        rc =
+                          setsockopt (fd, IPPROTO_IP, IP_MULTICAST_IF,
+                                      (char *) &bind_addr, sizeof (bind_addr));
+                    } else {
+                        rc = 0;
+                    }
+                }
 
 #ifdef ZMQ_HAVE_WINDOWS
                 wsa_assert (rc != SOCKET_ERROR);
@@ -161,11 +193,11 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
-        const ip_addr_t *bind_addr = address->resolved.udp_addr->bind_addr ();
+        const ip_addr_t *bind_addr = udp_addr->bind_addr ();
         ip_addr_t any = ip_addr_t::any (bind_addr->family ());
         const ip_addr_t *real_bind_addr;
 
-        bool multicast = address->resolved.udp_addr->is_mcast ();
+        bool multicast = udp_addr->is_mcast ();
 
         if (multicast) {
             //  In multicast we should bind ANY and use the mreq struct to
@@ -192,8 +224,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 #endif
 
         if (multicast) {
-            const ip_addr_t *mcast_addr =
-              address->resolved.udp_addr->target_addr ();
+            const ip_addr_t *mcast_addr = udp_addr->target_addr ();
 
             if (mcast_addr->family () == AF_INET) {
                 struct ip_mreq mreq;
