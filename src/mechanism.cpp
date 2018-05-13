@@ -62,7 +62,8 @@ void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
     user_id.set (static_cast<const unsigned char *> (data_), size_);
     zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
-      ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_));
+      std::string (ZMQ_MSG_PROPERTY_USER_ID),
+      std::string ((char *) data_, size_));
 }
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const

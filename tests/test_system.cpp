@@ -38,6 +38,13 @@
 #include <unistd.h>
 #endif
 
+//  Solaris has a default of 256 max files per process
+#ifdef ZMQ_HAVE_SOLARIS
+#define MAX_SOCKETS 200
+#else
+#define MAX_SOCKETS 1000
+#endif
+
 #if defined(ZMQ_HAVE_WINDOWS)
 
 void initialise_network (void)
@@ -75,24 +82,22 @@ int main (void)
         return -1;
     }
     //  Check that we can create 1,000 sockets
-    int handle[1000];
+    int handle[MAX_SOCKETS];
     int count;
-    for (count = 0; count < 1000; count++) {
+    for (count = 0; count < MAX_SOCKETS; count++) {
         handle[count] = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (handle[count] == -1) {
             printf ("W: Only able to create %d sockets on this box\n", count);
             printf (
               "I: Tune your system to increase maximum allowed file handles\n");
-#if defined(ZMQ_HAVE_OSX)
-            printf ("I: On OS/X, run 'ulimit -n 1200' in bash\n");
-#elif defined(ZMQ_HAVE_LINUX)
-            printf ("I: On Linux, run 'ulimit -n 1200' in bash\n");
+#if !defined(ZMQ_HAVE_WINDOWS)
+            printf ("I: Run 'ulimit -n 1200' in bash\n");
 #endif
             return -1;
         }
     }
     //  Release the socket handles
-    for (count = 0; count < 1000; count++) {
+    for (count = 0; count < MAX_SOCKETS; count++) {
         close (handle[count]);
     }
 

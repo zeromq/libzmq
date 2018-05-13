@@ -288,11 +288,11 @@ int do_getsockopt (void *const optval_,
 
 int do_setsockopt_int_as_bool_strict (const void *const optval_,
                                       const size_t optvallen_,
-                                      bool *out_value_);
+                                      bool *const out_value_);
 
 int do_setsockopt_int_as_bool_relaxed (const void *const optval_,
                                        const size_t optvallen_,
-                                       bool *out_value_);
+                                       bool *const out_value_);
 }
 
 #endif

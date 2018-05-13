@@ -40,7 +40,18 @@
 #define ZMQ_PUSH_OR_EMPLACE_BACK emplace_back
 #define ZMQ_MOVE(x) std::move (x)
 #else
+#if defined ZMQ_HAVE_SOLARIS
+template <typename K, typename V>
+std::pair<const K, V> make_pair_fix_const (const K &k, const V &v)
+{
+    return std::pair<const K, V> (k, v);
+}
+
+#define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) insert (make_pair_fix_const (k, v))
+#else
 #define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) insert (std::make_pair (k, v))
+#endif
+
 #define ZMQ_PUSH_OR_EMPLACE_BACK push_back
 #define ZMQ_MOVE(x) (x)
 #endif

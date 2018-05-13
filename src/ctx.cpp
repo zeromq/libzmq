@@ -503,7 +503,8 @@ int zmq::ctx_t::register_endpoint (const char *addr_,
     scoped_lock_t locker (endpoints_sync);
 
     const bool inserted =
-      endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (addr_, endpoint_).second;
+      endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (addr_), endpoint_)
+        .second;
     if (!inserted) {
         errno = EADDRINUSE;
         return -1;
