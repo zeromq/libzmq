@@ -138,6 +138,7 @@ zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
     io_object_t (io_thread_),
     has_file (false),
     s (retired_fd),
+    handle ((handle_t) NULL),
     socket (socket_)
 {
 }
