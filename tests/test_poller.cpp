@@ -339,9 +339,19 @@ void call_poller_modify_unregistered_fails (void *poller, void *socket)
 
 void call_poller_add_no_events (void *poller, void *socket)
 {
-    //  add a socket with no events
-    //  TODO should this really be legal? it does not make any sense...
+    //  add a socket with no events initially (may be activated later with
+    //  zmq_poller_modify)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_add (poller, socket, NULL, 0));
+    //  TODO test that no events are signalled
+}
+
+void call_poller_modify_no_events (void *poller, void *socket)
+{
+    //  deactivates all events for a socket temporarily (may be activated again
+    //  later with zmq_poller_modify)
+    zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_modify (poller, socket, 0));
+    //  TODO test that no events are signalled
 }
 
 void call_poller_add_fd_twice_fails (void *poller, void * /*zeromq_socket*/)
@@ -389,6 +399,7 @@ TEST_CASE_FUNC_PARAM (call_poller_remove_unregistered_fails,
 TEST_CASE_FUNC_PARAM (call_poller_modify_unregistered_fails,
                       test_with_empty_poller)
 TEST_CASE_FUNC_PARAM (call_poller_add_no_events, test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_modify_no_events, test_with_empty_poller)
 TEST_CASE_FUNC_PARAM (call_poller_add_fd_twice_fails, test_with_empty_poller)
 TEST_CASE_FUNC_PARAM (call_poller_remove_fd_unregistered_fails,
                       test_with_empty_poller)
@@ -603,6 +614,7 @@ int main (void)
     RUN_TEST (test_call_poller_remove_unregistered_fails);
     RUN_TEST (test_call_poller_modify_unregistered_fails);
     RUN_TEST (test_call_poller_add_no_events);
+    RUN_TEST (test_call_poller_modify_no_events);
     RUN_TEST (test_call_poller_add_fd_twice_fails);
     RUN_TEST (test_call_poller_remove_fd_unregistered_fails);
     RUN_TEST (test_call_poller_modify_fd_unregistered_fails);
