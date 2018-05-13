@@ -266,7 +266,11 @@ struct atomic_value_t
         return (int) (ptrdiff_t) atomic_cas ((void **) &value, 0, 0
 #if defined ZMQ_ATOMIC_PTR_MUTEX
                                              ,
+#if defined __SUNPRO_CC
+                                             const_cast<mutex_t &> (sync)
+#else
                                              sync
+#endif
 #endif
         );
 #endif

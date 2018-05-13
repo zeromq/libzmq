@@ -315,6 +315,12 @@ case "${host_os}" in
         ;;
 esac
 
+# Sun Studio does not like anonymous structures in unions
+if test "x$libzmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" = "xyes"; then
+    CXXFLAGS="${CXXFLAGS} -features=extensions"
+    CFLAGS="${CFLAGS} -features=extensions"
+fi
+
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])

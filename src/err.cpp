@@ -387,7 +387,7 @@ int zmq::wsa_error_to_errno (int errcode)
 
 #endif
 
-#ifdef HAVE_LIBUNWIND
+#if defined(HAVE_LIBUNWIND) && !defined(__SUNPRO_CC)
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>

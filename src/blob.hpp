@@ -40,7 +40,7 @@
 #define ZMQ_PUSH_OR_EMPLACE_BACK emplace_back
 #define ZMQ_MOVE(x) std::move (x)
 #else
-#if defined ZMQ_HAVE_SOLARIS
+#if defined __SUNPRO_CC
 template <typename K, typename V>
 std::pair<const K, V> make_pair_fix_const (const K &k, const V &v)
 {
