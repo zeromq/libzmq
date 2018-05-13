@@ -90,10 +90,8 @@ int main (void)
             printf ("W: Only able to create %d sockets on this box\n", count);
             printf (
               "I: Tune your system to increase maximum allowed file handles\n");
-#if defined(ZMQ_HAVE_OSX)
-            printf ("I: On OS/X, run 'ulimit -n 1200' in bash\n");
-#elif defined(ZMQ_HAVE_LINUX)
-            printf ("I: On Linux, run 'ulimit -n 1200' in bash\n");
+#if !defined(ZMQ_HAVE_WINDOWS)
+            printf ("I: Run 'ulimit -n 1200' in bash\n");
 #endif
             return -1;
         }
