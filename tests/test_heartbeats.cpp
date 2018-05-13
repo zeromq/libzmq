@@ -72,14 +72,10 @@ static void recv_with_retry (raw_socket fd, char *buffer, int bytes)
         assert (received <= bytes);
         if (received == bytes)
             break;
-        // ZMQ_REP READY message is shorter, check the actual socket type
-        if (received >= 3 && buffer[received - 1] == 'P'
-            && buffer[received - 2] == 'E' && buffer[received - 3] == 'R')
-            break;
     }
 }
 
-static void mock_handshake (raw_socket fd)
+static void mock_handshake (raw_socket fd, int mock_ping)
 {
     const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
                                        0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
@@ -102,7 +98,39 @@ static void mock_handshake (raw_socket fd)
     rc = send (fd, buffer, 43, 0);
     assert (rc == 43);
 
-    recv_with_retry (fd, buffer, 43);
+    if (mock_ping) {
+        //  test PING context - should be replicated in the PONG
+        //  to avoid timeouts, do a bulk send
+        const uint8_t zmtp_ping[12] = {4,   10, 4, 'P', 'I', 'N',
+                                       'G', 0,  0, 'L', 'O', 'L'};
+        uint8_t zmtp_pong[10] = {4, 8, 4, 'P', 'O', 'N', 'G', 'L', 'O', 'L'};
+        memset (buffer, 0, sizeof (buffer));
+        memcpy (buffer, zmtp_ping, 12);
+        rc = send (fd, buffer, 12, 0);
+        assert (rc == 12);
+
+        //  test a larger body that won't fit in a small message and should get
+        //  truncated
+        memset (buffer, 'z', sizeof (buffer));
+        memcpy (buffer, zmtp_ping, 12);
+        buffer[1] = 65;
+        rc = send (fd, buffer, 67, 0);
+        assert (rc == 67);
+
+        //  greeting
+        recv_with_retry (fd, buffer, 43);
+
+        //  small pong
+        recv_with_retry (fd, buffer, 10);
+        assert (memcmp (zmtp_pong, buffer, 10) == 0);
+        //  large pong
+        recv_with_retry (fd, buffer, 23);
+        uint8_t zmtp_pooong[65] = {4, 21, 4, 'P', 'O', 'N', 'G', 'L', 'O', 'L'};
+        memset (zmtp_pooong + 10, 'z', 55);
+        assert (memcmp (zmtp_pooong, buffer, 23) == 0);
+    } else {
+        recv_with_retry (fd, buffer, 43);
+    }
 }
 
 static void setup_curve (void *socket, int is_server)
@@ -185,7 +213,7 @@ static void prep_server_socket (void *ctx,
 // This checks for a broken TCP connection (or, in this case a stuck one
 // where the peer never responds to PINGS). There should be an accepted event
 // then a disconnect event.
-static void test_heartbeat_timeout (int server_type)
+static void test_heartbeat_timeout (int server_type, int mock_ping)
 {
     int rc;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -195,7 +223,7 @@ static void test_heartbeat_timeout (int server_type)
     assert (ctx);
 
     void *server, *server_mon;
-    prep_server_socket (ctx, 1, 0, &server, &server_mon, my_endpoint,
+    prep_server_socket (ctx, !mock_ping, 0, &server, &server_mon, my_endpoint,
                         MAX_SOCKET_STRING, server_type);
 
     struct sockaddr_in ip4addr;
@@ -214,15 +242,17 @@ static void test_heartbeat_timeout (int server_type)
     assert (rc > -1);
 
     // Mock a ZMTP 3 client so we can forcibly time out a connection
-    mock_handshake (s);
+    mock_handshake (s, mock_ping);
 
     // By now everything should report as connected
     rc = get_monitor_event (server_mon);
     assert (rc == ZMQ_EVENT_ACCEPTED);
 
-    // We should have been disconnected
-    rc = get_monitor_event (server_mon);
-    assert (rc == ZMQ_EVENT_DISCONNECTED);
+    if (!mock_ping) {
+        // We should have been disconnected
+        rc = get_monitor_event (server_mon);
+        assert (rc == ZMQ_EVENT_DISCONNECTED);
+    }
 
     close (s);
 
@@ -344,8 +374,8 @@ int main (void)
 {
     setup_test_environment ();
 
-    test_heartbeat_timeout (ZMQ_ROUTER);
-    test_heartbeat_timeout (ZMQ_REP);
+    test_heartbeat_timeout (ZMQ_ROUTER, 1);
+    test_heartbeat_timeout (ZMQ_ROUTER, 0);
 
     test_heartbeat_ttl (ZMQ_DEALER, ZMQ_ROUTER);
     test_heartbeat_ttl (ZMQ_REQ, ZMQ_REP);
