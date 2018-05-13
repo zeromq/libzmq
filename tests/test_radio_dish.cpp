@@ -268,6 +268,13 @@ static const char *mcast_url (int ipv6_)
 #define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
 #endif
 
+union sa_u
+{
+    struct sockaddr generic;
+    struct sockaddr_in ipv4;
+    struct sockaddr_in6 ipv6;
+};
+
 //  Test if multicast is available on this machine by attempting to
 //  send a receive a multicast datagram
 static bool is_multicast_available (int ipv6_)
@@ -279,14 +286,14 @@ static bool is_multicast_available (int ipv6_)
     bool success = false;
     const char *msg = "it works";
     char buf[32];
-    struct sockaddr_storage any;
-    struct sockaddr_storage mcast;
+    union sa_u any;
+    union sa_u mcast;
     socklen_t sl;
     int rc;
 
     if (ipv6_) {
-        struct sockaddr_in6 *any_ipv6 = (struct sockaddr_in6 *) &any;
-        struct sockaddr_in6 *mcast_ipv6 = (struct sockaddr_in6 *) &mcast;
+        struct sockaddr_in6 *any_ipv6 = &any.ipv6;
+        struct sockaddr_in6 *mcast_ipv6 = &mcast.ipv6;
 
         any_ipv6->sin6_family = AF_INET6;
         any_ipv6->sin6_port = htons (port);
@@ -307,8 +314,8 @@ static bool is_multicast_available (int ipv6_)
 
         sl = sizeof (*any_ipv6);
     } else {
-        struct sockaddr_in *any_ipv4 = (struct sockaddr_in *) &any;
-        struct sockaddr_in *mcast_ipv4 = (struct sockaddr_in *) &mcast;
+        struct sockaddr_in *any_ipv4 = &any.ipv4;
+        struct sockaddr_in *mcast_ipv4 = &mcast.ipv4;
 
         any_ipv4->sin_family = AF_INET;
         any_ipv4->sin_port = htons (5555);
@@ -338,14 +345,14 @@ static bool is_multicast_available (int ipv6_)
         goto out;
     }
 
-    rc = bind (bind_sock, (struct sockaddr *) &any, sl);
+    rc = bind (bind_sock, &any.generic, sl);
     if (rc < 0) {
         goto out;
     }
 
     if (ipv6_) {
         struct ipv6_mreq mreq;
-        struct sockaddr_in6 *mcast_ipv6 = (struct sockaddr_in6 *) &mcast;
+        struct sockaddr_in6 *mcast_ipv6 = &mcast.ipv6;
 
         mreq.ipv6mr_multiaddr = mcast_ipv6->sin6_addr;
         mreq.ipv6mr_interface = 0;
@@ -364,7 +371,7 @@ static bool is_multicast_available (int ipv6_)
         }
     } else {
         struct ip_mreq mreq;
-        struct sockaddr_in *mcast_ipv4 = (struct sockaddr_in *) &mcast;
+        struct sockaddr_in *mcast_ipv4 = &mcast.ipv4;
 
         mreq.imr_multiaddr = mcast_ipv4->sin_addr;
         mreq.imr_interface.s_addr = htonl (INADDR_ANY);
@@ -385,8 +392,7 @@ static bool is_multicast_available (int ipv6_)
 
     msleep (SETTLE_TIME);
 
-    rc =
-      sendto (send_sock, msg, strlen (msg), 0, (struct sockaddr *) &mcast, sl);
+    rc = sendto (send_sock, msg, strlen (msg), 0, &mcast.generic, sl);
     if (rc < 0) {
         goto out;
     }
