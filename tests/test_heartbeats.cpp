@@ -29,6 +29,19 @@ typedef SOCKET raw_socket;
 typedef int raw_socket;
 #endif
 
+#include <unity.h>
+
+void setUp ()
+{
+    //    setup_test_context ();
+}
+
+void tearDown ()
+{
+    //    teardown_test_context ();
+}
+
+
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
@@ -340,29 +353,62 @@ test_heartbeat_notimeout (int is_curve, int client_type, int server_type)
     assert (rc == 0);
 }
 
+void test_heartbeat_timeout_router ()
+{
+    test_heartbeat_timeout (ZMQ_ROUTER);
+}
+
+void test_heartbeat_timeout_rep ()
+{
+    test_heartbeat_timeout (ZMQ_REP);
+}
+
+#define DEFINE_TESTS(first, second, first_define, second_define)               \
+    void test_heartbeat_ttl_##first##_##second ()                              \
+    {                                                                          \
+        test_heartbeat_ttl (first_define, second_define);                      \
+    }                                                                          \
+    void test_heartbeat_notimeout_##first##_##second ()                        \
+    {                                                                          \
+        test_heartbeat_notimeout (0, first_define, second_define);             \
+    }                                                                          \
+    void test_heartbeat_notimeout_##first##_##second##_with_curve ()           \
+    {                                                                          \
+        test_heartbeat_notimeout (1, first_define, second_define);             \
+    }
+
+DEFINE_TESTS (dealer, router, ZMQ_DEALER, ZMQ_ROUTER)
+DEFINE_TESTS (req, rep, ZMQ_REQ, ZMQ_REP)
+DEFINE_TESTS (pull, push, ZMQ_PULL, ZMQ_PUSH)
+DEFINE_TESTS (sub, pub, ZMQ_SUB, ZMQ_PUB)
+DEFINE_TESTS (pair, pair, ZMQ_PAIR, ZMQ_PAIR)
+
 int main (void)
 {
     setup_test_environment ();
 
-    test_heartbeat_timeout (ZMQ_ROUTER);
-    test_heartbeat_timeout (ZMQ_REP);
+    UNITY_BEGIN ();
 
-    test_heartbeat_ttl (ZMQ_DEALER, ZMQ_ROUTER);
-    test_heartbeat_ttl (ZMQ_REQ, ZMQ_REP);
-    test_heartbeat_ttl (ZMQ_PULL, ZMQ_PUSH);
-    test_heartbeat_ttl (ZMQ_SUB, ZMQ_PUB);
-    test_heartbeat_ttl (ZMQ_PAIR, ZMQ_PAIR);
+    RUN_TEST (test_heartbeat_timeout_router);
+    RUN_TEST (test_heartbeat_timeout_rep);
 
-    // Run this test without curve
-    test_heartbeat_notimeout (0, ZMQ_DEALER, ZMQ_ROUTER);
-    test_heartbeat_notimeout (0, ZMQ_REQ, ZMQ_REP);
-    test_heartbeat_notimeout (0, ZMQ_PULL, ZMQ_PUSH);
-    test_heartbeat_notimeout (0, ZMQ_SUB, ZMQ_PUB);
-    test_heartbeat_notimeout (0, ZMQ_PAIR, ZMQ_PAIR);
-    // Then rerun it with curve
-    test_heartbeat_notimeout (1, ZMQ_DEALER, ZMQ_ROUTER);
-    test_heartbeat_notimeout (1, ZMQ_REQ, ZMQ_REP);
-    test_heartbeat_notimeout (1, ZMQ_PULL, ZMQ_PUSH);
-    test_heartbeat_notimeout (1, ZMQ_SUB, ZMQ_PUB);
-    test_heartbeat_notimeout (1, ZMQ_PAIR, ZMQ_PAIR);
+    RUN_TEST (test_heartbeat_ttl_dealer_router);
+    RUN_TEST (test_heartbeat_ttl_req_rep);
+    RUN_TEST (test_heartbeat_ttl_pull_push);
+    RUN_TEST (test_heartbeat_ttl_sub_pub);
+    RUN_TEST (test_heartbeat_ttl_pair_pair);
+
+    RUN_TEST (test_heartbeat_notimeout_dealer_router);
+    RUN_TEST (test_heartbeat_notimeout_req_rep);
+    RUN_TEST (test_heartbeat_notimeout_pull_push);
+    RUN_TEST (test_heartbeat_notimeout_sub_pub);
+    RUN_TEST (test_heartbeat_notimeout_pair_pair);
+
+    RUN_TEST (test_heartbeat_notimeout_dealer_router_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_req_rep_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_pull_push_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_sub_pub_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_pair_pair_with_curve);
+
+    return UNITY_END ();
 }

@@ -651,7 +651,8 @@ tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
 tests_test_setsockopt_LDADD = src/libzmq.la
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
-tests_test_heartbeats_LDADD = src/libzmq.la
+tests_test_heartbeats_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_heartbeats_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
 tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
