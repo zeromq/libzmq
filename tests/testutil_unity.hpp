@@ -57,11 +57,36 @@ int test_assert_success_message_errno_helper (int rc,
     return rc;
 }
 
+int test_assert_success_message_raw_errno_helper (int rc,
+                                                  const char *msg,
+                                                  const char *expr)
+{
+    if (rc == -1) {
+#if defined ZMQ_HAVE_WINDOWS
+        int current_errno = WSAGetLastError ();
+#else
+        int current_errno = errno;
+#endif
+
+        char buffer[512];
+        buffer[sizeof (buffer) - 1] =
+          0; // to ensure defined behavior with VC++ <= 2013
+        snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
+                  expr, msg ? " (additional info: " : "", msg ? msg : "",
+                  msg ? ")" : "", current_errno);
+        TEST_FAIL_MESSAGE (buffer);
+    }
+    return rc;
+}
+
 #define TEST_ASSERT_SUCCESS_MESSAGE_ERRNO(expr, msg)                           \
     test_assert_success_message_errno_helper (expr, msg, #expr)
 
 #define TEST_ASSERT_SUCCESS_ERRNO(expr)                                        \
     test_assert_success_message_errno_helper (expr, NULL, #expr)
+
+#define TEST_ASSERT_SUCCESS_RAW_ERRNO(expr)                                    \
+    test_assert_success_message_raw_errno_helper (expr, NULL, #expr)
 
 #define TEST_ASSERT_FAILURE_ERRNO(error_code, expr)                            \
     {                                                                          \
