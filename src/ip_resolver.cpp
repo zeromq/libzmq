@@ -51,7 +51,7 @@ const struct sockaddr *zmq::ip_addr_t::as_sockaddr () const
     return &generic;
 }
 
-size_t zmq::ip_addr_t::sockaddr_len () const
+socklen_t zmq::ip_addr_t::sockaddr_len () const
 {
     if (family () == AF_INET6) {
         return sizeof (ipv6);

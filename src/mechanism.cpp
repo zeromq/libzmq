@@ -184,13 +184,14 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
 size_t zmq::mechanism_t::basic_properties_len () const
 {
     const char *socket_type = socket_type_string (options.type);
-    int meta_len = 0;
+    size_t meta_len = 0;
 
     for (std::map<std::string, std::string>::const_iterator it =
            options.app_metadata.begin ();
-         it != options.app_metadata.end (); ++it)
+         it != options.app_metadata.end (); ++it) {
         meta_len +=
           property_len (it->first.c_str (), strlen (it->second.c_str ()));
+    }
 
     return property_len (ZMTP_PROPERTY_SOCKET_TYPE, strlen (socket_type))
            + meta_len
