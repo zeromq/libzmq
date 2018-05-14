@@ -315,6 +315,7 @@ endif ()
 
 if (LIBZMQ_WERROR)
   zmq_check_cxx_flag_prepend ("-Werror")
+  zmq_check_cxx_flag_prepend ("/WX")
   if (NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     zmq_check_cxx_flag_prepend ("-errwarn=%all")
   endif()
