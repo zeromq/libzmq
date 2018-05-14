@@ -42,30 +42,6 @@ void tearDown ()
     teardown_test_context ();
 }
 
-// duplicated from fd.hpp
-#ifdef ZMQ_HAVE_WINDOWS
-#define close closesocket
-#if defined _MSC_VER && _MSC_VER <= 1400
-typedef UINT_PTR fd_t;
-enum
-{
-    retired_fd = (fd_t) (~0)
-};
-#else
-typedef SOCKET fd_t;
-enum
-{
-    retired_fd = (fd_t) INVALID_SOCKET
-};
-#endif
-#else
-typedef int fd_t;
-enum
-{
-    retired_fd = -1
-};
-#endif
-
 fd_t get_fd (void *socket)
 {
     fd_t fd;
