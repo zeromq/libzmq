@@ -170,7 +170,7 @@ int main (void)
 
     // Unauthenticated messages from a vanilla socket shouldn't be received
     struct sockaddr_in ip4addr;
-    int s;
+    fd_t s;
 
     unsigned short int port;
     rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
