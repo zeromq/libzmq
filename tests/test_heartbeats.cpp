@@ -372,26 +372,26 @@ int main (void)
 
     UNITY_BEGIN ();
 
-    //RUN_TEST (test_heartbeat_timeout_router);
+    RUN_TEST (test_heartbeat_timeout_router);
     RUN_TEST (test_heartbeat_timeout_router_mock_ping);
 
-    //RUN_TEST (test_heartbeat_ttl_dealer_router);
-    //RUN_TEST (test_heartbeat_ttl_req_rep);
-    //RUN_TEST (test_heartbeat_ttl_pull_push);
-    //RUN_TEST (test_heartbeat_ttl_sub_pub);
-    //RUN_TEST (test_heartbeat_ttl_pair_pair);
+    RUN_TEST (test_heartbeat_ttl_dealer_router);
+    RUN_TEST (test_heartbeat_ttl_req_rep);
+    RUN_TEST (test_heartbeat_ttl_pull_push);
+    RUN_TEST (test_heartbeat_ttl_sub_pub);
+    RUN_TEST (test_heartbeat_ttl_pair_pair);
 
-    //RUN_TEST (test_heartbeat_notimeout_dealer_router);
-    //RUN_TEST (test_heartbeat_notimeout_req_rep);
-    //RUN_TEST (test_heartbeat_notimeout_pull_push);
-    //RUN_TEST (test_heartbeat_notimeout_sub_pub);
-    //RUN_TEST (test_heartbeat_notimeout_pair_pair);
+    RUN_TEST (test_heartbeat_notimeout_dealer_router);
+    RUN_TEST (test_heartbeat_notimeout_req_rep);
+    RUN_TEST (test_heartbeat_notimeout_pull_push);
+    RUN_TEST (test_heartbeat_notimeout_sub_pub);
+    RUN_TEST (test_heartbeat_notimeout_pair_pair);
 
-    //RUN_TEST (test_heartbeat_notimeout_dealer_router_with_curve);
-    //RUN_TEST (test_heartbeat_notimeout_req_rep_with_curve);
-    //RUN_TEST (test_heartbeat_notimeout_pull_push_with_curve);
-    //RUN_TEST (test_heartbeat_notimeout_sub_pub_with_curve);
-    //RUN_TEST (test_heartbeat_notimeout_pair_pair_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_dealer_router_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_req_rep_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_pull_push_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_sub_pub_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_pair_pair_with_curve);
 
     return UNITY_END ();
 }
