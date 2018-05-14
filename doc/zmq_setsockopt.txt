@@ -774,7 +774,7 @@ up.
 When ZMQ_ROUTER_MANDATORY is set to `1`, 'ZMQ_POLLOUT' events will be generated
 if one or more messages can be sent to at least one of the peers. If
 ZMQ_ROUTER_MANDATORY is set to `0`, the socket will generate a 'ZMQ_POLLOUT'
-event on every call to 'zmq_poll'.
+event on every call to 'zmq_poll' resp. 'zmq_poller_wait_all'.
 
 [horizontal]
 Option value type:: int

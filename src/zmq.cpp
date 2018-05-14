@@ -1167,7 +1167,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 void *zmq_poller_new (void)
 {
     zmq::socket_poller_t *poller = new (std::nothrow) zmq::socket_poller_t;
-    alloc_assert (poller);
+    if (!poller) {
+        errno = ENOMEM;
+    }
     return poller;
 }
 
@@ -1294,7 +1296,6 @@ int zmq_poller_remove_fd (void *poller_, int fd_)
 
     return ((zmq::socket_poller_t *) poller_)->remove_fd (fd_);
 }
-
 
 int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
 {
