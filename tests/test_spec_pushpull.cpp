@@ -92,9 +92,9 @@ void test_pull_fair_queue_in (void *ctx)
     rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, connect_address, &len);
     assert (rc == 0);
 
-    const size_t services = 5;
+    const unsigned char services = 5;
     void *pushs[services];
-    for (size_t peer = 0; peer < services; ++peer) {
+    for (unsigned char peer = 0; peer < services; ++peer) {
         pushs[peer] = zmq_socket (ctx, ZMQ_PUSH);
         assert (pushs[peer]);
 
@@ -109,7 +109,7 @@ void test_pull_fair_queue_in (void *ctx)
     int second_half = 0;
 
     // Send 2N messages
-    for (size_t peer = 0; peer < services; ++peer) {
+    for (unsigned char peer = 0; peer < services; ++peer) {
         char *str = strdup ("A");
 
         str[0] += peer;
