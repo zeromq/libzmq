@@ -88,6 +88,32 @@
 #endif
 #endif
 
+// duplicated from fd.hpp
+#ifdef ZMQ_HAVE_WINDOWS
+#define close closesocket
+typedef int socket_size_t;
+#if defined _MSC_VER && _MSC_VER <= 1400
+typedef UINT_PTR fd_t;
+enum
+{
+    retired_fd = (fd_t) (~0)
+};
+#else
+typedef SOCKET fd_t;
+enum
+{
+    retired_fd = (fd_t) INVALID_SOCKET
+};
+#endif
+#else
+typedef size_t socket_size_t;
+typedef int fd_t;
+enum
+{
+    retired_fd = -1
+};
+#endif
+
 #define LIBZMQ_UNUSED(object) (void) object
 
 //  Bounce a message from client to server and back
@@ -351,11 +377,11 @@ int is_ipv6_available (void)
     test_addr.sin6_family = AF_INET6;
     inet_pton (AF_INET6, "::1", &(test_addr.sin6_addr));
 
-#ifdef ZMQ_HAVE_WINDOWS
-    SOCKET fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
-    if (fd == INVALID_SOCKET)
+    fd_t fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
+    if (fd == retired_fd)
         ipv6 = 0;
     else {
+#ifdef ZMQ_HAVE_WINDOWS
         setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (const char *) &ipv6,
                     sizeof (int));
         rc = setsockopt (fd, IPPROTO_IPV6, IPV6_V6ONLY, (const char *) &ipv6,
@@ -367,13 +393,7 @@ int is_ipv6_available (void)
             if (rc == SOCKET_ERROR)
                 ipv6 = 0;
         }
-        closesocket (fd);
-    }
 #else
-    int fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
-    if (fd == -1)
-        ipv6 = 0;
-    else {
         setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, &ipv6, sizeof (int));
         rc = setsockopt (fd, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6, sizeof (int));
         if (rc != 0)
@@ -383,9 +403,9 @@ int is_ipv6_available (void)
             if (rc != 0)
                 ipv6 = 0;
         }
+#endif
         close (fd);
     }
-#endif
 
     return ipv6;
 #endif // _WIN32_WINNT < 0x0600
@@ -441,14 +461,5 @@ int test_inet_pton (int af_, const char *src_, void *dst_)
     return inet_pton (af_, src_, dst_);
 #endif
 }
-
-#if defined(ZMQ_HAVE_WINDOWS)
-
-int close (int fd)
-{
-    return closesocket (fd);
-}
-
-#endif
 
 #endif

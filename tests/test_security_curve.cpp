@@ -241,9 +241,9 @@ void test_curve_security_with_plain_client_credentials ()
     expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
 
-int connect_vanilla_socket (char *my_endpoint)
+fd_t connect_vanilla_socket (char *my_endpoint)
 {
-    int s;
+    fd_t s;
     struct sockaddr_in ip4addr;
 
     unsigned short int port;
@@ -267,7 +267,7 @@ int connect_vanilla_socket (char *my_endpoint)
 void test_curve_security_unauthenticated_message ()
 {
     // Unauthenticated messages from a vanilla socket shouldn't be received
-    int s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
@@ -279,7 +279,7 @@ void test_curve_security_unauthenticated_message ()
     close (s);
 }
 
-void send_all (int fd, const char *data, size_t size)
+void send_all (fd_t fd, const char *data, socket_size_t size)
 {
     while (size > 0) {
         int res = send (fd, data, size, 0);
@@ -289,12 +289,12 @@ void send_all (int fd, const char *data, size_t size)
     }
 }
 
-template <size_t N> void send (int fd, const char (&data)[N])
+template <size_t N> void send (fd_t fd, const char (&data)[N])
 {
     send_all (fd, data, N - 1);
 }
 
-void send_greeting (int s)
+void send_greeting (fd_t s)
 {
     send (s, "\xff\0\0\0\0\0\0\0\0\x7f");            // signature
     send (s, "\x03\x00");                            // version 3.0
@@ -305,7 +305,7 @@ void send_greeting (int s)
 
 void test_curve_security_invalid_hello_wrong_length ()
 {
-    int s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint);
 
     // send GREETING
     send_greeting (s);
@@ -360,7 +360,7 @@ uint64_t htonll (uint64_t value)
 }
 #endif
 
-template <size_t N> void send_command (int s, char (&command)[N])
+template <size_t N> void send_command (fd_t s, char (&command)[N])
 {
     if (N < 256) {
         send (s, "\x04");
@@ -376,7 +376,7 @@ template <size_t N> void send_command (int s, char (&command)[N])
 
 void test_curve_security_invalid_hello_command_name ()
 {
-    int s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
 
@@ -401,7 +401,7 @@ void test_curve_security_invalid_hello_command_name ()
 
 void test_curve_security_invalid_hello_version ()
 {
-    int s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
 
@@ -424,7 +424,7 @@ void test_curve_security_invalid_hello_version ()
     close (s);
 }
 
-void flush_read (int fd)
+void flush_read (fd_t fd)
 {
     int res;
     char buf[256];
@@ -434,9 +434,9 @@ void flush_read (int fd)
     TEST_ASSERT_NOT_EQUAL (-1, res);
 }
 
-void recv_all (int fd, uint8_t *data, size_t len)
+void recv_all (fd_t fd, uint8_t *data, socket_size_t len)
 {
-    size_t received = 0;
+    socket_size_t received = 0;
     while (received < len) {
         int res = recv (fd, (char *) data, len, 0);
         TEST_ASSERT_GREATER_THAN_INT (0, res);
@@ -446,17 +446,17 @@ void recv_all (int fd, uint8_t *data, size_t len)
     }
 }
 
-void recv_greeting (int fd)
+void recv_greeting (fd_t fd)
 {
     uint8_t greeting[64];
     recv_all (fd, greeting, 64);
     //  TODO assert anything about the greeting received from the server?
 }
 
-int connect_exchange_greeting_and_send_hello (char *my_endpoint,
-                                              zmq::curve_client_tools_t &tools)
+fd_t connect_exchange_greeting_and_send_hello (char *my_endpoint,
+                                               zmq::curve_client_tools_t &tools)
 {
-    int s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
     recv_greeting (s);
@@ -474,7 +474,7 @@ void test_curve_security_invalid_initiate_wrong_length ()
 {
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
-    int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
+    fd_t s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
 
     // receive but ignore WELCOME
     flush_read (s);
@@ -497,13 +497,13 @@ void test_curve_security_invalid_initiate_wrong_length ()
     close (s);
 }
 
-int connect_exchange_greeting_and_hello_welcome (
+fd_t connect_exchange_greeting_and_hello_welcome (
   char *my_endpoint,
   void *server_mon,
   int timeout,
   zmq::curve_client_tools_t &tools)
 {
-    int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
+    fd_t s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
 
     // receive but ignore WELCOME
     uint8_t welcome[welcome_length + 2];
@@ -524,7 +524,7 @@ int connect_exchange_greeting_and_hello_welcome (
 void test_curve_security_invalid_initiate_command_name ()
 {
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
-    int s = connect_exchange_greeting_and_hello_welcome (
+    fd_t s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);
 
     char initiate[257];
@@ -546,7 +546,7 @@ void test_curve_security_invalid_initiate_command_name ()
 void test_curve_security_invalid_initiate_command_encrypted_cookie ()
 {
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
-    int s = connect_exchange_greeting_and_hello_welcome (
+    fd_t s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);
 
     char initiate[257];
@@ -568,7 +568,7 @@ void test_curve_security_invalid_initiate_command_encrypted_cookie ()
 void test_curve_security_invalid_initiate_command_encrypted_content ()
 {
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
-    int s = connect_exchange_greeting_and_hello_welcome (
+    fd_t s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);
 
     char initiate[257];

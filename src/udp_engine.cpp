@@ -110,7 +110,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     io_object_t::plug (io_thread_);
     handle = add_fd (fd);
 
-    const struct udp_address_t *udp_addr = address->resolved.udp_addr;
+    const udp_address_t *const udp_addr = address->resolved.udp_addr;
 
     // Bind the socket to a device if applicable
     if (!options.bound_device.empty ())

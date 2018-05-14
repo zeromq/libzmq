@@ -47,9 +47,9 @@ void test_fair_queue_in (void *ctx)
     rc = zmq_getsockopt (receiver, ZMQ_LAST_ENDPOINT, connect_address, &len);
     assert (rc == 0);
 
-    const size_t services = 5;
+    const unsigned char services = 5;
     void *senders[services];
-    for (size_t peer = 0; peer < services; ++peer) {
+    for (unsigned char peer = 0; peer < services; ++peer) {
         senders[peer] = zmq_socket (ctx, ZMQ_DEALER);
         assert (senders[peer]);
 
@@ -82,7 +82,7 @@ void test_fair_queue_in (void *ctx)
     int sum = 0;
 
     // send N requests
-    for (size_t peer = 0; peer < services; ++peer) {
+    for (unsigned char peer = 0; peer < services; ++peer) {
         s_send_seq (senders[peer], "M", SEQ_END);
         sum += 'A' + peer;
     }
@@ -90,7 +90,7 @@ void test_fair_queue_in (void *ctx)
     assert (sum == services * 'A' + services * (services - 1) / 2);
 
     // handle N requests
-    for (size_t peer = 0; peer < services; ++peer) {
+    for (unsigned char peer = 0; peer < services; ++peer) {
         rc = zmq_msg_recv (&msg, receiver, 0);
         assert (rc == 2);
         const char *id = (const char *) zmq_msg_data (&msg);

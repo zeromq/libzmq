@@ -198,14 +198,14 @@ int main (int, char **)
 
             // Make sure payload matches what we expect.
             const char *const data = (const char *) zmq_msg_data (&data_frame);
-            const int size = zmq_msg_size (&data_frame);
+            const size_t size = zmq_msg_size (&data_frame);
             // 0-length frame is a disconnection notification.  The server
             // should receive it as the last step in the dialogue.
             if (size == 0) {
                 ++step;
                 assert (step == steps);
             } else {
-                assert ((size_t) size == strlen (dialog[step].text));
+                assert (size == strlen (dialog[step].text));
                 int cmp = memcmp (dialog[step].text, data, size);
                 assert (cmp == 0);
 
@@ -259,8 +259,8 @@ int main (int, char **)
 
             // Make sure payload matches what we expect.
             const char *const data = (const char *) zmq_msg_data (&data_frame);
-            const int size = zmq_msg_size (&data_frame);
-            assert ((size_t) size == strlen (dialog[step].text));
+            const size_t size = zmq_msg_size (&data_frame);
+            assert (size == strlen (dialog[step].text));
             int cmp = memcmp (dialog[step].text, data, size);
             assert (cmp == 0);
 

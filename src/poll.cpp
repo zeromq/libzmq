@@ -43,6 +43,10 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
+#ifdef ZMQ_HAVE_WINDOWS
+typedef unsigned long nfds_t;
+#endif
+
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
     retired (false)
@@ -155,7 +159,8 @@ void zmq::poll_t::loop ()
         }
 
         //  Wait for events.
-        int rc = poll (&pollset[0], pollset.size (), timeout ? timeout : -1);
+        int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
+                       timeout ? timeout : -1);
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else

@@ -31,6 +31,8 @@
 #include "socket_poller.hpp"
 #include "err.hpp"
 
+#include <limits.h>
+
 static bool is_thread_safe (zmq::socket_base_t &socket)
 {
     // do not use getsockopt here, since that would fail during context termination
@@ -575,7 +577,8 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
         else if (timeout_ < 0)
             timeout = -1;
         else
-            timeout = end - now;
+            timeout =
+              static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
 
         //  Wait for events.
         while (true) {

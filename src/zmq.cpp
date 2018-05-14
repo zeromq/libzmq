@@ -867,7 +867,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         else if (timeout_ < 0)
             timeout = -1;
         else
-            timeout = end - now;
+            timeout =
+              static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
 
         //  Wait for events.
         {

@@ -64,7 +64,7 @@ class test_ip_resolver_t : public zmq::ip_resolver_t
         assert (service_ == NULL);
 
         bool ipv6 = (hints_->ai_family == AF_INET6);
-        bool no_dns = hints_->ai_flags & AI_NUMERICHOST;
+        bool no_dns = (hints_->ai_flags & AI_NUMERICHOST) != 0;
         const char *ip = NULL;
 
         if (!no_dns) {
@@ -156,9 +156,8 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
         TEST_ASSERT_EQUAL (0, rc);
     }
 
-    validate_address (family, &addr, expected_addr_,
-                      expected_port_, expected_zone_,
-                      expected_addr_v4_failover_);
+    validate_address (family, &addr, expected_addr_, expected_port_,
+                      expected_zone_, expected_addr_v4_failover_);
 }
 
 // Helper macro to define the v4/v6 function pairs
@@ -167,7 +166,7 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
                                                                                \
     static void _test##_ipv6 () { _test (true); }
 
-static void test_bind_any (int ipv6_)
+static void test_bind_any (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -178,7 +177,7 @@ static void test_bind_any (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_bind_any)
 
-static void test_bind_any_port0 (int ipv6_)
+static void test_bind_any_port0 (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -190,7 +189,7 @@ static void test_bind_any_port0 (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_bind_any_port0)
 
-static void test_nobind_any (int ipv6_)
+static void test_nobind_any (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -202,7 +201,7 @@ static void test_nobind_any (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_nobind_any)
 
-static void test_nobind_any_port (int ipv6_)
+static void test_nobind_any_port (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -214,7 +213,7 @@ static void test_nobind_any_port (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_nobind_any_port)
 
-static void test_nobind_addr_anyport (int ipv6_)
+static void test_nobind_addr_anyport (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -225,7 +224,7 @@ static void test_nobind_addr_anyport (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_nobind_addr_anyport)
 
-static void test_nobind_addr_port0 (int ipv6_)
+static void test_nobind_addr_port0 (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 
@@ -746,7 +745,7 @@ void test_dns_brackets_port_bad ()
     test_resolve (resolver_opts, "[ip.zeromq.org:22]", NULL);
 }
 
-void test_dns_deny (int ipv6_)
+void test_dns_deny (bool ipv6_)
 {
     zmq::ip_resolver_options_t resolver_opts;
 

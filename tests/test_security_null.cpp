@@ -209,7 +209,7 @@ int main (void)
     assert (rc == 0);
 
     struct sockaddr_in ip4addr;
-    int s;
+    fd_t s;
 
     unsigned short int port;
     rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
