@@ -33,7 +33,7 @@ bool zmq::ip_addr_t::is_multicast () const
         return IN_MULTICAST (ntohl (ipv4.sin_addr.s_addr));
     } else {
         //  IPv6 Multicast: ff00::/8
-        return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr);
+        return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr) != 0;
     }
 }
 
