@@ -561,7 +561,7 @@ void setup_context_and_server_side (
     rc = zmq_setsockopt (*zap_control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
 
-    if (zap_handler_) {
+    if (zap_handler_ != NULL) {
         *zap_thread = zmq_threadstart (zap_handler_, *ctx);
 
         char *buf = s_recv (*zap_control);
