@@ -1187,40 +1187,72 @@ int zmq_poller_destroy (void **poller_p_)
     return 0;
 }
 
-int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
+static int check_poller (void *const poller_)
 {
     if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
 
+    return 0;
+}
+
+static int check_events (const short events_)
+{
+    if (events_ & ~(ZMQ_POLLIN | ZMQ_POLLOUT | ZMQ_POLLERR | ZMQ_POLLPRI)) {
+        errno = EINVAL;
+        return -1;
+    }
+    return 0;
+}
+
+static int check_poller_registration_args (void *const poller_, void *const s_)
+{
+    if (-1 == check_poller (poller_))
+        return -1;
+
     if (!s_ || !((zmq::socket_base_t *) s_)->check_tag ()) {
         errno = ENOTSOCK;
         return -1;
     }
+
+    return 0;
+}
+
+static int check_poller_fd_registration_args (void *const poller_,
+                                              const zmq::fd_t fd_)
+{
+    if (-1 == check_poller (poller_))
+        return -1;
+
+    if (fd_ == zmq::retired_fd) {
+        errno = EBADF;
+        return -1;
+    }
+
+    return 0;
+}
+
+int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
+{
+    if (-1 == check_poller_registration_args (poller_, s_)
+        || -1 == check_events (events_))
+        return -1;
+
     zmq::socket_base_t *socket = (zmq::socket_base_t *) s_;
 
     return ((zmq::socket_poller_t *) poller_)
       ->add (socket, user_data_, events_);
 }
 
-#if defined _WIN32
 int zmq_poller_add_fd (void *poller_,
-                       SOCKET fd_,
+                       zmq::fd_t fd_,
                        void *user_data_,
                        short events_)
-#else
-int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
-#endif
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller_fd_registration_args (poller_, fd_)
+        || -1 == check_events (events_))
         return -1;
-    }
-    if (fd_ == zmq::retired_fd) {
-        errno = EBADF;
-        return -1;
-    }
 
     return ((zmq::socket_poller_t *) poller_)
       ->add_fd (fd_, user_data_, events_);
@@ -1229,88 +1261,49 @@ int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
 
 int zmq_poller_modify (void *poller_, void *s_, short events_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller_registration_args (poller_, s_)
+        || -1 == check_events (events_))
         return -1;
-    }
 
-    if (!s_ || !((zmq::socket_base_t *) s_)->check_tag ()) {
-        errno = ENOTSOCK;
-        return -1;
-    }
     zmq::socket_base_t *socket = (zmq::socket_base_t *) s_;
 
     return ((zmq::socket_poller_t *) poller_)->modify (socket, events_);
 }
 
-
-#if defined _WIN32
-int zmq_poller_modify_fd (void *poller_, SOCKET fd_, short events_)
-#else
-int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
-#endif
+int zmq_poller_modify_fd (void *poller_, zmq::fd_t fd_, short events_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller_fd_registration_args (poller_, fd_)
+        || -1 == check_events (events_))
         return -1;
-    }
-    if (fd_ == zmq::retired_fd) {
-        errno = EBADF;
-        return -1;
-    }
 
     return ((zmq::socket_poller_t *) poller_)->modify_fd (fd_, events_);
 }
 
-
 int zmq_poller_remove (void *poller_, void *s_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller_registration_args (poller_, s_))
         return -1;
-    }
 
-    if (!s_ || !((zmq::socket_base_t *) s_)->check_tag ()) {
-        errno = ENOTSOCK;
-        return -1;
-    }
     zmq::socket_base_t *socket = (zmq::socket_base_t *) s_;
 
     return ((zmq::socket_poller_t *) poller_)->remove (socket);
 }
 
-#if defined _WIN32
-int zmq_poller_remove_fd (void *poller_, SOCKET fd_)
-#else
-int zmq_poller_remove_fd (void *poller_, int fd_)
-#endif
+int zmq_poller_remove_fd (void *poller_, zmq::fd_t fd_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller_fd_registration_args (poller_, fd_))
         return -1;
-    }
-    if (fd_ == zmq::retired_fd) {
-        errno = EBADF;
-        return -1;
-    }
 
     return ((zmq::socket_poller_t *) poller_)->remove_fd (fd_);
 }
 
 int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
-        return -1;
-    }
-    if (!event_) {
-        errno = EFAULT;
-        return -1;
-    }
-
     int rc = zmq_poller_wait_all (poller_, event_, 1, timeout_);
 
-    if (rc < 0) {
+    if (rc < 0 && event_) {
+        // TODO this is not portable... zmq_poller_event_t contains pointers,
+        // for which nullptr does not need to be represented by all-zeroes
         memset (event_, 0, sizeof (zmq_poller_event_t));
     }
     // wait_all returns number of events, but we return 0 for any success
@@ -1322,10 +1315,9 @@ int zmq_poller_wait_all (void *poller_,
                          int n_events,
                          long timeout_)
 {
-    if (!poller_ || !((zmq::socket_poller_t *) poller_)->check_tag ()) {
-        errno = EFAULT;
+    if (-1 == check_poller (poller_))
         return -1;
-    }
+
     if (!events_) {
         errno = EFAULT;
         return -1;
