@@ -82,7 +82,7 @@ int main (void)
         return -1;
     }
     //  Check that we can create 1,000 sockets
-    int handle[MAX_SOCKETS];
+    fd_t handle[MAX_SOCKETS];
     int count;
     for (count = 0; count < MAX_SOCKETS; count++) {
         handle[count] = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
