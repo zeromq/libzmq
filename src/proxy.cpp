@@ -27,17 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-//  On AIX platform, poll.h has to be included first to get consistent
-//  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
-//  instead of 'events' and 'revents' and defines macros to map from POSIX-y
-//  names to AIX-specific names).
-//  zmq.h must be included *after* poll.h for AIX to build properly.
-//  precompiled.hpp includes include/zmq.h
-#if defined ZMQ_POLL_BASED_ON_POLL && defined ZMQ_HAVE_AIX
-#include <poll.h>
-#endif
-
 #include "precompiled.hpp"
+
 #include <stddef.h>
 #include "poller.hpp"
 #include "proxy.hpp"
