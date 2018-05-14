@@ -1219,13 +1219,8 @@ static int check_poller_registration_args (void *const poller_, void *const s_)
     return 0;
 }
 
-#if defined _WIN32
 static int check_poller_fd_registration_args (void *const poller_,
-                                              const SOCKET fd_)
-#else
-static int check_poller_fd_registration_args (void *const poller_,
-                                              const int fd_)
-#endif
+                                              const zmq::fd_t fd_)
 {
     if (-1 == check_poller (poller_))
         return -1;
@@ -1250,14 +1245,10 @@ int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
       ->add (socket, user_data_, events_);
 }
 
-#if defined _WIN32
 int zmq_poller_add_fd (void *poller_,
-                       SOCKET fd_,
+                       zmq::fd_t fd_,
                        void *user_data_,
                        short events_)
-#else
-int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
-#endif
 {
     if (-1 == check_poller_fd_registration_args (poller_, fd_)
         || -1 == check_events (events_))
@@ -1279,12 +1270,7 @@ int zmq_poller_modify (void *poller_, void *s_, short events_)
     return ((zmq::socket_poller_t *) poller_)->modify (socket, events_);
 }
 
-
-#if defined _WIN32
-int zmq_poller_modify_fd (void *poller_, SOCKET fd_, short events_)
-#else
-int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
-#endif
+int zmq_poller_modify_fd (void *poller_, zmq::fd_t fd_, short events_)
 {
     if (-1 == check_poller_fd_registration_args (poller_, fd_)
         || -1 == check_events (events_))
@@ -1292,7 +1278,6 @@ int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
 
     return ((zmq::socket_poller_t *) poller_)->modify_fd (fd_, events_);
 }
-
 
 int zmq_poller_remove (void *poller_, void *s_)
 {
@@ -1304,11 +1289,7 @@ int zmq_poller_remove (void *poller_, void *s_)
     return ((zmq::socket_poller_t *) poller_)->remove (socket);
 }
 
-#if defined _WIN32
-int zmq_poller_remove_fd (void *poller_, SOCKET fd_)
-#else
-int zmq_poller_remove_fd (void *poller_, int fd_)
-#endif
+int zmq_poller_remove_fd (void *poller_, zmq::fd_t fd_)
 {
     if (-1 == check_poller_fd_registration_args (poller_, fd_))
         return -1;
