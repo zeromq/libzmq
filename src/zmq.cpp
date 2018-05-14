@@ -1197,6 +1197,15 @@ static int check_poller (void *const poller_)
     return 0;
 }
 
+static int check_events (const short events_)
+{
+    if (events_ & ~(ZMQ_POLLIN | ZMQ_POLLOUT | ZMQ_POLLERR | ZMQ_POLLPRI)) {
+        errno = EINVAL;
+        return -1;
+    }
+    return 0;
+}
+
 static int check_poller_registration_args (void *const poller_, void *const s_)
 {
     if (-1 == check_poller (poller_))
@@ -1231,7 +1240,8 @@ static int check_poller_fd_registration_args (void *const poller_,
 
 int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
 {
-    if (-1 == check_poller_registration_args (poller_, s_))
+    if (-1 == check_poller_registration_args (poller_, s_)
+        || -1 == check_events (events_))
         return -1;
 
     zmq::socket_base_t *socket = (zmq::socket_base_t *) s_;
@@ -1249,7 +1259,8 @@ int zmq_poller_add_fd (void *poller_,
 int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
 #endif
 {
-    if (-1 == check_poller_fd_registration_args (poller_, fd_))
+    if (-1 == check_poller_fd_registration_args (poller_, fd_)
+        || -1 == check_events (events_))
         return -1;
 
     return ((zmq::socket_poller_t *) poller_)
@@ -1259,7 +1270,8 @@ int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
 
 int zmq_poller_modify (void *poller_, void *s_, short events_)
 {
-    if (-1 == check_poller_registration_args (poller_, s_))
+    if (-1 == check_poller_registration_args (poller_, s_)
+        || -1 == check_events (events_))
         return -1;
 
     zmq::socket_base_t *socket = (zmq::socket_base_t *) s_;
@@ -1274,7 +1286,8 @@ int zmq_poller_modify_fd (void *poller_, SOCKET fd_, short events_)
 int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
 #endif
 {
-    if (-1 == check_poller_fd_registration_args (poller_, fd_))
+    if (-1 == check_poller_fd_registration_args (poller_, fd_)
+        || -1 == check_events (events_))
         return -1;
 
     return ((zmq::socket_poller_t *) poller_)->modify_fd (fd_, events_);
