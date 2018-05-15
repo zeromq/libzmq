@@ -92,6 +92,10 @@
 #ifdef ZMQ_HAVE_WINDOWS
 #define close closesocket
 typedef int socket_size_t;
+const char *as_setsockopt_opt_t (const void *opt)
+{
+    return static_cast<const char *> (opt);
+}
 #if defined _MSC_VER && _MSC_VER <= 1400
 typedef UINT_PTR fd_t;
 enum
@@ -107,6 +111,10 @@ enum
 #endif
 #else
 typedef size_t socket_size_t;
+const void *as_setsockopt_opt_t (const void *opt)
+{
+    return opt;
+}
 typedef int fd_t;
 enum
 {
