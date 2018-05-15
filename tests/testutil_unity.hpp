@@ -217,6 +217,24 @@ void *test_context_socket_close (void *socket)
     return socket;
 }
 
+void *test_context_socket_close_zero_linger (void *socket)
+{
+    const int linger = 0;
+    int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof (linger));
+    TEST_ASSERT_TRUE (rc == 0 || zmq_errno () == ETERM);
+    return test_context_socket_close (socket);
+}
+
+void test_bind (void *socket,
+                const char *bind_address,
+                char *my_endpoint,
+                size_t len)
+{
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, bind_address));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+}
+
 void bind_loopback (void *socket, int ipv6, char *my_endpoint, size_t len)
 {
     if (ipv6 && !is_ipv6_available ()) {
@@ -225,10 +243,9 @@ void bind_loopback (void *socket, int ipv6, char *my_endpoint, size_t len)
 
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (socket, ZMQ_IPV6, &ipv6, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_bind (socket, ipv6 ? "tcp://[::1]:*" : "tcp://127.0.0.1:*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+
+    test_bind (socket, ipv6 ? "tcp://[::1]:*" : "tcp://127.0.0.1:*",
+               my_endpoint, len);
 }
 
 void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
