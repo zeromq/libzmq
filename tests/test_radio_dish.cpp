@@ -280,8 +280,8 @@ union sa_u
 static bool is_multicast_available (int ipv6_)
 {
     int family = ipv6_ ? AF_INET6 : AF_INET;
-    int bind_sock = -1;
-    int send_sock = -1;
+    fd_t bind_sock = retired_fd;
+    fd_t send_sock = retired_fd;
     int port = 5555;
     bool success = false;
     const char *msg = "it works";
@@ -357,15 +357,15 @@ static bool is_multicast_available (int ipv6_)
         mreq.ipv6mr_multiaddr = mcast_ipv6->sin6_addr;
         mreq.ipv6mr_interface = 0;
 
-        rc = setsockopt (bind_sock, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq,
-                         sizeof (mreq));
+        rc = setsockopt (bind_sock, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+                         as_setsockopt_opt_t (&mreq), sizeof (mreq));
         if (rc < 0) {
             goto out;
         }
 
         int loop = 1;
-        rc = setsockopt (send_sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop,
-                         sizeof (loop));
+        rc = setsockopt (send_sock, IPPROTO_IPV6, IPV6_MULTICAST_LOOP,
+                         as_setsockopt_opt_t (&loop), sizeof (loop));
         if (rc < 0) {
             goto out;
         }
@@ -376,15 +376,15 @@ static bool is_multicast_available (int ipv6_)
         mreq.imr_multiaddr = mcast_ipv4->sin_addr;
         mreq.imr_interface.s_addr = htonl (INADDR_ANY);
 
-        rc = setsockopt (bind_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq,
-                         sizeof (mreq));
+        rc = setsockopt (bind_sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                         as_setsockopt_opt_t (&mreq), sizeof (mreq));
         if (rc < 0) {
             goto out;
         }
 
         int loop = 1;
-        rc = setsockopt (send_sock, IPPROTO_IP, IP_MULTICAST_LOOP, &loop,
-                         sizeof (loop));
+        rc = setsockopt (send_sock, IPPROTO_IP, IP_MULTICAST_LOOP,
+                         as_setsockopt_opt_t (&loop), sizeof (loop));
         if (rc < 0) {
             goto out;
         }
@@ -392,7 +392,8 @@ static bool is_multicast_available (int ipv6_)
 
     msleep (SETTLE_TIME);
 
-    rc = sendto (send_sock, msg, strlen (msg), 0, &mcast.generic, sl);
+    rc = sendto (send_sock, msg, static_cast<socklen_t> (strlen (msg)), 0,
+                 &mcast.generic, sl);
     if (rc < 0) {
         goto out;
     }
