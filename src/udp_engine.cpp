@@ -425,8 +425,8 @@ void zmq::udp_engine_t::restart_output ()
 
 void zmq::udp_engine_t::in_event ()
 {
-    struct sockaddr_in in_address;
-    socklen_t in_addrlen = sizeof (sockaddr_in);
+    sockaddr_storage in_address;
+    socklen_t in_addrlen = sizeof (sockaddr_storage);
 #ifdef ZMQ_HAVE_WINDOWS
     int nbytes = recvfrom (fd, (char *) in_buffer, MAX_UDP_MSG, 0,
                            (sockaddr *) &in_address, &in_addrlen);
@@ -459,7 +459,8 @@ void zmq::udp_engine_t::in_event ()
     msg_t msg;
 
     if (options.raw_socket) {
-        sockaddr_to_msg (&msg, &in_address);
+        zmq_assert (in_address.ss_family == AF_INET);
+        sockaddr_to_msg (&msg, reinterpret_cast<sockaddr_in *> (&in_address));
 
         body_size = nbytes;
         body_offset = 0;
