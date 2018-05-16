@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-set -x
+set -x -e
 
 cd ../..
 
 # always install custom builds from dist
 # to make sure that `make dist` doesn't omit any files required to build & test
-if [ -z $DO_CLANG_FORMAT_CHECK ]; then
+if [ -z $DO_CLANG_FORMAT_CHECK -a -z $CLANG_TIDY ]; then
     ./autogen.sh
     ./configure
     make -j5 dist-gzip
@@ -15,7 +15,7 @@ if [ -z $DO_CLANG_FORMAT_CHECK ]; then
     cd zeromq-$V
 fi
 
-mkdir tmp
+mkdir tmp || true
 BUILD_PREFIX=$PWD/tmp
 
 CONFIG_OPTS=()
@@ -47,15 +47,63 @@ elif [ $CURVE == "libsodium" ]; then
     fi
 fi
 
+CMAKE_PREFIXES=()
+MAKE_PREFIXES=()
+PARALLEL_MAKE_OPT="-j5"
+if [ -n "$CLANG_TIDY" ] ; then
+    CMAKE_OPTS+=("-DCMAKE_CXX_CLANG_TIDY:STRING=${CLANG_TIDY}")
+    if [ -n ${SONARCLOUD_BUILD_WRAPPER_PATH} ] ; then
+        MAKE_PREFIXES+=("${SONARCLOUD_BUILD_WRAPPER_PATH}build-wrapper-linux-x86-64")
+        MAKE_PREFIXES+=("--out-dir")
+        MAKE_PREFIXES+=("${TRAVIS_BUILD_DIR}/bw-output")
+        
+    fi
+    CMAKE_PREFIXES+=("scan-build-6.0")
+    MAKE_PREFIXES+=("scan-build-6.0")
+    MAKE_PREFIXES+=("-plist-html")
+    SCAN_BUILD_OUTPUT="$(pwd)/scan-build-report"
+    MAKE_PREFIXES+=("-o ${SCAN_BUILD_OUTPUT}")
+    # TODO this does not work with sonarcloud.io as it misses the sonar-cxx plugin
+    #MAKE_PREFIXES+=("-plist")
+    IFS="/" read -ra GITHUB_USER <<< "${TRAVIS_REPO_SLUG}"
+    PARALLEL_MAKE_OPT=""
+fi
+
 # Build, check, and install from local source
 mkdir build_cmake
 cd build_cmake
-if [ "$DO_CLANG_FORMAT_CHECK" -eq "1" ] ; then
+if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
     if ! ( PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make clang-format-check) ; then
         make clang-format-diff
         exit 1
     fi
 else
+    if [ -n "$CLANG_TIDY" ] ; then
+        ${CLANG_TIDY} -explain-config
+    fi
+
     export CTEST_OUTPUT_ON_FAILURE=1
-    ( PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make -j5 all VERBOSE=1 && make install && make -j5 test ARGS="-V" ) || exit 1
+    PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig ${CMAKE_PREFIXES[@]} cmake "${CMAKE_OPTS[@]}" ..
+    ${MAKE_PREFIXES[@]} make ${PARALLEL_MAKE_OPT} all VERBOSE=1 | tee clang-tidy-report
+    
+    if [ -n "${SONAR_SCANNER_CLI_PATH}" ] ; then
+        find ${SCAN_BUILD_OUTPUT} || echo "WARNING: ${SCAN_BUILD_OUTPUT} does not exist"
+    
+        ${SONAR_SCANNER_CLI_PATH}sonar-scanner \
+            -Dsonar.projectKey=libzmq-clang \
+            -Dsonar.organization=${GITHUB_USER}-github \
+            -Dsonar.projectBaseDir=.. \
+            -Dsonar.sources=${TRAVIS_BUILD_DIR}/include,${TRAVIS_BUILD_DIR}/src,${TRAVIS_BUILD_DIR}/tests,${TRAVIS_BUILD_DIR}/unittests \
+            -Dsonar.cfamily.build-wrapper-output=${TRAVIS_BUILD_DIR}/bw-output \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${SONARQUBE_TOKEN}
+
+            # TODO this does not work with sonarcloud.io as it misses the sonar-cxx plugin
+            # -Dsonar.cxx.clangtidy.reportPath=clang-tidy-report \
+            # -Dsonar.cxx.clangsa.reportPath=*.plist \
+            
+    fi
+
+    make install
+    make ${PARALLEL_MAKE_OPT} test ARGS="-V"
 fi

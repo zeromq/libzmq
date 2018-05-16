@@ -93,6 +93,18 @@ matrix:
         - llvm-toolchain-trusty-5.0
       packages:
         - clang-5.0
+  - env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-6.0 CC=clang-6.0 CXX=clang++-6.0
+    os: linux
+    compiler: clang
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-trusty-6.0
+        packages:
+          - clang-6.0
+          - clang-tools-6.0
+          - clang-tidy-6.0
   - env: BUILD_TYPE=default POLLER=poll
     os: linux
   - env: BUILD_TYPE=default POLLER=select
@@ -103,6 +115,14 @@ sudo: false
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
 - if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew update; brew install libsodium ; fi
+- if [ -n "$CLANG_TIDY" ] ; then
+    curl -L https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip -o build-wrapper-linux-x86.zip ;
+    unzip build-wrapper-linux-x86.zip ;
+    export SONARCLOUD_BUILD_WRAPPER_PATH="$(pwd)/build-wrapper-linux-x86/" ;
+    curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-linux.zip -o sonar-scanner-cli.zip ;
+    unzip sonar-scanner-cli.zip ;
+    export SONAR_SCANNER_CLI_PATH="$(pwd)/sonar-scanner-3.1.0.1141-linux/bin/" ;
+  fi
 
 before_script:
 # ZMQ stress tests need more open socket (files) than the usual default
