@@ -302,9 +302,32 @@ macro (zmq_check_cxx_flag_prepend flag)
   endif ()
 endmacro ()
 
+OPTION (ENABLE_ANALYSIS "Build with static analysis (make take very long)" OFF)
 
 if (MSVC)
-  zmq_check_cxx_flag_prepend ("/W3")
+  if (ENABLE_ANALYSIS)  
+    zmq_check_cxx_flag_prepend ("/W4")
+
+    zmq_check_cxx_flag_prepend ("/analyze")
+    
+    # C++11/14/17-specific, but maybe possible via conditional defines
+    zmq_check_cxx_flag_prepend ("/wd26440") # Function '...' can be declared 'noexcept' 
+    zmq_check_cxx_flag_prepend ("/wd26432") # If you define or delete any default operation in the type '...', define or delete them all
+    zmq_check_cxx_flag_prepend ("/wd26439") # This kind of function may not throw. Declare it 'noexcept' 
+    zmq_check_cxx_flag_prepend ("/wd26447") # The function is declared 'noexcept' but calls function '...' which may throw exceptions
+    zmq_check_cxx_flag_prepend ("/wd26433") # Function '...' should be marked with 'override'
+    zmq_check_cxx_flag_prepend ("/wd26409") # Avoid calling new and delete explicitly, use std::make_unique<T> instead
+    # Requires GSL
+    zmq_check_cxx_flag_prepend ("/wd26429") # Symbol '...' is never tested for nullness, it can be marked as not_null
+    zmq_check_cxx_flag_prepend ("/wd26446") # Prefer to use gsl::at()
+    zmq_check_cxx_flag_prepend ("/wd26481") # Don't use pointer arithmetic. Use span instead
+    zmq_check_cxx_flag_prepend ("/wd26472") # Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narow
+    zmq_check_cxx_flag_prepend ("/wd26448") # Consider using gsl::finally if final action is intended
+    zmq_check_cxx_flag_prepend ("/wd26400") # Do not assign the result of an allocation or a function call with an owner<T> return value to a raw pointer, use owner<T> instead    
+    zmq_check_cxx_flag_prepend ("/wd26485") # Expression '...': No array to pointer decay (bounds.3)
+  else()
+    zmq_check_cxx_flag_prepend ("/W3")
+  endif()
 
   if (MSVC_IDE)
     set (MSVC_TOOLSET "-${CMAKE_VS_PLATFORM_TOOLSET}")
@@ -941,8 +964,17 @@ if (MSVC)
   set( CMAKE_STATIC_LINKER_FLAGS /ignore:4221 )
   set (PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
   set (PDB_NAME "libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+  function(enable_vs_guideline_checker target)
+    set_target_properties(${target} PROPERTIES
+        VS_GLOBAL_EnableCppCoreCheck true
+        VS_GLOBAL_CodeAnalysisRuleSet CppCoreCheckRules.ruleset
+        VS_GLOBAL_RunCodeAnalysis true)
+  endfunction()
   if (BUILD_SHARED)
     add_library (libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+    if(ENABLE_ANALYSIS)
+        enable_vs_guideline_checker (libzmq)
+    endif()
     set_target_properties (libzmq PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
