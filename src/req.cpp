@@ -126,7 +126,7 @@ int zmq::req_t::xsend (msg_t *msg_)
         }
     }
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    bool more = (msg_->flags () & msg_t::more) != 0;
 
     int rc = dealer_t::xsend (msg_);
     if (rc != 0)
@@ -299,7 +299,8 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
                 if (msg_->size () == sizeof (uint32_t)) {
                     state = request_id;
                     return session_base_t::push_msg (msg_);
-                } else if (msg_->size () == 0) {
+                }
+                if (msg_->size () == 0) {
                     state = body;
                     return session_base_t::push_msg (msg_);
                 }

@@ -72,7 +72,7 @@ struct blob_t
     blob_t () : data_ (0), size_ (0), owned_ (true) {}
 
     //  Creates a blob_t of a given size, with uninitialized content.
-    blob_t (const size_t size) :
+    explicit blob_t (const size_t size) :
         data_ ((unsigned char *) malloc (size)),
         size_ (size),
         owned_ (true)

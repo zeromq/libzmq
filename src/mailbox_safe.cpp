@@ -37,7 +37,7 @@ zmq::mailbox_safe_t::mailbox_safe_t (mutex_t *sync_) : sync (sync_)
     //  Get the pipe into passive state. That way, if the users starts by
     //  polling on the associated file descriptor it will get woken up when
     //  new command is posted.
-    const bool ok = cpipe.read (NULL);
+    const bool ok = cpipe.check_read ();
     zmq_assert (!ok);
 }
 

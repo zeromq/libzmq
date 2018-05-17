@@ -52,7 +52,7 @@ int zmq::rep_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    bool more = (msg_->flags () & msg_t::more) != 0;
 
     //  Push message to the reply pipe.
     int rc = router_t::xsend (msg_);

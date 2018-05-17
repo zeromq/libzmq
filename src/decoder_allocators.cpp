@@ -108,17 +108,21 @@ void zmq::shared_message_memory_allocator::deallocate ()
     if (buf && !c->sub (1)) {
         std::free (buf);
     }
-    release ();
+    clear ();
 }
 
 unsigned char *zmq::shared_message_memory_allocator::release ()
 {
     unsigned char *b = buf;
+    clear ();
+    return b;
+}
+
+void zmq::shared_message_memory_allocator::clear ()
+{
     buf = NULL;
     bufsize = 0;
     msg_content = NULL;
-
-    return b;
 }
 
 void zmq::shared_message_memory_allocator::inc_ref ()
