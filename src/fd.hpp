@@ -49,8 +49,11 @@ enum
 #else
 typedef SOCKET fd_t;
 enum
+#if _MSC_VER >= 1800
+  : fd_t
+#endif
 {
-    retired_fd = (fd_t) INVALID_SOCKET
+    retired_fd = INVALID_SOCKET
 };
 #endif
 #else
