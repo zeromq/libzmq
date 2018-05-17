@@ -120,6 +120,8 @@ class shared_message_memory_allocator
     void advance_content () { msg_content++; }
 
   private:
+    void clear ();
+
     unsigned char *buf;
     std::size_t bufsize;
     const std::size_t max_size;
