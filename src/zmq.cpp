@@ -685,7 +685,7 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
     }
 }
 
-    // Polling.
+// Polling.
 
 #if defined ZMQ_HAVE_POLLER
 inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
@@ -1176,17 +1176,19 @@ void *zmq_poller_new (void)
 
 int zmq_poller_destroy (void **poller_p_)
 {
-    void *poller;
-    if (!poller_p_ || !(poller = *poller_p_)
-        || !((zmq::socket_poller_t *) poller)->check_tag ()) {
-        errno = EFAULT;
-        return -1;
+    if (poller_p_) {
+        zmq::socket_poller_t *const poller =
+          static_cast<zmq::socket_poller_t *> (*poller_p_);
+        if (poller && poller->check_tag ()) {
+            delete poller;
+            *poller_p_ = NULL;
+            return 0;
+        }
     }
-
-    delete ((zmq::socket_poller_t *) poller);
-    *poller_p_ = NULL;
-    return 0;
+    errno = EFAULT;
+    return -1;
 }
+
 
 static int check_poller (void *const poller_)
 {
