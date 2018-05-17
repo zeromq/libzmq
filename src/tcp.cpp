@@ -194,8 +194,9 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
                          sizeof (timeout_));
     tcp_assert_tuning_error (sockfd_, rc);
     return rc;
-#endif
+#else
     return 0;
+#endif
 }
 
 int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
