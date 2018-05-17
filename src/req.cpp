@@ -126,7 +126,7 @@ int zmq::req_t::xsend (msg_t *msg_)
         }
     }
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    bool more = (msg_->flags () & msg_t::more) != 0;
 
     int rc = dealer_t::xsend (msg_);
     if (rc != 0)
