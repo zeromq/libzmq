@@ -103,7 +103,7 @@ struct options_t
     int tos;
 
     //  Socket type.
-    int type;
+    int8_t type;
 
     //  Linger time, in milliseconds.
     atomic_value_t linger;
