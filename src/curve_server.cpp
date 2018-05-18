@@ -430,7 +430,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     uint8_t ready_nonce[crypto_box_NONCEBYTES];
 
     uint8_t *ready_plaintext =
-      (uint8_t *) malloc (crypto_box_ZEROBYTES + metadata_length);
+      static_cast<uint8_t *> (malloc (crypto_box_ZEROBYTES + metadata_length));
     alloc_assert (ready_plaintext);
 
     //  Create Box [metadata](S'->C')
@@ -443,8 +443,8 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
     put_uint64 (ready_nonce + 16, cn_nonce);
 
-    uint8_t *ready_box =
-      (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 16 + metadata_length);
+    uint8_t *ready_box = static_cast<uint8_t *> (
+      malloc (crypto_box_BOXZEROBYTES + 16 + metadata_length));
     alloc_assert (ready_box);
 
     int rc = crypto_box_afternm (ready_box, ready_plaintext, mlen, ready_nonce,

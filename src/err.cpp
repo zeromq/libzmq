@@ -219,8 +219,8 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
 #else
     DWORD rc = FormatMessageA (
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode,
-      MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), buffer_, (DWORD) buffer_size_,
-      NULL);
+      MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), buffer_,
+      static_cast<DWORD> (buffer_size_), NULL);
 #endif
     zmq_assert (rc);
 }

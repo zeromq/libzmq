@@ -143,7 +143,8 @@ zmq::signaler_t::~signaler_t ()
     if (w != retired_fd) {
         const struct linger so_linger = {1, 0};
         int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
-                             (const char *) &so_linger, sizeof so_linger);
+                             reinterpret_cast<const char *> (&so_linger),
+                             sizeof so_linger);
         //  Only check shutdown if WSASTARTUP was previously done
         if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
             wsa_assert (rc != SOCKET_ERROR);
@@ -187,7 +188,8 @@ void zmq::signaler_t::send ()
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
     while (true) {
-        int nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
+        int nbytes =
+          ::send (w, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
         wsa_assert (nbytes != SOCKET_ERROR);
         if (unlikely (nbytes == SOCKET_ERROR))
             continue;
@@ -319,7 +321,8 @@ void zmq::signaler_t::recv ()
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    int nbytes =
+      ::recv (r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
     ssize_t nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
@@ -359,7 +362,8 @@ int zmq::signaler_t::recv_failable ()
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    int nbytes =
+      ::recv (r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
         const int last_error = WSAGetLastError ();
         if (last_error == WSAEWOULDBLOCK) {

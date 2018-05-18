@@ -295,7 +295,7 @@ void zmq::select_t::loop ()
 {
     while (true) {
         //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+        int timeout = static_cast<int> (execute_timers ());
 
         cleanup_retired ();
 
@@ -316,8 +316,8 @@ void zmq::select_t::loop ()
 #if defined ZMQ_HAVE_OSX
         struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
 #else
-        struct timeval tv = {(long) (timeout / 1000),
-                             (long) (timeout % 1000 * 1000)};
+        struct timeval tv = {static_cast<long> (timeout / 1000),
+                             static_cast<long> (timeout % 1000 * 1000)};
 #endif
 
 #if defined ZMQ_HAVE_WINDOWS
@@ -577,14 +577,15 @@ u_short zmq::select_t::determine_fd_family (fd_t fd_)
     int type;
     int type_length = sizeof (int);
 
-    int rc =
-      getsockopt (fd_, SOL_SOCKET, SO_TYPE, (char *) &type, &type_length);
+    int rc = getsockopt (fd_, SOL_SOCKET, SO_TYPE,
+                         reinterpret_cast<char *> (&type), &type_length);
 
     if (rc == 0) {
         if (type == SOCK_DGRAM)
             return AF_INET;
         else {
-            rc = getsockname (fd_, (sockaddr *) &addr, &addr_size);
+            rc = getsockname (fd_, reinterpret_cast<sockaddr *> (&addr),
+                              &addr_size);
 
             //  AF_INET and AF_INET6 can be mixed in select
             //  TODO: If proven otherwise, should simply return addr.sa_family

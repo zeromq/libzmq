@@ -82,7 +82,8 @@ int zmq::req_t::xsend (msg_t *msg_)
             request_id++;
 
             //  Copy request id before sending (see issue #1695 for details).
-            uint32_t *request_id_copy = (uint32_t *) malloc (sizeof (uint32_t));
+            uint32_t *request_id_copy =
+              static_cast<uint32_t *> (malloc (sizeof (uint32_t)));
             zmq_assert (request_id_copy);
 
             *request_id_copy = request_id;

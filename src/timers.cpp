@@ -146,7 +146,7 @@ long zmq::timers_t::timeout ()
         //  Live timer, lets return the timeout
         if (cancelled_it == cancelled_timers.end ()) {
             if (it->first > now)
-                return (long) (it->first - now);
+                return static_cast<long> (it->first - now);
             else
                 return 0;
         }

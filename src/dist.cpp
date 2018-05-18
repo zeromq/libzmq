@@ -179,7 +179,7 @@ void zmq::dist_t::distribute (msg_t *msg_)
 
     //  Add matching-1 references to the message. We already hold one reference,
     //  that's why -1.
-    msg_->add_refs ((int) matching - 1);
+    msg_->add_refs (static_cast<int> (matching) - 1);
 
     //  Push copy of the message to each matching pipe.
     int failed = 0;

@@ -241,7 +241,7 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     zmq_assert (rc == 0);
     char *msg_data = static_cast<char *> (msg_->data ());
     memcpy (msg_data, "\5ERROR", 6);
-    msg_data[6] = (char) status_code.length ();
+    msg_data[6] = static_cast<char> (status_code.length ());
     memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
     return 0;
 }

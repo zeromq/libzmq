@@ -135,8 +135,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-    int rc =
-      setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (char *) &flag, sizeof (flag));
+    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY,
+                         reinterpret_cast<char *> (&flag), sizeof (flag));
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -156,7 +156,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 #else
     socklen_t addrlen = sizeof ss;
 #endif
-    rc = getpeername (sockfd_, (struct sockaddr *) &ss, &addrlen);
+    rc = getpeername (sockfd_, reinterpret_cast<struct sockaddr *> (&ss),
+                      &addrlen);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         const int last_error = WSAGetLastError ();
@@ -173,8 +174,8 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 #endif
 
     char host[NI_MAXHOST];
-    rc = getnameinfo ((struct sockaddr *) &ss, addrlen, host, sizeof host, NULL,
-                      0, NI_NUMERICHOST);
+    rc = getnameinfo (reinterpret_cast<struct sockaddr *> (&ss), addrlen, host,
+                      sizeof host, NULL, 0, NI_NUMERICHOST);
     if (rc != 0)
         return 0;
 
@@ -187,7 +188,7 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     } u;
 
     u.sa_stor = ss;
-    return (int) u.sa.sa_family;
+    return static_cast<int> (u.sa.sa_family);
 }
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
@@ -311,8 +312,9 @@ void zmq::shutdown_network ()
 static void tune_socket (const SOCKET socket)
 {
     BOOL tcp_nodelay = 1;
-    int rc = setsockopt (socket, IPPROTO_TCP, TCP_NODELAY,
-                         (char *) &tcp_nodelay, sizeof tcp_nodelay);
+    int rc =
+      setsockopt (socket, IPPROTO_TCP, TCP_NODELAY,
+                  reinterpret_cast<char *> (&tcp_nodelay), sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     zmq::tcp_tune_loopback_fast_path (socket);
@@ -415,7 +417,8 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
     BOOL so_reuseaddr = 1;
     int rc = setsockopt (listener, SOL_SOCKET, SO_REUSEADDR,
-                         (char *) &so_reuseaddr, sizeof so_reuseaddr);
+                         reinterpret_cast<char *> (&so_reuseaddr),
+                         sizeof so_reuseaddr);
     wsa_assert (rc != SOCKET_ERROR);
 
     tune_socket (listener);
@@ -441,12 +444,14 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Bind listening socket to signaler port.
-    rc = bind (listener, (const struct sockaddr *) &addr, sizeof addr);
+    rc = bind (listener, reinterpret_cast<const struct sockaddr *> (&addr),
+               sizeof addr);
 
     if (rc != SOCKET_ERROR && signaler_port == 0) {
         //  Retrieve ephemeral port number
         int addrlen = sizeof addr;
-        rc = getsockname (listener, (struct sockaddr *) &addr, &addrlen);
+        rc = getsockname (listener, reinterpret_cast<struct sockaddr *> (&addr),
+                          &addrlen);
     }
 
     //  Listen for incoming connections.
@@ -455,7 +460,8 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Connect writer to the listener.
     if (rc != SOCKET_ERROR)
-        rc = connect (*w_, (struct sockaddr *) &addr, sizeof addr);
+        rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
+                      sizeof addr);
 
     //  Accept connection from writer.
     if (rc != SOCKET_ERROR)
@@ -466,22 +472,26 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     if (*r_ != INVALID_SOCKET) {
         size_t dummy_size =
           1024 * 1024; //  1M to overload default receive buffer
-        unsigned char *dummy = (unsigned char *) malloc (dummy_size);
+        unsigned char *dummy =
+          static_cast<unsigned char *> (malloc (dummy_size));
         wsa_assert (dummy);
 
-        int still_to_send = (int) dummy_size;
-        int still_to_recv = (int) dummy_size;
+        int still_to_send = static_cast<int> (dummy_size);
+        int still_to_recv = static_cast<int> (dummy_size);
         while (still_to_send || still_to_recv) {
             int nbytes;
             if (still_to_send > 0) {
-                nbytes =
-                  ::send (*w_, (char *) (dummy + dummy_size - still_to_send),
-                          still_to_send, 0);
+                nbytes = ::send (
+                  *w_,
+                  reinterpret_cast<char *> (dummy + dummy_size - still_to_send),
+                  still_to_send, 0);
                 wsa_assert (nbytes != SOCKET_ERROR);
                 still_to_send -= nbytes;
             }
-            nbytes = ::recv (*r_, (char *) (dummy + dummy_size - still_to_recv),
-                             still_to_recv, 0);
+            nbytes = ::recv (
+              *r_,
+              reinterpret_cast<char *> (dummy + dummy_size - still_to_recv),
+              still_to_recv, 0);
             wsa_assert (nbytes != SOCKET_ERROR);
             still_to_recv -= nbytes;
         }

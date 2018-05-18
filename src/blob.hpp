@@ -30,6 +30,8 @@
 #ifndef __ZMQ_BLOB_HPP_INCLUDED__
 #define __ZMQ_BLOB_HPP_INCLUDED__
 
+#include "err.hpp"
+
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
@@ -73,19 +75,21 @@ struct blob_t
 
     //  Creates a blob_t of a given size, with uninitialized content.
     explicit blob_t (const size_t size) :
-        data_ ((unsigned char *) malloc (size)),
+        data_ (static_cast<unsigned char *> (malloc (size))),
         size_ (size),
         owned_ (true)
     {
+        alloc_assert (data_);
     }
 
     //  Creates a blob_t of a given size, an initializes content by copying
     // from another buffer.
     blob_t (const unsigned char *const data, const size_t size) :
-        data_ ((unsigned char *) malloc (size)),
+        data_ (static_cast<unsigned char *> (malloc (size))),
         size_ (size),
         owned_ (true)
     {
+        alloc_assert (data_);
         memcpy (data_, data, size_);
     }
 
@@ -120,7 +124,7 @@ struct blob_t
     void set_deep_copy (blob_t const &other)
     {
         clear ();
-        data_ = (unsigned char *) malloc (other.size_);
+        data_ = static_cast<unsigned char *> (malloc (other.size_));
         size_ = other.size_;
         owned_ = true;
         memcpy (data_, other.data_, size_);
@@ -130,7 +134,7 @@ struct blob_t
     void set (const unsigned char *const data, const size_t size)
     {
         clear ();
-        data_ = (unsigned char *) malloc (size);
+        data_ = static_cast<unsigned char *> (malloc (size));
         size_ = size;
         owned_ = true;
         memcpy (data_, data, size_);

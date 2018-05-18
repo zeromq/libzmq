@@ -208,7 +208,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
             port = 0;
         } else {
             //  Parse the port number (0 is not a valid port).
-            port = (uint16_t) atoi (port_str.c_str ());
+            port = static_cast<uint16_t> (atoi (port_str.c_str ()));
             if (port == 0) {
                 errno = EINVAL;
                 return -1;
@@ -239,7 +239,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         if (isalpha (if_str.at (0))) {
             zone_id = do_if_nametoindex (if_str.c_str ());
         } else {
-            zone_id = (uint32_t) atoi (if_str.c_str ());
+            zone_id = static_cast<uint32_t> (atoi (if_str.c_str ()));
         }
 
         if (zone_id == 0) {
@@ -557,7 +557,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index,
 #ifdef ZMQ_HAVE_WINDOWS_UWP
     char *buffer = (char *) malloc (1024);
 #else
-    char *buffer = (char *) malloc (IF_MAX_STRING_SIZE);
+    char *buffer = static_cast<char *> (malloc (IF_MAX_STRING_SIZE));
 #endif
     alloc_assert (buffer);
 
@@ -582,7 +582,7 @@ int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src, char **dest) const
     int buffer_len =
       WideCharToMultiByte (CP_UTF8, 0, src, -1, NULL, 0, NULL, 0);
 
-    char *buffer = (char *) malloc (buffer_len);
+    char *buffer = static_cast<char *> (malloc (buffer_len));
     alloc_assert (buffer);
 
     rc = WideCharToMultiByte (CP_UTF8, 0, src, -1, buffer, buffer_len, NULL, 0);
@@ -608,7 +608,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
     unsigned long out_buf_len = sizeof (IP_ADAPTER_ADDRESSES);
 
     do {
-        addresses = (IP_ADAPTER_ADDRESSES *) malloc (out_buf_len);
+        addresses = static_cast<IP_ADAPTER_ADDRESSES *> (malloc (out_buf_len));
         alloc_assert (addresses);
 
         rc =

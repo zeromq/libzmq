@@ -181,20 +181,21 @@ bool zmq::pipe_t::read (msg_t *msg_)
     if (unlikely (state != active && state != waiting_for_delimiter))
         return false;
 
-read_message:
-    if (!inpipe->read (msg_)) {
-        in_active = false;
-        return false;
-    }
+    for (bool payload_read = false; !payload_read;) {
+        if (!inpipe->read (msg_)) {
+            in_active = false;
+            return false;
+        }
 
-    //  If this is a credential, save a copy and receive next message.
-    if (unlikely (msg_->is_credential ())) {
-        const unsigned char *data =
-          static_cast<const unsigned char *> (msg_->data ());
-        credential.set (data, msg_->size ());
-        const int rc = msg_->close ();
-        zmq_assert (rc == 0);
-        goto read_message;
+        //  If this is a credential, save a copy and receive next message.
+        if (unlikely (msg_->is_credential ())) {
+            const unsigned char *data =
+              static_cast<const unsigned char *> (msg_->data ());
+            credential.set (data, msg_->size ());
+            const int rc = msg_->close ();
+            zmq_assert (rc == 0);
+        } else
+            payload_read = true;
     }
 
     //  If delimiter was read, start termination process of the pipe.
@@ -300,7 +301,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
 
     //  Plug in the new outpipe.
     zmq_assert (pipe_);
-    outpipe = (upipe_t *) pipe_;
+    outpipe = static_cast<upipe_t *> (pipe_);
     out_active = true;
 
     //  If appropriate, notify the user about the hiccup.

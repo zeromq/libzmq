@@ -64,7 +64,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     proxy_addr (proxy_addr_),
     status (unplugged),
     s (retired_fd),
-    handle ((handle_t) NULL),
+    handle (static_cast<handle_t> (NULL)),
     handle_valid (false),
     delayed_start (delayed_start_),
     timer_started (false),
@@ -178,7 +178,7 @@ void zmq::socks_connecter_t::out_event ()
                 || status == sending_greeting || status == sending_request);
 
     if (status == waiting_for_proxy_connection) {
-        const int rc = (int) check_proxy_connection ();
+        const int rc = static_cast<int> (check_proxy_connection ());
         if (rc == -1)
             error ();
         else {
@@ -394,7 +394,8 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     socklen_t len = sizeof err;
 #endif
 
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.
@@ -468,7 +469,7 @@ int zmq::socks_connecter_t::parse_address (const std::string &address_,
     //  Separate the hostname/port.
     const std::string port_str = address_.substr (idx + 1);
     //  Parse the port number (0 is not a valid port).
-    port_ = (uint16_t) atoi (port_str.c_str ());
+    port_ = static_cast<uint16_t> (atoi (port_str.c_str ()));
     if (port_ == 0) {
         errno = EINVAL;
         return -1;

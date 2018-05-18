@@ -54,8 +54,8 @@ int zmq::tune_tcp_socket (fd_t s_)
     //  so using Nagle wouldn't improve throughput in anyway, but it would
     //  hurt latency.
     int nodelay = 1;
-    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char *) &nodelay,
-                         sizeof (int));
+    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY,
+                         reinterpret_cast<char *> (&nodelay), sizeof (int));
     tcp_assert_tuning_error (s_, rc);
     if (rc != 0)
         return rc;
@@ -72,16 +72,18 @@ int zmq::tune_tcp_socket (fd_t s_)
 
 int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
 {
-    const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
-                               (char *) &bufsize_, sizeof bufsize_);
+    const int rc =
+      setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
+                  reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
     tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 }
 
 int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 {
-    const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
-                               (char *) &bufsize_, sizeof bufsize_);
+    const int rc =
+      setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
+                  reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
     tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 }
@@ -184,8 +186,9 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 #if defined(ZMQ_HAVE_WINDOWS) && defined(TCP_MAXRT)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000; // in seconds
-    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char *) &timeout_,
-                         sizeof (timeout_));
+    int rc =
+      setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT,
+                  reinterpret_cast<char *> (&timeout_), sizeof (timeout_));
     tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
@@ -194,15 +197,16 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
                          sizeof (timeout_));
     tcp_assert_tuning_error (sockfd_, rc);
     return rc;
-#endif
+#else
     return 0;
+#endif
 }
 
 int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
-    int nbytes = send (s_, (char *) data_, (int) size_, 0);
+    int nbytes = send (s_, (char *) data_, static_cast<int> (size_), 0);
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
@@ -254,7 +258,8 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
-    const int rc = recv (s_, (char *) data_, (int) size_, 0);
+    const int rc =
+      recv (s_, static_cast<char *> (data_), static_cast<int> (size_), 0);
 
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
@@ -306,7 +311,8 @@ void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
     socklen_t len = sizeof err;
 #endif
 
-    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.

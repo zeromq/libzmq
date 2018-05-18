@@ -212,8 +212,8 @@ int zmq::router_t::xsend (msg_t *msg_)
             //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe just silently ignore the message, unless
             //  router_mandatory is set.
-            blob_t routing_id ((unsigned char *) msg_->data (), msg_->size (),
-                               zmq::reference_tag_t ());
+            blob_t routing_id (static_cast<unsigned char *> (msg_->data ()),
+                               msg_->size (), zmq::reference_tag_t ());
             outpipes_t::iterator it = outpipes.find (routing_id);
 
             if (it != outpipes.end ()) {
@@ -498,7 +498,8 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             routing_id.set (buf, sizeof buf);
             msg.close ();
         } else {
-            routing_id.set ((unsigned char *) msg.data (), msg.size ());
+            routing_id.set (static_cast<unsigned char *> (msg.data ()),
+                            msg.size ());
             outpipes_t::iterator it = outpipes.find (routing_id);
             msg.close ();
 

@@ -58,7 +58,7 @@ int zmq::sub_t::xsetsockopt (int option_,
     msg_t msg;
     int rc = msg.init_size (optvallen_ + 1);
     errno_assert (rc == 0);
-    unsigned char *data = (unsigned char *) msg.data ();
+    unsigned char *data = static_cast<unsigned char *> (msg.data ());
     *data = (option_ == ZMQ_SUBSCRIBE);
     //  We explicitly allow a NULL subscription with size zero
     if (optvallen_) {

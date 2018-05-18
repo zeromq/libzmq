@@ -41,7 +41,8 @@ zmq::mechanism_base_t::mechanism_base_t (session_base_t *const session_,
 
 int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_)
 {
-    if (msg_->size () <= 1 || msg_->size () <= ((uint8_t *) msg_->data ())[0]) {
+    if (msg_->size () <= 1
+        || msg_->size () <= (static_cast<uint8_t *> (msg_->data ()))[0]) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED);

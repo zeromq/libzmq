@@ -63,7 +63,7 @@ void zmq::v1_encoder_t::message_ready ()
     //  For longer messages write 0xff escape character followed by 8-byte
     //  message size. In both cases 'flags' field follows.
     if (size < 255) {
-        tmpbuf[0] = (unsigned char) size;
+        tmpbuf[0] = static_cast<unsigned char> (size);
         tmpbuf[1] = (in_progress->flags () & msg_t::more);
         next_step (tmpbuf, 2, &v1_encoder_t::size_ready, false);
     } else {

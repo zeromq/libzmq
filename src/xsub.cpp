@@ -94,7 +94,7 @@ void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
 int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();
-    unsigned char *data = (unsigned char *) msg_->data ();
+    unsigned char *data = static_cast<unsigned char *> (msg_->data ());
 
     if (size > 0 && *data == 1) {
         //  Process subscribe message
@@ -212,8 +212,8 @@ const zmq::blob_t &zmq::xsub_t::get_credential () const
 
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    bool matching =
-      subscriptions.check ((unsigned char *) msg_->data (), msg_->size ());
+    bool matching = subscriptions.check (
+      static_cast<unsigned char *> (msg_->data ()), msg_->size ());
 
     return matching ^ options.invert_matching;
 }
@@ -222,13 +222,13 @@ void zmq::xsub_t::send_subscription (unsigned char *data_,
                                      size_t size_,
                                      void *arg_)
 {
-    pipe_t *pipe = (pipe_t *) arg_;
+    pipe_t *pipe = static_cast<pipe_t *> (arg_);
 
     //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
     errno_assert (rc == 0);
-    unsigned char *data = (unsigned char *) msg.data ();
+    unsigned char *data = static_cast<unsigned char *> (msg.data ());
     data[0] = 1;
 
     //  We explicitly allow a NULL subscription with size zero

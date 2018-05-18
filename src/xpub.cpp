@@ -89,7 +89,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
     msg_t sub;
     while (pipe_->read (&sub)) {
         //  Apply the subscription to the trie
-        unsigned char *const data = (unsigned char *) sub.data ();
+        unsigned char *const data = static_cast<unsigned char *> (sub.data ());
         const size_t size = sub.size ();
         metadata_t *metadata = sub.metadata ();
         if (size > 0 && (*data == 0 || *data == 1)) {
@@ -183,7 +183,8 @@ int zmq::xpub_t::xsetsockopt (int option_,
             int rc = welcome_msg.init_size (optvallen_);
             errno_assert (rc == 0);
 
-            unsigned char *data = (unsigned char *) welcome_msg.data ();
+            unsigned char *data =
+              static_cast<unsigned char *> (welcome_msg.data ());
             memcpy (data, optval_, optvallen_);
         } else
             welcome_msg.init ();
@@ -232,8 +233,8 @@ int zmq::xpub_t::xsend (msg_t *msg_)
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!more) {
-        subscriptions.match ((unsigned char *) msg_->data (), msg_->size (),
-                             mark_as_matching, this);
+        subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
+                             msg_->size (), mark_as_matching, this);
         // If inverted matching is used, reverse the selection now
         if (options.invert_matching) {
             dist.reverse_match ();

@@ -164,11 +164,11 @@ struct curve_client_tools_t
             return -1;
 
         uint8_t initiate_nonce[crypto_box_NONCEBYTES];
-        uint8_t *initiate_box =
-          (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 144 + metadata_length);
+        uint8_t *initiate_box = static_cast<uint8_t *> (
+          malloc (crypto_box_BOXZEROBYTES + 144 + metadata_length));
         alloc_assert (initiate_box);
-        uint8_t *initiate_plaintext =
-          (uint8_t *) malloc (crypto_box_ZEROBYTES + 128 + metadata_length);
+        uint8_t *initiate_plaintext = static_cast<uint8_t *> (
+          malloc (crypto_box_ZEROBYTES + 128 + metadata_length));
         alloc_assert (initiate_plaintext);
 
         //  Create Box [C + vouch + metadata](C'->S')

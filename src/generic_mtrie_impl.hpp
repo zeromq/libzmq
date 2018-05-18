@@ -191,7 +191,7 @@ void zmq::generic_mtrie_t<T>::rm_helper (value_t *pipe_,
     //  Adjust the buffer.
     if (buffsize_ >= maxbuffsize_) {
         maxbuffsize_ = buffsize_ + 256;
-        *buff_ = (unsigned char *) realloc (*buff_, maxbuffsize_);
+        *buff_ = static_cast<unsigned char *> (realloc (*buff_, maxbuffsize_));
         alloc_assert (*buff_);
     }
 
