@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include <string.h>
+#include <set>
 
 #include "options.hpp"
 #include "err.hpp"

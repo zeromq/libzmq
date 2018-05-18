@@ -30,7 +30,6 @@
 #ifndef __ZMQ_RAW_DECODER_HPP_INCLUDED__
 #define __ZMQ_RAW_DECODER_HPP_INCLUDED__
 
-#include "err.hpp"
 #include "msg.hpp"
 #include "i_decoder.hpp"
 #include "stdint.hpp"

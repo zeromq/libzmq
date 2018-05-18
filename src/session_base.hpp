@@ -30,7 +30,6 @@
 #ifndef __ZMQ_SESSION_BASE_HPP_INCLUDED__
 #define __ZMQ_SESSION_BASE_HPP_INCLUDED__
 
-#include <string>
 #include <stdarg.h>
 
 #include "own.hpp"
@@ -41,9 +40,7 @@
 
 namespace zmq
 {
-class pipe_t;
 class io_thread_t;
-class socket_base_t;
 struct i_engine;
 struct address_t;
 

@@ -36,7 +36,6 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "session_base.hpp"
-#include "wire.hpp"
 #include "null_mechanism.hpp"
 
 zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,

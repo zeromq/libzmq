@@ -31,10 +31,12 @@
 #define __ZMQ_LB_HPP_INCLUDED__
 
 #include "array.hpp"
-#include "pipe.hpp"
 
 namespace zmq
 {
+class msg_t;
+class pipe_t;
+
 //  This class manages a set of outbound pipes. On send it load balances
 //  messages fairly among the pipes.
 

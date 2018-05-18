@@ -31,12 +31,10 @@
 #define __ZMQ_XPUB_HPP_INCLUDED__
 
 #include <deque>
-#include <string>
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
 #include "mtrie.hpp"
-#include "array.hpp"
 #include "dist.hpp"
 
 namespace zmq

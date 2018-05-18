@@ -30,7 +30,7 @@
 #include "precompiled.hpp"
 #include "encoder.hpp"
 #include "v1_encoder.hpp"
-#include "likely.hpp"
+#include "msg.hpp"
 #include "wire.hpp"
 
 zmq::v1_encoder_t::v1_encoder_t (size_t bufsize_) :

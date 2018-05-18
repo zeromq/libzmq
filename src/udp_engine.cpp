@@ -40,9 +40,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #endif
 
+#include "udp_address.hpp"
 #include "udp_engine.hpp"
 #include "session_base.hpp"
-#include "v2_protocol.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 

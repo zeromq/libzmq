@@ -30,6 +30,7 @@
 #include "precompiled.hpp"
 #include "v2_protocol.hpp"
 #include "v2_encoder.hpp"
+#include "msg.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 

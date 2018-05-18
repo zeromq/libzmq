@@ -40,6 +40,7 @@
 #include "options.hpp"
 #include "socket_base.hpp"
 #include "metadata.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -51,7 +52,6 @@ enum
 };
 
 class io_thread_t;
-class msg_t;
 class session_base_t;
 class mechanism_t;
 

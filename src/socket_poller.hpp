@@ -47,7 +47,6 @@
 #endif
 
 #include <vector>
-#include <algorithm>
 
 #include "socket_base.hpp"
 #include "signaler.hpp"

@@ -42,8 +42,8 @@
 #include <algorithm>
 
 #include "err.hpp"
-#include "msg.hpp"
 #include "i_encoder.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {

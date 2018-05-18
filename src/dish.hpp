@@ -31,13 +31,12 @@
 #define __ZMQ_DISH_HPP_INCLUDED__
 
 #include <string>
-#include <vector>
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
 #include "dist.hpp"
 #include "fq.hpp"
-#include "trie.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {

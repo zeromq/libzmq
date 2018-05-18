@@ -37,7 +37,6 @@
 #include "decoder_allocators.hpp"
 #include "err.hpp"
 #include "i_decoder.hpp"
-#include "msg.hpp"
 #include "stdint.hpp"
 
 namespace zmq
