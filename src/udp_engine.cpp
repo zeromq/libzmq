@@ -55,7 +55,7 @@ zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     plugged (false),
     fd (-1),
     session (NULL),
-    handle ((handle_t) NULL),
+    handle (static_cast<handle_t> (NULL)),
     address (NULL),
     options (options_),
     send_enabled (false),
@@ -135,8 +135,9 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 }
 
                 int loop = options.multicast_loop;
-                int rc = setsockopt (fd, level, optname, (char *) &loop,
-                                     sizeof (loop));
+                int rc =
+                  setsockopt (fd, level, optname,
+                              reinterpret_cast<char *> (&loop), sizeof (loop));
 
 #ifdef ZMQ_HAVE_WINDOWS
                 wsa_assert (rc != SOCKET_ERROR);
@@ -151,7 +152,8 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                         //  If a bind interface is provided we tell the
                         //  kernel to use it to send multicast packets
                         rc = setsockopt (fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
-                                         (char *) &bind_if, sizeof (bind_if));
+                                         reinterpret_cast<char *> (&bind_if),
+                                         sizeof (bind_if));
                     } else {
                         rc = 0;
                     }
@@ -160,9 +162,9 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                       udp_addr->bind_addr ()->ipv4.sin_addr;
 
                     if (bind_addr.s_addr != INADDR_ANY) {
-                        rc =
-                          setsockopt (fd, IPPROTO_IP, IP_MULTICAST_IF,
-                                      (char *) &bind_addr, sizeof (bind_addr));
+                        rc = setsockopt (fd, IPPROTO_IP, IP_MULTICAST_IF,
+                                         reinterpret_cast<char *> (&bind_addr),
+                                         sizeof (bind_addr));
                     } else {
                         rc = 0;
                     }
@@ -176,7 +178,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
             }
         } else {
             /// XXX fixme ?
-            out_address = (sockaddr *) &raw_address;
+            out_address = reinterpret_cast<sockaddr *> (&raw_address);
             out_addrlen = sizeof (sockaddr_in);
         }
 
@@ -185,8 +187,8 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
     if (recv_enabled) {
         int on = 1;
-        int rc =
-          setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
+        int rc = setsockopt (fd, SOL_SOCKET, SO_REUSEADDR,
+                             reinterpret_cast<char *> (&on), sizeof (on));
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -231,8 +233,9 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 mreq.imr_multiaddr = mcast_addr->ipv4.sin_addr;
                 mreq.imr_interface = bind_addr->ipv4.sin_addr;
 
-                rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                                 (char *) &mreq, sizeof (mreq));
+                rc =
+                  setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                              reinterpret_cast<char *> (&mreq), sizeof (mreq));
 
                 errno_assert (rc == 0);
             } else if (mcast_addr->family () == AF_INET6) {
@@ -244,8 +247,9 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 mreq.ipv6mr_multiaddr = mcast_addr->ipv6.sin6_addr;
                 mreq.ipv6mr_interface = iface;
 
-                rc = setsockopt (fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
-                                 (char *) &mreq, sizeof (mreq));
+                rc =
+                  setsockopt (fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP,
+                              reinterpret_cast<char *> (&mreq), sizeof (mreq));
 
                 errno_assert (rc == 0);
             } else {
@@ -284,14 +288,14 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in *addr)
     char *name = inet_ntoa (addr->sin_addr);
 
     char port[6];
-    sprintf (port, "%d", (int) ntohs (addr->sin_port));
+    sprintf (port, "%d", static_cast<int> (ntohs (addr->sin_port)));
 
-    int size =
-      (int) strlen (name) + (int) strlen (port) + 1 + 1; //  Colon + NULL
+    int size = static_cast<int> (strlen (name))
+               + static_cast<int> (strlen (port)) + 1 + 1; //  Colon + NULL
     int rc = msg->init_size (size);
     errno_assert (rc == 0);
     msg->set_flags (msg_t::more);
-    char *address = (char *) msg->data ();
+    char *address = static_cast<char *> (msg->data ());
 
     strcpy (address, name);
     strcat (address, ":");
@@ -306,7 +310,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
 
     // Find delimiter, cannot use memrchr as it is not supported on windows
     if (length_ != 0) {
-        int chars_left = (int) length_;
+        int chars_left = static_cast<int> (length_);
         char *current_char = name_ + length_;
         do {
             if (*(--current_char) == ':') {
@@ -325,7 +329,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
     std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
 
     //  Parse the port number (0 is not a valid port).
-    uint16_t port = (uint16_t) atoi (port_str.c_str ());
+    uint16_t port = static_cast<uint16_t> (atoi (port_str.c_str ()));
     if (port == 0) {
         errno = EINVAL;
         return -1;
@@ -358,7 +362,8 @@ void zmq::udp_engine_t::out_event ()
         size_t size;
 
         if (options.raw_socket) {
-            rc = resolve_raw_address ((char *) group_msg.data (), group_size);
+            rc = resolve_raw_address (static_cast<char *> (group_msg.data ()),
+                                      group_size);
 
             //  We discard the message if address is not valid
             if (rc != 0) {
@@ -378,7 +383,7 @@ void zmq::udp_engine_t::out_event ()
             size = group_size + body_size + 1;
 
             // TODO: check if larger than maximum size
-            out_buffer[0] = (unsigned char) group_size;
+            out_buffer[0] = static_cast<unsigned char> (group_size);
             memcpy (out_buffer + 1, group_msg.data (), group_size);
             memcpy (out_buffer + 1 + group_size, body_msg.data (), body_size);
         }
@@ -390,8 +395,9 @@ void zmq::udp_engine_t::out_event ()
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = sendto (fd, (const char *) out_buffer, (int) size, 0, out_address,
-                     (int) out_addrlen);
+        rc = sendto (fd, reinterpret_cast<const char *> (out_buffer),
+                     static_cast<int> (size), 0, out_address,
+                     static_cast<int> (out_addrlen));
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
         rc = sendto (fd, (caddr_t) out_buffer, size, 0,
@@ -428,8 +434,9 @@ void zmq::udp_engine_t::in_event ()
     sockaddr_storage in_address;
     socklen_t in_addrlen = sizeof (sockaddr_storage);
 #ifdef ZMQ_HAVE_WINDOWS
-    int nbytes = recvfrom (fd, (char *) in_buffer, MAX_UDP_MSG, 0,
-                           (sockaddr *) &in_address, &in_addrlen);
+    int nbytes =
+      recvfrom (fd, reinterpret_cast<char *> (in_buffer), MAX_UDP_MSG, 0,
+                reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
     const int last_error = WSAGetLastError ();
     if (nbytes == SOCKET_ERROR) {
         wsa_assert (last_error == WSAENETDOWN || last_error == WSAENETRESET
@@ -465,7 +472,7 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes;
         body_offset = 0;
     } else {
-        char *group_buffer = (char *) in_buffer + 1;
+        char *group_buffer = reinterpret_cast<char *> (in_buffer) + 1;
         int group_size = in_buffer[0];
 
         rc = msg.init_size (group_size);

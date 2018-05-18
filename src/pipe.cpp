@@ -301,7 +301,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
 
     //  Plug in the new outpipe.
     zmq_assert (pipe_);
-    outpipe = (upipe_t *) pipe_;
+    outpipe = static_cast<upipe_t *> (pipe_);
     out_active = true;
 
     //  If appropriate, notify the user about the hiccup.

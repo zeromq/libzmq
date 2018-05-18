@@ -132,5 +132,5 @@ void zmq::worker_poller_base_t::check_thread ()
 
 void zmq::worker_poller_base_t::worker_routine (void *arg_)
 {
-    ((worker_poller_base_t *) arg_)->loop ();
+    (static_cast<worker_poller_base_t *> (arg_))->loop ();
 }

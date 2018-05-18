@@ -38,7 +38,7 @@
 
 zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
-    mailbox_handle ((poller_t::handle_t) NULL)
+    mailbox_handle (static_cast<poller_t::handle_t> (NULL))
 {
     poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (poller);

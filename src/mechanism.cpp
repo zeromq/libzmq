@@ -209,14 +209,14 @@ void zmq::mechanism_t::make_command_with_basic_properties (
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
-    unsigned char *ptr = (unsigned char *) msg_->data ();
+    unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
 
     //  Add prefix
     memcpy (ptr, prefix_, prefix_len_);
     ptr += prefix_len_;
 
-    add_basic_properties (ptr, command_size
-                                 - (ptr - (unsigned char *) msg_->data ()));
+    add_basic_properties (
+      ptr, command_size - (ptr - static_cast<unsigned char *> (msg_->data ())));
 }
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
@@ -251,7 +251,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         if (name == ZMTP_PROPERTY_IDENTITY && options.recv_routing_id)
             set_peer_routing_id (value, value_length);
         else if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
-            if (!check_socket_type ((const char *) value, value_length)) {
+            if (!check_socket_type (reinterpret_cast<const char *> (value),
+                                    value_length)) {
                 errno = EINVAL;
                 return -1;
             }

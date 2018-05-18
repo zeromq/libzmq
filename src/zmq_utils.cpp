@@ -60,7 +60,7 @@ void zmq_sleep (int seconds_)
 
 void *zmq_stopwatch_start ()
 {
-    uint64_t *watch = (uint64_t *) malloc (sizeof (uint64_t));
+    uint64_t *watch = static_cast<uint64_t *> (malloc (sizeof (uint64_t)));
     alloc_assert (watch);
     *watch = zmq::clock_t::now_us ();
     return (void *) watch;
@@ -69,8 +69,8 @@ void *zmq_stopwatch_start ()
 unsigned long zmq_stopwatch_intermediate (void *watch_)
 {
     uint64_t end = zmq::clock_t::now_us ();
-    uint64_t start = *(uint64_t *) watch_;
-    return (unsigned long) (end - start);
+    uint64_t start = *static_cast<uint64_t *> (watch_);
+    return static_cast<unsigned long> (end - start);
 }
 
 unsigned long zmq_stopwatch_stop (void *watch_)
@@ -287,14 +287,14 @@ void *zmq_atomic_counter_new (void)
 
 void zmq_atomic_counter_set (void *counter_, int value_)
 {
-    ((zmq::atomic_counter_t *) counter_)->set (value_);
+    (static_cast<zmq::atomic_counter_t *> (counter_))->set (value_);
 }
 
 //  Increment the atomic counter, and return the old value
 
 int zmq_atomic_counter_inc (void *counter_)
 {
-    return ((zmq::atomic_counter_t *) counter_)->add (1);
+    return (static_cast<zmq::atomic_counter_t *> (counter_))->add (1);
 }
 
 //  Decrement the atomic counter and return 1 (if counter >= 1), or
@@ -302,20 +302,20 @@ int zmq_atomic_counter_inc (void *counter_)
 
 int zmq_atomic_counter_dec (void *counter_)
 {
-    return ((zmq::atomic_counter_t *) counter_)->sub (1) ? 1 : 0;
+    return (static_cast<zmq::atomic_counter_t *> (counter_))->sub (1) ? 1 : 0;
 }
 
 //  Return actual value of atomic counter
 
 int zmq_atomic_counter_value (void *counter_)
 {
-    return ((zmq::atomic_counter_t *) counter_)->get ();
+    return (static_cast<zmq::atomic_counter_t *> (counter_))->get ();
 }
 
 //  Destroy atomic counter, and set reference to NULL
 
 void zmq_atomic_counter_destroy (void **counter_p_)
 {
-    delete ((zmq::atomic_counter_t *) *counter_p_);
+    delete (static_cast<zmq::atomic_counter_t *> (*counter_p_));
     *counter_p_ = NULL;
 }

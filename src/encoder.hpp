@@ -60,7 +60,7 @@ template <typename T> class encoder_base_t : public i_encoder
         next (NULL),
         new_msg_flag (false),
         bufsize (bufsize_),
-        buf ((unsigned char *) malloc (bufsize_)),
+        buf (static_cast<unsigned char *> (malloc (bufsize_))),
         in_progress (NULL)
     {
         alloc_assert (buf);
@@ -146,7 +146,7 @@ template <typename T> class encoder_base_t : public i_encoder
                            step_t next_,
                            bool new_msg_flag_)
     {
-        write_pos = (unsigned char *) write_pos_;
+        write_pos = static_cast<unsigned char *> (write_pos_);
         to_write = to_write_;
         next = next_;
         new_msg_flag = new_msg_flag_;

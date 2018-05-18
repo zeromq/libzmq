@@ -176,7 +176,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 {
     const size_t metadata_length = basic_properties_len ();
     unsigned char *metadata_plaintext =
-      (unsigned char *) malloc (metadata_length);
+      static_cast<unsigned char *> (malloc (metadata_length));
     alloc_assert (metadata_plaintext);
 
     add_basic_properties (metadata_plaintext, metadata_length);
@@ -217,10 +217,11 @@ int zmq::curve_client_t::process_ready (const uint8_t *msg_data,
     const size_t clen = (msg_size - 14) + crypto_box_BOXZEROBYTES;
 
     uint8_t ready_nonce[crypto_box_NONCEBYTES];
-    uint8_t *ready_plaintext = (uint8_t *) malloc (crypto_box_ZEROBYTES + clen);
+    uint8_t *ready_plaintext =
+      static_cast<uint8_t *> (malloc (crypto_box_ZEROBYTES + clen));
     alloc_assert (ready_plaintext);
     uint8_t *ready_box =
-      (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 16 + clen);
+      static_cast<uint8_t *> (malloc (crypto_box_BOXZEROBYTES + 16 + clen));
     alloc_assert (ready_box);
 
     memset (ready_box, 0, crypto_box_BOXZEROBYTES);

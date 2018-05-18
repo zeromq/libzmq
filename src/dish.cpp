@@ -295,7 +295,8 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
             goto has_group;
 
         //  Set the message group
-        rc = msg_->set_group ((char *) group_msg.data (), group_msg.size ());
+        rc = msg_->set_group (static_cast<char *> (group_msg.data ()),
+                              group_msg.size ());
         errno_assert (rc == 0);
 
         //  We set the group, so we don't need the group_msg anymore
@@ -328,7 +329,7 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
     if (!msg_->is_join () && !msg_->is_leave ())
         return rc;
     else {
-        int group_length = (int) strlen (msg_->group ());
+        int group_length = static_cast<int> (strlen (msg_->group ()));
 
         msg_t command;
         int offset;
@@ -346,7 +347,7 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
         }
 
         command.set_flags (msg_t::command);
-        char *command_data = (char *) command.data ();
+        char *command_data = static_cast<char *> (command.data ());
 
         //  Copy the group
         memcpy (command_data + offset, msg_->group (), group_length);

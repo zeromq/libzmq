@@ -70,7 +70,8 @@ int zmq::v1_decoder_t::one_byte_size_ready (unsigned char const *)
             return -1;
         }
 
-        if (maxmsgsize >= 0 && (int64_t) (*tmpbuf - 1) > maxmsgsize) {
+        if (maxmsgsize >= 0
+            && static_cast<int64_t> (*tmpbuf - 1) > maxmsgsize) {
             errno = EMSGSIZE;
             return -1;
         }
@@ -104,7 +105,8 @@ int zmq::v1_decoder_t::eight_byte_size_ready (unsigned char const *)
     }
 
     //  Message size must not exceed the maximum allowed size.
-    if (maxmsgsize >= 0 && payload_length - 1 > (uint64_t) maxmsgsize) {
+    if (maxmsgsize >= 0
+        && payload_length - 1 > static_cast<uint64_t> (maxmsgsize)) {
         errno = EMSGSIZE;
         return -1;
     }

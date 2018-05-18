@@ -66,7 +66,7 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     s (retired_fd),
-    handle ((handle_t) NULL),
+    handle (static_cast<handle_t> (NULL)),
     socket (socket_)
 {
 }
@@ -87,7 +87,7 @@ void zmq::tcp_listener_t::process_plug ()
 void zmq::tcp_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
-    handle = (handle_t) NULL;
+    handle = static_cast<handle_t> (NULL);
     close ();
     own_t::process_term (linger_);
 }
@@ -157,14 +157,14 @@ int zmq::tcp_listener_t::get_address (std::string &addr_)
 #else
     socklen_t sl = sizeof (ss);
 #endif
-    int rc = getsockname (s, (struct sockaddr *) &ss, &sl);
+    int rc = getsockname (s, reinterpret_cast<struct sockaddr *> (&ss), &sl);
 
     if (rc != 0) {
         addr_.clear ();
         return rc;
     }
 
-    tcp_address_t addr ((struct sockaddr *) &ss, sl);
+    tcp_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
     return addr.to_string (addr_);
 }
 
@@ -236,8 +236,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     //  Allow reusing of the address.
     int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS
-    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (const char *) &flag,
-                     sizeof (int));
+    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+                     reinterpret_cast<const char *> (&flag), sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (char *) &flag, sizeof (int));
@@ -302,7 +302,8 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
     fd_t sock = ::accept4 (s, (struct sockaddr *) &ss, &ss_len, SOCK_CLOEXEC);
 #else
-    fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+    fd_t sock =
+      ::accept (s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
 #ifdef ZMQ_HAVE_WINDOWS

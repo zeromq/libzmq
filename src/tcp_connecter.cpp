@@ -69,7 +69,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     addr (addr_),
     s (retired_fd),
-    handle ((handle_t) NULL),
+    handle (static_cast<handle_t> (NULL)),
     delayed_start (delayed_start_),
     connect_timer_started (false),
     reconnect_timer_started (false),
@@ -166,7 +166,7 @@ void zmq::tcp_connecter_t::out_event ()
 void zmq::tcp_connecter_t::rm_handle ()
 {
     rm_fd (handle);
-    handle = (handle_t) NULL;
+    handle = static_cast<handle_t> (NULL);
 }
 
 void zmq::tcp_connecter_t::timer_event (int id_)
@@ -325,8 +325,8 @@ int zmq::tcp_connecter_t::open ()
         //  using the same source port on the client.
         int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (const char *) &flag,
-                         sizeof (int));
+        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR,
+                         reinterpret_cast<const char *> (&flag), sizeof (int));
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (char *) &flag,
@@ -383,7 +383,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     socklen_t len = sizeof err;
 #endif
 
-    const int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    const int rc = getsockopt (s, SOL_SOCKET, SO_ERROR,
+                               reinterpret_cast<char *> (&err), &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.

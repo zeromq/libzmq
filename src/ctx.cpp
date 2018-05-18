@@ -290,7 +290,8 @@ bool zmq::ctx_t::start ()
     int ios = io_thread_count;
     opt_sync.unlock ();
     slot_count = mazmq + ios + 2;
-    slots = (i_mailbox **) malloc (sizeof (i_mailbox *) * slot_count);
+    slots =
+      static_cast<i_mailbox **> (malloc (sizeof (i_mailbox *) * slot_count));
     if (!slots) {
         errno = ENOMEM;
         goto fail;
@@ -311,7 +312,8 @@ bool zmq::ctx_t::start ()
     reaper->start ();
 
     //  Create I/O thread objects and launch them.
-    for (int32_t i = (int32_t) slot_count - 1; i >= (int32_t) 2; i--) {
+    for (int32_t i = static_cast<int32_t> (slot_count) - 1;
+         i >= static_cast<int32_t> (2); i--) {
         slots[i] = NULL;
     }
 
@@ -331,7 +333,8 @@ bool zmq::ctx_t::start ()
     }
 
     //  In the unused part of the slot array, create a list of empty slots.
-    for (int32_t i = (int32_t) slot_count - 1; i >= (int32_t) ios + 2; i--) {
+    for (int32_t i = static_cast<int32_t> (slot_count) - 1;
+         i >= static_cast<int32_t> (ios) + 2; i--) {
         empty_slots.push_back (i);
     }
 
@@ -377,7 +380,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     empty_slots.pop_back ();
 
     //  Generate new unique socket ID.
-    int sid = ((int) max_socket_id.add (1)) + 1;
+    int sid = (static_cast<int> (max_socket_id.add (1))) + 1;
 
     //  Create the socket and register its mailbox.
     socket_base_t *s = socket_base_t::create (type_, this, slot, sid);

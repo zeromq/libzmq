@@ -108,7 +108,8 @@ int zmq::stream_t::xsend (msg_t *msg_)
         if (msg_->flags () & msg_t::more) {
             //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe return an error
-            blob_t routing_id ((unsigned char *) msg_->data (), msg_->size ());
+            blob_t routing_id (static_cast<unsigned char *> (msg_->data ()),
+                               msg_->size ());
             outpipes_t::iterator it = outpipes.find (routing_id);
 
             if (it != outpipes.end ()) {
@@ -302,7 +303,8 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
         put_uint32 (buffer + 1, next_integral_routing_id++);
         routing_id.set (buffer, sizeof buffer);
         memcpy (options.routing_id, routing_id.data (), routing_id.size ());
-        options.routing_id_size = (unsigned char) routing_id.size ();
+        options.routing_id_size =
+          static_cast<unsigned char> (routing_id.size ());
     }
     pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table

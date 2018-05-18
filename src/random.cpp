@@ -49,18 +49,18 @@
 void zmq::seed_random ()
 {
 #if defined ZMQ_HAVE_WINDOWS
-    int pid = (int) GetCurrentProcessId ();
+    int pid = static_cast<int> (GetCurrentProcessId ());
 #else
     int pid = (int) getpid ();
 #endif
-    srand ((unsigned int) (clock_t::now_us () + pid));
+    srand (static_cast<unsigned int> (clock_t::now_us () + pid));
 }
 
 uint32_t zmq::generate_random ()
 {
     //  Compensate for the fact that rand() returns signed integer.
-    uint32_t low = (uint32_t) rand ();
-    uint32_t high = (uint32_t) rand ();
+    uint32_t low = static_cast<uint32_t> (rand ());
+    uint32_t high = static_cast<uint32_t> (rand ());
     high <<= (sizeof (int) * 8 - 1);
     return high | low;
 }

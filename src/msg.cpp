@@ -88,7 +88,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.vsm.metadata = NULL;
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
-        u.vsm.size = (unsigned char) size_;
+        u.vsm.size = static_cast<unsigned char> (size_);
         u.vsm.group[0] = '\0';
         u.vsm.routing_id = 0;
     } else {
@@ -99,7 +99,8 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.routing_id = 0;
         u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
-            u.lmsg.content = (content_t *) malloc (sizeof (content_t) + size_);
+            u.lmsg.content =
+              static_cast<content_t *> (malloc (sizeof (content_t) + size_));
         if (unlikely (!u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
@@ -163,7 +164,7 @@ int zmq::msg_t::init_data (void *data_,
         u.lmsg.flags = 0;
         u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
-        u.lmsg.content = (content_t *) malloc (sizeof (content_t));
+        u.lmsg.content = static_cast<content_t *> (malloc (sizeof (content_t)));
         if (!u.lmsg.content) {
             errno = ENOMEM;
             return -1;

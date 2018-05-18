@@ -57,7 +57,7 @@ int zmq::raw_decoder_t::decode (const uint8_t *data_,
                                 size_t &bytes_used_)
 {
     int rc =
-      in_progress.init ((unsigned char *) data_, size_,
+      in_progress.init (const_cast<unsigned char *> (data_), size_,
                         shared_message_memory_allocator::call_dec_ref,
                         allocator.buffer (), allocator.provide_content ());
 

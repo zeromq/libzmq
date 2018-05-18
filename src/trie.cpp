@@ -74,7 +74,8 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             unsigned char oldc = min;
             trie_t *oldp = next.node;
             count = (min < c ? c - min : min - c) + 1;
-            next.table = (trie_t **) malloc (sizeof (trie_t *) * count);
+            next.table =
+              static_cast<trie_t **> (malloc (sizeof (trie_t *) * count));
             alloc_assert (next.table);
             for (unsigned short i = 0; i != count; ++i)
                 next.table[i] = 0;
@@ -84,8 +85,8 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             //  The new character is above the current character range.
             unsigned short old_count = count;
             count = c - min + 1;
-            next.table = (trie_t **) realloc ((void *) next.table,
-                                              sizeof (trie_t *) * count);
+            next.table = static_cast<trie_t **> (
+              realloc ((void *) next.table, sizeof (trie_t *) * count));
             zmq_assert (next.table);
             for (unsigned short i = old_count; i != count; i++)
                 next.table[i] = NULL;
@@ -93,8 +94,8 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             //  The new character is below the current character range.
             unsigned short old_count = count;
             count = (min + old_count) - c;
-            next.table = (trie_t **) realloc ((void *) next.table,
-                                              sizeof (trie_t *) * count);
+            next.table = static_cast<trie_t **> (
+              realloc ((void *) next.table, sizeof (trie_t *) * count));
             zmq_assert (next.table);
             memmove (next.table + min - c, next.table,
                      old_count * sizeof (trie_t *));
@@ -200,7 +201,8 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                 zmq_assert (count > new_min - min);
 
                 count = count - (new_min - min);
-                next.table = (trie_t **) malloc (sizeof (trie_t *) * count);
+                next.table =
+                  static_cast<trie_t **> (malloc (sizeof (trie_t *) * count));
                 alloc_assert (next.table);
 
                 memmove (next.table, old_table + (new_min - min),
@@ -223,7 +225,8 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                 count = new_count;
 
                 trie_t **old_table = next.table;
-                next.table = (trie_t **) malloc (sizeof (trie_t *) * count);
+                next.table =
+                  static_cast<trie_t **> (malloc (sizeof (trie_t *) * count));
                 alloc_assert (next.table);
 
                 memmove (next.table, old_table, sizeof (trie_t *) * count);
@@ -290,7 +293,7 @@ void zmq::trie_t::apply_helper (unsigned char **buff_,
     //  Adjust the buffer.
     if (buffsize_ >= maxbuffsize_) {
         maxbuffsize_ = buffsize_ + 256;
-        *buff_ = (unsigned char *) realloc (*buff_, maxbuffsize_);
+        *buff_ = static_cast<unsigned char *> (realloc (*buff_, maxbuffsize_));
         zmq_assert (*buff_);
     }
 
