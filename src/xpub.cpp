@@ -89,7 +89,8 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
     msg_t sub;
     while (pipe_->read (&sub)) {
         //  Apply the subscription to the trie
-        unsigned char *const data = static_cast<unsigned char *> (sub.data ());
+        const unsigned char *const data =
+          static_cast<const unsigned char *> (sub.data ());
         const size_t size = sub.size ();
         metadata_t *metadata = sub.metadata ();
         if (size > 0 && (*data == 0 || *data == 1)) {

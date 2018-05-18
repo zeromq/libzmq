@@ -186,7 +186,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Status code frame, only 200, 300, 400 and 500 are valid status codes
-    char *status_code_data = static_cast<char *> (msg[3].data ());
+    const char *status_code_data = static_cast<const char *> (msg[3].data ());
     if (msg[3].size () != 3 || status_code_data[0] < '2'
         || status_code_data[0] > '5' || status_code_data[1] != '0'
         || status_code_data[2] != '0') {

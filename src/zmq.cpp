@@ -545,7 +545,7 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         memcpy (a_[i].iov_base, static_cast<char *> (zmq_msg_data (&msg)),
                 a_[i].iov_len);
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
-        zmq::msg_t *p_msg = reinterpret_cast<zmq::msg_t *> (&msg);
+        const zmq::msg_t *p_msg = reinterpret_cast<const zmq::msg_t *> (&msg);
         recvmore = p_msg->flags () & zmq::msg_t::more;
         rc = zmq_msg_close (&msg);
         errno_assert (rc == 0);
@@ -678,7 +678,8 @@ const char *zmq_msg_group (zmq_msg_t *msg_)
 
 const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
 {
-    zmq::metadata_t *metadata = ((zmq::msg_t *) msg_)->metadata ();
+    const zmq::metadata_t *metadata =
+      reinterpret_cast<const zmq::msg_t *> (msg_)->metadata ();
     const char *value = NULL;
     if (metadata)
         value = metadata->get (std::string (property_));
@@ -1355,7 +1356,7 @@ int zmq_socket_get_peer_state (void *s_,
                                const void *routing_id_,
                                size_t routing_id_size_)
 {
-    zmq::socket_base_t *s = as_socket_base_t (s_);
+    const zmq::socket_base_t *const s = as_socket_base_t (s_);
     if (!s)
         return -1;
 

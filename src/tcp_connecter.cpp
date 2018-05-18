@@ -262,7 +262,7 @@ int zmq::tcp_connecter_t::open ()
         return -1;
     }
     zmq_assert (addr->resolved.tcp_addr != NULL);
-    tcp_address_t *const tcp_addr = addr->resolved.tcp_addr;
+    const tcp_address_t *const tcp_addr = addr->resolved.tcp_addr;
 
     //  Create the socket.
     s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
