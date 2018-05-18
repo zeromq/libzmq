@@ -30,6 +30,8 @@
 #ifndef __ZMQ_BLOB_HPP_INCLUDED__
 #define __ZMQ_BLOB_HPP_INCLUDED__
 
+#include "err.hpp"
+
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
@@ -77,6 +79,7 @@ struct blob_t
         size_ (size),
         owned_ (true)
     {
+        alloc_assert (data_);
     }
 
     //  Creates a blob_t of a given size, an initializes content by copying
@@ -86,6 +89,7 @@ struct blob_t
         size_ (size),
         owned_ (true)
     {
+        alloc_assert (data_);
         memcpy (data_, data, size_);
     }
 
