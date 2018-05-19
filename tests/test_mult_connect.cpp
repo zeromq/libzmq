@@ -42,8 +42,6 @@
 
 int connectTest(int connects)
 {
-    setup_test_environment();
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -96,6 +94,8 @@ int connectTest(int connects)
 
 int main (void)
 {
+    setup_test_environment();
+
     int rc = connectTest(1);
     assert (rc == 0);
 
