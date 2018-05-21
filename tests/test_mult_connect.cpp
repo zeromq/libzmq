@@ -33,11 +33,6 @@
 
 */
 
-#include <zmq.h>
-#include <assert.h>
-#include <string.h>
-#include <unistd.h>
-
 #include "testutil.hpp"
 
 int connectTest(int connects)
