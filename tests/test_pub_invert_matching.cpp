@@ -65,6 +65,7 @@ void test ()
 
     //  Send a message with the first prefix
     send_string_expect_success (pub, PREFIX1, 0);
+    msleep (SETTLE_TIME);
 
     //  sub1 should receive it, but not sub2
     recv_string_expect_success (sub1, PREFIX1, ZMQ_DONTWAIT);
@@ -73,6 +74,7 @@ void test ()
 
     //  Send a message with the second prefix
     send_string_expect_success (pub, PREFIX2, 0);
+    msleep (SETTLE_TIME);
 
     //  sub2 should receive it, but not sub1
     recv_string_expect_success (sub2, PREFIX2, ZMQ_DONTWAIT);
@@ -92,6 +94,7 @@ void test ()
 
     //  Send a message with the first prefix
     send_string_expect_success (pub, PREFIX1, 0);
+    msleep (SETTLE_TIME);
 
     //  sub2 should receive it, but not sub1
     recv_string_expect_success (sub2, PREFIX1, ZMQ_DONTWAIT);
@@ -100,6 +103,7 @@ void test ()
 
     //  Send a message with the second prefix
     send_string_expect_success (pub, PREFIX2, 0);
+    msleep (SETTLE_TIME);
 
     //  sub1 should receive it, but not sub2
     recv_string_expect_success (sub1, PREFIX2, ZMQ_DONTWAIT);
