@@ -205,6 +205,56 @@ void test_add_fd_and_remove_by_timer ()
     close_fdpair (w, r);
 }
 
+#ifdef _WIN32
+void test_add_fd_with_pending_failing_connect ()
+{
+    zmq::thread_ctx_t thread_ctx;
+    zmq::poller_t poller (thread_ctx);
+
+    zmq::fd_t bind_socket = socket (AF_INET, SOCK_STREAM, 0);
+    sockaddr_in addr = {0};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+    addr.sin_port = 0;
+    TEST_ASSERT_EQUAL_INT (0, bind (bind_socket,
+                                    reinterpret_cast<const sockaddr *> (&addr),
+                                    sizeof (addr)));
+
+    int addr_len = static_cast<int> (sizeof (addr));
+    TEST_ASSERT_EQUAL_INT (0, getsockname (bind_socket,
+                                           reinterpret_cast<sockaddr *> (&addr),
+                                           &addr_len));
+
+    zmq::fd_t connect_socket = socket (AF_INET, SOCK_STREAM, 0);
+    zmq::unblock_socket (connect_socket);
+
+    TEST_ASSERT_EQUAL_INT (
+      -1, connect (connect_socket, reinterpret_cast<const sockaddr *> (&addr),
+                   sizeof (addr)));
+    TEST_ASSERT_EQUAL_INT (WSAEWOULDBLOCK, WSAGetLastError ());
+
+    test_events_t events (connect_socket, poller);
+
+    zmq::poller_t::handle_t handle = poller.add_fd (connect_socket, &events);
+    events.set_handle (handle);
+    poller.set_pollin (handle);
+    poller.start ();
+
+    wait_in_events (events);
+
+    int value;
+    int value_len = sizeof (value);
+    TEST_ASSERT_EQUAL_INT (0, getsockopt (connect_socket, SOL_SOCKET, SO_ERROR,
+                                          reinterpret_cast<char *> (&value),
+                                          &value_len));
+    TEST_ASSERT_EQUAL_INT (WSAECONNREFUSED, value);
+
+    // required cleanup
+    close (connect_socket);
+    close (bind_socket);
+}
+#endif
+
 int main (void)
 {
     UNITY_BEGIN ();
@@ -215,6 +265,10 @@ int main (void)
     RUN_TEST (test_create);
     RUN_TEST (test_add_fd_and_start_and_receive_data);
     RUN_TEST (test_add_fd_and_remove_by_timer);
+
+#if defined _WIN32
+    RUN_TEST (test_add_fd_with_pending_failing_connect);
+#endif
 
     zmq::shutdown_network ();
 
