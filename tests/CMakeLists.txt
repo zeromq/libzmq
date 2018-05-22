@@ -71,7 +71,6 @@ set(tests
         test_monitor
 		test_socket_null
 	test_reconnect_ivl
-        test_mult_connect
 )
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests 
