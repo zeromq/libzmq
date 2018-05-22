@@ -49,6 +49,14 @@ linkzmq:zmq_socket[3]. A ZMQ_ROUTER socket enters its normal 'ready' state
 for a specific peer only when handshaking is complete for that peer, which
 may take an arbitrary time.
 
+NOTE: for some socket types, multiple connections to the same endpoint
+don't really make sense
+(see https://github.com/zeromq/libzmq/issues/788).
+For those socket types, any attempt to connect to an already connected endpoint
+is silently ignored (i.e., returns zero).  This behavior applies to ZMQ_DEALER,
+ZMQ_SUB, ZMQ_PUB, and ZMQ_REQ socket types.
+
+
 RETURN VALUE
 ------------
 The _zmq_connect()_ function returns zero if successful. Otherwise it returns
