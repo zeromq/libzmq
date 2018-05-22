@@ -29,7 +29,7 @@
 
 #include "precompiled.hpp"
 #include "select.hpp"
-#if defined ZMQ_USE_SELECT
+#if defined ZMQ_IOTHREAD_POLLER_USE_SELECT
 
 #if defined ZMQ_HAVE_WINDOWS
 #elif defined ZMQ_HAVE_HPUX

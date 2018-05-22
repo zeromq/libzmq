@@ -1052,7 +1052,12 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     # Allow user to override poller autodetection
     AC_ARG_WITH([poller],
         [AS_HELP_STRING([--with-poller],
-        [choose polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', or 'auto'. [default=auto]])])
+        [choose I/O thread polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', or 'auto'. [default=auto]])])
+
+    # Allow user to override poller autodetection
+    AC_ARG_WITH([api_poller],
+        [AS_HELP_STRING([--with-api-poller],
+        [choose zmq_poll(er)_* API polling system manually. Valid values are 'poll', 'select', or 'auto'. [default=auto]])])
 
     if test "x$with_poller" == "x"; then
         pollers=auto
@@ -1065,14 +1070,14 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     fi
 
     # try to find suitable polling system. the order of testing is:
-    AC_MSG_NOTICE([Choosing polling system from '$pollers'...])
+    AC_MSG_NOTICE([Choosing I/O thread polling system from '$pollers'...])
     poller_found=0
     for poller in $pollers; do
         case "$poller" in
             kqueue)
                 LIBZMQ_CHECK_POLLER_KQUEUE([
-                    AC_MSG_NOTICE([Using 'kqueue' polling system])
-                    AC_DEFINE(ZMQ_USE_KQUEUE, 1, [Use 'kqueue' polling system])
+                    AC_MSG_NOTICE([Using 'kqueue' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_KQUEUE, 1, [Use 'kqueue' I/O thread polling system])
                     poller_found=1
                 ])
             ;;
@@ -1084,17 +1089,17 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                         # that ZMQ has from Linux systems. Unless you undertake
                         # to fix the integration, do not disable this exception
                         # and use select() or poll() on Solarish OSes for now.
-                        AC_MSG_NOTICE([NOT using 'epoll' polling system on '$host_os']) ;;
+                        AC_MSG_NOTICE([NOT using 'epoll' I/O thread polling system on '$host_os']) ;;
                     *)
                         LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([
-                            AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
-                            AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
-                            AC_DEFINE(ZMQ_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' polling system with CLOEXEC])
+                            AC_MSG_NOTICE([Using 'epoll' I/O thread polling system with CLOEXEC])
+                            AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
+                            AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' I/O thread polling system with CLOEXEC])
                             poller_found=1
                             ],[
                             LIBZMQ_CHECK_POLLER_EPOLL([
-                                AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
-                                AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
+                                AC_MSG_NOTICE([Using 'epoll' I/O thread polling system with CLOEXEC])
+                                AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
                                 poller_found=1
                             ])
                         ])
@@ -1103,29 +1108,29 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
             ;;
             devpoll)
                 LIBZMQ_CHECK_POLLER_DEVPOLL([
-                    AC_MSG_NOTICE([Using 'devpoll' polling system])
-                    AC_DEFINE(ZMQ_USE_DEVPOLL, 1, [Use 'devpoll' polling system])
+                    AC_MSG_NOTICE([Using 'devpoll' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_DEVPOLL, 1, [Use 'devpoll' I/O thread polling system])
                     poller_found=1
                 ])
             ;;
             pollset)
                 LIBZMQ_CHECK_POLLER_POLLSET([
-                    AC_MSG_NOTICE([Using 'pollset' polling system])
-                    AC_DEFINE(ZMQ_USE_POLLSET, 1, [Use 'pollset' polling system])
+                    AC_MSG_NOTICE([Using 'pollset' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_POLLSET, 1, [Use 'pollset' I/O thread polling system])
                     poller_found=1
                 ])
             ;;
             poll)
                 LIBZMQ_CHECK_POLLER_POLL([
-                    AC_MSG_NOTICE([Using 'poll' polling system])
-                    AC_DEFINE(ZMQ_USE_POLL, 1, [Use 'poll' polling system])
+                    AC_MSG_NOTICE([Using 'poll' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_POLL, 1, [Use 'poll' I/O thread polling system])
                     poller_found=1
                 ])
             ;;
             select)
                 LIBZMQ_CHECK_POLLER_SELECT([
-                    AC_MSG_NOTICE([Using 'select' polling system])
-                    AC_DEFINE(ZMQ_USE_SELECT, 1, [Use 'select' polling system])
+                    AC_MSG_NOTICE([Using 'select' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_SELECT, 1, [Use 'select' I/O thread polling system])
                     poller_found=1
                 ])
             ;;
@@ -1135,4 +1140,25 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     if test $poller_found -eq 0; then
         AC_MSG_ERROR([None of '$pollers' are valid pollers on this platform])
     fi
+    if test "x$with_api_poller" == "x"; then
+        with_api_poller=auto
+    fi
+	if test "x$with_api_poller" == "xauto"; then
+		if test $poller == "select"; then
+			api_poller=select
+		else		
+			api_poller=poll
+		fi
+	else
+		api_poller=$with_api_poller
+	fi
+	if test "$api_poller" == "select"; then
+		AC_MSG_NOTICE([Using 'select' zmq_poll(er)_* API polling system])
+		AC_DEFINE(ZMQ_POLL_BASED_ON_SELECT, 1, [Use 'select' zmq_poll(er)_* API polling system])
+	elif test "$api_poller" == "poll"; then
+		AC_MSG_NOTICE([Using 'poll' zmq_poll(er)_* API polling system])
+		AC_DEFINE(ZMQ_POLL_BASED_ON_POLL, 1, [Use 'poll' zmq_poll(er)_* API polling system])
+	else
+        AC_MSG_ERROR([Invalid API poller '$api_poller' specified])
+	fi
 }])

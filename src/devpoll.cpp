@@ -29,7 +29,7 @@
 
 #include "precompiled.hpp"
 #include "devpoll.hpp"
-#if defined ZMQ_USE_DEVPOLL
+#if defined ZMQ_IOTHREAD_POLLER_USE_DEVPOLL
 
 #include <sys/devpoll.h>
 #include <sys/time.h>

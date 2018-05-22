@@ -32,11 +32,15 @@
 
 //  poller.hpp decides which polling mechanism to use.
 #include "poller.hpp"
-#if defined ZMQ_USE_POLL
+#if defined ZMQ_IOTHREAD_POLLER_USE_POLL
 
-#if !defined ZMQ_HAVE_WINDOWS
-#include <poll.h>
+#if defined ZMQ_HAVE_WINDOWS
+#error                                                                         \
+  "poll is broken on Windows for the purpose of the I/O thread poller, use select instead; "\
+  "see https://github.com/zeromq/libzmq/issues/3107"
 #endif
+
+#include <poll.h>
 #include <stddef.h>
 #include <vector>
 

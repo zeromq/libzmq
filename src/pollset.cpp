@@ -29,7 +29,7 @@
 
 #include "precompiled.hpp"
 #include "pollset.hpp"
-#if defined ZMQ_USE_POLLSET
+#if defined ZMQ_IOTHREAD_POLLER_USE_POLLSET
 
 #include <stdlib.h>
 #include <string.h>
