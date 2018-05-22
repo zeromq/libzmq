@@ -644,9 +644,6 @@ tests_test_sodium_LDADD = src/libzmq.la
 tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
 tests_test_socket_null_LDADD = src/libzmq.la
 
-tests_test_mult_connect_SOURCES = tests/test_mult_connect.cpp
-tests_test_mult_connect_LDADD = src/libzmq.la
-
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
 tests_test_reconnect_ivl_LDADD = src/libzmq.la
 
