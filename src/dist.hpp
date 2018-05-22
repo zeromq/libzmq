@@ -33,7 +33,6 @@
 #include <vector>
 
 #include "array.hpp"
-#include "pipe.hpp"
 
 namespace zmq
 {

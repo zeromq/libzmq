@@ -31,7 +31,6 @@
 #define __ZMQ_GATHER_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "session_base.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -39,7 +38,6 @@ namespace zmq
 class ctx_t;
 class pipe_t;
 class msg_t;
-class io_thread_t;
 
 class gather_t : public socket_base_t
 {

@@ -30,7 +30,6 @@
 #ifndef __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
 #define __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
 
-#include "mechanism.hpp"
 #include "options.hpp"
 #include "zap_client.hpp"
 

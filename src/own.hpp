@@ -31,7 +31,6 @@
 #define __ZMQ_OWN_HPP_INCLUDED__
 
 #include <set>
-#include <algorithm>
 
 #include "object.hpp"
 #include "options.hpp"

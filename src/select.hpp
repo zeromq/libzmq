@@ -48,7 +48,6 @@
 
 #include "ctx.hpp"
 #include "fd.hpp"
-#include "thread.hpp"
 #include "poller_base.hpp"
 
 namespace zmq

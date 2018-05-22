@@ -30,8 +30,6 @@
 #ifndef __ZMQ_IO_THREAD_HPP_INCLUDED__
 #define __ZMQ_IO_THREAD_HPP_INCLUDED__
 
-#include <vector>
-
 #include "stdint.hpp"
 #include "object.hpp"
 #include "poller.hpp"

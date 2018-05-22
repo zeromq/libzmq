@@ -5,7 +5,6 @@
 #include "io_object.hpp"
 #include "i_engine.hpp"
 #include "address.hpp"
-#include "udp_address.hpp"
 #include "msg.hpp"
 
 #define MAX_UDP_MSG 8192

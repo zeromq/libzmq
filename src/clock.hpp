@@ -33,17 +33,19 @@
 #include "stdint.hpp"
 
 #if defined ZMQ_HAVE_OSX
-#include <mach/clock.h>
-#include <mach/mach.h>
-#include <time.h>
-#include <sys/time.h>
-int alt_clock_gettime (int clock_id, timespec *ts);
+// TODO this is not required in this file, but condition_variable.hpp includes
+// clock.hpp to get these definitions
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 #endif
 #ifndef HAVE_CLOCK_GETTIME
 #define HAVE_CLOCK_GETTIME
 #endif
+
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <time.h>
+#include <sys/time.h>
 #endif
 
 namespace zmq

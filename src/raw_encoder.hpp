@@ -33,11 +33,8 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
-#include <algorithm>
 
-#include "err.hpp"
-#include "msg.hpp"
-#include "i_encoder.hpp"
+#include "encoder.hpp"
 
 namespace zmq
 {

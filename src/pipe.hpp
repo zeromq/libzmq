@@ -30,7 +30,6 @@
 #ifndef __ZMQ_PIPE_HPP_INCLUDED__
 #define __ZMQ_PIPE_HPP_INCLUDED__
 
-#include "msg.hpp"
 #include "ypipe_base.hpp"
 #include "config.hpp"
 #include "object.hpp"
@@ -40,7 +39,7 @@
 
 namespace zmq
 {
-class object_t;
+class msg_t;
 class pipe_t;
 
 //  Create a pipepair for bi-directional transfer of messages.

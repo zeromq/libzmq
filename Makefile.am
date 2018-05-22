@@ -470,7 +470,8 @@ tests_test_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_hwm_pubsub_SOURCES = tests/test_hwm_pubsub.cpp
-tests_test_hwm_pubsub_LDADD = src/libzmq.la
+tests_test_hwm_pubsub_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_hwm_pubsub_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reqrep_device_SOURCES = tests/test_reqrep_device.cpp
 tests_test_reqrep_device_LDADD = src/libzmq.la
@@ -629,7 +630,8 @@ tests_test_capabilities_SOURCES = tests/test_capabilities.cpp
 tests_test_capabilities_LDADD = src/libzmq.la
 
 tests_test_xpub_nodrop_SOURCES = tests/test_xpub_nodrop.cpp
-tests_test_xpub_nodrop_LDADD = src/libzmq.la
+tests_test_xpub_nodrop_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_xpub_nodrop_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_xpub_manual_SOURCES = tests/test_xpub_manual.cpp
 tests_test_xpub_manual_LDADD = src/libzmq.la
@@ -659,7 +661,8 @@ tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
 tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
-tests_test_pub_invert_matching_LDADD = src/libzmq.la
+tests_test_pub_invert_matching_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_pub_invert_matching_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_bind_after_connect_tcp_SOURCES = tests/test_bind_after_connect_tcp.cpp
 tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la ${UNITY_LIBS}

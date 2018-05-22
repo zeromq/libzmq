@@ -28,109 +28,99 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test ()
+{
     //  Create a publisher
-    void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (pub);
-    int rc = zmq_bind (pub, "inproc://soname");
-    assert (rc == 0);
+    void *pub = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
 
     //  Create two subscribers
-    void *sub1 = zmq_socket (ctx, ZMQ_SUB);
-    assert (sub1);
-    rc = zmq_connect (sub1, "inproc://soname");
-    assert (rc == 0);
+    void *sub1 = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub1, "inproc://soname"));
 
-    void *sub2 = zmq_socket (ctx, ZMQ_SUB);
-    assert (sub2);
-    rc = zmq_connect (sub2, "inproc://soname");
-    assert (rc == 0);
+    void *sub2 = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, "inproc://soname"));
 
     //  Subscribe pub1 to one prefix
     //  and pub2 to another prefix.
     const char PREFIX1[] = "prefix1";
     const char PREFIX2[] = "p2";
 
-    rc = zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, PREFIX1, sizeof (PREFIX1));
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, PREFIX2, sizeof (PREFIX2));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, PREFIX1, strlen (PREFIX1)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, PREFIX2, strlen (PREFIX2)));
 
     //  Send a message with the first prefix
-    rc = zmq_send_const (pub, PREFIX1, sizeof (PREFIX1), 0);
-    assert (rc == sizeof (PREFIX1));
+    send_string_expect_success (pub, PREFIX1, 0);
+    msleep (SETTLE_TIME);
 
     //  sub1 should receive it, but not sub2
-    rc = zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == sizeof (PREFIX1));
+    recv_string_expect_success (sub1, PREFIX1, ZMQ_DONTWAIT);
 
-    rc = zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT));
 
     //  Send a message with the second prefix
-    rc = zmq_send_const (pub, PREFIX2, sizeof (PREFIX2), 0);
-    assert (rc == sizeof (PREFIX2));
+    send_string_expect_success (pub, PREFIX2, 0);
+    msleep (SETTLE_TIME);
 
     //  sub2 should receive it, but not sub1
-    rc = zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == sizeof (PREFIX2));
+    recv_string_expect_success (sub2, PREFIX2, ZMQ_DONTWAIT);
 
-    rc = zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT));
 
     //  Now invert the matching
     int invert = 1;
-    rc = zmq_setsockopt (pub, ZMQ_INVERT_MATCHING, &invert, sizeof (invert));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_INVERT_MATCHING, &invert, sizeof (invert)));
 
     //  ... on both sides, otherwise the SUB socket will filter the messages out
-    rc = zmq_setsockopt (sub1, ZMQ_INVERT_MATCHING, &invert, sizeof (invert));
-    rc = zmq_setsockopt (sub2, ZMQ_INVERT_MATCHING, &invert, sizeof (invert));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_INVERT_MATCHING, &invert, sizeof (invert)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub2, ZMQ_INVERT_MATCHING, &invert, sizeof (invert)));
 
     //  Send a message with the first prefix
-    rc = zmq_send_const (pub, PREFIX1, sizeof (PREFIX1), 0);
-    assert (rc == sizeof (PREFIX1));
+    send_string_expect_success (pub, PREFIX1, 0);
+    msleep (SETTLE_TIME);
 
     //  sub2 should receive it, but not sub1
-    rc = zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == sizeof (PREFIX1));
+    recv_string_expect_success (sub2, PREFIX1, ZMQ_DONTWAIT);
 
-    rc = zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT));
 
     //  Send a message with the second prefix
-    rc = zmq_send_const (pub, PREFIX2, sizeof (PREFIX2), 0);
-    assert (rc == sizeof (PREFIX2));
+    send_string_expect_success (pub, PREFIX2, 0);
+    msleep (SETTLE_TIME);
 
     //  sub1 should receive it, but not sub2
-    rc = zmq_recv (sub1, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == sizeof (PREFIX2));
+    recv_string_expect_success (sub1, PREFIX2, ZMQ_DONTWAIT);
 
-    rc = zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
-
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (sub2, NULL, 0, ZMQ_DONTWAIT));
 
     //  Clean up.
-    rc = zmq_close (pub);
-    assert (rc == 0);
-    rc = zmq_close (sub1);
-    assert (rc == 0);
-    rc = zmq_close (sub2);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub1);
+    test_context_socket_close (sub2);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test);
+    return UNITY_END ();
 }

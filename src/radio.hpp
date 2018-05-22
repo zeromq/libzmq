@@ -36,14 +36,12 @@
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
-#include "mtrie.hpp"
-#include "array.hpp"
 #include "dist.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
 class ctx_t;
-class msg_t;
 class pipe_t;
 class io_thread_t;
 

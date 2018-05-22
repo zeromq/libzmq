@@ -33,6 +33,7 @@
 #include "poller.hpp"
 #include "proxy.hpp"
 #include "likely.hpp"
+#include "msg.hpp"
 
 #if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS                \
   && !defined ZMQ_HAVE_AIX

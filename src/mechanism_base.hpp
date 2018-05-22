@@ -34,6 +34,8 @@
 
 namespace zmq
 {
+class msg_t;
+
 class mechanism_base_t : public mechanism_t
 {
   protected:

@@ -36,12 +36,12 @@
 #include "session_base.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
-#include "msg.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 class ctx_t;
+class msg_t;
 class pipe_t;
 
 //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.

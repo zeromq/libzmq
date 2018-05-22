@@ -32,7 +32,6 @@
 
 #include <string>
 #include <vector>
-#include <set>
 #include <map>
 
 #include "atomic_ptr.hpp"
@@ -41,6 +40,7 @@
 #include "tcp_address.hpp"
 
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+#include <set>
 #include <sys/types.h>
 #endif
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED

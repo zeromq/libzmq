@@ -40,9 +40,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #endif
 
+#include "udp_address.hpp"
 #include "udp_engine.hpp"
 #include "session_base.hpp"
-#include "v2_protocol.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 
@@ -285,14 +285,15 @@ void zmq::udp_engine_t::terminate ()
 
 void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in *addr)
 {
-    char *name = inet_ntoa (addr->sin_addr);
+    const char *const name = inet_ntoa (addr->sin_addr);
 
     char port[6];
     sprintf (port, "%d", static_cast<int> (ntohs (addr->sin_port)));
 
-    int size = static_cast<int> (strlen (name))
-               + static_cast<int> (strlen (port)) + 1 + 1; //  Colon + NULL
-    int rc = msg->init_size (size);
+    const int size = static_cast<int> (strlen (name))
+                     + static_cast<int> (strlen (port)) + 1
+                     + 1; //  Colon + NULL
+    const int rc = msg->init_size (size);
     errno_assert (rc == 0);
     msg->set_flags (msg_t::more);
     char *address = static_cast<char *> (msg->data ());
@@ -472,7 +473,8 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes;
         body_offset = 0;
     } else {
-        char *group_buffer = reinterpret_cast<char *> (in_buffer) + 1;
+        const char *group_buffer =
+          reinterpret_cast<const char *> (in_buffer) + 1;
         int group_size = in_buffer[0];
 
         rc = msg.init_size (group_size);

@@ -32,11 +32,12 @@
 
 #include "array.hpp"
 #include "blob.hpp"
-#include "pipe.hpp"
-#include "msg.hpp"
 
 namespace zmq
 {
+class msg_t;
+class pipe_t;
+
 //  Class manages a set of inbound pipes. On receive it performs fair
 //  queueing so that senders gone berserk won't cause denial of
 //  service for decent senders.

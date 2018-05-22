@@ -1110,12 +1110,14 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
 
 int zmq::stream_engine_t::process_command_message (msg_t *msg_)
 {
-    uint8_t cmd_name_size = *(static_cast<uint8_t *> (msg_->data ()));
+    const uint8_t cmd_name_size =
+      *(static_cast<const uint8_t *> (msg_->data ()));
     //  Malformed command
     if (msg_->size () < cmd_name_size + sizeof (cmd_name_size))
         return -1;
 
-    uint8_t *cmd_name = (static_cast<uint8_t *> (msg_->data ())) + 1;
+    const uint8_t *cmd_name =
+      (static_cast<const uint8_t *> (msg_->data ())) + 1;
     if (cmd_name_size == 4
         && (memcmp (cmd_name, "PING", cmd_name_size) == 0
             || memcmp (cmd_name, "PONG", cmd_name_size) == 0))

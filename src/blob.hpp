@@ -125,6 +125,7 @@ struct blob_t
     {
         clear ();
         data_ = static_cast<unsigned char *> (malloc (other.size_));
+        alloc_assert (data_);
         size_ = other.size_;
         owned_ = true;
         memcpy (data_, other.data_, size_);
@@ -135,6 +136,7 @@ struct blob_t
     {
         clear ();
         data_ = static_cast<unsigned char *> (malloc (size));
+        alloc_assert (data_);
         size_ = size;
         owned_ = true;
         memcpy (data_, data, size_);

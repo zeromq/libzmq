@@ -39,10 +39,8 @@
 #include "blob.hpp"
 #include "stdint.hpp"
 #include "poller.hpp"
-#include "atomic_counter.hpp"
 #include "i_poll_events.hpp"
 #include "i_mailbox.hpp"
-#include "stdint.hpp"
 #include "clock.hpp"
 #include "pipe.hpp"
 

@@ -15,6 +15,7 @@
 namespace zmq
 {
 class io_thread_t;
+class msg_t;
 class session_base_t;
 
 class norm_engine_t : public io_object_t, public i_engine

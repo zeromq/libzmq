@@ -31,7 +31,6 @@
 #define __ZMQ_CLIENT_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "session_base.hpp"
 #include "fq.hpp"
 #include "lb.hpp"
 
@@ -41,7 +40,6 @@ class ctx_t;
 class msg_t;
 class pipe_t;
 class io_thread_t;
-class socket_base_t;
 
 class client_t : public socket_base_t
 {

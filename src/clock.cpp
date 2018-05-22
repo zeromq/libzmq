@@ -57,11 +57,6 @@
 #endif
 
 #if defined ZMQ_HAVE_OSX
-#include <mach/clock.h>
-#include <mach/mach.h>
-#include <time.h>
-#include <sys/time.h>
-
 int alt_clock_gettime (int clock_id, timespec *ts)
 {
     clock_serv_t cclock;
