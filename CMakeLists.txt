@@ -94,7 +94,10 @@ if (WITH_MILITANT)
     add_definitions(-DZMQ_ACT_MILITANT)
 endif()
 
-set (POLLER "" CACHE STRING "Choose polling system. valid values are
+set (API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid values are
+                            poll or select [default=poll unless POLLER=select]")
+
+set (POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
                             kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
 
 include (CheckFunctionExists)
@@ -117,7 +120,7 @@ if (POLLER STREQUAL "")
         set (POLLER "epoll")
         check_function_exists (epoll_create1 HAVE_EPOLL_CLOEXEC)
         if (HAVE_EPOLL_CLOEXEC)
-            set (ZMQ_USE_EPOLL_CLOEXEC 1)
+            set (ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC 1)
         endif ()
     endif ()
 endif ()
@@ -172,12 +175,24 @@ if (POLLER STREQUAL "kqueue"
  OR POLLER STREQUAL "pollset"
  OR POLLER STREQUAL "poll"
  OR POLLER STREQUAL "select")
-    message (STATUS "Detected ${POLLER} polling method")
+    message (STATUS "Using polling method in I/O threads: ${POLLER}")
     string (TOUPPER ${POLLER} UPPER_POLLER)
-    set (ZMQ_USE_${UPPER_POLLER} 1)
+    set (ZMQ_IOTHREAD_POLLER_USE_${UPPER_POLLER} 1)
 else ()
     message (FATAL_ERROR "Invalid polling method")
 endif ()
+
+if (API_POLLER STREQUAL "")
+	if (POLLER STREQUAL "select")
+		set (API_POLLER "select")
+	else()
+		set (API_POLLER "poll")
+	endif()
+endif()
+
+message (STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
+    string (TOUPPER ${API_POLLER} UPPER_API_POLLER)
+set (ZMQ_POLL_BASED_ON_${UPPER_API_POLLER} 1)
 
 include (TestZMQVersion)
 if (NOT CMAKE_CROSSCOMPILING)

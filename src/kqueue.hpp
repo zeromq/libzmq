@@ -32,7 +32,7 @@
 
 //  poller.hpp decides which polling mechanism to use.
 #include "poller.hpp"
-#if defined ZMQ_USE_KQUEUE
+#if defined ZMQ_IOTHREAD_POLLER_USE_KQUEUE
 
 #include <vector>
 #include <unistd.h>

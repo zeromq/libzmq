@@ -32,7 +32,7 @@
 
 //  poller.hpp decides which polling mechanism to use.
 #include "poller.hpp"
-#if defined ZMQ_USE_SELECT
+#if defined ZMQ_IOTHREAD_POLLER_USE_SELECT
 
 #include <stddef.h>
 #include <vector>

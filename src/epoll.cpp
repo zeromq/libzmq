@@ -29,7 +29,7 @@
 
 #include "precompiled.hpp"
 #include "epoll.hpp"
-#if defined ZMQ_USE_EPOLL
+#if defined ZMQ_IOTHREAD_POLLER_USE_EPOLL
 
 #include <sys/epoll.h>
 #include <stdlib.h>

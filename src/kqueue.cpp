@@ -29,7 +29,7 @@
 
 #include "precompiled.hpp"
 #include "kqueue.hpp"
-#if defined ZMQ_USE_KQUEUE
+#if defined ZMQ_IOTHREAD_POLLER_USE_KQUEUE
 
 #include <sys/time.h>
 #include <sys/types.h>
