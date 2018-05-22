@@ -28,69 +28,68 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test ()
+{
     //  Create a publisher
-    void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (pub);
+    void *pub = test_context_socket (ZMQ_PUB);
 
     int hwm = 2000;
-    int rc = zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4));
 
-    rc = zmq_bind (pub, "inproc://soname");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
 
     //  set pub socket options
     int wait = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_NODROP, &wait, 4);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_XPUB_NODROP, &wait, 4));
 
 
     //  Create a subscriber
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
-    assert (sub);
-    rc = zmq_connect (sub, "inproc://soname");
-    assert (rc == 0);
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
 
     //  Subscribe for all messages.
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
 
     int hwmlimit = hwm - 1;
     int send_count = 0;
 
     //  Send an empty message
     for (int i = 0; i < hwmlimit; i++) {
-        rc = zmq_send (pub, NULL, 0, 0);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_send (pub, NULL, 0, 0));
         send_count++;
     }
 
     int recv_count = 0;
     do {
         //  Receive the message in the subscriber
-        rc = zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT);
-        if (rc == -1)
-            assert (errno == EAGAIN);
-        else {
-            assert (rc == 0);
+        int rc = zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT);
+        if (rc == -1) {
+            TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+            break;
+        } else {
+            TEST_ASSERT_EQUAL_INT (0, rc);
             recv_count++;
         }
-    } while (rc == 0);
+    } while (true);
 
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     //  Now test real blocking behavior
     //  Set a timeout, default is infinite
     int timeout = 0;
-    rc = zmq_setsockopt (pub, ZMQ_SNDTIMEO, &timeout, 4);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SNDTIMEO, &timeout, 4));
 
     send_count = 0;
     recv_count = 0;
@@ -99,19 +98,21 @@ int main (void)
     //  Send an empty message until we get an error, which must be EAGAIN
     while (zmq_send (pub, "", 0, 0) == 0)
         send_count++;
-    assert (errno == EAGAIN);
+    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
 
     while (zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT) == 0)
         recv_count++;
-    assert (send_count == recv_count);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     //  Clean up.
-    rc = zmq_close (pub);
-    assert (rc == 0);
-    rc = zmq_close (sub);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+    UNITY_BEGIN ();
+    RUN_TEST (test);
+    return UNITY_END ();
 }
