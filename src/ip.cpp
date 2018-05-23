@@ -66,6 +66,10 @@
 #include <pgm/pgm.h>
 #endif
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
 {
     int rc;
@@ -168,7 +172,11 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     }
 #else
     if (rc == -1) {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOTSOCK);
+#else
+        errno_assert (errno != EFAULT && errno != ENOTSOCK);
+#endif
         return 0;
     }
 #endif

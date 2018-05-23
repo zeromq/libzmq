@@ -60,6 +60,10 @@
 #endif
 #endif
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
                                        class session_base_t *session_,
                                        const options_t &options_,
@@ -404,8 +408,13 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         err = errno;
     if (err != 0) {
         errno = err;
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != ENOPROTOOPT
                       && errno != ENOTSOCK && errno != ENOBUFS);
+#else
+        errno_assert (errno != ENOPROTOOPT && errno != ENOTSOCK
+                      && errno != ENOBUFS);
+#endif
         return retired_fd;
     }
 #endif

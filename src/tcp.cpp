@@ -48,6 +48,10 @@
 #include <ioctl.h>
 #endif
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 int zmq::tune_tcp_socket (fd_t s_)
 {
     //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
@@ -242,10 +246,17 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 
     //  Signalise peer failure.
     if (nbytes == -1) {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EACCES && errno != EBADF && errno != EDESTADDRREQ
                       && errno != EFAULT && errno != EISCONN
                       && errno != EMSGSIZE && errno != ENOMEM
                       && errno != ENOTSOCK && errno != EOPNOTSUPP);
+#else
+        errno_assert (errno != EACCES && errno != EDESTADDRREQ
+                      && errno != EFAULT && errno != EISCONN
+                      && errno != EMSGSIZE && errno != ENOMEM
+                      && errno != ENOTSOCK && errno != EOPNOTSUPP);
+#endif
         return -1;
     }
 
@@ -287,8 +298,12 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     //  be able to read a single byte from the socket. Also, SIGSTOP issued
     //  by a debugging tool can result in EINTR error.
     if (rc == -1) {
+#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
                       && errno != ENOTSOCK);
+#else
+        errno_assert (errno != EFAULT && errno != ENOMEM && errno != ENOTSOCK);
+#endif
         if (errno == EWOULDBLOCK || errno == EINTR)
             errno = EAGAIN;
     }
