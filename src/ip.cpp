@@ -80,28 +80,22 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     type_ |= SOCK_CLOEXEC;
 #endif
 
-    fd_t s = socket (domain_, type_, protocol_);
-#ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET)
-        return INVALID_SOCKET;
+#if defined ZMQ_HAVE_WINDOWS && defined WSA_FLAG_NO_HANDLE_INHERIT
+    // if supported, create socket with WSA_FLAG_NO_HANDLE_INHERIT, such that
+    // the race condition in making it non-inheritable later is avoided
+    const fd_t s = WSASocket (domain_, type_, protocol_, NULL, 0,
+                              WSA_FLAG_NO_HANDLE_INHERIT);
 #else
-    if (s == -1)
-        return -1;
+    const fd_t s = socket (domain_, type_, protocol_);
 #endif
+    if (s == retired_fd) {
+#ifdef ZMQ_HAVE_WINDOWS
+        errno = wsa_error_to_errno (WSAGetLastError ());
+#endif
+        return retired_fd;
+    }
 
-        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-        //  race condition can cause socket not to be closed (if fork happens
-        //  between socket creation and this point).
-#if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
-    rc = fcntl (s, F_SETFD, FD_CLOEXEC);
-    errno_assert (rc != -1);
-#endif
-
-    //  On Windows, preventing sockets to be inherited by child processes.
-#if defined ZMQ_HAVE_WINDOWS && defined HANDLE_FLAG_INHERIT
-    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#endif
+    make_socket_noninheritable (s);
 
     //  Socket is not yet connected so EINVAL is not a valid networking error
     rc = zmq::set_nosigpipe (s);
@@ -530,11 +524,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     if (*r_ != INVALID_SOCKET) {
-#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
-        //  On Windows, preventing sockets to be inherited by child processes.
-        BOOL brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
-        win_assert (brc);
-#endif
+        make_socket_noninheritable (*r_);
         return 0;
     } else {
         //  Cleanup writer if connection failed
@@ -659,18 +649,32 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         *w_ = *r_ = -1;
         return -1;
     } else {
-    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
-    //  race condition can cause socket not to be closed (if fork happens
-    //  between socket creation and this point).
-#if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
-        rc = fcntl (sv[0], F_SETFD, FD_CLOEXEC);
-        errno_assert (rc != -1);
-        rc = fcntl (sv[1], F_SETFD, FD_CLOEXEC);
-        errno_assert (rc != -1);
-#endif
+        make_socket_noninheritable (sv[0]);
+        make_socket_noninheritable (sv[1]);
+
         *w_ = sv[0];
         *r_ = sv[1];
         return 0;
     }
+#endif
+}
+
+void zmq::make_socket_noninheritable (fd_t sock)
+{
+#if defined ZMQ_HAVE_WINDOWS && !defined _WIN32_WCE                            \
+  && !defined ZMQ_HAVE_WINDOWS_UWP
+    //  On Windows, preventing sockets to be inherited by child processes.
+    const BOOL brc = SetHandleInformation (reinterpret_cast<HANDLE> (sock),
+                                           HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+#endif
+
+#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
+  && defined FD_CLOEXEC
+    //  If there 's no SOCK_CLOEXEC, let's try the second best option.
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+    const int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
 #endif
 }

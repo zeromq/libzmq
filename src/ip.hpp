@@ -67,6 +67,10 @@ void shutdown_network ();
 // Creates a pair of sockets (using signaler_port on OS using TCP sockets).
 // Returns -1 if we could not make the socket pair successfully
 int make_fdpair (fd_t *r_, fd_t *w_);
+
+// Makes a socket non-inheritable to child processes.
+// Asserts on any failure.
+void make_socket_noninheritable (fd_t sock);
 }
 
 #endif

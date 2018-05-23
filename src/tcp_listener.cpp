@@ -195,20 +195,10 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
-#ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET) {
-        errno = wsa_error_to_errno (WSAGetLastError ());
+    if (s == retired_fd) {
         return -1;
     }
-#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
-    //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#endif
-#else
-    if (s == -1)
-        return -1;
-#endif
+    make_socket_noninheritable (s);
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
@@ -306,35 +296,21 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
       ::accept (s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
+    if (sock == retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-    if (sock == INVALID_SOCKET) {
         const int last_error = WSAGetLastError ();
         wsa_assert (last_error == WSAEWOULDBLOCK || last_error == WSAECONNRESET
                     || last_error == WSAEMFILE || last_error == WSAENOBUFS);
-        return retired_fd;
-    }
-#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
-    //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#endif
 #else
-    if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
                       || errno == ECONNABORTED || errno == EPROTO
                       || errno == ENOBUFS || errno == ENOMEM || errno == EMFILE
                       || errno == ENFILE);
+#endif
         return retired_fd;
     }
-#endif
 
-#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
-  && defined FD_CLOEXEC
-    //  Race condition can cause socket not to be closed (if fork happens
-    //  between accept and this point).
-    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
-    errno_assert (rc != -1);
-#endif
+    make_socket_noninheritable (sock);
 
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
