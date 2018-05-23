@@ -476,14 +476,8 @@ static void test_radio_dish_no_loop (int ipv6_)
 
     // Looping is disabled, we shouldn't receive anything
     msleep (SETTLE_TIME);
-    zmq_msg_t msg;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
-    int rc = zmq_msg_recv (&msg, dish, ZMQ_DONTWAIT);
-    zmq_msg_close (&msg);
-
-    TEST_ASSERT_EQUAL_INT (rc, -1);
-    TEST_ASSERT_EQUAL_INT (errno, EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (dish, NULL, 0, ZMQ_DONTWAIT));
 
     test_context_socket_close (dish);
     test_context_socket_close (radio);
