@@ -43,7 +43,8 @@ void tearDown ()
 static void pusher (void * /*unused*/)
 {
     // Connect first
-    void *connectSocket = test_context_socket (ZMQ_PAIR);
+    // do not use test_context_socket here, as it is not thread-safe
+    void *connectSocket = zmq_socket (get_test_context (), ZMQ_PAIR);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://sink"));
 
@@ -51,7 +52,7 @@ static void pusher (void * /*unused*/)
     send_string_expect_success (connectSocket, "foobar", 0);
 
     // Cleanup
-    test_context_socket_close (connectSocket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connectSocket));
 }
 
 static void simult_conn (void *endpt_)
@@ -60,11 +61,12 @@ static void simult_conn (void *endpt_)
     const char *endpt = static_cast<const char *> (endpt_);
 
     // Connect
-    void *connectSocket = test_context_socket (ZMQ_SUB);
+    // do not use test_context_socket here, as it is not thread-safe
+    void *connectSocket = zmq_socket (get_test_context (), ZMQ_SUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, endpt));
 
     // Cleanup
-    test_context_socket_close (connectSocket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connectSocket));
 }
 
 static void simult_bind (void *endpt_)
@@ -73,11 +75,12 @@ static void simult_bind (void *endpt_)
     const char *endpt = static_cast<const char *> (endpt_);
 
     // Bind
-    void *bindSocket = test_context_socket (ZMQ_PUB);
+    // do not use test_context_socket here, as it is not thread-safe
+    void *bindSocket = zmq_socket (get_test_context (), ZMQ_PUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, endpt));
 
     // Cleanup
-    test_context_socket_close (bindSocket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bindSocket));
 }
 
 void test_bind_before_connect ()
