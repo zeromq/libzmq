@@ -593,7 +593,8 @@ tests_test_conflate_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_conflate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_inproc_connect_SOURCES = tests/test_inproc_connect.cpp
-tests_test_inproc_connect_LDADD = src/libzmq.la
+tests_test_inproc_connect_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_inproc_connect_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
 tests_test_issue_566_LDADD = src/libzmq.la
