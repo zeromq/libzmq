@@ -198,12 +198,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (s == retired_fd) {
         return -1;
     }
-#if defined ZMQ_HAVE_WINDOWS && !defined _WIN32_WCE                            \
-  && !defined ZMQ_HAVE_WINDOWS_UWP
-    //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#endif
+    make_socket_noninheritable (s);
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
@@ -315,20 +310,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
         return retired_fd;
     }
 
-#if defined ZMQ_HAVE_WINDOWS && !defined _WIN32_WCE                            \
-  && !defined ZMQ_HAVE_WINDOWS_UWP
-    //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#endif
-
-#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
-  && defined FD_CLOEXEC
-    //  Race condition can cause socket not to be closed (if fork happens
-    //  between accept and this point).
-    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
-    errno_assert (rc != -1);
-#endif
+    make_socket_noninheritable (sock);
 
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
