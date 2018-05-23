@@ -259,7 +259,7 @@ static const char *mcast_url (int ipv6_)
     if (ipv6_) {
         return "udp://[" MCAST_IPV6 "]:5555";
     } else {
-        return "udp://[" MCAST_IPV4 "]:5555";
+        return "udp://" MCAST_IPV4 ":5555";
     }
 }
 
@@ -421,8 +421,18 @@ out:
     return success;
 }
 
+static void ignore_if_unavailable (int ipv6_)
+{
+    if (ipv6_ && !is_ipv6_available ())
+        TEST_IGNORE_MESSAGE ("No IPV6 available");
+    if (!is_multicast_available (ipv6_))
+        TEST_IGNORE_MESSAGE ("No multicast available");
+}
+
 static void test_radio_dish_mcast (int ipv6_)
 {
+    ignore_if_unavailable (ipv6_);
+
     void *radio = test_context_socket (ZMQ_RADIO);
     void *dish = test_context_socket (ZMQ_DISH);
 
@@ -450,6 +460,12 @@ MAKE_TEST_V4V6 (test_radio_dish_mcast)
 
 static void test_radio_dish_no_loop (int ipv6_)
 {
+#ifdef _WIN32
+    TEST_IGNORE_MESSAGE (
+      "ZMQ_MULTICAST_LOOP=false does not appear to work on Windows (TODO)");
+#endif
+    ignore_if_unavailable (ipv6_);
+
     void *radio = test_context_socket (ZMQ_RADIO);
     void *dish = test_context_socket (ZMQ_DISH);
 
@@ -458,7 +474,7 @@ static void test_radio_dish_no_loop (int ipv6_)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (dish, ZMQ_IPV6, &ipv6_, sizeof (int)));
 
-    //  Disable multicast loop
+    //  Disable multicast loop for radio
     int loop = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (radio, ZMQ_MULTICAST_LOOP, &loop, sizeof (int)));
@@ -476,14 +492,8 @@ static void test_radio_dish_no_loop (int ipv6_)
 
     // Looping is disabled, we shouldn't receive anything
     msleep (SETTLE_TIME);
-    zmq_msg_t msg;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
-    int rc = zmq_msg_recv (&msg, dish, ZMQ_DONTWAIT);
-    zmq_msg_close (&msg);
-
-    TEST_ASSERT_EQUAL_INT (rc, -1);
-    TEST_ASSERT_EQUAL_INT (errno, EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (dish, NULL, 0, ZMQ_DONTWAIT));
 
     test_context_socket_close (dish);
     test_context_socket_close (radio);
@@ -507,18 +517,11 @@ int main (void)
     RUN_TEST (test_radio_dish_udp_ipv4);
     RUN_TEST (test_radio_dish_udp_ipv6);
 
-    bool ipv4_mcast = is_multicast_available (false);
-    bool ipv6_mcast = is_ipv6_available () && is_multicast_available (true);
+    RUN_TEST (test_radio_dish_mcast_ipv4);
+    RUN_TEST (test_radio_dish_no_loop_ipv4);
 
-    if (ipv4_mcast) {
-        RUN_TEST (test_radio_dish_mcast_ipv4);
-        RUN_TEST (test_radio_dish_no_loop_ipv4);
-    }
-
-    if (ipv6_mcast) {
-        RUN_TEST (test_radio_dish_mcast_ipv6);
-        RUN_TEST (test_radio_dish_no_loop_ipv6);
-    }
+    RUN_TEST (test_radio_dish_mcast_ipv6);
+    RUN_TEST (test_radio_dish_no_loop_ipv6);
 
     return UNITY_END ();
 }

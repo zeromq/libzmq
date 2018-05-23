@@ -217,9 +217,12 @@ if(ZMQ_HAVE_CURVE)
 endif()
 set_tests_properties(test_heartbeats PROPERTIES TIMEOUT 60)
 
-if(WIN32 AND ${POLLER} MATCHES "poll")
-  set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 30)
-  set_tests_properties(test_immediate PROPERTIES TIMEOUT 30)
+if(WIN32 AND ${POLLER} MATCHES "epoll")
+  set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 120)
+endif()
+
+if(WIN32)
+  set_tests_properties(test_radio_dish PROPERTIES TIMEOUT 30)
 endif()
 
 #add additional required flags
