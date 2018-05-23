@@ -421,8 +421,18 @@ out:
     return success;
 }
 
+static void ignore_if_unavailable (int ipv6_)
+{
+    if (ipv6_ && !is_ipv6_available ())
+        TEST_IGNORE_MESSAGE ("No IPV6 available");
+    if (!is_multicast_available (ipv6_))
+        TEST_IGNORE_MESSAGE ("No multicast available");
+}
+
 static void test_radio_dish_mcast (int ipv6_)
 {
+    ignore_if_unavailable (ipv6_);
+
     void *radio = test_context_socket (ZMQ_RADIO);
     void *dish = test_context_socket (ZMQ_DISH);
 
@@ -450,6 +460,8 @@ MAKE_TEST_V4V6 (test_radio_dish_mcast)
 
 static void test_radio_dish_no_loop (int ipv6_)
 {
+    ignore_if_unavailable (ipv6_);
+
     void *radio = test_context_socket (ZMQ_RADIO);
     void *dish = test_context_socket (ZMQ_DISH);
 
@@ -501,18 +513,11 @@ int main (void)
     RUN_TEST (test_radio_dish_udp_ipv4);
     RUN_TEST (test_radio_dish_udp_ipv6);
 
-    bool ipv4_mcast = is_multicast_available (false);
-    bool ipv6_mcast = is_ipv6_available () && is_multicast_available (true);
+    RUN_TEST (test_radio_dish_mcast_ipv4);
+    RUN_TEST (test_radio_dish_no_loop_ipv4);
 
-    if (ipv4_mcast) {
-        RUN_TEST (test_radio_dish_mcast_ipv4);
-        RUN_TEST (test_radio_dish_no_loop_ipv4);
-    }
-
-    if (ipv6_mcast) {
-        RUN_TEST (test_radio_dish_mcast_ipv6);
-        RUN_TEST (test_radio_dish_no_loop_ipv6);
-    }
+    RUN_TEST (test_radio_dish_mcast_ipv6);
+    RUN_TEST (test_radio_dish_no_loop_ipv6);
 
     return UNITY_END ();
 }
