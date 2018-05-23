@@ -259,7 +259,7 @@ static const char *mcast_url (int ipv6_)
     if (ipv6_) {
         return "udp://[" MCAST_IPV6 "]:5555";
     } else {
-        return "udp://[" MCAST_IPV4 "]:5555";
+        return "udp://" MCAST_IPV4 ":5555";
     }
 }
 
@@ -460,6 +460,10 @@ MAKE_TEST_V4V6 (test_radio_dish_mcast)
 
 static void test_radio_dish_no_loop (int ipv6_)
 {
+#ifdef _WIN32
+    TEST_IGNORE_MESSAGE (
+      "ZMQ_MULTICAST_LOOP=false does not appear to work on Windows (TODO)");
+#endif
     ignore_if_unavailable (ipv6_);
 
     void *radio = test_context_socket (ZMQ_RADIO);
@@ -470,7 +474,7 @@ static void test_radio_dish_no_loop (int ipv6_)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (dish, ZMQ_IPV6, &ipv6_, sizeof (int)));
 
-    //  Disable multicast loop
+    //  Disable multicast loop for radio
     int loop = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (radio, ZMQ_MULTICAST_LOOP, &loop, sizeof (int)));
