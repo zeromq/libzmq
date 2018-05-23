@@ -76,7 +76,14 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     type_ |= SOCK_CLOEXEC;
 #endif
 
+#if defined ZMQ_HAVE_WINDOWS && defined WSA_FLAG_NO_HANDLE_INHERIT
+    // if supported, create socket with WSA_FLAG_NO_HANDLE_INHERIT, such that
+    // the race condition in making it non-inheritable later is avoided
+    const fd_t s = WSASocket (domain_, type_, protocol_, NULL, 0,
+                              WSA_FLAG_NO_HANDLE_INHERIT);
+#else
     const fd_t s = socket (domain_, type_, protocol_);
+#endif
     if (s == retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
         errno = wsa_error_to_errno (WSAGetLastError ());
