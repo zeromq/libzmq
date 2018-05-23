@@ -76,14 +76,13 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     type_ |= SOCK_CLOEXEC;
 #endif
 
-    fd_t s = socket (domain_, type_, protocol_);
+    const fd_t s = socket (domain_, type_, protocol_);
+    if (s == retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET)
-        return INVALID_SOCKET;
-#else
-    if (s == -1)
-        return -1;
+        errno = wsa_error_to_errno (WSAGetLastError ());
 #endif
+        return retired_fd;
+    }
 
         //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
         //  race condition can cause socket not to be closed (if fork happens

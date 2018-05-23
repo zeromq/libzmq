@@ -279,15 +279,9 @@ int zmq::tcp_connecter_t::open ()
         s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
-#ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET) {
-        errno = wsa_error_to_errno (WSAGetLastError ());
+    if (s == retired_fd) {
         return -1;
     }
-#else
-    if (s == -1)
-        return -1;
-#endif
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
