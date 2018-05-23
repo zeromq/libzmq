@@ -28,22 +28,28 @@
 */
 
 #include "precompiled.hpp"
-#include "epoll.hpp"
 #if defined ZMQ_IOTHREAD_POLLER_USE_EPOLL
+#include "epoll.hpp"
 
-#include <sys/epoll.h>
+#if !defined ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <signal.h>
 #include <algorithm>
 #include <new>
 
 #include "macros.hpp"
-#include "epoll.hpp"
 #include "err.hpp"
 #include "config.hpp"
 #include "i_poll_events.hpp"
+
+#ifdef ZMQ_HAVE_WINDOWS
+const zmq::epoll_t::epoll_fd_t zmq::epoll_t::epoll_retired_fd =
+  INVALID_HANDLE_VALUE;
+#endif
 
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_)
@@ -56,7 +62,7 @@ zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
 #else
     epoll_fd = epoll_create (1);
 #endif
-    errno_assert (epoll_fd != -1);
+    errno_assert (epoll_fd != epoll_retired_fd);
 }
 
 zmq::epoll_t::~epoll_t ()
@@ -64,7 +70,11 @@ zmq::epoll_t::~epoll_t ()
     //  Wait till the worker thread exits.
     stop_worker ();
 
+#ifdef ZMQ_HAVE_WINDOWS
+    epoll_close (epoll_fd);
+#else
     close (epoll_fd);
+#endif
     for (retired_t::iterator it = retired.begin (); it != retired.end ();
          ++it) {
         LIBZMQ_DELETE (*it);

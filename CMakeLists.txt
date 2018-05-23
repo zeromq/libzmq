@@ -182,6 +182,11 @@ else ()
     message (FATAL_ERROR "Invalid polling method")
 endif ()
 
+if (POLLER STREQUAL "epoll" AND WIN32)
+    message (STATUS "Including wepoll")
+    list (APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/wepoll/wepoll.c ${CMAKE_CURRENT_SOURCE_DIR}/external/wepoll/wepoll.h)
+endif()
+
 if (API_POLLER STREQUAL "")
 	if (POLLER STREQUAL "select")
 		set (API_POLLER "select")
@@ -886,8 +891,9 @@ endif ()
 
 if (MSVC)
     # default for all sources is to use precompiled headers
-    foreach(source ${sources})
-        if (NOT ${source} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/src/precompiled.cpp")
+    foreach(source ${sources})    
+        # C and C++ can not use the same precompiled header
+        if (${soruce} MATCHES ".cpp$" AND NOT ${source} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/src/precompiled.cpp")
             set_source_files_properties(${source}
                 PROPERTIES
                 COMPILE_FLAGS "/Yuprecompiled.hpp"
@@ -900,11 +906,6 @@ if (MSVC)
         PROPERTIES
         COMPILE_FLAGS "/Ycprecompiled.hpp"
         OBJECT_OUTPUTS precompiled.hpp
-        )
-    # C and C++ can not use the same precompiled header
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/tweetnacl.c
-        PROPERTIES
-        COMPILE_FLAGS "/Y-"
         )
 endif ()
 

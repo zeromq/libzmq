@@ -35,7 +35,12 @@
 #if defined ZMQ_IOTHREAD_POLLER_USE_EPOLL
 
 #include <vector>
+
+#if defined ZMQ_HAVE_WINDOWS
+#include "../external/wepoll/wepoll.h"
+#else
 #include <sys/epoll.h>
+#endif
 
 #include "ctx.hpp"
 #include "fd.hpp"
@@ -70,11 +75,22 @@ class epoll_t : public worker_poller_base_t
     static int max_fds ();
 
   private:
+#if defined ZMQ_HAVE_WINDOWS
+    typedef HANDLE epoll_fd_t;
+    static const epoll_fd_t epoll_retired_fd;
+#else
+    typedef fd_t epoll_fd_t;
+    enum
+    {
+        epoll_retired_fd = retired_fd
+    };
+#endif
+
     //  Main event loop.
     void loop ();
 
     //  Main epoll file descriptor
-    fd_t epoll_fd;
+    epoll_fd_t epoll_fd;
 
     struct poll_entry_t
     {
