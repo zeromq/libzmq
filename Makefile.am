@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = doc
 
-DIST_SUBDIRS = doc builds builds/msvc
+DIST_SUBDIRS = doc builds builds/deprecated-msvc
 
 pkgconfig_DATA = src/libzmq.pc
 
