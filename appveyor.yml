@@ -75,6 +75,7 @@ cache:
     - C:\projects\libsodium
 
 install:
+  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" appveyor exit )
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
@@ -95,17 +96,41 @@ install:
 clone_folder: C:\projects\libzmq
 
 before_build:
+  - cmd: set LIBZMQ_SRCDIR=%cd%
   - cmd: set LIBZMQ_BUILDDIR=C:\projects\build_libzmq
+  # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+  # - cmd: curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-windows.zip -o sonar-scanner-cli-3.1.0.1141-windows.zip
+  # - cmd: unzip sonar-scanner-cli-3.1.0.1141-windows.zip
+  # - cmd: set BUILDLOG="%LIBZMQ_SRCDIR%\build.log"
   - cmd: md "%LIBZMQ_BUILDDIR%"
   - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="ON" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="ON" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="ON" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cd "%LIBZMQ_SRCDIR%"
 
 build:
   parallel: true
   project: C:\projects\build_libzmq\ZeroMQ.sln
   verbosity: minimal
 
+# TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+# build_script:
+  # - cmd: msbuild %LIBZMQ_BUILDDIR%\ZeroMQ.sln /verbosity:detailed >%BUILDLOG%
+
 after_build:
+  # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+  # - cmd: cd "%LIBZMQ_SRCDIR%"
+  # - cmd: dir
+  # - cmd: sonar-scanner-3.1.0.1141-windows\bin\sonar-scanner 
+            # -Dsonar.scm.provider=git 
+            # -Dsonar.projectKey=libzmq-msvc 
+            # -Dsonar.organization=sigiesec-github 
+            # -Dsonar.sources=include,src,tests,unittests 
+            # -Dsonar.host.url=https://sonarcloud.io 
+            # -Dsonar.login=%SONARQUBE_TOKEN% 
+            # -Dsonar.cxx.compiler.parser="Visual C++" 
+            # -Dsonar.cxx.compiler.reportPath=build.log 
+            # -Dsonar.cxx.compiler.charset=UTF-8 
+            # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
   - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll
@@ -115,3 +140,20 @@ test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
   - cmd: ctest -C "%Configuration%" -V -j5
 
+for:
+-
+    branches:
+        only:
+            - master
+            - /.*analyze$/
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
