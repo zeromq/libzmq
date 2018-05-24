@@ -13,6 +13,20 @@ environment:
   matrix:
     - platform: Win32
       configuration: Release
+      WITH_LIBSODIUM: OFF # unavailable build files for VS2008
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Visual Studio 9 2008"
+      MSVCVERSION: "v90"
+      MSVCYEAR: "vs2008"
+    - platform: Win32
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Visual Studio 10 2010"
+      MSVCVERSION: "v100"
+      MSVCYEAR: "vs2010"
+    - platform: Win32
+      configuration: Release
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
     - platform: Win32
@@ -107,10 +121,11 @@ before_build:
   - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="ON" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
-build:
-  parallel: true
-  project: C:\projects\build_libzmq\ZeroMQ.sln
-  verbosity: minimal
+build_script:
+  - cmd: set verbosity=Minimal
+  - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
+  - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
+  - cmd: msbuild C:\projects\build_libzmq\ZeroMQ.sln /verbosity:%verbosity% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
 # build_script:

@@ -39,8 +39,7 @@
 #include "err.hpp"
 
 zmq::v1_decoder_t::v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
-    c_single_allocator (bufsize_),
-    decoder_base_t<v1_decoder_t> (this),
+    decoder_base_t<v1_decoder_t> (bufsize_),
     maxmsgsize (maxmsgsize_)
 {
     int rc = in_progress.init ();

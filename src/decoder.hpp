@@ -57,23 +57,23 @@ template <typename T, typename A = c_single_allocator>
 class decoder_base_t : public i_decoder
 {
   public:
-    explicit decoder_base_t (A *allocator_) :
+    explicit decoder_base_t (const size_t buf_size_) :
         next (NULL),
         read_pos (NULL),
         to_read (0),
-        allocator (allocator_)
+        allocator (buf_size_)
     {
-        buf = allocator->allocate ();
+        buf = allocator.allocate ();
     }
 
     //  The destructor doesn't have to be virtual. It is made virtual
     //  just to keep ICC and code checking tools from complaining.
-    virtual ~decoder_base_t () { allocator->deallocate (); }
+    virtual ~decoder_base_t () { allocator.deallocate (); }
 
     //  Returns a buffer to be filled with binary data.
     void get_buffer (unsigned char **data_, std::size_t *size_)
     {
-        buf = allocator->allocate ();
+        buf = allocator.allocate ();
 
         //  If we are expected to read large message, we'll opt for zero-
         //  copy, i.e. we'll ask caller to fill the data directly to the
@@ -83,14 +83,14 @@ class decoder_base_t : public i_decoder
         //  As a consequence, large messages being received won't block
         //  other engines running in the same I/O thread for excessive
         //  amounts of time.
-        if (to_read >= allocator->size ()) {
+        if (to_read >= allocator.size ()) {
             *data_ = read_pos;
             *size_ = to_read;
             return;
         }
 
         *data_ = buf;
-        *size_ = allocator->size ();
+        *size_ = allocator.size ();
     }
 
     //  Processes the data in the buffer previously allocated using
@@ -151,7 +151,7 @@ class decoder_base_t : public i_decoder
 
     virtual void resize_buffer (std::size_t new_size)
     {
-        allocator->resize (new_size);
+        allocator.resize (new_size);
     }
 
   protected:
@@ -168,6 +168,8 @@ class decoder_base_t : public i_decoder
         next = next_;
     }
 
+    A &get_allocator () { return allocator; }
+
   private:
     //  Next step. If set to NULL, it means that associated data stream
     //  is dead. Note that there can be still data in the process in such
@@ -181,7 +183,7 @@ class decoder_base_t : public i_decoder
     std::size_t to_read;
 
     //  The duffer for data to decode.
-    A *allocator;
+    A allocator;
     unsigned char *buf;
 
     decoder_base_t (const decoder_base_t &);

@@ -152,13 +152,16 @@ add_library (unity
     "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h" 
     "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity_internals.h")
 set_target_properties (unity PROPERTIES
-    PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h")
+                             PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h")
 target_compile_definitions (unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EXCLUDE_FLOAT")
-target_include_directories (unity
-    PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
+target_include_directories (unity PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
 
 IF (MSVC_VERSION LESS 1700)
     SET_SOURCE_FILES_PROPERTIES("${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.c" PROPERTIES LANGUAGE CXX)
+ENDIF()
+
+IF (MSVC_VERSION LESS 1600)
+    target_compile_definitions (unity PUBLIC "UNITY_EXCLUDE_STDINT_H")
 ENDIF()
 
 # add library and include dirs for all targets
