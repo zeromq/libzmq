@@ -93,7 +93,8 @@ matrix:
         - llvm-toolchain-trusty-5.0
       packages:
         - clang-5.0
-  - env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-6.0 CC=clang-6.0 CXX=clang++-6.0
+  - if: type = cron OR (branch =~ analyze$ AND type = push)
+    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-6.0 CC=clang-6.0 CXX=clang++-6.0
     os: linux
     compiler: clang
     addons:
@@ -109,7 +110,7 @@ matrix:
     os: linux
   - env: BUILD_TYPE=default POLLER=select
     os: linux
-
+    
 sudo: false
 
 before_install:
