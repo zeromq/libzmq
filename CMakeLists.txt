@@ -227,7 +227,11 @@ include (CMakeDependentOption)
 include (CheckCXXSymbolExists)
 include (CheckSymbolExists)
 
-check_include_files (windows.h ZMQ_HAVE_WINDOWS)
+if (NOT CYGWIN)
+    # TODO cannot we simply do 'if (WIN32) set(ZMQ_HAVE_WINDOWS ON)' or similar?
+    check_include_files (windows.h ZMQ_HAVE_WINDOWS)
+endif()
+
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION STREQUAL "10.0")
   SET(ZMQ_HAVE_WINDOWS_UWP ON)
   ADD_DEFINITIONS(-D_WIN32_WINNT=_WIN32_WINNT_WIN10)
