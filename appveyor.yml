@@ -75,6 +75,7 @@ cache:
     - C:\projects\libsodium
 
 install:
+  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" appveyor exit )
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
