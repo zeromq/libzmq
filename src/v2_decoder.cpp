@@ -41,8 +41,7 @@
 zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_,
                                  int64_t maxmsgsize_,
                                  bool zero_copy_) :
-    shared_message_memory_allocator (bufsize_),
-    decoder_base_t<v2_decoder_t, shared_message_memory_allocator> (this),
+    decoder_base_t<v2_decoder_t, shared_message_memory_allocator> (bufsize_),
     msg_flags (0),
     zero_copy (zero_copy_),
     maxmsgsize (maxmsgsize_)
@@ -114,9 +113,10 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size,
     // the current message can exceed the current buffer. We have to copy the buffer
     // data into a new message and complete it in the next receive.
 
-    if (unlikely (
-          !zero_copy
-          || ((unsigned char *) read_pos + msg_size > (data () + size ())))) {
+    shared_message_memory_allocator &allocator = get_allocator ();
+    if (unlikely (!zero_copy
+                  || ((unsigned char *) read_pos + msg_size
+                      > (allocator.data () + allocator.size ())))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
         rc = in_progress.init_size (static_cast<size_t> (msg_size));
@@ -124,15 +124,16 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size,
         // construct message using n bytes from the buffer as storage
         // increase buffer ref count
         // if the message will be a large message, pass a valid refcnt memory location as well
-        rc = in_progress.init (const_cast<unsigned char *> (read_pos),
-                               static_cast<size_t> (msg_size),
-                               shared_message_memory_allocator::call_dec_ref,
-                               buffer (), provide_content ());
+        rc =
+          in_progress.init (const_cast<unsigned char *> (read_pos),
+                            static_cast<size_t> (msg_size),
+                            shared_message_memory_allocator::call_dec_ref,
+                            allocator.buffer (), allocator.provide_content ());
 
         // For small messages, data has been copied and refcount does not have to be increased
         if (in_progress.is_zcmsg ()) {
-            advance_content ();
-            inc_ref ();
+            allocator.advance_content ();
+            allocator.inc_ref ();
         }
     }
 
