@@ -1327,7 +1327,7 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
 
 int zmq_poller_wait_all (void *poller_,
                          zmq_poller_event_t *events_,
-                         int n_events,
+                         int n_events_,
                          long timeout_)
 {
     if (-1 == check_poller (poller_))
@@ -1337,7 +1337,7 @@ int zmq_poller_wait_all (void *poller_,
         errno = EFAULT;
         return -1;
     }
-    if (n_events < 0) {
+    if (n_events_ < 0) {
         errno = EINVAL;
         return -1;
     }
@@ -1345,7 +1345,7 @@ int zmq_poller_wait_all (void *poller_,
     int rc =
       (static_cast<zmq::socket_poller_t *> (poller_))
         ->wait (reinterpret_cast<zmq::socket_poller_t::event_t *> (events_),
-                n_events, timeout_);
+                n_events_, timeout_);
 
     return rc;
 }
@@ -1487,38 +1487,38 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
 
 //  Probe library capabilities; for now, reports on transport and security
 
-int zmq_has (const char *capability)
+int zmq_has (const char *capability_)
 {
 #if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
-    if (strcmp (capability, "ipc") == 0)
+    if (strcmp (capability_, "ipc") == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_OPENPGM)
-    if (strcmp (capability, "pgm") == 0)
+    if (strcmp (capability_, "pgm") == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_TIPC)
-    if (strcmp (capability, "tipc") == 0)
+    if (strcmp (capability_, "tipc") == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_NORM)
-    if (strcmp (capability, "norm") == 0)
+    if (strcmp (capability_, "norm") == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_CURVE)
-    if (strcmp (capability, "curve") == 0)
+    if (strcmp (capability_, "curve") == 0)
         return true;
 #endif
 #if defined(HAVE_LIBGSSAPI_KRB5)
-    if (strcmp (capability, "gssapi") == 0)
+    if (strcmp (capability_, "gssapi") == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_VMCI)
-    if (strcmp (capability, "vmci") == 0)
+    if (strcmp (capability_, "vmci") == 0)
         return true;
 #endif
 #if defined(ZMQ_BUILD_DRAFT_API)
-    if (strcmp (capability, "draft") == 0)
+    if (strcmp (capability_, "draft") == 0)
         return true;
 #endif
     //  Whatever the application asked for, we don't have

@@ -54,8 +54,8 @@ class mailbox_safe_t : public i_mailbox
     int recv (command_t *cmd_, int timeout_);
 
     // Add signaler to mailbox which will be called when a message is ready
-    void add_signaler (signaler_t *signaler);
-    void remove_signaler (signaler_t *signaler);
+    void add_signaler (signaler_t *signaler_);
+    void remove_signaler (signaler_t *signaler_);
     void clear_signalers ();
 
 #ifdef HAVE_FORK

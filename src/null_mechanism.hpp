@@ -43,7 +43,7 @@ class null_mechanism_t : public zap_client_t
 {
   public:
     null_mechanism_t (session_base_t *session_,
-                      const std::string &peer_address,
+                      const std::string &peer_address_,
                       const options_t &options_);
     virtual ~null_mechanism_t ();
 
@@ -61,8 +61,10 @@ class null_mechanism_t : public zap_client_t
     bool zap_request_sent;
     bool zap_reply_received;
 
-    int process_ready_command (const unsigned char *cmd_data, size_t data_size);
-    int process_error_command (const unsigned char *cmd_data, size_t data_size);
+    int process_ready_command (const unsigned char *cmd_data_,
+                               size_t data_size_);
+    int process_error_command (const unsigned char *cmd_data_,
+                               size_t data_size_);
 
     void send_zap_request ();
 };

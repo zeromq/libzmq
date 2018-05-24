@@ -144,13 +144,13 @@ zmq::socks_request_encoder_t::socks_request_encoder_t () :
 {
 }
 
-void zmq::socks_request_encoder_t::encode (const socks_request_t &req)
+void zmq::socks_request_encoder_t::encode (const socks_request_t &req_)
 {
-    zmq_assert (req.hostname.size () <= UINT8_MAX);
+    zmq_assert (req_.hostname.size () <= UINT8_MAX);
 
     unsigned char *ptr = buf;
     *ptr++ = 0x05;
-    *ptr++ = req.command;
+    *ptr++ = req_.command;
     *ptr++ = 0x00;
 
 #if defined ZMQ_HAVE_OPENVMS && defined __ia64 && __INITIAL_POINTER_SIZE == 64
@@ -164,7 +164,7 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req)
     //  Suppress potential DNS lookups.
     hints.ai_flags = AI_NUMERICHOST;
 
-    const int rc = getaddrinfo (req.hostname.c_str (), NULL, &hints, &res);
+    const int rc = getaddrinfo (req_.hostname.c_str (), NULL, &hints, &res);
     if (rc == 0 && res->ai_family == AF_INET) {
         const struct sockaddr_in *sockaddr_in =
           reinterpret_cast<const struct sockaddr_in *> (res->ai_addr);
@@ -179,16 +179,16 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req)
         ptr += 16;
     } else {
         *ptr++ = 0x03;
-        *ptr++ = static_cast<unsigned char> (req.hostname.size ());
-        memcpy (ptr, req.hostname.c_str (), req.hostname.size ());
-        ptr += req.hostname.size ();
+        *ptr++ = static_cast<unsigned char> (req_.hostname.size ());
+        memcpy (ptr, req_.hostname.c_str (), req_.hostname.size ());
+        ptr += req_.hostname.size ();
     }
 
     if (rc == 0)
         freeaddrinfo (res);
 
-    *ptr++ = req.port / 256;
-    *ptr++ = req.port % 256;
+    *ptr++ = req_.port / 256;
+    *ptr++ = req_.port % 256;
 
     bytes_encoded = ptr - buf;
     bytes_written = 0;

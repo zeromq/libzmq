@@ -95,7 +95,7 @@ const char *zmq::wsa_error ()
     return wsa_error_no (WSAGetLastError (), NULL);
 }
 
-const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string)
+const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
 {
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
@@ -116,7 +116,7 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string)
         case WSAEMFILE:
             return "Too many open files";
         case WSAEWOULDBLOCK:
-            return wsae_wouldblock_string;
+            return wsae_wouldblock_string_;
         case WSAEINPROGRESS:
             return "Operation now in progress";
         case WSAEALREADY:
@@ -225,9 +225,9 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
     zmq_assert (rc);
 }
 
-int zmq::wsa_error_to_errno (int errcode)
+int zmq::wsa_error_to_errno (int errcode_)
 {
-    switch (errcode) {
+    switch (errcode_) {
             //  10004 - Interrupted system call.
         case WSAEINTR:
             return EINTR;

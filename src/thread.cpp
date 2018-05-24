@@ -83,11 +83,11 @@ void zmq::thread_t::stop ()
 }
 
 void zmq::thread_t::setSchedulingParameters (
-  int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
+  int priority_, int scheduling_policy_, const std::set<int> &affinity_cpus_)
 {
     // not implemented
     LIBZMQ_UNUSED (priority_);
-    LIBZMQ_UNUSED (schedulingPolicy_);
+    LIBZMQ_UNUSED (scheduling_policy_);
     LIBZMQ_UNUSED (affinity_cpus_);
 }
 

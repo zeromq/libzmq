@@ -42,7 +42,7 @@ class pipe_t;
 class stream_t : public socket_base_t
 {
   public:
-    stream_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    stream_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
     ~stream_t ();
 
     //  Overrides of functions from socket_base_t.

@@ -242,7 +242,7 @@ struct atomic_value_t
 {
     atomic_value_t (const int value_) : value (value_) {}
 
-    atomic_value_t (const atomic_value_t &src) : value (src.load ()) {}
+    atomic_value_t (const atomic_value_t &src_) : value (src_.load ()) {}
 
     void store (const int value_)
     {
@@ -288,7 +288,7 @@ struct atomic_value_t
 #endif
 
   private:
-    atomic_value_t &operator= (const atomic_value_t &src);
+    atomic_value_t &operator= (const atomic_value_t &src_);
 };
 }
 

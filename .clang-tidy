@@ -42,7 +42,7 @@ Checks:        "*,\
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 # AnalyzeTemporaryDtors: false
-# CheckOptions:    
+CheckOptions:
   # - key:             cert-dcl59-cpp.HeaderFileExtensions
     # value:           h,hh,hpp,hxx
   # - key:             cert-err61-cpp.CheckThrowTemporaries
@@ -287,8 +287,8 @@ HeaderFilterRegex: ''
     # value:           ''
   # - key:             readability-identifier-naming.NamespaceSuffix
     # value:           ''
-  # - key:             readability-identifier-naming.ParameterCase
-    # value:           aNy_CasE
+   - key:             readability-identifier-naming.ParameterCase
+     value:           lower_case
   # - key:             readability-identifier-naming.ParameterPackCase
     # value:           aNy_CasE
   # - key:             readability-identifier-naming.ParameterPackPrefix
@@ -297,8 +297,8 @@ HeaderFilterRegex: ''
     # value:           ''
   # - key:             readability-identifier-naming.ParameterPrefix
     # value:           ''
-  # - key:             readability-identifier-naming.ParameterSuffix
-    # value:           ''
+   - key:             readability-identifier-naming.ParameterSuffix
+     value:           '_'
   # - key:             readability-identifier-naming.PrivateMemberCase
     # value:           aNy_CasE
   # - key:             readability-identifier-naming.PrivateMemberPrefix

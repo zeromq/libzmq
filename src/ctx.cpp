@@ -55,14 +55,14 @@
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD 0xdeadbeef
 
-int clipped_maxsocket (int max_requested)
+int clipped_maxsocket (int max_requested_)
 {
-    if (max_requested >= zmq::poller_t::max_fds ()
+    if (max_requested_ >= zmq::poller_t::max_fds ()
         && zmq::poller_t::max_fds () != -1)
         // -1 because we need room for the reaper mailbox.
-        max_requested = zmq::poller_t::max_fds () - 1;
+        max_requested_ = zmq::poller_t::max_fds () - 1;
 
-    return max_requested;
+    return max_requested_;
 }
 
 zmq::ctx_t::ctx_t () :
@@ -608,14 +608,14 @@ void zmq::ctx_t::connect_pending (const char *addr_,
 
 void zmq::ctx_t::connect_inproc_sockets (
   zmq::socket_base_t *bind_socket_,
-  options_t &bind_options,
+  options_t &bind_options_,
   const pending_connection_t &pending_connection_,
   side side_)
 {
     bind_socket_->inc_seqnum ();
     pending_connection_.bind_pipe->set_tid (bind_socket_->get_tid ());
 
-    if (!bind_options.recv_routing_id) {
+    if (!bind_options_.recv_routing_id) {
         msg_t msg;
         const bool ok = pending_connection_.bind_pipe->read (&msg);
         zmq_assert (ok);
@@ -632,8 +632,8 @@ void zmq::ctx_t::connect_inproc_sockets (
           || pending_connection_.endpoint.options.type == ZMQ_SUB);
 
     if (!conflate) {
-        pending_connection_.connect_pipe->set_hwms_boost (bind_options.sndhwm,
-                                                          bind_options.rcvhwm);
+        pending_connection_.connect_pipe->set_hwms_boost (bind_options_.sndhwm,
+                                                          bind_options_.rcvhwm);
         pending_connection_.bind_pipe->set_hwms_boost (
           pending_connection_.endpoint.options.sndhwm,
           pending_connection_.endpoint.options.rcvhwm);
@@ -641,8 +641,8 @@ void zmq::ctx_t::connect_inproc_sockets (
         pending_connection_.connect_pipe->set_hwms (
           pending_connection_.endpoint.options.rcvhwm,
           pending_connection_.endpoint.options.sndhwm);
-        pending_connection_.bind_pipe->set_hwms (bind_options.rcvhwm,
-                                                 bind_options.sndhwm);
+        pending_connection_.bind_pipe->set_hwms (bind_options_.rcvhwm,
+                                                 bind_options_.sndhwm);
     } else {
         pending_connection_.connect_pipe->set_hwms (-1, -1);
         pending_connection_.bind_pipe->set_hwms (-1, -1);
@@ -667,10 +667,10 @@ void zmq::ctx_t::connect_inproc_sockets (
     if (pending_connection_.endpoint.options.recv_routing_id
         && pending_connection_.endpoint.socket->check_tag ()) {
         msg_t routing_id;
-        const int rc = routing_id.init_size (bind_options.routing_id_size);
+        const int rc = routing_id.init_size (bind_options_.routing_id_size);
         errno_assert (rc == 0);
-        memcpy (routing_id.data (), bind_options.routing_id,
-                bind_options.routing_id_size);
+        memcpy (routing_id.data (), bind_options_.routing_id,
+                bind_options_.routing_id_size);
         routing_id.set_flags (msg_t::routing_id);
         const bool written = pending_connection_.bind_pipe->write (&routing_id);
         zmq_assert (written);

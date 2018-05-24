@@ -62,7 +62,7 @@ struct options_t
 {
     options_t ();
 
-    int set_curve_key (uint8_t *destination,
+    int set_curve_key (uint8_t *destination_,
                        const void *optval_,
                        size_t optvallen_);
 

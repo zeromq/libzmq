@@ -41,16 +41,16 @@ class zap_client_t : public virtual mechanism_base_t
                   const std::string &peer_address_,
                   const options_t &options_);
 
-    void send_zap_request (const char *mechanism,
-                           size_t mechanism_length,
-                           const uint8_t *credentials,
-                           size_t credentials_size);
+    void send_zap_request (const char *mechanism_,
+                           size_t mechanism_length_,
+                           const uint8_t *credentials_,
+                           size_t credentials_size_);
 
-    void send_zap_request (const char *mechanism,
-                           size_t mechanism_length,
-                           const uint8_t **credentials,
-                           size_t *credentials_sizes,
-                           size_t credentials_count);
+    void send_zap_request (const char *mechanism_,
+                           size_t mechanism_length_,
+                           const uint8_t **credentials_,
+                           size_t *credentials_sizes_,
+                           size_t credentials_count_);
 
     virtual int receive_and_process_zap_reply ();
     virtual void handle_zap_status_code ();
@@ -80,7 +80,7 @@ class zap_client_common_handshake_t : public zap_client_t
     zap_client_common_handshake_t (session_base_t *const session_,
                                    const std::string &peer_address_,
                                    const options_t &options_,
-                                   state_t zap_reply_ok_state);
+                                   state_t zap_reply_ok_state_);
 
     //  methods from mechanism_t
     status_t status () const;

@@ -72,10 +72,10 @@ class curve_client_t : public curve_mechanism_base_t
     curve_client_tools_t tools;
 
     int produce_hello (msg_t *msg_);
-    int process_welcome (const uint8_t *cmd_data, size_t data_size);
+    int process_welcome (const uint8_t *cmd_data_, size_t data_size_);
     int produce_initiate (msg_t *msg_);
-    int process_ready (const uint8_t *cmd_data, size_t data_size);
-    int process_error (const uint8_t *cmd_data, size_t data_size);
+    int process_ready (const uint8_t *cmd_data_, size_t data_size_);
+    int process_error (const uint8_t *cmd_data_, size_t data_size_);
 };
 }
 

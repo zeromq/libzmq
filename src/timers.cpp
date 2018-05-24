@@ -66,9 +66,9 @@ struct zmq::timers_t::match_by_id
 {
     match_by_id (int timer_id_) : timer_id (timer_id_) {}
 
-    bool operator() (timersmap_t::value_type const &entry) const
+    bool operator() (timersmap_t::value_type const &entry_) const
     {
-        return entry.second.timer_id == timer_id;
+        return entry_.second.timer_id == timer_id;
     }
 
   private:

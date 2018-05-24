@@ -51,18 +51,18 @@ zmq::mailbox_safe_t::~mailbox_safe_t ()
     sync->unlock ();
 }
 
-void zmq::mailbox_safe_t::add_signaler (signaler_t *signaler)
+void zmq::mailbox_safe_t::add_signaler (signaler_t *signaler_)
 {
-    signalers.push_back (signaler);
+    signalers.push_back (signaler_);
 }
 
-void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler)
+void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler_)
 {
     std::vector<signaler_t *>::iterator it = signalers.begin ();
 
     // TODO: make a copy of array and signal outside the lock
     for (; it != signalers.end (); ++it) {
-        if (*it == signaler)
+        if (*it == signaler_)
             break;
     }
 

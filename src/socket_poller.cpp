@@ -33,10 +33,10 @@
 
 #include <limits.h>
 
-static bool is_thread_safe (zmq::socket_base_t &socket)
+static bool is_thread_safe (zmq::socket_base_t &socket_)
 {
     // do not use getsockopt here, since that would fail during context termination
-    return socket.is_thread_safe ();
+    return socket_.is_thread_safe ();
 }
 
 zmq::socket_poller_t::socket_poller_t () :
@@ -399,9 +399,9 @@ void zmq::socket_poller_t::rebuild ()
 }
 
 void zmq::socket_poller_t::zero_trail_events (
-  zmq::socket_poller_t::event_t *events_, int n_events_, int found)
+  zmq::socket_poller_t::event_t *events_, int n_events_, int found_)
 {
-    for (int i = found; i < n_events_; ++i) {
+    for (int i = found_; i < n_events_; ++i) {
         events_[i].socket = NULL;
         events_[i].fd = 0;
         events_[i].user_data = NULL;
@@ -415,9 +415,9 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
                                         int n_events_,
-                                        fd_set &inset,
-                                        fd_set &outset,
-                                        fd_set &errset)
+                                        fd_set &inset_,
+                                        fd_set &outset_,
+                                        fd_set &errset_)
 #endif
 {
     int found = 0;
@@ -461,11 +461,11 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 
             short events = 0;
 
-            if (FD_ISSET (it->fd, &inset))
+            if (FD_ISSET (it->fd, &inset_))
                 events |= ZMQ_POLLIN;
-            if (FD_ISSET (it->fd, &outset))
+            if (FD_ISSET (it->fd, &outset_))
                 events |= ZMQ_POLLOUT;
-            if (FD_ISSET (it->fd, &errset))
+            if (FD_ISSET (it->fd, &errset_))
                 events |= ZMQ_POLLERR;
 #endif //POLL_SELECT
 
@@ -483,11 +483,11 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 }
 
 //Return 0 if timeout is expired otherwise 1
-int zmq::socket_poller_t::adjust_timeout (zmq::clock_t &clock,
+int zmq::socket_poller_t::adjust_timeout (zmq::clock_t &clock_,
                                           long timeout_,
-                                          uint64_t &now,
-                                          uint64_t &end,
-                                          bool &first_pass)
+                                          uint64_t &now_,
+                                          uint64_t &end_,
+                                          bool &first_pass_)
 {
     //  If socket_poller_t::timeout is zero, exit immediately whether there
     //  are events or not.
@@ -497,8 +497,8 @@ int zmq::socket_poller_t::adjust_timeout (zmq::clock_t &clock,
     //  At this point we are meant to wait for events but there are none.
     //  If timeout is infinite we can just loop until we get some events.
     if (timeout_ < 0) {
-        if (first_pass)
-            first_pass = false;
+        if (first_pass_)
+            first_pass_ = false;
         return 1;
     }
 
@@ -506,15 +506,15 @@ int zmq::socket_poller_t::adjust_timeout (zmq::clock_t &clock,
     //  we get a timestamp of when the polling have begun. (We assume that
     //  first pass have taken negligible time). We also compute the time
     //  when the polling should time out.
-    now = clock.now_ms ();
-    if (first_pass) {
-        end = now + timeout_;
-        first_pass = false;
+    now_ = clock_.now_ms ();
+    if (first_pass_) {
+        end_ = now_ + timeout_;
+        first_pass_ = false;
         return 1;
     }
 
     //  Find out whether timeout have expired.
-    if (now >= end)
+    if (now_ >= end_)
         return 0;
 
     return 1;

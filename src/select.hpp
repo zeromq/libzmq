@@ -135,7 +135,7 @@ class select_t : public worker_poller_base_t
     // See loop for details.
     family_entries_t::iterator current_family_entry_it;
 
-    int try_retire_fd_entry (family_entries_t::iterator family_entry_it,
+    int try_retire_fd_entry (family_entries_t::iterator family_entry_it_,
                              zmq::fd_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
@@ -155,10 +155,10 @@ class select_t : public worker_poller_base_t
     bool cleanup_retired (family_entry_t &family_entry_);
 
     //  Checks if an fd_entry_t is retired.
-    static bool is_retired_fd (const fd_entry_t &entry);
+    static bool is_retired_fd (const fd_entry_t &entry_);
 
     static fd_entries_t::iterator
-    find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
+    find_fd_entry_by_handle (fd_entries_t &fd_entries_, handle_t handle_);
 
     select_t (const select_t &);
     const select_t &operator= (const select_t &);

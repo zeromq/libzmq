@@ -73,11 +73,11 @@ class mechanism_t
     //  Returns the status of this mechanism.
     virtual status_t status () const = 0;
 
-    void set_peer_routing_id (const void *id_ptr, size_t id_size);
+    void set_peer_routing_id (const void *id_ptr_, size_t id_size_);
 
     void peer_routing_id (msg_t *msg_);
 
-    void set_user_id (const void *user_id, size_t size);
+    void set_user_id (const void *user_id_, size_t size_);
 
     const blob_t &get_user_id () const;
 
@@ -88,29 +88,30 @@ class mechanism_t
   protected:
     //  Only used to identify the socket for the Socket-Type
     //  property in the wire protocol.
-    const char *socket_type_string (int socket_type) const;
+    const char *socket_type_string (int socket_type_) const;
 
-    static size_t add_property (unsigned char *ptr,
-                                size_t ptr_capacity,
-                                const char *name,
-                                const void *value,
-                                size_t value_len);
-    static size_t property_len (const char *name, size_t value_len);
+    static size_t add_property (unsigned char *ptr_,
+                                size_t ptr_capacity_,
+                                const char *name_,
+                                const void *value_,
+                                size_t value_len_);
+    static size_t property_len (const char *name_, size_t value_len_);
 
-    size_t add_basic_properties (unsigned char *ptr, size_t ptr_capacity) const;
+    size_t add_basic_properties (unsigned char *ptr_,
+                                 size_t ptr_capacity_) const;
     size_t basic_properties_len () const;
 
     void make_command_with_basic_properties (msg_t *msg_,
-                                             const char *prefix,
-                                             size_t prefix_len) const;
+                                             const char *prefix_,
+                                             size_t prefix_len_) const;
 
     //  Parses a metadata.
     //  Metadata consists of a list of properties consisting of
     //  name and value as size-specified strings.
     //  Returns 0 on success and -1 on error, in which case errno is set.
     int parse_metadata (const unsigned char *ptr_,
-                        size_t length,
-                        bool zap_flag = false);
+                        size_t length_,
+                        bool zap_flag_ = false);
 
     //  This is called by parse_property method whenever it
     //  parses a new property. The function should return 0

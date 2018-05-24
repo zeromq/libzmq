@@ -193,10 +193,10 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     return static_cast<int> (u.sa.sa_family);
 }
 
-void zmq::set_ip_type_of_service (fd_t s_, int iptos)
+void zmq::set_ip_type_of_service (fd_t s_, int iptos_)
 {
     int rc = setsockopt (s_, IPPROTO_IP, IP_TOS,
-                         reinterpret_cast<char *> (&iptos), sizeof (iptos));
+                         reinterpret_cast<char *> (&iptos_), sizeof (iptos_));
 
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
@@ -207,7 +207,7 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
     //  Windows and Hurd do not support IPV6_TCLASS
 #if !defined(ZMQ_HAVE_WINDOWS) && defined(IPV6_TCLASS)
     rc = setsockopt (s_, IPPROTO_IPV6, IPV6_TCLASS,
-                     reinterpret_cast<char *> (&iptos), sizeof (iptos));
+                     reinterpret_cast<char *> (&iptos_), sizeof (iptos_));
 
     //  If IPv6 is not enabled ENOPROTOOPT will be returned on Linux and
     //  EINVAL on OSX
@@ -311,15 +311,15 @@ void zmq::shutdown_network ()
 }
 
 #if defined ZMQ_HAVE_WINDOWS
-static void tune_socket (const SOCKET socket)
+static void tune_socket (const SOCKET socket_)
 {
     BOOL tcp_nodelay = 1;
     int rc =
-      setsockopt (socket, IPPROTO_TCP, TCP_NODELAY,
+      setsockopt (socket_, IPPROTO_TCP, TCP_NODELAY,
                   reinterpret_cast<char *> (&tcp_nodelay), sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
-    zmq::tcp_tune_loopback_fast_path (socket);
+    zmq::tcp_tune_loopback_fast_path (socket_);
 }
 #endif
 
@@ -659,12 +659,12 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 #endif
 }
 
-void zmq::make_socket_noninheritable (fd_t sock)
+void zmq::make_socket_noninheritable (fd_t sock_)
 {
 #if defined ZMQ_HAVE_WINDOWS && !defined _WIN32_WCE                            \
   && !defined ZMQ_HAVE_WINDOWS_UWP
     //  On Windows, preventing sockets to be inherited by child processes.
-    const BOOL brc = SetHandleInformation (reinterpret_cast<HANDLE> (sock),
+    const BOOL brc = SetHandleInformation (reinterpret_cast<HANDLE> (sock_),
                                            HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
 #endif
@@ -674,7 +674,7 @@ void zmq::make_socket_noninheritable (fd_t sock)
     //  If there 's no SOCK_CLOEXEC, let's try the second best option.
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
-    const int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    const int rc = fcntl (sock_, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
 #endif
 }

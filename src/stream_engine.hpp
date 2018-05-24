@@ -70,7 +70,7 @@ class stream_engine_t : public io_object_t, public i_engine
 
     stream_engine_t (fd_t fd_,
                      const options_t &options_,
-                     const std::string &endpoint);
+                     const std::string &endpoint_);
     ~stream_engine_t ();
 
     //  i_engine interface implementation.
@@ -91,7 +91,7 @@ class stream_engine_t : public io_object_t, public i_engine
     void unplug ();
 
     //  Function to handle network disconnections.
-    void error (error_reason_t reason);
+    void error (error_reason_t reason_);
 
     //  Receives the greeting message from the peer.
     int receive_greeting ();
@@ -102,13 +102,13 @@ class stream_engine_t : public io_object_t, public i_engine
     int routing_id_msg (msg_t *msg_);
     int process_routing_id_msg (msg_t *msg_);
 
-    int next_handshake_command (msg_t *msg);
-    int process_handshake_command (msg_t *msg);
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
 
     int pull_msg_from_session (msg_t *msg_);
-    int push_msg_to_session (msg_t *msg);
+    int push_msg_to_session (msg_t *msg_);
 
-    int push_raw_msg_to_session (msg_t *msg);
+    int push_raw_msg_to_session (msg_t *msg_);
 
     int write_credential (msg_t *msg_);
     int pull_and_encode (msg_t *msg_);
@@ -117,15 +117,15 @@ class stream_engine_t : public io_object_t, public i_engine
 
     void mechanism_ready ();
 
-    size_t add_property (unsigned char *ptr,
-                         const char *name,
-                         const void *value,
-                         size_t value_len);
+    size_t add_property (unsigned char *ptr_,
+                         const char *name_,
+                         const void *value_,
+                         size_t value_len_);
 
     void set_handshake_timer ();
 
     typedef metadata_t::dict_t properties_t;
-    bool init_properties (properties_t &properties);
+    bool init_properties (properties_t &properties_);
 
     int process_command_message (msg_t *msg_);
     int produce_ping_message (msg_t *msg_);

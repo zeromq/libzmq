@@ -287,20 +287,20 @@ void zmq::udp_engine_t::terminate ()
     delete this;
 }
 
-void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in *addr)
+void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_)
 {
-    const char *const name = inet_ntoa (addr->sin_addr);
+    const char *const name = inet_ntoa (addr_->sin_addr);
 
     char port[6];
-    sprintf (port, "%d", static_cast<int> (ntohs (addr->sin_port)));
+    sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
 
     const int size = static_cast<int> (strlen (name))
                      + static_cast<int> (strlen (port)) + 1
                      + 1; //  Colon + NULL
-    const int rc = msg->init_size (size);
+    const int rc = msg_->init_size (size);
     errno_assert (rc == 0);
-    msg->set_flags (msg_t::more);
-    char *address = static_cast<char *> (msg->data ());
+    msg_->set_flags (msg_t::more);
+    char *address = static_cast<char *> (msg_->data ());
 
     strcpy (address, name);
     strcat (address, ":");

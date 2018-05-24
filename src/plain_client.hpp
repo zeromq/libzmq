@@ -64,9 +64,9 @@ class plain_client_t : public mechanism_base_t
     int produce_hello (msg_t *msg_) const;
     int produce_initiate (msg_t *msg_) const;
 
-    int process_welcome (const unsigned char *cmd_data, size_t data_size);
-    int process_ready (const unsigned char *cmd_data, size_t data_size);
-    int process_error (const unsigned char *cmd_data, size_t data_size);
+    int process_welcome (const unsigned char *cmd_data_, size_t data_size_);
+    int process_ready (const unsigned char *cmd_data_, size_t data_size_);
+    int process_error (const unsigned char *cmd_data_, size_t data_size_);
 };
 }
 

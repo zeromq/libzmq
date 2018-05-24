@@ -45,7 +45,7 @@
 #include "pipe.hpp"
 
 extern "C" {
-void zmq_free_event (void *data, void *hint);
+void zmq_free_event (void *data_, void *hint_);
 }
 
 namespace zmq
@@ -87,8 +87,8 @@ class socket_base_t : public own_t,
     int term_endpoint (const char *addr_);
     int send (zmq::msg_t *msg_, int flags_);
     int recv (zmq::msg_t *msg_, int flags_);
-    void add_signaler (signaler_t *s);
-    void remove_signaler (signaler_t *s);
+    void add_signaler (signaler_t *s_);
+    void remove_signaler (signaler_t *s_);
     int close ();
 
     //  These functions are used by the polling mechanism to determine
@@ -97,8 +97,8 @@ class socket_base_t : public own_t,
     bool has_out ();
 
     //  Joining and leaving groups
-    int join (const char *group);
-    int leave (const char *group);
+    int join (const char *group_);
+    int leave (const char *group_);
 
     //  Using this function reaper thread ask the socket to register with
     //  its poller.
@@ -137,8 +137,8 @@ class socket_base_t : public own_t,
 
     //  Query the state of a specific peer. The default implementation
     //  always returns an ENOTSUP error.
-    virtual int get_peer_state (const void *identity,
-                                size_t identity_size) const;
+    virtual int get_peer_state (const void *identity_,
+                                size_t identity_size_) const;
 
   protected:
     socket_base_t (zmq::ctx_t *parent_,
@@ -198,7 +198,7 @@ class socket_base_t : public own_t,
     void stop_monitor (bool send_monitor_stopped_event_ = true);
 
     //  Creates new endpoint ID and adds the endpoint to the map.
-    void add_endpoint (const char *addr_, own_t *endpoint_, pipe_t *pipe);
+    void add_endpoint (const char *addr_, own_t *endpoint_, pipe_t *pipe_);
 
     //  Map of open endpoints.
     typedef std::pair<own_t *, pipe_t *> endpoint_pipe_t;

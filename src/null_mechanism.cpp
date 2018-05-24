@@ -150,17 +150,17 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
-int zmq::null_mechanism_t::process_ready_command (const unsigned char *cmd_data,
-                                                  size_t data_size)
+int zmq::null_mechanism_t::process_ready_command (
+  const unsigned char *cmd_data_, size_t data_size_)
 {
     ready_command_received = true;
-    return parse_metadata (cmd_data + 6, data_size - 6);
+    return parse_metadata (cmd_data_ + 6, data_size_ - 6);
 }
 
-int zmq::null_mechanism_t::process_error_command (const unsigned char *cmd_data,
-                                                  size_t data_size)
+int zmq::null_mechanism_t::process_error_command (
+  const unsigned char *cmd_data_, size_t data_size_)
 {
-    if (data_size < 7) {
+    if (data_size_ < 7) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
@@ -168,8 +168,8 @@ int zmq::null_mechanism_t::process_error_command (const unsigned char *cmd_data,
         errno = EPROTO;
         return -1;
     }
-    const size_t error_reason_len = static_cast<size_t> (cmd_data[6]);
-    if (error_reason_len > data_size - 7) {
+    const size_t error_reason_len = static_cast<size_t> (cmd_data_[6]);
+    if (error_reason_len > data_size_ - 7) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
@@ -177,7 +177,7 @@ int zmq::null_mechanism_t::process_error_command (const unsigned char *cmd_data,
         errno = EPROTO;
         return -1;
     }
-    const char *error_reason = reinterpret_cast<const char *> (cmd_data) + 7;
+    const char *error_reason = reinterpret_cast<const char *> (cmd_data_) + 7;
     handle_error_reason (error_reason, error_reason_len);
     error_command_received = true;
     return 0;

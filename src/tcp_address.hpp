@@ -43,7 +43,7 @@ class tcp_address_t
 {
   public:
     tcp_address_t ();
-    tcp_address_t (const sockaddr *sa, socklen_t sa_len);
+    tcp_address_t (const sockaddr *sa_, socklen_t sa_len_);
     virtual ~tcp_address_t ();
 
     //  This function translates textual TCP address into an address
@@ -88,8 +88,8 @@ class tcp_address_mask_t : public tcp_address_t
 
     int mask () const;
 
-    bool match_address (const struct sockaddr *ss,
-                        const socklen_t ss_len) const;
+    bool match_address (const struct sockaddr *ss_,
+                        const socklen_t ss_len_) const;
 
   private:
     int address_mask;

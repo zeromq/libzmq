@@ -48,7 +48,7 @@ class pipe_t;
 class server_t : public socket_base_t
 {
   public:
-    server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
     ~server_t ();
 
     //  Overrides of functions from socket_base_t.

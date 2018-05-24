@@ -251,7 +251,7 @@ class ctx_t : public thread_ctx_t
     };
     void
     connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
-                            options_t &bind_options,
+                            options_t &bind_options_,
                             const pending_connection_t &pending_connection_,
                             side side_);
 

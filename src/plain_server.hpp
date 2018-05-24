@@ -58,8 +58,8 @@ class plain_server_t : public zap_client_common_handshake_t
     int process_hello (msg_t *msg_);
     int process_initiate (msg_t *msg_);
 
-    void send_zap_request (const std::string &username,
-                           const std::string &password);
+    void send_zap_request (const std::string &username_,
+                           const std::string &password_);
 };
 }
 

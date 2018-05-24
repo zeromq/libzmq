@@ -58,7 +58,7 @@ class c_single_allocator
 
     std::size_t size () const { return bufsize; }
 
-    void resize (std::size_t new_size) { bufsize = new_size; }
+    void resize (std::size_t new_size_) { bufsize = new_size_; }
 
   private:
     std::size_t bufsize;
@@ -84,7 +84,7 @@ class shared_message_memory_allocator
 
     // Create an allocator for a maximum number of messages
     shared_message_memory_allocator (std::size_t bufsize_,
-                                     std::size_t maxMessages);
+                                     std::size_t max_messages_);
 
     ~shared_message_memory_allocator ();
 
@@ -103,7 +103,7 @@ class shared_message_memory_allocator
 
     void inc_ref ();
 
-    static void call_dec_ref (void *, void *buffer);
+    static void call_dec_ref (void *, void *buffer_);
 
     std::size_t size () const;
 
@@ -113,7 +113,7 @@ class shared_message_memory_allocator
     // Return pointer to the first byte of the buffer.
     unsigned char *buffer () { return buf; }
 
-    void resize (std::size_t new_size) { bufsize = new_size; }
+    void resize (std::size_t new_size_) { bufsize = new_size_; }
 
     zmq::msg_t::content_t *provide_content () { return msg_content; }
 

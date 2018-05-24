@@ -249,18 +249,18 @@ zmq::options_t::options_t () :
 #endif
 }
 
-int zmq::options_t::set_curve_key (uint8_t *destination,
+int zmq::options_t::set_curve_key (uint8_t *destination_,
                                    const void *optval_,
                                    size_t optvallen_)
 {
     switch (optvallen_) {
         case CURVE_KEYSIZE:
-            memcpy (destination, optval_, optvallen_);
+            memcpy (destination_, optval_, optvallen_);
             mechanism = ZMQ_CURVE;
             return 0;
 
         case CURVE_KEYSIZE_Z85 + 1:
-            if (zmq_z85_decode (destination, (char *) optval_)) {
+            if (zmq_z85_decode (destination_, (char *) optval_)) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -270,7 +270,7 @@ int zmq::options_t::set_curve_key (uint8_t *destination,
             char z85_key[CURVE_KEYSIZE_Z85 + 1];
             memcpy (z85_key, (char *) optval_, optvallen_);
             z85_key[CURVE_KEYSIZE_Z85] = 0;
-            if (zmq_z85_decode (destination, z85_key)) {
+            if (zmq_z85_decode (destination_, z85_key)) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }

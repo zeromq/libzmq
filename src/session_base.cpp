@@ -416,7 +416,7 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 }
 
 void zmq::session_base_t::engine_error (
-  zmq::stream_engine_t::error_reason_t reason)
+  zmq::stream_engine_t::error_reason_t reason_)
 {
     //  Engine is dead. Let's forget about it.
     engine = NULL;
@@ -425,11 +425,11 @@ void zmq::session_base_t::engine_error (
     if (pipe)
         clean_pipes ();
 
-    zmq_assert (reason == stream_engine_t::connection_error
-                || reason == stream_engine_t::timeout_error
-                || reason == stream_engine_t::protocol_error);
+    zmq_assert (reason_ == stream_engine_t::connection_error
+                || reason_ == stream_engine_t::timeout_error
+                || reason_ == stream_engine_t::protocol_error);
 
-    switch (reason) {
+    switch (reason_) {
         case stream_engine_t::timeout_error:
             /* FALLTHROUGH */
         case stream_engine_t::connection_error:

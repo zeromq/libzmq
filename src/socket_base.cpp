@@ -978,12 +978,12 @@ int zmq::socket_base_t::connect (const char *addr_)
 
 void zmq::socket_base_t::add_endpoint (const char *addr_,
                                        own_t *endpoint_,
-                                       pipe_t *pipe)
+                                       pipe_t *pipe_)
 {
     //  Activate the session. Make it a child of this socket.
     launch_child (endpoint_);
     endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (addr_),
-                                         endpoint_pipe_t (endpoint_, pipe));
+                                         endpoint_pipe_t (endpoint_, pipe_));
 }
 
 int zmq::socket_base_t::term_endpoint (const char *addr_)

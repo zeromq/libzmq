@@ -104,7 +104,7 @@ template <typename T> class ypipe_conflate_t : public ypipe_base_t<T>
     //  Applies the function fn to the first elemenent in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
-    inline bool probe (bool (*fn) (const T &)) { return dbuffer.probe (fn); }
+    inline bool probe (bool (*fn_) (const T &)) { return dbuffer.probe (fn_); }
 
   protected:
     dbuffer_t<T> dbuffer;
