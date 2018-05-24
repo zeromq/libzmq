@@ -835,6 +835,6 @@ AC_CONFIG_FILES([ \
     src/libzmq.pc \
     doc/Makefile \
     builds/Makefile \
-    builds/msvc/Makefile])
+    builds/deprecated-msvc/Makefile])
 
 AC_OUTPUT
