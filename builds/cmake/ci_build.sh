@@ -90,7 +90,7 @@ else
         find ${SCAN_BUILD_OUTPUT} || echo "WARNING: ${SCAN_BUILD_OUTPUT} does not exist"
     
         ${SONAR_SCANNER_CLI_PATH}sonar-scanner \
-            -Dsonar.projectKey=libzmq-clang \
+            -Dsonar.projectKey=${GITHUB_USER}-libzmq \
             -Dsonar.organization=${GITHUB_USER}-github \
             -Dsonar.projectBaseDir=.. \
             -Dsonar.sources=${TRAVIS_BUILD_DIR}/include,${TRAVIS_BUILD_DIR}/src,${TRAVIS_BUILD_DIR}/tests,${TRAVIS_BUILD_DIR}/unittests \
