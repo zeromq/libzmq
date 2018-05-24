@@ -15,15 +15,6 @@ environment:
       configuration: Release
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
-      ENABLE_ANALYSIS: ON
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      CMAKE_GENERATOR: "Visual Studio 15 2017"
-      MSVCVERSION: "v141"
-      MSVCYEAR: "vs2017"
-    - platform: Win32
-      configuration: Release
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
       API_POLLER: poll
@@ -148,3 +139,20 @@ test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
   - cmd: ctest -C "%Configuration%" -V -j5
 
+for:
+-
+    branches:
+        only:
+            - master
+            - /.*analyze$/
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
