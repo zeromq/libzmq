@@ -104,7 +104,8 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         //  when there are forwarding devices involved.
         subscriptions.add (data + 1, size - 1);
         return dist.send_to_all (msg_);
-    } else if (size > 0 && *data == 0) {
+    }
+    if (size > 0 && *data == 0) {
         //  Process unsubscribe message
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_);

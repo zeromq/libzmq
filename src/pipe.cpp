@@ -404,7 +404,7 @@ void zmq::pipe_t::terminate (bool delay_)
     }
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else if (state == term_ack_sent) {
+    if (state == term_ack_sent) {
         return;
     }
     //  The simple sync termination case. Ask the peer to terminate and wait

@@ -526,17 +526,17 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     if (*r_ != INVALID_SOCKET) {
         make_socket_noninheritable (*r_);
         return 0;
-    } else {
-        //  Cleanup writer if connection failed
-        if (*w_ != INVALID_SOCKET) {
-            rc = closesocket (*w_);
-            wsa_assert (rc != SOCKET_ERROR);
-            *w_ = INVALID_SOCKET;
-        }
-        //  Set errno from saved value
-        errno = wsa_error_to_errno (saved_errno);
-        return -1;
     }
+    //  Cleanup writer if connection failed
+    if (*w_ != INVALID_SOCKET) {
+        rc = closesocket (*w_);
+        wsa_assert (rc != SOCKET_ERROR);
+        *w_ = INVALID_SOCKET;
+    }
+    //  Set errno from saved value
+    errno = wsa_error_to_errno (saved_errno);
+    return -1;
+
 
 #elif defined ZMQ_HAVE_OPENVMS
 

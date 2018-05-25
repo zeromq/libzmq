@@ -266,16 +266,15 @@ bool zmq::socks_response_decoder_t::message_ready () const
 {
     if (bytes_read < 4)
         return false;
-    else {
-        const uint8_t atyp = buf[3];
-        zmq_assert (atyp == 0x01 || atyp == 0x03 || atyp == 0x04);
-        if (atyp == 0x01)
-            return bytes_read == 10;
-        else if (atyp == 0x03)
-            return bytes_read > 4 && bytes_read == 4 + 1 + buf[4] + 2u;
-        else
-            return bytes_read == 22;
-    }
+
+    const uint8_t atyp = buf[3];
+    zmq_assert (atyp == 0x01 || atyp == 0x03 || atyp == 0x04);
+    if (atyp == 0x01)
+        return bytes_read == 10;
+    if (atyp == 0x03)
+        return bytes_read > 4 && bytes_read == 4 + 1 + buf[4] + 2u;
+    else
+        return bytes_read == 22;
 }
 
 zmq::socks_response_t zmq::socks_response_decoder_t::decode ()

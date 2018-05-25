@@ -125,7 +125,7 @@ zmq::mechanism_t::status_t zmq::curve_client_t::status () const
 {
     if (state == connected)
         return mechanism_t::ready;
-    else if (state == error_received)
+    if (state == error_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;

@@ -685,10 +685,9 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
         value = metadata->get (std::string (property_));
     if (value)
         return value;
-    else {
-        errno = EINVAL;
-        return NULL;
-    }
+
+    errno = EINVAL;
+    return NULL;
 }
 
     // Polling.

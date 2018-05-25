@@ -153,8 +153,8 @@ socklen_t zmq::tcp_address_t::addrlen () const
 {
     if (address.generic.sa_family == AF_INET6)
         return static_cast<socklen_t> (sizeof (address.ipv6));
-    else
-        return static_cast<socklen_t> (sizeof (address.ipv4));
+
+    return static_cast<socklen_t> (sizeof (address.ipv4));
 }
 
 const sockaddr *zmq::tcp_address_t::src_addr () const
@@ -166,8 +166,8 @@ socklen_t zmq::tcp_address_t::src_addrlen () const
 {
     if (address.family () == AF_INET6)
         return static_cast<socklen_t> (sizeof (source_address.ipv6));
-    else
-        return static_cast<socklen_t> (sizeof (source_address.ipv4));
+
+    return static_cast<socklen_t> (sizeof (source_address.ipv4));
 }
 
 bool zmq::tcp_address_t::has_src_addr () const

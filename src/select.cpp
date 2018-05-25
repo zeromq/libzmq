@@ -583,15 +583,14 @@ u_short zmq::select_t::determine_fd_family (fd_t fd_)
     if (rc == 0) {
         if (type == SOCK_DGRAM)
             return AF_INET;
-        else {
-            rc = getsockname (fd_, reinterpret_cast<sockaddr *> (&addr),
-                              &addr_size);
 
-            //  AF_INET and AF_INET6 can be mixed in select
-            //  TODO: If proven otherwise, should simply return addr.sa_family
-            if (rc != SOCKET_ERROR)
-                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
-        }
+        rc =
+          getsockname (fd_, reinterpret_cast<sockaddr *> (&addr), &addr_size);
+
+        //  AF_INET and AF_INET6 can be mixed in select
+        //  TODO: If proven otherwise, should simply return addr.sa_family
+        if (rc != SOCKET_ERROR)
+            return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
     }
 
     return AF_UNSPEC;

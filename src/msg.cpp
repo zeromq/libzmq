@@ -64,9 +64,9 @@ int zmq::msg_t::init (void *data_,
         if (rc != -1) {
             memcpy (data (), data_, size_);
             return 0;
-        } else {
-            return -1;
         }
+        return -1;
+
     } else if (content_) {
         return init_external_storage (content_, data_, size_, ffn_, hint_);
     } else {

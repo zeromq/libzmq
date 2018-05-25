@@ -75,7 +75,8 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             session->get_socket ()->event_handshake_failed_no_detail (
               session->get_endpoint (), EFAULT);
             return -1;
-        } else if (rc == 0) {
+        }
+        if (rc == 0) {
             send_zap_request ();
             zap_request_sent = true;
 
@@ -103,10 +104,9 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             msg_data[6] = status_code_len;
             memcpy (msg_data + 7, status_code.c_str (), status_code_len);
             return 0;
-        } else {
-            errno = EAGAIN;
-            return -1;
         }
+        errno = EAGAIN;
+        return -1;
     }
 
     make_command_with_basic_properties (msg_, "\5READY", 6);
@@ -203,7 +203,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 
     if (ready_command_sent && ready_command_received)
         return mechanism_t::ready;
-    else if (command_sent && command_received)
+    if (command_sent && command_received)
         return error;
     else
         return handshaking;

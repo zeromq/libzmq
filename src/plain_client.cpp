@@ -104,7 +104,7 @@ zmq::mechanism_t::status_t zmq::plain_client_t::status () const
 {
     if (state == ready)
         return mechanism_t::ready;
-    else if (state == error_command_received)
+    if (state == error_command_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;

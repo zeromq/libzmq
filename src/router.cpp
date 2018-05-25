@@ -507,35 +507,33 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                 if (!handover)
                     //  Ignore peers with duplicate ID
                     return false;
-                else {
-                    //  We will allow the new connection to take over this
-                    //  routing id. Temporarily assign a new routing id to the
-                    //  existing pipe so we can terminate it asynchronously.
-                    unsigned char buf[5];
-                    buf[0] = 0;
-                    put_uint32 (buf + 1, next_integral_routing_id++);
-                    blob_t new_routing_id (buf, sizeof buf);
 
-                    it->second.pipe->set_router_socket_routing_id (
-                      new_routing_id);
-                    outpipe_t existing_outpipe = {it->second.pipe,
-                                                  it->second.active};
+                //  We will allow the new connection to take over this
+                //  routing id. Temporarily assign a new routing id to the
+                //  existing pipe so we can terminate it asynchronously.
+                unsigned char buf[5];
+                buf[0] = 0;
+                put_uint32 (buf + 1, next_integral_routing_id++);
+                blob_t new_routing_id (buf, sizeof buf);
 
-                    ok = outpipes
-                           .ZMQ_MAP_INSERT_OR_EMPLACE (
-                             ZMQ_MOVE (new_routing_id), existing_outpipe)
-                           .second;
-                    zmq_assert (ok);
+                it->second.pipe->set_router_socket_routing_id (new_routing_id);
+                outpipe_t existing_outpipe = {it->second.pipe,
+                                              it->second.active};
 
-                    //  Remove the existing routing id entry to allow the new
-                    //  connection to take the routing id.
-                    outpipes.erase (it);
+                ok = outpipes
+                       .ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (new_routing_id),
+                                                   existing_outpipe)
+                       .second;
+                zmq_assert (ok);
 
-                    if (existing_outpipe.pipe == current_in)
-                        terminate_current_in = true;
-                    else
-                        existing_outpipe.pipe->terminate (true);
-                }
+                //  Remove the existing routing id entry to allow the new
+                //  connection to take the routing id.
+                outpipes.erase (it);
+
+                if (existing_outpipe.pipe == current_in)
+                    terminate_current_in = true;
+                else
+                    existing_outpipe.pipe->terminate (true);
             }
         }
     }

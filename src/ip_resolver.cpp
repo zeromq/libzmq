@@ -31,19 +31,17 @@ bool zmq::ip_addr_t::is_multicast () const
         //  IPv4 Multicast: address MSBs are 1110
         //  Range: 224.0.0.0 - 239.255.255.255
         return IN_MULTICAST (ntohl (ipv4.sin_addr.s_addr));
-    } else {
-        //  IPv6 Multicast: ff00::/8
-        return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr) != 0;
     }
+    //  IPv6 Multicast: ff00::/8
+    return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr) != 0;
 }
 
 uint16_t zmq::ip_addr_t::port () const
 {
     if (family () == AF_INET6) {
         return ntohs (ipv6.sin6_port);
-    } else {
-        return ntohs (ipv4.sin_port);
     }
+    return ntohs (ipv4.sin_port);
 }
 
 const struct sockaddr *zmq::ip_addr_t::as_sockaddr () const
@@ -55,9 +53,8 @@ socklen_t zmq::ip_addr_t::sockaddr_len () const
 {
     if (family () == AF_INET6) {
         return sizeof (ipv6);
-    } else {
-        return sizeof (ipv4);
     }
+    return sizeof (ipv4);
 }
 
 void zmq::ip_addr_t::set_port (uint16_t port_)

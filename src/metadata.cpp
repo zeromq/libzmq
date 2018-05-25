@@ -43,8 +43,8 @@ const char *zmq::metadata_t::get (const std::string &property_) const
             return get (ZMQ_MSG_PROPERTY_ROUTING_ID);
 
         return NULL;
-    } else
-        return it->second.c_str ();
+    }
+    return it->second.c_str ();
 }
 
 void zmq::metadata_t::add_ref ()

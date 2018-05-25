@@ -147,8 +147,8 @@ long zmq::timers_t::timeout ()
         if (cancelled_it == cancelled_timers.end ()) {
             if (it->first > now)
                 return static_cast<long> (it->first - now);
-            else
-                return 0;
+
+            return 0;
         }
 
         // Let's remove it from the beginning of the list

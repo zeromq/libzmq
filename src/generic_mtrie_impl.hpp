@@ -140,14 +140,13 @@ bool zmq::generic_mtrie_t<T>::add_helper (prefix_t prefix_,
             ++live_nodes;
         }
         return next.node->add_helper (prefix_ + 1, size_ - 1, pipe_);
-    } else {
-        if (!next.table[c - min]) {
-            next.table[c - min] = new (std::nothrow) generic_mtrie_t;
-            alloc_assert (next.table[c - min]);
-            ++live_nodes;
-        }
-        return next.table[c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
+    if (!next.table[c - min]) {
+        next.table[c - min] = new (std::nothrow) generic_mtrie_t;
+        alloc_assert (next.table[c - min]);
+        ++live_nodes;
+    }
+    return next.table[c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
 }
 
 

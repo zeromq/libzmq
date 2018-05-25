@@ -263,7 +263,7 @@ zmq::mechanism_t::status_t zap_client_common_handshake_t::status () const
 {
     if (state == ready)
         return mechanism_t::ready;
-    else if (state == error_sent)
+    if (state == error_sent)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;

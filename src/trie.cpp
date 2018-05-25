@@ -114,15 +114,14 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             zmq_assert (live_nodes == 1);
         }
         return next.node->add (prefix_ + 1, size_ - 1);
-    } else {
-        if (!next.table[c - min]) {
-            next.table[c - min] = new (std::nothrow) trie_t;
-            alloc_assert (next.table[c - min]);
-            ++live_nodes;
-            zmq_assert (live_nodes > 1);
-        }
-        return next.table[c - min]->add (prefix_ + 1, size_ - 1);
     }
+    if (!next.table[c - min]) {
+        next.table[c - min] = new (std::nothrow) trie_t;
+        alloc_assert (next.table[c - min]);
+        ++live_nodes;
+        zmq_assert (live_nodes > 1);
+    }
+    return next.table[c - min]->add (prefix_ + 1, size_ - 1);
 }
 
 bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
