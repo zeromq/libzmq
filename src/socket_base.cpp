@@ -1576,7 +1576,7 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
         zmq_assert (options.recv_routing_id);
 
     //  Remove MORE flag.
-    rcvmore = msg_->flags () & msg_t::more ? true : false;
+    rcvmore = (msg_->flags () & msg_t::more) != 0;
 }
 
 int zmq::socket_base_t::monitor (const char *addr_, int events_)

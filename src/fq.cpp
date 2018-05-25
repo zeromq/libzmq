@@ -99,7 +99,7 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
         if (fetched) {
             if (pipe_)
                 *pipe_ = pipes[current];
-            more = msg_->flags () & msg_t::more ? true : false;
+            more = (msg_->flags () & msg_t::more) != 0;
             if (!more) {
                 last_in = pipes[current];
                 current = (current + 1) % active;

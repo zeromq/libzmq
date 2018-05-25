@@ -156,7 +156,7 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
         return -1;
     }
 
-    incomplete_in = msg_->flags () & msg_t::more ? true : false;
+    incomplete_in = (msg_->flags () & msg_t::more) != 0;
 
     return 0;
 }
