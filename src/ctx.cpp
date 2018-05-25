@@ -136,7 +136,7 @@ int zmq::ctx_t::terminate ()
 {
     slot_sync.lock ();
 
-    bool saveTerminating = terminating;
+    bool save_terminating = terminating;
     terminating = false;
 
     // Connect up any pending inproc connections, otherwise we will hang
@@ -149,7 +149,7 @@ int zmq::ctx_t::terminate ()
         s->bind (p->first.c_str ());
         s->close ();
     }
-    terminating = saveTerminating;
+    terminating = save_terminating;
 
     if (!starting) {
 #ifdef HAVE_FORK

@@ -361,16 +361,16 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 {
 #if defined ZMQ_HAVE_WINDOWS && defined SIO_LOOPBACK_FAST_PATH
     int sio_loopback_fastpath = 1;
-    DWORD numberOfBytesReturned = 0;
+    DWORD number_of_bytes_returned = 0;
 
     int rc = WSAIoctl (socket_, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
                        sizeof sio_loopback_fastpath, NULL, 0,
-                       &numberOfBytesReturned, 0, 0);
+                       &number_of_bytes_returned, 0, 0);
 
     if (SOCKET_ERROR == rc) {
-        DWORD lastError = ::WSAGetLastError ();
+        DWORD last_error = ::WSAGetLastError ();
 
-        if (WSAEOPNOTSUPP == lastError) {
+        if (WSAEOPNOTSUPP == last_error) {
             // This system is not Windows 8 or Server 2012, and the call is not supported.
         } else {
             wsa_assert (false);

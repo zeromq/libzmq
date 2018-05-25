@@ -76,15 +76,15 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     zmq_assert (pipe_);
 
     if (probe_router) {
-        msg_t probe_msg_;
-        int rc = probe_msg_.init ();
+        msg_t probe_msg;
+        int rc = probe_msg.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
+        rc = pipe_->write (&probe_msg);
         // zmq_assert (rc) is not applicable here, since it is not a bug.
         pipe_->flush ();
 
-        rc = probe_msg_.close ();
+        rc = probe_msg.close ();
         errno_assert (rc == 0);
     }
 

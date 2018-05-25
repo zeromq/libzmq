@@ -90,9 +90,9 @@ void *zmq_threadstart (zmq_thread_fn *func_, void *arg_)
 
 void zmq_threadclose (void *thread_)
 {
-    zmq::thread_t *pThread = static_cast<zmq::thread_t *> (thread_);
-    pThread->stop ();
-    LIBZMQ_DELETE (pThread);
+    zmq::thread_t *p_thread = static_cast<zmq::thread_t *> (thread_);
+    p_thread->stop ();
+    LIBZMQ_DELETE (p_thread);
 }
 
 //  Z85 codec, taken from 0MQ RFC project, implements RFC32 Z85 encoding

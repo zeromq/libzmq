@@ -141,8 +141,8 @@ uint64_t zmq::clock_t::now_us ()
 #if defined ZMQ_HAVE_WINDOWS
 
     //  Get the high resolution counter's accuracy.
-    LARGE_INTEGER ticksPerSecond;
-    QueryPerformanceFrequency (&ticksPerSecond);
+    LARGE_INTEGER ticks_per_second;
+    QueryPerformanceFrequency (&ticks_per_second);
 
     //  What time is it?
     LARGE_INTEGER tick;
@@ -150,7 +150,7 @@ uint64_t zmq::clock_t::now_us ()
 
     //  Convert the tick number into the number of seconds
     //  since the system was started.
-    double ticks_div = ticksPerSecond.QuadPart / 1000000.0;
+    double ticks_div = ticks_per_second.QuadPart / 1000000.0;
     return static_cast<uint64_t> (tick.QuadPart / ticks_div);
 
 #elif defined HAVE_CLOCK_GETTIME                                               \

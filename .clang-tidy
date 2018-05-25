@@ -257,18 +257,18 @@ CheckOptions:
     # value:           ''
   # - key:             readability-identifier-naming.InlineNamespaceSuffix
     # value:           ''
-  # - key:             readability-identifier-naming.LocalConstantCase
-    # value:           aNy_CasE
-  # - key:             readability-identifier-naming.LocalConstantPrefix
-    # value:           ''
-  # - key:             readability-identifier-naming.LocalConstantSuffix
-    # value:           ''
-  # - key:             readability-identifier-naming.LocalVariableCase
-    # value:           aNy_CasE
-  # - key:             readability-identifier-naming.LocalVariablePrefix
-    # value:           ''
-  # - key:             readability-identifier-naming.LocalVariableSuffix
-    # value:           ''
+   - key:             readability-identifier-naming.LocalConstantCase
+     value:           lower_case
+   - key:             readability-identifier-naming.LocalConstantPrefix
+     value:           ''
+   - key:             readability-identifier-naming.LocalConstantSuffix
+     value:           ''
+   - key:             readability-identifier-naming.LocalVariableCase
+     value:           lower_case
+   - key:             readability-identifier-naming.LocalVariablePrefix
+     value:           ''
+   - key:             readability-identifier-naming.LocalVariableSuffix
+     value:           ''
   # - key:             readability-identifier-naming.MemberCase
     # value:           aNy_CasE
   # - key:             readability-identifier-naming.MemberPrefix
