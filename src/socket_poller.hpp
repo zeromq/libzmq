@@ -77,7 +77,7 @@ class socket_poller_t
 
     int wait (event_t *event_, int n_events_, long timeout_);
 
-    inline int size (void) { return static_cast<int> (items.size ()); };
+    inline int size () { return static_cast<int> (items.size ()); };
 
     //  Return false if object is not a socket.
     bool check_tag ();

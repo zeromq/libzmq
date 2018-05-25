@@ -157,12 +157,12 @@ static void manage_random (bool init_)
 #endif
 }
 
-void zmq::random_open (void)
+void zmq::random_open ()
 {
     manage_random (true);
 }
 
-void zmq::random_close (void)
+void zmq::random_close ()
 {
     manage_random (false);
 }

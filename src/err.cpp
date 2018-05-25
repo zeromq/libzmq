@@ -444,7 +444,7 @@ void zmq::print_backtrace (void)
 
 #else
 
-void zmq::print_backtrace (void)
+void zmq::print_backtrace ()
 {
 }
 

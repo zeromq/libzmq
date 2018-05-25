@@ -65,7 +65,7 @@ __declspec(noreturn) void zmq_abort (const char *errmsg_);
 #else
 void zmq_abort (const char *errmsg_);
 #endif
-void print_backtrace (void);
+void print_backtrace ();
 }
 
 #ifdef ZMQ_HAVE_WINDOWS
