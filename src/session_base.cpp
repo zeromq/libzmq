@@ -441,9 +441,9 @@ void zmq::session_base_t::engine_error (
         case stream_engine_t::protocol_error:
             if (pending) {
                 if (pipe)
-                    pipe->terminate (0);
+                    pipe->terminate (false);
                 if (zap_pipe)
-                    zap_pipe->terminate (0);
+                    zap_pipe->terminate (false);
             } else {
                 terminate ();
             }

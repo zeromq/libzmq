@@ -107,7 +107,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
         // Application should handle this as suitable
         if (more) {
             pipes[current]->rollback ();
-            more = 0;
+            more = false;
             errno = EAGAIN;
             return -1;
         }

@@ -209,7 +209,7 @@ zmq::options_t::options_t () :
     maxmsgsize (-1),
     rcvtimeo (-1),
     sndtimeo (-1),
-    ipv6 (0),
+    ipv6 (false),
     immediate (0),
     filter (false),
     invert_matching (false),

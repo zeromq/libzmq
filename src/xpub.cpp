@@ -162,7 +162,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
         }
         if (option_ == ZMQ_XPUB_VERBOSE) {
             verbose_subs = (*static_cast<const int *> (optval_) != 0);
-            verbose_unsubs = 0;
+            verbose_unsubs = false;
         } else if (option_ == ZMQ_XPUB_VERBOSER) {
             verbose_subs = (*static_cast<const int *> (optval_) != 0);
             verbose_unsubs = verbose_subs;
