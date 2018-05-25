@@ -361,6 +361,7 @@ no effect.
 Option value type:: int
 Option value unit:: milliseconds
 Default value:: 0
+Maximum value:: 6553599 (which is 2^16-1 deciseconds)
 Applicable socket types:: all, when using connection-oriented transports
 
 

@@ -282,6 +282,8 @@ int zmq::options_t::set_curve_key (uint8_t *destination,
     return -1;
 }
 
+const int deciseconds_per_millisecond = 100;
+
 int zmq::options_t::setsockopt (int option_,
                                 const void *optval_,
                                 size_t optvallen_)
@@ -665,8 +667,8 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_HEARTBEAT_TTL:
             // Convert this to deciseconds from milliseconds
-            value = value / 100;
-            if (is_int && value >= 0 && value <= 6553) {
+            value = value / deciseconds_per_millisecond;
+            if (is_int && value >= 0 && value <= UINT16_MAX) {
                 heartbeat_ttl = static_cast<uint16_t> (value);
                 return 0;
             }

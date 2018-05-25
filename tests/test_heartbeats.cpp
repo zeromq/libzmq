@@ -29,6 +29,14 @@ typedef SOCKET raw_socket;
 typedef int raw_socket;
 #endif
 
+#include <limits.h>
+
+// TODO remove this here, either ensure that UINT16_MAX is always properly
+// defined or handle this at a more central location
+#ifndef UINT16_MAX
+#define UINT16_MAX 65535
+#endif
+
 #include "testutil_unity.hpp"
 
 void setUp ()
@@ -366,6 +374,48 @@ DEFINE_TESTS (pull, push, ZMQ_PULL, ZMQ_PUSH)
 DEFINE_TESTS (sub, pub, ZMQ_SUB, ZMQ_PUB)
 DEFINE_TESTS (pair, pair, ZMQ_PAIR, ZMQ_PAIR)
 
+const int deciseconds_per_millisecond = 100;
+const int heartbeat_ttl_max =
+  (UINT16_MAX + 1) * deciseconds_per_millisecond - 1;
+
+void test_setsockopt_heartbeat_success (const int value)
+{
+    void *const socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_HEARTBEAT_TTL, &value, sizeof (value)));
+
+    int value_read;
+    size_t value_read_size = sizeof (value_read);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (socket, ZMQ_HEARTBEAT_TTL,
+                                               &value_read, &value_read_size));
+
+    TEST_ASSERT_EQUAL_INT (value - value % deciseconds_per_millisecond,
+                           value_read);
+
+    test_context_socket_close (socket);
+}
+
+void test_setsockopt_heartbeat_ttl_max ()
+{
+    test_setsockopt_heartbeat_success (heartbeat_ttl_max);
+}
+
+void test_setsockopt_heartbeat_ttl_more_than_max_fails ()
+{
+    void *const socket = test_context_socket (ZMQ_PAIR);
+    const int value = heartbeat_ttl_max + 1;
+    TEST_ASSERT_FAILURE_ERRNO (
+      EINVAL,
+      zmq_setsockopt (socket, ZMQ_HEARTBEAT_TTL, &value, sizeof (value)));
+
+    test_context_socket_close (socket);
+}
+
+void test_setsockopt_heartbeat_ttl_near_zero ()
+{
+    test_setsockopt_heartbeat_success (deciseconds_per_millisecond - 1);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -380,6 +430,10 @@ int main (void)
     RUN_TEST (test_heartbeat_ttl_pull_push);
     RUN_TEST (test_heartbeat_ttl_sub_pub);
     RUN_TEST (test_heartbeat_ttl_pair_pair);
+
+    RUN_TEST (test_setsockopt_heartbeat_ttl_max);
+    RUN_TEST (test_setsockopt_heartbeat_ttl_more_than_max_fails);
+    RUN_TEST (test_setsockopt_heartbeat_ttl_near_zero);
 
     RUN_TEST (test_heartbeat_notimeout_dealer_router);
     RUN_TEST (test_heartbeat_notimeout_req_rep);
