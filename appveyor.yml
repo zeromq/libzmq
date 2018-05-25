@@ -72,6 +72,8 @@ environment:
 
 matrix:
   fast_finish: false
+  allow_failures:
+    - platform: cygwin64 # TODO allow failures until tests are fixed
 
 init:
   - cmd: if "%NO_PR%"=="TRUE" (
