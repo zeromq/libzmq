@@ -153,7 +153,16 @@ after_build:
 
 test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: ctest -C "%Configuration%" -V -j5
+# TODO run tests in parallel only on selected platforms, since they fail on others, see https://github.com/zeromq/libzmq/issues/3123
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013 Win64" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015 Win64" set PARALLELIZE=ON
+  - cmd: if "%PARALLELIZE%"=="ON" (
+            echo "Running tests in parallel" &&
+            set TEST_OPTIONS=-j5
+         )
+  - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
 
 for:
 -
