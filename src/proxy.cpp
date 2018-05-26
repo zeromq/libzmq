@@ -110,9 +110,9 @@ int capture (class zmq::socket_base_t *capture_,
 }
 
 int forward (class zmq::socket_base_t *from_,
-             zmq_socket_stats_t *from_stats,
+             zmq_socket_stats_t *from_stats_,
              class zmq::socket_base_t *to_,
-             zmq_socket_stats_t *to_stats,
+             zmq_socket_stats_t *to_stats_,
              class zmq::socket_base_t *capture_,
              zmq::msg_t &msg_)
 {
@@ -145,60 +145,61 @@ int forward (class zmq::socket_base_t *from_,
     }
 
     // A multipart message counts as 1 packet:
-    from_stats->msg_in++;
-    from_stats->bytes_in += complete_msg_size;
-    to_stats->msg_out++;
-    to_stats->bytes_out += complete_msg_size;
+    from_stats_->msg_in++;
+    from_stats_->bytes_in += complete_msg_size;
+    to_stats_->msg_out++;
+    to_stats_->bytes_out += complete_msg_size;
 
     return 0;
 }
 
 static int loop_and_send_multipart_stat (zmq::socket_base_t *control_,
-                                         uint64_t stat,
-                                         bool first,
-                                         bool more)
+                                         uint64_t stat_,
+                                         bool first_,
+                                         bool more_)
 {
     int rc;
     zmq::msg_t msg;
 
     //  VSM of 8 bytes can't fail to init
     msg.init_size (sizeof (uint64_t));
-    memcpy (msg.data (), (const void *) &stat, sizeof (uint64_t));
+    memcpy (msg.data (), (const void *) &stat_, sizeof (uint64_t));
 
     //  if the first message is handed to the pipe successfully then the HWM
     //  is not full, which means failures are due to interrupts (on Windows pipes
     //  are TCP sockets), so keep retrying
     do {
-        rc = control_->send (&msg, more ? ZMQ_SNDMORE : 0);
-    } while (!first && rc != 0 && errno == EAGAIN);
+        rc = control_->send (&msg, more_ ? ZMQ_SNDMORE : 0);
+    } while (!first_ && rc != 0 && errno == EAGAIN);
 
     return rc;
 }
 
 int reply_stats (class zmq::socket_base_t *control_,
-                 zmq_socket_stats_t *frontend_stats,
-                 zmq_socket_stats_t *backend_stats)
+                 zmq_socket_stats_t *frontend_stats_,
+                 zmq_socket_stats_t *backend_stats_)
 {
     // first part: frontend stats - the first send might fail due to HWM
-    if (loop_and_send_multipart_stat (control_, frontend_stats->msg_in, true,
+    if (loop_and_send_multipart_stat (control_, frontend_stats_->msg_in, true,
                                       true)
         != 0)
         return -1;
 
-    loop_and_send_multipart_stat (control_, frontend_stats->bytes_in, false,
+    loop_and_send_multipart_stat (control_, frontend_stats_->bytes_in, false,
                                   true);
-    loop_and_send_multipart_stat (control_, frontend_stats->msg_out, false,
+    loop_and_send_multipart_stat (control_, frontend_stats_->msg_out, false,
                                   true);
-    loop_and_send_multipart_stat (control_, frontend_stats->bytes_out, false,
+    loop_and_send_multipart_stat (control_, frontend_stats_->bytes_out, false,
                                   true);
 
     // second part: backend stats
-    loop_and_send_multipart_stat (control_, backend_stats->msg_in, false, true);
-    loop_and_send_multipart_stat (control_, backend_stats->bytes_in, false,
+    loop_and_send_multipart_stat (control_, backend_stats_->msg_in, false,
                                   true);
-    loop_and_send_multipart_stat (control_, backend_stats->msg_out, false,
+    loop_and_send_multipart_stat (control_, backend_stats_->bytes_in, false,
                                   true);
-    loop_and_send_multipart_stat (control_, backend_stats->bytes_out, false,
+    loop_and_send_multipart_stat (control_, backend_stats_->msg_out, false,
+                                  true);
+    loop_and_send_multipart_stat (control_, backend_stats_->bytes_out, false,
                                   false);
 
     return 0;

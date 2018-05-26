@@ -37,10 +37,10 @@
 #include "likely.hpp"
 
 extern "C" {
-static void free_id (void *data, void *hint)
+static void free_id (void *data_, void *hint_)
 {
-    LIBZMQ_UNUSED (hint);
-    free (data);
+    LIBZMQ_UNUSED (hint_);
+    free (data_);
 }
 }
 

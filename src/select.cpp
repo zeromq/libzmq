@@ -103,11 +103,11 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 }
 
 zmq::select_t::fd_entries_t::iterator
-zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries,
+zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries_,
                                         handle_t handle_)
 {
     fd_entries_t::iterator fd_entry_it;
-    for (fd_entry_it = fd_entries.begin (); fd_entry_it != fd_entries.end ();
+    for (fd_entry_it = fd_entries_.begin (); fd_entry_it != fd_entries_.end ();
          ++fd_entry_it)
         if (fd_entry_it->fd == handle_)
             break;
@@ -158,9 +158,9 @@ void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
 
 #if defined ZMQ_HAVE_WINDOWS
 int zmq::select_t::try_retire_fd_entry (
-  family_entries_t::iterator family_entry_it, zmq::fd_t &handle_)
+  family_entries_t::iterator family_entry_it_, zmq::fd_t &handle_)
 {
-    family_entry_t &family_entry = family_entry_it->second;
+    family_entry_t &family_entry = family_entry_it_->second;
 
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
@@ -171,7 +171,7 @@ int zmq::select_t::try_retire_fd_entry (
     fd_entry_t &fd_entry = *fd_entry_it;
     zmq_assert (fd_entry.fd != retired_fd);
 
-    if (family_entry_it != current_family_entry_it) {
+    if (family_entry_it_ != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
         //  modified in-place. So later it can be skipped without
         //  re-verifying its content.
@@ -530,9 +530,9 @@ void zmq::select_t::cleanup_retired ()
 #endif
 }
 
-bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
+bool zmq::select_t::is_retired_fd (const fd_entry_t &entry_)
 {
-    return (entry.fd == retired_fd);
+    return (entry_.fd == retired_fd);
 }
 
 zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
@@ -583,15 +583,14 @@ u_short zmq::select_t::determine_fd_family (fd_t fd_)
     if (rc == 0) {
         if (type == SOCK_DGRAM)
             return AF_INET;
-        else {
-            rc = getsockname (fd_, reinterpret_cast<sockaddr *> (&addr),
-                              &addr_size);
 
-            //  AF_INET and AF_INET6 can be mixed in select
-            //  TODO: If proven otherwise, should simply return addr.sa_family
-            if (rc != SOCKET_ERROR)
-                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
-        }
+        rc =
+          getsockname (fd_, reinterpret_cast<sockaddr *> (&addr), &addr_size);
+
+        //  AF_INET and AF_INET6 can be mixed in select
+        //  TODO: If proven otherwise, should simply return addr.sa_family
+        if (rc != SOCKET_ERROR)
+            return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
     }
 
     return AF_UNSPEC;

@@ -288,35 +288,34 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
         int rc = msg_->init ();
         errno_assert (rc == 0);
         return 0;
-    } else {
-        const char *group_setting = msg_->group ();
-        int rc;
-        if (group_setting[0] != 0)
-            goto has_group;
-
-        //  Set the message group
-        rc = msg_->set_group (static_cast<char *> (group_msg.data ()),
-                              group_msg.size ());
-        errno_assert (rc == 0);
-
-        //  We set the group, so we don't need the group_msg anymore
-        rc = group_msg.close ();
-        errno_assert (rc == 0);
-    has_group:
-        //  Thread safe socket doesn't support multipart messages
-        if ((msg_->flags () & msg_t::more) == msg_t::more) {
-            errno = EFAULT;
-            return -1;
-        }
-
-        //  Push message to dish socket
-        rc = session_base_t::push_msg (msg_);
-
-        if (rc == 0)
-            state = group;
-
-        return rc;
     }
+    const char *group_setting = msg_->group ();
+    int rc;
+    if (group_setting[0] != 0)
+        goto has_group;
+
+    //  Set the message group
+    rc = msg_->set_group (static_cast<char *> (group_msg.data ()),
+                          group_msg.size ());
+    errno_assert (rc == 0);
+
+    //  We set the group, so we don't need the group_msg anymore
+    rc = group_msg.close ();
+    errno_assert (rc == 0);
+has_group:
+    //  Thread safe socket doesn't support multipart messages
+    if ((msg_->flags () & msg_t::more) == msg_t::more) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    //  Push message to dish socket
+    rc = session_base_t::push_msg (msg_);
+
+    if (rc == 0)
+        state = group;
+
+    return rc;
 }
 
 int zmq::dish_session_t::pull_msg (msg_t *msg_)
@@ -328,38 +327,37 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
 
     if (!msg_->is_join () && !msg_->is_leave ())
         return rc;
-    else {
-        int group_length = static_cast<int> (strlen (msg_->group ()));
 
-        msg_t command;
-        int offset;
+    int group_length = static_cast<int> (strlen (msg_->group ()));
 
-        if (msg_->is_join ()) {
-            rc = command.init_size (group_length + 5);
-            errno_assert (rc == 0);
-            offset = 5;
-            memcpy (command.data (), "\4JOIN", 5);
-        } else {
-            rc = command.init_size (group_length + 6);
-            errno_assert (rc == 0);
-            offset = 6;
-            memcpy (command.data (), "\5LEAVE", 6);
-        }
+    msg_t command;
+    int offset;
 
-        command.set_flags (msg_t::command);
-        char *command_data = static_cast<char *> (command.data ());
-
-        //  Copy the group
-        memcpy (command_data + offset, msg_->group (), group_length);
-
-        //  Close the join message
-        rc = msg_->close ();
+    if (msg_->is_join ()) {
+        rc = command.init_size (group_length + 5);
         errno_assert (rc == 0);
-
-        *msg_ = command;
-
-        return 0;
+        offset = 5;
+        memcpy (command.data (), "\4JOIN", 5);
+    } else {
+        rc = command.init_size (group_length + 6);
+        errno_assert (rc == 0);
+        offset = 6;
+        memcpy (command.data (), "\5LEAVE", 6);
     }
+
+    command.set_flags (msg_t::command);
+    char *command_data = static_cast<char *> (command.data ());
+
+    //  Copy the group
+    memcpy (command_data + offset, msg_->group (), group_length);
+
+    //  Close the join message
+    rc = msg_->close ();
+    errno_assert (rc == 0);
+
+    *msg_ = command;
+
+    return 0;
 }
 
 void zmq::dish_session_t::reset ()

@@ -235,16 +235,16 @@ void zmq::socks_connecter_t::initiate_connect ()
 }
 
 int zmq::socks_connecter_t::process_server_response (
-  const socks_choice_t &response)
+  const socks_choice_t &response_)
 {
     //  We do not support any authentication method for now.
-    return response.method == 0 ? 0 : -1;
+    return response_.method == 0 ? 0 : -1;
 }
 
 int zmq::socks_connecter_t::process_server_response (
-  const socks_response_t &response)
+  const socks_response_t &response_)
 {
-    return response.response_code == 0 ? 0 : -1;
+    return response_.response_code == 0 ? 0 : -1;
 }
 
 void zmq::socks_connecter_t::timer_event (int id_)

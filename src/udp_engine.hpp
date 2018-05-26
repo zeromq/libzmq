@@ -47,7 +47,7 @@ class udp_engine_t : public io_object_t, public i_engine
 
   private:
     int resolve_raw_address (char *addr_, size_t length_);
-    void sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in *addr);
+    void sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_);
 
     bool plugged;
 

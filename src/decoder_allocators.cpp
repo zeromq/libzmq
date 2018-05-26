@@ -47,12 +47,12 @@ zmq::shared_message_memory_allocator::shared_message_memory_allocator (
 }
 
 zmq::shared_message_memory_allocator::shared_message_memory_allocator (
-  std::size_t bufsize_, std::size_t maxMessages) :
+  std::size_t bufsize_, std::size_t max_messages_) :
     buf (NULL),
     bufsize (0),
     max_size (bufsize_),
     msg_content (NULL),
-    maxCounters (maxMessages)
+    maxCounters (max_messages_)
 {
 }
 
@@ -130,10 +130,10 @@ void zmq::shared_message_memory_allocator::inc_ref ()
     (reinterpret_cast<zmq::atomic_counter_t *> (buf))->add (1);
 }
 
-void zmq::shared_message_memory_allocator::call_dec_ref (void *, void *hint)
+void zmq::shared_message_memory_allocator::call_dec_ref (void *, void *hint_)
 {
-    zmq_assert (hint);
-    unsigned char *buf = static_cast<unsigned char *> (hint);
+    zmq_assert (hint_);
+    unsigned char *buf = static_cast<unsigned char *> (hint_);
     zmq::atomic_counter_t *c = reinterpret_cast<zmq::atomic_counter_t *> (buf);
 
     if (!c->sub (1)) {

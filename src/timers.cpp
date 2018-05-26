@@ -66,9 +66,9 @@ struct zmq::timers_t::match_by_id
 {
     match_by_id (int timer_id_) : timer_id (timer_id_) {}
 
-    bool operator() (timersmap_t::value_type const &entry) const
+    bool operator() (timersmap_t::value_type const &entry_) const
     {
-        return entry.second.timer_id == timer_id;
+        return entry_.second.timer_id == timer_id;
     }
 
   private:
@@ -147,8 +147,8 @@ long zmq::timers_t::timeout ()
         if (cancelled_it == cancelled_timers.end ()) {
             if (it->first > now)
                 return static_cast<long> (it->first - now);
-            else
-                return 0;
+
+            return 0;
         }
 
         // Let's remove it from the beginning of the list

@@ -43,7 +43,7 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void(msg_free_fn) (void *data, void *hint);
+typedef void(msg_free_fn) (void *data_, void *hint_);
 }
 
 namespace zmq
@@ -83,10 +83,10 @@ class msg_t
     bool check () const;
     int init ();
 
-    int init (void *data,
+    int init (void *data_,
               size_t size_,
               msg_free_fn *ffn_,
-              void *hint,
+              void *hint_,
               content_t *content_ = NULL);
 
     int init_size (size_t size_);
@@ -123,7 +123,7 @@ class msg_t
     int reset_routing_id ();
     const char *group ();
     int set_group (const char *group_);
-    int set_group (const char *, size_t length);
+    int set_group (const char *, size_t length_);
 
     //  After calling this function you can copy the message in POD-style
     //  refs_ times. No need to call copy.
@@ -252,21 +252,21 @@ class msg_t
     } u;
 };
 
-inline int close_and_return (zmq::msg_t *msg, int echo)
+inline int close_and_return (zmq::msg_t *msg_, int echo_)
 {
     // Since we abort on close failure we preserve errno for success case.
     int err = errno;
-    const int rc = msg->close ();
+    const int rc = msg_->close ();
     errno_assert (rc == 0);
     errno = err;
-    return echo;
+    return echo_;
 }
 
-inline int close_and_return (zmq::msg_t msg[], int count, int echo)
+inline int close_and_return (zmq::msg_t msg_[], int count_, int echo_)
 {
-    for (int i = 0; i < count; i++)
-        close_and_return (&msg[i], 0);
-    return echo;
+    for (int i = 0; i < count_; i++)
+        close_and_return (&msg_[i], 0);
+    return echo_;
 }
 }
 

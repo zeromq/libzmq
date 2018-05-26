@@ -46,7 +46,7 @@ class socket_base_t;
 class dealer_t : public socket_base_t
 {
   public:
-    dealer_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    dealer_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
     ~dealer_t ();
 
   protected:

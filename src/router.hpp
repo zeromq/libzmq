@@ -48,7 +48,7 @@ class pipe_t;
 class router_t : public socket_base_t
 {
   public:
-    router_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    router_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
     ~router_t ();
 
     //  Overrides of functions from socket_base_t.
@@ -61,7 +61,7 @@ class router_t : public socket_base_t
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
-    int get_peer_state (const void *identity, size_t identity_size) const;
+    int get_peer_state (const void *identity_, size_t identity_size_) const;
 
   protected:
     //  Rollback any message parts that were sent but not yet flushed.

@@ -74,9 +74,9 @@ struct blob_t
     blob_t () : data_ (0), size_ (0), owned_ (true) {}
 
     //  Creates a blob_t of a given size, with uninitialized content.
-    explicit blob_t (const size_t size) :
-        data_ (static_cast<unsigned char *> (malloc (size))),
-        size_ (size),
+    explicit blob_t (const size_t size_) :
+        data_ (static_cast<unsigned char *> (malloc (size_))),
+        size_ (size_),
         owned_ (true)
     {
         alloc_assert (data_);
@@ -84,22 +84,22 @@ struct blob_t
 
     //  Creates a blob_t of a given size, an initializes content by copying
     // from another buffer.
-    blob_t (const unsigned char *const data, const size_t size) :
-        data_ (static_cast<unsigned char *> (malloc (size))),
-        size_ (size),
+    blob_t (const unsigned char *const data_, const size_t size_) :
+        data_ (static_cast<unsigned char *> (malloc (size_))),
+        size_ (size_),
         owned_ (true)
     {
-        alloc_assert (data_);
-        memcpy (data_, data, size_);
+        alloc_assert (this->data_);
+        memcpy (this->data_, data_, size_);
     }
 
     //  Creates a blob_t for temporary use that only references a
     //  pre-allocated block of data.
     //  Use with caution and ensure that the blob_t will not outlive
     //  the referenced data.
-    blob_t (unsigned char *const data, const size_t size, reference_tag_t) :
-        data_ (data),
-        size_ (size),
+    blob_t (unsigned char *const data_, const size_t size_, reference_tag_t) :
+        data_ (data_),
+        size_ (size_),
         owned_ (false)
     {
     }
@@ -114,32 +114,33 @@ struct blob_t
     unsigned char *data () { return data_; }
 
     //  Defines an order relationship on blob_t.
-    bool operator< (blob_t const &other) const
+    bool operator< (blob_t const &other_) const
     {
-        int cmpres = memcmp (data_, other.data_, std::min (size_, other.size_));
-        return cmpres < 0 || (cmpres == 0 && size_ < other.size_);
+        int cmpres =
+          memcmp (data_, other_.data_, std::min (size_, other_.size_));
+        return cmpres < 0 || (cmpres == 0 && size_ < other_.size_);
     }
 
     //  Sets a blob_t to a deep copy of another blob_t.
-    void set_deep_copy (blob_t const &other)
+    void set_deep_copy (blob_t const &other_)
     {
         clear ();
-        data_ = static_cast<unsigned char *> (malloc (other.size_));
+        data_ = static_cast<unsigned char *> (malloc (other_.size_));
         alloc_assert (data_);
-        size_ = other.size_;
+        size_ = other_.size_;
         owned_ = true;
-        memcpy (data_, other.data_, size_);
+        memcpy (data_, other_.data_, size_);
     }
 
     //  Sets a blob_t to a copy of a given buffer.
-    void set (const unsigned char *const data, const size_t size)
+    void set (const unsigned char *const data_, const size_t size_)
     {
         clear ();
-        data_ = static_cast<unsigned char *> (malloc (size));
-        alloc_assert (data_);
-        size_ = size;
+        this->data_ = static_cast<unsigned char *> (malloc (size_));
+        alloc_assert (this->data_);
+        this->size_ = size_;
         owned_ = true;
-        memcpy (data_, data, size_);
+        memcpy (this->data_, data_, size_);
     }
 
     //  Empties a blob_t.
@@ -163,21 +164,21 @@ struct blob_t
     blob_t (const blob_t &) = delete;
     blob_t &operator= (const blob_t &) = delete;
 
-    blob_t (blob_t &&other) :
-        data_ (other.data_),
-        size_ (other.size_),
-        owned_ (other.owned_)
+    blob_t (blob_t &&other_) :
+        data_ (other_.data_),
+        size_ (other_.size_),
+        owned_ (other_.owned_)
     {
-        other.owned_ = false;
+        other_.owned_ = false;
     }
-    blob_t &operator= (blob_t &&other)
+    blob_t &operator= (blob_t &&other_)
     {
-        if (this != &other) {
+        if (this != &other_) {
             clear ();
-            data_ = other.data_;
-            size_ = other.size_;
-            owned_ = other.owned_;
-            other.owned_ = false;
+            data_ = other_.data_;
+            size_ = other_.size_;
+            owned_ = other_.owned_;
+            other_.owned_ = false;
         }
         return *this;
     }

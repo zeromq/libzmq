@@ -87,7 +87,7 @@ class thread_t
     // Sets the thread scheduling parameters. Only implemented for
     // pthread. Has no effect on other platforms.
     void setSchedulingParameters (int priority_,
-                                  int schedulingPolicy_,
+                                  int scheduling_policy_,
                                   const std::set<int> &affinity_cpus_);
 
     // Sets the thread name, 16 characters max including terminating NUL.

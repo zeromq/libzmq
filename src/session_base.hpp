@@ -60,7 +60,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     //  Following functions are the interface exposed towards the engine.
     virtual void reset ();
     void flush ();
-    void engine_error (zmq::stream_engine_t::error_reason_t reason);
+    void engine_error (zmq::stream_engine_t::error_reason_t reason_);
 
     //  i_pipe_events interface implementation.
     void read_activated (zmq::pipe_t *pipe_);

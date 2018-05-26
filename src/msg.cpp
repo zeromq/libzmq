@@ -52,8 +52,11 @@ bool zmq::msg_t::check () const
     return u.base.type >= type_min && u.base.type <= type_max;
 }
 
-int zmq::msg_t::init (
-  void *data_, size_t size_, msg_free_fn *ffn_, void *hint, content_t *content_)
+int zmq::msg_t::init (void *data_,
+                      size_t size_,
+                      msg_free_fn *ffn_,
+                      void *hint_,
+                      content_t *content_)
 {
     if (size_ < max_vsm_size) {
         int const rc = init_size (size_);
@@ -61,13 +64,13 @@ int zmq::msg_t::init (
         if (rc != -1) {
             memcpy (data (), data_, size_);
             return 0;
-        } else {
-            return -1;
         }
+        return -1;
+
     } else if (content_) {
-        return init_external_storage (content_, data_, size_, ffn_, hint);
+        return init_external_storage (content_, data_, size_, ffn_, hint_);
     } else {
-        return init_data (data_, size_, ffn_, hint);
+        return init_data (data_, size_, ffn_, hint_);
     }
 }
 

@@ -77,32 +77,32 @@ int zmq::v2_decoder_t::flags_ready (unsigned char const *)
     return 0;
 }
 
-int zmq::v2_decoder_t::one_byte_size_ready (unsigned char const *read_from)
+int zmq::v2_decoder_t::one_byte_size_ready (unsigned char const *read_from_)
 {
-    return size_ready (tmpbuf[0], read_from);
+    return size_ready (tmpbuf[0], read_from_);
 }
 
-int zmq::v2_decoder_t::eight_byte_size_ready (unsigned char const *read_from)
+int zmq::v2_decoder_t::eight_byte_size_ready (unsigned char const *read_from_)
 {
     //  The payload size is encoded as 64-bit unsigned integer.
     //  The most significant byte comes first.
     const uint64_t msg_size = get_uint64 (tmpbuf);
 
-    return size_ready (msg_size, read_from);
+    return size_ready (msg_size, read_from_);
 }
 
-int zmq::v2_decoder_t::size_ready (uint64_t msg_size,
-                                   unsigned char const *read_pos)
+int zmq::v2_decoder_t::size_ready (uint64_t msg_size_,
+                                   unsigned char const *read_pos_)
 {
     //  Message size must not exceed the maximum allowed size.
     if (maxmsgsize >= 0)
-        if (unlikely (msg_size > static_cast<uint64_t> (maxmsgsize))) {
+        if (unlikely (msg_size_ > static_cast<uint64_t> (maxmsgsize))) {
             errno = EMSGSIZE;
             return -1;
         }
 
     //  Message size must fit into size_t data type.
-    if (unlikely (msg_size != static_cast<size_t> (msg_size))) {
+    if (unlikely (msg_size_ != static_cast<size_t> (msg_size_))) {
         errno = EMSGSIZE;
         return -1;
     }
@@ -115,18 +115,18 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size,
 
     shared_message_memory_allocator &allocator = get_allocator ();
     if (unlikely (!zero_copy
-                  || ((unsigned char *) read_pos + msg_size
+                  || ((unsigned char *) read_pos_ + msg_size_
                       > (allocator.data () + allocator.size ())))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
-        rc = in_progress.init_size (static_cast<size_t> (msg_size));
+        rc = in_progress.init_size (static_cast<size_t> (msg_size_));
     } else {
         // construct message using n bytes from the buffer as storage
         // increase buffer ref count
         // if the message will be a large message, pass a valid refcnt memory location as well
         rc =
-          in_progress.init (const_cast<unsigned char *> (read_pos),
-                            static_cast<size_t> (msg_size),
+          in_progress.init (const_cast<unsigned char *> (read_pos_),
+                            static_cast<size_t> (msg_size_),
                             shared_message_memory_allocator::call_dec_ref,
                             allocator.buffer (), allocator.provide_content ());
 

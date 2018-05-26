@@ -233,7 +233,7 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write ()))
         return false;
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    bool more = (msg_->flags () & msg_t::more) != 0;
     const bool is_routing_id = msg_->is_routing_id ();
     outpipe->write (*msg_, more);
     if (!more && !is_routing_id)
@@ -404,7 +404,7 @@ void zmq::pipe_t::terminate (bool delay_)
     }
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else if (state == term_ack_sent) {
+    if (state == term_ack_sent) {
         return;
     }
     //  The simple sync termination case. Ask the peer to terminate and wait

@@ -978,12 +978,12 @@ int zmq::socket_base_t::connect (const char *addr_)
 
 void zmq::socket_base_t::add_endpoint (const char *addr_,
                                        own_t *endpoint_,
-                                       pipe_t *pipe)
+                                       pipe_t *pipe_)
 {
     //  Activate the session. Make it a child of this socket.
     launch_child (endpoint_);
     endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (addr_),
-                                         endpoint_pipe_t (endpoint_, pipe));
+                                         endpoint_pipe_t (endpoint_, pipe_));
 }
 
 int zmq::socket_base_t::term_endpoint (const char *addr_)
@@ -1576,7 +1576,7 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
         zmq_assert (options.recv_routing_id);
 
     //  Remove MORE flag.
-    rcvmore = msg_->flags () & msg_t::more ? true : false;
+    rcvmore = (msg_->flags () & msg_t::more) != 0;
 }
 
 int zmq::socket_base_t::monitor (const char *addr_, int events_)

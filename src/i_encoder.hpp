@@ -47,7 +47,7 @@ struct i_encoder
     //  are filled to a supplied buffer. If no buffer is supplied (data_
     //  is NULL) encoder will provide buffer of its own.
     //  Function returns 0 when a new message is required.
-    virtual size_t encode (unsigned char **data_, size_t size) = 0;
+    virtual size_t encode (unsigned char **data_, size_t size_) = 0;
 
     //  Load a new message into encoder.
     virtual void load_msg (msg_t *msg_) = 0;

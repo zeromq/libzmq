@@ -162,7 +162,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
         }
         if (option_ == ZMQ_XPUB_VERBOSE) {
             verbose_subs = (*static_cast<const int *> (optval_) != 0);
-            verbose_unsubs = 0;
+            verbose_unsubs = false;
         } else if (option_ == ZMQ_XPUB_VERBOSER) {
             verbose_subs = (*static_cast<const int *> (optval_) != 0);
             verbose_unsubs = verbose_subs;
@@ -230,7 +230,7 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, xpub_t *self_)
 
 int zmq::xpub_t::xsend (msg_t *msg_)
 {
-    bool msg_more = msg_->flags () & msg_t::more ? true : false;
+    bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!more) {

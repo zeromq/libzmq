@@ -79,7 +79,7 @@ class curve_server_t : public zap_client_common_handshake_t,
     int produce_ready (msg_t *msg_);
     int produce_error (msg_t *msg_) const;
 
-    void send_zap_request (const uint8_t *key);
+    void send_zap_request (const uint8_t *key_);
 };
 #ifdef _MSC_VER
 #pragma warning(pop)

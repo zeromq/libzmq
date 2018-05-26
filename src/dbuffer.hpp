@@ -118,10 +118,10 @@ template <> class dbuffer_t<msg_t>
         return has_msg;
     }
 
-    inline bool probe (bool (*fn) (const msg_t &))
+    inline bool probe (bool (*fn_) (const msg_t &))
     {
         scoped_lock_t lock (sync);
-        return (*fn) (*front);
+        return (*fn_) (*front);
     }
 
 

@@ -76,15 +76,15 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     zmq_assert (pipe_);
 
     if (probe_router) {
-        msg_t probe_msg_;
-        int rc = probe_msg_.init ();
+        msg_t probe_msg;
+        int rc = probe_msg.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
+        rc = pipe_->write (&probe_msg);
         // zmq_assert (rc) is not applicable here, since it is not a bug.
         pipe_->flush ();
 
-        rc = probe_msg_.close ();
+        rc = probe_msg.close ();
         errno_assert (rc == 0);
     }
 
@@ -254,7 +254,7 @@ int zmq::router_t::xsend (msg_t *msg_)
         msg_->reset_flags (msg_t::more);
 
     //  Check whether this is the last part of the message.
-    more_out = msg_->flags () & msg_t::more ? true : false;
+    more_out = (msg_->flags () & msg_t::more) != 0;
 
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
@@ -310,7 +310,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
             errno_assert (rc == 0);
             prefetched = false;
         }
-        more_in = msg_->flags () & msg_t::more ? true : false;
+        more_in = (msg_->flags () & msg_t::more) != 0;
 
         if (!more_in) {
             if (terminate_current_in) {
@@ -338,7 +338,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
 
     //  If we are in the middle of reading a message, just return the next part.
     if (more_in) {
-        more_in = msg_->flags () & msg_t::more ? true : false;
+        more_in = (msg_->flags () & msg_t::more) != 0;
 
         if (!more_in) {
             if (terminate_current_in) {
@@ -369,7 +369,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
     return 0;
 }
 
-int zmq::router_t::rollback (void)
+int zmq::router_t::rollback ()
 {
     if (current_out) {
         current_out->rollback ();
@@ -507,35 +507,33 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                 if (!handover)
                     //  Ignore peers with duplicate ID
                     return false;
-                else {
-                    //  We will allow the new connection to take over this
-                    //  routing id. Temporarily assign a new routing id to the
-                    //  existing pipe so we can terminate it asynchronously.
-                    unsigned char buf[5];
-                    buf[0] = 0;
-                    put_uint32 (buf + 1, next_integral_routing_id++);
-                    blob_t new_routing_id (buf, sizeof buf);
 
-                    it->second.pipe->set_router_socket_routing_id (
-                      new_routing_id);
-                    outpipe_t existing_outpipe = {it->second.pipe,
-                                                  it->second.active};
+                //  We will allow the new connection to take over this
+                //  routing id. Temporarily assign a new routing id to the
+                //  existing pipe so we can terminate it asynchronously.
+                unsigned char buf[5];
+                buf[0] = 0;
+                put_uint32 (buf + 1, next_integral_routing_id++);
+                blob_t new_routing_id (buf, sizeof buf);
 
-                    ok = outpipes
-                           .ZMQ_MAP_INSERT_OR_EMPLACE (
-                             ZMQ_MOVE (new_routing_id), existing_outpipe)
-                           .second;
-                    zmq_assert (ok);
+                it->second.pipe->set_router_socket_routing_id (new_routing_id);
+                outpipe_t existing_outpipe = {it->second.pipe,
+                                              it->second.active};
 
-                    //  Remove the existing routing id entry to allow the new
-                    //  connection to take the routing id.
-                    outpipes.erase (it);
+                ok = outpipes
+                       .ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (new_routing_id),
+                                                   existing_outpipe)
+                       .second;
+                zmq_assert (ok);
 
-                    if (existing_outpipe.pipe == current_in)
-                        terminate_current_in = true;
-                    else
-                        existing_outpipe.pipe->terminate (true);
-                }
+                //  Remove the existing routing id entry to allow the new
+                //  connection to take the routing id.
+                outpipes.erase (it);
+
+                if (existing_outpipe.pipe == current_in)
+                    terminate_current_in = true;
+                else
+                    existing_outpipe.pipe->terminate (true);
             }
         }
     }

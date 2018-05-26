@@ -50,7 +50,7 @@ class raw_decoder_t : public i_decoder
     virtual void get_buffer (unsigned char **data_, size_t *size_);
 
     virtual int
-    decode (const unsigned char *data_, size_t size_, size_t &processed);
+    decode (const unsigned char *data_, size_t size_, size_t &processed_);
 
     virtual msg_t *msg () { return &in_progress; }
 

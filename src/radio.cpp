@@ -240,8 +240,8 @@ int zmq::radio_session_t::push_msg (msg_t *msg_)
         //  Push the join or leave command
         *msg_ = join_leave_msg;
         return session_base_t::push_msg (msg_);
-    } else
-        return session_base_t::push_msg (msg_);
+    }
+    return session_base_t::push_msg (msg_);
 }
 
 int zmq::radio_session_t::pull_msg (msg_t *msg_)
@@ -263,11 +263,10 @@ int zmq::radio_session_t::pull_msg (msg_t *msg_)
         //  Next status is the body
         state = body;
         return 0;
-    } else {
-        *msg_ = pending_msg;
-        state = group;
-        return 0;
     }
+    *msg_ = pending_msg;
+    state = group;
+    return 0;
 }
 
 void zmq::radio_session_t::reset ()

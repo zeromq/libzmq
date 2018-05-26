@@ -85,7 +85,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {
-        more = msg_->flags () & msg_t::more ? true : false;
+        more = (msg_->flags () & msg_t::more) != 0;
         dropping = more;
 
         int rc = msg_->close ();
@@ -107,7 +107,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
         // Application should handle this as suitable
         if (more) {
             pipes[current]->rollback ();
-            more = 0;
+            more = false;
             errno = EAGAIN;
             return -1;
         }
@@ -127,7 +127,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 
     //  If it's final part of the message we can flush it downstream and
     //  continue round-robining (load balance).
-    more = msg_->flags () & msg_t::more ? true : false;
+    more = (msg_->flags () & msg_t::more) != 0;
     if (!more) {
         pipes[current]->flush ();
 

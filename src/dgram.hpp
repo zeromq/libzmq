@@ -44,7 +44,7 @@ class io_thread_t;
 class dgram_t : public socket_base_t
 {
   public:
-    dgram_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+    dgram_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
     ~dgram_t ();
 
     //  Overrides of functions from socket_base_t.

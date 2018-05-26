@@ -149,9 +149,9 @@ class decoder_base_t : public i_decoder
         return 0;
     }
 
-    virtual void resize_buffer (std::size_t new_size)
+    virtual void resize_buffer (std::size_t new_size_)
     {
-        allocator.resize (new_size);
+        allocator.resize (new_size_);
     }
 
   protected:

@@ -45,9 +45,10 @@ zmq::mechanism_t::~mechanism_t ()
 {
 }
 
-void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr, size_t id_size)
+void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr_,
+                                            size_t id_size_)
 {
-    routing_id.set (static_cast<const unsigned char *> (id_ptr), id_size);
+    routing_id.set (static_cast<const unsigned char *> (id_ptr_), id_size_);
 }
 
 void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
@@ -93,7 +94,7 @@ const char socket_type_scatter[] = "SCATTER";
 const char socket_type_dgram[] = "DGRAM";
 #endif
 
-const char *zmq::mechanism_t::socket_type_string (int socket_type) const
+const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
 {
     // TODO the order must of the names must correspond to the values resp. order of ZMQ_* socket type definitions in zmq.h!
     static const char *names[] = {
@@ -108,67 +109,67 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 #endif
     };
     static const size_t names_count = sizeof (names) / sizeof (names[0]);
-    zmq_assert (socket_type >= 0 && socket_type < (int) names_count);
-    return names[socket_type];
+    zmq_assert (socket_type_ >= 0 && socket_type_ < (int) names_count);
+    return names[socket_type_];
 }
 
-static size_t property_len (size_t name_len, size_t value_len)
+static size_t property_len (size_t name_len_, size_t value_len_)
 {
-    return 1 + name_len + 4 + value_len;
+    return 1 + name_len_ + 4 + value_len_;
 }
 
-static size_t name_len (const char *name)
+static size_t name_len (const char *name_)
 {
-    const size_t name_len = strlen (name);
+    const size_t name_len = strlen (name_);
     zmq_assert (name_len <= 255);
     return name_len;
 }
 
-size_t zmq::mechanism_t::add_property (unsigned char *ptr,
-                                       size_t ptr_capacity,
-                                       const char *name,
-                                       const void *value,
-                                       size_t value_len)
+size_t zmq::mechanism_t::add_property (unsigned char *ptr_,
+                                       size_t ptr_capacity_,
+                                       const char *name_,
+                                       const void *value_,
+                                       size_t value_len_)
 {
-    const size_t name_len = ::name_len (name);
-    const size_t total_len = ::property_len (name_len, value_len);
-    zmq_assert (total_len <= ptr_capacity);
+    const size_t name_len = ::name_len (name_);
+    const size_t total_len = ::property_len (name_len, value_len_);
+    zmq_assert (total_len <= ptr_capacity_);
 
-    *ptr++ = static_cast<unsigned char> (name_len);
-    memcpy (ptr, name, name_len);
-    ptr += name_len;
-    zmq_assert (value_len <= 0x7FFFFFFF);
-    put_uint32 (ptr, static_cast<uint32_t> (value_len));
-    ptr += 4;
-    memcpy (ptr, value, value_len);
+    *ptr_++ = static_cast<unsigned char> (name_len);
+    memcpy (ptr_, name_, name_len);
+    ptr_ += name_len;
+    zmq_assert (value_len_ <= 0x7FFFFFFF);
+    put_uint32 (ptr_, static_cast<uint32_t> (value_len_));
+    ptr_ += 4;
+    memcpy (ptr_, value_, value_len_);
 
     return total_len;
 }
 
-size_t zmq::mechanism_t::property_len (const char *name, size_t value_len)
+size_t zmq::mechanism_t::property_len (const char *name_, size_t value_len_)
 {
-    return ::property_len (name_len (name), value_len);
+    return ::property_len (name_len (name_), value_len_);
 }
 
 #define ZMTP_PROPERTY_SOCKET_TYPE "Socket-Type"
 #define ZMTP_PROPERTY_IDENTITY "Identity"
 
-size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
-                                               size_t buf_capacity) const
+size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf_,
+                                               size_t buf_capacity_) const
 {
-    unsigned char *ptr = buf;
+    unsigned char *ptr = buf_;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, buf_capacity, ZMTP_PROPERTY_SOCKET_TYPE,
+    ptr += add_property (ptr, buf_capacity_, ZMTP_PROPERTY_SOCKET_TYPE,
                          socket_type, strlen (socket_type));
 
     //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER) {
-        ptr +=
-          add_property (ptr, buf_capacity - (ptr - buf), ZMTP_PROPERTY_IDENTITY,
-                        options.routing_id, options.routing_id_size);
+        ptr += add_property (ptr, buf_capacity_ - (ptr - buf_),
+                             ZMTP_PROPERTY_IDENTITY, options.routing_id,
+                             options.routing_id_size);
     }
 
 
@@ -176,10 +177,10 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
            options.app_metadata.begin ();
          it != options.app_metadata.end (); ++it)
         ptr +=
-          add_property (ptr, buf_capacity - (ptr - buf), it->first.c_str (),
+          add_property (ptr, buf_capacity_ - (ptr - buf_), it->first.c_str (),
                         it->second.c_str (), strlen (it->second.c_str ()));
 
-    return ptr - buf;
+    return ptr - buf_;
 }
 
 size_t zmq::mechanism_t::basic_properties_len () const

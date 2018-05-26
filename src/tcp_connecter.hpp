@@ -100,7 +100,7 @@ class tcp_connecter_t : public own_t, public io_object_t
     fd_t connect ();
 
     //  Tunes a connected socket.
-    bool tune_socket (fd_t fd);
+    bool tune_socket (fd_t fd_);
 
     //  Address to connect to. Owned by session_base_t.
     address_t *const addr;

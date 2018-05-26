@@ -31,19 +31,17 @@ bool zmq::ip_addr_t::is_multicast () const
         //  IPv4 Multicast: address MSBs are 1110
         //  Range: 224.0.0.0 - 239.255.255.255
         return IN_MULTICAST (ntohl (ipv4.sin_addr.s_addr));
-    } else {
-        //  IPv6 Multicast: ff00::/8
-        return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr) != 0;
     }
+    //  IPv6 Multicast: ff00::/8
+    return IN6_IS_ADDR_MULTICAST (&ipv6.sin6_addr) != 0;
 }
 
 uint16_t zmq::ip_addr_t::port () const
 {
     if (family () == AF_INET6) {
         return ntohs (ipv6.sin6_port);
-    } else {
-        return ntohs (ipv4.sin_port);
     }
+    return ntohs (ipv4.sin_port);
 }
 
 const struct sockaddr *zmq::ip_addr_t::as_sockaddr () const
@@ -55,31 +53,30 @@ socklen_t zmq::ip_addr_t::sockaddr_len () const
 {
     if (family () == AF_INET6) {
         return sizeof (ipv6);
-    } else {
-        return sizeof (ipv4);
     }
+    return sizeof (ipv4);
 }
 
-void zmq::ip_addr_t::set_port (uint16_t port)
+void zmq::ip_addr_t::set_port (uint16_t port_)
 {
     if (family () == AF_INET6) {
-        ipv6.sin6_port = htons (port);
+        ipv6.sin6_port = htons (port_);
     } else {
-        ipv4.sin_port = htons (port);
+        ipv4.sin_port = htons (port_);
     }
 }
 
 //  Construct an "ANY" address for the given family
-zmq::ip_addr_t zmq::ip_addr_t::any (int family)
+zmq::ip_addr_t zmq::ip_addr_t::any (int family_)
 {
     ip_addr_t addr;
 
-    if (family == AF_INET) {
+    if (family_ == AF_INET) {
         sockaddr_in *ip4_addr = &addr.ipv4;
         memset (ip4_addr, 0, sizeof (*ip4_addr));
         ip4_addr->sin_family = AF_INET;
         ip4_addr->sin_addr.s_addr = htonl (INADDR_ANY);
-    } else if (family == AF_INET6) {
+    } else if (family_ == AF_INET6) {
         sockaddr_in6 *ip6_addr = &addr.ipv6;
 
         memset (ip6_addr, 0, sizeof (*ip6_addr));
@@ -551,8 +548,8 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 
 #include <netioapi.h>
 
-int zmq::ip_resolver_t::get_interface_name (unsigned long index,
-                                            char **dest) const
+int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
+                                            char **dest_) const
 {
 #ifdef ZMQ_HAVE_WINDOWS_UWP
     char *buffer = (char *) malloc (1024);
@@ -564,7 +561,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index,
     char *if_name_result = NULL;
 
 #if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP
-    if_name_result = if_indextoname (index, buffer);
+    if_name_result = if_indextoname (index_, buffer);
 #endif
 
     if (if_name_result == NULL) {
@@ -572,27 +569,28 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index,
         return -1;
     }
 
-    *dest = buffer;
+    *dest_ = buffer;
     return 0;
 }
 
-int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src, char **dest) const
+int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src_, char **dest_) const
 {
     int rc;
     int buffer_len =
-      WideCharToMultiByte (CP_UTF8, 0, src, -1, NULL, 0, NULL, 0);
+      WideCharToMultiByte (CP_UTF8, 0, src_, -1, NULL, 0, NULL, 0);
 
     char *buffer = static_cast<char *> (malloc (buffer_len));
     alloc_assert (buffer);
 
-    rc = WideCharToMultiByte (CP_UTF8, 0, src, -1, buffer, buffer_len, NULL, 0);
+    rc =
+      WideCharToMultiByte (CP_UTF8, 0, src_, -1, buffer, buffer_len, NULL, 0);
 
     if (rc == 0) {
         free (buffer);
         return -1;
     }
 
-    *dest = buffer;
+    *dest_ = buffer;
     return 0;
 }
 

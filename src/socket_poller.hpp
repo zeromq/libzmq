@@ -67,17 +67,17 @@ class socket_poller_t
         short events;
     } event_t;
 
-    int add (socket_base_t *socket, void *user_data, short events);
-    int modify (socket_base_t *socket, short events);
-    int remove (socket_base_t *socket);
+    int add (socket_base_t *socket_, void *user_data_, short events_);
+    int modify (socket_base_t *socket_, short events_);
+    int remove (socket_base_t *socket_);
 
-    int add_fd (fd_t fd, void *user_data, short events);
-    int modify_fd (fd_t fd, short events);
-    int remove_fd (fd_t fd);
+    int add_fd (fd_t fd_, void *user_data_, short events_);
+    int modify_fd (fd_t fd_, short events_);
+    int remove_fd (fd_t fd_);
 
-    int wait (event_t *event, int n_events, long timeout);
+    int wait (event_t *event_, int n_events_, long timeout_);
 
-    inline int size (void) { return static_cast<int> (items.size ()); };
+    inline int size () { return static_cast<int> (items.size ()); };
 
     //  Return false if object is not a socket.
     bool check_tag ();
@@ -85,21 +85,21 @@ class socket_poller_t
   private:
     void zero_trail_events (zmq::socket_poller_t::event_t *events_,
                             int n_events_,
-                            int found);
+                            int found_);
 #if defined ZMQ_POLL_BASED_ON_POLL
     int check_events (zmq::socket_poller_t::event_t *events_, int n_events_);
 #elif defined ZMQ_POLL_BASED_ON_SELECT
     int check_events (zmq::socket_poller_t::event_t *events_,
                       int n_events_,
-                      fd_set &inset,
-                      fd_set &outset,
-                      fd_set &errset);
+                      fd_set &inset_,
+                      fd_set &outset_,
+                      fd_set &errset_);
 #endif
-    int adjust_timeout (zmq::clock_t &clock,
+    int adjust_timeout (zmq::clock_t &clock_,
                         long timeout_,
-                        uint64_t &now,
-                        uint64_t &end,
-                        bool &first_pass);
+                        uint64_t &now_,
+                        uint64_t &end_,
+                        bool &first_pass_);
     void rebuild ();
 
     //  Used to check whether the object is a socket_poller.

@@ -54,19 +54,19 @@ zmq::tcp_address_t::tcp_address_t () : _has_src_addr (false)
     memset (&source_address, 0, sizeof (source_address));
 }
 
-zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len) :
+zmq::tcp_address_t::tcp_address_t (const sockaddr *sa_, socklen_t sa_len_) :
     _has_src_addr (false)
 {
-    zmq_assert (sa && sa_len > 0);
+    zmq_assert (sa_ && sa_len_ > 0);
 
     memset (&address, 0, sizeof (address));
     memset (&source_address, 0, sizeof (source_address));
-    if (sa->sa_family == AF_INET
-        && sa_len >= static_cast<socklen_t> (sizeof (address.ipv4)))
-        memcpy (&address.ipv4, sa, sizeof (address.ipv4));
-    else if (sa->sa_family == AF_INET6
-             && sa_len >= static_cast<socklen_t> (sizeof (address.ipv6)))
-        memcpy (&address.ipv6, sa, sizeof (address.ipv6));
+    if (sa_->sa_family == AF_INET
+        && sa_len_ >= static_cast<socklen_t> (sizeof (address.ipv4)))
+        memcpy (&address.ipv4, sa_, sizeof (address.ipv4));
+    else if (sa_->sa_family == AF_INET6
+             && sa_len_ >= static_cast<socklen_t> (sizeof (address.ipv6)))
+        memcpy (&address.ipv6, sa_, sizeof (address.ipv6));
 }
 
 zmq::tcp_address_t::~tcp_address_t ()
@@ -153,8 +153,8 @@ socklen_t zmq::tcp_address_t::addrlen () const
 {
     if (address.generic.sa_family == AF_INET6)
         return static_cast<socklen_t> (sizeof (address.ipv6));
-    else
-        return static_cast<socklen_t> (sizeof (address.ipv4));
+
+    return static_cast<socklen_t> (sizeof (address.ipv4));
 }
 
 const sockaddr *zmq::tcp_address_t::src_addr () const
@@ -166,8 +166,8 @@ socklen_t zmq::tcp_address_t::src_addrlen () const
 {
     if (address.family () == AF_INET6)
         return static_cast<socklen_t> (sizeof (source_address.ipv6));
-    else
-        return static_cast<socklen_t> (sizeof (source_address.ipv4));
+
+    return static_cast<socklen_t> (sizeof (source_address.ipv4));
 }
 
 bool zmq::tcp_address_t::has_src_addr () const
@@ -278,29 +278,30 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
     return 0;
 }
 
-bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss,
-                                             const socklen_t ss_len) const
+bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss_,
+                                             const socklen_t ss_len_) const
 {
-    zmq_assert (address_mask != -1 && ss != NULL
-                && ss_len >= (socklen_t) sizeof (struct sockaddr));
+    zmq_assert (address_mask != -1 && ss_ != NULL
+                && ss_len_ >= (socklen_t) sizeof (struct sockaddr));
 
-    if (ss->sa_family != address.generic.sa_family)
+    if (ss_->sa_family != address.generic.sa_family)
         return false;
 
     if (address_mask > 0) {
         int mask;
         const uint8_t *our_bytes, *their_bytes;
-        if (ss->sa_family == AF_INET6) {
-            zmq_assert (ss_len == sizeof (struct sockaddr_in6));
-            their_bytes = reinterpret_cast<const uint8_t *> (&(
-              (reinterpret_cast<const struct sockaddr_in6 *> (ss))->sin6_addr));
+        if (ss_->sa_family == AF_INET6) {
+            zmq_assert (ss_len_ == sizeof (struct sockaddr_in6));
+            their_bytes = reinterpret_cast<const uint8_t *> (
+              &((reinterpret_cast<const struct sockaddr_in6 *> (ss_))
+                  ->sin6_addr));
             our_bytes =
               reinterpret_cast<const uint8_t *> (&address.ipv6.sin6_addr);
             mask = sizeof (struct in6_addr) * 8;
         } else {
-            zmq_assert (ss_len == sizeof (struct sockaddr_in));
-            their_bytes = reinterpret_cast<const uint8_t *> (
-              &((reinterpret_cast<const struct sockaddr_in *> (ss))->sin_addr));
+            zmq_assert (ss_len_ == sizeof (struct sockaddr_in));
+            their_bytes = reinterpret_cast<const uint8_t *> (&(
+              (reinterpret_cast<const struct sockaddr_in *> (ss_))->sin_addr));
             our_bytes =
               reinterpret_cast<const uint8_t *> (&address.ipv4.sin_addr);
             mask = sizeof (struct in_addr) * 8;

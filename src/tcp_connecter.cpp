@@ -419,13 +419,13 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     return result;
 }
 
-bool zmq::tcp_connecter_t::tune_socket (const fd_t fd)
+bool zmq::tcp_connecter_t::tune_socket (const fd_t fd_)
 {
-    const int rc = tune_tcp_socket (fd)
+    const int rc = tune_tcp_socket (fd_)
                    | tune_tcp_keepalives (
-                       fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+                       fd_, options.tcp_keepalive, options.tcp_keepalive_cnt,
                        options.tcp_keepalive_idle, options.tcp_keepalive_intvl)
-                   | tune_tcp_maxrt (fd, options.tcp_maxrt);
+                   | tune_tcp_maxrt (fd_, options.tcp_maxrt);
     return rc == 0;
 }
 

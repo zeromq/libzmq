@@ -90,7 +90,8 @@ static int do_getsockopt_curve_key (void *const optval_,
     if (*optvallen_ == CURVE_KEYSIZE) {
         memcpy (optval_, curve_key_, CURVE_KEYSIZE);
         return 0;
-    } else if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+    }
+    if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
         zmq_z85_encode (static_cast<char *> (optval_), curve_key_,
                         CURVE_KEYSIZE);
         return 0;
@@ -150,7 +151,8 @@ do_setsockopt_string_allow_empty_strict (const void *const optval_,
     if (optval_ == NULL && optvallen_ == 0) {
         out_value_->clear ();
         return 0;
-    } else if (optval_ != NULL && optvallen_ > 0 && optvallen_ <= max_len_) {
+    }
+    if (optval_ != NULL && optvallen_ > 0 && optvallen_ <= max_len_) {
         out_value_->assign (static_cast<const char *> (optval_), optvallen_);
         return 0;
     }
@@ -209,7 +211,7 @@ zmq::options_t::options_t () :
     maxmsgsize (-1),
     rcvtimeo (-1),
     sndtimeo (-1),
-    ipv6 (0),
+    ipv6 (false),
     immediate (0),
     filter (false),
     invert_matching (false),
@@ -249,18 +251,18 @@ zmq::options_t::options_t () :
 #endif
 }
 
-int zmq::options_t::set_curve_key (uint8_t *destination,
+int zmq::options_t::set_curve_key (uint8_t *destination_,
                                    const void *optval_,
                                    size_t optvallen_)
 {
     switch (optvallen_) {
         case CURVE_KEYSIZE:
-            memcpy (destination, optval_, optvallen_);
+            memcpy (destination_, optval_, optvallen_);
             mechanism = ZMQ_CURVE;
             return 0;
 
         case CURVE_KEYSIZE_Z85 + 1:
-            if (zmq_z85_decode (destination, (char *) optval_)) {
+            if (zmq_z85_decode (destination_, (char *) optval_)) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -270,7 +272,7 @@ int zmq::options_t::set_curve_key (uint8_t *destination,
             char z85_key[CURVE_KEYSIZE_Z85 + 1];
             memcpy (z85_key, (char *) optval_, optvallen_);
             z85_key[CURVE_KEYSIZE_Z85] = 0;
-            if (zmq_z85_decode (destination, z85_key)) {
+            if (zmq_z85_decode (destination_, z85_key)) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }

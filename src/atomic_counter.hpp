@@ -143,34 +143,35 @@ class atomic_counter_t
     }
 
     //  Atomic subtraction. Returns false if the counter drops to zero.
-    inline bool sub (integer_t decrement)
+    inline bool sub (integer_t decrement_)
     {
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
-        LONG delta = -((LONG) decrement);
+        LONG delta = -((LONG) decrement_);
         integer_t old = InterlockedExchangeAdd ((LONG *) &value, delta);
-        return old - decrement != 0;
+        return old - decrement_ != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_INTRINSIC
-        integer_t nv = __atomic_sub_fetch (&value, decrement, __ATOMIC_ACQ_REL);
+        integer_t nv =
+          __atomic_sub_fetch (&value, decrement_, __ATOMIC_ACQ_REL);
         return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_CXX11
-        integer_t old = value.fetch_sub (decrement, std::memory_order_acq_rel);
-        return old - decrement != 0;
+        integer_t old = value.fetch_sub (decrement_, std::memory_order_acq_rel);
+        return old - decrement_ != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
-        int32_t delta = -((int32_t) decrement);
+        int32_t delta = -((int32_t) decrement_);
         integer_t nv = atomic_add_32_nv (&value, delta);
         return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_TILE
-        int32_t delta = -((int32_t) decrement);
+        int32_t delta = -((int32_t) decrement_);
         integer_t nv = arch_atomic_add (&value, delta);
         return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_X86
-        integer_t oldval = -decrement;
+        integer_t oldval = -decrement_;
         volatile integer_t *val = &value;
         __asm__ volatile("lock; xaddl %0,%1"
                          : "=r"(oldval), "=m"(*val)
                          : "0"(oldval), "m"(*val)
                          : "cc", "memory");
-        return oldval != decrement;
+        return oldval != decrement_;
 #elif defined ZMQ_ATOMIC_COUNTER_ARM
         integer_t old_value, flag, tmp;
         __asm__ volatile("       dmb     sy\n\t"
@@ -182,12 +183,12 @@ class atomic_counter_t
                          "       dmb     sy\n\t"
                          : "=&r"(old_value), "=&r"(flag), "=&r"(tmp),
                            "+Qo"(value)
-                         : "Ir"(decrement), "r"(&value)
+                         : "Ir"(decrement_), "r"(&value)
                          : "cc");
         return old_value - decrement != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_MUTEX
         sync.lock ();
-        value -= decrement;
+        value -= decrement_;
         bool result = value ? true : false;
         sync.unlock ();
         return result;

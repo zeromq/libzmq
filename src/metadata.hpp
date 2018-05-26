@@ -42,11 +42,11 @@ class metadata_t
   public:
     typedef std::map<std::string, std::string> dict_t;
 
-    metadata_t (const dict_t &dict);
+    metadata_t (const dict_t &dict_);
 
     //  Returns pointer to property value or NULL if
     //  property is not found.
-    const char *get (const std::string &property) const;
+    const char *get (const std::string &property_) const;
 
     void add_ref ();
 

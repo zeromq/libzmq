@@ -770,7 +770,8 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
     if (mechanism->status () == mechanism_t::ready) {
         mechanism_ready ();
         return pull_and_encode (msg_);
-    } else if (mechanism->status () == mechanism_t::error) {
+    }
+    if (mechanism->status () == mechanism_t::error) {
         errno = EPROTO;
         return -1;
     } else {
@@ -958,7 +959,7 @@ int zmq::stream_engine_t::push_one_then_decode_and_push (msg_t *msg_)
     return rc;
 }
 
-void zmq::stream_engine_t::error (error_reason_t reason)
+void zmq::stream_engine_t::error (error_reason_t reason_)
 {
     if (options.raw_socket && options.raw_notify) {
         //  For raw sockets, send a final 0-length message to the application
@@ -971,7 +972,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
     // protocol errors have been signaled already at the point where they occurred
-    if (reason != protocol_error
+    if (reason_ != protocol_error
         && (mechanism == NULL
             || mechanism->status () == mechanism_t::handshaking)) {
         int err = errno;
@@ -980,7 +981,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
 #endif
     socket->event_disconnected (endpoint, s);
     session->flush ();
-    session->engine_error (reason);
+    session->engine_error (reason_);
     unplug ();
     delete this;
 }
@@ -995,19 +996,19 @@ void zmq::stream_engine_t::set_handshake_timer ()
     }
 }
 
-bool zmq::stream_engine_t::init_properties (properties_t &properties)
+bool zmq::stream_engine_t::init_properties (properties_t &properties_)
 {
     if (peer_address.empty ())
         return false;
-    properties.ZMQ_MAP_INSERT_OR_EMPLACE (
+    properties_.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_PEER_ADDRESS), peer_address);
 
     //  Private property to support deprecated SRCFD
     std::ostringstream stream;
     stream << static_cast<int> (s);
     std::string fd_string = stream.str ();
-    properties.ZMQ_MAP_INSERT_OR_EMPLACE (std::string ("__fd"),
-                                          ZMQ_MOVE (fd_string));
+    properties_.ZMQ_MAP_INSERT_OR_EMPLACE (std::string ("__fd"),
+                                           ZMQ_MOVE (fd_string));
     return true;
 }
 

@@ -91,8 +91,8 @@ class socks_connecter_t : public own_t, public io_object_t
     //  Internal function to start the actual connection establishment.
     void initiate_connect ();
 
-    int process_server_response (const socks_choice_t &response);
-    int process_server_response (const socks_response_t &response);
+    int process_server_response (const socks_choice_t &response_);
+    int process_server_response (const socks_response_t &response_);
 
     int parse_address (const std::string &address_,
                        std::string &hostname_,

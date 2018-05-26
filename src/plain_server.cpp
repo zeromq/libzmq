@@ -246,13 +246,13 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-void zmq::plain_server_t::send_zap_request (const std::string &username,
-                                            const std::string &password)
+void zmq::plain_server_t::send_zap_request (const std::string &username_,
+                                            const std::string &password_)
 {
     const uint8_t *credentials[] = {
-      reinterpret_cast<const uint8_t *> (username.c_str ()),
-      reinterpret_cast<const uint8_t *> (password.c_str ())};
-    size_t credentials_sizes[] = {username.size (), password.size ()};
+      reinterpret_cast<const uint8_t *> (username_.c_str ()),
+      reinterpret_cast<const uint8_t *> (password_.c_str ())};
+    size_t credentials_sizes[] = {username_.size (), password_.size ()};
     zap_client_t::send_zap_request ("PLAIN", 5, credentials, credentials_sizes,
                                     2);
 }

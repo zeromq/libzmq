@@ -119,7 +119,7 @@ static unsigned int random_refcount = 0;
 static zmq::mutex_t random_sync;
 #endif
 
-static void manage_random (bool init)
+static void manage_random (bool init_)
 {
 #if defined(ZMQ_USE_TWEETNACL) && !defined(ZMQ_HAVE_WINDOWS)                   \
   && !defined(ZMQ_HAVE_GETRANDOM)
@@ -129,7 +129,7 @@ static void manage_random (bool init)
     static zmq::mutex_t random_sync;
 #endif
 
-    if (init) {
+    if (init_) {
         zmq::scoped_lock_t locker (random_sync);
 
         if (random_refcount == 0) {
@@ -148,7 +148,7 @@ static void manage_random (bool init)
     }
 
 #elif defined(ZMQ_USE_LIBSODIUM)
-    if (init) {
+    if (init_) {
         int rc = sodium_init ();
         zmq_assert (rc != -1);
     } else {
@@ -157,12 +157,12 @@ static void manage_random (bool init)
 #endif
 }
 
-void zmq::random_open (void)
+void zmq::random_open ()
 {
     manage_random (true);
 }
 
-void zmq::random_close (void)
+void zmq::random_close ()
 {
     manage_random (false);
 }

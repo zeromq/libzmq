@@ -484,9 +484,10 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-void zmq::curve_server_t::send_zap_request (const uint8_t *key)
+void zmq::curve_server_t::send_zap_request (const uint8_t *key_)
 {
-    zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
+    zap_client_t::send_zap_request ("CURVE", 5, key_,
+                                    crypto_box_PUBLICKEYBYTES);
 }
 
 #endif

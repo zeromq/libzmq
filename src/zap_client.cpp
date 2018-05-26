@@ -43,20 +43,20 @@ zap_client_t::zap_client_t (session_base_t *const session_,
 {
 }
 
-void zap_client_t::send_zap_request (const char *mechanism,
-                                     size_t mechanism_length,
-                                     const uint8_t *credentials,
-                                     size_t credentials_size)
+void zap_client_t::send_zap_request (const char *mechanism_,
+                                     size_t mechanism_length_,
+                                     const uint8_t *credentials_,
+                                     size_t credentials_size_)
 {
-    send_zap_request (mechanism, mechanism_length, &credentials,
-                      &credentials_size, 1);
+    send_zap_request (mechanism_, mechanism_length_, &credentials_,
+                      &credentials_size_, 1);
 }
 
-void zap_client_t::send_zap_request (const char *mechanism,
-                                     size_t mechanism_length,
-                                     const uint8_t **credentials,
-                                     size_t *credentials_sizes,
-                                     size_t credentials_count)
+void zap_client_t::send_zap_request (const char *mechanism_,
+                                     size_t mechanism_length_,
+                                     const uint8_t **credentials_,
+                                     size_t *credentials_sizes_,
+                                     size_t credentials_count_)
 {
     // write_zap_msg cannot fail. It could only fail if the HWM was exceeded,
     // but on the ZAP socket, the HWM is disabled.
@@ -113,21 +113,21 @@ void zap_client_t::send_zap_request (const char *mechanism,
     errno_assert (rc == 0);
 
     //  Mechanism frame
-    rc = msg.init_size (mechanism_length);
+    rc = msg.init_size (mechanism_length_);
     errno_assert (rc == 0);
-    memcpy (msg.data (), mechanism, mechanism_length);
-    if (credentials_count)
+    memcpy (msg.data (), mechanism_, mechanism_length_);
+    if (credentials_count_)
         msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
     //  Credentials frames
-    for (size_t i = 0; i < credentials_count; ++i) {
-        rc = msg.init_size (credentials_sizes[i]);
+    for (size_t i = 0; i < credentials_count_; ++i) {
+        rc = msg.init_size (credentials_sizes_[i]);
         errno_assert (rc == 0);
-        if (i < credentials_count - 1)
+        if (i < credentials_count_ - 1)
             msg.set_flags (msg_t::more);
-        memcpy (msg.data (), credentials[i], credentials_sizes[i]);
+        memcpy (msg.data (), credentials_[i], credentials_sizes_[i]);
         rc = session->write_zap_msg (&msg);
         errno_assert (rc == 0);
     }
@@ -263,7 +263,7 @@ zmq::mechanism_t::status_t zap_client_common_handshake_t::status () const
 {
     if (state == ready)
         return mechanism_t::ready;
-    else if (state == error_sent)
+    if (state == error_sent)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;

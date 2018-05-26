@@ -100,14 +100,14 @@ unsigned long zmq_stopwatch_intermediate (void *watch_);
 #define ZMQ_ZERO_COPY_RECV 10
 
 /*  DRAFT Socket methods.                                                     */
-int zmq_join (void *s, const char *group);
-int zmq_leave (void *s, const char *group);
+int zmq_join (void *s_, const char *group_);
+int zmq_leave (void *s_, const char *group_);
 
 /*  DRAFT Msg methods.                                                        */
-int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
-uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
-int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
-const char *zmq_msg_group (zmq_msg_t *msg);
+int zmq_msg_set_routing_id (zmq_msg_t *msg_, uint32_t routing_id_);
+uint32_t zmq_msg_routing_id (zmq_msg_t *msg_);
+int zmq_msg_set_group (zmq_msg_t *msg_, const char *group_);
+const char *zmq_msg_group (zmq_msg_t *msg_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -132,47 +132,53 @@ typedef struct zmq_poller_event_t
 } zmq_poller_event_t;
 
 void *zmq_poller_new (void);
-int zmq_poller_destroy (void **poller_p);
-int zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-int zmq_poller_modify (void *poller, void *socket, short events);
-int zmq_poller_remove (void *poller, void *socket);
-int zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-int zmq_poller_wait_all (void *poller,
-                         zmq_poller_event_t *events,
-                         int n_events,
-                         long timeout);
+int zmq_poller_destroy (void **poller_p_);
+int zmq_poller_add (void *poller_,
+                    void *socket_,
+                    void *user_data_,
+                    short events_);
+int zmq_poller_modify (void *poller_, void *socket_, short events_);
+int zmq_poller_remove (void *poller_, void *socket_);
+int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_);
+int zmq_poller_wait_all (void *poller_,
+                         zmq_poller_event_t *events_,
+                         int n_events_,
+                         long timeout_);
 
 #if defined _WIN32
-int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
-int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
-int zmq_poller_remove_fd (void *poller, SOCKET fd);
+int zmq_poller_add_fd (void *poller_,
+                       SOCKET fd_,
+                       void *user_data_,
+                       short events_);
+int zmq_poller_modify_fd (void *poller_, SOCKET fd_, short events_);
+int zmq_poller_remove_fd (void *poller_, SOCKET fd_);
 #else
 int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
 int zmq_poller_modify_fd (void *poller, int fd, short events);
 int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
-int zmq_socket_get_peer_state (void *socket,
-                               const void *routing_id,
-                               size_t routing_id_size);
+int zmq_socket_get_peer_state (void *socket_,
+                               const void *routing_id_,
+                               size_t routing_id_size_);
 
 /******************************************************************************/
 /*  Scheduling timers                                                         */
 /******************************************************************************/
 
-typedef void(zmq_timer_fn) (int timer_id, void *arg);
+typedef void(zmq_timer_fn) (int timer_id_, void *arg_);
 
 void *zmq_timers_new (void);
-int zmq_timers_destroy (void **timers_p);
-int zmq_timers_add (void *timers,
-                    size_t interval,
-                    zmq_timer_fn handler,
-                    void *arg);
-int zmq_timers_cancel (void *timers, int timer_id);
-int zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
-int zmq_timers_reset (void *timers, int timer_id);
-long zmq_timers_timeout (void *timers);
-int zmq_timers_execute (void *timers);
+int zmq_timers_destroy (void **timers_p_);
+int zmq_timers_add (void *timers_,
+                    size_t interval_,
+                    zmq_timer_fn handler_,
+                    void *arg_);
+int zmq_timers_cancel (void *timers_, int timer_id_);
+int zmq_timers_set_interval (void *timers_, int timer_id_, size_t interval_);
+int zmq_timers_reset (void *timers_, int timer_id_);
+long zmq_timers_timeout (void *timers_);
+int zmq_timers_execute (void *timers_);
 
 #endif // ZMQ_BUILD_DRAFT_API
 

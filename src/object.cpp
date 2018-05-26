@@ -58,9 +58,9 @@ uint32_t zmq::object_t::get_tid ()
     return tid;
 }
 
-void zmq::object_t::set_tid (uint32_t id)
+void zmq::object_t::set_tid (uint32_t id_)
 {
-    tid = id;
+    tid = id_;
 }
 
 zmq::ctx_t *zmq::object_t::get_ctx ()

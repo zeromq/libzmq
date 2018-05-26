@@ -170,12 +170,12 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  Applies the function fn to the first elemenent in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
-    inline bool probe (bool (*fn) (const T &))
+    inline bool probe (bool (*fn_) (const T &))
     {
         bool rc = check_read ();
         zmq_assert (rc);
 
-        return (*fn) (queue.front ());
+        return (*fn_) (queue.front ());
     }
 
   protected:

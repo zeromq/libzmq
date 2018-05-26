@@ -65,7 +65,7 @@ __declspec(noreturn) void zmq_abort (const char *errmsg_);
 #else
 void zmq_abort (const char *errmsg_);
 #endif
-void print_backtrace (void);
+void print_backtrace ();
 }
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -75,9 +75,9 @@ namespace zmq
 const char *wsa_error ();
 const char *
 wsa_error_no (int no_,
-              const char *wsae_wouldblock_string = "Operation would block");
+              const char *wsae_wouldblock_string_ = "Operation would block");
 void win_error (char *buffer_, size_t buffer_size_);
-int wsa_error_to_errno (int errcode);
+int wsa_error_to_errno (int errcode_);
 }
 
 //  Provides convenient way to check WSA-style errors on Windows.

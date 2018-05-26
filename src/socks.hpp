@@ -38,7 +38,7 @@ namespace zmq
 {
 struct socks_greeting_t
 {
-    socks_greeting_t (uint8_t method);
+    socks_greeting_t (uint8_t method_);
     socks_greeting_t (uint8_t *methods_, uint8_t num_methods_);
 
     uint8_t methods[UINT8_MAX];
@@ -94,7 +94,7 @@ class socks_request_encoder_t
 {
   public:
     socks_request_encoder_t ();
-    void encode (const socks_request_t &req);
+    void encode (const socks_request_t &req_);
     int output (fd_t fd_);
     bool has_pending_data () const;
     void reset ();

@@ -52,7 +52,7 @@ union ip_addr_t
 
     void set_port (uint16_t);
 
-    static ip_addr_t any (int family);
+    static ip_addr_t any (int family_);
 };
 
 class ip_resolver_options_t
@@ -94,8 +94,8 @@ class ip_resolver_t
     int resolve_getaddrinfo (ip_addr_t *ip_addr_, const char *addr_);
 
 #if defined ZMQ_HAVE_WINDOWS
-    int get_interface_name (unsigned long index, char **dest) const;
-    int wchar_to_utf8 (const WCHAR *src, char **dest) const;
+    int get_interface_name (unsigned long index_, char **dest_) const;
+    int wchar_to_utf8 (const WCHAR *src_, char **dest_) const;
 #endif
 
     //  Virtual functions that are overriden in tests
