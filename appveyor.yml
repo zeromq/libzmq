@@ -115,10 +115,11 @@ before_build:
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
 build_script:
-  - cmd: set verbosity=Minimal
-  - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
-  - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
-  - cmd: msbuild C:\projects\build_libzmq\ZeroMQ.sln /verbosity:%verbosity% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: if "%MSVCYEAR%"=="vs2008" (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
+         ) else (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+         )
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
 # build_script:
