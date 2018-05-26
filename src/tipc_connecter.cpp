@@ -255,7 +255,7 @@ zmq::fd_t zmq::tipc_connecter_t::connect ()
     //  Following code should handle both Berkeley-derived socket
     //  implementations and Solaris.
     int err = 0;
-#if ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_VXWORKS
     int len = sizeof (err);
 #else
     socklen_t len = sizeof (err);
