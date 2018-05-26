@@ -812,6 +812,12 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 # unittests will not build without the static libzmq.a
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
 
+# clang 6 has a warning that does not make sense on multi-platform code
+AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+    [CFLAGS+=" -Wno-tautological-constant-compare" CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [],
+    [-Werror])
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
