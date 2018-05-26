@@ -31,20 +31,12 @@ environment:
       ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
+      POLLER: epoll
       API_POLLER: poll
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
     - platform: Win32
-      configuration: Release
-      POLLER: epoll
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
-    - platform: Win32
       configuration: Debug
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
-    - platform: x64
-      configuration: Release
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
     - platform: x64
@@ -55,10 +47,6 @@ environment:
       configuration: Release
       WITH_LIBSODIUM: OFF
       ENABLE_CURVE: OFF
-    - platform: Win32
-      configuration: Release
-      WITH_LIBSODIUM: OFF
-      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: ON
@@ -80,6 +68,12 @@ matrix:
   fast_finish: false
 
 init:
+  - cmd: if "%NO_PR%"=="TRUE" (
+            if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" (
+                echo "Build is disabled for PRs, aborting" &&
+                appveyor exit
+            )
+         )
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - cmake --version
   - msbuild /version
@@ -89,7 +83,6 @@ cache:
     - C:\projects\libsodium
 
 install:
-  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" appveyor exit )
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
@@ -122,10 +115,11 @@ before_build:
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
 build_script:
-  - cmd: set verbosity=Minimal
-  - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
-  - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
-  - cmd: msbuild C:\projects\build_libzmq\ZeroMQ.sln /verbosity:%verbosity% /maxcpucount /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: if "%MSVCYEAR%"=="vs2008" (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
+         ) else (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+         )
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
 # build_script:
@@ -153,13 +147,54 @@ after_build:
 
 test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: ctest -C "%Configuration%" -V -j5
+# TODO run tests in parallel only on selected platforms, since they fail on others, see https://github.com/zeromq/libzmq/issues/3123
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013 Win64" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015 Win64" set PARALLELIZE=ON
+  - cmd: if "%PARALLELIZE%"=="ON" (
+            echo "Running tests in parallel" &&
+            set TEST_OPTIONS=-j5
+         )
+  - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
 
+# the analysis build is repeated; apparently appveyor only uses the first section that matches some branch
 for:
 -
     branches:
         only:
             - master
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              API_POLLER: poll
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: x64
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
+              NO_PR: TRUE
+-
+    branches:
+        only:
             - /.*analyze$/
     environment:
         matrix:
@@ -172,3 +207,4 @@ for:
               CMAKE_GENERATOR: "Visual Studio 15 2017"
               MSVCVERSION: "v141"
               MSVCYEAR: "vs2017"
+              NO_PR: TRUE
