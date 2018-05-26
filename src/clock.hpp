@@ -54,7 +54,6 @@ class clock_t
 {
   public:
     clock_t ();
-    ~clock_t ();
 
     //  CPU's timestamp counter. Returns 0 if it's not available.
     static uint64_t rdtsc ();

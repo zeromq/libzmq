@@ -136,10 +136,6 @@ zmq::clock_t::clock_t () :
 {
 }
 
-zmq::clock_t::~clock_t ()
-{
-}
-
 uint64_t zmq::clock_t::now_us ()
 {
 #if defined ZMQ_HAVE_WINDOWS
