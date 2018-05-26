@@ -31,20 +31,12 @@ environment:
       ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
+      POLLER: epoll
       API_POLLER: poll
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
     - platform: Win32
-      configuration: Release
-      POLLER: epoll
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
-    - platform: Win32
       configuration: Debug
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
-    - platform: x64
-      configuration: Release
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
     - platform: x64
@@ -55,10 +47,6 @@ environment:
       configuration: Release
       WITH_LIBSODIUM: OFF
       ENABLE_CURVE: OFF
-    - platform: Win32
-      configuration: Release
-      WITH_LIBSODIUM: OFF
-      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: ON
@@ -80,6 +68,12 @@ matrix:
   fast_finish: false
 
 init:
+  - cmd: if "%NO_PR%"=="TRUE" (
+            if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" (
+                echo "Build is disabled for PRs, aborting" &&
+                appveyor exit
+            )
+         )
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - cmake --version
   - msbuild /version
@@ -89,7 +83,6 @@ cache:
     - C:\projects\libsodium
 
 install:
-  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" appveyor exit )
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
@@ -164,11 +157,43 @@ test_script:
          )
   - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
 
+# the analysis build is repeated; apparently appveyor only uses the first section that matches some branch
 for:
 -
     branches:
         only:
             - master
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              API_POLLER: poll
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: x64
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
+              NO_PR: TRUE
+-
+    branches:
+        only:
             - /.*analyze$/
     environment:
         matrix:
@@ -181,3 +206,4 @@ for:
               CMAKE_GENERATOR: "Visual Studio 15 2017"
               MSVCVERSION: "v141"
               MSVCYEAR: "vs2017"
+              NO_PR: TRUE
