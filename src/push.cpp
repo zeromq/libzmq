@@ -53,25 +53,25 @@ void zmq::push_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     pipe_->set_nodelay ();
 
     zmq_assert (pipe_);
-    lb.attach (pipe_);
+    _lb.attach (pipe_);
 }
 
 void zmq::push_t::xwrite_activated (pipe_t *pipe_)
 {
-    lb.activated (pipe_);
+    _lb.activated (pipe_);
 }
 
 void zmq::push_t::xpipe_terminated (pipe_t *pipe_)
 {
-    lb.pipe_terminated (pipe_);
+    _lb.pipe_terminated (pipe_);
 }
 
 int zmq::push_t::xsend (msg_t *msg_)
 {
-    return lb.send (msg_);
+    return _lb.send (msg_);
 }
 
 bool zmq::push_t::xhas_out ()
 {
-    return lb.has_out ();
+    return _lb.has_out ();
 }

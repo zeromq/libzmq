@@ -50,12 +50,12 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     inline ypipe_t ()
     {
         //  Insert terminator element into the queue.
-        queue.push ();
+        _queue.push ();
 
         //  Let all the pointers to point to the terminator.
         //  (unless pipe is dead, in which case c is set to NULL).
-        r = w = f = &queue.back ();
-        c.set (&queue.back ());
+        _r = _w = _f = &_queue.back ();
+        _c.set (&_queue.back ());
     }
 
     //  The destructor doesn't have to be virtual. It is made virtual
@@ -78,12 +78,12 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     inline void write (const T &value_, bool incomplete_)
     {
         //  Place the value to the queue, add new terminator element.
-        queue.back () = value_;
-        queue.push ();
+        _queue.back () = value_;
+        _queue.push ();
 
         //  Move the "flush up to here" poiter.
         if (!incomplete_)
-            f = &queue.back ();
+            _f = &_queue.back ();
     }
 
 #ifdef ZMQ_HAVE_OPENVMS
@@ -94,10 +94,10 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  item exists, false otherwise.
     inline bool unwrite (T *value_)
     {
-        if (f == &queue.back ())
+        if (_f == &_queue.back ())
             return false;
-        queue.unpush ();
-        *value_ = queue.back ();
+        _queue.unpush ();
+        *value_ = _queue.back ();
         return true;
     }
 
@@ -107,24 +107,24 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     inline bool flush ()
     {
         //  If there are no un-flushed items, do nothing.
-        if (w == f)
+        if (_w == _f)
             return true;
 
         //  Try to set 'c' to 'f'.
-        if (c.cas (w, f) != w) {
+        if (_c.cas (_w, _f) != _w) {
             //  Compare-and-swap was unseccessful because 'c' is NULL.
             //  This means that the reader is asleep. Therefore we don't
             //  care about thread-safeness and update c in non-atomic
             //  manner. We'll return false to let the caller know
             //  that reader is sleeping.
-            c.set (f);
-            w = f;
+            _c.set (_f);
+            _w = _f;
             return false;
         }
 
         //  Reader is alive. Nothing special to do now. Just move
         //  the 'first un-flushed item' pointer to 'f'.
-        w = f;
+        _w = _f;
         return true;
     }
 
@@ -132,20 +132,20 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     inline bool check_read ()
     {
         //  Was the value prefetched already? If so, return.
-        if (&queue.front () != r && r)
+        if (&_queue.front () != _r && _r)
             return true;
 
         //  There's no prefetched value, so let us prefetch more values.
         //  Prefetching is to simply retrieve the
         //  pointer from c in atomic fashion. If there are no
         //  items to prefetch, set c to NULL (using compare-and-swap).
-        r = c.cas (&queue.front (), NULL);
+        _r = _c.cas (&_queue.front (), NULL);
 
         //  If there are no elements prefetched, exit.
         //  During pipe's lifetime r should never be NULL, however,
         //  it can happen during pipe shutdown when items
         //  are being deallocated.
-        if (&queue.front () == r || !r)
+        if (&_queue.front () == _r || !_r)
             return false;
 
         //  There was at least one value prefetched.
@@ -162,8 +162,8 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
 
         //  There was at least one value prefetched.
         //  Return it to the caller.
-        *value_ = queue.front ();
-        queue.pop ();
+        *value_ = _queue.front ();
+        _queue.pop ();
         return true;
     }
 
@@ -175,7 +175,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
         bool rc = check_read ();
         zmq_assert (rc);
 
-        return (*fn_) (queue.front ());
+        return (*fn_) (_queue.front ());
     }
 
   protected:
@@ -183,24 +183,24 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  Front of the queue points to the first prefetched item, back of
     //  the pipe points to last un-flushed item. Front is used only by
     //  reader thread, while back is used only by writer thread.
-    yqueue_t<T, N> queue;
+    yqueue_t<T, N> _queue;
 
     //  Points to the first un-flushed item. This variable is used
     //  exclusively by writer thread.
-    T *w;
+    T *_w;
 
     //  Points to the first un-prefetched item. This variable is used
     //  exclusively by reader thread.
-    T *r;
+    T *_r;
 
     //  Points to the first item to be flushed in the future.
-    T *f;
+    T *_f;
 
     //  The single point of contention between writer and reader thread.
     //  Points past the last flushed item. If it is NULL,
     //  reader is asleep. This pointer should be always accessed using
     //  atomic operations.
-    atomic_ptr_t<T> c;
+    atomic_ptr_t<T> _c;
 
     //  Disable copying of ypipe object.
     ypipe_t (const ypipe_t &);

@@ -270,9 +270,9 @@ CheckOptions:
    - key:             readability-identifier-naming.LocalVariableSuffix
      value:           ''
   # - key:             readability-identifier-naming.MemberCase
-    # value:           aNy_CasE
+    # value:           lower_case
   # - key:             readability-identifier-naming.MemberPrefix
-    # value:           ''
+    # value:           '_'
   # - key:             readability-identifier-naming.MemberSuffix
     # value:           ''
   # - key:             readability-identifier-naming.MethodCase
@@ -299,12 +299,12 @@ CheckOptions:
     # value:           ''
    - key:             readability-identifier-naming.ParameterSuffix
      value:           '_'
-  # - key:             readability-identifier-naming.PrivateMemberCase
-    # value:           aNy_CasE
-  # - key:             readability-identifier-naming.PrivateMemberPrefix
-    # value:           ''
-  # - key:             readability-identifier-naming.PrivateMemberSuffix
-    # value:           ''
+   - key:             readability-identifier-naming.PrivateMemberCase
+     value:           lower_case
+   - key:             readability-identifier-naming.PrivateMemberPrefix
+     value:           '_'
+   - key:             readability-identifier-naming.PrivateMemberSuffix
+     value:           ''
   # - key:             readability-identifier-naming.PrivateMethodCase
     # value:           aNy_CasE
   # - key:             readability-identifier-naming.PrivateMethodPrefix

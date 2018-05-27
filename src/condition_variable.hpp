@@ -93,13 +93,13 @@ namespace zmq
 class condition_variable_t
 {
   public:
-    inline condition_variable_t () { InitializeConditionVariable (&cv); }
+    inline condition_variable_t () { InitializeConditionVariable (&_cv); }
 
     inline ~condition_variable_t () {}
 
     inline int wait (mutex_t *mutex_, int timeout_)
     {
-        int rc = SleepConditionVariableCS (&cv, mutex_->get_cs (), timeout_);
+        int rc = SleepConditionVariableCS (&_cv, mutex_->get_cs (), timeout_);
 
         if (rc != 0)
             return 0;
@@ -113,10 +113,10 @@ class condition_variable_t
         return -1;
     }
 
-    inline void broadcast () { WakeAllConditionVariable (&cv); }
+    inline void broadcast () { WakeAllConditionVariable (&_cv); }
 
   private:
-    CONDITION_VARIABLE cv;
+    CONDITION_VARIABLE _cv;
 
     //  Disable copy construction and assignment.
     condition_variable_t (const condition_variable_t &);
@@ -132,13 +132,13 @@ class condition_variable_t
 
     inline int wait (mutex_t *mutex_, int timeout_)
     {
-        std::unique_lock<std::mutex> lck (mtx); // lock mtx
-        mutex_->unlock ();                      // unlock mutex_
+        std::unique_lock<std::mutex> lck (_mtx); // lock mtx
+        mutex_->unlock ();                       // unlock mutex_
         int res = 0;
         if (timeout_ == -1) {
-            cv.wait (
+            _cv.wait (
               lck); // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
-        } else if (cv.wait_for (lck, std::chrono::milliseconds (timeout_))
+        } else if (_cv.wait_for (lck, std::chrono::milliseconds (timeout_))
                    == std::cv_status::timeout) {
             // time expired
             errno = EAGAIN;
@@ -151,13 +151,13 @@ class condition_variable_t
 
     inline void broadcast ()
     {
-        std::unique_lock<std::mutex> lck (mtx); // lock mtx
-        cv.notify_all ();
+        std::unique_lock<std::mutex> lck (_mtx); // lock mtx
+        _cv.notify_all ();
     }
 
   private:
-    std::condition_variable cv;
-    std::mutex mtx;
+    std::condition_variable _cv;
+    std::mutex _mtx;
 
     //  Disable copy construction and assignment.
     condition_variable_t (const condition_variable_t &);
@@ -182,9 +182,9 @@ class condition_variable_t
 
     inline ~condition_variable_t ()
     {
-        scoped_lock_t l (m_listenersMutex);
-        for (size_t i = 0; i < m_listeners.size (); i++) {
-            semDelete (m_listeners[i]);
+        scoped_lock_t l (_listenersMutex);
+        for (size_t i = 0; i < _listeners.size (); i++) {
+            semDelete (_listeners[i]);
         }
     }
 
@@ -198,8 +198,8 @@ class condition_variable_t
 
         SEM_ID sem = semBCreate (SEM_Q_PRIORITY, SEM_EMPTY);
         {
-            scoped_lock_t l (m_listenersMutex);
-            m_listeners.push_back (sem);
+            scoped_lock_t l (_listenersMutex);
+            _listeners.push_back (sem);
         }
         mutex_->unlock ();
 
@@ -213,11 +213,11 @@ class condition_variable_t
         }
 
         {
-            scoped_lock_t l (m_listenersMutex);
+            scoped_lock_t l (_listenersMutex);
             // remove sem from listeners
-            for (size_t i = 0; i < m_listeners.size (); i++) {
-                if (m_listeners[i] == sem) {
-                    m_listeners.erase (m_listeners.begin () + i);
+            for (size_t i = 0; i < _listeners.size (); i++) {
+                if (_listeners[i] == sem) {
+                    _listeners.erase (_listeners.begin () + i);
                     break;
                 }
             }
@@ -238,15 +238,15 @@ class condition_variable_t
 
     inline void broadcast ()
     {
-        scoped_lock_t l (m_listenersMutex);
-        for (size_t i = 0; i < m_listeners.size (); i++) {
-            semGive (m_listeners[i]);
+        scoped_lock_t l (_listenersMutex);
+        for (size_t i = 0; i < _listeners.size (); i++) {
+            semGive (_listeners[i]);
         }
     }
 
   private:
-    mutex_t m_listenersMutex;
-    std::vector<SEM_ID> m_listeners;
+    mutex_t _listenersMutex;
+    std::vector<SEM_ID> _listeners;
 
     // Disable copy construction and assignment.
     condition_variable_t (const condition_variable_t &);
@@ -276,13 +276,13 @@ class condition_variable_t
 #if !defined(ZMQ_HAVE_OSX) && !defined(ANDROID_LEGACY)
         pthread_condattr_setclock (&attr, CLOCK_MONOTONIC);
 #endif
-        int rc = pthread_cond_init (&cond, &attr);
+        int rc = pthread_cond_init (&_cond, &attr);
         posix_assert (rc);
     }
 
     inline ~condition_variable_t ()
     {
-        int rc = pthread_cond_destroy (&cond);
+        int rc = pthread_cond_destroy (&_cond);
         posix_assert (rc);
     }
 
@@ -309,15 +309,16 @@ class condition_variable_t
             }
 #ifdef ZMQ_HAVE_OSX
             rc = pthread_cond_timedwait_relative_np (
-              &cond, mutex_->get_mutex (), &timeout);
+              &_cond, mutex_->get_mutex (), &timeout);
 #elif defined(ANDROID_LEGACY)
             rc = pthread_cond_timedwait_monotonic_np (
-              &cond, mutex_->get_mutex (), &timeout);
+              &_cond, mutex_->get_mutex (), &timeout);
 #else
-            rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);
+            rc =
+              pthread_cond_timedwait (&_cond, mutex_->get_mutex (), &timeout);
 #endif
         } else
-            rc = pthread_cond_wait (&cond, mutex_->get_mutex ());
+            rc = pthread_cond_wait (&_cond, mutex_->get_mutex ());
 
         if (rc == 0)
             return 0;
@@ -333,12 +334,12 @@ class condition_variable_t
 
     inline void broadcast ()
     {
-        int rc = pthread_cond_broadcast (&cond);
+        int rc = pthread_cond_broadcast (&_cond);
         posix_assert (rc);
     }
 
   private:
-    pthread_cond_t cond;
+    pthread_cond_t _cond;
 
     // Disable copy construction and assignment.
     condition_variable_t (const condition_variable_t &);

@@ -33,47 +33,47 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::fq_t::fq_t () : active (0), last_in (NULL), current (0), more (false)
+zmq::fq_t::fq_t () : _active (0), _last_in (NULL), _current (0), _more (false)
 {
 }
 
 zmq::fq_t::~fq_t ()
 {
-    zmq_assert (pipes.empty ());
+    zmq_assert (_pipes.empty ());
 }
 
 void zmq::fq_t::attach (pipe_t *pipe_)
 {
-    pipes.push_back (pipe_);
-    pipes.swap (active, pipes.size () - 1);
-    active++;
+    _pipes.push_back (pipe_);
+    _pipes.swap (_active, _pipes.size () - 1);
+    _active++;
 }
 
 void zmq::fq_t::pipe_terminated (pipe_t *pipe_)
 {
-    const pipes_t::size_type index = pipes.index (pipe_);
+    const pipes_t::size_type index = _pipes.index (pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
-    if (index < active) {
-        active--;
-        pipes.swap (index, active);
-        if (current == active)
-            current = 0;
+    if (index < _active) {
+        _active--;
+        _pipes.swap (index, _active);
+        if (_current == _active)
+            _current = 0;
     }
-    pipes.erase (pipe_);
+    _pipes.erase (pipe_);
 
-    if (last_in == pipe_) {
-        saved_credential.set_deep_copy (last_in->get_credential ());
-        last_in = NULL;
+    if (_last_in == pipe_) {
+        _saved_credential.set_deep_copy (_last_in->get_credential ());
+        _last_in = NULL;
     }
 }
 
 void zmq::fq_t::activated (pipe_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
-    pipes.swap (pipes.index (pipe_), active);
-    active++;
+    _pipes.swap (_pipes.index (pipe_), _active);
+    _active++;
 }
 
 int zmq::fq_t::recv (msg_t *msg_)
@@ -88,21 +88,21 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
     errno_assert (rc == 0);
 
     //  Round-robin over the pipes to get the next message.
-    while (active > 0) {
+    while (_active > 0) {
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
-        bool fetched = pipes[current]->read (msg_);
+        bool fetched = _pipes[_current]->read (msg_);
 
         //  Note that when message is not fetched, current pipe is deactivated
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
             if (pipe_)
-                *pipe_ = pipes[current];
-            more = (msg_->flags () & msg_t::more) != 0;
-            if (!more) {
-                last_in = pipes[current];
-                current = (current + 1) % active;
+                *pipe_ = _pipes[_current];
+            _more = (msg_->flags () & msg_t::more) != 0;
+            if (!_more) {
+                _last_in = _pipes[_current];
+                _current = (_current + 1) % _active;
             }
             return 0;
         }
@@ -110,12 +110,12 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
         //  Check the atomicity of the message.
         //  If we've already received the first part of the message
         //  we should get the remaining parts without blocking.
-        zmq_assert (!more);
+        zmq_assert (!_more);
 
-        active--;
-        pipes.swap (current, active);
-        if (current == active)
-            current = 0;
+        _active--;
+        _pipes.swap (_current, _active);
+        if (_current == _active)
+            _current = 0;
     }
 
     //  No message is available. Initialise the output parameter
@@ -129,22 +129,22 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 bool zmq::fq_t::has_in ()
 {
     //  There are subsequent parts of the partly-read message available.
-    if (more)
+    if (_more)
         return true;
 
     //  Note that messing with current doesn't break the fairness of fair
     //  queueing algorithm. If there are no messages available current will
     //  get back to its original value. Otherwise it'll point to the first
     //  pipe holding messages, skipping only pipes with no messages available.
-    while (active > 0) {
-        if (pipes[current]->check_read ())
+    while (_active > 0) {
+        if (_pipes[_current]->check_read ())
             return true;
 
         //  Deactivate the pipe.
-        active--;
-        pipes.swap (current, active);
-        if (current == active)
-            current = 0;
+        _active--;
+        _pipes.swap (_current, _active);
+        if (_current == _active)
+            _current = 0;
     }
 
     return false;
@@ -152,5 +152,5 @@ bool zmq::fq_t::has_in ()
 
 const zmq::blob_t &zmq::fq_t::get_credential () const
 {
-    return last_in ? last_in->get_credential () : saved_credential;
+    return _last_in ? _last_in->get_credential () : _saved_credential;
 }

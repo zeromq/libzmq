@@ -43,23 +43,23 @@ namespace zmq
 class mutex_t
 {
   public:
-    inline mutex_t () { InitializeCriticalSection (&cs); }
+    inline mutex_t () { InitializeCriticalSection (&_cs); }
 
-    inline ~mutex_t () { DeleteCriticalSection (&cs); }
+    inline ~mutex_t () { DeleteCriticalSection (&_cs); }
 
-    inline void lock () { EnterCriticalSection (&cs); }
+    inline void lock () { EnterCriticalSection (&_cs); }
 
     inline bool try_lock ()
     {
-        return (TryEnterCriticalSection (&cs)) ? true : false;
+        return (TryEnterCriticalSection (&_cs)) ? true : false;
     }
 
-    inline void unlock () { LeaveCriticalSection (&cs); }
+    inline void unlock () { LeaveCriticalSection (&_cs); }
 
-    inline CRITICAL_SECTION *get_cs () { return &cs; }
+    inline CRITICAL_SECTION *get_cs () { return &_cs; }
 
   private:
-    CRITICAL_SECTION cs;
+    CRITICAL_SECTION _cs;
 
     //  Disable copy construction and assignment.
     mutex_t (const mutex_t &);
@@ -79,26 +79,26 @@ class mutex_t
   public:
     inline mutex_t ()
     {
-        m_semId =
+        _semId =
           semMCreate (SEM_Q_PRIORITY | SEM_INVERSION_SAFE | SEM_DELETE_SAFE);
     }
 
-    inline ~mutex_t () { semDelete (m_semId); }
+    inline ~mutex_t () { semDelete (_semId); }
 
-    inline void lock () { semTake (m_semId, WAIT_FOREVER); }
+    inline void lock () { semTake (_semId, WAIT_FOREVER); }
 
     inline bool try_lock ()
     {
-        if (semTake (m_semId, NO_WAIT) == OK) {
+        if (semTake (_semId, NO_WAIT) == OK) {
             return true;
         }
         return false;
     }
 
-    inline void unlock () { semGive (m_semId); }
+    inline void unlock () { semGive (_semId); }
 
   private:
-    SEM_ID m_semId;
+    SEM_ID _semId;
 
     // Disable copy construction and assignment.
     mutex_t (const mutex_t &);
@@ -117,34 +117,34 @@ class mutex_t
   public:
     inline mutex_t ()
     {
-        int rc = pthread_mutexattr_init (&attr);
+        int rc = pthread_mutexattr_init (&_attr);
         posix_assert (rc);
 
-        rc = pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE);
+        rc = pthread_mutexattr_settype (&_attr, PTHREAD_MUTEX_RECURSIVE);
         posix_assert (rc);
 
-        rc = pthread_mutex_init (&mutex, &attr);
+        rc = pthread_mutex_init (&_mutex, &_attr);
         posix_assert (rc);
     }
 
     inline ~mutex_t ()
     {
-        int rc = pthread_mutex_destroy (&mutex);
+        int rc = pthread_mutex_destroy (&_mutex);
         posix_assert (rc);
 
-        rc = pthread_mutexattr_destroy (&attr);
+        rc = pthread_mutexattr_destroy (&_attr);
         posix_assert (rc);
     }
 
     inline void lock ()
     {
-        int rc = pthread_mutex_lock (&mutex);
+        int rc = pthread_mutex_lock (&_mutex);
         posix_assert (rc);
     }
 
     inline bool try_lock ()
     {
-        int rc = pthread_mutex_trylock (&mutex);
+        int rc = pthread_mutex_trylock (&_mutex);
         if (rc == EBUSY)
             return false;
 
@@ -154,15 +154,15 @@ class mutex_t
 
     inline void unlock ()
     {
-        int rc = pthread_mutex_unlock (&mutex);
+        int rc = pthread_mutex_unlock (&_mutex);
         posix_assert (rc);
     }
 
-    inline pthread_mutex_t *get_mutex () { return &mutex; }
+    inline pthread_mutex_t *get_mutex () { return &_mutex; }
 
   private:
-    pthread_mutex_t mutex;
-    pthread_mutexattr_t attr;
+    pthread_mutex_t _mutex;
+    pthread_mutexattr_t _attr;
 
     // Disable copy construction and assignment.
     mutex_t (const mutex_t &);
@@ -177,12 +177,12 @@ namespace zmq
 {
 struct scoped_lock_t
 {
-    scoped_lock_t (mutex_t &mutex_) : mutex (mutex_) { mutex.lock (); }
+    scoped_lock_t (mutex_t &mutex_) : _mutex (mutex_) { _mutex.lock (); }
 
-    ~scoped_lock_t () { mutex.unlock (); }
+    ~scoped_lock_t () { _mutex.unlock (); }
 
   private:
-    mutex_t &mutex;
+    mutex_t &_mutex;
 
     // Disable copy construction and assignment.
     scoped_lock_t (const scoped_lock_t &);
@@ -192,20 +192,20 @@ struct scoped_lock_t
 
 struct scoped_optional_lock_t
 {
-    scoped_optional_lock_t (mutex_t *mutex_) : mutex (mutex_)
+    scoped_optional_lock_t (mutex_t *mutex_) : _mutex (mutex_)
     {
-        if (mutex != NULL)
-            mutex->lock ();
+        if (_mutex != NULL)
+            _mutex->lock ();
     }
 
     ~scoped_optional_lock_t ()
     {
-        if (mutex != NULL)
-            mutex->unlock ();
+        if (_mutex != NULL)
+            _mutex->unlock ();
     }
 
   private:
-    mutex_t *mutex;
+    mutex_t *_mutex;
 
     // Disable copy construction and assignment.
     scoped_optional_lock_t (const scoped_lock_t &);

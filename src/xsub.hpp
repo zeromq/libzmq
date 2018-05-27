@@ -71,22 +71,22 @@ class xsub_t : public socket_base_t
     send_subscription (unsigned char *data_, size_t size_, void *arg_);
 
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     //  Object for distributing the subscriptions upstream.
-    dist_t dist;
+    dist_t _dist;
 
     //  The repository of subscriptions.
-    trie_t subscriptions;
+    trie_t _subscriptions;
 
     //  If true, 'message' contains a matching message to return on the
     //  next recv call.
-    bool has_message;
-    msg_t message;
+    bool _has_message;
+    msg_t _message;
 
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting.
-    bool more;
+    bool _more;
 
     xsub_t (const xsub_t &);
     const xsub_t &operator= (const xsub_t &);

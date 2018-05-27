@@ -59,19 +59,19 @@ class curve_server_t : public zap_client_common_handshake_t,
 
   private:
     //  Our secret key (s)
-    uint8_t secret_key[crypto_box_SECRETKEYBYTES];
+    uint8_t _secret_key[crypto_box_SECRETKEYBYTES];
 
     //  Our short-term public key (S')
-    uint8_t cn_public[crypto_box_PUBLICKEYBYTES];
+    uint8_t _cn_public[crypto_box_PUBLICKEYBYTES];
 
     //  Our short-term secret key (s')
-    uint8_t cn_secret[crypto_box_SECRETKEYBYTES];
+    uint8_t _cn_secret[crypto_box_SECRETKEYBYTES];
 
     //  Client's short-term public key (C')
-    uint8_t cn_client[crypto_box_PUBLICKEYBYTES];
+    uint8_t _cn_client[crypto_box_PUBLICKEYBYTES];
 
     //  Key used to produce cookie
-    uint8_t cookie_key[crypto_secretbox_KEYBYTES];
+    uint8_t _cookie_key[crypto_secretbox_KEYBYTES];
 
     int process_hello (msg_t *msg_);
     int produce_welcome (msg_t *msg_);

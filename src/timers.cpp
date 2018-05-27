@@ -33,19 +33,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <algorithm>
 
-zmq::timers_t::timers_t () : tag (0xCAFEDADA), next_timer_id (0)
+zmq::timers_t::timers_t () : _tag (0xCAFEDADA), _next_timer_id (0)
 {
 }
 
 zmq::timers_t::~timers_t ()
 {
     //  Mark the timers as dead
-    tag = 0xdeadbeef;
+    _tag = 0xdeadbeef;
 }
 
 bool zmq::timers_t::check_tag ()
 {
-    return tag == 0xCAFEDADA;
+    return _tag == 0xCAFEDADA;
 }
 
 int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void *arg_)
@@ -55,58 +55,58 @@ int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void *arg_)
         return -1;
     }
 
-    uint64_t when = clock.now_ms () + interval_;
-    timer_t timer = {++next_timer_id, interval_, handler_, arg_};
-    timers.insert (timersmap_t::value_type (when, timer));
+    uint64_t when = _clock.now_ms () + interval_;
+    timer_t timer = {++_next_timer_id, interval_, handler_, arg_};
+    _timers.insert (timersmap_t::value_type (when, timer));
 
     return timer.timer_id;
 }
 
 struct zmq::timers_t::match_by_id
 {
-    match_by_id (int timer_id_) : timer_id (timer_id_) {}
+    match_by_id (int timer_id_) : _timer_id (timer_id_) {}
 
     bool operator() (timersmap_t::value_type const &entry_) const
     {
-        return entry_.second.timer_id == timer_id;
+        return entry_.second.timer_id == _timer_id;
     }
 
   private:
-    int timer_id;
+    int _timer_id;
 };
 
 int zmq::timers_t::cancel (int timer_id_)
 {
     // check first if timer exists at all
-    if (timers.end ()
-        == std::find_if (timers.begin (), timers.end (),
+    if (_timers.end ()
+        == std::find_if (_timers.begin (), _timers.end (),
                          match_by_id (timer_id_))) {
         errno = EINVAL;
         return -1;
     }
 
     // check if timer was already canceled
-    if (cancelled_timers.count (timer_id_)) {
+    if (_cancelled_timers.count (timer_id_)) {
         errno = EINVAL;
         return -1;
     }
 
-    cancelled_timers.insert (timer_id_);
+    _cancelled_timers.insert (timer_id_);
 
     return 0;
 }
 
 int zmq::timers_t::set_interval (int timer_id_, size_t interval_)
 {
-    const timersmap_t::iterator end = timers.end ();
+    const timersmap_t::iterator end = _timers.end ();
     const timersmap_t::iterator it =
-      std::find_if (timers.begin (), end, match_by_id (timer_id_));
+      std::find_if (_timers.begin (), end, match_by_id (timer_id_));
     if (it != end) {
         timer_t timer = it->second;
         timer.interval = interval_;
-        uint64_t when = clock.now_ms () + interval_;
-        timers.erase (it);
-        timers.insert (timersmap_t::value_type (when, timer));
+        uint64_t when = _clock.now_ms () + interval_;
+        _timers.erase (it);
+        _timers.insert (timersmap_t::value_type (when, timer));
 
         return 0;
     }
@@ -117,14 +117,14 @@ int zmq::timers_t::set_interval (int timer_id_, size_t interval_)
 
 int zmq::timers_t::reset (int timer_id_)
 {
-    const timersmap_t::iterator end = timers.end ();
+    const timersmap_t::iterator end = _timers.end ();
     const timersmap_t::iterator it =
-      std::find_if (timers.begin (), end, match_by_id (timer_id_));
+      std::find_if (_timers.begin (), end, match_by_id (timer_id_));
     if (it != end) {
         timer_t timer = it->second;
-        uint64_t when = clock.now_ms () + timer.interval;
-        timers.erase (it);
-        timers.insert (timersmap_t::value_type (when, timer));
+        uint64_t when = _clock.now_ms () + timer.interval;
+        _timers.erase (it);
+        _timers.insert (timersmap_t::value_type (when, timer));
 
         return 0;
     }
@@ -135,16 +135,16 @@ int zmq::timers_t::reset (int timer_id_)
 
 long zmq::timers_t::timeout ()
 {
-    timersmap_t::iterator it = timers.begin ();
+    timersmap_t::iterator it = _timers.begin ();
 
-    uint64_t now = clock.now_ms ();
+    uint64_t now = _clock.now_ms ();
 
-    while (it != timers.end ()) {
+    while (it != _timers.end ()) {
         cancelled_timers_t::iterator cancelled_it =
-          cancelled_timers.find (it->second.timer_id);
+          _cancelled_timers.find (it->second.timer_id);
 
         //  Live timer, lets return the timeout
-        if (cancelled_it == cancelled_timers.end ()) {
+        if (cancelled_it == _cancelled_timers.end ()) {
             if (it->first > now)
                 return static_cast<long> (it->first - now);
 
@@ -154,8 +154,8 @@ long zmq::timers_t::timeout ()
         // Let's remove it from the beginning of the list
         timersmap_t::iterator old = it;
         ++it;
-        timers.erase (old);
-        cancelled_timers.erase (cancelled_it);
+        _timers.erase (old);
+        _cancelled_timers.erase (cancelled_it);
     }
 
     //  Wait forever as no timers are alive
@@ -164,20 +164,20 @@ long zmq::timers_t::timeout ()
 
 int zmq::timers_t::execute ()
 {
-    timersmap_t::iterator it = timers.begin ();
+    timersmap_t::iterator it = _timers.begin ();
 
-    uint64_t now = clock.now_ms ();
+    uint64_t now = _clock.now_ms ();
 
-    while (it != timers.end ()) {
+    while (it != _timers.end ()) {
         cancelled_timers_t::iterator cancelled_it =
-          cancelled_timers.find (it->second.timer_id);
+          _cancelled_timers.find (it->second.timer_id);
 
         //  Dead timer, lets remove it and continue
-        if (cancelled_it != cancelled_timers.end ()) {
+        if (cancelled_it != _cancelled_timers.end ()) {
             timersmap_t::iterator old = it;
             ++it;
-            timers.erase (old);
-            cancelled_timers.erase (cancelled_it);
+            _timers.erase (old);
+            _cancelled_timers.erase (cancelled_it);
             continue;
         }
 
@@ -191,8 +191,8 @@ int zmq::timers_t::execute ()
 
         timersmap_t::iterator old = it;
         ++it;
-        timers.erase (old);
-        timers.insert (timersmap_t::value_type (now + timer.interval, timer));
+        _timers.erase (old);
+        _timers.insert (timersmap_t::value_type (now + timer.interval, timer));
     }
 
     return 0;

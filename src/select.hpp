@@ -131,15 +131,15 @@ class select_t : public worker_poller_base_t
         WSAEVENT events[4];
     };
 
-    family_entries_t family_entries;
+    family_entries_t _family_entries;
     // See loop for details.
-    family_entries_t::iterator current_family_entry_it;
+    family_entries_t::iterator _current_family_entry_it;
 
     int try_retire_fd_entry (family_entries_t::iterator family_entry_it_,
                              zmq::fd_t &handle_);
 
     static const size_t fd_family_cache_size = 8;
-    std::pair<fd_t, u_short> fd_family_cache[fd_family_cache_size];
+    std::pair<fd_t, u_short> _fd_family_cache[fd_family_cache_size];
 
     u_short get_fd_family (fd_t fd_);
 
@@ -147,8 +147,8 @@ class select_t : public worker_poller_base_t
     static u_short determine_fd_family (fd_t fd_);
 #else
     //  on non-Windows, we can treat all fds as one family
-    family_entry_t family_entry;
-    fd_t maxfd;
+    family_entry_t _family_entry;
+    fd_t _max_fd;
 #endif
 
     void cleanup_retired ();

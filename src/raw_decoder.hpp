@@ -52,14 +52,14 @@ class raw_decoder_t : public i_decoder
     virtual int
     decode (const unsigned char *data_, size_t size_, size_t &processed_);
 
-    virtual msg_t *msg () { return &in_progress; }
+    virtual msg_t *msg () { return &_in_progress; }
 
     virtual void resize_buffer (size_t) {}
 
   private:
-    msg_t in_progress;
+    msg_t _in_progress;
 
-    shared_message_memory_allocator allocator;
+    shared_message_memory_allocator _allocator;
 
     raw_decoder_t (const raw_decoder_t &);
     void operator= (const raw_decoder_t &);

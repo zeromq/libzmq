@@ -34,8 +34,8 @@
 
 zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     router_t (parent_, tid_, sid_),
-    sending_reply (false),
-    request_begins (true)
+    _sending_reply (false),
+    _request_begins (true)
 {
     options.type = ZMQ_REP;
 }
@@ -47,7 +47,7 @@ zmq::rep_t::~rep_t ()
 int zmq::rep_t::xsend (msg_t *msg_)
 {
     //  If we are in the middle of receiving a request, we cannot send reply.
-    if (!sending_reply) {
+    if (!_sending_reply) {
         errno = EFSM;
         return -1;
     }
@@ -61,7 +61,7 @@ int zmq::rep_t::xsend (msg_t *msg_)
 
     //  If the reply is complete flip the FSM back to request receiving state.
     if (!more)
-        sending_reply = false;
+        _sending_reply = false;
 
     return 0;
 }
@@ -69,14 +69,14 @@ int zmq::rep_t::xsend (msg_t *msg_)
 int zmq::rep_t::xrecv (msg_t *msg_)
 {
     //  If we are in middle of sending a reply, we cannot receive next request.
-    if (sending_reply) {
+    if (_sending_reply) {
         errno = EFSM;
         return -1;
     }
 
     //  First thing to do when receiving a request is to copy all the labels
     //  to the reply pipe.
-    if (request_begins) {
+    if (_request_begins) {
         while (true) {
             int rc = router_t::xrecv (msg_);
             if (rc != 0)
@@ -99,7 +99,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
                 errno_assert (rc == 0);
             }
         }
-        request_begins = false;
+        _request_begins = false;
     }
 
     //  Get next message part to return to the user.
@@ -109,8 +109,8 @@ int zmq::rep_t::xrecv (msg_t *msg_)
 
     //  If whole request is read, flip the FSM to reply-sending state.
     if (!(msg_->flags () & msg_t::more)) {
-        sending_reply = true;
-        request_begins = true;
+        _sending_reply = true;
+        _request_begins = true;
     }
 
     return 0;
@@ -118,7 +118,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
 
 bool zmq::rep_t::xhas_in ()
 {
-    if (sending_reply)
+    if (_sending_reply)
         return false;
 
     return router_t::xhas_in ();
@@ -126,7 +126,7 @@ bool zmq::rep_t::xhas_in ()
 
 bool zmq::rep_t::xhas_out ()
 {
-    if (!sending_reply)
+    if (!_sending_reply)
         return false;
 
     return router_t::xhas_out ();

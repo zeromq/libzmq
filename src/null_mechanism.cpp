@@ -43,12 +43,12 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const options_t &options_) :
     mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
-    ready_command_sent (false),
-    error_command_sent (false),
-    ready_command_received (false),
-    error_command_received (false),
-    zap_request_sent (false),
-    zap_reply_received (false)
+    _ready_command_sent (false),
+    _error_command_sent (false),
+    _ready_command_received (false),
+    _error_command_received (false),
+    _zap_request_sent (false),
+    _zap_reply_received (false)
 {
 }
 
@@ -58,13 +58,13 @@ zmq::null_mechanism_t::~null_mechanism_t ()
 
 int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 {
-    if (ready_command_sent || error_command_sent) {
+    if (_ready_command_sent || _error_command_sent) {
         errno = EAGAIN;
         return -1;
     }
 
-    if (zap_required () && !zap_reply_received) {
-        if (zap_request_sent) {
+    if (zap_required () && !_zap_reply_received) {
+        if (_zap_request_sent) {
             errno = EAGAIN;
             return -1;
         }
@@ -78,7 +78,7 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         }
         if (rc == 0) {
             send_zap_request ();
-            zap_request_sent = true;
+            _zap_request_sent = true;
 
             //  TODO actually, it is quite unlikely that we can read the ZAP
             //  reply already, but removing this has some strange side-effect
@@ -88,12 +88,12 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             if (rc != 0)
                 return -1;
 
-            zap_reply_received = true;
+            _zap_reply_received = true;
         }
     }
 
-    if (zap_reply_received && status_code != "200") {
-        error_command_sent = true;
+    if (_zap_reply_received && status_code != "200") {
+        _error_command_sent = true;
         if (status_code != "300") {
             const size_t status_code_len = 3;
             const int rc = msg_->init_size (6 + 1 + status_code_len);
@@ -111,14 +111,14 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 
     make_command_with_basic_properties (msg_, "\5READY", 6);
 
-    ready_command_sent = true;
+    _ready_command_sent = true;
 
     return 0;
 }
 
 int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
-    if (ready_command_received || error_command_received) {
+    if (_ready_command_received || _error_command_received) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
@@ -153,7 +153,7 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 int zmq::null_mechanism_t::process_ready_command (
   const unsigned char *cmd_data_, size_t data_size_)
 {
-    ready_command_received = true;
+    _ready_command_received = true;
     return parse_metadata (cmd_data_ + 6, data_size_ - 6);
 }
 
@@ -179,29 +179,29 @@ int zmq::null_mechanism_t::process_error_command (
     }
     const char *error_reason = reinterpret_cast<const char *> (cmd_data_) + 7;
     handle_error_reason (error_reason, error_reason_len);
-    error_command_received = true;
+    _error_command_received = true;
     return 0;
 }
 
 int zmq::null_mechanism_t::zap_msg_available ()
 {
-    if (zap_reply_received) {
+    if (_zap_reply_received) {
         errno = EFSM;
         return -1;
     }
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        zap_reply_received = true;
+        _zap_reply_received = true;
     return rc == -1 ? -1 : 0;
 }
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
-    const bool command_sent = ready_command_sent || error_command_sent;
+    const bool command_sent = _ready_command_sent || _error_command_sent;
     const bool command_received =
-      ready_command_received || error_command_received;
+      _ready_command_received || _error_command_received;
 
-    if (ready_command_sent && ready_command_received)
+    if (_ready_command_sent && _ready_command_received)
         return mechanism_t::ready;
     if (command_sent && command_received)
         return error;

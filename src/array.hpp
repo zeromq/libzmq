@@ -51,18 +51,18 @@ namespace zmq
 template <int ID = 0> class array_item_t
 {
   public:
-    inline array_item_t () : array_index (-1) {}
+    inline array_item_t () : _array_index (-1) {}
 
     //  The destructor doesn't have to be virtual. It is made virtual
     //  just to keep ICC and code checking tools from complaining.
     inline virtual ~array_item_t () {}
 
-    inline void set_array_index (int index_) { array_index = index_; }
+    inline void set_array_index (int index_) { _array_index = index_; }
 
-    inline int get_array_index () { return array_index; }
+    inline int get_array_index () { return _array_index; }
 
   private:
-    int array_index;
+    int _array_index;
 
     array_item_t (const array_item_t &);
     const array_item_t &operator= (const array_item_t &);
@@ -81,17 +81,17 @@ template <typename T, int ID = 0> class array_t
 
     inline ~array_t () {}
 
-    inline size_type size () { return items.size (); }
+    inline size_type size () { return _items.size (); }
 
-    inline bool empty () { return items.empty (); }
+    inline bool empty () { return _items.empty (); }
 
-    inline T *&operator[] (size_type index_) { return items[index_]; }
+    inline T *&operator[] (size_type index_) { return _items[index_]; }
 
     inline void push_back (T *item_)
     {
         if (item_)
-            ((item_t *) item_)->set_array_index ((int) items.size ());
-        items.push_back (item_);
+            ((item_t *) item_)->set_array_index ((int) _items.size ());
+        _items.push_back (item_);
     }
 
     inline void erase (T *item_)
@@ -101,22 +101,22 @@ template <typename T, int ID = 0> class array_t
 
     inline void erase (size_type index_)
     {
-        if (items.back ())
-            ((item_t *) items.back ())->set_array_index ((int) index_);
-        items[index_] = items.back ();
-        items.pop_back ();
+        if (_items.back ())
+            ((item_t *) _items.back ())->set_array_index ((int) index_);
+        _items[index_] = _items.back ();
+        _items.pop_back ();
     }
 
     inline void swap (size_type index1_, size_type index2_)
     {
-        if (items[index1_])
-            ((item_t *) items[index1_])->set_array_index ((int) index2_);
-        if (items[index2_])
-            ((item_t *) items[index2_])->set_array_index ((int) index1_);
-        std::swap (items[index1_], items[index2_]);
+        if (_items[index1_])
+            ((item_t *) _items[index1_])->set_array_index ((int) index2_);
+        if (_items[index2_])
+            ((item_t *) _items[index2_])->set_array_index ((int) index1_);
+        std::swap (_items[index1_], _items[index2_]);
     }
 
-    inline void clear () { items.clear (); }
+    inline void clear () { _items.clear (); }
 
     inline size_type index (T *item_)
     {
@@ -125,7 +125,7 @@ template <typename T, int ID = 0> class array_t
 
   private:
     typedef std::vector<T *> items_t;
-    items_t items;
+    items_t _items;
 
     array_t (const array_t &);
     const array_t &operator= (const array_t &);

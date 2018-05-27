@@ -46,7 +46,7 @@ class v2_encoder_t : public encoder_base_t<v2_encoder_t>
     void size_ready ();
     void message_ready ();
 
-    unsigned char tmpbuf[9];
+    unsigned char _tmp_buf[9];
 
     v2_encoder_t (const v2_encoder_t &);
     const v2_encoder_t &operator= (const v2_encoder_t &);

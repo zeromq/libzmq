@@ -63,20 +63,20 @@ class lb_t
   private:
     //  List of outbound pipes.
     typedef array_t<pipe_t, 2> pipes_t;
-    pipes_t pipes;
+    pipes_t _pipes;
 
     //  Number of active pipes. All the active pipes are located at the
     //  beginning of the pipes array.
-    pipes_t::size_type active;
+    pipes_t::size_type _active;
 
     //  Points to the last pipe that the most recent message was sent to.
-    pipes_t::size_type current;
+    pipes_t::size_type _current;
 
     //  True if last we are in the middle of a multipart message.
-    bool more;
+    bool _more;
 
     //  True if we are dropping current message.
-    bool dropping;
+    bool _dropping;
 
     lb_t (const lb_t &);
     const lb_t &operator= (const lb_t &);

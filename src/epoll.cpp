@@ -58,11 +58,11 @@ zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
     //  Setting this option result in sane behaviour when exec() functions
     //  are used. Old sockets are closed and don't block TCP ports, avoid
     //  leaks, etc.
-    epoll_fd = epoll_create1 (EPOLL_CLOEXEC);
+    _epoll_fd = epoll_create1 (EPOLL_CLOEXEC);
 #else
-    epoll_fd = epoll_create (1);
+    _epoll_fd = epoll_create (1);
 #endif
-    errno_assert (epoll_fd != epoll_retired_fd);
+    errno_assert (_epoll_fd != epoll_retired_fd);
 }
 
 zmq::epoll_t::~epoll_t ()
@@ -71,11 +71,11 @@ zmq::epoll_t::~epoll_t ()
     stop_worker ();
 
 #ifdef ZMQ_HAVE_WINDOWS
-    epoll_close (epoll_fd);
+    epoll_close (_epoll_fd);
 #else
-    close (epoll_fd);
+    close (_epoll_fd);
 #endif
-    for (retired_t::iterator it = retired.begin (); it != retired.end ();
+    for (retired_t::iterator it = _retired.begin (); it != _retired.end ();
          ++it) {
         LIBZMQ_DELETE (*it);
     }
@@ -96,7 +96,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
     pe->ev.data.ptr = pe;
     pe->events = events_;
 
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_ADD, fd_, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_ADD, fd_, &pe->ev);
     errno_assert (rc != -1);
 
     //  Increase the load metric of the thread.
@@ -109,12 +109,12 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
-    retired_sync.lock ();
-    retired.push_back (pe);
-    retired_sync.unlock ();
+    _retired_sync.lock ();
+    _retired.push_back (pe);
+    _retired_sync.unlock ();
 
     //  Decrease the load metric of the thread.
     adjust_load (-1);
@@ -125,7 +125,7 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLIN;
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -134,7 +134,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLIN);
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -143,7 +143,7 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events |= EPOLLOUT;
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -152,7 +152,7 @@ void zmq::epoll_t::reset_pollout (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = (poll_entry_t *) handle_;
     pe->ev.events &= ~((short) EPOLLOUT);
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -183,7 +183,7 @@ void zmq::epoll_t::loop ()
         }
 
         //  Wait for events.
-        int n = epoll_wait (epoll_fd, &ev_buf[0], max_io_events,
+        int n = epoll_wait (_epoll_fd, &ev_buf[0], max_io_events,
                             timeout ? timeout : -1);
         if (n == -1) {
             errno_assert (errno == EINTR);
@@ -208,13 +208,13 @@ void zmq::epoll_t::loop ()
         }
 
         //  Destroy retired event sources.
-        retired_sync.lock ();
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
+        _retired_sync.lock ();
+        for (retired_t::iterator it = _retired.begin (); it != _retired.end ();
              ++it) {
             LIBZMQ_DELETE (*it);
         }
-        retired.clear ();
-        retired_sync.unlock ();
+        _retired.clear ();
+        _retired_sync.unlock ();
     }
 }
 

@@ -127,11 +127,11 @@ const uint64_t usecs_per_sec = 1000000;
 const uint64_t nsecs_per_usec = 1000;
 
 zmq::clock_t::clock_t () :
-    last_tsc (rdtsc ()),
+    _last_tsc (rdtsc ()),
 #ifdef ZMQ_HAVE_WINDOWS
-    last_time (static_cast<uint64_t> ((*my_get_tick_count64) ()))
+    _last_time (static_cast<uint64_t> ((*my_get_tick_count64) ()))
 #else
-    last_time (now_us () / usecs_per_msec)
+    _last_time (now_us () / usecs_per_msec)
 #endif
 {
 }
@@ -218,16 +218,16 @@ uint64_t zmq::clock_t::now_ms ()
     //  If TSC haven't jumped back (in case of migration to a different
     //  CPU core) and if not too much time elapsed since last measurement,
     //  we can return cached time value.
-    if (likely (tsc - last_tsc <= (clock_precision / 2) && tsc >= last_tsc))
-        return last_time;
+    if (likely (tsc - _last_tsc <= (clock_precision / 2) && tsc >= _last_tsc))
+        return _last_time;
 
-    last_tsc = tsc;
+    _last_tsc = tsc;
 #ifdef ZMQ_HAVE_WINDOWS
-    last_time = static_cast<uint64_t> ((*my_get_tick_count64) ());
+    _last_time = static_cast<uint64_t> ((*my_get_tick_count64) ());
 #else
-    last_time = now_us () / usecs_per_msec;
+    _last_time = now_us () / usecs_per_msec;
 #endif
-    return last_time;
+    return _last_time;
 }
 
 uint64_t zmq::clock_t::rdtsc ()

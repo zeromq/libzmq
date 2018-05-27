@@ -30,14 +30,14 @@
 #include "precompiled.hpp"
 #include "metadata.hpp"
 
-zmq::metadata_t::metadata_t (const dict_t &dict_) : ref_cnt (1), dict (dict_)
+zmq::metadata_t::metadata_t (const dict_t &dict_) : _ref_cnt (1), _dict (dict_)
 {
 }
 
 const char *zmq::metadata_t::get (const std::string &property_) const
 {
-    dict_t::const_iterator it = dict.find (property_);
-    if (it == dict.end ()) {
+    dict_t::const_iterator it = _dict.find (property_);
+    if (it == _dict.end ()) {
         /** \todo remove this when support for the deprecated name "Identity" is dropped */
         if (property_ == "Identity")
             return get (ZMQ_MSG_PROPERTY_ROUTING_ID);
@@ -49,10 +49,10 @@ const char *zmq::metadata_t::get (const std::string &property_) const
 
 void zmq::metadata_t::add_ref ()
 {
-    ref_cnt.add (1);
+    _ref_cnt.add (1);
 }
 
 bool zmq::metadata_t::drop_ref ()
 {
-    return !ref_cnt.sub (1);
+    return !_ref_cnt.sub (1);
 }

@@ -59,7 +59,7 @@ class plain_client_t : public mechanism_base_t
         ready
     };
 
-    state_t state;
+    state_t _state;
 
     int produce_hello (msg_t *msg_) const;
     int produce_initiate (msg_t *msg_) const;

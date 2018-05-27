@@ -55,9 +55,9 @@ class socks_greeting_encoder_t
     void reset ();
 
   private:
-    size_t bytes_encoded;
-    size_t bytes_written;
-    uint8_t buf[2 + UINT8_MAX];
+    size_t _bytes_encoded;
+    size_t _bytes_written;
+    uint8_t _buf[2 + UINT8_MAX];
 };
 
 struct socks_choice_t
@@ -77,8 +77,8 @@ class socks_choice_decoder_t
     void reset ();
 
   private:
-    unsigned char buf[2];
-    size_t bytes_read;
+    unsigned char _buf[2];
+    size_t _bytes_read;
 };
 
 struct socks_request_t
@@ -100,9 +100,9 @@ class socks_request_encoder_t
     void reset ();
 
   private:
-    size_t bytes_encoded;
-    size_t bytes_written;
-    uint8_t buf[4 + UINT8_MAX + 1 + 2];
+    size_t _bytes_encoded;
+    size_t _bytes_written;
+    uint8_t _buf[4 + UINT8_MAX + 1 + 2];
 };
 
 struct socks_response_t
@@ -125,8 +125,8 @@ class socks_response_decoder_t
     void reset ();
 
   private:
-    int8_t buf[4 + UINT8_MAX + 1 + 2];
-    size_t bytes_read;
+    int8_t _buf[4 + UINT8_MAX + 1 + 2];
+    size_t _bytes_read;
 };
 }
 

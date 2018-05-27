@@ -48,20 +48,20 @@ zmq::mechanism_t::~mechanism_t ()
 void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr_,
                                             size_t id_size_)
 {
-    routing_id.set (static_cast<const unsigned char *> (id_ptr_), id_size_);
+    _routing_id.set (static_cast<const unsigned char *> (id_ptr_), id_size_);
 }
 
 void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 {
-    const int rc = msg_->init_size (routing_id.size ());
+    const int rc = msg_->init_size (_routing_id.size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (), routing_id.data (), routing_id.size ());
+    memcpy (msg_->data (), _routing_id.data (), _routing_id.size ());
     msg_->set_flags (msg_t::routing_id);
 }
 
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
-    user_id.set (static_cast<const unsigned char *> (data_), size_);
+    _user_id.set (static_cast<const unsigned char *> (data_), size_);
     zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_USER_ID),
       std::string ((char *) data_, size_));
@@ -69,7 +69,7 @@ void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const
 {
-    return user_id;
+    return _user_id;
 }
 
 const char socket_type_pair[] = "PAIR";

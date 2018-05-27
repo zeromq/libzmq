@@ -62,8 +62,8 @@ class client_t : public socket_base_t
   private:
     //  Messages are fair-queued from inbound pipes. And load-balanced to
     //  the outbound pipes.
-    fq_t fq;
-    lb_t lb;
+    fq_t _fq;
+    lb_t _lb;
 
     client_t (const client_t &);
     const client_t &operator= (const client_t &);

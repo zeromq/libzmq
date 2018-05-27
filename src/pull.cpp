@@ -49,30 +49,30 @@ void zmq::pull_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     LIBZMQ_UNUSED (subscribe_to_all_);
 
     zmq_assert (pipe_);
-    fq.attach (pipe_);
+    _fq.attach (pipe_);
 }
 
 void zmq::pull_t::xread_activated (pipe_t *pipe_)
 {
-    fq.activated (pipe_);
+    _fq.activated (pipe_);
 }
 
 void zmq::pull_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.pipe_terminated (pipe_);
+    _fq.pipe_terminated (pipe_);
 }
 
 int zmq::pull_t::xrecv (msg_t *msg_)
 {
-    return fq.recv (msg_);
+    return _fq.recv (msg_);
 }
 
 bool zmq::pull_t::xhas_in ()
 {
-    return fq.has_in ();
+    return _fq.has_in ();
 }
 
 const zmq::blob_t &zmq::pull_t::get_credential () const
 {
-    return fq.get_credential ();
+    return _fq.get_credential ();
 }

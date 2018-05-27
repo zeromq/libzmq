@@ -68,8 +68,8 @@ class tcp_address_t
     bool has_src_addr () const;
 
   protected:
-    ip_addr_t address;
-    ip_addr_t source_address;
+    ip_addr_t _address;
+    ip_addr_t _source_address;
     bool _has_src_addr;
 };
 
@@ -92,7 +92,7 @@ class tcp_address_mask_t : public tcp_address_t
                         const socklen_t ss_len_) const;
 
   private:
-    int address_mask;
+    int _address_mask;
 };
 }
 

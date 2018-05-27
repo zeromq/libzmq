@@ -67,10 +67,10 @@ class clock_t
 
   private:
     //  TSC timestamp of when last time measurement was made.
-    uint64_t last_tsc;
+    uint64_t _last_tsc;
 
     //  Physical time corresponding to the TSC above (in milliseconds).
-    uint64_t last_time;
+    uint64_t _last_time;
 
     clock_t (const clock_t &);
     const clock_t &operator= (const clock_t &);

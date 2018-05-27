@@ -54,58 +54,58 @@ zmq::socks_greeting_t::socks_greeting_t (uint8_t *methods_,
 }
 
 zmq::socks_greeting_encoder_t::socks_greeting_encoder_t () :
-    bytes_encoded (0),
-    bytes_written (0)
+    _bytes_encoded (0),
+    _bytes_written (0)
 {
 }
 
 void zmq::socks_greeting_encoder_t::encode (const socks_greeting_t &greeting_)
 {
-    uint8_t *ptr = buf;
+    uint8_t *ptr = _buf;
 
     *ptr++ = 0x05;
     *ptr++ = static_cast<uint8_t> (greeting_.num_methods);
     for (uint8_t i = 0; i < greeting_.num_methods; i++)
         *ptr++ = greeting_.methods[i];
 
-    bytes_encoded = 2 + greeting_.num_methods;
-    bytes_written = 0;
+    _bytes_encoded = 2 + greeting_.num_methods;
+    _bytes_written = 0;
 }
 
 int zmq::socks_greeting_encoder_t::output (fd_t fd_)
 {
     const int rc =
-      tcp_write (fd_, buf + bytes_written, bytes_encoded - bytes_written);
+      tcp_write (fd_, _buf + _bytes_written, _bytes_encoded - _bytes_written);
     if (rc > 0)
-        bytes_written += static_cast<size_t> (rc);
+        _bytes_written += static_cast<size_t> (rc);
     return rc;
 }
 
 bool zmq::socks_greeting_encoder_t::has_pending_data () const
 {
-    return bytes_written < bytes_encoded;
+    return _bytes_written < _bytes_encoded;
 }
 
 void zmq::socks_greeting_encoder_t::reset ()
 {
-    bytes_encoded = bytes_written = 0;
+    _bytes_encoded = _bytes_written = 0;
 }
 
 zmq::socks_choice_t::socks_choice_t (unsigned char method_) : method (method_)
 {
 }
 
-zmq::socks_choice_decoder_t::socks_choice_decoder_t () : bytes_read (0)
+zmq::socks_choice_decoder_t::socks_choice_decoder_t () : _bytes_read (0)
 {
 }
 
 int zmq::socks_choice_decoder_t::input (fd_t fd_)
 {
-    zmq_assert (bytes_read < 2);
-    const int rc = tcp_read (fd_, buf + bytes_read, 2 - bytes_read);
+    zmq_assert (_bytes_read < 2);
+    const int rc = tcp_read (fd_, _buf + _bytes_read, 2 - _bytes_read);
     if (rc > 0) {
-        bytes_read += static_cast<size_t> (rc);
-        if (buf[0] != 0x05)
+        _bytes_read += static_cast<size_t> (rc);
+        if (_buf[0] != 0x05)
             return -1;
     }
     return rc;
@@ -113,18 +113,18 @@ int zmq::socks_choice_decoder_t::input (fd_t fd_)
 
 bool zmq::socks_choice_decoder_t::message_ready () const
 {
-    return bytes_read == 2;
+    return _bytes_read == 2;
 }
 
 zmq::socks_choice_t zmq::socks_choice_decoder_t::decode ()
 {
     zmq_assert (message_ready ());
-    return socks_choice_t (buf[1]);
+    return socks_choice_t (_buf[1]);
 }
 
 void zmq::socks_choice_decoder_t::reset ()
 {
-    bytes_read = 0;
+    _bytes_read = 0;
 }
 
 
@@ -139,8 +139,8 @@ zmq::socks_request_t::socks_request_t (uint8_t command_,
 }
 
 zmq::socks_request_encoder_t::socks_request_encoder_t () :
-    bytes_encoded (0),
-    bytes_written (0)
+    _bytes_encoded (0),
+    _bytes_written (0)
 {
 }
 
@@ -148,7 +148,7 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req_)
 {
     zmq_assert (req_.hostname.size () <= UINT8_MAX);
 
-    unsigned char *ptr = buf;
+    unsigned char *ptr = _buf;
     *ptr++ = 0x05;
     *ptr++ = req_.command;
     *ptr++ = 0x00;
@@ -190,27 +190,27 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req_)
     *ptr++ = req_.port / 256;
     *ptr++ = req_.port % 256;
 
-    bytes_encoded = ptr - buf;
-    bytes_written = 0;
+    _bytes_encoded = ptr - _buf;
+    _bytes_written = 0;
 }
 
 int zmq::socks_request_encoder_t::output (fd_t fd_)
 {
     const int rc =
-      tcp_write (fd_, buf + bytes_written, bytes_encoded - bytes_written);
+      tcp_write (fd_, _buf + _bytes_written, _bytes_encoded - _bytes_written);
     if (rc > 0)
-        bytes_written += static_cast<size_t> (rc);
+        _bytes_written += static_cast<size_t> (rc);
     return rc;
 }
 
 bool zmq::socks_request_encoder_t::has_pending_data () const
 {
-    return bytes_written < bytes_encoded;
+    return _bytes_written < _bytes_encoded;
 }
 
 void zmq::socks_request_encoder_t::reset ()
 {
-    bytes_encoded = bytes_written = 0;
+    _bytes_encoded = _bytes_written = 0;
 }
 
 zmq::socks_response_t::socks_response_t (uint8_t response_code_,
@@ -222,7 +222,7 @@ zmq::socks_response_t::socks_response_t (uint8_t response_code_,
 {
 }
 
-zmq::socks_response_decoder_t::socks_response_decoder_t () : bytes_read (0)
+zmq::socks_response_decoder_t::socks_response_decoder_t () : _bytes_read (0)
 {
 }
 
@@ -230,31 +230,31 @@ int zmq::socks_response_decoder_t::input (fd_t fd_)
 {
     size_t n = 0;
 
-    if (bytes_read < 5)
-        n = 5 - bytes_read;
+    if (_bytes_read < 5)
+        n = 5 - _bytes_read;
     else {
-        const uint8_t atyp = buf[3];
+        const uint8_t atyp = _buf[3];
         zmq_assert (atyp == 0x01 || atyp == 0x03 || atyp == 0x04);
         if (atyp == 0x01)
             n = 3 + 2;
         else if (atyp == 0x03)
-            n = buf[4] + 2;
+            n = _buf[4] + 2;
         else if (atyp == 0x04)
             n = 15 + 2;
     }
-    const int rc = tcp_read (fd_, buf + bytes_read, n);
+    const int rc = tcp_read (fd_, _buf + _bytes_read, n);
     if (rc > 0) {
-        bytes_read += static_cast<size_t> (rc);
-        if (buf[0] != 0x05)
+        _bytes_read += static_cast<size_t> (rc);
+        if (_buf[0] != 0x05)
             return -1;
-        if (bytes_read >= 2)
-            if (buf[1] > 0x08)
+        if (_bytes_read >= 2)
+            if (_buf[1] > 0x08)
                 return -1;
-        if (bytes_read >= 3)
-            if (buf[2] != 0x00)
+        if (_bytes_read >= 3)
+            if (_buf[2] != 0x00)
                 return -1;
-        if (bytes_read >= 4) {
-            const uint8_t atyp = buf[3];
+        if (_bytes_read >= 4) {
+            const uint8_t atyp = _buf[3];
             if (atyp != 0x01 && atyp != 0x03 && atyp != 0x04)
                 return -1;
         }
@@ -264,26 +264,26 @@ int zmq::socks_response_decoder_t::input (fd_t fd_)
 
 bool zmq::socks_response_decoder_t::message_ready () const
 {
-    if (bytes_read < 4)
+    if (_bytes_read < 4)
         return false;
 
-    const uint8_t atyp = buf[3];
+    const uint8_t atyp = _buf[3];
     zmq_assert (atyp == 0x01 || atyp == 0x03 || atyp == 0x04);
     if (atyp == 0x01)
-        return bytes_read == 10;
+        return _bytes_read == 10;
     if (atyp == 0x03)
-        return bytes_read > 4 && bytes_read == 4 + 1 + buf[4] + 2u;
+        return _bytes_read > 4 && _bytes_read == 4 + 1 + _buf[4] + 2u;
     else
-        return bytes_read == 22;
+        return _bytes_read == 22;
 }
 
 zmq::socks_response_t zmq::socks_response_decoder_t::decode ()
 {
     zmq_assert (message_ready ());
-    return socks_response_t (buf[1], "", 0);
+    return socks_response_t (_buf[1], "", 0);
 }
 
 void zmq::socks_response_decoder_t::reset ()
 {
-    bytes_read = 0;
+    _bytes_read = 0;
 }

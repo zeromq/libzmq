@@ -69,11 +69,11 @@ class dealer_t : public socket_base_t
   private:
     //  Messages are fair-queued from inbound pipes. And load-balanced to
     //  the outbound pipes.
-    fq_t fq;
-    lb_t lb;
+    fq_t _fq;
+    lb_t _lb;
 
     // if true, send an empty message to every connected router peer
-    bool probe_router;
+    bool _probe_router;
 
     dealer_t (const dealer_t &);
     const dealer_t &operator= (const dealer_t &);

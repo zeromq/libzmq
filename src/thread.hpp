@@ -53,11 +53,11 @@ class thread_t
 {
   public:
     inline thread_t () :
-        tfn (NULL),
-        arg (NULL),
-        started (false),
-        thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
-        thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
+        _tfn (NULL),
+        _arg (NULL),
+        _started (false),
+        _thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
+        _thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
     }
 
@@ -97,16 +97,16 @@ class thread_t
     //  These are internal members. They should be private, however then
     //  they would not be accessible from the main C routine of the thread.
     void applySchedulingParameters ();
-    thread_fn *tfn;
-    void *arg;
+    thread_fn *_tfn;
+    void *_arg;
 
   private:
-    bool started;
+    bool _started;
 
 #ifdef ZMQ_HAVE_WINDOWS
-    HANDLE descriptor;
+    HANDLE _descriptor;
 #elif defined ZMQ_HAVE_VXWORKS
-    int descriptor;
+    int _descriptor;
     enum
     {
         DEFAULT_PRIORITY = 100,
@@ -114,13 +114,13 @@ class thread_t
         DEFAULT_STACK_SIZE = 4000
     };
 #else
-    pthread_t descriptor;
+    pthread_t _descriptor;
 #endif
 
     //  Thread scheduling parameters.
-    int thread_priority;
-    int thread_sched_policy;
-    std::set<int> thread_affinity_cpus;
+    int _thread_priority;
+    int _thread_sched_policy;
+    std::set<int> _thread_affinity_cpus;
 
     thread_t (const thread_t &);
     const thread_t &operator= (const thread_t &);

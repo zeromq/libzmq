@@ -66,10 +66,10 @@ class curve_client_t : public curve_mechanism_base_t
     };
 
     //  Current FSM state
-    state_t state;
+    state_t _state;
 
     //  CURVE protocol tools
-    curve_client_tools_t tools;
+    curve_client_tools_t _tools;
 
     int produce_hello (msg_t *msg_);
     int process_welcome (const uint8_t *cmd_data_, size_t data_size_);

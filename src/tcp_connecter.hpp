@@ -103,33 +103,33 @@ class tcp_connecter_t : public own_t, public io_object_t
     bool tune_socket (fd_t fd_);
 
     //  Address to connect to. Owned by session_base_t.
-    address_t *const addr;
+    address_t *const _addr;
 
     //  Underlying socket.
-    fd_t s;
+    fd_t _s;
 
     //  Handle corresponding to the listening socket, if file descriptor is
     //  registered with the poller, or NULL.
-    handle_t handle;
+    handle_t _handle;
 
     //  If true, connecter is waiting a while before trying to connect.
-    const bool delayed_start;
+    const bool _delayed_start;
 
     //  True iff a timer has been started.
-    bool connect_timer_started;
-    bool reconnect_timer_started;
+    bool _connect_timer_started;
+    bool _reconnect_timer_started;
 
     //  Reference to the session we belong to.
-    zmq::session_base_t *const session;
+    zmq::session_base_t *const _session;
 
     //  Current reconnect ivl, updated for backoff strategy
-    int current_reconnect_ivl;
+    int _current_reconnect_ivl;
 
     // String representation of endpoint to connect to
-    std::string endpoint;
+    std::string _endpoint;
 
     // Socket
-    zmq::socket_base_t *const socket;
+    zmq::socket_base_t *const _socket;
 
     tcp_connecter_t (const tcp_connecter_t &);
     const tcp_connecter_t &operator= (const tcp_connecter_t &);

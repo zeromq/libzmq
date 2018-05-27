@@ -39,13 +39,13 @@
 #include "session_base.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) : ctx (ctx_), tid (tid_)
+zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) : _ctx (ctx_), _tid (tid_)
 {
 }
 
 zmq::object_t::object_t (object_t *parent_) :
-    ctx (parent_->ctx),
-    tid (parent_->tid)
+    _ctx (parent_->_ctx),
+    _tid (parent_->_tid)
 {
 }
 
@@ -55,17 +55,17 @@ zmq::object_t::~object_t ()
 
 uint32_t zmq::object_t::get_tid ()
 {
-    return tid;
+    return _tid;
 }
 
 void zmq::object_t::set_tid (uint32_t id_)
 {
-    tid = id_;
+    _tid = id_;
 }
 
 zmq::ctx_t *zmq::object_t::get_ctx ()
 {
-    return ctx;
+    return _ctx;
 }
 
 void zmq::object_t::process_command (command_t &cmd_)
@@ -157,46 +157,46 @@ void zmq::object_t::process_command (command_t &cmd_)
 int zmq::object_t::register_endpoint (const char *addr_,
                                       const endpoint_t &endpoint_)
 {
-    return ctx->register_endpoint (addr_, endpoint_);
+    return _ctx->register_endpoint (addr_, endpoint_);
 }
 
 int zmq::object_t::unregister_endpoint (const std::string &addr_,
                                         socket_base_t *socket_)
 {
-    return ctx->unregister_endpoint (addr_, socket_);
+    return _ctx->unregister_endpoint (addr_, socket_);
 }
 
 void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
 {
-    return ctx->unregister_endpoints (socket_);
+    return _ctx->unregister_endpoints (socket_);
 }
 
 zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
 {
-    return ctx->find_endpoint (addr_);
+    return _ctx->find_endpoint (addr_);
 }
 
 void zmq::object_t::pend_connection (const std::string &addr_,
                                      const endpoint_t &endpoint_,
                                      pipe_t **pipes_)
 {
-    ctx->pend_connection (addr_, endpoint_, pipes_);
+    _ctx->pend_connection (addr_, endpoint_, pipes_);
 }
 
 void zmq::object_t::connect_pending (const char *addr_,
                                      zmq::socket_base_t *bind_socket_)
 {
-    return ctx->connect_pending (addr_, bind_socket_);
+    return _ctx->connect_pending (addr_, bind_socket_);
 }
 
 void zmq::object_t::destroy_socket (socket_base_t *socket_)
 {
-    ctx->destroy_socket (socket_);
+    _ctx->destroy_socket (socket_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
 {
-    return ctx->choose_io_thread (affinity_);
+    return _ctx->choose_io_thread (affinity_);
 }
 
 void zmq::object_t::send_stop ()
@@ -206,7 +206,7 @@ void zmq::object_t::send_stop ()
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    ctx->send_command (tid, cmd);
+    _ctx->send_command (_tid, cmd);
 }
 
 void zmq::object_t::send_plug (own_t *destination_, bool inc_seqnum_)
@@ -352,7 +352,7 @@ void zmq::object_t::send_term_endpoint (own_t *destination_,
 void zmq::object_t::send_reap (class socket_base_t *socket_)
 {
     command_t cmd;
-    cmd.destination = ctx->get_reaper ();
+    cmd.destination = _ctx->get_reaper ();
     cmd.type = command_t::reap;
     cmd.args.reap.socket = socket_;
     send_command (cmd);
@@ -361,7 +361,7 @@ void zmq::object_t::send_reap (class socket_base_t *socket_)
 void zmq::object_t::send_reaped ()
 {
     command_t cmd;
-    cmd.destination = ctx->get_reaper ();
+    cmd.destination = _ctx->get_reaper ();
     cmd.type = command_t::reaped;
     send_command (cmd);
 }
@@ -379,7 +379,7 @@ void zmq::object_t::send_done ()
     command_t cmd;
     cmd.destination = NULL;
     cmd.type = command_t::done;
-    ctx->send_command (ctx_t::term_tid, cmd);
+    _ctx->send_command (ctx_t::term_tid, cmd);
 }
 
 void zmq::object_t::process_stop ()
@@ -474,5 +474,5 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    ctx->send_command (cmd_.destination->get_tid (), cmd_);
+    _ctx->send_command (cmd_.destination->get_tid (), cmd_);
 }

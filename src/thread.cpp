@@ -34,7 +34,7 @@
 
 bool zmq::thread_t::get_started () const
 {
-    return started;
+    return _started;
 }
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -47,37 +47,37 @@ static unsigned int __stdcall thread_routine (void *arg_)
 #endif
 {
     zmq::thread_t *self = (zmq::thread_t *) arg_;
-    self->tfn (self->arg);
+    self->_tfn (self->_arg);
     return 0;
 }
 }
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
-    tfn = tfn_;
-    arg = arg_;
+    _tfn = tfn_;
+    _arg = arg_;
 #if defined _WIN32_WCE
-    descriptor =
+    _descriptor =
       (HANDLE) CreateThread (NULL, 0, &::thread_routine, this, 0, NULL);
 #else
-    descriptor =
+    _descriptor =
       (HANDLE) _beginthreadex (NULL, 0, &::thread_routine, this, 0, NULL);
 #endif
-    win_assert (descriptor != NULL);
-    started = true;
+    win_assert (_descriptor != NULL);
+    _started = true;
 }
 
 bool zmq::thread_t::is_current_thread () const
 {
-    return GetCurrentThreadId () == GetThreadId (descriptor);
+    return GetCurrentThreadId () == GetThreadId (_descriptor);
 }
 
 void zmq::thread_t::stop ()
 {
-    if (started) {
-        DWORD rc = WaitForSingleObject (descriptor, INFINITE);
+    if (_started) {
+        DWORD rc = WaitForSingleObject (_descriptor, INFINITE);
         win_assert (rc != WAIT_FAILED);
-        BOOL rc2 = CloseHandle (descriptor);
+        BOOL rc2 = CloseHandle (_descriptor);
         win_assert (rc2 != 0);
     }
 }
@@ -104,50 +104,51 @@ static void *thread_routine (void *arg_)
 {
     zmq::thread_t *self = (zmq::thread_t *) arg_;
     self->applySchedulingParameters ();
-    self->tfn (self->arg);
+    self->_tfn (self->_arg);
     return NULL;
 }
 }
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
-    tfn = tfn_;
-    arg = arg_;
-    descriptor = taskSpawn (NULL, DEFAULT_PRIORITY, DEFAULT_OPTIONS,
-                            DEFAULT_STACK_SIZE, (FUNCPTR) thread_routine,
-                            (int) this, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    if (descriptor != NULL || descriptor > 0)
-        started = true;
+    _tfn = tfn_;
+    _arg = arg_;
+    _descriptor = taskSpawn (NULL, DEFAULT_PRIORITY, DEFAULT_OPTIONS,
+                             DEFAULT_STACK_SIZE, (FUNCPTR) thread_routine,
+                             (int) this, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    if (_descriptor != NULL || _descriptor > 0)
+        _started = true;
 }
 
 void zmq::thread_t::stop ()
 {
-    if (started)
-        while ((descriptor != NULL || descriptor > 0)
-               && taskIdVerify (descriptor) == 0) {
+    if (_started)
+        while ((_descriptor != NULL || _descriptor > 0)
+               && taskIdVerify (_descriptor) == 0) {
         }
 }
 
 bool zmq::thread_t::is_current_thread () const
 {
-    return taskIdSelf () == descriptor;
+    return taskIdSelf () == _descriptor;
 }
 
 void zmq::thread_t::setSchedulingParameters (
   int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
 {
-    thread_priority = priority_;
-    thread_sched_policy = schedulingPolicy_;
-    thread_affinity_cpus = affinity_cpus_;
+    _thread_priority = priority_;
+    _thread_sched_policy = schedulingPolicy_;
+    _thread_affinity_cpus = affinity_cpus_;
 }
 
 void zmq::thread_t::
   applySchedulingParameters () // to be called in secondary thread context
 {
-    int priority = (thread_priority >= 0 ? thread_priority : DEFAULT_PRIORITY);
+    int priority =
+      (_thread_priority >= 0 ? _thread_priority : DEFAULT_PRIORITY);
     priority = (priority < 255 ? priority : DEFAULT_PRIORITY);
-    if (descriptor != NULL || descriptor > 0) {
-        taskPrioritySet (descriptor, priority);
+    if (_descriptor != NULL || _descriptor > 0) {
+        taskPrioritySet (_descriptor, priority);
     }
 }
 
@@ -178,39 +179,39 @@ static void *thread_routine (void *arg_)
 #endif
     zmq::thread_t *self = (zmq::thread_t *) arg_;
     self->applySchedulingParameters ();
-    self->tfn (self->arg);
+    self->_tfn (self->_arg);
     return NULL;
 }
 }
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
-    tfn = tfn_;
-    arg = arg_;
-    int rc = pthread_create (&descriptor, NULL, thread_routine, this);
+    _tfn = tfn_;
+    _arg = arg_;
+    int rc = pthread_create (&_descriptor, NULL, thread_routine, this);
     posix_assert (rc);
-    started = true;
+    _started = true;
 }
 
 void zmq::thread_t::stop ()
 {
-    if (started) {
-        int rc = pthread_join (descriptor, NULL);
+    if (_started) {
+        int rc = pthread_join (_descriptor, NULL);
         posix_assert (rc);
     }
 }
 
 bool zmq::thread_t::is_current_thread () const
 {
-    return pthread_self () == descriptor;
+    return pthread_self () == _descriptor;
 }
 
 void zmq::thread_t::setSchedulingParameters (
   int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
 {
-    thread_priority = priority_;
-    thread_sched_policy = schedulingPolicy_;
-    thread_affinity_cpus = affinity_cpus_;
+    _thread_priority = priority_;
+    _thread_sched_policy = schedulingPolicy_;
+    _thread_affinity_cpus = affinity_cpus_;
 }
 
 void zmq::thread_t::
@@ -227,11 +228,11 @@ void zmq::thread_t::
         return;
     }
 #endif
-    int rc = pthread_getschedparam (descriptor, &policy, &param);
+    int rc = pthread_getschedparam (_descriptor, &policy, &param);
     posix_assert (rc);
 
-    if (thread_sched_policy != ZMQ_THREAD_SCHED_POLICY_DFLT) {
-        policy = thread_sched_policy;
+    if (_thread_sched_policy != ZMQ_THREAD_SCHED_POLICY_DFLT) {
+        policy = _thread_sched_policy;
     }
 
     /* Quoting docs:
@@ -242,13 +243,13 @@ void zmq::thread_t::
     bool use_nice_instead_priority =
       (policy != SCHED_FIFO) && (policy != SCHED_RR);
 
-    if (thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
+    if (_thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
         if (use_nice_instead_priority)
             param.sched_priority =
               0; // this is the only supported priority for most scheduling policies
         else
             param.sched_priority =
-              thread_priority; // user should provide a value between 1 and 99
+              _thread_priority; // user should provide a value between 1 and 99
     }
 
 #ifdef __NetBSD__
@@ -256,7 +257,7 @@ void zmq::thread_t::
         param.sched_priority = -1;
 #endif
 
-    rc = pthread_setschedparam (descriptor, policy, &param);
+    rc = pthread_setschedparam (_descriptor, policy, &param);
 
 #if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
     // If this feature is unavailable at run-time, don't abort.
@@ -268,7 +269,7 @@ void zmq::thread_t::
 
 #if !defined ZMQ_HAVE_VXWORKS
     if (use_nice_instead_priority
-        && thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
+        && _thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
         // assume the user wants to decrease the thread's nice value
         // i.e., increase the chance of this thread being scheduled: try setting that to
         // maximum priority.
@@ -281,11 +282,11 @@ void zmq::thread_t::
 #endif
 
 #ifdef ZMQ_HAVE_PTHREAD_SET_AFFINITY
-    if (!thread_affinity_cpus.empty ()) {
+    if (!_thread_affinity_cpus.empty ()) {
         cpu_set_t cpuset;
         CPU_ZERO (&cpuset);
-        for (std::set<int>::const_iterator it = thread_affinity_cpus.begin ();
-             it != thread_affinity_cpus.end (); it++) {
+        for (std::set<int>::const_iterator it = _thread_affinity_cpus.begin ();
+             it != _thread_affinity_cpus.end (); it++) {
             CPU_SET ((int) (*it), &cpuset);
         }
         rc =
@@ -313,15 +314,15 @@ void zmq::thread_t::setThreadName (const char *name_)
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_2)
-    int rc = pthread_setname_np (descriptor, name_);
+    int rc = pthread_setname_np (_descriptor, name_);
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_3)
-    int rc = pthread_setname_np (descriptor, name_, NULL);
+    int rc = pthread_setname_np (_descriptor, name_, NULL);
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SET_NAME)
-    pthread_set_name_np (descriptor, name_);
+    pthread_set_name_np (_descriptor, name_);
 #endif
 }
 

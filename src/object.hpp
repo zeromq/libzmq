@@ -134,10 +134,10 @@ class object_t
 
   private:
     //  Context provides access to the global state.
-    zmq::ctx_t *const ctx;
+    zmq::ctx_t *const _ctx;
 
     //  Thread ID of the thread the object belongs to.
-    uint32_t tid;
+    uint32_t _tid;
 
     void send_command (command_t &cmd_);
 

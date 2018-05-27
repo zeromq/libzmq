@@ -72,45 +72,45 @@ class xpub_t : public socket_base_t
     static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *arg_);
 
     //  List of all subscriptions mapped to corresponding pipes.
-    mtrie_t subscriptions;
+    mtrie_t _subscriptions;
 
     //  List of manual subscriptions mapped to corresponding pipes.
-    mtrie_t manual_subscriptions;
+    mtrie_t _manual_subscriptions;
 
     //  Distributor of messages holding the list of outbound pipes.
-    dist_t dist;
+    dist_t _dist;
 
     // If true, send all subscription messages upstream, not just
     // unique ones
-    bool verbose_subs;
+    bool _verbose_subs;
 
     // If true, send all unsubscription messages upstream, not just
     // unique ones
-    bool verbose_unsubs;
+    bool _verbose_unsubs;
 
     //  True if we are in the middle of sending a multi-part message.
-    bool more;
+    bool _more;
 
     //  Drop messages if HWM reached, otherwise return with EAGAIN
-    bool lossy;
+    bool _lossy;
 
     //  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
-    bool manual;
+    bool _manual;
 
     //  Last pipe that sent subscription message, only used if xpub is on manual
-    pipe_t *last_pipe;
+    pipe_t *_last_pipe;
 
     // Pipes that sent subscriptions messages that have not yet been processed, only used if xpub is on manual
-    std::deque<pipe_t *> pending_pipes;
+    std::deque<pipe_t *> _pending_pipes;
 
     //  Welcome message to send to pipe when attached
-    msg_t welcome_msg;
+    msg_t _welcome_msg;
 
     //  List of pending (un)subscriptions, ie. those that were already
     //  applied to the trie, but not yet received by the user.
-    std::deque<blob_t> pending_data;
-    std::deque<metadata_t *> pending_metadata;
-    std::deque<unsigned char> pending_flags;
+    std::deque<blob_t> _pending_data;
+    std::deque<metadata_t *> _pending_metadata;
+    std::deque<unsigned char> _pending_flags;
 
     xpub_t (const xpub_t &);
     const xpub_t &operator= (const xpub_t &);

@@ -62,26 +62,26 @@ class req_t : public dealer_t
   private:
     //  If true, request was already sent and reply wasn't received yet or
     //  was received partially.
-    bool receiving_reply;
+    bool _receiving_reply;
 
     //  If true, we are starting to send/recv a message. The first part
     //  of the message must be empty message part (backtrace stack bottom).
-    bool message_begins;
+    bool _message_begins;
 
     //  The pipe the request was sent to and where the reply is expected.
-    zmq::pipe_t *reply_pipe;
+    zmq::pipe_t *_reply_pipe;
 
     //  Whether request id frames shall be sent and expected.
-    bool request_id_frames_enabled;
+    bool _request_id_frames_enabled;
 
     //  The current request id. It is incremented every time before a new
     //  request is sent.
-    uint32_t request_id;
+    uint32_t _request_id;
 
     //  If false, send() will reset its internal state and terminate the
     //  reply_pipe's connection instead of failing if a previous request is
     //  still pending.
-    bool strict;
+    bool _strict;
 
     req_t (const req_t &);
     const req_t &operator= (const req_t &);
@@ -107,7 +107,7 @@ class req_session_t : public session_base_t
         bottom,
         request_id,
         body
-    } state;
+    } _state;
 
     req_session_t (const req_session_t &);
     const req_session_t &operator= (const req_session_t &);
