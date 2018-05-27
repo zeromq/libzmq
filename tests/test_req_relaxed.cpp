@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-static void bounce (void *socket)
+static void bounce (void *socket_)
 {
     int more;
     size_t more_size = sizeof (more);
@@ -38,28 +38,28 @@ static void bounce (void *socket)
         int rc = zmq_msg_init (&recv_part);
         assert (rc == 0);
 
-        rc = zmq_msg_recv (&recv_part, socket, 0);
+        rc = zmq_msg_recv (&recv_part, socket_, 0);
         assert (rc != -1);
 
-        rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
+        rc = zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size);
         assert (rc == 0);
 
         zmq_msg_init (&sent_part);
         zmq_msg_copy (&sent_part, &recv_part);
 
-        rc = zmq_msg_send (&sent_part, socket, more ? ZMQ_SNDMORE : 0);
+        rc = zmq_msg_send (&sent_part, socket_, more ? ZMQ_SNDMORE : 0);
         assert (rc != -1);
 
         zmq_msg_close (&recv_part);
     } while (more);
 }
 
-static int get_events (void *socket)
+static int get_events (void *socket_)
 {
     int rc;
     int events;
     size_t events_size = sizeof (events);
-    rc = zmq_getsockopt (socket, ZMQ_EVENTS, &events, &events_size);
+    rc = zmq_getsockopt (socket_, ZMQ_EVENTS, &events, &events_size);
     assert (rc == 0);
     return events;
 }

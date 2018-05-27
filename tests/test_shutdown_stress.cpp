@@ -38,11 +38,11 @@ struct thread_data
 };
 
 extern "C" {
-static void worker (void *data)
+static void worker (void *data_)
 {
     int rc;
     void *socket;
-    struct thread_data *tdata = (struct thread_data *) data;
+    struct thread_data *tdata = (struct thread_data *) data_;
 
     socket = zmq_socket (tdata->ctx, ZMQ_SUB);
     assert (socket);

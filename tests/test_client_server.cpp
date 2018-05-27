@@ -42,20 +42,20 @@ void tearDown ()
     teardown_test_context ();
 }
 
-void create_inproc_client_server_pair (void **server, void **client)
+void create_inproc_client_server_pair (void **server_, void **client_)
 {
-    *server = test_context_socket (ZMQ_SERVER);
-    *client = test_context_socket (ZMQ_CLIENT);
+    *server_ = test_context_socket (ZMQ_SERVER);
+    *client_ = test_context_socket (ZMQ_CLIENT);
 
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_bind (*server, "inproc://test-client-server"));
+      zmq_bind (*server_, "inproc://test-client-server"));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (*client, "inproc://test-client-server"));
+      zmq_connect (*client_, "inproc://test-client-server"));
 }
 
-void send_sndmore_expect_failure (void *socket)
+void send_sndmore_expect_failure (void *socket_)
 {
-    int rc = zmq_send (socket, "X", 1, ZMQ_SNDMORE);
+    int rc = zmq_send (socket_, "X", 1, ZMQ_SNDMORE);
     TEST_ASSERT_EQUAL_INT (-1, rc);
     TEST_ASSERT_EQUAL_INT (EINVAL, errno);
 }

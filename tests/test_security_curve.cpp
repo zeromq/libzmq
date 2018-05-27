@@ -91,42 +91,43 @@ const char large_routing_id[] = "0123456789012345678901234567890123456789"
                                 "0123456789012345678901234567890123456789"
                                 "012345678901234";
 
-static void zap_handler_large_routing_id (void *ctx)
+static void zap_handler_large_routing_id (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_ok, large_routing_id);
+    zap_handler_generic (ctx_, zap_ok, large_routing_id);
 }
 
-void expect_new_client_curve_bounce_fail (void *ctx,
-                                          char *server_public,
-                                          char *client_public,
-                                          char *client_secret,
-                                          char *my_endpoint,
-                                          void *server,
-                                          void **client_mon = NULL,
-                                          int expected_client_event = 0,
-                                          int expected_client_value = 0)
+void expect_new_client_curve_bounce_fail (void *ctx_,
+                                          char *server_public_,
+                                          char *client_public_,
+                                          char *client_secret_,
+                                          char *my_endpoint_,
+                                          void *server_,
+                                          void **client_mon_ = NULL,
+                                          int expected_client_event_ = 0,
+                                          int expected_client_value_ = 0)
 {
-    curve_client_data_t curve_client_data = {server_public, client_public,
-                                             client_secret};
+    curve_client_data_t curve_client_data = {server_public_, client_public_,
+                                             client_secret_};
     expect_new_client_bounce_fail (
-      ctx, my_endpoint, server, socket_config_curve_client, &curve_client_data,
-      client_mon, expected_client_event, expected_client_value);
+      ctx_, my_endpoint_, server_, socket_config_curve_client,
+      &curve_client_data, client_mon_, expected_client_event_,
+      expected_client_value_);
 }
 
-void test_null_key (void *ctx,
-                    void *server,
-                    void *server_mon,
-                    char *my_endpoint,
-                    char *server_public,
-                    char *client_public,
-                    char *client_secret)
+void test_null_key (void *ctx_,
+                    void *server_,
+                    void *server_mon_,
+                    char *my_endpoint_,
+                    char *server_public_,
+                    char *client_public_,
+                    char *client_secret_)
 {
-    expect_new_client_curve_bounce_fail (ctx, server_public, client_public,
-                                         client_secret, my_endpoint, server);
+    expect_new_client_curve_bounce_fail (ctx_, server_public_, client_public_,
+                                         client_secret_, my_endpoint_, server_);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     int handshake_failed_encryption_event_count =
-      expect_monitor_event_multiple (server_mon,
+      expect_monitor_event_multiple (server_mon_,
                                      ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                      ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 
@@ -201,19 +202,19 @@ void test_curve_security_with_bogus_client_credentials ()
                  || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
-void expect_zmtp_mechanism_mismatch (void *client,
-                                     char *my_endpoint,
-                                     void *server,
-                                     void *server_mon)
+void expect_zmtp_mechanism_mismatch (void *client_,
+                                     char *my_endpoint_,
+                                     void *server_,
+                                     void *server_mon_)
 {
     //  This must be caught by the curve_server class, not passed to ZAP
-    int rc = zmq_connect (client, my_endpoint);
+    int rc = zmq_connect (client_, my_endpoint_);
     TEST_ASSERT_ZMQ_ERRNO (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger (client);
+    expect_bounce_fail (server_, client_);
+    close_zero_linger (client_);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon,
+    expect_monitor_event_multiple (server_mon_,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
 #endif
@@ -241,13 +242,13 @@ void test_curve_security_with_plain_client_credentials ()
     expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
 
-fd_t connect_vanilla_socket (char *my_endpoint)
+fd_t connect_vanilla_socket (char *my_endpoint_)
 {
     fd_t s;
     struct sockaddr_in ip4addr;
 
     unsigned short int port;
-    int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    int rc = sscanf (my_endpoint_, "tcp://127.0.0.1:%hu", &port);
     TEST_ASSERT_EQUAL_INT (1, rc);
 
     ip4addr.sin_family = AF_INET;
@@ -279,28 +280,28 @@ void test_curve_security_unauthenticated_message ()
     close (s);
 }
 
-void send_all (fd_t fd, const char *data, socket_size_t size)
+void send_all (fd_t fd_, const char *data_, socket_size_t size_)
 {
-    while (size > 0) {
-        int res = send (fd, data, size, 0);
+    while (size_ > 0) {
+        int res = send (fd_, data_, size_, 0);
         TEST_ASSERT_GREATER_THAN_INT (0, res);
-        size -= res;
-        data += res;
+        size_ -= res;
+        data_ += res;
     }
 }
 
-template <size_t N> void send (fd_t fd, const char (&data)[N])
+template <size_t N> void send (fd_t fd_, const char (&data_)[N])
 {
-    send_all (fd, data, N - 1);
+    send_all (fd_, data_, N - 1);
 }
 
-void send_greeting (fd_t s)
+void send_greeting (fd_t s_)
 {
-    send (s, "\xff\0\0\0\0\0\0\0\0\x7f");            // signature
-    send (s, "\x03\x00");                            // version 3.0
-    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s, "\0");                                  // as-server == false
-    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    send (s_, "\xff\0\0\0\0\0\0\0\0\x7f");            // signature
+    send (s_, "\x03\x00");                            // version 3.0
+    send (s_, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
+    send (s_, "\0");                                  // as-server == false
+    send (s_, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
 }
 
 void test_curve_security_invalid_hello_wrong_length ()
@@ -342,36 +343,36 @@ zmq::curve_client_tools_t make_curve_client_tools ()
 }
 
 #ifndef htonll
-uint64_t htonll (uint64_t value)
+uint64_t htonll (uint64_t value_)
 {
     // The answer is 42
     static const int num = 42;
 
     // Check the endianness
     if (*reinterpret_cast<const char *> (&num) == num) {
-        const uint32_t high_part = htonl (static_cast<uint32_t> (value >> 32));
+        const uint32_t high_part = htonl (static_cast<uint32_t> (value_ >> 32));
         const uint32_t low_part =
-          htonl (static_cast<uint32_t> (value & 0xFFFFFFFFLL));
+          htonl (static_cast<uint32_t> (value_ & 0xFFFFFFFFLL));
 
         return (static_cast<uint64_t> (low_part) << 32) | high_part;
     } else {
-        return value;
+        return value_;
     }
 }
 #endif
 
-template <size_t N> void send_command (fd_t s, char (&command)[N])
+template <size_t N> void send_command (fd_t s_, char (&command_)[N])
 {
     if (N < 256) {
-        send (s, "\x04");
+        send (s_, "\x04");
         char len = (char) N;
-        send_all (s, &len, 1);
+        send_all (s_, &len, 1);
     } else {
-        send (s, "\x06");
+        send (s_, "\x06");
         uint64_t len = htonll (N);
-        send_all (s, (char *) &len, 8);
+        send_all (s_, (char *) &len, 8);
     }
-    send_all (s, command, N);
+    send_all (s_, command_, N);
 }
 
 void test_curve_security_invalid_hello_command_name ()
@@ -424,46 +425,46 @@ void test_curve_security_invalid_hello_version ()
     close (s);
 }
 
-void flush_read (fd_t fd)
+void flush_read (fd_t fd_)
 {
     int res;
     char buf[256];
 
-    while ((res = recv (fd, buf, 256, 0)) == 256) {
+    while ((res = recv (fd_, buf, 256, 0)) == 256) {
     }
     TEST_ASSERT_NOT_EQUAL (-1, res);
 }
 
-void recv_all (fd_t fd, uint8_t *data, socket_size_t len)
+void recv_all (fd_t fd_, uint8_t *data_, socket_size_t len_)
 {
     socket_size_t received = 0;
-    while (received < len) {
-        int res = recv (fd, (char *) data, len, 0);
+    while (received < len_) {
+        int res = recv (fd_, (char *) data_, len_, 0);
         TEST_ASSERT_GREATER_THAN_INT (0, res);
 
-        data += res;
+        data_ += res;
         received += res;
     }
 }
 
-void recv_greeting (fd_t fd)
+void recv_greeting (fd_t fd_)
 {
     uint8_t greeting[64];
-    recv_all (fd, greeting, 64);
+    recv_all (fd_, greeting, 64);
     //  TODO assert anything about the greeting received from the server?
 }
 
-fd_t connect_exchange_greeting_and_send_hello (char *my_endpoint,
-                                               zmq::curve_client_tools_t &tools)
+fd_t connect_exchange_greeting_and_send_hello (
+  char *my_endpoint_, zmq::curve_client_tools_t &tools_)
 {
-    fd_t s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_vanilla_socket (my_endpoint_);
 
     send_greeting (s);
     recv_greeting (s);
 
     // send valid CURVE HELLO
     char hello[hello_length];
-    int rc = tools.produce_hello (hello, 0);
+    int rc = tools_.produce_hello (hello, 0);
     TEST_ASSERT_ZMQ_ERRNO (rc == 0);
 
     send_command (s, hello);
@@ -498,23 +499,23 @@ void test_curve_security_invalid_initiate_wrong_length ()
 }
 
 fd_t connect_exchange_greeting_and_hello_welcome (
-  char *my_endpoint,
-  void *server_mon,
-  int timeout,
-  zmq::curve_client_tools_t &tools)
+  char *my_endpoint_,
+  void *server_mon_,
+  int timeout_,
+  zmq::curve_client_tools_t &tools_)
 {
-    fd_t s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
+    fd_t s = connect_exchange_greeting_and_send_hello (my_endpoint_, tools_);
 
     // receive but ignore WELCOME
     uint8_t welcome[welcome_length + 2];
     recv_all (s, welcome, welcome_length + 2);
 
     uint8_t cn_precom[crypto_box_BEFORENMBYTES];
-    int res = tools.process_welcome (welcome + 2, welcome_length, cn_precom);
+    int res = tools_.process_welcome (welcome + 2, welcome_length, cn_precom);
     TEST_ASSERT_ZMQ_ERRNO (res == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    res = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
+    res = get_monitor_event_with_timeout (server_mon_, NULL, NULL, timeout_);
     TEST_ASSERT_EQUAL_INT (-1, res);
 #endif
 
@@ -587,10 +588,10 @@ void test_curve_security_invalid_initiate_command_encrypted_content ()
     close (s);
 }
 
-void test_curve_security_invalid_keysize (void *ctx)
+void test_curve_security_invalid_keysize (void *ctx_)
 {
     //  Check return codes for invalid buffer sizes
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    void *client = zmq_socket (ctx_, ZMQ_DEALER);
     TEST_ASSERT_NOT_NULL (client);
     errno = 0;
     int rc =

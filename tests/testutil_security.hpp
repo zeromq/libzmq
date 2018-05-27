@@ -39,24 +39,24 @@ typedef void(socket_config_fn) (void *, void *);
 const char *test_zap_domain = "ZAPTEST";
 
 //  NULL specific functions
-void socket_config_null_client (void *server, void *server_secret)
+void socket_config_null_client (void *server_, void *server_secret_)
 {
-    LIBZMQ_UNUSED (server);
-    LIBZMQ_UNUSED (server_secret);
+    LIBZMQ_UNUSED (server_);
+    LIBZMQ_UNUSED (server_secret_);
 }
 
-void socket_config_null_server (void *server, void *server_secret)
+void socket_config_null_server (void *server_, void *server_secret_)
 {
-    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+    int rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
                              strlen (test_zap_domain));
     assert (rc == 0);
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    int required = server_secret ? *(int *) server_secret : 0;
+    int required = server_secret_ ? *(int *) server_secret_ : 0;
     rc =
-      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
+      zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
     assert (rc == 0);
 #else
-    LIBZMQ_UNUSED (server_secret);
+    LIBZMQ_UNUSED (server_secret_);
 #endif
 }
 
@@ -64,28 +64,28 @@ void socket_config_null_server (void *server, void *server_secret)
 const char *test_plain_username = "testuser";
 const char *test_plain_password = "testpass";
 
-void socket_config_plain_client (void *server, void *server_secret)
+void socket_config_plain_client (void *server_, void *server_secret_)
 {
-    LIBZMQ_UNUSED (server_secret);
+    LIBZMQ_UNUSED (server_secret_);
 
     int rc =
-      zmq_setsockopt (server, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
+      zmq_setsockopt (server_, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (server, ZMQ_PLAIN_USERNAME, test_plain_username, 8);
+    rc = zmq_setsockopt (server_, ZMQ_PLAIN_USERNAME, test_plain_username, 8);
     assert (rc == 0);
 }
 
-void socket_config_plain_server (void *server, void *server_secret)
+void socket_config_plain_server (void *server_, void *server_secret_)
 {
-    LIBZMQ_UNUSED (server_secret);
+    LIBZMQ_UNUSED (server_secret_);
 
     int as_server = 1;
     int rc =
-      zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+      zmq_setsockopt (server_, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+    rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
                          strlen (test_zap_domain));
     assert (rc == 0);
 }
@@ -107,24 +107,24 @@ void setup_testutil_security_curve ()
     assert (rc == 0);
 }
 
-void socket_config_curve_server (void *server, void *server_secret)
+void socket_config_curve_server (void *server_, void *server_secret_)
 {
     int as_server = 1;
     int rc =
-      zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
+      zmq_setsockopt (server_, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41);
+    rc = zmq_setsockopt (server_, ZMQ_CURVE_SECRETKEY, server_secret_, 41);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+    rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
                          strlen (test_zap_domain));
     assert (rc == 0);
 
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
     int required = 1;
     rc =
-      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
+      zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
     assert (rc == 0);
 #endif
 }
@@ -136,18 +136,18 @@ struct curve_client_data_t
     const char *client_secret;
 };
 
-void socket_config_curve_client (void *client, void *data)
+void socket_config_curve_client (void *client_, void *data_)
 {
     curve_client_data_t *curve_client_data =
-      static_cast<curve_client_data_t *> (data);
+      static_cast<curve_client_data_t *> (data_);
 
-    int rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY,
+    int rc = zmq_setsockopt (client_, ZMQ_CURVE_SERVERKEY,
                              curve_client_data->server_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY,
+    rc = zmq_setsockopt (client_, ZMQ_CURVE_PUBLICKEY,
                          curve_client_data->client_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY,
+    rc = zmq_setsockopt (client_, ZMQ_CURVE_SECRETKEY,
                          curve_client_data->client_secret, 41);
     assert (rc == 0);
 }
@@ -174,16 +174,16 @@ enum zap_protocol_t
 
 void *zap_requests_handled;
 
-void zap_handler_generic (void *ctx,
-                          zap_protocol_t zap_protocol,
-                          const char *expected_routing_id = "IDENT")
+void zap_handler_generic (void *ctx_,
+                          zap_protocol_t zap_protocol_,
+                          const char *expected_routing_id_ = "IDENT")
 {
-    void *control = zmq_socket (ctx, ZMQ_REQ);
+    void *control = zmq_socket (ctx_, ZMQ_REQ);
     assert (control);
     int rc = zmq_connect (control, "inproc://handler-control");
     assert (rc == 0);
 
-    void *handler = zmq_socket (ctx, ZMQ_REP);
+    void *handler = zmq_socket (ctx_, ZMQ_REP);
     assert (handler);
     rc = zmq_bind (handler, "inproc://zeromq.zap.01");
     assert (rc == 0);
@@ -198,7 +198,7 @@ void zap_handler_generic (void *ctx,
     };
 
     // if ordered not to receive the request, ignore the second poll item
-    const int numitems = (zap_protocol == zap_do_not_recv) ? 1 : 2;
+    const int numitems = (zap_protocol_ == zap_do_not_recv) ? 1 : 2;
 
     //  Process ZAP requests forever
     while (zmq_poll (items, numitems, -1) >= 0) {
@@ -215,7 +215,7 @@ void zap_handler_generic (void *ctx,
         char *version = s_recv (handler);
         if (!version)
             break; //  Terminating - peer's socket closed
-        if (zap_protocol == zap_disconnect) {
+        if (zap_protocol_ == zap_disconnect) {
             free (version);
             break;
         }
@@ -258,18 +258,18 @@ void zap_handler_generic (void *ctx,
         }
 
         assert (streq (version, "1.0"));
-        assert (streq (routing_id, expected_routing_id));
+        assert (streq (routing_id, expected_routing_id_));
 
-        s_sendmore (handler, zap_protocol == zap_wrong_version
+        s_sendmore (handler, zap_protocol_ == zap_wrong_version
                                ? "invalid_version"
                                : version);
-        s_sendmore (handler, zap_protocol == zap_wrong_request_id
+        s_sendmore (handler, zap_protocol_ == zap_wrong_request_id
                                ? "invalid_request_id"
                                : sequence);
 
         if (authentication_succeeded) {
             const char *status_code;
-            switch (zap_protocol) {
+            switch (zap_protocol_) {
                 case zap_status_internal_error:
                     status_code = "500";
                     break;
@@ -285,16 +285,16 @@ void zap_handler_generic (void *ctx,
             s_sendmore (handler, status_code);
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
-            if (zap_protocol == zap_too_many_parts) {
+            if (zap_protocol_ == zap_too_many_parts) {
                 s_sendmore (handler, "");
             }
-            if (zap_protocol != zap_do_not_send)
+            if (zap_protocol_ != zap_do_not_send)
                 s_send (handler, "");
         } else {
             s_sendmore (handler, "400");
             s_sendmore (handler, "Invalid client public key");
             s_sendmore (handler, "");
-            if (zap_protocol != zap_do_not_send)
+            if (zap_protocol_ != zap_do_not_send)
                 s_send (handler, "");
         }
         free (version);
@@ -310,16 +310,16 @@ void zap_handler_generic (void *ctx,
     assert (rc == 0);
     close_zero_linger (handler);
 
-    if (zap_protocol != zap_disconnect) {
+    if (zap_protocol_ != zap_disconnect) {
         rc = s_send (control, "STOPPED");
         assert (rc == 7);
     }
     close_zero_linger (control);
 }
 
-void zap_handler (void *ctx)
+void zap_handler (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_ok);
+    zap_handler_generic (ctx_, zap_ok);
 }
 
 //  Monitor event utilities
@@ -328,15 +328,15 @@ void zap_handler (void *ctx)
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
 
-static int get_monitor_event_internal (void *monitor,
-                                       int *value,
-                                       char **address,
-                                       int recv_flag)
+static int get_monitor_event_internal (void *monitor_,
+                                       int *value_,
+                                       char **address_,
+                                       int recv_flag_)
 {
     //  First frame in message contains event number and value
     zmq_msg_t msg;
     zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, recv_flag) == -1) {
+    if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
         assert (errno == EAGAIN);
         return -1; //  timed out or no message available
     }
@@ -344,81 +344,82 @@ static int get_monitor_event_internal (void *monitor,
 
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
     uint16_t event = *(uint16_t *) (data);
-    if (value)
-        *value = *(uint32_t *) (data + 2);
+    if (value_)
+        *value_ = *(uint32_t *) (data + 2);
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
-    int res = zmq_msg_recv (&msg, monitor, recv_flag) == -1;
+    int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
     assert (res != -1);
     assert (!zmq_msg_more (&msg));
 
-    if (address) {
+    if (address_) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
         size_t size = zmq_msg_size (&msg);
-        *address = (char *) malloc (size + 1);
-        memcpy (*address, data, size);
-        *address[size] = 0;
+        *address_ = (char *) malloc (size + 1);
+        memcpy (*address_, data, size);
+        *address_[size] = 0;
     }
     return event;
 }
 
-int get_monitor_event_with_timeout (void *monitor,
-                                    int *value,
-                                    char **address,
-                                    int timeout)
+int get_monitor_event_with_timeout (void *monitor_,
+                                    int *value_,
+                                    char **address_,
+                                    int timeout_)
 {
     int res;
-    if (timeout == -1) {
+    if (timeout_ == -1) {
         // process infinite timeout in small steps to allow the user
         // to see some information on the console
 
         int timeout_step = 250;
         int wait_time = 0;
-        zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout_step,
+        zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_step,
                         sizeof (timeout_step));
-        while ((res = get_monitor_event_internal (monitor, value, address, 0))
-               == -1) {
+        while (
+          (res = get_monitor_event_internal (monitor_, value_, address_, 0))
+          == -1) {
             wait_time += timeout_step;
             fprintf (stderr, "Still waiting for monitor event after %i ms\n",
                      wait_time);
         }
     } else {
-        zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
-        res = get_monitor_event_internal (monitor, value, address, 0);
+        zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_, sizeof (timeout_));
+        res = get_monitor_event_internal (monitor_, value_, address_, 0);
     }
     int timeout_infinite = -1;
-    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout_infinite,
+    zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_infinite,
                     sizeof (timeout_infinite));
     return res;
 }
 
-int get_monitor_event (void *monitor, int *value, char **address)
+int get_monitor_event (void *monitor_, int *value_, char **address_)
 {
-    return get_monitor_event_with_timeout (monitor, value, address, -1);
+    return get_monitor_event_with_timeout (monitor_, value_, address_, -1);
 }
 
-void expect_monitor_event (void *monitor, int expected_event)
+void expect_monitor_event (void *monitor_, int expected_event_)
 {
-    int event = get_monitor_event (monitor, NULL, NULL);
-    if (event != expected_event) {
+    int event = get_monitor_event (monitor_, NULL, NULL);
+    if (event != expected_event_) {
         fprintf (stderr, "Expected monitor event %x but received %x\n",
-                 expected_event, event);
-        assert (event == expected_event);
+                 expected_event_, event);
+        assert (event == expected_event_);
     }
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
 
-void print_unexpected_event (int event,
-                             int err,
-                             int expected_event,
-                             int expected_err)
+void print_unexpected_event (int event_,
+                             int err_,
+                             int expected_event_,
+                             int expected_err_)
 {
     fprintf (stderr,
              "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
              "= %i/0x%x)\n",
-             event, err, err, expected_event, expected_err, expected_err);
+             event_, err_, err_, expected_event_, expected_err_, expected_err_);
 }
 
 //  expects that one or more occurrences of the expected event are received
@@ -428,10 +429,10 @@ void print_unexpected_event (int event,
 //  or ECONNABORTED occurs; in this case, 0 is returned
 //  this should be investigated further, see
 //  https://github.com/zeromq/libzmq/issues/2644
-int expect_monitor_event_multiple (void *server_mon,
-                                   int expected_event,
-                                   int expected_err = -1,
-                                   bool optional = false)
+int expect_monitor_event_multiple (void *server_mon_,
+                                   int expected_event_,
+                                   int expected_err_ = -1,
+                                   bool optional_ = false)
 {
     int count_of_expected_events = 0;
     int client_closed_connection = 0;
@@ -440,18 +441,18 @@ int expect_monitor_event_multiple (void *server_mon,
 
     int event;
     int err;
-    while (
-      (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
-        != -1
-      || !count_of_expected_events) {
+    while ((event =
+              get_monitor_event_with_timeout (server_mon_, &err, NULL, timeout))
+             != -1
+           || !count_of_expected_events) {
         if (event == -1) {
-            if (optional)
+            if (optional_)
                 break;
             wait_time += timeout;
             fprintf (stderr,
                      "Still waiting for first event after %ims (expected event "
                      "%x (value %i/0x%x))\n",
-                     wait_time, expected_event, expected_err, expected_err);
+                     wait_time, expected_event_, expected_err_, expected_err_);
             continue;
         }
         // ignore errors with EPIPE/ECONNRESET/ECONNABORTED, which can happen
@@ -459,7 +460,7 @@ int expect_monitor_event_multiple (void *server_mon,
         // to the peer and then tries to read the socket before the peer reads
         // ECONNABORTED happens when a client aborts a connection via RST/timeout
         if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-            && ((err == EPIPE && expected_err != EPIPE) || err == ECONNRESET
+            && ((err == EPIPE && expected_err_ != EPIPE) || err == ECONNRESET
                 || err == ECONNABORTED)) {
             fprintf (stderr,
                      "Ignored event (skipping any further events): %x (err = "
@@ -468,14 +469,14 @@ int expect_monitor_event_multiple (void *server_mon,
             client_closed_connection = 1;
             break;
         }
-        if (event != expected_event
-            || (-1 != expected_err && err != expected_err)) {
-            print_unexpected_event (event, err, expected_event, expected_err);
+        if (event != expected_event_
+            || (-1 != expected_err_ && err != expected_err_)) {
+            print_unexpected_event (event, err, expected_event_, expected_err_);
             assert (false);
         }
         ++count_of_expected_events;
     }
-    assert (optional || count_of_expected_events > 0
+    assert (optional_ || count_of_expected_events > 0
             || client_closed_connection);
 
     return count_of_expected_events;
@@ -507,14 +508,14 @@ int expect_monitor_event_multiple (void *server_mon,
 
 #endif
 
-void setup_handshake_socket_monitor (void *ctx,
-                                     void *server,
-                                     void **server_mon,
-                                     const char *monitor_endpoint)
+void setup_handshake_socket_monitor (void *ctx_,
+                                     void *server_,
+                                     void **server_mon_,
+                                     const char *monitor_endpoint_)
 {
 #ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
-    int rc = zmq_socket_monitor (server, monitor_endpoint,
+    int rc = zmq_socket_monitor (server_, monitor_endpoint_,
                                  ZMQ_EVENT_HANDSHAKE_SUCCEEDED
                                    | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
                                    | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
@@ -522,160 +523,160 @@ void setup_handshake_socket_monitor (void *ctx,
     assert (rc == 0);
 
     //  Create socket for collecting monitor events
-    *server_mon = zmq_socket (ctx, ZMQ_PAIR);
-    assert (*server_mon);
+    *server_mon_ = zmq_socket (ctx_, ZMQ_PAIR);
+    assert (*server_mon_);
     int linger = 0;
-    rc = zmq_setsockopt (*server_mon, ZMQ_LINGER, &linger, sizeof (linger));
+    rc = zmq_setsockopt (*server_mon_, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
 
     //  Connect it to the inproc endpoints so they'll get events
-    rc = zmq_connect (*server_mon, monitor_endpoint);
+    rc = zmq_connect (*server_mon_, monitor_endpoint_);
     assert (rc == 0);
 #endif
 }
 
 void setup_context_and_server_side (
-  void **ctx,
-  void **zap_control,
-  void **zap_thread,
-  void **server,
-  void **server_mon,
-  char *my_endpoint,
+  void **ctx_,
+  void **zap_control_,
+  void **zap_thread_,
+  void **server_,
+  void **server_mon_,
+  char *my_endpoint_,
   zmq_thread_fn zap_handler_ = &zap_handler,
   socket_config_fn socket_config_ = &socket_config_curve_server,
   void *socket_config_data_ = valid_server_secret,
-  const char *routing_id = "IDENT")
+  const char *routing_id_ = "IDENT")
 {
-    *ctx = zmq_ctx_new ();
-    assert (*ctx);
+    *ctx_ = zmq_ctx_new ();
+    assert (*ctx_);
 
     //  Spawn ZAP handler
     zap_requests_handled = zmq_atomic_counter_new ();
     assert (zap_requests_handled != NULL);
 
-    *zap_control = zmq_socket (*ctx, ZMQ_REP);
-    assert (*zap_control);
-    int rc = zmq_bind (*zap_control, "inproc://handler-control");
+    *zap_control_ = zmq_socket (*ctx_, ZMQ_REP);
+    assert (*zap_control_);
+    int rc = zmq_bind (*zap_control_, "inproc://handler-control");
     assert (rc == 0);
     int linger = 0;
-    rc = zmq_setsockopt (*zap_control, ZMQ_LINGER, &linger, sizeof (linger));
+    rc = zmq_setsockopt (*zap_control_, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
 
     if (zap_handler_ != NULL) {
-        *zap_thread = zmq_threadstart (zap_handler_, *ctx);
+        *zap_thread_ = zmq_threadstart (zap_handler_, *ctx_);
 
-        char *buf = s_recv (*zap_control);
+        char *buf = s_recv (*zap_control_);
         assert (buf);
         assert (streq (buf, "GO"));
         free (buf);
     } else
-        *zap_thread = NULL;
+        *zap_thread_ = NULL;
 
     //  Server socket will accept connections
-    *server = zmq_socket (*ctx, ZMQ_DEALER);
-    assert (*server);
-    rc = zmq_setsockopt (*server, ZMQ_LINGER, &linger, sizeof (linger));
+    *server_ = zmq_socket (*ctx_, ZMQ_DEALER);
+    assert (*server_);
+    rc = zmq_setsockopt (*server_, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
 
-    socket_config_ (*server, socket_config_data_);
+    socket_config_ (*server_, socket_config_data_);
 
-    rc =
-      zmq_setsockopt (*server, ZMQ_ROUTING_ID, routing_id, strlen (routing_id));
+    rc = zmq_setsockopt (*server_, ZMQ_ROUTING_ID, routing_id_,
+                         strlen (routing_id_));
     assert (rc == 0);
 
-    rc = zmq_bind (*server, "tcp://127.0.0.1:*");
+    rc = zmq_bind (*server_, "tcp://127.0.0.1:*");
     assert (rc == 0);
 
     size_t len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (*server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    rc = zmq_getsockopt (*server_, ZMQ_LAST_ENDPOINT, my_endpoint_, &len);
     assert (rc == 0);
 
     const char server_monitor_endpoint[] = "inproc://monitor-server";
-    setup_handshake_socket_monitor (*ctx, *server, server_mon,
+    setup_handshake_socket_monitor (*ctx_, *server_, server_mon_,
                                     server_monitor_endpoint);
 }
 
-void shutdown_context_and_server_side (void *ctx,
-                                       void *zap_thread,
-                                       void *server,
-                                       void *server_mon,
-                                       void *zap_control,
-                                       bool zap_handler_stopped = false)
+void shutdown_context_and_server_side (void *ctx_,
+                                       void *zap_thread_,
+                                       void *server_,
+                                       void *server_mon_,
+                                       void *zap_control_,
+                                       bool zap_handler_stopped_ = false)
 {
-    if (zap_thread && !zap_handler_stopped) {
-        int rc = s_send (zap_control, "STOP");
+    if (zap_thread_ && !zap_handler_stopped_) {
+        int rc = s_send (zap_control_, "STOP");
         assert (rc == 4);
-        char *buf = s_recv (zap_control);
+        char *buf = s_recv (zap_control_);
         assert (buf);
         assert (streq (buf, "STOPPED"));
         free (buf);
-        rc = zmq_unbind (zap_control, "inproc://handler-control");
+        rc = zmq_unbind (zap_control_, "inproc://handler-control");
         assert (rc == 0);
     }
-    int rc = zmq_close (zap_control);
+    int rc = zmq_close (zap_control_);
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    rc = zmq_close (server_mon);
+    rc = zmq_close (server_mon_);
     assert (rc == 0);
 #endif
-    rc = zmq_close (server);
+    rc = zmq_close (server_);
     assert (rc == 0);
 
     //  Wait until ZAP handler terminates
-    if (zap_thread)
-        zmq_threadclose (zap_thread);
+    if (zap_thread_)
+        zmq_threadclose (zap_thread_);
 
-    rc = zmq_ctx_term (ctx);
+    rc = zmq_ctx_term (ctx_);
     assert (rc == 0);
 
     zmq_atomic_counter_destroy (&zap_requests_handled);
 }
 
-void *create_and_connect_client (void *ctx,
-                                 char *my_endpoint,
+void *create_and_connect_client (void *ctx_,
+                                 char *my_endpoint_,
                                  socket_config_fn socket_config_,
                                  void *socket_config_data_,
-                                 void **client_mon = NULL)
+                                 void **client_mon_ = NULL)
 {
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    void *client = zmq_socket (ctx_, ZMQ_DEALER);
     assert (client);
 
     socket_config_ (client, socket_config_data_);
 
-    int rc = zmq_connect (client, my_endpoint);
+    int rc = zmq_connect (client, my_endpoint_);
     assert (rc == 0);
 
-    if (client_mon) {
-        setup_handshake_socket_monitor (ctx, client, client_mon,
+    if (client_mon_) {
+        setup_handshake_socket_monitor (ctx_, client, client_mon_,
                                         "inproc://client-monitor");
     }
 
     return client;
 }
 
-void expect_new_client_bounce_fail (void *ctx,
-                                    char *my_endpoint,
-                                    void *server,
+void expect_new_client_bounce_fail (void *ctx_,
+                                    char *my_endpoint_,
+                                    void *server_,
                                     socket_config_fn socket_config_,
                                     void *socket_config_data_,
-                                    void **client_mon = NULL,
-                                    int expected_client_event = 0,
-                                    int expected_client_value = 0)
+                                    void **client_mon_ = NULL,
+                                    int expected_client_event_ = 0,
+                                    int expected_client_value_ = 0)
 {
     void *my_client_mon;
-    assert (client_mon == NULL || expected_client_event == 0);
-    if (expected_client_event != 0)
-        client_mon = &my_client_mon;
-    void *client = create_and_connect_client (ctx, my_endpoint, socket_config_,
-                                              socket_config_data_, client_mon);
-    expect_bounce_fail (server, client);
+    assert (client_mon_ == NULL || expected_client_event_ == 0);
+    if (expected_client_event_ != 0)
+        client_mon_ = &my_client_mon;
+    void *client = create_and_connect_client (
+      ctx_, my_endpoint_, socket_config_, socket_config_data_, client_mon_);
+    expect_bounce_fail (server_, client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    if (expected_client_event != 0) {
+    if (expected_client_event_ != 0) {
         int events_received = 0;
         events_received = expect_monitor_event_multiple (
-          my_client_mon, expected_client_event, expected_client_value, false);
+          my_client_mon, expected_client_event_, expected_client_value_, false);
 
         assert (events_received == 1);
 

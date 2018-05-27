@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-typedef void (*extra_func_t) (void *socket);
+typedef void (*extra_func_t) (void *socket_);
 
 #ifdef ZMQ_BUILD_DRAFT
 void set_sockopt_fastpath (void *socket)
@@ -41,7 +41,7 @@ void set_sockopt_fastpath (void *socket)
 }
 #endif
 
-void test_pair_tcp (extra_func_t extra_func = NULL)
+void test_pair_tcp (extra_func_t extra_func_ = NULL)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -51,8 +51,8 @@ void test_pair_tcp (extra_func_t extra_func = NULL)
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
 
-    if (extra_func)
-        extra_func (sb);
+    if (extra_func_)
+        extra_func_ (sb);
 
     int rc = zmq_bind (sb, "tcp://127.0.0.1:*");
     assert (rc == 0);
@@ -61,8 +61,8 @@ void test_pair_tcp (extra_func_t extra_func = NULL)
 
     void *sc = zmq_socket (ctx, ZMQ_PAIR);
     assert (sc);
-    if (extra_func)
-        extra_func (sc);
+    if (extra_func_)
+        extra_func_ (sc);
 
     rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);

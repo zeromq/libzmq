@@ -74,15 +74,15 @@ bool is_allowed_to_raise_priority ()
 #endif
 
 
-void test_ctx_thread_opts (void *ctx)
+void test_ctx_thread_opts (void *ctx_)
 {
     int rc;
 
     // verify that setting negative values (e.g., default values) fail:
     rc =
-      zmq_ctx_set (ctx, ZMQ_THREAD_SCHED_POLICY, ZMQ_THREAD_SCHED_POLICY_DFLT);
+      zmq_ctx_set (ctx_, ZMQ_THREAD_SCHED_POLICY, ZMQ_THREAD_SCHED_POLICY_DFLT);
     assert (rc == -1 && errno == EINVAL);
-    rc = zmq_ctx_set (ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
+    rc = zmq_ctx_set (ctx_, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
 
 
@@ -90,7 +90,7 @@ void test_ctx_thread_opts (void *ctx)
 
     // set context options that alter the background thread CPU scheduling/affinity settings;
     // as of ZMQ 4.2.3 this has an effect only on POSIX systems (nothing happens on Windows, but still it should return success):
-    rc = zmq_ctx_set (ctx, ZMQ_THREAD_SCHED_POLICY, TEST_POLICY);
+    rc = zmq_ctx_set (ctx_, ZMQ_THREAD_SCHED_POLICY, TEST_POLICY);
     assert (rc == 0);
 
 
@@ -107,7 +107,7 @@ void test_ctx_thread_opts (void *ctx)
     // check that the current effective user is able to do that:
     if (is_allowed_to_raise_priority ()) {
         rc = zmq_ctx_set (
-          ctx, ZMQ_THREAD_PRIORITY,
+          ctx_, ZMQ_THREAD_PRIORITY,
           1 /* any positive value different than the default will be ok */);
         assert (rc == 0);
     }
@@ -123,7 +123,7 @@ void test_ctx_thread_opts (void *ctx)
     int cpus_add[] = {0, 1};
     for (unsigned int idx = 0; idx < sizeof (cpus_add) / sizeof (cpus_add[0]);
          idx++) {
-        rc = zmq_ctx_set (ctx, ZMQ_THREAD_AFFINITY_CPU_ADD, cpus_add[idx]);
+        rc = zmq_ctx_set (ctx_, ZMQ_THREAD_AFFINITY_CPU_ADD, cpus_add[idx]);
         assert (rc == 0);
     }
 
@@ -132,7 +132,7 @@ void test_ctx_thread_opts (void *ctx)
     for (unsigned int idx = 0;
          idx < sizeof (cpus_remove) / sizeof (cpus_remove[0]); idx++) {
         rc =
-          zmq_ctx_set (ctx, ZMQ_THREAD_AFFINITY_CPU_REMOVE, cpus_remove[idx]);
+          zmq_ctx_set (ctx_, ZMQ_THREAD_AFFINITY_CPU_REMOVE, cpus_remove[idx]);
         assert (rc == 0);
     }
 #endif
@@ -141,30 +141,30 @@ void test_ctx_thread_opts (void *ctx)
 #ifdef ZMQ_THREAD_NAME_PREFIX
     // test thread name prefix:
 
-    rc = zmq_ctx_set (ctx, ZMQ_THREAD_NAME_PREFIX, 1234);
+    rc = zmq_ctx_set (ctx_, ZMQ_THREAD_NAME_PREFIX, 1234);
     assert (rc == 0);
 #endif
 }
 
-void test_ctx_zero_copy (void *ctx)
+void test_ctx_zero_copy (void *ctx_)
 {
 #ifdef ZMQ_ZERO_COPY_RECV
     int zero_copy;
     // Default value is 1.
-    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    zero_copy = zmq_ctx_get (ctx_, ZMQ_ZERO_COPY_RECV);
     assert (zero_copy == 1);
 
     // Test we can set it to 0.
-    assert (0 == zmq_ctx_set (ctx, ZMQ_ZERO_COPY_RECV, 0));
-    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    assert (0 == zmq_ctx_set (ctx_, ZMQ_ZERO_COPY_RECV, 0));
+    zero_copy = zmq_ctx_get (ctx_, ZMQ_ZERO_COPY_RECV);
     assert (zero_copy == 0);
 
     // Create a TCP socket pair using the context and test that messages can be
     // received. Note that inproc sockets cannot be used for this test.
-    void *pull = zmq_socket (ctx, ZMQ_PULL);
+    void *pull = zmq_socket (ctx_, ZMQ_PULL);
     assert (0 == zmq_bind (pull, "tcp://127.0.0.1:*"));
 
-    void *push = zmq_socket (ctx, ZMQ_PUSH);
+    void *push = zmq_socket (ctx_, ZMQ_PUSH);
     size_t endpoint_len = MAX_SOCKET_STRING;
     char endpoint[MAX_SOCKET_STRING];
     assert (
@@ -191,8 +191,8 @@ void test_ctx_zero_copy (void *ctx)
     assert (0 == zmq_close (pull));
     assert (0 == zmq_msg_close (&small_msg));
     assert (0 == zmq_msg_close (&large_msg));
-    assert (0 == zmq_ctx_set (ctx, ZMQ_ZERO_COPY_RECV, 1));
-    zero_copy = zmq_ctx_get (ctx, ZMQ_ZERO_COPY_RECV);
+    assert (0 == zmq_ctx_set (ctx_, ZMQ_ZERO_COPY_RECV, 1));
+    zero_copy = zmq_ctx_get (ctx_, ZMQ_ZERO_COPY_RECV);
     assert (zero_copy == 1);
 #endif
 }

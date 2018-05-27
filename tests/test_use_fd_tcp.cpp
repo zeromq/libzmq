@@ -33,7 +33,7 @@
 #include <netdb.h>
 
 uint16_t
-pre_allocate_sock (void *zmq_socket, const char *address, const char *port)
+pre_allocate_sock (void *zmq_socket_, const char *address_, const char *port_)
 {
     struct addrinfo *addr, hint;
     hint.ai_flags = 0;
@@ -45,7 +45,7 @@ pre_allocate_sock (void *zmq_socket, const char *address, const char *port)
     hint.ai_addr = NULL;
     hint.ai_next = NULL;
 
-    int rc = getaddrinfo (address, port, &hint, &addr);
+    int rc = getaddrinfo (address_, port_, &hint, &addr);
     assert (rc == 0);
 
     int s_pre = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -61,7 +61,7 @@ pre_allocate_sock (void *zmq_socket, const char *address, const char *port)
     rc = listen (s_pre, SOMAXCONN);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
+    rc = zmq_setsockopt (zmq_socket_, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
     assert (rc == 0);
 
     struct sockaddr_in sin;

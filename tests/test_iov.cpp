@@ -40,9 +40,9 @@ struct iovec
 };
 #endif
 
-void do_check (void *sb, void *sc, size_t msg_size)
+void do_check (void *sb_, void *sc_, size_t msg_size_)
 {
-    assert (sb && sc && msg_size > 0);
+    assert (sb_ && sc_ && msg_size_ > 0);
 
     int rc = 0;
     const char msg_val = '1';
@@ -51,39 +51,39 @@ void do_check (void *sb, void *sc, size_t msg_size)
 
     send_count = recv_count = num_messages;
 
-    char *ref_msg = (char *) malloc (msg_size);
+    char *ref_msg = (char *) malloc (msg_size_);
     assert (ref_msg);
-    memset (ref_msg, msg_val, msg_size);
+    memset (ref_msg, msg_val, msg_size_);
 
     // zmq_sendiov(3) as a single multi-part send
     struct iovec send_iov[num_messages];
-    char *buf = (char *) malloc (msg_size * num_messages);
+    char *buf = (char *) malloc (msg_size_ * num_messages);
 
     for (int i = 0; i < num_messages; i++) {
-        send_iov[i].iov_base = &buf[i * msg_size];
-        send_iov[i].iov_len = msg_size;
-        memcpy (send_iov[i].iov_base, ref_msg, msg_size);
-        assert (memcmp (ref_msg, send_iov[i].iov_base, msg_size) == 0);
+        send_iov[i].iov_base = &buf[i * msg_size_];
+        send_iov[i].iov_len = msg_size_;
+        memcpy (send_iov[i].iov_base, ref_msg, msg_size_);
+        assert (memcmp (ref_msg, send_iov[i].iov_base, msg_size_) == 0);
     }
 
     // Test errors - zmq_recviov - null socket
     rc = zmq_sendiov (NULL, send_iov, send_count, ZMQ_SNDMORE);
     assert (rc == -1 && errno == ENOTSOCK);
     // Test errors - zmq_recviov - invalid send count
-    rc = zmq_sendiov (sc, send_iov, 0, 0);
+    rc = zmq_sendiov (sc_, send_iov, 0, 0);
     assert (rc == -1 && errno == EINVAL);
     // Test errors - zmq_recviov - null iovec
-    rc = zmq_sendiov (sc, NULL, send_count, 0);
+    rc = zmq_sendiov (sc_, NULL, send_count, 0);
     assert (rc == -1 && errno == EINVAL);
 
     // Test success
-    rc = zmq_sendiov (sc, send_iov, send_count, ZMQ_SNDMORE);
+    rc = zmq_sendiov (sc_, send_iov, send_count, ZMQ_SNDMORE);
     // The zmq_sendiov(3) API method does not follow the same semantics as
     // zmq_recviov(3); the latter returns the count of messages sent, rightly
     // so, whilst the former sends the number of bytes successfully sent from
     // the last message, which does not hold much sense from a batch send
     // perspective; hence the assert checks if rc is same as msg_size.
-    assert ((size_t) rc == msg_size);
+    assert ((size_t) rc == msg_size_);
 
     // zmq_recviov(3) single-shot
     struct iovec recv_iov[num_messages];
@@ -92,22 +92,22 @@ void do_check (void *sb, void *sc, size_t msg_size)
     rc = zmq_recviov (NULL, recv_iov, &recv_count, 0);
     assert (rc == -1 && errno == ENOTSOCK);
     // Test error - zmq_recviov - invalid receive count
-    rc = zmq_recviov (sb, recv_iov, NULL, 0);
+    rc = zmq_recviov (sb_, recv_iov, NULL, 0);
     assert (rc == -1 && errno == EINVAL);
     size_t invalid_recv_count = 0;
-    rc = zmq_recviov (sb, recv_iov, &invalid_recv_count, 0);
+    rc = zmq_recviov (sb_, recv_iov, &invalid_recv_count, 0);
     assert (rc == -1 && errno == EINVAL);
     // Test error - zmq_recviov - null iovec
-    rc = zmq_recviov (sb, NULL, &recv_count, 0);
+    rc = zmq_recviov (sb_, NULL, &recv_count, 0);
     assert (rc == -1 && errno == EINVAL);
 
     // Test success
-    rc = zmq_recviov (sb, recv_iov, &recv_count, 0);
+    rc = zmq_recviov (sb_, recv_iov, &recv_count, 0);
     assert (rc == num_messages);
 
     for (int i = 0; i < num_messages; i++) {
         assert (recv_iov[i].iov_base);
-        assert (memcmp (ref_msg, recv_iov[i].iov_base, msg_size) == 0);
+        assert (memcmp (ref_msg, recv_iov[i].iov_base, msg_size_) == 0);
         free (recv_iov[i].iov_base);
     }
 

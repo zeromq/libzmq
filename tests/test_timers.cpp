@@ -30,10 +30,10 @@
 #define __STDC_LIMIT_MACROS // to define SIZE_MAX with older compilers
 #include "testutil.hpp"
 
-void handler (int timer_id, void *arg)
+void handler (int timer_id_, void *arg_)
 {
-    (void) timer_id; //  Stop 'unused' compiler warnings
-    *((bool *) arg) = true;
+    (void) timer_id_; //  Stop 'unused' compiler warnings
+    *((bool *) arg_) = true;
 }
 
 int sleep_and_execute (void *timers_)

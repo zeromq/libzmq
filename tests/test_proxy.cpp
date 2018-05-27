@@ -74,9 +74,9 @@ void *g_clients_pkts_out = NULL;
 void *g_workers_pkts_out = NULL;
 
 
-static void client_task (void *db)
+static void client_task (void *db_)
 {
-    struct thread_data *databag = (struct thread_data *) db;
+    struct thread_data *databag = (struct thread_data *) db_;
     // Endpoint socket gets random port to avoid test failing when port in use
     void *endpoint = zmq_socket (databag->ctx, ZMQ_PAIR);
     assert (endpoint);
@@ -190,14 +190,14 @@ static void client_task (void *db)
 // one request at a time but one client can talk to multiple workers at
 // once.
 
-static void server_worker (void *ctx);
+static void server_worker (void *ctx_);
 
-void server_task (void *ctx)
+void server_task (void *ctx_)
 {
     // Frontend socket talks to clients over TCP
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
+    void *frontend = zmq_socket (ctx_, ZMQ_ROUTER);
     assert (frontend);
     int linger = 0;
     int rc = zmq_setsockopt (frontend, ZMQ_LINGER, &linger, sizeof (linger));
@@ -208,7 +208,7 @@ void server_task (void *ctx)
     assert (rc == 0);
 
     // Backend socket talks to workers over inproc
-    void *backend = zmq_socket (ctx, ZMQ_DEALER);
+    void *backend = zmq_socket (ctx_, ZMQ_DEALER);
     assert (backend);
     rc = zmq_setsockopt (backend, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
@@ -216,7 +216,7 @@ void server_task (void *ctx)
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_REP);
+    void *control = zmq_socket (ctx_, ZMQ_REP);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
@@ -227,13 +227,13 @@ void server_task (void *ctx)
     int thread_nbr;
     void *threads[5];
     for (thread_nbr = 0; thread_nbr < QT_WORKERS; thread_nbr++)
-        threads[thread_nbr] = zmq_threadstart (&server_worker, ctx);
+        threads[thread_nbr] = zmq_threadstart (&server_worker, ctx_);
 
     // Endpoint socket sends random port to avoid test failing when port in use
     void *endpoint_receivers[QT_CLIENTS];
     char endpoint_source[256];
     for (int i = 0; i < QT_CLIENTS; ++i) {
-        endpoint_receivers[i] = zmq_socket (ctx, ZMQ_PAIR);
+        endpoint_receivers[i] = zmq_socket (ctx_, ZMQ_PAIR);
         assert (endpoint_receivers[i]);
         rc = zmq_setsockopt (endpoint_receivers[i], ZMQ_LINGER, &linger,
                              sizeof (linger));
@@ -271,9 +271,9 @@ void server_task (void *ctx)
 // of replies back, with random delays between replies:
 // The comments in the first column, if suppressed, makes it a poller version
 
-static void server_worker (void *ctx)
+static void server_worker (void *ctx_)
 {
-    void *worker = zmq_socket (ctx, ZMQ_DEALER);
+    void *worker = zmq_socket (ctx_, ZMQ_DEALER);
     assert (worker);
     int linger = 0;
     int rc = zmq_setsockopt (worker, ZMQ_LINGER, &linger, sizeof (linger));
@@ -282,7 +282,7 @@ static void server_worker (void *ctx)
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_SUB);
+    void *control = zmq_socket (ctx_, ZMQ_SUB);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
@@ -346,14 +346,14 @@ static void server_worker (void *ctx)
     assert (rc == 0);
 }
 
-uint64_t recv_stat (void *sock, bool last)
+uint64_t recv_stat (void *sock_, bool last_)
 {
     uint64_t res;
     zmq_msg_t stats_msg;
 
     int rc = zmq_msg_init (&stats_msg);
     assert (rc == 0);
-    rc = zmq_recvmsg (sock, &stats_msg, 0);
+    rc = zmq_recvmsg (sock_, &stats_msg, 0);
     assert (rc == sizeof (uint64_t));
     memcpy (&res, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
     rc = zmq_msg_close (&stats_msg);
@@ -361,34 +361,34 @@ uint64_t recv_stat (void *sock, bool last)
 
     int more;
     size_t moresz = sizeof more;
-    rc = zmq_getsockopt (sock, ZMQ_RCVMORE, &more, &moresz);
+    rc = zmq_getsockopt (sock_, ZMQ_RCVMORE, &more, &moresz);
     assert (rc == 0);
-    assert ((last && !more) || (!last && more));
+    assert ((last_ && !more) || (!last_ && more));
 
     return res;
 }
 
 // Utility function to interrogate the proxy:
 
-void check_proxy_stats (void *control_proxy)
+void check_proxy_stats (void *control_proxy_)
 {
     zmq_proxy_stats_t total_stats;
     int rc;
 
-    rc = zmq_send (control_proxy, "STATISTICS", 10, 0);
+    rc = zmq_send (control_proxy_, "STATISTICS", 10, 0);
     assert (rc == 10);
 
     // first frame of the reply contains FRONTEND stats:
-    total_stats.frontend.msg_in = recv_stat (control_proxy, false);
-    total_stats.frontend.bytes_in = recv_stat (control_proxy, false);
-    total_stats.frontend.msg_out = recv_stat (control_proxy, false);
-    total_stats.frontend.bytes_out = recv_stat (control_proxy, false);
+    total_stats.frontend.msg_in = recv_stat (control_proxy_, false);
+    total_stats.frontend.bytes_in = recv_stat (control_proxy_, false);
+    total_stats.frontend.msg_out = recv_stat (control_proxy_, false);
+    total_stats.frontend.bytes_out = recv_stat (control_proxy_, false);
 
     // second frame of the reply contains BACKEND stats:
-    total_stats.backend.msg_in = recv_stat (control_proxy, false);
-    total_stats.backend.bytes_in = recv_stat (control_proxy, false);
-    total_stats.backend.msg_out = recv_stat (control_proxy, false);
-    total_stats.backend.bytes_out = recv_stat (control_proxy, true);
+    total_stats.backend.msg_in = recv_stat (control_proxy_, false);
+    total_stats.backend.bytes_in = recv_stat (control_proxy_, false);
+    total_stats.backend.msg_out = recv_stat (control_proxy_, false);
+    total_stats.backend.bytes_out = recv_stat (control_proxy_, true);
 
     // check stats
 

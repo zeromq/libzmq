@@ -42,14 +42,14 @@ void tearDown ()
     teardown_test_context ();
 }
 
-static void do_bind_and_verify (void *s, const char *endpoint)
+static void do_bind_and_verify (void *s_, const char *endpoint_)
 {
-    int rc = zmq_bind (s, endpoint);
+    int rc = zmq_bind (s_, endpoint_);
     assert (rc == 0);
     char reported[255];
     size_t size = 255;
-    rc = zmq_getsockopt (s, ZMQ_LAST_ENDPOINT, reported, &size);
-    assert (rc == 0 && strcmp (reported, endpoint) == 0);
+    rc = zmq_getsockopt (s_, ZMQ_LAST_ENDPOINT, reported, &size);
+    assert (rc == 0 && strcmp (reported, endpoint_) == 0);
 }
 
 void test_last_endpoint ()

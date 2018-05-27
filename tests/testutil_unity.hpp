@@ -40,28 +40,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define snprintf _snprintf
 #endif
 
-int test_assert_success_message_errno_helper (int rc,
-                                              const char *msg,
-                                              const char *expr)
+int test_assert_success_message_errno_helper (int rc_,
+                                              const char *msg_,
+                                              const char *expr_)
 {
-    if (rc == -1) {
+    if (rc_ == -1) {
         char buffer[512];
         buffer[sizeof (buffer) - 1] =
           0; // to ensure defined behavior with VC++ <= 2013
         snprintf (buffer, sizeof (buffer) - 1,
-                  "%s failed%s%s%s, errno = %i (%s)", expr,
-                  msg ? " (additional info: " : "", msg ? msg : "",
-                  msg ? ")" : "", zmq_errno (), zmq_strerror (zmq_errno ()));
+                  "%s failed%s%s%s, errno = %i (%s)", expr_,
+                  msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
+                  msg_ ? ")" : "", zmq_errno (), zmq_strerror (zmq_errno ()));
         TEST_FAIL_MESSAGE (buffer);
     }
-    return rc;
+    return rc_;
 }
 
-int test_assert_success_message_raw_errno_helper (int rc,
-                                                  const char *msg,
-                                                  const char *expr)
+int test_assert_success_message_raw_errno_helper (int rc_,
+                                                  const char *msg_,
+                                                  const char *expr_)
 {
-    if (rc == -1) {
+    if (rc_ == -1) {
 #if defined ZMQ_HAVE_WINDOWS
         int current_errno = WSAGetLastError ();
 #else
@@ -72,11 +72,11 @@ int test_assert_success_message_raw_errno_helper (int rc,
         buffer[sizeof (buffer) - 1] =
           0; // to ensure defined behavior with VC++ <= 2013
         snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
-                  expr, msg ? " (additional info: " : "", msg ? msg : "",
-                  msg ? ")" : "", current_errno);
+                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
+                  msg_ ? ")" : "", current_errno);
         TEST_FAIL_MESSAGE (buffer);
     }
-    return rc;
+    return rc_;
 }
 
 #define TEST_ASSERT_SUCCESS_MESSAGE_ERRNO(expr, msg)                           \
@@ -95,16 +95,16 @@ int test_assert_success_message_raw_errno_helper (int rc,
         TEST_ASSERT_EQUAL_INT (error_code, errno);                             \
     }
 
-void send_string_expect_success (void *socket, const char *str, int flags)
+void send_string_expect_success (void *socket_, const char *str_, int flags_)
 {
-    const size_t len = str ? strlen (str) : 0;
-    const int rc = zmq_send (socket, str, len, flags);
+    const size_t len = str_ ? strlen (str_) : 0;
+    const int rc = zmq_send (socket_, str_, len, flags_);
     TEST_ASSERT_EQUAL_INT ((int) len, rc);
 }
 
-void recv_string_expect_success (void *socket, const char *str, int flags)
+void recv_string_expect_success (void *socket_, const char *str_, int flags_)
 {
-    const size_t len = str ? strlen (str) : 0;
+    const size_t len = str_ ? strlen (str_) : 0;
     char buffer[255];
     TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (sizeof (buffer), len,
                                        "recv_string_expect_success cannot be "
@@ -112,22 +112,22 @@ void recv_string_expect_success (void *socket, const char *str, int flags)
                                        "characters");
 
     const int rc = TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_recv (socket, buffer, sizeof (buffer), flags));
+      zmq_recv (socket_, buffer, sizeof (buffer), flags_));
     TEST_ASSERT_EQUAL_INT ((int) len, rc);
-    if (str)
-        TEST_ASSERT_EQUAL_STRING_LEN (str, buffer, len);
+    if (str_)
+        TEST_ASSERT_EQUAL_STRING_LEN (str_, buffer, len);
 }
 
 // do not call from tests directly, use setup_test_context, get_test_context and teardown_test_context only
-void *internal_manage_test_context (bool init, bool clear)
+void *internal_manage_test_context (bool init_, bool clear_)
 {
     static void *test_context = NULL;
-    if (clear) {
+    if (clear_) {
         TEST_ASSERT_NOT_NULL (test_context);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (test_context));
         test_context = NULL;
     } else {
-        if (init) {
+        if (init_) {
             TEST_ASSERT_NULL (test_context);
             test_context = zmq_ctx_new ();
             TEST_ASSERT_NOT_NULL (test_context);
@@ -138,12 +138,12 @@ void *internal_manage_test_context (bool init, bool clear)
 
 #define MAX_TEST_SOCKETS 128
 
-void internal_manage_test_sockets (void *socket, bool add)
+void internal_manage_test_sockets (void *socket_, bool add_)
 {
     static void *test_sockets[MAX_TEST_SOCKETS];
     static size_t test_socket_count = 0;
-    if (!socket) {
-        assert (!add);
+    if (!socket_) {
+        assert (!add_);
 
         // force-close all sockets
         if (test_socket_count) {
@@ -157,17 +157,17 @@ void internal_manage_test_sockets (void *socket, bool add)
             test_socket_count = 0;
         }
     } else {
-        if (add) {
+        if (add_) {
             ++test_socket_count;
             TEST_ASSERT_LESS_THAN_MESSAGE (MAX_TEST_SOCKETS, test_socket_count,
                                            "MAX_TEST_SOCKETS must be "
                                            "increased, or you cannot use the "
                                            "test context");
-            test_sockets[test_socket_count - 1] = socket;
+            test_sockets[test_socket_count - 1] = socket_;
         } else {
             bool found = false;
             for (size_t i = 0; i < test_socket_count; ++i) {
-                if (test_sockets[i] == socket) {
+                if (test_sockets[i] == socket_) {
                     found = true;
                 }
                 if (found) {
@@ -202,53 +202,53 @@ void teardown_test_context ()
     }
 }
 
-void *test_context_socket (int type)
+void *test_context_socket (int type_)
 {
-    void *const socket = zmq_socket (get_test_context (), type);
+    void *const socket = zmq_socket (get_test_context (), type_);
     TEST_ASSERT_NOT_NULL (socket);
     internal_manage_test_sockets (socket, true);
     return socket;
 }
 
-void *test_context_socket_close (void *socket)
+void *test_context_socket_close (void *socket_)
 {
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
-    internal_manage_test_sockets (socket, false);
-    return socket;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket_));
+    internal_manage_test_sockets (socket_, false);
+    return socket_;
 }
 
-void *test_context_socket_close_zero_linger (void *socket)
+void *test_context_socket_close_zero_linger (void *socket_)
 {
     const int linger = 0;
-    int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof (linger));
+    int rc = zmq_setsockopt (socket_, ZMQ_LINGER, &linger, sizeof (linger));
     TEST_ASSERT_TRUE (rc == 0 || zmq_errno () == ETERM);
-    return test_context_socket_close (socket);
+    return test_context_socket_close (socket_);
 }
 
-void test_bind (void *socket,
-                const char *bind_address,
-                char *my_endpoint,
-                size_t len)
+void test_bind (void *socket_,
+                const char *bind_address_,
+                char *my_endpoint_,
+                size_t len_)
 {
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, bind_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket_, bind_address_));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+      zmq_getsockopt (socket_, ZMQ_LAST_ENDPOINT, my_endpoint_, &len_));
 }
 
-void bind_loopback (void *socket, int ipv6, char *my_endpoint, size_t len)
+void bind_loopback (void *socket_, int ipv6_, char *my_endpoint_, size_t len_)
 {
-    if (ipv6 && !is_ipv6_available ()) {
+    if (ipv6_ && !is_ipv6_available ()) {
         TEST_IGNORE_MESSAGE ("ipv6 is not available");
     }
 
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (socket, ZMQ_IPV6, &ipv6, sizeof (int)));
+      zmq_setsockopt (socket_, ZMQ_IPV6, &ipv6_, sizeof (int)));
 
-    test_bind (socket, ipv6 ? "tcp://[::1]:*" : "tcp://127.0.0.1:*",
-               my_endpoint, len);
+    test_bind (socket_, ipv6_ ? "tcp://[::1]:*" : "tcp://127.0.0.1:*",
+               my_endpoint_, len_);
 }
 
-void bind_loopback_ipv4 (void *socket, char *my_endpoint, size_t len)
+void bind_loopback_ipv4 (void *socket_, char *my_endpoint_, size_t len_)
 {
-    bind_loopback (socket, false, my_endpoint, len);
+    bind_loopback (socket_, false, my_endpoint_, len_);
 }

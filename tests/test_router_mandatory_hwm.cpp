@@ -87,9 +87,9 @@ int main (void)
     assert (buffer[0] == 'X');
 
     int i;
-    const int BUF_SIZE = 65536;
-    char buf[BUF_SIZE];
-    memset (buf, 0, BUF_SIZE);
+    const int buf_size = 65536;
+    char buf[buf_size];
+    memset (buf, 0, buf_size);
     // Send first batch of messages
     for (i = 0; i < 100000; ++i) {
         if (TRACE_ENABLED)
@@ -98,8 +98,8 @@ int main (void)
         if (rc == -1 && zmq_errno () == EAGAIN)
             break;
         assert (rc == 1);
-        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-        assert (rc == BUF_SIZE);
+        rc = zmq_send (router, buf, buf_size, ZMQ_DONTWAIT);
+        assert (rc == buf_size);
     }
     // This should fail after one message but kernel buffering could
     // skew results
@@ -113,8 +113,8 @@ int main (void)
         if (rc == -1 && zmq_errno () == EAGAIN)
             break;
         assert (rc == 1);
-        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-        assert (rc == BUF_SIZE);
+        rc = zmq_send (router, buf, buf_size, ZMQ_DONTWAIT);
+        assert (rc == buf_size);
     }
     // This should fail after two messages but kernel buffering could
     // skew results

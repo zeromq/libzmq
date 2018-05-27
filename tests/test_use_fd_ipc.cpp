@@ -33,13 +33,13 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-void pre_allocate_sock (void *zmq_socket, const char *path)
+void pre_allocate_sock (void *zmq_socket_, const char *path_)
 {
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
-    strcpy (addr.sun_path, path);
+    strcpy (addr.sun_path, path_);
 
-    unlink (path);
+    unlink (path_);
 
     int s_pre = socket (AF_UNIX, SOCK_STREAM, 0);
     assert (s_pre != -1);
@@ -51,7 +51,7 @@ void pre_allocate_sock (void *zmq_socket, const char *path)
     rc = listen (s_pre, SOMAXCONN);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
+    rc = zmq_setsockopt (zmq_socket_, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
     assert (rc == 0);
 }
 

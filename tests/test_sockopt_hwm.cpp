@@ -114,23 +114,23 @@ void test_change_after_connected ()
     test_context_socket_close (connect_socket);
 }
 
-int send_until_wouldblock (void *socket)
+int send_until_wouldblock (void *socket_)
 {
     int send_count = 0;
     while (send_count < MAX_SENDS
-           && zmq_send (socket, &send_count, sizeof (send_count), ZMQ_DONTWAIT)
+           && zmq_send (socket_, &send_count, sizeof (send_count), ZMQ_DONTWAIT)
                 == sizeof (send_count)) {
         ++send_count;
     }
     return send_count;
 }
 
-int test_fill_up_to_hwm (void *socket, int sndhwm)
+int test_fill_up_to_hwm (void *socket_, int sndhwm_)
 {
-    int send_count = send_until_wouldblock (socket);
-    fprintf (stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
-    TEST_ASSERT_LESS_OR_EQUAL_INT (sndhwm + 1, send_count);
-    TEST_ASSERT_GREATER_THAN_INT (sndhwm / 10, send_count);
+    int send_count = send_until_wouldblock (socket_);
+    fprintf (stderr, "sndhwm==%i, send_count==%i\n", sndhwm_, send_count);
+    TEST_ASSERT_LESS_OR_EQUAL_INT (sndhwm_ + 1, send_count);
+    TEST_ASSERT_GREATER_THAN_INT (sndhwm_ / 10, send_count);
     return send_count;
 }
 

@@ -43,14 +43,15 @@ void tearDown ()
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-bool send_msg_to_peer_if_ready (void *router, const char *peer_routing_id)
+bool send_msg_to_peer_if_ready (void *router_, const char *peer_routing_id_)
 {
     int rc = TEST_ASSERT_SUCCESS_MESSAGE_ERRNO (
-      zmq_socket_get_peer_state (router, peer_routing_id, 1), peer_routing_id);
+      zmq_socket_get_peer_state (router_, peer_routing_id_, 1),
+      peer_routing_id_);
     if (rc & ZMQ_POLLOUT) {
-        send_string_expect_success (router, peer_routing_id,
+        send_string_expect_success (router_, peer_routing_id_,
                                     ZMQ_SNDMORE | ZMQ_DONTWAIT);
-        send_string_expect_success (router, "Hello", ZMQ_DONTWAIT);
+        send_string_expect_success (router_, "Hello", ZMQ_DONTWAIT);
 
         return true;
     }

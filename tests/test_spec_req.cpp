@@ -32,9 +32,9 @@
 const char *bind_address = 0;
 char connect_address[MAX_SOCKET_STRING];
 
-void test_round_robin_out (void *ctx)
+void test_round_robin_out (void *ctx_)
 {
-    void *req = zmq_socket (ctx, ZMQ_REQ);
+    void *req = zmq_socket (ctx_, ZMQ_REQ);
     assert (req);
 
     int rc = zmq_bind (req, bind_address);
@@ -46,7 +46,7 @@ void test_round_robin_out (void *ctx)
     const size_t services = 5;
     void *rep[services];
     for (size_t peer = 0; peer < services; peer++) {
-        rep[peer] = zmq_socket (ctx, ZMQ_REP);
+        rep[peer] = zmq_socket (ctx_, ZMQ_REP);
         assert (rep[peer]);
 
         int timeout = 250;
@@ -77,9 +77,9 @@ void test_round_robin_out (void *ctx)
     msleep (SETTLE_TIME);
 }
 
-void test_req_only_listens_to_current_peer (void *ctx)
+void test_req_only_listens_to_current_peer (void *ctx_)
 {
-    void *req = zmq_socket (ctx, ZMQ_REQ);
+    void *req = zmq_socket (ctx_, ZMQ_REQ);
     assert (req);
 
     int rc = zmq_setsockopt (req, ZMQ_ROUTING_ID, "A", 2);
@@ -95,7 +95,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
     void *router[services];
 
     for (size_t i = 0; i < services; ++i) {
-        router[i] = zmq_socket (ctx, ZMQ_ROUTER);
+        router[i] = zmq_socket (ctx_, ZMQ_ROUTER);
         assert (router[i]);
 
         int timeout = 250;
@@ -146,12 +146,12 @@ void test_req_only_listens_to_current_peer (void *ctx)
     msleep (SETTLE_TIME);
 }
 
-void test_req_message_format (void *ctx)
+void test_req_message_format (void *ctx_)
 {
-    void *req = zmq_socket (ctx, ZMQ_REQ);
+    void *req = zmq_socket (ctx_, ZMQ_REQ);
     assert (req);
 
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
+    void *router = zmq_socket (ctx_, ZMQ_ROUTER);
     assert (router);
 
     int rc = zmq_bind (req, bind_address);
@@ -207,9 +207,9 @@ void test_req_message_format (void *ctx)
     msleep (SETTLE_TIME);
 }
 
-void test_block_on_send_no_peers (void *ctx)
+void test_block_on_send_no_peers (void *ctx_)
 {
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
+    void *sc = zmq_socket (ctx_, ZMQ_REQ);
     assert (sc);
 
     int timeout = 250;

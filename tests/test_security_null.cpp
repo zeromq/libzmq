@@ -40,35 +40,35 @@
 #include <unistd.h>
 #endif
 
-static void zap_handler (void *handler)
+static void zap_handler (void *handler_)
 {
     //  Process ZAP requests forever
     while (true) {
-        char *version = s_recv (handler);
+        char *version = s_recv (handler_);
         if (!version)
             break; //  Terminating
 
-        char *sequence = s_recv (handler);
-        char *domain = s_recv (handler);
-        char *address = s_recv (handler);
-        char *routing_id = s_recv (handler);
-        char *mechanism = s_recv (handler);
+        char *sequence = s_recv (handler_);
+        char *domain = s_recv (handler_);
+        char *address = s_recv (handler_);
+        char *routing_id = s_recv (handler_);
+        char *mechanism = s_recv (handler_);
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
 
-        s_sendmore (handler, version);
-        s_sendmore (handler, sequence);
+        s_sendmore (handler_, version);
+        s_sendmore (handler_, sequence);
         if (streq (domain, "TEST")) {
-            s_sendmore (handler, "200");
-            s_sendmore (handler, "OK");
-            s_sendmore (handler, "anonymous");
-            s_send (handler, "");
+            s_sendmore (handler_, "200");
+            s_sendmore (handler_, "OK");
+            s_sendmore (handler_, "anonymous");
+            s_send (handler_, "");
         } else {
-            s_sendmore (handler, "400");
-            s_sendmore (handler, "BAD DOMAIN");
-            s_sendmore (handler, "");
-            s_send (handler, "");
+            s_sendmore (handler_, "400");
+            s_sendmore (handler_, "BAD DOMAIN");
+            s_sendmore (handler_, "");
+            s_send (handler_, "");
         }
         free (version);
         free (sequence);
@@ -77,7 +77,7 @@ static void zap_handler (void *handler)
         free (routing_id);
         free (mechanism);
     }
-    close_zero_linger (handler);
+    close_zero_linger (handler_);
 }
 
 int main (void)

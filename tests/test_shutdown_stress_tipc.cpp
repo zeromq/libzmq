@@ -32,15 +32,15 @@
 #define THREAD_COUNT 100
 
 extern "C" {
-static void *worker (void *s)
+static void *worker (void *s_)
 {
     int rc;
 
-    rc = zmq_connect (s, "tipc://{5560,0}@0.0.0");
+    rc = zmq_connect (s_, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     //  Start closing the socket while the connecting process is underway.
-    rc = zmq_close (s);
+    rc = zmq_close (s_);
     assert (rc == 0);
 
     return NULL;

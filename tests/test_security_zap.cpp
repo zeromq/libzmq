@@ -29,94 +29,94 @@
 
 #include "testutil_security.hpp"
 
-static void zap_handler_wrong_version (void *ctx)
+static void zap_handler_wrong_version (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_wrong_version);
+    zap_handler_generic (ctx_, zap_wrong_version);
 }
 
-static void zap_handler_wrong_request_id (void *ctx)
+static void zap_handler_wrong_request_id (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_wrong_request_id);
+    zap_handler_generic (ctx_, zap_wrong_request_id);
 }
 
-static void zap_handler_wrong_status_invalid (void *ctx)
+static void zap_handler_wrong_status_invalid (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_status_invalid);
+    zap_handler_generic (ctx_, zap_status_invalid);
 }
 
-static void zap_handler_wrong_status_temporary_failure (void *ctx)
+static void zap_handler_wrong_status_temporary_failure (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_status_temporary_failure);
+    zap_handler_generic (ctx_, zap_status_temporary_failure);
 }
 
-static void zap_handler_wrong_status_internal_error (void *ctx)
+static void zap_handler_wrong_status_internal_error (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_status_internal_error);
+    zap_handler_generic (ctx_, zap_status_internal_error);
 }
 
-static void zap_handler_too_many_parts (void *ctx)
+static void zap_handler_too_many_parts (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_too_many_parts);
+    zap_handler_generic (ctx_, zap_too_many_parts);
 }
 
-static void zap_handler_disconnect (void *ctx)
+static void zap_handler_disconnect (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_disconnect);
+    zap_handler_generic (ctx_, zap_disconnect);
 }
 
-static void zap_handler_do_not_recv (void *ctx)
+static void zap_handler_do_not_recv (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_do_not_recv);
+    zap_handler_generic (ctx_, zap_do_not_recv);
 }
 
-static void zap_handler_do_not_send (void *ctx)
+static void zap_handler_do_not_send (void *ctx_)
 {
-    zap_handler_generic (ctx, zap_do_not_send);
+    zap_handler_generic (ctx_, zap_do_not_send);
 }
 
 int expect_new_client_bounce_fail_and_count_monitor_events (
-  void *ctx,
-  char *my_endpoint,
-  void *server,
+  void *ctx_,
+  char *my_endpoint_,
+  void *server_,
   socket_config_fn socket_config_,
   void *socket_config_data_,
-  void **client_mon,
-  void *server_mon,
-  int expected_server_event,
-  int expected_server_value,
-  int expected_client_event = 0,
-  int expected_client_value = 0)
+  void **client_mon_,
+  void *server_mon_,
+  int expected_server_event_,
+  int expected_server_value_,
+  int expected_client_event_ = 0,
+  int expected_client_value_ = 0)
 {
     expect_new_client_bounce_fail (
-      ctx, my_endpoint, server, socket_config_, socket_config_data_, client_mon,
-      expected_client_event, expected_client_value);
+      ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
+      client_mon_, expected_client_event_, expected_client_value_);
 
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received = expect_monitor_event_multiple (
-      server_mon, expected_server_event, expected_server_value);
+      server_mon_, expected_server_event_, expected_server_value_);
 #endif
 
     return events_received;
 }
 
-void test_zap_unsuccessful (void *ctx,
-                            char *my_endpoint,
-                            void *server,
-                            void *server_mon,
-                            int expected_server_event,
-                            int expected_server_value,
+void test_zap_unsuccessful (void *ctx_,
+                            char *my_endpoint_,
+                            void *server_,
+                            void *server_mon_,
+                            int expected_server_event_,
+                            int expected_server_value_,
                             socket_config_fn socket_config_,
                             void *socket_config_data_,
-                            void **client_mon = NULL,
-                            int expected_client_event = 0,
-                            int expected_client_value = 0)
+                            void **client_mon_ = NULL,
+                            int expected_client_event_ = 0,
+                            int expected_client_value_ = 0)
 {
     int server_events_received =
       expect_new_client_bounce_fail_and_count_monitor_events (
-        ctx, my_endpoint, server, socket_config_, socket_config_data_,
-        client_mon, server_mon, expected_server_event, expected_server_value,
-        expected_client_event, expected_client_value);
+        ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
+        client_mon_, server_mon_, expected_server_event_,
+        expected_server_value_, expected_client_event_, expected_client_value_);
 
     //  there may be more than one ZAP request due to repeated attempts by the
     //  client (actually only in case if ZAP status code 300)
@@ -124,20 +124,20 @@ void test_zap_unsuccessful (void *ctx,
             || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
-void test_zap_unsuccessful_no_handler (void *ctx,
-                                       char *my_endpoint,
-                                       void *server,
-                                       void *server_mon,
-                                       int expected_event,
-                                       int expected_err,
+void test_zap_unsuccessful_no_handler (void *ctx_,
+                                       char *my_endpoint_,
+                                       void *server_,
+                                       void *server_mon_,
+                                       int expected_event_,
+                                       int expected_err_,
                                        socket_config_fn socket_config_,
                                        void *socket_config_data_,
-                                       void **client_mon = NULL)
+                                       void **client_mon_ = NULL)
 {
     int events_received =
       expect_new_client_bounce_fail_and_count_monitor_events (
-        ctx, my_endpoint, server, socket_config_, socket_config_data_,
-        client_mon, server_mon, expected_event, expected_err);
+        ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
+        client_mon_, server_mon_, expected_event_, expected_err_);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     //  there may be more than one ZAP request due to repeated attempts by the
@@ -148,32 +148,32 @@ void test_zap_unsuccessful_no_handler (void *ctx,
 #endif
 }
 
-void test_zap_protocol_error (void *ctx,
-                              char *my_endpoint,
-                              void *server,
-                              void *server_mon,
+void test_zap_protocol_error (void *ctx_,
+                              char *my_endpoint_,
+                              void *server_,
+                              void *server_mon_,
                               socket_config_fn socket_config_,
                               void *socket_config_data_,
-                              int expected_error)
+                              int expected_error_)
 {
-    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
 #ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, expected_error,
+                           ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, expected_error_,
 #else
                            0, 0,
 #endif
                            socket_config_, socket_config_data_);
 }
 
-void test_zap_unsuccessful_status_300 (void *ctx,
-                                       char *my_endpoint,
-                                       void *server,
-                                       void *server_mon,
+void test_zap_unsuccessful_status_300 (void *ctx_,
+                                       char *my_endpoint_,
+                                       void *server_,
+                                       void *server_mon_,
                                        socket_config_fn client_socket_config_,
                                        void *client_socket_config_data_)
 {
     void *client_mon;
-    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
 #ifdef ZMQ_BUILD_DRAFT_API
                            ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
 #else
@@ -191,14 +191,14 @@ void test_zap_unsuccessful_status_300 (void *ctx,
 #endif
 }
 
-void test_zap_unsuccessful_status_500 (void *ctx,
-                                       char *my_endpoint,
-                                       void *server,
-                                       void *server_mon,
+void test_zap_unsuccessful_status_500 (void *ctx_,
+                                       char *my_endpoint_,
+                                       void *server_,
+                                       void *server_mon_,
                                        socket_config_fn client_socket_config_,
                                        void *client_socket_config_data_)
 {
-    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
 #ifdef ZMQ_BUILD_DRAFT_API
                            ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
 #else
