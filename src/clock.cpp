@@ -141,6 +141,9 @@ uint64_t zmq::clock_t::now_us ()
 #if defined ZMQ_HAVE_WINDOWS
 
     //  Get the high resolution counter's accuracy.
+    //  While QueryPerformanceFrequency only needs to be called once, since its
+    //  value does not change during runtime, we query it here since this is a
+    //  static function. It might make sense to cache it, though.
     LARGE_INTEGER ticks_per_second;
     QueryPerformanceFrequency (&ticks_per_second);
 
