@@ -51,7 +51,7 @@ void zmq::seed_random ()
 #if defined ZMQ_HAVE_WINDOWS
     int pid = static_cast<int> (GetCurrentProcessId ());
 #else
-    int pid = (int) getpid ();
+    int pid = static_cast<int> (getpid ());
 #endif
     srand (static_cast<unsigned int> (clock_t::now_us () + pid));
 }

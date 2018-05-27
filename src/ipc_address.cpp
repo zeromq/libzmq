@@ -100,9 +100,9 @@ const sockaddr *zmq::ipc_address_t::addr () const
 socklen_t zmq::ipc_address_t::addrlen () const
 {
     if (!address.sun_path[0] && address.sun_path[1])
-        return (socklen_t) strlen (address.sun_path + 1) + sizeof (sa_family_t)
-               + 1;
-    return (socklen_t) sizeof address;
+        return static_cast<socklen_t> (strlen (address.sun_path + 1))
+               + sizeof (sa_family_t) + 1;
+    return static_cast<socklen_t> (sizeof address);
 }
 
 #endif

@@ -108,7 +108,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 void zmq::epoll_t::rm_fd (handle_t handle_)
 {
     check_thread ();
-    poll_entry_t *pe = (poll_entry_t *) handle_;
+    poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
@@ -123,7 +123,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 void zmq::epoll_t::set_pollin (handle_t handle_)
 {
     check_thread ();
-    poll_entry_t *pe = (poll_entry_t *) handle_;
+    poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events |= EPOLLIN;
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -132,8 +132,8 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
 void zmq::epoll_t::reset_pollin (handle_t handle_)
 {
     check_thread ();
-    poll_entry_t *pe = (poll_entry_t *) handle_;
-    pe->ev.events &= ~((short) EPOLLIN);
+    poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
+    pe->ev.events &= ~(static_cast<short> (EPOLLIN));
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
@@ -141,7 +141,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
 void zmq::epoll_t::set_pollout (handle_t handle_)
 {
     check_thread ();
-    poll_entry_t *pe = (poll_entry_t *) handle_;
+    poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events |= EPOLLOUT;
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -150,8 +150,8 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
 void zmq::epoll_t::reset_pollout (handle_t handle_)
 {
     check_thread ();
-    poll_entry_t *pe = (poll_entry_t *) handle_;
-    pe->ev.events &= ~((short) EPOLLOUT);
+    poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
+    pe->ev.events &= ~(static_cast<short> (EPOLLOUT));
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
@@ -172,7 +172,7 @@ void zmq::epoll_t::loop ()
 
     while (true) {
         //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+        int timeout = static_cast<int> (execute_timers ());
 
         if (get_load () == 0) {
             if (timeout == 0)
@@ -191,7 +191,8 @@ void zmq::epoll_t::loop ()
         }
 
         for (int i = 0; i < n; i++) {
-            poll_entry_t *pe = ((poll_entry_t *) ev_buf[i].data.ptr);
+            poll_entry_t *pe =
+              (static_cast<poll_entry_t *> (ev_buf[i].data.ptr));
 
             if (pe->fd == retired_fd)
                 continue;

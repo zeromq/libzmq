@@ -457,8 +457,9 @@ void zmq::udp_engine_t::in_event ()
         return;
     }
 #else
-    int nbytes = recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                           (sockaddr *) &in_address, &in_addrlen);
+    int nbytes =
+      recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
+                reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
     if (nbytes == -1) {
 #if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM

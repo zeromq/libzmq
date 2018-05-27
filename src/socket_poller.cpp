@@ -296,7 +296,7 @@ void zmq::socket_poller_t::rebuild ()
     if (_pollset_size == 0)
         return;
 
-    _pollfds = (pollfd *) malloc (_pollset_size * sizeof (pollfd));
+    _pollfds = static_cast<pollfd *> (malloc (_pollset_size * sizeof (pollfd)));
     alloc_assert (_pollfds);
 
     int item_nbr = 0;

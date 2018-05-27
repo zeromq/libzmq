@@ -128,8 +128,9 @@ int zmq::tune_tcp_keepalives (fd_t s_,
 #else
 #ifdef ZMQ_HAVE_SO_KEEPALIVE
     if (keepalive_ != -1) {
-        int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE, (char *) &keepalive_,
-                             sizeof (int));
+        int rc =
+          setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
+                      reinterpret_cast<char *> (&keepalive_), sizeof (int));
         tcp_assert_tuning_error (s_, rc);
         if (rc != 0)
             return rc;
@@ -292,7 +293,7 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
 #else
 
-    const ssize_t rc = recv (s_, (char *) data_, size_, 0);
+    const ssize_t rc = recv (s_, static_cast<char *> (data_), size_, 0);
 
     //  Several errors are OK. When speculative read is being done we may not
     //  be able to read a single byte from the socket. Also, SIGSTOP issued

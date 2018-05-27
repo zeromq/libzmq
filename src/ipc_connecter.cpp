@@ -252,7 +252,8 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
 #else
     socklen_t len = sizeof (err);
 #endif
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
     if (rc == -1) {
         if (errno == ENOPROTOOPT)
             errno = 0;

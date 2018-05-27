@@ -291,7 +291,8 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     socklen_t ss_len = sizeof (ss);
 #endif
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
-    fd_t sock = ::accept4 (_s, (struct sockaddr *) &ss, &ss_len, SOCK_CLOEXEC);
+    fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
+                           &ss_len, SOCK_CLOEXEC);
 #else
     fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
@@ -318,7 +319,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
         for (options_t::tcp_accept_filters_t::size_type i = 0;
              i != options.tcp_accept_filters.size (); ++i) {
             if (options.tcp_accept_filters[i].match_address (
-                  (struct sockaddr *) &ss, ss_len)) {
+                  reinterpret_cast<struct sockaddr *> (&ss), ss_len)) {
                 matched = true;
                 break;
             }
