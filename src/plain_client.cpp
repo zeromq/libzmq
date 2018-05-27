@@ -40,7 +40,7 @@
 zmq::plain_client_t::plain_client_t (session_base_t *const session_,
                                      const options_t &options_) :
     mechanism_base_t (session_, options_),
-    state (sending_hello)
+    _state (sending_hello)
 {
 }
 
@@ -52,16 +52,16 @@ int zmq::plain_client_t::next_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
-    switch (state) {
+    switch (_state) {
         case sending_hello:
             rc = produce_hello (msg_);
             if (rc == 0)
-                state = waiting_for_welcome;
+                _state = waiting_for_welcome;
             break;
         case sending_initiate:
             rc = produce_initiate (msg_);
             if (rc == 0)
-                state = waiting_for_ready;
+                _state = waiting_for_ready;
             break;
         default:
             errno = EAGAIN;
@@ -102,9 +102,9 @@ int zmq::plain_client_t::process_handshake_command (msg_t *msg_)
 
 zmq::mechanism_t::status_t zmq::plain_client_t::status () const
 {
-    if (state == ready)
+    if (_state == ready)
         return mechanism_t::ready;
-    if (state == error_command_received)
+    if (_state == error_command_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;
@@ -143,7 +143,7 @@ int zmq::plain_client_t::process_welcome (const unsigned char *cmd_data_,
 {
     LIBZMQ_UNUSED (cmd_data_);
 
-    if (state != waiting_for_welcome) {
+    if (_state != waiting_for_welcome) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
@@ -156,7 +156,7 @@ int zmq::plain_client_t::process_welcome (const unsigned char *cmd_data_,
         errno = EPROTO;
         return -1;
     }
-    state = sending_initiate;
+    _state = sending_initiate;
     return 0;
 }
 
@@ -170,7 +170,7 @@ int zmq::plain_client_t::produce_initiate (msg_t *msg_) const
 int zmq::plain_client_t::process_ready (const unsigned char *cmd_data_,
                                         size_t data_size_)
 {
-    if (state != waiting_for_ready) {
+    if (_state != waiting_for_ready) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
@@ -178,7 +178,7 @@ int zmq::plain_client_t::process_ready (const unsigned char *cmd_data_,
     }
     const int rc = parse_metadata (cmd_data_ + 6, data_size_ - 6);
     if (rc == 0)
-        state = ready;
+        _state = ready;
     else
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_METADATA);
@@ -189,7 +189,7 @@ int zmq::plain_client_t::process_ready (const unsigned char *cmd_data_,
 int zmq::plain_client_t::process_error (const unsigned char *cmd_data_,
                                         size_t data_size_)
 {
-    if (state != waiting_for_welcome && state != waiting_for_ready) {
+    if (_state != waiting_for_welcome && _state != waiting_for_ready) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
@@ -212,6 +212,6 @@ int zmq::plain_client_t::process_error (const unsigned char *cmd_data_,
     }
     const char *error_reason = reinterpret_cast<const char *> (cmd_data_) + 7;
     handle_error_reason (error_reason, error_reason_len);
-    state = error_command_received;
+    _state = error_command_received;
     return 0;
 }

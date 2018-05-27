@@ -42,27 +42,28 @@ void tearDown ()
     teardown_test_context ();
 }
 
-void test_reconnect_ivl_against_pair_socket (const char *my_endpoint, void *sb)
+void test_reconnect_ivl_against_pair_socket (const char *my_endpoint_,
+                                             void *sb_)
 {
     void *sc = test_context_socket (ZMQ_PAIR);
     int interval = -1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint_));
 
-    bounce (sb, sc);
+    bounce (sb_, sc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb_, my_endpoint_));
 
-    expect_bounce_fail (sb, sc);
+    expect_bounce_fail (sb_, sc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb_, my_endpoint_));
 
-    expect_bounce_fail (sb, sc);
+    expect_bounce_fail (sb_, sc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint_));
 
-    bounce (sb, sc);
+    bounce (sb_, sc);
 
     test_context_socket_close (sc);
 }
@@ -79,13 +80,13 @@ void test_reconnect_ivl_ipc (void)
 }
 #endif
 
-void test_reconnect_ivl_tcp (const char *address)
+void test_reconnect_ivl_tcp (const char *address_)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, address_));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 

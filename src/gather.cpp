@@ -49,34 +49,34 @@ void zmq::gather_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     LIBZMQ_UNUSED (subscribe_to_all_);
 
     zmq_assert (pipe_);
-    fq.attach (pipe_);
+    _fq.attach (pipe_);
 }
 
 void zmq::gather_t::xread_activated (pipe_t *pipe_)
 {
-    fq.activated (pipe_);
+    _fq.activated (pipe_);
 }
 
 void zmq::gather_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.pipe_terminated (pipe_);
+    _fq.pipe_terminated (pipe_);
 }
 
 int zmq::gather_t::xrecv (msg_t *msg_)
 {
-    int rc = fq.recvpipe (msg_, NULL);
+    int rc = _fq.recvpipe (msg_, NULL);
 
     // Drop any messages with more flag
     while (rc == 0 && msg_->flags () & msg_t::more) {
         // drop all frames of the current multi-frame message
-        rc = fq.recvpipe (msg_, NULL);
+        rc = _fq.recvpipe (msg_, NULL);
 
         while (rc == 0 && msg_->flags () & msg_t::more)
-            rc = fq.recvpipe (msg_, NULL);
+            rc = _fq.recvpipe (msg_, NULL);
 
         // get the new message
         if (rc == 0)
-            rc = fq.recvpipe (msg_, NULL);
+            rc = _fq.recvpipe (msg_, NULL);
     }
 
     return rc;
@@ -84,10 +84,10 @@ int zmq::gather_t::xrecv (msg_t *msg_)
 
 bool zmq::gather_t::xhas_in ()
 {
-    return fq.has_in ();
+    return _fq.has_in ();
 }
 
 const zmq::blob_t &zmq::gather_t::get_credential () const
 {
-    return fq.get_credential ();
+    return _fq.get_credential ();
 }

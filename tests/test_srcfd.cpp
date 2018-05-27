@@ -77,8 +77,8 @@ int main (void)
     assert (zmq_msg_size (&msg) == MSG_SIZE);
 
     // get the messages source file descriptor
-    int srcFd = zmq_msg_get (&msg, ZMQ_SRCFD);
-    assert (srcFd >= 0);
+    int src_fd = zmq_msg_get (&msg, ZMQ_SRCFD);
+    assert (src_fd >= 0);
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -90,7 +90,7 @@ int main (void)
 #else
     socklen_t addrlen = sizeof ss;
 #endif
-    rc = getpeername (srcFd, (struct sockaddr *) &ss, &addrlen);
+    rc = getpeername (src_fd, (struct sockaddr *) &ss, &addrlen);
     assert (rc == 0);
 
     char host[NI_MAXHOST];
@@ -110,7 +110,7 @@ int main (void)
     msleep (SETTLE_TIME);
 
     // getting name from closed socket will fail
-    rc = getpeername (srcFd, (struct sockaddr *) &ss, &addrlen);
+    rc = getpeername (src_fd, (struct sockaddr *) &ss, &addrlen);
 #ifdef ZMQ_HAVE_WINDOWS
     assert (rc == SOCKET_ERROR);
     assert (WSAGetLastError () == WSAENOTSOCK);

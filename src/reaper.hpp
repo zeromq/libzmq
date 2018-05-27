@@ -63,26 +63,26 @@ class reaper_t : public object_t, public i_poll_events
     void process_reaped ();
 
     //  Reaper thread accesses incoming commands via this mailbox.
-    mailbox_t mailbox;
+    mailbox_t _mailbox;
 
     //  Handle associated with mailbox' file descriptor.
-    poller_t::handle_t mailbox_handle;
+    poller_t::handle_t _mailbox_handle;
 
     //  I/O multiplexing is performed using a poller object.
-    poller_t *poller;
+    poller_t *_poller;
 
     //  Number of sockets being reaped at the moment.
-    int sockets;
+    int _sockets;
 
     //  If true, we were already asked to terminate.
-    bool terminating;
+    bool _terminating;
 
     reaper_t (const reaper_t &);
     const reaper_t &operator= (const reaper_t &);
 
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.
-    pid_t pid;
+    pid_t _pid;
 #endif
 };
 }

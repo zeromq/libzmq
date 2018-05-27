@@ -46,19 +46,19 @@ const test_message_t dialog[] = {
 };
 const int steps = sizeof (dialog) / sizeof (dialog[0]);
 
-bool has_more (void *socket)
+bool has_more (void *socket_)
 {
     int more = 0;
     size_t more_size = sizeof (more);
-    int rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
+    int rc = zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size);
     if (rc != 0)
         return false;
     return more != 0;
 }
 
-bool get_routing_id (void *socket, char *data, size_t *size)
+bool get_routing_id (void *socket_, char *data_, size_t *size_)
 {
-    int rc = zmq_getsockopt (socket, ZMQ_ROUTING_ID, data, size);
+    int rc = zmq_getsockopt (socket_, ZMQ_ROUTING_ID, data_, size_);
     return rc == 0;
 }
 

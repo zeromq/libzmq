@@ -40,10 +40,10 @@ void tearDown ()
 {
 }
 
-static void receiver (void *socket)
+static void receiver (void *socket_)
 {
     char buffer[16];
-    int rc = zmq_recv (socket, &buffer, sizeof (buffer), 0);
+    int rc = zmq_recv (socket_, &buffer, sizeof (buffer), 0);
     assert (rc == -1);
 }
 
@@ -147,12 +147,12 @@ void run_poller (void *data_)
 }
 #endif
 
-void test_poller_exists_with_socket_on_zmq_ctx_term (const int socket_type)
+void test_poller_exists_with_socket_on_zmq_ctx_term (const int socket_type_)
 {
 #ifdef ZMQ_HAVE_POLLER
     struct poller_test_data_t poller_test_data;
 
-    poller_test_data.socket_type = socket_type;
+    poller_test_data.socket_type = socket_type_;
 
     //  Set up our context and sockets
     poller_test_data.ctx = zmq_ctx_new ();

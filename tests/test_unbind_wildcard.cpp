@@ -35,28 +35,28 @@ int main (void)
     int rc = zmq_bind (sb, "tcp://*:*");
     assert (rc == 0);
 
-    char bindEndpoint[256];
-    char connectEndpoint[256];
-    size_t endpoint_len = sizeof (bindEndpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
+    char bind_endpoint[256];
+    char connect_endpoint[256];
+    size_t endpoint_len = sizeof (bind_endpoint);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len);
     assert (rc == 0);
 
     //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
 #ifdef ZMQ_HAVE_WINDOWS
-    sprintf (connectEndpoint, "tcp://127.0.0.1:%s",
-             strrchr (bindEndpoint, ':') + 1);
+    sprintf (connect_endpoint, "tcp://127.0.0.1:%s",
+             strrchr (bind_endpoint, ':') + 1);
 #else
-    strcpy (connectEndpoint, bindEndpoint);
+    strcpy (connect_endpoint, bind_endpoint);
 #endif
 
-    rc = zmq_connect (sc, connectEndpoint);
+    rc = zmq_connect (sc, connect_endpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, connectEndpoint);
+    rc = zmq_disconnect (sc, connect_endpoint);
     assert (rc == 0);
-    rc = zmq_unbind (sb, bindEndpoint);
+    rc = zmq_unbind (sb, bind_endpoint);
     assert (rc == 0);
 
     rc = zmq_close (sc);
@@ -78,30 +78,30 @@ int main (void)
     rc = zmq_bind (sb, "tcp://*:*");
     assert (rc == 0);
 
-    endpoint_len = sizeof (bindEndpoint);
-    memset (bindEndpoint, 0, endpoint_len);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
+    endpoint_len = sizeof (bind_endpoint);
+    memset (bind_endpoint, 0, endpoint_len);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len);
     assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (ipv6)
-        sprintf (connectEndpoint, "tcp://[::1]:%s",
-                 strrchr (bindEndpoint, ':') + 1);
+        sprintf (connect_endpoint, "tcp://[::1]:%s",
+                 strrchr (bind_endpoint, ':') + 1);
     else
-        sprintf (connectEndpoint, "tcp://127.0.0.1:%s",
-                 strrchr (bindEndpoint, ':') + 1);
+        sprintf (connect_endpoint, "tcp://127.0.0.1:%s",
+                 strrchr (bind_endpoint, ':') + 1);
 #else
-    strcpy (connectEndpoint, bindEndpoint);
+    strcpy (connect_endpoint, bind_endpoint);
 #endif
 
-    rc = zmq_connect (sc, connectEndpoint);
+    rc = zmq_connect (sc, connect_endpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, connectEndpoint);
+    rc = zmq_disconnect (sc, connect_endpoint);
     assert (rc == 0);
-    rc = zmq_unbind (sb, bindEndpoint);
+    rc = zmq_unbind (sb, bind_endpoint);
     assert (rc == 0);
 
     rc = zmq_close (sc);

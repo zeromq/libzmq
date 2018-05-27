@@ -29,11 +29,11 @@
 
 #include "testutil.hpp"
 
-void ffn (void *data, void *hint)
+void ffn (void *data_, void *hint_)
 {
     // Signal that ffn has been called by writing "freed" to hint
-    (void) data; //  Suppress 'unused' warnings at compile time
-    memcpy (hint, (void *) "freed", 5);
+    (void) data_; //  Suppress 'unused' warnings at compile time
+    memcpy (hint_, (void *) "freed", 5);
 }
 
 int main (void)

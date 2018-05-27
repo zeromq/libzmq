@@ -33,11 +33,11 @@
 // This is our server task.
 // It runs a proxy with a single REP socket as both frontend and backend.
 
-void server_task (void *ctx)
+void server_task (void *ctx_)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *rep = zmq_socket (ctx, ZMQ_REP);
+    void *rep = zmq_socket (ctx_, ZMQ_REP);
     assert (rep);
     int rc = zmq_bind (rep, "tcp://127.0.0.1:*");
     assert (rc == 0);
@@ -45,7 +45,7 @@ void server_task (void *ctx)
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_REQ);
+    void *control = zmq_socket (ctx_, ZMQ_REQ);
     assert (control);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);

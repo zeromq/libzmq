@@ -35,7 +35,7 @@
 
 zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    probe_router (false)
+    _probe_router (false)
 {
     options.type = ZMQ_DEALER;
 }
@@ -50,7 +50,7 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
     zmq_assert (pipe_);
 
-    if (probe_router) {
+    if (_probe_router) {
         msg_t probe_msg;
         int rc = probe_msg.init ();
         errno_assert (rc == 0);
@@ -65,8 +65,8 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
         errno_assert (rc == 0);
     }
 
-    fq.attach (pipe_);
-    lb.attach (pipe_);
+    _fq.attach (pipe_);
+    _lb.attach (pipe_);
 }
 
 int zmq::dealer_t::xsetsockopt (int option_,
@@ -81,7 +81,7 @@ int zmq::dealer_t::xsetsockopt (int option_,
     switch (option_) {
         case ZMQ_PROBE_ROUTER:
             if (is_int && value >= 0) {
-                probe_router = (value != 0);
+                _probe_router = (value != 0);
                 return 0;
             }
             break;
@@ -106,42 +106,42 @@ int zmq::dealer_t::xrecv (msg_t *msg_)
 
 bool zmq::dealer_t::xhas_in ()
 {
-    return fq.has_in ();
+    return _fq.has_in ();
 }
 
 bool zmq::dealer_t::xhas_out ()
 {
-    return lb.has_out ();
+    return _lb.has_out ();
 }
 
 const zmq::blob_t &zmq::dealer_t::get_credential () const
 {
-    return fq.get_credential ();
+    return _fq.get_credential ();
 }
 
 
 void zmq::dealer_t::xread_activated (pipe_t *pipe_)
 {
-    fq.activated (pipe_);
+    _fq.activated (pipe_);
 }
 
 void zmq::dealer_t::xwrite_activated (pipe_t *pipe_)
 {
-    lb.activated (pipe_);
+    _lb.activated (pipe_);
 }
 
 void zmq::dealer_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.pipe_terminated (pipe_);
-    lb.pipe_terminated (pipe_);
+    _fq.pipe_terminated (pipe_);
+    _lb.pipe_terminated (pipe_);
 }
 
 int zmq::dealer_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 {
-    return lb.sendpipe (msg_, pipe_);
+    return _lb.sendpipe (msg_, pipe_);
 }
 
 int zmq::dealer_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 {
-    return fq.recvpipe (msg_, pipe_);
+    return _fq.recvpipe (msg_, pipe_);
 }

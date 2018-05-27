@@ -43,12 +43,13 @@ void tearDown ()
 
 // SHALL route outgoing messages to available peers using a round-robin
 // strategy.
-void test_round_robin_out (const char *bind_address)
+void test_round_robin_out (const char *bind_address_)
 {
     void *dealer = test_context_socket (ZMQ_DEALER);
 
     char connect_address[MAX_SOCKET_STRING];
-    test_bind (dealer, bind_address, connect_address, sizeof (connect_address));
+    test_bind (dealer, bind_address_, connect_address,
+               sizeof (connect_address));
 
     const size_t services = 5;
     void *rep[services];
@@ -86,7 +87,7 @@ void test_round_robin_out (const char *bind_address)
 
 // SHALL receive incoming messages from its peers using a fair-queuing
 // strategy.
-void test_fair_queue_in (const char *bind_address)
+void test_fair_queue_in (const char *bind_address_)
 {
     void *receiver = test_context_socket (ZMQ_DEALER);
 
@@ -95,7 +96,7 @@ void test_fair_queue_in (const char *bind_address)
       zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
     char connect_address[MAX_SOCKET_STRING];
-    test_bind (receiver, bind_address, connect_address,
+    test_bind (receiver, bind_address_, connect_address,
                sizeof (connect_address));
 
     const size_t services = 5;
@@ -141,25 +142,25 @@ void test_fair_queue_in (const char *bind_address)
 // SHALL create a double queue when a peer connects to it. If this peer
 // disconnects, the DEALER socket SHALL destroy its double queue and SHALL
 // discard any messages it contains.
-void test_destroy_queue_on_disconnect (const char *bind_address)
+void test_destroy_queue_on_disconnect (const char *bind_address_)
 {
-    void *A = test_context_socket (ZMQ_DEALER);
+    void *a = test_context_socket (ZMQ_DEALER);
 
     char connect_address[MAX_SOCKET_STRING];
-    test_bind (A, bind_address, connect_address, sizeof (connect_address));
+    test_bind (a, bind_address_, connect_address, sizeof (connect_address));
 
-    void *B = test_context_socket (ZMQ_DEALER);
+    void *b = test_context_socket (ZMQ_DEALER);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (B, connect_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (b, connect_address));
 
     // Send a message in both directions
-    s_send_seq (A, "ABC", SEQ_END);
-    s_send_seq (B, "DEF", SEQ_END);
+    s_send_seq (a, "ABC", SEQ_END);
+    s_send_seq (b, "DEF", SEQ_END);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (B, connect_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (b, connect_address));
 
     // Disconnect may take time and need command processing.
-    zmq_pollitem_t poller[2] = {{A, 0, 0, 0}, {B, 0, 0, 0}};
+    zmq_pollitem_t poller[2] = {{a, 0, 0, 0}, {b, 0, 0, 0}};
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poll (poller, 2, 100));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poll (poller, 2, 100));
 
@@ -167,25 +168,25 @@ void test_destroy_queue_on_disconnect (const char *bind_address)
     zmq_msg_t msg;
     zmq_msg_init (&msg);
 
-    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (A, 0, 0, ZMQ_DONTWAIT));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (a, 0, 0, ZMQ_DONTWAIT));
 
-    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, A, ZMQ_DONTWAIT));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, a, ZMQ_DONTWAIT));
 
     // After a reconnect of B, the messages should still be gone
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (B, connect_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (b, connect_address));
 
-    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, A, ZMQ_DONTWAIT));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, a, ZMQ_DONTWAIT));
 
-    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, B, ZMQ_DONTWAIT));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, b, ZMQ_DONTWAIT));
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    test_context_socket_close_zero_linger (A);
-    test_context_socket_close_zero_linger (B);
+    test_context_socket_close_zero_linger (a);
+    test_context_socket_close_zero_linger (b);
 }
 
 // SHALL block on sending, or return a suitable error, when it has no connected peers.
-void test_block_on_send_no_peers (const char *bind_address)
+void test_block_on_send_no_peers (const char *bind_address_)
 {
     void *sc = test_context_socket (ZMQ_DEALER);
 

@@ -255,7 +255,7 @@ zap_client_common_handshake_t::zap_client_common_handshake_t (
     mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
     state (waiting_for_hello),
-    zap_reply_ok_state (zap_reply_ok_state_)
+    _zap_reply_ok_state (zap_reply_ok_state_)
 {
 }
 
@@ -283,7 +283,7 @@ void zap_client_common_handshake_t::handle_zap_status_code ()
     //  i.e. 200, 300, 400 or 500
     switch (status_code[0]) {
         case '2':
-            state = zap_reply_ok_state;
+            state = _zap_reply_ok_state;
             break;
         case '3':
             //  a 300 error code (temporary failure)

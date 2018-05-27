@@ -54,13 +54,13 @@ void tearDown ()
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
 
-static int get_monitor_event (void *monitor)
+static int get_monitor_event (void *monitor_)
 {
     for (int i = 0; i < 2; i++) {
         //  First frame in message contains event number and value
         zmq_msg_t msg;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
-        if (zmq_msg_recv (&msg, monitor, ZMQ_DONTWAIT) == -1) {
+        if (zmq_msg_recv (&msg, monitor_, ZMQ_DONTWAIT) == -1) {
             msleep (SETTLE_TIME);
             continue; //  Interrupted, presumably
         }
@@ -71,7 +71,7 @@ static int get_monitor_event (void *monitor)
 
         //  Second frame in message contains event address
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
-        if (zmq_msg_recv (&msg, monitor, 0) == -1) {
+        if (zmq_msg_recv (&msg, monitor_, 0) == -1) {
             return -1; //  Interrupted, presumably
         }
         TEST_ASSERT_FALSE (zmq_msg_more (&msg));
@@ -81,21 +81,21 @@ static int get_monitor_event (void *monitor)
     return -1;
 }
 
-static void recv_with_retry (raw_socket fd, char *buffer, int bytes)
+static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
 {
     int received = 0;
     while (true) {
         int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-          recv (fd, buffer + received, bytes - received, 0));
+          recv (fd_, buffer_ + received, bytes_ - received, 0));
         TEST_ASSERT_GREATER_THAN_INT (0, rc);
         received += rc;
-        TEST_ASSERT_LESS_OR_EQUAL_INT (bytes, received);
-        if (received == bytes)
+        TEST_ASSERT_LESS_OR_EQUAL_INT (bytes_, received);
+        if (received == bytes_)
             break;
     }
 }
 
-static void mock_handshake (raw_socket fd, int mock_ping)
+static void mock_handshake (raw_socket fd_, int mock_ping_)
 {
     const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
                                        0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
@@ -103,10 +103,10 @@ static void mock_handshake (raw_socket fd, int mock_ping)
     memset (buffer, 0, sizeof (buffer));
     memcpy (buffer, zmtp_greeting, sizeof (zmtp_greeting));
 
-    int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 64, 0));
+    int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 64, 0));
     TEST_ASSERT_EQUAL_INT (64, rc);
 
-    recv_with_retry (fd, buffer, 64);
+    recv_with_retry (fd_, buffer, 64);
 
     const uint8_t zmtp_ready[43] = {
       4,   41,  5,   'R', 'E', 'A', 'D', 'Y', 11,  'S', 'o', 'c', 'k', 'e', 't',
@@ -115,13 +115,13 @@ static void mock_handshake (raw_socket fd, int mock_ping)
 
     memset (buffer, 0, sizeof (buffer));
     memcpy (buffer, zmtp_ready, 43);
-    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 43, 0));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 43, 0));
     TEST_ASSERT_EQUAL_INT (43, rc);
 
     //  greeting
-    recv_with_retry (fd, buffer, 43);
+    recv_with_retry (fd_, buffer, 43);
 
-    if (mock_ping) {
+    if (mock_ping_) {
         //  test PING context - should be replicated in the PONG
         //  to avoid timeouts, do a bulk send
         const uint8_t zmtp_ping[12] = {4,   10, 4, 'P', 'I', 'N',
@@ -129,7 +129,7 @@ static void mock_handshake (raw_socket fd, int mock_ping)
         uint8_t zmtp_pong[10] = {4, 8, 4, 'P', 'O', 'N', 'G', 'L', 'O', 'L'};
         memset (buffer, 0, sizeof (buffer));
         memcpy (buffer, zmtp_ping, 12);
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 12, 0));
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 12, 0));
         TEST_ASSERT_EQUAL_INT (12, rc);
 
         //  test a larger body that won't fit in a small message and should get
@@ -137,27 +137,27 @@ static void mock_handshake (raw_socket fd, int mock_ping)
         memset (buffer, 'z', sizeof (buffer));
         memcpy (buffer, zmtp_ping, 12);
         buffer[1] = 65;
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 67, 0));
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 67, 0));
         TEST_ASSERT_EQUAL_INT (67, rc);
 
         //  small pong
-        recv_with_retry (fd, buffer, 10);
+        recv_with_retry (fd_, buffer, 10);
         TEST_ASSERT_EQUAL_INT (0, memcmp (zmtp_pong, buffer, 10));
         //  large pong
-        recv_with_retry (fd, buffer, 23);
+        recv_with_retry (fd_, buffer, 23);
         uint8_t zmtp_pooong[65] = {4, 21, 4, 'P', 'O', 'N', 'G', 'L', 'O', 'L'};
         memset (zmtp_pooong + 10, 'z', 55);
         TEST_ASSERT_EQUAL_INT (0, memcmp (zmtp_pooong, buffer, 23));
     }
 }
 
-static void setup_curve (void *socket, int is_server)
+static void setup_curve (void *socket_, int is_server_)
 {
     const char *secret_key;
     const char *public_key;
     const char *server_key;
 
-    if (is_server) {
+    if (is_server_) {
         secret_key = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
         public_key = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
         server_key = NULL;
@@ -167,43 +167,43 @@ static void setup_curve (void *socket, int is_server)
         server_key = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
     }
 
-    zmq_setsockopt (socket, ZMQ_CURVE_SECRETKEY, secret_key,
+    zmq_setsockopt (socket_, ZMQ_CURVE_SECRETKEY, secret_key,
                     strlen (secret_key));
-    zmq_setsockopt (socket, ZMQ_CURVE_PUBLICKEY, public_key,
+    zmq_setsockopt (socket_, ZMQ_CURVE_PUBLICKEY, public_key,
                     strlen (public_key));
-    if (is_server)
-        zmq_setsockopt (socket, ZMQ_CURVE_SERVER, &is_server,
-                        sizeof (is_server));
+    if (is_server_)
+        zmq_setsockopt (socket_, ZMQ_CURVE_SERVER, &is_server_,
+                        sizeof (is_server_));
     else
-        zmq_setsockopt (socket, ZMQ_CURVE_SERVERKEY, server_key,
+        zmq_setsockopt (socket_, ZMQ_CURVE_SERVERKEY, server_key,
                         strlen (server_key));
 }
 
-static void prep_server_socket (int set_heartbeats,
-                                int is_curve,
-                                void **server_out,
-                                void **mon_out,
-                                char *endpoint,
-                                size_t ep_length,
-                                int socket_type)
+static void prep_server_socket (int set_heartbeats_,
+                                int is_curve_,
+                                void **server_out_,
+                                void **mon_out_,
+                                char *endpoint_,
+                                size_t ep_length_,
+                                int socket_type_)
 {
     //  We'll be using this socket in raw mode
-    void *server = test_context_socket (socket_type);
+    void *server = test_context_socket (socket_type_);
 
     int value = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (server, ZMQ_LINGER, &value, sizeof (value)));
 
-    if (set_heartbeats) {
+    if (set_heartbeats_) {
         value = 50;
         TEST_ASSERT_SUCCESS_ERRNO (
           zmq_setsockopt (server, ZMQ_HEARTBEAT_IVL, &value, sizeof (value)));
     }
 
-    if (is_curve)
+    if (is_curve_)
         setup_curve (server, 1);
 
-    bind_loopback_ipv4 (server, endpoint, ep_length);
+    bind_loopback_ipv4 (server, endpoint_, ep_length_);
 
     //  Create and connect a socket for collecting monitor events on dealer
     void *server_mon = test_context_socket (ZMQ_PAIR);
@@ -216,21 +216,21 @@ static void prep_server_socket (int set_heartbeats,
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_connect (server_mon, "inproc://monitor-dealer"));
 
-    *server_out = server;
-    *mon_out = server_mon;
+    *server_out_ = server;
+    *mon_out_ = server_mon;
 }
 
 // This checks for a broken TCP connection (or, in this case a stuck one
 // where the peer never responds to PINGS). There should be an accepted event
 // then a disconnect event.
-static void test_heartbeat_timeout (int server_type, int mock_ping)
+static void test_heartbeat_timeout (int server_type_, int mock_ping_)
 {
     int rc;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *server, *server_mon;
-    prep_server_socket (!mock_ping, 0, &server, &server_mon, my_endpoint,
-                        MAX_SOCKET_STRING, server_type);
+    prep_server_socket (!mock_ping_, 0, &server, &server_mon, my_endpoint,
+                        MAX_SOCKET_STRING, server_type_);
 
     struct sockaddr_in ip4addr;
     raw_socket s;
@@ -249,13 +249,13 @@ static void test_heartbeat_timeout (int server_type, int mock_ping)
     TEST_ASSERT_GREATER_THAN_INT (-1, rc);
 
     // Mock a ZMTP 3 client so we can forcibly time out a connection
-    mock_handshake (s, mock_ping);
+    mock_handshake (s, mock_ping_);
 
     // By now everything should report as connected
     rc = get_monitor_event (server_mon);
     TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_ACCEPTED, rc);
 
-    if (!mock_ping) {
+    if (!mock_ping_) {
         // We should have been disconnected
         rc = get_monitor_event (server_mon);
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_DISCONNECTED, rc);
@@ -272,16 +272,16 @@ static void test_heartbeat_timeout (int server_type, int mock_ping)
 // to a server that is not doing any heartbeating. Then we sleep,
 // if the server disconnects the client, then we know the TTL did
 // its thing correctly.
-static void test_heartbeat_ttl (int client_type, int server_type)
+static void test_heartbeat_ttl (int client_type_, int server_type_)
 {
     int rc, value;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *server, *server_mon, *client;
     prep_server_socket (0, 0, &server, &server_mon, my_endpoint,
-                        MAX_SOCKET_STRING, server_type);
+                        MAX_SOCKET_STRING, server_type_);
 
-    client = test_context_socket (client_type);
+    client = test_context_socket (client_type_);
 
     // Set the heartbeat TTL to 0.1 seconds
     value = 100;
@@ -315,17 +315,17 @@ static void test_heartbeat_ttl (int client_type, int server_type)
 // exchanged normally. There should be an accepted event on the server,
 // and then no event afterwards.
 static void
-test_heartbeat_notimeout (int is_curve, int client_type, int server_type)
+test_heartbeat_notimeout (int is_curve_, int client_type_, int server_type_)
 {
     int rc;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *server, *server_mon;
-    prep_server_socket (1, is_curve, &server, &server_mon, my_endpoint,
-                        MAX_SOCKET_STRING, server_type);
+    prep_server_socket (1, is_curve_, &server, &server_mon, my_endpoint,
+                        MAX_SOCKET_STRING, server_type_);
 
-    void *client = test_context_socket (client_type);
-    if (is_curve)
+    void *client = test_context_socket (client_type_);
+    if (is_curve_)
         setup_curve (client, 0);
     rc = zmq_connect (client, my_endpoint);
 
@@ -378,18 +378,18 @@ const int deciseconds_per_millisecond = 100;
 const int heartbeat_ttl_max =
   (UINT16_MAX + 1) * deciseconds_per_millisecond - 1;
 
-void test_setsockopt_heartbeat_success (const int value)
+void test_setsockopt_heartbeat_success (const int value_)
 {
     void *const socket = test_context_socket (ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (socket, ZMQ_HEARTBEAT_TTL, &value, sizeof (value)));
+      zmq_setsockopt (socket, ZMQ_HEARTBEAT_TTL, &value_, sizeof (value_)));
 
     int value_read;
     size_t value_read_size = sizeof (value_read);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (socket, ZMQ_HEARTBEAT_TTL,
                                                &value_read, &value_read_size));
 
-    TEST_ASSERT_EQUAL_INT (value - value % deciseconds_per_millisecond,
+    TEST_ASSERT_EQUAL_INT (value_ - value_ % deciseconds_per_millisecond,
                            value_read);
 
     test_context_socket_close (socket);

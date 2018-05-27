@@ -43,12 +43,12 @@ void tearDown ()
 }
 
 //  Client threads loop on send/recv until told to exit
-void client_thread (void *client)
+void client_thread (void *client_)
 {
     for (int count = 0; count < 15000; count++) {
-        send_string_expect_success (client, "0", 0);
+        send_string_expect_success (client_, "0", 0);
     }
-    send_string_expect_success (client, "1", 0);
+    send_string_expect_success (client_, "1", 0);
 }
 
 void test_thread_safe ()
@@ -82,12 +82,12 @@ void test_thread_safe ()
     test_context_socket_close (client);
 }
 
-void test_getsockopt_thread_safe (void *const socket)
+void test_getsockopt_thread_safe (void *const socket_)
 {
     int thread_safe;
     size_t size = sizeof (int);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (socket, ZMQ_THREAD_SAFE, &thread_safe, &size));
+      zmq_getsockopt (socket_, ZMQ_THREAD_SAFE, &thread_safe, &size));
     TEST_ASSERT_EQUAL_INT (1, thread_safe);
 }
 

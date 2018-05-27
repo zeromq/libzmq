@@ -74,7 +74,7 @@ class io_object_t : public i_poll_events
     void timer_event (int id_);
 
   private:
-    poller_t *poller;
+    poller_t *_poller;
 
     io_object_t (const io_object_t &);
     const io_object_t &operator= (const io_object_t &);

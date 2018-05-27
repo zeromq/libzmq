@@ -59,14 +59,14 @@ class dgram_t : public socket_base_t
     void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
-    zmq::pipe_t *pipe;
+    zmq::pipe_t *_pipe;
 
-    zmq::pipe_t *last_in;
+    zmq::pipe_t *_last_in;
 
-    blob_t saved_credential;
+    blob_t _saved_credential;
 
     //  If true, more outgoing message parts are expected.
-    bool more_out;
+    bool _more_out;
 
     dgram_t (const dgram_t &);
     const dgram_t &operator= (const dgram_t &);

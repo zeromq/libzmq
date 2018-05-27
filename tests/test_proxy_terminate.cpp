@@ -34,12 +34,12 @@
 // but there is no pull on the other side, previously the proxy blocks
 // in writing to the backend, preventing the proxy from terminating
 
-void server_task (void *ctx)
+void server_task (void *ctx_)
 {
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     // Frontend socket talks to main process
-    void *frontend = zmq_socket (ctx, ZMQ_SUB);
+    void *frontend = zmq_socket (ctx_, ZMQ_SUB);
     assert (frontend);
     int rc = zmq_setsockopt (frontend, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
@@ -49,13 +49,13 @@ void server_task (void *ctx)
     assert (rc == 0);
 
     // Nice socket which is never read
-    void *backend = zmq_socket (ctx, ZMQ_PUSH);
+    void *backend = zmq_socket (ctx_, ZMQ_PUSH);
     assert (backend);
     rc = zmq_bind (backend, "tcp://127.0.0.1:*");
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_REQ);
+    void *control = zmq_socket (ctx_, ZMQ_REQ);
     assert (control);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);

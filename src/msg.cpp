@@ -49,7 +49,7 @@ typedef char
 
 bool zmq::msg_t::check () const
 {
-    return u.base.type >= type_min && u.base.type <= type_max;
+    return _u.base.type >= type_min && _u.base.type <= type_max;
 }
 
 int zmq::msg_t::init (void *data_,
@@ -76,44 +76,44 @@ int zmq::msg_t::init (void *data_,
 
 int zmq::msg_t::init ()
 {
-    u.vsm.metadata = NULL;
-    u.vsm.type = type_vsm;
-    u.vsm.flags = 0;
-    u.vsm.size = 0;
-    u.vsm.group[0] = '\0';
-    u.vsm.routing_id = 0;
+    _u.vsm.metadata = NULL;
+    _u.vsm.type = type_vsm;
+    _u.vsm.flags = 0;
+    _u.vsm.size = 0;
+    _u.vsm.group[0] = '\0';
+    _u.vsm.routing_id = 0;
     return 0;
 }
 
 int zmq::msg_t::init_size (size_t size_)
 {
     if (size_ <= max_vsm_size) {
-        u.vsm.metadata = NULL;
-        u.vsm.type = type_vsm;
-        u.vsm.flags = 0;
-        u.vsm.size = static_cast<unsigned char> (size_);
-        u.vsm.group[0] = '\0';
-        u.vsm.routing_id = 0;
+        _u.vsm.metadata = NULL;
+        _u.vsm.type = type_vsm;
+        _u.vsm.flags = 0;
+        _u.vsm.size = static_cast<unsigned char> (size_);
+        _u.vsm.group[0] = '\0';
+        _u.vsm.routing_id = 0;
     } else {
-        u.lmsg.metadata = NULL;
-        u.lmsg.type = type_lmsg;
-        u.lmsg.flags = 0;
-        u.lmsg.group[0] = '\0';
-        u.lmsg.routing_id = 0;
-        u.lmsg.content = NULL;
+        _u.lmsg.metadata = NULL;
+        _u.lmsg.type = type_lmsg;
+        _u.lmsg.flags = 0;
+        _u.lmsg.group[0] = '\0';
+        _u.lmsg.routing_id = 0;
+        _u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
-            u.lmsg.content =
+            _u.lmsg.content =
               static_cast<content_t *> (malloc (sizeof (content_t) + size_));
-        if (unlikely (!u.lmsg.content)) {
+        if (unlikely (!_u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
         }
 
-        u.lmsg.content->data = u.lmsg.content + 1;
-        u.lmsg.content->size = size_;
-        u.lmsg.content->ffn = NULL;
-        u.lmsg.content->hint = NULL;
-        new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+        _u.lmsg.content->data = _u.lmsg.content + 1;
+        _u.lmsg.content->size = size_;
+        _u.lmsg.content->ffn = NULL;
+        _u.lmsg.content->hint = NULL;
+        new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
 }
@@ -127,18 +127,18 @@ int zmq::msg_t::init_external_storage (content_t *content_,
     zmq_assert (NULL != data_);
     zmq_assert (NULL != content_);
 
-    u.zclmsg.metadata = NULL;
-    u.zclmsg.type = type_zclmsg;
-    u.zclmsg.flags = 0;
-    u.zclmsg.group[0] = '\0';
-    u.zclmsg.routing_id = 0;
+    _u.zclmsg.metadata = NULL;
+    _u.zclmsg.type = type_zclmsg;
+    _u.zclmsg.flags = 0;
+    _u.zclmsg.group[0] = '\0';
+    _u.zclmsg.routing_id = 0;
 
-    u.zclmsg.content = content_;
-    u.zclmsg.content->data = data_;
-    u.zclmsg.content->size = size_;
-    u.zclmsg.content->ffn = ffn_;
-    u.zclmsg.content->hint = hint_;
-    new (&u.zclmsg.content->refcnt) zmq::atomic_counter_t ();
+    _u.zclmsg.content = content_;
+    _u.zclmsg.content->data = data_;
+    _u.zclmsg.content->size = size_;
+    _u.zclmsg.content->ffn = ffn_;
+    _u.zclmsg.content->hint = hint_;
+    new (&_u.zclmsg.content->refcnt) zmq::atomic_counter_t ();
 
     return 0;
 }
@@ -154,61 +154,62 @@ int zmq::msg_t::init_data (void *data_,
 
     //  Initialize constant message if there's no need to deallocate
     if (ffn_ == NULL) {
-        u.cmsg.metadata = NULL;
-        u.cmsg.type = type_cmsg;
-        u.cmsg.flags = 0;
-        u.cmsg.data = data_;
-        u.cmsg.size = size_;
-        u.cmsg.group[0] = '\0';
-        u.cmsg.routing_id = 0;
+        _u.cmsg.metadata = NULL;
+        _u.cmsg.type = type_cmsg;
+        _u.cmsg.flags = 0;
+        _u.cmsg.data = data_;
+        _u.cmsg.size = size_;
+        _u.cmsg.group[0] = '\0';
+        _u.cmsg.routing_id = 0;
     } else {
-        u.lmsg.metadata = NULL;
-        u.lmsg.type = type_lmsg;
-        u.lmsg.flags = 0;
-        u.lmsg.group[0] = '\0';
-        u.lmsg.routing_id = 0;
-        u.lmsg.content = static_cast<content_t *> (malloc (sizeof (content_t)));
-        if (!u.lmsg.content) {
+        _u.lmsg.metadata = NULL;
+        _u.lmsg.type = type_lmsg;
+        _u.lmsg.flags = 0;
+        _u.lmsg.group[0] = '\0';
+        _u.lmsg.routing_id = 0;
+        _u.lmsg.content =
+          static_cast<content_t *> (malloc (sizeof (content_t)));
+        if (!_u.lmsg.content) {
             errno = ENOMEM;
             return -1;
         }
 
-        u.lmsg.content->data = data_;
-        u.lmsg.content->size = size_;
-        u.lmsg.content->ffn = ffn_;
-        u.lmsg.content->hint = hint_;
-        new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+        _u.lmsg.content->data = data_;
+        _u.lmsg.content->size = size_;
+        _u.lmsg.content->ffn = ffn_;
+        _u.lmsg.content->hint = hint_;
+        new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
 }
 
 int zmq::msg_t::init_delimiter ()
 {
-    u.delimiter.metadata = NULL;
-    u.delimiter.type = type_delimiter;
-    u.delimiter.flags = 0;
-    u.delimiter.group[0] = '\0';
-    u.delimiter.routing_id = 0;
+    _u.delimiter.metadata = NULL;
+    _u.delimiter.type = type_delimiter;
+    _u.delimiter.flags = 0;
+    _u.delimiter.group[0] = '\0';
+    _u.delimiter.routing_id = 0;
     return 0;
 }
 
 int zmq::msg_t::init_join ()
 {
-    u.base.metadata = NULL;
-    u.base.type = type_join;
-    u.base.flags = 0;
-    u.base.group[0] = '\0';
-    u.base.routing_id = 0;
+    _u.base.metadata = NULL;
+    _u.base.type = type_join;
+    _u.base.flags = 0;
+    _u.base.group[0] = '\0';
+    _u.base.routing_id = 0;
     return 0;
 }
 
 int zmq::msg_t::init_leave ()
 {
-    u.base.metadata = NULL;
-    u.base.type = type_leave;
-    u.base.flags = 0;
-    u.base.group[0] = '\0';
-    u.base.routing_id = 0;
+    _u.base.metadata = NULL;
+    _u.base.type = type_leave;
+    _u.base.flags = 0;
+    _u.base.group[0] = '\0';
+    _u.base.routing_id = 0;
     return 0;
 }
 
@@ -220,47 +221,47 @@ int zmq::msg_t::close ()
         return -1;
     }
 
-    if (u.base.type == type_lmsg) {
+    if (_u.base.type == type_lmsg) {
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
-        if (!(u.lmsg.flags & msg_t::shared)
-            || !u.lmsg.content->refcnt.sub (1)) {
+        if (!(_u.lmsg.flags & msg_t::shared)
+            || !_u.lmsg.content->refcnt.sub (1)) {
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
-            u.lmsg.content->refcnt.~atomic_counter_t ();
+            _u.lmsg.content->refcnt.~atomic_counter_t ();
 
-            if (u.lmsg.content->ffn)
-                u.lmsg.content->ffn (u.lmsg.content->data,
-                                     u.lmsg.content->hint);
-            free (u.lmsg.content);
+            if (_u.lmsg.content->ffn)
+                _u.lmsg.content->ffn (_u.lmsg.content->data,
+                                      _u.lmsg.content->hint);
+            free (_u.lmsg.content);
         }
     }
 
     if (is_zcmsg ()) {
-        zmq_assert (u.zclmsg.content->ffn);
+        zmq_assert (_u.zclmsg.content->ffn);
 
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
-        if (!(u.zclmsg.flags & msg_t::shared)
-            || !u.zclmsg.content->refcnt.sub (1)) {
+        if (!(_u.zclmsg.flags & msg_t::shared)
+            || !_u.zclmsg.content->refcnt.sub (1)) {
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
-            u.zclmsg.content->refcnt.~atomic_counter_t ();
+            _u.zclmsg.content->refcnt.~atomic_counter_t ();
 
-            u.zclmsg.content->ffn (u.zclmsg.content->data,
-                                   u.zclmsg.content->hint);
+            _u.zclmsg.content->ffn (_u.zclmsg.content->data,
+                                    _u.zclmsg.content->hint);
         }
     }
 
-    if (u.base.metadata != NULL) {
-        if (u.base.metadata->drop_ref ()) {
-            LIBZMQ_DELETE (u.base.metadata);
+    if (_u.base.metadata != NULL) {
+        if (_u.base.metadata->drop_ref ()) {
+            LIBZMQ_DELETE (_u.base.metadata);
         }
-        u.base.metadata = NULL;
+        _u.base.metadata = NULL;
     }
 
     //  Make the message invalid.
-    u.base.type = 0;
+    _u.base.type = 0;
 
     return 0;
 }
@@ -298,29 +299,29 @@ int zmq::msg_t::copy (msg_t &src_)
     if (unlikely (rc < 0))
         return rc;
 
-    if (src_.u.base.type == type_lmsg) {
+    if (src_._u.base.type == type_lmsg) {
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
-        if (src_.u.lmsg.flags & msg_t::shared)
-            src_.u.lmsg.content->refcnt.add (1);
+        if (src_._u.lmsg.flags & msg_t::shared)
+            src_._u.lmsg.content->refcnt.add (1);
         else {
-            src_.u.lmsg.flags |= msg_t::shared;
-            src_.u.lmsg.content->refcnt.set (2);
+            src_._u.lmsg.flags |= msg_t::shared;
+            src_._u.lmsg.content->refcnt.set (2);
         }
     }
 
     if (src_.is_zcmsg ()) {
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
-        if (src_.u.zclmsg.flags & msg_t::shared)
+        if (src_._u.zclmsg.flags & msg_t::shared)
             src_.refcnt ()->add (1);
         else {
-            src_.u.zclmsg.flags |= msg_t::shared;
+            src_._u.zclmsg.flags |= msg_t::shared;
             src_.refcnt ()->set (2);
         }
     }
-    if (src_.u.base.metadata != NULL)
-        src_.u.base.metadata->add_ref ();
+    if (src_._u.base.metadata != NULL)
+        src_._u.base.metadata->add_ref ();
 
     *this = src_;
 
@@ -332,15 +333,15 @@ void *zmq::msg_t::data ()
     //  Check the validity of the message.
     zmq_assert (check ());
 
-    switch (u.base.type) {
+    switch (_u.base.type) {
         case type_vsm:
-            return u.vsm.data;
+            return _u.vsm.data;
         case type_lmsg:
-            return u.lmsg.content->data;
+            return _u.lmsg.content->data;
         case type_cmsg:
-            return u.cmsg.data;
+            return _u.cmsg.data;
         case type_zclmsg:
-            return u.zclmsg.content->data;
+            return _u.zclmsg.content->data;
         default:
             zmq_assert (false);
             return NULL;
@@ -352,15 +353,15 @@ size_t zmq::msg_t::size () const
     //  Check the validity of the message.
     zmq_assert (check ());
 
-    switch (u.base.type) {
+    switch (_u.base.type) {
         case type_vsm:
-            return u.vsm.size;
+            return _u.vsm.size;
         case type_lmsg:
-            return u.lmsg.content->size;
+            return _u.lmsg.content->size;
         case type_zclmsg:
-            return u.zclmsg.content->size;
+            return _u.zclmsg.content->size;
         case type_cmsg:
-            return u.cmsg.size;
+            return _u.cmsg.size;
         default:
             zmq_assert (false);
             return 0;
@@ -369,80 +370,80 @@ size_t zmq::msg_t::size () const
 
 unsigned char zmq::msg_t::flags () const
 {
-    return u.base.flags;
+    return _u.base.flags;
 }
 
 void zmq::msg_t::set_flags (unsigned char flags_)
 {
-    u.base.flags |= flags_;
+    _u.base.flags |= flags_;
 }
 
 void zmq::msg_t::reset_flags (unsigned char flags_)
 {
-    u.base.flags &= ~flags_;
+    _u.base.flags &= ~flags_;
 }
 
 zmq::metadata_t *zmq::msg_t::metadata () const
 {
-    return u.base.metadata;
+    return _u.base.metadata;
 }
 
 void zmq::msg_t::set_metadata (zmq::metadata_t *metadata_)
 {
     assert (metadata_ != NULL);
-    assert (u.base.metadata == NULL);
+    assert (_u.base.metadata == NULL);
     metadata_->add_ref ();
-    u.base.metadata = metadata_;
+    _u.base.metadata = metadata_;
 }
 
 void zmq::msg_t::reset_metadata ()
 {
-    if (u.base.metadata) {
-        if (u.base.metadata->drop_ref ()) {
-            LIBZMQ_DELETE (u.base.metadata);
+    if (_u.base.metadata) {
+        if (_u.base.metadata->drop_ref ()) {
+            LIBZMQ_DELETE (_u.base.metadata);
         }
-        u.base.metadata = NULL;
+        _u.base.metadata = NULL;
     }
 }
 
 bool zmq::msg_t::is_routing_id () const
 {
-    return (u.base.flags & routing_id) == routing_id;
+    return (_u.base.flags & routing_id) == routing_id;
 }
 
 bool zmq::msg_t::is_credential () const
 {
-    return (u.base.flags & credential) == credential;
+    return (_u.base.flags & credential) == credential;
 }
 
 bool zmq::msg_t::is_delimiter () const
 {
-    return u.base.type == type_delimiter;
+    return _u.base.type == type_delimiter;
 }
 
 bool zmq::msg_t::is_vsm () const
 {
-    return u.base.type == type_vsm;
+    return _u.base.type == type_vsm;
 }
 
 bool zmq::msg_t::is_cmsg () const
 {
-    return u.base.type == type_cmsg;
+    return _u.base.type == type_cmsg;
 }
 
 bool zmq::msg_t::is_zcmsg () const
 {
-    return u.base.type == type_zclmsg;
+    return _u.base.type == type_zclmsg;
 }
 
 bool zmq::msg_t::is_join () const
 {
-    return u.base.type == type_join;
+    return _u.base.type == type_join;
 }
 
 bool zmq::msg_t::is_leave () const
 {
-    return u.base.type == type_leave;
+    return _u.base.type == type_leave;
 }
 
 void zmq::msg_t::add_refs (int refs_)
@@ -450,7 +451,7 @@ void zmq::msg_t::add_refs (int refs_)
     zmq_assert (refs_ >= 0);
 
     //  Operation not supported for messages with metadata.
-    zmq_assert (u.base.metadata == NULL);
+    zmq_assert (_u.base.metadata == NULL);
 
     //  No copies required.
     if (!refs_)
@@ -458,12 +459,12 @@ void zmq::msg_t::add_refs (int refs_)
 
     //  VSMs, CMSGS and delimiters can be copied straight away. The only
     //  message type that needs special care are long messages.
-    if (u.base.type == type_lmsg || is_zcmsg ()) {
-        if (u.base.flags & msg_t::shared)
+    if (_u.base.type == type_lmsg || is_zcmsg ()) {
+        if (_u.base.flags & msg_t::shared)
             refcnt ()->add (refs_);
         else {
             refcnt ()->set (refs_ + 1);
-            u.base.flags |= msg_t::shared;
+            _u.base.flags |= msg_t::shared;
         }
     }
 }
@@ -473,37 +474,37 @@ bool zmq::msg_t::rm_refs (int refs_)
     zmq_assert (refs_ >= 0);
 
     //  Operation not supported for messages with metadata.
-    zmq_assert (u.base.metadata == NULL);
+    zmq_assert (_u.base.metadata == NULL);
 
     //  No copies required.
     if (!refs_)
         return true;
 
     //  If there's only one reference close the message.
-    if ((u.base.type != type_zclmsg && u.base.type != type_lmsg)
-        || !(u.base.flags & msg_t::shared)) {
+    if ((_u.base.type != type_zclmsg && _u.base.type != type_lmsg)
+        || !(_u.base.flags & msg_t::shared)) {
         close ();
         return false;
     }
 
     //  The only message type that needs special care are long and zcopy messages.
-    if (u.base.type == type_lmsg && !u.lmsg.content->refcnt.sub (refs_)) {
+    if (_u.base.type == type_lmsg && !_u.lmsg.content->refcnt.sub (refs_)) {
         //  We used "placement new" operator to initialize the reference
         //  counter so we call the destructor explicitly now.
-        u.lmsg.content->refcnt.~atomic_counter_t ();
+        _u.lmsg.content->refcnt.~atomic_counter_t ();
 
-        if (u.lmsg.content->ffn)
-            u.lmsg.content->ffn (u.lmsg.content->data, u.lmsg.content->hint);
-        free (u.lmsg.content);
+        if (_u.lmsg.content->ffn)
+            _u.lmsg.content->ffn (_u.lmsg.content->data, _u.lmsg.content->hint);
+        free (_u.lmsg.content);
 
         return false;
     }
 
-    if (is_zcmsg () && !u.zclmsg.content->refcnt.sub (refs_)) {
+    if (is_zcmsg () && !_u.zclmsg.content->refcnt.sub (refs_)) {
         // storage for rfcnt is provided externally
-        if (u.zclmsg.content->ffn) {
-            u.zclmsg.content->ffn (u.zclmsg.content->data,
-                                   u.zclmsg.content->hint);
+        if (_u.zclmsg.content->ffn) {
+            _u.zclmsg.content->ffn (_u.zclmsg.content->data,
+                                    _u.zclmsg.content->hint);
         }
 
         return false;
@@ -514,13 +515,13 @@ bool zmq::msg_t::rm_refs (int refs_)
 
 uint32_t zmq::msg_t::get_routing_id ()
 {
-    return u.base.routing_id;
+    return _u.base.routing_id;
 }
 
 int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 {
     if (routing_id_) {
-        u.base.routing_id = routing_id_;
+        _u.base.routing_id = routing_id_;
         return 0;
     }
     errno = EINVAL;
@@ -529,13 +530,13 @@ int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 
 int zmq::msg_t::reset_routing_id ()
 {
-    u.base.routing_id = 0;
+    _u.base.routing_id = 0;
     return 0;
 }
 
 const char *zmq::msg_t::group ()
 {
-    return u.base.group;
+    return _u.base.group;
 }
 
 int zmq::msg_t::set_group (const char *group_)
@@ -550,19 +551,19 @@ int zmq::msg_t::set_group (const char *group_, size_t length_)
         return -1;
     }
 
-    strncpy (u.base.group, group_, length_);
-    u.base.group[length_] = '\0';
+    strncpy (_u.base.group, group_, length_);
+    _u.base.group[length_] = '\0';
 
     return 0;
 }
 
 zmq::atomic_counter_t *zmq::msg_t::refcnt ()
 {
-    switch (u.base.type) {
+    switch (_u.base.type) {
         case type_lmsg:
-            return &u.lmsg.content->refcnt;
+            return &_u.lmsg.content->refcnt;
         case type_zclmsg:
-            return &u.zclmsg.content->refcnt;
+            return &_u.zclmsg.content->refcnt;
         default:
             zmq_assert (false);
             return NULL;

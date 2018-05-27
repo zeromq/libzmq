@@ -90,7 +90,7 @@ class epoll_t : public worker_poller_base_t
     void loop ();
 
     //  Main epoll file descriptor
-    epoll_fd_t epoll_fd;
+    epoll_fd_t _epoll_fd;
 
     struct poll_entry_t
     {
@@ -101,13 +101,13 @@ class epoll_t : public worker_poller_base_t
 
     //  List of retired event sources.
     typedef std::vector<poll_entry_t *> retired_t;
-    retired_t retired;
+    retired_t _retired;
 
     //  Handle of the physical thread doing the I/O work.
-    thread_t worker;
+    thread_t _worker;
 
     //  Synchronisation of retired event sources
-    mutex_t retired_sync;
+    mutex_t _retired_sync;
 
     epoll_t (const epoll_t &);
     const epoll_t &operator= (const epoll_t &);

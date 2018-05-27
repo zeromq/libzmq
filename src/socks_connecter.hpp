@@ -122,46 +122,46 @@ class socks_connecter_t : public own_t, public io_object_t
     //  retired_fd if the connection was unsuccessful.
     zmq::fd_t check_proxy_connection ();
 
-    socks_greeting_encoder_t greeting_encoder;
-    socks_choice_decoder_t choice_decoder;
-    socks_request_encoder_t request_encoder;
-    socks_response_decoder_t response_decoder;
+    socks_greeting_encoder_t _greeting_encoder;
+    socks_choice_decoder_t _choice_decoder;
+    socks_request_encoder_t _request_encoder;
+    socks_response_decoder_t _response_decoder;
 
     //  Address to connect to. Owned by session_base_t.
-    address_t *addr;
+    address_t *_addr;
 
     //  SOCKS address; owned by this connecter.
-    address_t *proxy_addr;
+    address_t *_proxy_addr;
 
-    int status;
+    int _status;
 
     //  Underlying socket.
-    fd_t s;
+    fd_t _s;
 
     //  Handle corresponding to the listening socket.
-    handle_t handle;
+    handle_t _handle;
 
     //  If true file descriptor is registered with the poller and 'handle'
     //  contains valid value.
-    bool handle_valid;
+    bool _handle_valid;
 
     //  If true, connecter is waiting a while before trying to connect.
-    const bool delayed_start;
+    const bool _delayed_start;
 
     //  True iff a timer has been started.
-    bool timer_started;
+    bool _timer_started;
 
     //  Reference to the session we belong to.
-    zmq::session_base_t *session;
+    zmq::session_base_t *_session;
 
     //  Current reconnect ivl, updated for backoff strategy
-    int current_reconnect_ivl;
+    int _current_reconnect_ivl;
 
     // String representation of endpoint to connect to
-    std::string endpoint;
+    std::string _endpoint;
 
     // Socket
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *_socket;
 
     socks_connecter_t (const socks_connecter_t &);
     const socks_connecter_t &operator= (const socks_connecter_t &);

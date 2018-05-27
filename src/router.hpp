@@ -73,65 +73,65 @@ class router_t : public socket_base_t
     bool identify_peer (pipe_t *pipe_);
 
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     //  True iff there is a message held in the pre-fetch buffer.
-    bool prefetched;
+    bool _prefetched;
 
     //  If true, the receiver got the message part with
     //  the peer's identity.
-    bool routing_id_sent;
+    bool _routing_id_sent;
 
     //  Holds the prefetched identity.
-    msg_t prefetched_id;
+    msg_t _prefetched_id;
 
     //  Holds the prefetched message.
-    msg_t prefetched_msg;
+    msg_t _prefetched_msg;
 
     //  The pipe we are currently reading from
-    zmq::pipe_t *current_in;
+    zmq::pipe_t *_current_in;
 
     //  Should current_in should be terminate after all parts received?
-    bool terminate_current_in;
+    bool _terminate_current_in;
 
     //  If true, more incoming message parts are expected.
-    bool more_in;
+    bool _more_in;
 
-    struct outpipe_t
+    struct out_pipe_t
     {
         zmq::pipe_t *pipe;
         bool active;
     };
 
     //  We keep a set of pipes that have not been identified yet.
-    std::set<pipe_t *> anonymous_pipes;
+    std::set<pipe_t *> _anonymous_pipes;
 
     //  Outbound pipes indexed by the peer IDs.
-    typedef std::map<blob_t, outpipe_t> outpipes_t;
-    outpipes_t outpipes;
+    typedef std::map<blob_t, out_pipe_t> outpipes_t;
+    outpipes_t _out_pipes;
 
     //  The pipe we are currently writing to.
-    zmq::pipe_t *current_out;
+    zmq::pipe_t *_current_out;
 
     //  If true, more outgoing message parts are expected.
-    bool more_out;
+    bool _more_out;
 
     //  Routing IDs are generated. It's a simple increment and wrap-over
     //  algorithm. This value is the next ID to use (if not used already).
-    uint32_t next_integral_routing_id;
+    uint32_t _next_integral_routing_id;
 
     // If true, report EAGAIN to the caller instead of silently dropping
     // the message targeting an unknown peer.
-    bool mandatory;
-    bool raw_socket;
+    bool _mandatory;
+    bool _raw_socket;
 
     // if true, send an empty message to every connected router peer
-    bool probe_router;
+    bool _probe_router;
 
     // If true, the router will reassign an identity upon encountering a
     // name collision. The new pipe will take the identity, the old pipe
     // will be terminated.
-    bool handover;
+    bool _handover;
 
     router_t (const router_t &);
     const router_t &operator= (const router_t &);

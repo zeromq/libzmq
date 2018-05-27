@@ -44,25 +44,25 @@ class c_single_allocator
 {
   public:
     explicit c_single_allocator (std::size_t bufsize_) :
-        bufsize (bufsize_),
-        buf (static_cast<unsigned char *> (std::malloc (bufsize)))
+        _buf_size (bufsize_),
+        _buf (static_cast<unsigned char *> (std::malloc (_buf_size)))
     {
-        alloc_assert (buf);
+        alloc_assert (_buf);
     }
 
-    ~c_single_allocator () { std::free (buf); }
+    ~c_single_allocator () { std::free (_buf); }
 
-    unsigned char *allocate () { return buf; }
+    unsigned char *allocate () { return _buf; }
 
     void deallocate () {}
 
-    std::size_t size () const { return bufsize; }
+    std::size_t size () const { return _buf_size; }
 
-    void resize (std::size_t new_size_) { bufsize = new_size_; }
+    void resize (std::size_t new_size_) { _buf_size = new_size_; }
 
   private:
-    std::size_t bufsize;
-    unsigned char *buf;
+    std::size_t _buf_size;
+    unsigned char *_buf;
 
     c_single_allocator (c_single_allocator const &);
     c_single_allocator &operator= (c_single_allocator const &);
@@ -111,22 +111,22 @@ class shared_message_memory_allocator
     unsigned char *data ();
 
     // Return pointer to the first byte of the buffer.
-    unsigned char *buffer () { return buf; }
+    unsigned char *buffer () { return _buf; }
 
-    void resize (std::size_t new_size_) { bufsize = new_size_; }
+    void resize (std::size_t new_size_) { _buf_size = new_size_; }
 
-    zmq::msg_t::content_t *provide_content () { return msg_content; }
+    zmq::msg_t::content_t *provide_content () { return _msg_content; }
 
-    void advance_content () { msg_content++; }
+    void advance_content () { _msg_content++; }
 
   private:
     void clear ();
 
-    unsigned char *buf;
-    std::size_t bufsize;
-    const std::size_t max_size;
-    zmq::msg_t::content_t *msg_content;
-    std::size_t maxCounters;
+    unsigned char *_buf;
+    std::size_t _buf_size;
+    const std::size_t _max_size;
+    zmq::msg_t::content_t *_msg_content;
+    std::size_t _max_counters;
 };
 }
 

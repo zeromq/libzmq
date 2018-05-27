@@ -42,7 +42,7 @@ void tearDown ()
 
 // const int MAX_SENDS = 10000;
 
-int test_defaults (int send_hwm, int msgCnt)
+int test_defaults (int send_hwm_, int msg_cnt_)
 {
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -54,13 +54,13 @@ int test_defaults (int send_hwm, int msgCnt)
 
     //set a hwm on publisher
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+      zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0));
 
     // Send until we block
     int send_count = 0;
-    while (send_count < msgCnt
+    while (send_count < msg_cnt_
            && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
@@ -72,7 +72,7 @@ int test_defaults (int send_hwm, int msgCnt)
         ++recv_count;
     }
 
-    TEST_ASSERT_EQUAL_INT (send_hwm, recv_count);
+    TEST_ASSERT_EQUAL_INT (send_hwm_, recv_count);
 
     // Clean up
     test_context_socket_close (sub_socket);
@@ -81,11 +81,11 @@ int test_defaults (int send_hwm, int msgCnt)
     return recv_count;
 }
 
-int receive (void *socket)
+int receive (void *socket_)
 {
     int recv_count = 0;
     // Now receive all sent messages
-    while (0 == zmq_recv (socket, NULL, 0, ZMQ_DONTWAIT)) {
+    while (0 == zmq_recv (socket_, NULL, 0, ZMQ_DONTWAIT)) {
         ++recv_count;
     }
 
@@ -93,7 +93,7 @@ int receive (void *socket)
 }
 
 
-int test_blocking (int send_hwm, int msgCnt)
+int test_blocking (int send_hwm_, int msg_cnt_)
 {
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -105,7 +105,7 @@ int test_blocking (int send_hwm, int msgCnt)
 
     //set a hwm on publisher
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+      zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
     int wait = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (pub_socket, ZMQ_XPUB_NODROP, &wait, sizeof (wait)));
@@ -115,7 +115,7 @@ int test_blocking (int send_hwm, int msgCnt)
     // Send until we block
     int send_count = 0;
     int recv_count = 0;
-    while (send_count < msgCnt) {
+    while (send_count < msg_cnt_) {
         const int rc = zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT);
         if (rc == 0) {
             ++send_count;

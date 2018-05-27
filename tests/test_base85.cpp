@@ -46,10 +46,10 @@ void test__zmq_z85_encode__valid__success ()
 }
 
 // Buffer length must be evenly divisible by 4 or must fail with EINVAL.
-void test__zmq_z85_encode__invalid__failure (size_t size)
+void test__zmq_z85_encode__invalid__failure (size_t size_)
 {
     errno = 0;
-    assert (zmq_z85_encode (NULL, NULL, size) == NULL);
+    assert (zmq_z85_encode (NULL, NULL, size_) == NULL);
     assert (zmq_errno () == EINVAL);
 }
 
@@ -70,11 +70,11 @@ void test__zmq_z85_decode__valid__success ()
 
 // Invalid input data must fail with EINVAL.
 template <size_t SIZE>
-void test__zmq_z85_decode__invalid__failure (const char (&encoded)[SIZE])
+void test__zmq_z85_decode__invalid__failure (const char (&encoded_)[SIZE])
 {
     uint8_t decoded[SIZE * 4 / 5 + 1];
     errno = 0;
-    assert (zmq_z85_decode (decoded, encoded) == NULL);
+    assert (zmq_z85_decode (decoded, encoded_) == NULL);
     assert (zmq_errno () == EINVAL);
 }
 
@@ -82,28 +82,28 @@ void test__zmq_z85_decode__invalid__failure (const char (&encoded)[SIZE])
 // call zmq_z85_encode, then zmq_z85_decode, and compare the results with the original
 template <size_t SIZE>
 void test__zmq_z85_encode__zmq_z85_decode__roundtrip (
-  const uint8_t (&test_data)[SIZE])
+  const uint8_t (&test_data_)[SIZE])
 {
     char test_data_z85[SIZE * 5 / 4 + 1];
-    char *res1 = zmq_z85_encode (test_data_z85, test_data, SIZE);
+    char *res1 = zmq_z85_encode (test_data_z85, test_data_, SIZE);
     assert (res1 != NULL);
 
     uint8_t test_data_decoded[SIZE];
     uint8_t *res2 = zmq_z85_decode (test_data_decoded, test_data_z85);
     assert (res2 != NULL);
 
-    int res3 = memcmp (test_data, test_data_decoded, SIZE);
+    int res3 = memcmp (test_data_, test_data_decoded, SIZE);
     assert (res3 == 0);
 }
 
 // call zmq_z85_encode, then zmq_z85_decode, and compare the results with the original
 template <size_t SIZE>
 void test__zmq_z85_decode__zmq_z85_encode__roundtrip (
-  const char (&test_data)[SIZE])
+  const char (&test_data_)[SIZE])
 {
     const size_t decoded_size = (SIZE - 1) * 4 / 5;
     uint8_t test_data_decoded[decoded_size];
-    uint8_t *res1 = zmq_z85_decode (test_data_decoded, test_data);
+    uint8_t *res1 = zmq_z85_decode (test_data_decoded, test_data_);
     assert (res1 != NULL);
 
     char test_data_z85[SIZE];
@@ -111,7 +111,7 @@ void test__zmq_z85_decode__zmq_z85_encode__roundtrip (
       zmq_z85_encode (test_data_z85, test_data_decoded, decoded_size);
     assert (res2 != NULL);
 
-    int res3 = memcmp (test_data, test_data_z85, SIZE);
+    int res3 = memcmp (test_data_, test_data_z85, SIZE);
     assert (res3 == 0);
 }
 

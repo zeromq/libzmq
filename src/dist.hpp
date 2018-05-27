@@ -87,25 +87,25 @@ class dist_t
 
     //  List of outbound pipes.
     typedef array_t<zmq::pipe_t, 2> pipes_t;
-    pipes_t pipes;
+    pipes_t _pipes;
 
     //  Number of all the pipes to send the next message to.
-    pipes_t::size_type matching;
+    pipes_t::size_type _matching;
 
     //  Number of active pipes. All the active pipes are located at the
     //  beginning of the pipes array. These are the pipes the messages
     //  can be sent to at the moment.
-    pipes_t::size_type active;
+    pipes_t::size_type _active;
 
     //  Number of pipes eligible for sending messages to. This includes all
     //  the active pipes plus all the pipes that we can in theory send
     //  messages to (the HWM is not yet reached), but sending a message
     //  to them would result in partial message being delivered, ie. message
     //  with initial parts missing.
-    pipes_t::size_type eligible;
+    pipes_t::size_type _eligible;
 
     //  True if last we are in the middle of a multipart message.
-    bool more;
+    bool _more;
 
     dist_t (const dist_t &);
     const dist_t &operator= (const dist_t &);

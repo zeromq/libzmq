@@ -99,7 +99,7 @@ void test_stream_2_stream ()
     zmq_ctx_destroy (ctx);
 }
 
-void test_router_2_router (bool named)
+void test_router_2_router (bool named_)
 {
     void *rbind, *rconn1;
     int ret;
@@ -128,7 +128,7 @@ void test_router_2_router (bool named)
     assert (0 == ret);
 
     //  If we're in named mode, set some identities.
-    if (named) {
+    if (named_) {
         ret = zmq_setsockopt (rbind, ZMQ_ROUTING_ID, "X", 1);
         ret = zmq_setsockopt (rconn1, ZMQ_ROUTING_ID, "Y", 1);
     }
@@ -153,7 +153,7 @@ void test_router_2_router (bool named)
 
     //  Receive the name.
     ret = zmq_recv (rbind, buff, 256, 0);
-    if (named)
+    if (named_)
         assert (ret && 'Y' == buff[0]);
     else
         assert (ret && 0 == buff[0]);
@@ -163,7 +163,7 @@ void test_router_2_router (bool named)
     assert (5 == ret && 'h' == buff[128]);
 
     //  Send some data back.
-    if (named) {
+    if (named_) {
         ret = zmq_send (rbind, buff, 1, ZMQ_SNDMORE);
         assert (1 == ret);
     } else {

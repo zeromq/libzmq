@@ -140,7 +140,7 @@ class poller_base_t
 
   private:
     //  Clock instance private to this I/O thread.
-    clock_t clock;
+    clock_t _clock;
 
     //  List of active timers.
     struct timer_info_t
@@ -149,11 +149,11 @@ class poller_base_t
         int id;
     };
     typedef std::multimap<uint64_t, timer_info_t> timers_t;
-    timers_t timers;
+    timers_t _timers;
 
     //  Load of the poller. Currently the number of file descriptors
     //  registered.
-    atomic_counter_t load;
+    atomic_counter_t _load;
 
     poller_base_t (const poller_base_t &);
     const poller_base_t &operator= (const poller_base_t &);
@@ -186,10 +186,10 @@ class worker_poller_base_t : public poller_base_t
     virtual void loop () = 0;
 
     // Reference to ZMQ context.
-    const thread_ctx_t &ctx;
+    const thread_ctx_t &_ctx;
 
     //  Handle of the physical thread doing the I/O work.
-    thread_t worker;
+    thread_t _worker;
 };
 }
 

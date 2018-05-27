@@ -121,9 +121,9 @@ static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
 zmq::signaler_t::signaler_t ()
 {
     //  Create the socketpair for signaling.
-    if (make_fdpair (&r, &w) == 0) {
-        unblock_socket (w);
-        unblock_socket (r);
+    if (make_fdpair (&_r, &_w) == 0) {
+        unblock_socket (_w);
+        unblock_socket (_r);
     }
 #ifdef HAVE_FORK
     pid = getpid ();
@@ -131,38 +131,38 @@ zmq::signaler_t::signaler_t ()
 }
 
 // This might get run after some part of construction failed, leaving one or
-// both of r and w retired_fd.
+// both of _r and _w retired_fd.
 zmq::signaler_t::~signaler_t ()
 {
 #if defined ZMQ_HAVE_EVENTFD
-    if (r == retired_fd)
+    if (_r == retired_fd)
         return;
-    int rc = close_wait_ms (r);
+    int rc = close_wait_ms (_r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
-    if (w != retired_fd) {
+    if (_w != retired_fd) {
         const struct linger so_linger = {1, 0};
-        int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
+        int rc = setsockopt (_w, SOL_SOCKET, SO_LINGER,
                              reinterpret_cast<const char *> (&so_linger),
                              sizeof so_linger);
         //  Only check shutdown if WSASTARTUP was previously done
         if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
             wsa_assert (rc != SOCKET_ERROR);
-            rc = closesocket (w);
+            rc = closesocket (_w);
             wsa_assert (rc != SOCKET_ERROR);
-            if (r == retired_fd)
+            if (_r == retired_fd)
                 return;
-            rc = closesocket (r);
+            rc = closesocket (_r);
             wsa_assert (rc != SOCKET_ERROR);
         }
     }
 #else
-    if (w != retired_fd) {
-        int rc = close_wait_ms (w);
+    if (_w != retired_fd) {
+        int rc = close_wait_ms (_w);
         errno_assert (rc == 0);
     }
-    if (r != retired_fd) {
-        int rc = close_wait_ms (r);
+    if (_r != retired_fd) {
+        int rc = close_wait_ms (_r);
         errno_assert (rc == 0);
     }
 #endif
@@ -170,7 +170,7 @@ zmq::signaler_t::~signaler_t ()
 
 zmq::fd_t zmq::signaler_t::get_fd () const
 {
-    return r;
+    return _r;
 }
 
 void zmq::signaler_t::send ()
@@ -183,13 +183,13 @@ void zmq::signaler_t::send ()
 #endif
 #if defined ZMQ_HAVE_EVENTFD
     const uint64_t inc = 1;
-    ssize_t sz = write (w, &inc, sizeof (inc));
+    ssize_t sz = write (_w, &inc, sizeof (inc));
     errno_assert (sz == sizeof (inc));
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
     while (true) {
         int nbytes =
-          ::send (w, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
+          ::send (_w, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
         wsa_assert (nbytes != SOCKET_ERROR);
         if (unlikely (nbytes == SOCKET_ERROR))
             continue;
@@ -199,7 +199,7 @@ void zmq::signaler_t::send ()
 #elif defined ZMQ_HAVE_VXWORKS
     unsigned char dummy = 0;
     while (true) {
-        ssize_t nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
+        ssize_t nbytes = ::send (_w, (char *) &dummy, sizeof (dummy), 0);
         if (unlikely (nbytes == -1 && errno == EINTR))
             continue;
 #if defined(HAVE_FORK)
@@ -215,7 +215,7 @@ void zmq::signaler_t::send ()
 #else
     unsigned char dummy = 0;
     while (true) {
-        ssize_t nbytes = ::send (w, &dummy, sizeof (dummy), 0);
+        ssize_t nbytes = ::send (_w, &dummy, sizeof (dummy), 0);
         if (unlikely (nbytes == -1 && errno == EINTR))
             continue;
 #if defined(HAVE_FORK)
@@ -245,7 +245,7 @@ int zmq::signaler_t::wait (int timeout_)
 
 #ifdef ZMQ_POLL_BASED_ON_POLL
     struct pollfd pfd;
-    pfd.fd = r;
+    pfd.fd = _r;
     pfd.events = POLLIN;
     int rc = poll (&pfd, 1, timeout_);
     if (unlikely (rc < 0)) {
@@ -272,7 +272,7 @@ int zmq::signaler_t::wait (int timeout_)
 
     fd_set fds;
     FD_ZERO (&fds);
-    FD_SET (r, &fds);
+    FD_SET (_r, &fds);
     struct timeval timeout;
     if (timeout_ >= 0) {
         timeout.tv_sec = timeout_ / 1000;
@@ -282,7 +282,7 @@ int zmq::signaler_t::wait (int timeout_)
     int rc = select (0, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = select (r + 1, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    int rc = select (_r + 1, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
@@ -305,14 +305,14 @@ void zmq::signaler_t::recv ()
 //  Attempt to read a signal.
 #if defined ZMQ_HAVE_EVENTFD
     uint64_t dummy;
-    ssize_t sz = read (r, &dummy, sizeof (dummy));
+    ssize_t sz = read (_r, &dummy, sizeof (dummy));
     errno_assert (sz == sizeof (dummy));
 
     //  If we accidentally grabbed the next signal(s) along with the current
     //  one, return it back to the eventfd object.
     if (unlikely (dummy > 1)) {
         const uint64_t inc = dummy - 1;
-        ssize_t sz2 = write (w, &inc, sizeof (inc));
+        ssize_t sz2 = write (_w, &inc, sizeof (inc));
         errno_assert (sz2 == sizeof (inc));
         return;
     }
@@ -322,13 +322,13 @@ void zmq::signaler_t::recv ()
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
     int nbytes =
-      ::recv (r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
+      ::recv (_r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-    ssize_t nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    ssize_t nbytes = ::recv (_r, (char *) &dummy, sizeof (dummy), 0);
     errno_assert (nbytes >= 0);
 #else
-    ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
+    ssize_t nbytes = ::recv (_r, &dummy, sizeof (dummy), 0);
     errno_assert (nbytes >= 0);
 #endif
     zmq_assert (nbytes == sizeof (dummy));
@@ -341,7 +341,7 @@ int zmq::signaler_t::recv_failable ()
 //  Attempt to read a signal.
 #if defined ZMQ_HAVE_EVENTFD
     uint64_t dummy;
-    ssize_t sz = read (r, &dummy, sizeof (dummy));
+    ssize_t sz = read (_r, &dummy, sizeof (dummy));
     if (sz == -1) {
         errno_assert (errno == EAGAIN);
         return -1;
@@ -352,7 +352,7 @@ int zmq::signaler_t::recv_failable ()
         //  one, return it back to the eventfd object.
         if (unlikely (dummy > 1)) {
             const uint64_t inc = dummy - 1;
-            ssize_t sz2 = write (w, &inc, sizeof (inc));
+            ssize_t sz2 = write (_w, &inc, sizeof (inc));
             errno_assert (sz2 == sizeof (inc));
             return 0;
         }
@@ -363,7 +363,7 @@ int zmq::signaler_t::recv_failable ()
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
     int nbytes =
-      ::recv (r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
+      ::recv (_r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
         const int last_error = WSAGetLastError ();
         if (last_error == WSAEWOULDBLOCK) {
@@ -373,7 +373,7 @@ int zmq::signaler_t::recv_failable ()
         wsa_assert (last_error == WSAEWOULDBLOCK);
     }
 #elif defined ZMQ_HAVE_VXWORKS
-    ssize_t nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
+    ssize_t nbytes = ::recv (_r, (char *) &dummy, sizeof (dummy), 0);
     if (nbytes == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
             errno = EAGAIN;
@@ -383,7 +383,7 @@ int zmq::signaler_t::recv_failable ()
                       || errno == EINTR);
     }
 #else
-    ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
+    ssize_t nbytes = ::recv (_r, &dummy, sizeof (dummy), 0);
     if (nbytes == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
             errno = EAGAIN;
@@ -401,15 +401,15 @@ int zmq::signaler_t::recv_failable ()
 
 bool zmq::signaler_t::valid () const
 {
-    return w != retired_fd;
+    return _w != retired_fd;
 }
 
 #ifdef HAVE_FORK
 void zmq::signaler_t::forked ()
 {
     //  Close file descriptors created in the parent and create new pair
-    close (r);
-    close (w);
-    make_fdpair (&r, &w);
+    close (_r);
+    close (_w);
+    make_fdpair (&_r, &_w);
 }
 #endif

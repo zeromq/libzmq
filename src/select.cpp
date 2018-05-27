@@ -59,14 +59,14 @@ zmq::select_t::select_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
 #if defined ZMQ_HAVE_WINDOWS
     //  Fine as long as map is not cleared.
-    current_family_entry_it (family_entries.end ())
+    _current_family_entry_it (_family_entries.end ())
 #else
-    maxfd (retired_fd)
+    _max_fd (retired_fd)
 #endif
 {
 #if defined ZMQ_HAVE_WINDOWS
     for (size_t i = 0; i < fd_family_cache_size; ++i)
-        fd_family_cache[i] = std::make_pair (retired_fd, 0);
+        _fd_family_cache[i] = std::make_pair (retired_fd, 0);
 #endif
 }
 
@@ -87,14 +87,16 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (fd_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries[family];
+    family_entry_t &family_entry = _family_entries[family];
+#else
+    family_entry_t &family_entry = _family_entry;
 #endif
     family_entry.fd_entries.push_back (fd_entry);
     FD_SET (fd_, &family_entry.fds_set.error);
 
 #if !defined ZMQ_HAVE_WINDOWS
-    if (fd_ > maxfd)
-        maxfd = fd_;
+    if (fd_ > _max_fd)
+        _max_fd = fd_;
 #endif
 
     adjust_load (1);
@@ -171,7 +173,7 @@ int zmq::select_t::try_retire_fd_entry (
     fd_entry_t &fd_entry = *fd_entry_it;
     zmq_assert (fd_entry.fd != retired_fd);
 
-    if (family_entry_it_ != current_family_entry_it) {
+    if (family_entry_it_ != _current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
         //  modified in-place. So later it can be skipped without
         //  re-verifying its content.
@@ -195,16 +197,16 @@ void zmq::select_t::rm_fd (handle_t handle_)
     u_short family = get_fd_family (handle_);
     if (family != AF_UNSPEC) {
         family_entries_t::iterator family_entry_it =
-          family_entries.find (family);
+          _family_entries.find (family);
 
         retired += try_retire_fd_entry (family_entry_it, handle_);
     } else {
         //  get_fd_family may fail and return AF_UNSPEC if the socket was not
         //  successfully connected. In that case, we need to look for the
         //  socket in all family_entries.
-        family_entries_t::iterator end = family_entries.end ();
+        family_entries_t::iterator end = _family_entries.end ();
         for (family_entries_t::iterator family_entry_it =
-               family_entries.begin ();
+               _family_entries.begin ();
              family_entry_it != end; ++family_entry_it) {
             if (retired += try_retire_fd_entry (family_entry_it, handle_)) {
                 break;
@@ -213,24 +215,24 @@ void zmq::select_t::rm_fd (handle_t handle_)
     }
 #else
     fd_entries_t::iterator fd_entry_it =
-      find_fd_entry_by_handle (family_entry.fd_entries, handle_);
-    assert (fd_entry_it != family_entry.fd_entries.end ());
+      find_fd_entry_by_handle (_family_entry.fd_entries, handle_);
+    assert (fd_entry_it != _family_entry.fd_entries.end ());
 
     zmq_assert (fd_entry_it->fd != retired_fd);
     fd_entry_it->fd = retired_fd;
-    family_entry.fds_set.remove_fd (handle_);
+    _family_entry.fds_set.remove_fd (handle_);
 
     ++retired;
 
-    if (handle_ == maxfd) {
-        maxfd = retired_fd;
-        for (fd_entry_it = family_entry.fd_entries.begin ();
-             fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
-            if (fd_entry_it->fd > maxfd)
-                maxfd = fd_entry_it->fd;
+    if (handle_ == _max_fd) {
+        _max_fd = retired_fd;
+        for (fd_entry_it = _family_entry.fd_entries.begin ();
+             fd_entry_it != _family_entry.fd_entries.end (); ++fd_entry_it)
+            if (fd_entry_it->fd > _max_fd)
+                _max_fd = fd_entry_it->fd;
     }
 
-    family_entry.has_retired = true;
+    _family_entry.has_retired = true;
 #endif
     zmq_assert (retired == 1);
     adjust_load (-1);
@@ -242,7 +244,9 @@ void zmq::select_t::set_pollin (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries[family];
+    family_entry_t &family_entry = _family_entries[family];
+#else
+    family_entry_t &family_entry = _family_entry;
 #endif
     FD_SET (handle_, &family_entry.fds_set.read);
 }
@@ -253,7 +257,9 @@ void zmq::select_t::reset_pollin (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries[family];
+    family_entry_t &family_entry = _family_entries[family];
+#else
+    family_entry_t &family_entry = _family_entry;
 #endif
     FD_CLR (handle_, &family_entry.fds_set.read);
 }
@@ -264,7 +270,9 @@ void zmq::select_t::set_pollout (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries[family];
+    family_entry_t &family_entry = _family_entries[family];
+#else
+    family_entry_t &family_entry = _family_entry;
 #endif
     FD_SET (handle_, &family_entry.fds_set.write);
 }
@@ -275,7 +283,9 @@ void zmq::select_t::reset_pollout (handle_t handle_)
 #if defined ZMQ_HAVE_WINDOWS
     u_short family = get_fd_family (handle_);
     wsa_assert (family != AF_UNSPEC);
-    family_entry_t &family_entry = family_entries[family];
+    family_entry_t &family_entry = _family_entries[family];
+#else
+    family_entry_t &family_entry = _family_entry;
 #endif
     FD_CLR (handle_, &family_entry.fds_set.write);
 }
@@ -300,9 +310,9 @@ void zmq::select_t::loop ()
         cleanup_retired ();
 
 #ifdef _WIN32
-        if (family_entries.empty ()) {
+        if (_family_entries.empty ()) {
 #else
-        if (family_entry.fd_entries.empty ()) {
+        if (_family_entry.fd_entries.empty ()) {
 #endif
             zmq_assert (get_load () == 0);
 
@@ -338,7 +348,7 @@ void zmq::select_t::loop ()
 
         //  If there is just one family, there is no reason to use WSA events.
         int rc = 0;
-        const bool use_wsa_events = family_entries.size () > 1;
+        const bool use_wsa_events = _family_entries.size () > 1;
         if (use_wsa_events) {
             // TODO: I don't really understand why we are doing this. If any of
             // the events was signaled, we will call select for each fd_family
@@ -350,8 +360,8 @@ void zmq::select_t::loop ()
             wsa_events_t wsa_events;
 
             for (family_entries_t::iterator family_entry_it =
-                   family_entries.begin ();
-                 family_entry_it != family_entries.end (); ++family_entry_it) {
+                   _family_entries.begin ();
+                 family_entry_it != _family_entries.end (); ++family_entry_it) {
                 family_entry_t &family_entry = family_entry_it->second;
 
                 for (fd_entries_t::iterator fd_entry_it =
@@ -392,10 +402,10 @@ void zmq::select_t::loop ()
                 continue;
         }
 
-        for (current_family_entry_it = family_entries.begin ();
-             current_family_entry_it != family_entries.end ();
-             ++current_family_entry_it) {
-            family_entry_t &family_entry = current_family_entry_it->second;
+        for (_current_family_entry_it = _family_entries.begin ();
+             _current_family_entry_it != _family_entries.end ();
+             ++_current_family_entry_it) {
+            family_entry_t &family_entry = _current_family_entry_it->second;
 
 
             if (use_wsa_events) {
@@ -408,7 +418,7 @@ void zmq::select_t::loop ()
             }
         }
 #else
-        select_family_entry (family_entry, maxfd + 1, timeout > 0, tv);
+        select_family_entry (_family_entry, _max_fd + 1, timeout > 0, tv);
 #endif
     }
 }
@@ -518,15 +528,15 @@ bool zmq::select_t::cleanup_retired (family_entry_t &family_entry_)
 void zmq::select_t::cleanup_retired ()
 {
 #ifdef _WIN32
-    for (family_entries_t::iterator it = family_entries.begin ();
-         it != family_entries.end ();) {
+    for (family_entries_t::iterator it = _family_entries.begin ();
+         it != _family_entries.end ();) {
         if (cleanup_retired (it->second))
-            it = family_entries.erase (it);
+            it = _family_entries.erase (it);
         else
             ++it;
     }
 #else
-    cleanup_retired (family_entry);
+    cleanup_retired (_family_entry);
 #endif
 }
 
@@ -547,7 +557,7 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
     // for the same sockets, and determine_fd_family is expensive
     size_t i;
     for (i = 0; i < fd_family_cache_size; ++i) {
-        const std::pair<fd_t, u_short> &entry = fd_family_cache[i];
+        const std::pair<fd_t, u_short> &entry = _fd_family_cache[i];
         if (entry.first == fd_) {
             return entry.second;
         }
@@ -558,11 +568,11 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
     std::pair<fd_t, u_short> res =
       std::make_pair (fd_, determine_fd_family (fd_));
     if (i < fd_family_cache_size) {
-        fd_family_cache[i] = res;
+        _fd_family_cache[i] = res;
     } else {
         // just overwrite a random entry
         // could be optimized by some LRU strategy
-        fd_family_cache[rand () % fd_family_cache_size] = res;
+        _fd_family_cache[rand () % fd_family_cache_size] = res;
     }
 
     return res.second;

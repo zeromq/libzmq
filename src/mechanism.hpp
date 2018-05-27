@@ -132,9 +132,9 @@ class mechanism_t
     const options_t options;
 
   private:
-    blob_t routing_id;
+    blob_t _routing_id;
 
-    blob_t user_id;
+    blob_t _user_id;
 
     //  Returns true iff socket associated with the mechanism
     //  is compatible with a given socket type 'type_'.

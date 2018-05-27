@@ -49,17 +49,17 @@ int main (int, char **)
 {
     setup_test_environment ();
     void *context = zmq_ctx_new ();
-    void *pubSocket;
-    void *subSocket;
+    void *pub_socket;
+    void *sub_socket;
 
-    (pubSocket = zmq_socket (context, ZMQ_XPUB))
+    (pub_socket = zmq_socket (context, ZMQ_XPUB))
       || printf ("zmq_socket: %s\n", zmq_strerror (errno));
-    (subSocket = zmq_socket (context, ZMQ_SUB))
+    (sub_socket = zmq_socket (context, ZMQ_SUB))
       || printf ("zmq_socket: %s\n", zmq_strerror (errno));
-    zmq_setsockopt (subSocket, ZMQ_SUBSCRIBE, "foo", 3)
+    zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, "foo", 3)
       && printf ("zmq_setsockopt: %s\n", zmq_strerror (errno));
 
-    zmq_bind (pubSocket, "inproc://someInProcDescriptor")
+    zmq_bind (pub_socket, "inproc://someInProcDescriptor")
       && printf ("zmq_bind: %s\n", zmq_strerror (errno));
     //zmq_bind(pubSocket, "tcp://127.0.0.1:30010") && printf("zmq_bind: %s\n", zmq_strerror(errno));
 
@@ -69,8 +69,8 @@ int main (int, char **)
 
     while (1) {
         zmq_pollitem_t items[] = {
-          {subSocket, 0, ZMQ_POLLIN, 0}, // read publications
-          {pubSocket, 0, ZMQ_POLLIN, 0}, // read subscriptions
+          {sub_socket, 0, ZMQ_POLLIN, 0}, // read publications
+          {pub_socket, 0, ZMQ_POLLIN, 0}, // read subscriptions
         };
         int rc = zmq_poll (items, 2, 100);
 
@@ -78,7 +78,7 @@ int main (int, char **)
             while (1) {
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
-                zmq_msg_recv (&msg, pubSocket, 0);
+                zmq_msg_recv (&msg, pub_socket, 0);
                 char *buffer = (char *) zmq_msg_data (&msg);
 
                 if (buffer[0] == 0) {
@@ -89,7 +89,7 @@ int main (int, char **)
                     isSubscribed = true;
                 }
 
-                zmq_getsockopt (pubSocket, ZMQ_RCVMORE, &more, &more_size);
+                zmq_getsockopt (pub_socket, ZMQ_RCVMORE, &more, &more_size);
                 zmq_msg_close (&msg);
 
                 if (!more)
@@ -101,8 +101,8 @@ int main (int, char **)
             while (1) {
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
-                zmq_msg_recv (&msg, subSocket, 0);
-                zmq_getsockopt (subSocket, ZMQ_RCVMORE, &more, &more_size);
+                zmq_msg_recv (&msg, sub_socket, 0);
+                zmq_getsockopt (sub_socket, ZMQ_RCVMORE, &more, &more_size);
                 zmq_msg_close (&msg);
 
                 if (!more) {
@@ -112,28 +112,28 @@ int main (int, char **)
             }
         }
         if (iteration == 1) {
-            zmq_connect (subSocket, "inproc://someInProcDescriptor")
+            zmq_connect (sub_socket, "inproc://someInProcDescriptor")
               && printf ("zmq_connect: %s\n", zmq_strerror (errno));
             msleep (SETTLE_TIME);
         }
         if (iteration == 4) {
-            zmq_disconnect (subSocket, "inproc://someInProcDescriptor")
+            zmq_disconnect (sub_socket, "inproc://someInProcDescriptor")
               && printf ("zmq_disconnect(%d): %s\n", errno,
                          zmq_strerror (errno));
         }
         if (iteration > 4 && rc == 0)
             break;
 
-        zmq_msg_t channelEnvlp;
-        ZMQ_PREPARE_STRING (channelEnvlp, "foo", 3);
-        zmq_msg_send (&channelEnvlp, pubSocket, ZMQ_SNDMORE) >= 0
+        zmq_msg_t channel_envlp;
+        ZMQ_PREPARE_STRING (channel_envlp, "foo", 3);
+        zmq_msg_send (&channel_envlp, pub_socket, ZMQ_SNDMORE) >= 0
           || printf ("zmq_msg_send: %s\n", zmq_strerror (errno));
-        zmq_msg_close (&channelEnvlp)
+        zmq_msg_close (&channel_envlp)
           && printf ("zmq_msg_close: %s\n", zmq_strerror (errno));
 
         zmq_msg_t message;
         ZMQ_PREPARE_STRING (message, "this is foo!", 12);
-        zmq_msg_send (&message, pubSocket, 0) >= 0
+        zmq_msg_send (&message, pub_socket, 0) >= 0
           || printf ("zmq_msg_send: %s\n", zmq_strerror (errno));
         zmq_msg_close (&message)
           && printf ("zmq_msg_close: %s\n", zmq_strerror (errno));
@@ -143,8 +143,8 @@ int main (int, char **)
     assert (publicationsReceived == 3);
     assert (!isSubscribed);
 
-    zmq_close (pubSocket) && printf ("zmq_close: %s", zmq_strerror (errno));
-    zmq_close (subSocket) && printf ("zmq_close: %s", zmq_strerror (errno));
+    zmq_close (pub_socket) && printf ("zmq_close: %s", zmq_strerror (errno));
+    zmq_close (sub_socket) && printf ("zmq_close: %s", zmq_strerror (errno));
 
     zmq_ctx_term (context);
     return 0;

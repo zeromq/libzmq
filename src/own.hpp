@@ -120,25 +120,25 @@ class own_t : public object_t
 
     //  True if termination was already initiated. If so, we can destroy
     //  the object if there are no more child objects or pending term acks.
-    bool terminating;
+    bool _terminating;
 
     //  Sequence number of the last command sent to this object.
-    atomic_counter_t sent_seqnum;
+    atomic_counter_t _sent_seqnum;
 
     //  Sequence number of the last command processed by this object.
-    uint64_t processed_seqnum;
+    uint64_t _processed_seqnum;
 
     //  Socket owning this object. It's responsible for shutting down
     //  this object.
-    own_t *owner;
+    own_t *_owner;
 
     //  List of all objects owned by this socket. We are responsible
     //  for deallocating them before we quit.
     typedef std::set<own_t *> owned_t;
-    owned_t owned;
+    owned_t _owned;
 
     //  Number of events we have to get before we can destroy the object.
-    int term_acks;
+    int _term_acks;
 
     own_t (const own_t &);
     const own_t &operator= (const own_t &);

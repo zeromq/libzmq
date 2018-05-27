@@ -54,12 +54,12 @@ class null_mechanism_t : public zap_client_t
     virtual status_t status () const;
 
   private:
-    bool ready_command_sent;
-    bool error_command_sent;
-    bool ready_command_received;
-    bool error_command_received;
-    bool zap_request_sent;
-    bool zap_reply_received;
+    bool _ready_command_sent;
+    bool _error_command_sent;
+    bool _ready_command_received;
+    bool _error_command_received;
+    bool _zap_request_sent;
+    bool _zap_reply_received;
 
     int process_ready_command (const unsigned char *cmd_data_,
                                size_t data_size_);

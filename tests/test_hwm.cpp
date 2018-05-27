@@ -83,33 +83,33 @@ void test_defaults ()
     TEST_ASSERT_EQUAL_INT (2000, send_count);
 }
 
-int count_msg (int send_hwm, int recv_hwm, TestType testType)
+int count_msg (int send_hwm_, int recv_hwm_, TestType test_type_)
 {
     void *bind_socket;
     void *connect_socket;
-    if (testType == BIND_FIRST) {
+    if (test_type_ == BIND_FIRST) {
         // Set up bind socket
         bind_socket = test_context_socket (ZMQ_PULL);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-          bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+          bind_socket, ZMQ_RCVHWM, &recv_hwm_, sizeof (recv_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
         // Set up connect socket
         connect_socket = test_context_socket (ZMQ_PUSH);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-          connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+          connect_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
     } else {
         // Set up connect socket
         connect_socket = test_context_socket (ZMQ_PUSH);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-          connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+          connect_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
         // Set up bind socket
         bind_socket = test_context_socket (ZMQ_PULL);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-          bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+          bind_socket, ZMQ_RCVHWM, &recv_hwm_, sizeof (recv_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
     }
 
@@ -139,22 +139,22 @@ int count_msg (int send_hwm, int recv_hwm, TestType testType)
     return send_count;
 }
 
-int test_inproc_bind_first (int send_hwm, int recv_hwm)
+int test_inproc_bind_first (int send_hwm_, int recv_hwm_)
 {
-    return count_msg (send_hwm, recv_hwm, BIND_FIRST);
+    return count_msg (send_hwm_, recv_hwm_, BIND_FIRST);
 }
 
-int test_inproc_connect_first (int send_hwm, int recv_hwm)
+int test_inproc_connect_first (int send_hwm_, int recv_hwm_)
 {
-    return count_msg (send_hwm, recv_hwm, CONNECT_FIRST);
+    return count_msg (send_hwm_, recv_hwm_, CONNECT_FIRST);
 }
 
-int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
+int test_inproc_connect_and_close_first (int send_hwm_, int recv_hwm_)
 {
     // Set up connect socket
     void *connect_socket = test_context_socket (ZMQ_PUSH);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (connect_socket, ZMQ_SNDHWM,
-                                               &send_hwm, sizeof (send_hwm)));
+                                               &send_hwm_, sizeof (send_hwm_)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
     // Send until we block
@@ -169,7 +169,7 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
     // Set up bind socket
     void *bind_socket = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
+      zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm_, sizeof (recv_hwm_)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Now receive all sent messages
@@ -185,7 +185,7 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
     return send_count;
 }
 
-int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
+int test_inproc_bind_and_close_first (int send_hwm_, int /* recv_hwm */)
 {
     void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
@@ -194,7 +194,7 @@ int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
     void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
     TEST_ASSERT_NOT_NULL (bind_socket);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+      zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
 
     // Send until we block

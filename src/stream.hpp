@@ -61,20 +61,20 @@ class stream_t : public socket_base_t
     void identify_peer (pipe_t *pipe_);
 
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     //  True iff there is a message held in the pre-fetch buffer.
-    bool prefetched;
+    bool _prefetched;
 
     //  If true, the receiver got the message part with
     //  the peer's identity.
-    bool routing_id_sent;
+    bool _routing_id_sent;
 
     //  Holds the prefetched identity.
-    msg_t prefetched_routing_id;
+    msg_t _prefetched_routing_id;
 
     //  Holds the prefetched message.
-    msg_t prefetched_msg;
+    msg_t _prefetched_msg;
 
     struct outpipe_t
     {
@@ -84,17 +84,17 @@ class stream_t : public socket_base_t
 
     //  Outbound pipes indexed by the peer IDs.
     typedef std::map<blob_t, outpipe_t> outpipes_t;
-    outpipes_t outpipes;
+    outpipes_t _outpipes;
 
     //  The pipe we are currently writing to.
-    zmq::pipe_t *current_out;
+    zmq::pipe_t *_current_out;
 
     //  If true, more outgoing message parts are expected.
-    bool more_out;
+    bool _more_out;
 
     //  Routing IDs are generated. It's a simple increment and wrap-over
     //  algorithm. This value is the next ID to use (if not used already).
-    uint32_t next_integral_routing_id;
+    uint32_t _next_integral_routing_id;
 
     stream_t (const stream_t &);
     const stream_t &operator= (const stream_t &);

@@ -174,36 +174,36 @@ class pipe_t : public object_t,
     ~pipe_t ();
 
     //  Underlying pipes for both directions.
-    upipe_t *inpipe;
-    upipe_t *outpipe;
+    upipe_t *_in_pipe;
+    upipe_t *_out_pipe;
 
     //  Can the pipe be read from / written to?
-    bool in_active;
-    bool out_active;
+    bool _in_active;
+    bool _out_active;
 
     //  High watermark for the outbound pipe.
-    int hwm;
+    int _hwm;
 
     //  Low watermark for the inbound pipe.
-    int lwm;
+    int _lwm;
 
     // boosts for high and low watermarks, used with inproc sockets so hwm are sum of send and recv hmws on each side of pipe
-    int inhwmboost;
-    int outhwmboost;
+    int _in_hwm_boost;
+    int _out_hwm_boost;
 
     //  Number of messages read and written so far.
-    uint64_t msgs_read;
-    uint64_t msgs_written;
+    uint64_t _msgs_read;
+    uint64_t _msgs_written;
 
     //  Last received peer's msgs_read. The actual number in the peer
     //  can be higher at the moment.
-    uint64_t peers_msgs_read;
+    uint64_t _peers_msgs_read;
 
     //  The pipe object on the other side of the pipepair.
-    pipe_t *peer;
+    pipe_t *_peer;
 
     //  Sink to send events to.
-    i_pipe_events *sink;
+    i_pipe_events *_sink;
 
     //  States of the pipe endpoint:
     //  active: common state before any termination begins,
@@ -224,21 +224,21 @@ class pipe_t : public object_t,
         term_ack_sent,
         term_req_sent1,
         term_req_sent2
-    } state;
+    } _state;
 
     //  If true, we receive all the pending inbound messages before
     //  terminating. If false, we terminate immediately when the peer
     //  asks us to.
-    bool delay;
+    bool _delay;
 
     //  Routing id of the writer. Used uniquely by the reader side.
-    blob_t router_socket_routing_id;
+    blob_t _router_socket_routing_id;
 
     //  Routing id of the writer. Used uniquely by the reader side.
-    int server_socket_routing_id;
+    int _server_socket_routing_id;
 
     //  Pipe's credential.
-    blob_t credential;
+    blob_t _credential;
 
     //  Returns true if the message is delimiter; false otherwise.
     static bool is_delimiter (const msg_t &msg_);
@@ -246,7 +246,7 @@ class pipe_t : public object_t,
     //  Computes appropriate low watermark from the given high watermark.
     static int compute_lwm (int hwm_);
 
-    const bool conflate;
+    const bool _conflate;
 
     //  Disable copying.
     pipe_t (const pipe_t &);

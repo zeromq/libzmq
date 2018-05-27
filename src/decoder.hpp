@@ -58,22 +58,22 @@ class decoder_base_t : public i_decoder
 {
   public:
     explicit decoder_base_t (const size_t buf_size_) :
-        next (NULL),
-        read_pos (NULL),
-        to_read (0),
-        allocator (buf_size_)
+        _next (NULL),
+        _read_pos (NULL),
+        _to_read (0),
+        _allocator (buf_size_)
     {
-        buf = allocator.allocate ();
+        _buf = _allocator.allocate ();
     }
 
     //  The destructor doesn't have to be virtual. It is made virtual
     //  just to keep ICC and code checking tools from complaining.
-    virtual ~decoder_base_t () { allocator.deallocate (); }
+    virtual ~decoder_base_t () { _allocator.deallocate (); }
 
     //  Returns a buffer to be filled with binary data.
     void get_buffer (unsigned char **data_, std::size_t *size_)
     {
-        buf = allocator.allocate ();
+        _buf = _allocator.allocate ();
 
         //  If we are expected to read large message, we'll opt for zero-
         //  copy, i.e. we'll ask caller to fill the data directly to the
@@ -83,14 +83,14 @@ class decoder_base_t : public i_decoder
         //  As a consequence, large messages being received won't block
         //  other engines running in the same I/O thread for excessive
         //  amounts of time.
-        if (to_read >= allocator.size ()) {
-            *data_ = read_pos;
-            *size_ = to_read;
+        if (_to_read >= _allocator.size ()) {
+            *data_ = _read_pos;
+            *size_ = _to_read;
             return;
         }
 
-        *data_ = buf;
-        *size_ = allocator.size ();
+        *data_ = _buf;
+        *size_ = _allocator.size ();
     }
 
     //  Processes the data in the buffer previously allocated using
@@ -108,15 +108,15 @@ class decoder_base_t : public i_decoder
         //  In case of zero-copy simply adjust the pointers, no copying
         //  is required. Also, run the state machine in case all the data
         //  were processed.
-        if (data_ == read_pos) {
-            zmq_assert (size_ <= to_read);
-            read_pos += size_;
-            to_read -= size_;
+        if (data_ == _read_pos) {
+            zmq_assert (size_ <= _to_read);
+            _read_pos += size_;
+            _to_read -= size_;
             bytes_used_ = size_;
 
-            while (!to_read) {
+            while (!_to_read) {
                 const int rc =
-                  (static_cast<T *> (this)->*next) (data_ + bytes_used_);
+                  (static_cast<T *> (this)->*_next) (data_ + bytes_used_);
                 if (rc != 0)
                     return rc;
             }
@@ -125,22 +125,22 @@ class decoder_base_t : public i_decoder
 
         while (bytes_used_ < size_) {
             //  Copy the data from buffer to the message.
-            const size_t to_copy = std::min (to_read, size_ - bytes_used_);
+            const size_t to_copy = std::min (_to_read, size_ - bytes_used_);
             // Only copy when destination address is different from the
             // current address in the buffer.
-            if (read_pos != data_ + bytes_used_) {
-                memcpy (read_pos, data_ + bytes_used_, to_copy);
+            if (_read_pos != data_ + bytes_used_) {
+                memcpy (_read_pos, data_ + bytes_used_, to_copy);
             }
 
-            read_pos += to_copy;
-            to_read -= to_copy;
+            _read_pos += to_copy;
+            _to_read -= to_copy;
             bytes_used_ += to_copy;
             //  Try to get more space in the message to fill in.
             //  If none is available, return.
-            while (to_read == 0) {
+            while (_to_read == 0) {
                 // pass current address in the buffer
                 const int rc =
-                  (static_cast<T *> (this)->*next) (data_ + bytes_used_);
+                  (static_cast<T *> (this)->*_next) (data_ + bytes_used_);
                 if (rc != 0)
                     return rc;
             }
@@ -151,7 +151,7 @@ class decoder_base_t : public i_decoder
 
     virtual void resize_buffer (std::size_t new_size_)
     {
-        allocator.resize (new_size_);
+        _allocator.resize (new_size_);
     }
 
   protected:
@@ -163,28 +163,28 @@ class decoder_base_t : public i_decoder
     //  from the buffer and schedule next state machine action.
     void next_step (void *read_pos_, std::size_t to_read_, step_t next_)
     {
-        read_pos = static_cast<unsigned char *> (read_pos_);
-        to_read = to_read_;
-        next = next_;
+        _read_pos = static_cast<unsigned char *> (read_pos_);
+        _to_read = to_read_;
+        _next = next_;
     }
 
-    A &get_allocator () { return allocator; }
+    A &get_allocator () { return _allocator; }
 
   private:
     //  Next step. If set to NULL, it means that associated data stream
     //  is dead. Note that there can be still data in the process in such
     //  case.
-    step_t next;
+    step_t _next;
 
     //  Where to store the read data.
-    unsigned char *read_pos;
+    unsigned char *_read_pos;
 
     //  How much data to read before taking next step.
-    std::size_t to_read;
+    std::size_t _to_read;
 
     //  The duffer for data to decode.
-    A allocator;
-    unsigned char *buf;
+    A _allocator;
+    unsigned char *_buf;
 
     decoder_base_t (const decoder_base_t &);
     const decoder_base_t &operator= (const decoder_base_t &);

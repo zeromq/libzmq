@@ -70,19 +70,19 @@ class dish_t : public socket_base_t
     void send_subscriptions (pipe_t *pipe_);
 
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     //  Object for distributing the subscriptions upstream.
-    dist_t dist;
+    dist_t _dist;
 
     //  The repository of subscriptions.
     typedef std::set<std::string> subscriptions_t;
-    subscriptions_t subscriptions;
+    subscriptions_t _subscriptions;
 
     //  If true, 'message' contains a matching message to return on the
     //  next recv call.
-    bool has_message;
-    msg_t message;
+    bool _has_message;
+    msg_t _message;
 
     dish_t (const dish_t &);
     const dish_t &operator= (const dish_t &);
@@ -108,9 +108,9 @@ class dish_session_t : public session_base_t
     {
         group,
         body
-    } state;
+    } _state;
 
-    msg_t group_msg;
+    msg_t _group_msg;
 
     dish_session_t (const dish_session_t &);
     const dish_session_t &operator= (const dish_session_t &);

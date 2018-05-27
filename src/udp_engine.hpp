@@ -49,23 +49,23 @@ class udp_engine_t : public io_object_t, public i_engine
     int resolve_raw_address (char *addr_, size_t length_);
     void sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_);
 
-    bool plugged;
+    bool _plugged;
 
-    fd_t fd;
-    session_base_t *session;
-    handle_t handle;
-    address_t *address;
+    fd_t _fd;
+    session_base_t *_session;
+    handle_t _handle;
+    address_t *_address;
 
-    options_t options;
+    options_t _options;
 
-    sockaddr_in raw_address;
-    const struct sockaddr *out_address;
-    socklen_t out_addrlen;
+    sockaddr_in _raw_address;
+    const struct sockaddr *_out_address;
+    socklen_t _out_address_len;
 
-    unsigned char out_buffer[MAX_UDP_MSG];
-    unsigned char in_buffer[MAX_UDP_MSG];
-    bool send_enabled;
-    bool recv_enabled;
+    unsigned char _out_buffer[MAX_UDP_MSG];
+    unsigned char _in_buffer[MAX_UDP_MSG];
+    bool _send_enabled;
+    bool _recv_enabled;
 };
 }
 

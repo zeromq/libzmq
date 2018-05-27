@@ -73,11 +73,11 @@ class ip_resolver_options_t
     bool allow_dns ();
 
   private:
-    bool bindable_wanted;
-    bool nic_name_allowed;
-    bool ipv6_wanted;
-    bool port_expected;
-    bool dns_allowed;
+    bool _bindable_wanted;
+    bool _nic_name_allowed;
+    bool _ipv6_wanted;
+    bool _port_expected;
+    bool _dns_allowed;
 };
 
 class ip_resolver_t
@@ -88,7 +88,7 @@ class ip_resolver_t
     int resolve (ip_addr_t *ip_addr_, const char *name_);
 
   protected:
-    ip_resolver_options_t options;
+    ip_resolver_options_t _options;
 
     int resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_);
     int resolve_getaddrinfo (ip_addr_t *ip_addr_, const char *addr_);

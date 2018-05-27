@@ -71,15 +71,15 @@ class mailbox_safe_t : public i_mailbox
   private:
     //  The pipe to store actual commands.
     typedef ypipe_t<command_t, command_pipe_granularity> cpipe_t;
-    cpipe_t cpipe;
+    cpipe_t _cpipe;
 
     //  Condition variable to pass signals from writer thread to reader thread.
-    condition_variable_t cond_var;
+    condition_variable_t _cond_var;
 
     //  Synchronize access to the mailbox from receivers and senders
-    mutex_t *const sync;
+    mutex_t *const _sync;
 
-    std::vector<zmq::signaler_t *> signalers;
+    std::vector<zmq::signaler_t *> _signalers;
 
     //  Disable copying of mailbox_t object.
     mailbox_safe_t (const mailbox_safe_t &);

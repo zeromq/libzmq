@@ -56,7 +56,7 @@ class gather_t : public socket_base_t
 
   private:
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     gather_t (const gather_t &);
     const gather_t &operator= (const gather_t &);

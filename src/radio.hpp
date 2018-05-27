@@ -65,17 +65,17 @@ class radio_t : public socket_base_t
   private:
     //  List of all subscriptions mapped to corresponding pipes.
     typedef std::multimap<std::string, pipe_t *> subscriptions_t;
-    subscriptions_t subscriptions;
+    subscriptions_t _subscriptions;
 
     //  List of udp pipes
     typedef std::vector<pipe_t *> udp_pipes_t;
-    udp_pipes_t udp_pipes;
+    udp_pipes_t _udp_pipes;
 
     //  Distributor of messages holding the list of outbound pipes.
-    dist_t dist;
+    dist_t _dist;
 
     //  Drop messages if HWM reached, otherwise return with EAGAIN
-    bool lossy;
+    bool _lossy;
 
     radio_t (const radio_t &);
     const radio_t &operator= (const radio_t &);
@@ -101,9 +101,9 @@ class radio_session_t : public session_base_t
     {
         group,
         body
-    } state;
+    } _state;
 
-    msg_t pending_msg;
+    msg_t _pending_msg;
 
     radio_session_t (const radio_session_t &);
     const radio_session_t &operator= (const radio_session_t &);

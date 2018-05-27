@@ -120,34 +120,34 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 
     //  If true, this session (re)connects to the peer. Otherwise, it's
     //  a transient session created by the listener.
-    const bool active;
+    const bool _active;
 
     //  Pipe connecting the session to its socket.
-    zmq::pipe_t *pipe;
+    zmq::pipe_t *_pipe;
 
     //  Pipe used to exchange messages with ZAP socket.
-    zmq::pipe_t *zap_pipe;
+    zmq::pipe_t *_zap_pipe;
 
     //  This set is added to with pipes we are disconnecting, but haven't yet completed
-    std::set<pipe_t *> terminating_pipes;
+    std::set<pipe_t *> _terminating_pipes;
 
     //  This flag is true if the remainder of the message being processed
     //  is still in the in pipe.
-    bool incomplete_in;
+    bool _incomplete_in;
 
     //  True if termination have been suspended to push the pending
     //  messages to the network.
-    bool pending;
+    bool _pending;
 
     //  The protocol I/O engine connected to the session.
-    zmq::i_engine *engine;
+    zmq::i_engine *_engine;
 
     //  The socket the session belongs to.
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *_socket;
 
     //  I/O thread the session is living in. It will be used to plug in
     //  the engines into the same thread.
-    zmq::io_thread_t *io_thread;
+    zmq::io_thread_t *_io_thread;
 
     //  ID of the linger timer
     enum
@@ -156,10 +156,10 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     };
 
     //  True is linger timer is running.
-    bool has_linger_timer;
+    bool _has_linger_timer;
 
     //  Protocol and address to use when connecting.
-    address_t *addr;
+    address_t *_addr;
 
     session_base_t (const session_base_t &);
     const session_base_t &operator= (const session_base_t &);

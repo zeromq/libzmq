@@ -203,11 +203,11 @@ class socket_base_t : public own_t,
     //  Map of open endpoints.
     typedef std::pair<own_t *, pipe_t *> endpoint_pipe_t;
     typedef std::multimap<std::string, endpoint_pipe_t> endpoints_t;
-    endpoints_t endpoints;
+    endpoints_t _endpoints;
 
     //  Map of open inproc endpoints.
     typedef std::multimap<std::string, pipe_t *> inprocs_t;
-    inprocs_t inprocs;
+    inprocs_t _inprocs;
 
     //  To be called after processing commands or invoking any command
     //  handlers explicitly. If required, it will deallocate the socket.
@@ -218,15 +218,15 @@ class socket_base_t : public own_t,
     void extract_flags (msg_t *msg_);
 
     //  Used to check whether the object is a socket.
-    uint32_t tag;
+    uint32_t _tag;
 
     //  If true, associated context was already terminated.
-    bool ctx_terminated;
+    bool _ctx_terminated;
 
     //  If true, object should have been already destroyed. However,
     //  destruction is delayed while we unwind the stack to the point
     //  where it doesn't intersect the object being destroyed.
-    bool destroyed;
+    bool _destroyed;
 
     //  Parse URI string.
     int
@@ -254,48 +254,48 @@ class socket_base_t : public own_t,
     void update_pipe_options (int option_);
 
     //  Socket's mailbox object.
-    i_mailbox *mailbox;
+    i_mailbox *_mailbox;
 
     //  List of attached pipes.
     typedef array_t<pipe_t, 3> pipes_t;
-    pipes_t pipes;
+    pipes_t _pipes;
 
     //  Reaper's poller and handle of this socket within it.
-    poller_t *poller;
-    poller_t::handle_t handle;
+    poller_t *_poller;
+    poller_t::handle_t _handle;
 
     //  Timestamp of when commands were processed the last time.
-    uint64_t last_tsc;
+    uint64_t _last_tsc;
 
     //  Number of messages received since last command processing.
-    int ticks;
+    int _ticks;
 
     //  True if the last message received had MORE flag set.
-    bool rcvmore;
+    bool _rcvmore;
 
     //  Improves efficiency of time measurement.
-    clock_t clock;
+    clock_t _clock;
 
     // Monitor socket;
-    void *monitor_socket;
+    void *_monitor_socket;
 
     // Bitmask of events being monitored
-    int monitor_events;
+    int _monitor_events;
 
     // Last socket endpoint resolved URI
-    std::string last_endpoint;
+    std::string _last_endpoint;
 
     // Indicate if the socket is thread safe
-    const bool thread_safe;
+    const bool _thread_safe;
 
     // Signaler to be used in the reaping stage
-    signaler_t *reaper_signaler;
+    signaler_t *_reaper_signaler;
 
     // Mutex for synchronize access to the socket in thread safe mode
-    mutex_t sync;
+    mutex_t _sync;
 
     // Mutex to synchronize access to the monitor Pair socket
-    mutex_t monitor_sync;
+    mutex_t _monitor_sync;
 
     socket_base_t (const socket_base_t &);
     const socket_base_t &operator= (const socket_base_t &);

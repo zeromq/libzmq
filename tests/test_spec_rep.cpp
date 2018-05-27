@@ -32,9 +32,9 @@
 const char *bind_address = 0;
 char connect_address[MAX_SOCKET_STRING];
 
-void test_fair_queue_in (void *ctx)
+void test_fair_queue_in (void *ctx_)
 {
-    void *rep = zmq_socket (ctx, ZMQ_REP);
+    void *rep = zmq_socket (ctx_, ZMQ_REP);
     assert (rep);
 
     int timeout = 250;
@@ -50,7 +50,7 @@ void test_fair_queue_in (void *ctx)
     const size_t services = 5;
     void *reqs[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        reqs[peer] = zmq_socket (ctx, ZMQ_REQ);
+        reqs[peer] = zmq_socket (ctx_, ZMQ_REQ);
         assert (reqs[peer]);
 
         rc = zmq_setsockopt (reqs[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
@@ -102,9 +102,9 @@ void test_fair_queue_in (void *ctx)
     msleep (SETTLE_TIME);
 }
 
-void test_envelope (void *ctx)
+void test_envelope (void *ctx_)
 {
-    void *rep = zmq_socket (ctx, ZMQ_REP);
+    void *rep = zmq_socket (ctx_, ZMQ_REP);
     assert (rep);
 
     int rc = zmq_bind (rep, bind_address);
@@ -113,7 +113,7 @@ void test_envelope (void *ctx)
     rc = zmq_getsockopt (rep, ZMQ_LAST_ENDPOINT, connect_address, &len);
     assert (rc == 0);
 
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    void *dealer = zmq_socket (ctx_, ZMQ_DEALER);
     assert (dealer);
 
     rc = zmq_connect (dealer, connect_address);

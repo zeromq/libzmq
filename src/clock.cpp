@@ -122,17 +122,17 @@ static f_compatible_get_tick_count64 my_get_tick_count64 =
   init_compatible_get_tick_count64 ();
 #endif
 
-zmq::clock_t::clock_t () :
-    last_tsc (rdtsc ()),
-#ifdef ZMQ_HAVE_WINDOWS
-    last_time (static_cast<uint64_t> ((*my_get_tick_count64) ()))
-#else
-    last_time (now_us () / 1000)
-#endif
-{
-}
+const uint64_t usecs_per_msec = 1000;
+const uint64_t usecs_per_sec = 1000000;
+const uint64_t nsecs_per_usec = 1000;
 
-zmq::clock_t::~clock_t ()
+zmq::clock_t::clock_t () :
+    _last_tsc (rdtsc ()),
+#ifdef ZMQ_HAVE_WINDOWS
+    _last_time (static_cast<uint64_t> ((*my_get_tick_count64) ()))
+#else
+    _last_time (now_us () / usecs_per_msec)
+#endif
 {
 }
 
@@ -141,6 +141,9 @@ uint64_t zmq::clock_t::now_us ()
 #if defined ZMQ_HAVE_WINDOWS
 
     //  Get the high resolution counter's accuracy.
+    //  While QueryPerformanceFrequency only needs to be called once, since its
+    //  value does not change during runtime, we query it here since this is a
+    //  static function. It might make sense to cache it, though.
     LARGE_INTEGER ticks_per_second;
     QueryPerformanceFrequency (&ticks_per_second);
 
@@ -150,7 +153,8 @@ uint64_t zmq::clock_t::now_us ()
 
     //  Convert the tick number into the number of seconds
     //  since the system was started.
-    double ticks_div = ticks_per_second.QuadPart / 1000000.0;
+    const double ticks_div =
+      static_cast<double> (ticks_per_second.QuadPart) / usecs_per_sec;
     return static_cast<uint64_t> (tick.QuadPart / ticks_div);
 
 #elif defined HAVE_CLOCK_GETTIME                                               \
@@ -174,14 +178,14 @@ uint64_t zmq::clock_t::now_us ()
         struct timeval tv;
         int rc = gettimeofday (&tv, NULL);
         errno_assert (rc == 0);
-        return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+        return tv.tv_sec * usecs_per_sec + tv.tv_usec;
 #endif
     }
-    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_nsec / 1000);
+    return tv.tv_sec * usecs_per_sec + tv.tv_nsec / nsecs_per_usec;
 
 #elif defined HAVE_GETHRTIME
 
-    return (gethrtime () / 1000);
+    return gethrtime () / nsecs_per_usec;
 
 #else
 
@@ -189,7 +193,7 @@ uint64_t zmq::clock_t::now_us ()
     struct timeval tv;
     int rc = gettimeofday (&tv, NULL);
     errno_assert (rc == 0);
-    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+    return tv.tv_sec * usecs_per_sec + tv.tv_usec;
 
 #endif
 }
@@ -207,23 +211,23 @@ uint64_t zmq::clock_t::now_ms ()
         // to its 32 bit limitation.
         return static_cast<uint64_t> ((*my_get_tick_count64) ());
 #else
-        return now_us () / 1000;
+        return now_us () / usecs_per_msec;
 #endif
     }
 
     //  If TSC haven't jumped back (in case of migration to a different
     //  CPU core) and if not too much time elapsed since last measurement,
     //  we can return cached time value.
-    if (likely (tsc - last_tsc <= (clock_precision / 2) && tsc >= last_tsc))
-        return last_time;
+    if (likely (tsc - _last_tsc <= (clock_precision / 2) && tsc >= _last_tsc))
+        return _last_time;
 
-    last_tsc = tsc;
+    _last_tsc = tsc;
 #ifdef ZMQ_HAVE_WINDOWS
-    last_time = static_cast<uint64_t> ((*my_get_tick_count64) ());
+    _last_time = static_cast<uint64_t> ((*my_get_tick_count64) ());
 #else
-    last_time = now_us () / 1000;
+    _last_time = now_us () / usecs_per_msec;
 #endif
-    return last_time;
+    return _last_time;
 }
 
 uint64_t zmq::clock_t::rdtsc ()
@@ -233,7 +237,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));
-    return (uint64_t) high << 32 | low;
+    return static_cast<uint64_t> (high) << 32 | low;
 #elif (defined __SUNPRO_CC && (__SUNPRO_CC >= 0x5100)                          \
        && (defined __i386 || defined __amd64 || defined __x86_64))
     union
@@ -246,7 +250,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #elif defined(__s390__)
     uint64_t tsc;
     asm("\tstck\t%0\n" : "=Q"(tsc) : : "cc");
-    return (tsc);
+    return tsc;
 #else
     struct timespec ts;
 #if defined ZMQ_HAVE_OSX                                                       \
@@ -255,6 +259,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #else
     clock_gettime (CLOCK_MONOTONIC, &ts);
 #endif
-    return (uint64_t) (ts.tv_sec) * 1000000000 + ts.tv_nsec;
+    return static_cast<uint64_t> (ts.tv_sec) * nsecs_per_usec * usecs_per_sec
+           + ts.tv_nsec;
 #endif
 }

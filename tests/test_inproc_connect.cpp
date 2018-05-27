@@ -44,15 +44,15 @@ static void pusher (void * /*unused*/)
 {
     // Connect first
     // do not use test_context_socket here, as it is not thread-safe
-    void *connectSocket = zmq_socket (get_test_context (), ZMQ_PAIR);
+    void *connect_socket = zmq_socket (get_test_context (), ZMQ_PAIR);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://sink"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://sink"));
 
     // Queue up some data
-    send_string_expect_success (connectSocket, "foobar", 0);
+    send_string_expect_success (connect_socket, "foobar", 0);
 
     // Cleanup
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connectSocket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
 }
 
 static void simult_conn (void *endpt_)
@@ -62,11 +62,11 @@ static void simult_conn (void *endpt_)
 
     // Connect
     // do not use test_context_socket here, as it is not thread-safe
-    void *connectSocket = zmq_socket (get_test_context (), ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, endpt));
+    void *connect_socket = zmq_socket (get_test_context (), ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, endpt));
 
     // Cleanup
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connectSocket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
 }
 
 static void simult_bind (void *endpt_)
@@ -76,96 +76,96 @@ static void simult_bind (void *endpt_)
 
     // Bind
     // do not use test_context_socket here, as it is not thread-safe
-    void *bindSocket = zmq_socket (get_test_context (), ZMQ_PUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, endpt));
+    void *bind_socket = zmq_socket (get_test_context (), ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, endpt));
 
     // Cleanup
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bindSocket));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
 }
 
 void test_bind_before_connect ()
 {
     // Bind first
-    void *bindSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, "inproc://bbc"));
+    void *bind_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://bbc"));
 
     // Now connect
-    void *connectSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://bbc"));
+    void *connect_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://bbc"));
 
     // Queue up some data
-    send_string_expect_success (connectSocket, "foobar", 0);
+    send_string_expect_success (connect_socket, "foobar", 0);
 
     // Read pending message
-    recv_string_expect_success (bindSocket, "foobar", 0);
+    recv_string_expect_success (bind_socket, "foobar", 0);
 
     // Cleanup
-    test_context_socket_close (connectSocket);
-    test_context_socket_close (bindSocket);
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket);
 }
 
 void test_connect_before_bind ()
 {
     // Connect first
-    void *connectSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://cbb"));
+    void *connect_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://cbb"));
 
     // Queue up some data
-    send_string_expect_success (connectSocket, "foobar", 0);
+    send_string_expect_success (connect_socket, "foobar", 0);
 
     // Now bind
-    void *bindSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, "inproc://cbb"));
+    void *bind_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://cbb"));
 
     // Read pending message
-    recv_string_expect_success (bindSocket, "foobar", 0);
+    recv_string_expect_success (bind_socket, "foobar", 0);
 
     // Cleanup
-    test_context_socket_close (connectSocket);
-    test_context_socket_close (bindSocket);
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket);
 }
 
 void test_connect_before_bind_pub_sub ()
 {
     // Connect first
-    void *connectSocket = test_context_socket (ZMQ_PUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://cbbps"));
+    void *connect_socket = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://cbbps"));
 
     // Queue up some data, this will be dropped
-    send_string_expect_success (connectSocket, "before", 0);
+    send_string_expect_success (connect_socket, "before", 0);
 
     // Now bind
-    void *bindSocket = test_context_socket (ZMQ_SUB);
+    void *bind_socket = test_context_socket (ZMQ_SUB);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (bindSocket, ZMQ_SUBSCRIBE, "", 0));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, "inproc://cbbps"));
+      zmq_setsockopt (bind_socket, ZMQ_SUBSCRIBE, "", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://cbbps"));
 
     // Wait for pub-sub connection to happen
     msleep (SETTLE_TIME);
 
     // Queue up some data, this not will be dropped
-    send_string_expect_success (connectSocket, "after", 0);
+    send_string_expect_success (connect_socket, "after", 0);
 
     // Read pending message
-    recv_string_expect_success (bindSocket, "after", 0);
+    recv_string_expect_success (bind_socket, "after", 0);
 
     // Cleanup
-    test_context_socket_close (connectSocket);
-    test_context_socket_close (bindSocket);
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket);
 }
 
 void test_connect_before_bind_ctx_term ()
 {
     for (int i = 0; i < 20; ++i) {
         // Connect first
-        void *connectSocket = test_context_socket (ZMQ_ROUTER);
+        void *connect_socket = test_context_socket (ZMQ_ROUTER);
 
         char ep[20];
         sprintf (ep, "inproc://cbbrr%d", i);
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, ep));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, ep));
 
         // Cleanup
-        test_context_socket_close (connectSocket);
+        test_context_socket_close (connect_socket);
     }
 }
 
@@ -173,32 +173,32 @@ void test_multiple_connects ()
 {
     const unsigned int no_of_connects = 10;
 
-    void *connectSocket[no_of_connects];
+    void *connect_socket[no_of_connects];
 
     // Connect first
     for (unsigned int i = 0; i < no_of_connects; ++i) {
-        connectSocket[i] = test_context_socket (ZMQ_PUSH);
+        connect_socket[i] = test_context_socket (ZMQ_PUSH);
         TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_connect (connectSocket[i], "inproc://multiple"));
+          zmq_connect (connect_socket[i], "inproc://multiple"));
 
         // Queue up some data
-        send_string_expect_success (connectSocket[i], "foobar", 0);
+        send_string_expect_success (connect_socket[i], "foobar", 0);
     }
 
     // Now bind
-    void *bindSocket = test_context_socket (ZMQ_PULL);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, "inproc://multiple"));
+    void *bind_socket = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://multiple"));
 
     for (unsigned int i = 0; i < no_of_connects; ++i) {
-        recv_string_expect_success (bindSocket, "foobar", 0);
+        recv_string_expect_success (bind_socket, "foobar", 0);
     }
 
     // Cleanup
     for (unsigned int i = 0; i < no_of_connects; ++i) {
-        test_context_socket_close (connectSocket[i]);
+        test_context_socket_close (connect_socket[i]);
     }
 
-    test_context_socket_close (bindSocket);
+    test_context_socket_close (bind_socket);
 }
 
 void test_multiple_threads ()
@@ -213,12 +213,12 @@ void test_multiple_threads ()
     }
 
     // Now bind
-    void *bindSocket = test_context_socket (ZMQ_PULL);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket, "inproc://sink"));
+    void *bind_socket = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://sink"));
 
     for (unsigned int i = 0; i < no_of_threads; ++i) {
         // Read pending message
-        recv_string_expect_success (bindSocket, "foobar", 0);
+        recv_string_expect_success (bind_socket, "foobar", 0);
     }
 
     // Cleanup
@@ -226,7 +226,7 @@ void test_multiple_threads ()
         zmq_threadclose (threads[i]);
     }
 
-    test_context_socket_close (bindSocket);
+    test_context_socket_close (bind_socket);
 }
 
 void test_simultaneous_connect_bind_threads ()
@@ -297,50 +297,50 @@ void test_routing_id ()
 
 void test_connect_only ()
 {
-    void *connectSocket = test_context_socket (ZMQ_PUSH);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://a"));
+    void *connect_socket = test_context_socket (ZMQ_PUSH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
-    test_context_socket_close (connectSocket);
+    test_context_socket_close (connect_socket);
 }
 
 
 void test_unbind ()
 {
     // Bind and unbind socket 1
-    void *bindSocket1 = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket1, "inproc://unbind"));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (bindSocket1, "inproc://unbind"));
+    void *bind_socket1 = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket1, "inproc://unbind"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (bind_socket1, "inproc://unbind"));
 
     // Bind socket 2
-    void *bindSocket2 = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bindSocket2, "inproc://unbind"));
+    void *bind_socket2 = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket2, "inproc://unbind"));
 
     // Now connect
-    void *connectSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://unbind"));
+    void *connect_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://unbind"));
 
     // Queue up some data
-    send_string_expect_success (connectSocket, "foobar", 0);
+    send_string_expect_success (connect_socket, "foobar", 0);
 
     // Read pending message
-    recv_string_expect_success (bindSocket2, "foobar", 0);
+    recv_string_expect_success (bind_socket2, "foobar", 0);
 
     // Cleanup
-    test_context_socket_close (connectSocket);
-    test_context_socket_close (bindSocket1);
-    test_context_socket_close (bindSocket2);
+    test_context_socket_close (connect_socket);
+    test_context_socket_close (bind_socket1);
+    test_context_socket_close (bind_socket2);
 }
 
 void test_shutdown_during_pend ()
 {
     // Connect first
-    void *connectSocket = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connectSocket, "inproc://cbb"));
+    void *connect_socket = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://cbb"));
 
     zmq_ctx_shutdown (get_test_context ());
 
     // Cleanup
-    test_context_socket_close (connectSocket);
+    test_context_socket_close (connect_socket);
 }
 
 int main (void)

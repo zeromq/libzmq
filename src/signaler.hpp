@@ -69,8 +69,8 @@ class signaler_t
     //  Underlying write & read file descriptor
     //  Will be -1 if an error occurred during initialization, e.g. we
     //  exceeded the number of available handles
-    fd_t w;
-    fd_t r;
+    fd_t _w;
+    fd_t _r;
 
     //  Disable copying of signaler_t object.
     signaler_t (const signaler_t &);

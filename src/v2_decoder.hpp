@@ -46,7 +46,7 @@ class v2_decoder_t
     virtual ~v2_decoder_t ();
 
     //  i_decoder interface.
-    virtual msg_t *msg () { return &in_progress; }
+    virtual msg_t *msg () { return &_in_progress; }
 
   private:
     int flags_ready (unsigned char const *);
@@ -56,12 +56,12 @@ class v2_decoder_t
 
     int size_ready (uint64_t size_, unsigned char const *);
 
-    unsigned char tmpbuf[8];
-    unsigned char msg_flags;
-    msg_t in_progress;
+    unsigned char _tmpbuf[8];
+    unsigned char _msg_flags;
+    msg_t _in_progress;
 
-    const bool zero_copy;
-    const int64_t maxmsgsize;
+    const bool _zero_copy;
+    const int64_t _max_msg_size;
 
     v2_decoder_t (const v2_decoder_t &);
     void operator= (const v2_decoder_t &);

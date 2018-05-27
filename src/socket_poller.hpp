@@ -77,7 +77,7 @@ class socket_poller_t
 
     int wait (event_t *event_, int n_events_, long timeout_);
 
-    inline int size () { return static_cast<int> (items.size ()); };
+    inline int size () { return static_cast<int> (_items.size ()); };
 
     //  Return false if object is not a socket.
     bool check_tag ();
@@ -103,10 +103,10 @@ class socket_poller_t
     void rebuild ();
 
     //  Used to check whether the object is a socket_poller.
-    uint32_t tag;
+    uint32_t _tag;
 
     //  Signaler used for thread safe sockets polling
-    signaler_t *signaler;
+    signaler_t *_signaler;
 
     typedef struct item_t
     {
@@ -121,24 +121,24 @@ class socket_poller_t
 
     //  List of sockets
     typedef std::vector<item_t> items_t;
-    items_t items;
+    items_t _items;
 
     //  Does the pollset needs rebuilding?
-    bool need_rebuild;
+    bool _need_rebuild;
 
     //  Should the signaler be used for the thread safe polling?
-    bool use_signaler;
+    bool _use_signaler;
 
     //  Size of the pollset
-    int poll_size;
+    int _pollset_size;
 
 #if defined ZMQ_POLL_BASED_ON_POLL
-    pollfd *pollfds;
+    pollfd *_pollfds;
 #elif defined ZMQ_POLL_BASED_ON_SELECT
-    fd_set pollset_in;
-    fd_set pollset_out;
-    fd_set pollset_err;
-    zmq::fd_t maxfd;
+    fd_set _pollset_in;
+    fd_set _pollset_out;
+    fd_set _pollset_err;
+    zmq::fd_t _max_fd;
 #endif
 
     socket_poller_t (const socket_poller_t &);

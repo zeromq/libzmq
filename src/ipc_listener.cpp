@@ -201,13 +201,13 @@ int zmq::ipc_listener_t::get_address (std::string &addr_)
 #else
     socklen_t sl = sizeof (ss);
 #endif
-    int rc = getsockname (s, (sockaddr *) &ss, &sl);
+    int rc = getsockname (s, reinterpret_cast<sockaddr *> (&ss), &sl);
     if (rc != 0) {
         addr_.clear ();
         return rc;
     }
 
-    ipc_address_t addr ((struct sockaddr *) &ss, sl);
+    ipc_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
     return addr.to_string (addr_);
 }
 
@@ -266,7 +266,8 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         }
 
         //  Bind the socket to the file path.
-        rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
+        rc = bind (s, const_cast<sockaddr *> (address.addr ()),
+                   address.addrlen ());
         if (rc != 0)
             goto error;
 

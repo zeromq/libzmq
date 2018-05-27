@@ -59,18 +59,18 @@ template <> class dbuffer_t<msg_t>
 {
   public:
     inline dbuffer_t () :
-        back (&storage[0]),
-        front (&storage[1]),
-        has_msg (false)
+        _back (&_storage[0]),
+        _front (&_storage[1]),
+        _has_msg (false)
     {
-        back->init ();
-        front->init ();
+        _back->init ();
+        _front->init ();
     }
 
     inline ~dbuffer_t ()
     {
-        back->close ();
-        front->close ();
+        _back->close ();
+        _front->close ();
     }
 
     inline void write (const msg_t &value_)
@@ -78,15 +78,15 @@ template <> class dbuffer_t<msg_t>
         msg_t &xvalue = const_cast<msg_t &> (value_);
 
         zmq_assert (xvalue.check ());
-        back->move (xvalue); // cannot just overwrite, might leak
+        _back->move (xvalue); // cannot just overwrite, might leak
 
-        zmq_assert (back->check ());
+        zmq_assert (_back->check ());
 
-        if (sync.try_lock ()) {
-            std::swap (back, front);
-            has_msg = true;
+        if (_sync.try_lock ()) {
+            std::swap (_back, _front);
+            _has_msg = true;
 
-            sync.unlock ();
+            _sync.unlock ();
         }
     }
 
@@ -96,16 +96,16 @@ template <> class dbuffer_t<msg_t>
             return false;
 
         {
-            scoped_lock_t lock (sync);
-            if (!has_msg)
+            scoped_lock_t lock (_sync);
+            if (!_has_msg)
                 return false;
 
-            zmq_assert (front->check ());
+            zmq_assert (_front->check ());
 
-            *value_ = *front;
-            front->init (); // avoid double free
+            *value_ = *_front;
+            _front->init (); // avoid double free
 
-            has_msg = false;
+            _has_msg = false;
             return true;
         }
     }
@@ -113,24 +113,24 @@ template <> class dbuffer_t<msg_t>
 
     inline bool check_read ()
     {
-        scoped_lock_t lock (sync);
+        scoped_lock_t lock (_sync);
 
-        return has_msg;
+        return _has_msg;
     }
 
     inline bool probe (bool (*fn_) (const msg_t &))
     {
-        scoped_lock_t lock (sync);
-        return (*fn_) (*front);
+        scoped_lock_t lock (_sync);
+        return (*fn_) (*_front);
     }
 
 
   private:
-    msg_t storage[2];
-    msg_t *back, *front;
+    msg_t _storage[2];
+    msg_t *_back, *_front;
 
-    mutex_t sync;
-    bool has_msg;
+    mutex_t _sync;
+    bool _has_msg;
 
     //  Disable copying of dbuffer.
     dbuffer_t (const dbuffer_t &);

@@ -69,12 +69,12 @@ void test__zmq_curve_public__valid__success ()
 }
 
 // The key length must be evenly divisible by 5 or must fail with EINVAL.
-void test__zmq_curve_public__invalid__failure (const char *secret)
+void test__zmq_curve_public__invalid__failure (const char *secret_)
 {
     errno = 0;
     char out_public[41] = {0};
 
-    const int rc = zmq_curve_public (out_public, secret);
+    const int rc = zmq_curve_public (out_public, secret_);
 
 #if defined(ZMQ_HAVE_CURVE)
     assert (rc == -1);

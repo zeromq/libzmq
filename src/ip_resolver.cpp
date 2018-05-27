@@ -95,18 +95,18 @@ zmq::ip_addr_t zmq::ip_addr_t::any (int family_)
 }
 
 zmq::ip_resolver_options_t::ip_resolver_options_t () :
-    bindable_wanted (false),
-    nic_name_allowed (false),
-    ipv6_wanted (false),
-    port_expected (false),
-    dns_allowed (false)
+    _bindable_wanted (false),
+    _nic_name_allowed (false),
+    _ipv6_wanted (false),
+    _port_expected (false),
+    _dns_allowed (false)
 {
 }
 
 zmq::ip_resolver_options_t &
 zmq::ip_resolver_options_t::bindable (bool bindable_)
 {
-    bindable_wanted = bindable_;
+    _bindable_wanted = bindable_;
 
     return *this;
 }
@@ -114,14 +114,14 @@ zmq::ip_resolver_options_t::bindable (bool bindable_)
 zmq::ip_resolver_options_t &
 zmq::ip_resolver_options_t::allow_nic_name (bool allow_)
 {
-    nic_name_allowed = allow_;
+    _nic_name_allowed = allow_;
 
     return *this;
 }
 
 zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::ipv6 (bool ipv6_)
 {
-    ipv6_wanted = ipv6_;
+    _ipv6_wanted = ipv6_;
 
     return *this;
 }
@@ -131,45 +131,45 @@ zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::ipv6 (bool ipv6_)
 zmq::ip_resolver_options_t &
 zmq::ip_resolver_options_t::expect_port (bool expect_)
 {
-    port_expected = expect_;
+    _port_expected = expect_;
 
     return *this;
 }
 
 zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::allow_dns (bool allow_)
 {
-    dns_allowed = allow_;
+    _dns_allowed = allow_;
 
     return *this;
 }
 
 bool zmq::ip_resolver_options_t::bindable ()
 {
-    return bindable_wanted;
+    return _bindable_wanted;
 }
 
 bool zmq::ip_resolver_options_t::allow_nic_name ()
 {
-    return nic_name_allowed;
+    return _nic_name_allowed;
 }
 
 bool zmq::ip_resolver_options_t::ipv6 ()
 {
-    return ipv6_wanted;
+    return _ipv6_wanted;
 }
 
 bool zmq::ip_resolver_options_t::expect_port ()
 {
-    return port_expected;
+    return _port_expected;
 }
 
 bool zmq::ip_resolver_options_t::allow_dns ()
 {
-    return dns_allowed;
+    return _dns_allowed;
 }
 
 zmq::ip_resolver_t::ip_resolver_t (ip_resolver_options_t opts_) :
-    options (opts_)
+    _options (opts_)
 {
 }
 
@@ -178,7 +178,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     std::string addr;
     uint16_t port;
 
-    if (options.expect_port ()) {
+    if (_options.expect_port ()) {
         //  We expect 'addr:port'. It's important to use str*r*chr to only get
         //  the latest colon since IPv6 addresses use colons as delemiters.
         const char *delim = strrchr (name_, ':');
@@ -192,7 +192,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         std::string port_str = std::string (delim + 1);
 
         if (port_str == "*") {
-            if (options.bindable ()) {
+            if (_options.bindable ()) {
                 //  Resolve wildcard to 0 to allow autoselection of port
                 port = 0;
             } else {
@@ -248,13 +248,13 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     bool resolved = false;
     const char *addr_str = addr.c_str ();
 
-    if (options.bindable () && addr == "*") {
+    if (_options.bindable () && addr == "*") {
         //  Return an ANY address
-        *ip_addr_ = ip_addr_t::any (options.ipv6 () ? AF_INET6 : AF_INET);
+        *ip_addr_ = ip_addr_t::any (_options.ipv6 () ? AF_INET6 : AF_INET);
         resolved = true;
     }
 
-    if (!resolved && options.allow_nic_name ()) {
+    if (!resolved && _options.allow_nic_name ()) {
         //  Try to resolve the string as a NIC name.
         int rc = resolve_nic_name (ip_addr_, addr_str);
 
@@ -303,18 +303,18 @@ int zmq::ip_resolver_t::resolve_getaddrinfo (ip_addr_t *ip_addr_,
 
     //  Choose IPv4 or IPv6 protocol family. Note that IPv6 allows for
     //  IPv4-in-IPv6 addresses.
-    req.ai_family = options.ipv6 () ? AF_INET6 : AF_INET;
+    req.ai_family = _options.ipv6 () ? AF_INET6 : AF_INET;
 
     //  Arbitrary, not used in the output, but avoids duplicate results.
     req.ai_socktype = SOCK_STREAM;
 
     req.ai_flags = 0;
 
-    if (options.bindable ()) {
+    if (_options.bindable ()) {
         req.ai_flags |= AI_PASSIVE;
     }
 
-    if (!options.allow_dns ()) {
+    if (!_options.allow_dns ()) {
         req.ai_flags |= AI_NUMERICHOST;
     }
 
@@ -355,7 +355,7 @@ int zmq::ip_resolver_t::resolve_getaddrinfo (ip_addr_t *ip_addr_,
                 errno = ENOMEM;
                 break;
             default:
-                if (options.bindable ()) {
+                if (_options.bindable ()) {
                     errno = ENODEV;
                 } else {
                     errno = EINVAL;
@@ -444,7 +444,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 {
 #if defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX
     // IPv6 support not implemented for AIX or HP/UX.
-    if (options.ipv6 ()) {
+    if (_options.ipv6 ()) {
         errno = ENODEV;
         return -1;
     }
@@ -452,7 +452,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 
     //  Create a socket.
     const int sd =
-      open_socket (options.ipv6 () ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+      open_socket (_options.ipv6 () ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
     errno_assert (sd != -1);
 
     struct ifreq ifr;
@@ -472,7 +472,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
     }
 
     const int family = ifr.ifr_addr.sa_family;
-    if (family == (options.ipv6 () ? AF_INET6 : AF_INET)
+    if (family == (_options.ipv6 () ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifr.ifr_name)) {
         memcpy (ip_addr_, &ifr.ifr_addr,
                 (family == AF_INET) ? sizeof (struct sockaddr_in)
@@ -524,7 +524,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
             continue;
 
         const int family = ifp->ifa_addr->sa_family;
-        if (family == (options.ipv6 () ? AF_INET6 : AF_INET)
+        if (family == (_options.ipv6 () ? AF_INET6 : AF_INET)
             && !strcmp (nic_, ifp->ifa_name)) {
             memcpy (ip_addr_, ifp->ifa_addr,
                     (family == AF_INET) ? sizeof (struct sockaddr_in)
@@ -647,7 +647,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
                     ADDRESS_FAMILY family =
                       current_unicast_address->Address.lpSockaddr->sa_family;
 
-                    if (family == (options.ipv6 () ? AF_INET6 : AF_INET)) {
+                    if (family == (_options.ipv6 () ? AF_INET6 : AF_INET)) {
                         memcpy (
                           ip_addr_, current_unicast_address->Address.lpSockaddr,
                           (family == AF_INET) ? sizeof (struct sockaddr_in)

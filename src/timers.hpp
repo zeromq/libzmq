@@ -78,12 +78,12 @@ class timers_t
 
   private:
     //  Used to check whether the object is a timers class.
-    uint32_t tag;
+    uint32_t _tag;
 
-    int next_timer_id;
+    int _next_timer_id;
 
     //  Clock instance.
-    clock_t clock;
+    clock_t _clock;
 
     typedef struct timer_t
     {
@@ -94,10 +94,10 @@ class timers_t
     } timer_t;
 
     typedef std::multimap<uint64_t, timer_t> timersmap_t;
-    timersmap_t timers;
+    timersmap_t _timers;
 
     typedef std::set<int> cancelled_timers_t;
-    cancelled_timers_t cancelled_timers;
+    cancelled_timers_t _cancelled_timers;
 
     timers_t (const timers_t &);
     const timers_t &operator= (const timers_t &);

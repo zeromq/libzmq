@@ -29,35 +29,36 @@
 
 #include "testutil.hpp"
 
-static void bounce_fail (void *server, void *client)
+static void bounce_fail (void *server_, void *client_)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
     char buffer[32];
 
     //  Send message from client to server
-    int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
+    int rc = zmq_send (client_, content, 32, ZMQ_SNDMORE);
     assert (rc == 32);
-    rc = zmq_send (client, content, 32, 0);
+    rc = zmq_send (client_, content, 32, 0);
     assert (rc == 32);
 
     //  Receive message at server side (should not succeed)
     int timeout = 250;
-    rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    rc = zmq_setsockopt (server_, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    rc = zmq_recv (server, buffer, 32, 0);
+    rc = zmq_recv (server_, buffer, 32, 0);
     assert (rc == -1);
     assert (zmq_errno () == EAGAIN);
 
     //  Send message from server to client to test other direction
-    rc = zmq_setsockopt (server, ZMQ_SNDTIMEO, &timeout, sizeof (int));
+    rc = zmq_setsockopt (server_, ZMQ_SNDTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
+    rc = zmq_send (server_, content, 32, ZMQ_SNDMORE);
     assert (rc == -1);
     assert (zmq_errno () == EAGAIN);
 }
 
 template <class T>
-static void run_test (int opt, T optval, int expected_error, int bounce_test)
+static void
+run_test (int opt_, T optval_, int expected_error_, int bounce_test_)
 {
     int rc;
 
@@ -67,11 +68,11 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     void *sb = zmq_socket (ctx, ZMQ_DEALER);
     assert (sb);
 
-    if (opt) {
-        rc = zmq_setsockopt (sb, opt, &optval, sizeof (optval));
-        if (expected_error) {
+    if (opt_) {
+        rc = zmq_setsockopt (sb, opt_, &optval_, sizeof (optval_));
+        if (expected_error_) {
             assert (rc == -1);
-            assert (zmq_errno () == expected_error);
+            assert (zmq_errno () == expected_error_);
         } else
             assert (rc == 0);
     }
@@ -93,7 +94,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     rc = zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int));
     assert (rc == 0);
 
-    if (bounce_test) {
+    if (bounce_test_) {
         const char *endpoint = "ipc://test_filter_ipc.sock";
         int rc = zmq_bind (sb, endpoint);
         assert (rc == 0);
@@ -101,7 +102,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
         rc = zmq_connect (sc, endpoint);
         assert (rc == 0);
 
-        if (bounce_test > 0)
+        if (bounce_test_ > 0)
             bounce (sb, sc);
         else
             bounce_fail (sb, sc);

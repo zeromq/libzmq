@@ -62,11 +62,11 @@ class udp_address_t
     const ip_addr_t *target_addr () const;
 
   private:
-    ip_addr_t bind_address;
-    int bind_interface;
-    ip_addr_t target_address;
-    bool is_multicast;
-    std::string address;
+    ip_addr_t _bind_address;
+    int _bind_interface;
+    ip_addr_t _target_address;
+    bool _is_multicast;
+    std::string _address;
 };
 }
 

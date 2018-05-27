@@ -94,7 +94,7 @@ class zap_client_common_handshake_t : public zap_client_t
     state_t state;
 
   private:
-    const state_t zap_reply_ok_state;
+    const state_t _zap_reply_ok_state;
 };
 }
 

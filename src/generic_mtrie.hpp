@@ -96,16 +96,16 @@ template <typename T> class generic_mtrie_t
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
-    pipes_t *pipes;
+    pipes_t *_pipes;
 
-    unsigned char min;
-    unsigned short count;
-    unsigned short live_nodes;
+    unsigned char _min;
+    unsigned short _count;
+    unsigned short _live_nodes;
     union
     {
         class generic_mtrie_t<value_t> *node;
         class generic_mtrie_t<value_t> **table;
-    } next;
+    } _next;
 
     generic_mtrie_t (const generic_mtrie_t<value_t> &);
     const generic_mtrie_t<value_t> &

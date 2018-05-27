@@ -40,10 +40,10 @@
 #include <unistd.h>
 #endif
 
-static void zap_handler (void *ctx)
+static void zap_handler (void *ctx_)
 {
     //  Create and bind ZAP socket
-    void *zap = zmq_socket (ctx, ZMQ_REP);
+    void *zap = zmq_socket (ctx_, ZMQ_REP);
     assert (zap);
     int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
     assert (rc == 0);

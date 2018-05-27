@@ -831,7 +831,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     pollfd *pollfds = spollfds;
 
     if (nitems_ > ZMQ_POLLITEMS_DFLT) {
-        pollfds = (pollfd *) malloc (nitems_ * sizeof (pollfd));
+        pollfds = static_cast<pollfd *> (malloc (nitems_ * sizeof (pollfd)));
         alloc_assert (pollfds);
     }
 

@@ -66,7 +66,7 @@ class server_t : public socket_base_t
 
   private:
     //  Fair queueing object for inbound pipes.
-    fq_t fq;
+    fq_t _fq;
 
     struct outpipe_t
     {
@@ -75,12 +75,12 @@ class server_t : public socket_base_t
     };
 
     //  Outbound pipes indexed by the peer IDs.
-    typedef std::map<uint32_t, outpipe_t> outpipes_t;
-    outpipes_t outpipes;
+    typedef std::map<uint32_t, outpipe_t> out_pipes_t;
+    out_pipes_t _out_pipes;
 
     //  Routing IDs are generated. It's a simple increment and wrap-over
     //  algorithm. This value is the next ID to use (if not used already).
-    uint32_t next_routing_id;
+    uint32_t _next_routing_id;
 
     server_t (const server_t &);
     const server_t &operator= (const server_t &);

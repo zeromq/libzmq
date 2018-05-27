@@ -249,7 +249,7 @@ class msg_t
             char group[16];
             uint32_t routing_id;
         } delimiter;
-    } u;
+    } _u;
 };
 
 inline int close_and_return (zmq::msg_t *msg_, int echo_)

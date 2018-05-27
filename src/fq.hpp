@@ -60,26 +60,26 @@ class fq_t
   private:
     //  Inbound pipes.
     typedef array_t<pipe_t, 1> pipes_t;
-    pipes_t pipes;
+    pipes_t _pipes;
 
     //  Number of active pipes. All the active pipes are located at the
     //  beginning of the pipes array.
-    pipes_t::size_type active;
+    pipes_t::size_type _active;
 
     //  Pointer to the last pipe we received message from.
     //  NULL when no message has been received or the pipe
     //  has terminated.
-    pipe_t *last_in;
+    pipe_t *_last_in;
 
     //  Index of the next bound pipe to read a message from.
-    pipes_t::size_type current;
+    pipes_t::size_type _current;
 
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting in the current pipe.
-    bool more;
+    bool _more;
 
     //  Holds credential after the last_active_pipe has terminated.
-    blob_t saved_credential;
+    blob_t _saved_credential;
 
     fq_t (const fq_t &);
     const fq_t &operator= (const fq_t &);
