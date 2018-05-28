@@ -113,9 +113,12 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
     return names[socket_type_];
 }
 
+const size_t name_len_size = sizeof (unsigned char);
+const size_t value_len_size = sizeof (uint32_t);
+
 static size_t property_len (size_t name_len_, size_t value_len_)
 {
-    return 1 + name_len_ + 4 + value_len_;
+    return name_len_size + name_len_ + value_len_size + value_len_;
 }
 
 static size_t name_len (const char *name_)
@@ -135,12 +138,13 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr_,
     const size_t total_len = ::property_len (name_len, value_len_);
     zmq_assert (total_len <= ptr_capacity_);
 
-    *ptr_++ = static_cast<unsigned char> (name_len);
+    *ptr_ = static_cast<unsigned char> (name_len);
+    ptr_ += name_len_size;
     memcpy (ptr_, name_, name_len);
     ptr_ += name_len;
     zmq_assert (value_len_ <= 0x7FFFFFFF);
     put_uint32 (ptr_, static_cast<uint32_t> (value_len_));
-    ptr_ += 4;
+    ptr_ += value_len_size;
     memcpy (ptr_, value_, value_len_);
 
     return total_len;
@@ -228,20 +232,20 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
 
     while (bytes_left > 1) {
         const size_t name_length = static_cast<size_t> (*ptr_);
-        ptr_ += 1;
-        bytes_left -= 1;
+        ptr_ += name_len_size;
+        bytes_left -= name_len_size;
         if (bytes_left < name_length)
             break;
 
         const std::string name = std::string ((char *) ptr_, name_length);
         ptr_ += name_length;
         bytes_left -= name_length;
-        if (bytes_left < 4)
+        if (bytes_left < value_len_size)
             break;
 
         const size_t value_length = static_cast<size_t> (get_uint32 (ptr_));
-        ptr_ += 4;
-        bytes_left -= 4;
+        ptr_ += value_len_size;
+        bytes_left -= value_len_size;
         if (bytes_left < value_length)
             break;
 
