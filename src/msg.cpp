@@ -444,6 +444,43 @@ bool zmq::msg_t::is_leave () const
     return _u.base.type == type_leave;
 }
 
+bool zmq::msg_t::is_ping () const
+{
+    return (_u.base.flags & CMD_TYPE_MASK) == ping;
+}
+
+bool zmq::msg_t::is_pong () const
+{
+    return (_u.base.flags & CMD_TYPE_MASK) == pong;
+}
+
+size_t zmq::msg_t::command_body_size () const
+{
+    if (this->is_ping () || this->is_pong ())
+        return this->size () - ping_cmd_name_size;
+    if (this->is_subscribe ())
+        return this->size () - sub_cmd_name_size;
+    if (this->is_cancel ())
+        return this->size () - cancel_cmd_name_size;
+
+    return 0;
+}
+
+void *zmq::msg_t::command_body ()
+{
+    unsigned char *data = NULL;
+    if (this->is_ping () || this->is_pong ())
+        data =
+          static_cast<unsigned char *> (this->data ()) + ping_cmd_name_size;
+    if (this->is_subscribe ())
+        data = static_cast<unsigned char *> (this->data ()) + sub_cmd_name_size;
+    if (this->is_cancel ())
+        data =
+          static_cast<unsigned char *> (this->data ()) + cancel_cmd_name_size;
+
+    return data;
+}
+
 void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);

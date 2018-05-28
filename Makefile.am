@@ -445,6 +445,7 @@ test_apps = \
 	tests/test_bind_after_connect_tcp \
 	tests/test_sodium \
 	tests/test_reconnect_ivl \
+	tests/test_mock_pub_sub \
 	tests/test_socket_null
 
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
@@ -698,6 +699,10 @@ tests_test_socket_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
 tests_test_reconnect_ivl_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_reconnect_ivl_CPPFLAGS = ${UNITY_CPPFLAGS}
+
+tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
+tests_test_mock_pub_sub_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_mock_pub_sub_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 if HAVE_CURVE
 

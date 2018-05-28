@@ -147,6 +147,7 @@ test_app_meta
 test_security_zap
 test_socket_null
 test_xpub_verbose
+test_mock_pub_sub
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller

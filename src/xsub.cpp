@@ -96,18 +96,32 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     size_t size = msg_->size ();
     unsigned char *data = static_cast<unsigned char *> (msg_->data ());
 
-    if (size > 0 && *data == 1) {
+    if (msg_->is_subscribe () || (size > 0 && *data == 1)) {
         //  Process subscribe message
         //  This used to filter out duplicate subscriptions,
         //  however this is alread done on the XPUB side and
         //  doing it here as well breaks ZMQ_XPUB_VERBOSE
         //  when there are forwarding devices involved.
-        _subscriptions.add (data + 1, size - 1);
+        if (msg_->is_subscribe ()) {
+            data = static_cast<unsigned char *> (msg_->command_body ());
+            size = msg_->command_body_size ();
+        } else {
+            data = data + 1;
+            size = size - 1;
+        }
+        _subscriptions.add (data, size);
         return _dist.send_to_all (msg_);
     }
-    if (size > 0 && *data == 0) {
+    if (msg_->is_cancel () || (size > 0 && *data == 0)) {
         //  Process unsubscribe message
-        if (_subscriptions.rm (data + 1, size - 1))
+        if (msg_->is_cancel ()) {
+            data = static_cast<unsigned char *> (msg_->command_body ());
+            size = msg_->command_body_size ();
+        } else {
+            data = data + 1;
+            size = size - 1;
+        }
+        if (_subscriptions.rm (data, size))
             return _dist.send_to_all (msg_);
     } else
         //  User message sent upstream to XPUB socket
