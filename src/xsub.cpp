@@ -241,16 +241,8 @@ void zmq::xsub_t::send_subscription (unsigned char *data_,
 
     //  Create the subscription message.
     msg_t msg;
-    int rc = msg.init_size (size_ + 1);
+    int rc = msg.init_subscribe (size_, data_);
     errno_assert (rc == 0);
-    unsigned char *data = static_cast<unsigned char *> (msg.data ());
-    data[0] = 1;
-
-    //  We explicitly allow a NULL subscription with size zero
-    if (size_) {
-        assert (data_);
-        memcpy (data + 1, data_, size_);
-    }
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);

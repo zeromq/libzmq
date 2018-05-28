@@ -212,6 +212,40 @@ int zmq::msg_t::init_leave ()
     return 0;
 }
 
+int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
+{
+    int rc = init_size (size_ + sub_cmd_name_size);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::command);
+        set_flags (zmq::msg_t::subscribe);
+        memcpy (data (), "\x9SUBSCRIBE", sub_cmd_name_size);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic);
+            memcpy (command_body (), topic, size_);
+        }
+    }
+    return rc;
+}
+
+int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
+{
+    int rc = init_size (size_ + cancel_cmd_name_size);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::command);
+        set_flags (zmq::msg_t::cancel);
+        memcpy (data (), "\6CANCEL", cancel_cmd_name_size);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic);
+            memcpy (command_body (), topic, size_);
+        }
+    }
+    return rc;
+}
+
 int zmq::msg_t::close ()
 {
     //  Check the validity of the message.
@@ -602,5 +636,22 @@ zmq::atomic_counter_t *zmq::msg_t::refcnt ()
         default:
             zmq_assert (false);
             return NULL;
+    }
+}
+
+void zmq::msg_t::shrink (const size_t new_size_)
+{
+    if (is_vsm ()) {
+        assert (_u.vsm.size > static_cast<unsigned char> (new_size_));
+        _u.vsm.size = static_cast<unsigned char> (new_size_);
+    } else if (is_cmsg ()) {
+        assert (_u.cmsg.size > new_size_);
+        _u.cmsg.size = new_size_;
+    } else if (is_lmsg ()) {
+        assert (_u.lmsg.content->size > new_size_);
+        _u.lmsg.content->size = new_size_;
+    } else if (is_zcmsg ()) {
+        assert (_u.cmsg.size > new_size_);
+        _u.cmsg.size = new_size_;
     }
 }

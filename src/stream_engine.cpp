@@ -95,6 +95,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
     _has_timeout_timer (false),
     _has_heartbeat_timer (false),
     _heartbeat_timeout (0),
+    _sub_cancel_as_commands (false),
     _socket (NULL)
 {
     int rc = _tx_msg.init ();
@@ -651,6 +652,12 @@ bool zmq::stream_engine_t::handshake ()
           v2_decoder_t (in_batch_size, _options.maxmsgsize, _options.zero_copy);
         alloc_assert (_decoder);
 
+        // ZMTP >= 3.1? Use commands for sub/unsub. Disabled by default.
+        if (_greeting_recv[revision_pos] > 3
+            || (_greeting_recv[revision_pos] == 3
+                && _greeting_recv[revision_pos + 1] >= 1))
+            _sub_cancel_as_commands = true;
+
         if (_options.mechanism == ZMQ_NULL
             && memcmp (_greeting_recv + 12,
                        "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20)
@@ -917,6 +924,51 @@ int zmq::stream_engine_t::pull_and_encode (msg_t *msg_)
 
     if (_session->pull_msg (msg_) == -1)
         return -1;
+
+    //  When speaking to a ZMTP < 3.1 peer we need to downgrade to old-style
+    //  sub/cancel. But it cannot be done from the sub/xsub code itself, as
+    //  that runs in the application thread, and sub/cancel message might get
+    //  queued long before the engine has actually ran and established what's on
+    //  the other side. Also there is no way simple and clean way to get
+    //  per-peer information from the application thread in the sub/xsub code,
+    //  since the engine is per-peer.
+    //  So hack it here - shrinking the message should always be safe, as it
+    //  will simply not use some of the allocated buffer space. The pointer to
+    //  it does not change.
+    //
+    //  This is the critical path, so be careful. The message was just pulled in
+    //  and the flags byte was just checked, so it should be hot in the cache.
+    //  So check the flags first, and only then check the engine class variable.
+    if (unlikely ((msg_->flags () & msg_t::command)
+                  && (msg_->is_subscribe () || msg_->is_cancel ())
+                  && !_sub_cancel_as_commands)) {
+        //  We need to change the content, but only for this session, as others
+        //  might be ZMTP 3.1+, so create a new message with a separate buffer
+        //  if the message is large enough to have one.
+        if (!msg_->is_vsm ()) {
+            msg_t copy;
+            assert (copy.init_size (msg_->size ()) == 0);
+            memcpy (copy.data (), msg_->data (), copy.size ());
+            msg_->move (copy);
+        }
+        unsigned char *data = static_cast<unsigned char *> (msg_->data ());
+        msg_->reset_flags (msg_t::command);
+        if (msg_->is_subscribe ()) {
+            *data = 1;
+            msg_->reset_flags (msg_t::subscribe);
+            msg_->shrink (msg_->size () - msg_t::sub_cmd_name_size + 1);
+            if (msg_->size () > 1)
+                memmove (data + 1, data + msg_t::sub_cmd_name_size,
+                         msg_->size () - 1);
+        } else {
+            *data = 0;
+            msg_->reset_flags (msg_t::cancel);
+            msg_->shrink (msg_->size () - msg_t::cancel_cmd_name_size + 1);
+            if (msg_->size () > 1)
+                memmove (data + 1, data + msg_t::cancel_cmd_name_size,
+                         msg_->size () - 1);
+        }
+    }
     if (_mechanism->encode (msg_) == -1)
         return -1;
     return 0;

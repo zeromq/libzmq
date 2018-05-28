@@ -108,6 +108,8 @@ class msg_t
     int init_delimiter ();
     int init_join ();
     int init_leave ();
+    int init_subscribe (const size_t size_, const unsigned char *topic);
+    int init_cancel (const size_t size_, const unsigned char *topic);
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
@@ -150,6 +152,9 @@ class msg_t
     const char *group ();
     int set_group (const char *group_);
     int set_group (const char *, size_t length_);
+
+    //  Sets a new size. Does not change anything else. MUST be smaller.
+    void shrink (const size_t new_size_);
 
     //  After calling this function you can copy the message in POD-style
     //  refs_ times. No need to call copy.

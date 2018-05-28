@@ -228,6 +228,9 @@ class stream_engine_t : public io_object_t, public i_engine
     bool _has_heartbeat_timer;
     int _heartbeat_timeout;
 
+    //  Whether to use commands to subscribe/cancel (ZMTP 3.1)
+    bool _sub_cancel_as_commands;
+
     // Socket
     zmq::socket_base_t *_socket;
 
