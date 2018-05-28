@@ -99,11 +99,10 @@ static int sleep_ms (unsigned int ms_)
 static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
 {
     unsigned int ms_so_far = 0;
-    unsigned int step_ms = max_ms_ / 10;
-    if (step_ms < 1)
-        step_ms = 1;
-    if (step_ms > 100)
-        step_ms = 100;
+    const unsigned int min_step_ms = 1;
+    const unsigned int max_step_ms = 100;
+    const unsigned int step_ms =
+      std::min (std::max (min_step_ms, max_ms_ / 10), max_step_ms);
 
     int rc = 0; // do not sleep on first attempt
     do {
