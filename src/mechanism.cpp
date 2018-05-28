@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include <string.h>
+#include <limits.h>
 
 #include "mechanism.hpp"
 #include "options.hpp"
@@ -124,7 +125,7 @@ static size_t property_len (size_t name_len_, size_t value_len_)
 static size_t name_len (const char *name_)
 {
     const size_t name_len = strlen (name_);
-    zmq_assert (name_len <= 255);
+    zmq_assert (name_len <= UCHAR_MAX);
     return name_len;
 }
 

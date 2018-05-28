@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include <string.h>
+#include <limits.h>
 #include <set>
 
 #include "options.hpp"
@@ -491,7 +492,7 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_TCP_ACCEPT_FILTER: {
             std::string filter_str;
             int rc = do_setsockopt_string_allow_empty_strict (
-              optval_, optvallen_, &filter_str, 255);
+              optval_, optvallen_, &filter_str, UCHAR_MAX);
             if (rc == 0) {
                 if (filter_str.empty ()) {
                     tcp_accept_filters.clear ();
@@ -559,7 +560,7 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_ZAP_DOMAIN:
             return do_setsockopt_string_allow_empty_relaxed (
-              optval_, optvallen_, &zap_domain, 255);
+              optval_, optvallen_, &zap_domain, UCHAR_MAX);
             break;
 
             //  If curve encryption isn't built, these options provoke EINVAL
