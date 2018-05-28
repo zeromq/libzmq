@@ -70,8 +70,6 @@ zmq::ctx_t::ctx_t () :
     _starting (true),
     _terminating (false),
     _reaper (NULL),
-    _slot_count (0),
-    _slots (NULL),
     _max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
     _max_msgsz (INT_MAX),
     _io_thread_count (ZMQ_IO_THREADS_DFLT),
@@ -115,10 +113,8 @@ zmq::ctx_t::~ctx_t ()
     //  Deallocate the reaper thread object.
     LIBZMQ_DELETE (_reaper);
 
-    //  Deallocate the array of mailboxes. No special work is
-    //  needed as mailboxes themselves were deallocated with their
+    //  The mailboxes in _slots themselves were deallocated with their
     //  corresponding io_thread/socket objects.
-    free (_slots);
 
     //  De-initialise crypto library, if needed.
     zmq::random_close ();
@@ -283,19 +279,23 @@ int zmq::ctx_t::get (int option_)
 
 bool zmq::ctx_t::start ()
 {
-    //  Initialise the array of mailboxes. Additional three slots are for
+    //  Initialise the array of mailboxes. Additional two slots are for
     //  zmq_ctx_term thread and reaper thread.
     _opt_sync.lock ();
-    int mazmq = _max_sockets;
-    int ios = _io_thread_count;
+    const int term_and_reaper_threads_count = 2;
+    const int mazmq = _max_sockets;
+    const int ios = _io_thread_count;
     _opt_sync.unlock ();
-    _slot_count = mazmq + ios + 2;
-    _slots =
-      static_cast<i_mailbox **> (malloc (sizeof (i_mailbox *) * _slot_count));
-    if (!_slots) {
-        errno = ENOMEM;
-        goto fail;
+    int slot_count = mazmq + ios + term_and_reaper_threads_count;
+    try {
+        _slots.reserve (slot_count);
+        _empty_slots.reserve (slot_count - term_and_reaper_threads_count);
     }
+    catch (const std::bad_alloc &) {
+        errno = ENOMEM;
+        return false;
+    }
+    _slots.resize (term_and_reaper_threads_count);
 
     //  Initialise the infrastructure for zmq_ctx_term thread.
     _slots[term_tid] = &_term_mailbox;
@@ -312,12 +312,10 @@ bool zmq::ctx_t::start ()
     _reaper->start ();
 
     //  Create I/O thread objects and launch them.
-    for (int32_t i = static_cast<int32_t> (_slot_count) - 1;
-         i >= static_cast<int32_t> (2); i--) {
-        _slots[i] = NULL;
-    }
+    _slots.resize (slot_count, NULL);
 
-    for (int i = 2; i != ios + 2; i++) {
+    for (int i = term_and_reaper_threads_count;
+         i != ios + term_and_reaper_threads_count; i++) {
         io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
         if (!io_thread) {
             errno = ENOMEM;
@@ -333,8 +331,8 @@ bool zmq::ctx_t::start ()
     }
 
     //  In the unused part of the slot array, create a list of empty slots.
-    for (int32_t i = static_cast<int32_t> (_slot_count) - 1;
-         i >= static_cast<int32_t> (ios) + 2; i--) {
+    for (int32_t i = static_cast<int32_t> (_slots.size ()) - 1;
+         i >= static_cast<int32_t> (ios) + term_and_reaper_threads_count; i--) {
         _empty_slots.push_back (i);
     }
 
@@ -347,10 +345,7 @@ fail_cleanup_reaper:
     _reaper = NULL;
 
 fail_cleanup_slots:
-    free (_slots);
-    _slots = NULL;
-
-fail:
+    _slots.clear ();
     return false;
 }
 

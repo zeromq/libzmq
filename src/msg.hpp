@@ -117,6 +117,7 @@ class msg_t
     bool is_leave () const;
     bool is_vsm () const;
     bool is_cmsg () const;
+    bool is_lmsg () const;
     bool is_zcmsg () const;
     uint32_t get_routing_id ();
     int set_routing_id (uint32_t routing_id_);

@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include <string.h>
+#include <limits.h>
 
 #include "mechanism.hpp"
 #include "options.hpp"
@@ -64,7 +65,7 @@ void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
     _user_id.set (static_cast<const unsigned char *> (data_), size_);
     zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_USER_ID),
-      std::string ((char *) data_, size_));
+      std::string (reinterpret_cast<const char *> (data_), size_));
 }
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const
@@ -113,15 +114,18 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
     return names[socket_type_];
 }
 
+const size_t name_len_size = sizeof (unsigned char);
+const size_t value_len_size = sizeof (uint32_t);
+
 static size_t property_len (size_t name_len_, size_t value_len_)
 {
-    return 1 + name_len_ + 4 + value_len_;
+    return name_len_size + name_len_ + value_len_size + value_len_;
 }
 
 static size_t name_len (const char *name_)
 {
     const size_t name_len = strlen (name_);
-    zmq_assert (name_len <= 255);
+    zmq_assert (name_len <= UCHAR_MAX);
     return name_len;
 }
 
@@ -135,12 +139,13 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr_,
     const size_t total_len = ::property_len (name_len, value_len_);
     zmq_assert (total_len <= ptr_capacity_);
 
-    *ptr_++ = static_cast<unsigned char> (name_len);
+    *ptr_ = static_cast<unsigned char> (name_len);
+    ptr_ += name_len_size;
     memcpy (ptr_, name_, name_len);
     ptr_ += name_len;
     zmq_assert (value_len_ <= 0x7FFFFFFF);
     put_uint32 (ptr_, static_cast<uint32_t> (value_len_));
-    ptr_ += 4;
+    ptr_ += value_len_size;
     memcpy (ptr_, value_, value_len_);
 
     return total_len;
@@ -228,20 +233,21 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
 
     while (bytes_left > 1) {
         const size_t name_length = static_cast<size_t> (*ptr_);
-        ptr_ += 1;
-        bytes_left -= 1;
+        ptr_ += name_len_size;
+        bytes_left -= name_len_size;
         if (bytes_left < name_length)
             break;
 
-        const std::string name = std::string ((char *) ptr_, name_length);
+        const std::string name =
+          std::string (reinterpret_cast<const char *> (ptr_), name_length);
         ptr_ += name_length;
         bytes_left -= name_length;
-        if (bytes_left < 4)
+        if (bytes_left < value_len_size)
             break;
 
         const size_t value_length = static_cast<size_t> (get_uint32 (ptr_));
-        ptr_ += 4;
-        bytes_left -= 4;
+        ptr_ += value_len_size;
+        bytes_left -= value_len_size;
         if (bytes_left < value_length)
             break;
 
@@ -264,7 +270,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         }
         (zap_flag_ ? zap_properties : zmtp_properties)
           .ZMQ_MAP_INSERT_OR_EMPLACE (
-            name, std::string ((char *) value, value_length));
+            name,
+            std::string (reinterpret_cast<const char *> (value), value_length));
     }
     if (bytes_left > 0) {
         errno = EPROTO;

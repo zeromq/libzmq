@@ -146,7 +146,7 @@ void zmq::thread_t::
 {
     int priority =
       (_thread_priority >= 0 ? _thread_priority : DEFAULT_PRIORITY);
-    priority = (priority < 255 ? priority : DEFAULT_PRIORITY);
+    priority = (priority < UCHAR_MAX ? priority : DEFAULT_PRIORITY);
     if (_descriptor != NULL || _descriptor > 0) {
         taskPrioritySet (_descriptor, priority);
     }

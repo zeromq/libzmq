@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits>
+#include <limits.h>
 
 #include "decoder.hpp"
 #include "v1_decoder.hpp"
@@ -57,10 +58,10 @@ zmq::v1_decoder_t::~v1_decoder_t ()
 
 int zmq::v1_decoder_t::one_byte_size_ready (unsigned char const *)
 {
-    //  First byte of size is read. If it is 0xff read 8-byte size.
+    //  First byte of size is read. If it is UCHAR_MAX (0xff) read 8-byte size.
     //  Otherwise allocate the buffer for message data and read the
     //  message data into it.
-    if (*_tmpbuf == 0xff)
+    if (*_tmpbuf == UCHAR_MAX)
         next_step (_tmpbuf, 8, &v1_decoder_t::eight_byte_size_ready);
     else {
         //  There has to be at least one byte (the flags) in the message).

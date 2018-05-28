@@ -48,6 +48,8 @@
 #include <stdlib.h>
 #endif
 
+#include <limits.h>
+
 zmq::tcp_address_t::tcp_address_t () : _has_src_addr (false)
 {
     memset (&_address, 0, sizeof (_address));
@@ -227,17 +229,18 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
         return rc;
 
     // Parse the cidr mask number.
+    const int full_mask_ipv4 = sizeof (_address.ipv4.sin_addr) * CHAR_BIT;
+    const int full_mask_ipv6 = sizeof (_address.ipv6.sin6_addr) * CHAR_BIT;
     if (mask_str.empty ()) {
-        if (_address.family () == AF_INET6)
-            _address_mask = 128;
-        else
-            _address_mask = 32;
+        _address_mask =
+          _address.family () == AF_INET6 ? full_mask_ipv6 : full_mask_ipv4;
     } else if (mask_str == "0")
         _address_mask = 0;
     else {
         const int mask = atoi (mask_str.c_str ());
-        if ((mask < 1) || (_address.family () == AF_INET6 && mask > 128)
-            || (_address.family () != AF_INET6 && mask > 32)) {
+        if ((mask < 1)
+            || (_address.family () == AF_INET6 && mask > full_mask_ipv6)
+            || (_address.family () != AF_INET6 && mask > full_mask_ipv4)) {
             errno = EINVAL;
             return -1;
         }

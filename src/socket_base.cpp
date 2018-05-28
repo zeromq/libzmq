@@ -1731,14 +1731,14 @@ void zmq::socket_base_t::monitor_event (int event_,
 
     if (_monitor_socket) {
         //  Send event in first frame
+        const uint16_t event = static_cast<uint16_t> (event_);
+        const uint32_t value = static_cast<uint32_t> (value_);
         zmq_msg_t msg;
-        zmq_msg_init_size (&msg, 6);
+        zmq_msg_init_size (&msg, sizeof (event) + sizeof (value));
         uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
         //  Avoid dereferencing uint32_t on unaligned address
-        uint16_t event = static_cast<uint16_t> (event_);
-        uint32_t value = static_cast<uint32_t> (value_);
         memcpy (data + 0, &event, sizeof (event));
-        memcpy (data + 2, &value, sizeof (value));
+        memcpy (data + sizeof (event), &value, sizeof (value));
         zmq_sendmsg (_monitor_socket, &msg, ZMQ_SNDMORE);
 
         //  Send address in second frame

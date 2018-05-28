@@ -198,8 +198,7 @@ class ctx_t : public thread_ctx_t
     io_threads_t _io_threads;
 
     //  Array of pointers to mailboxes for both application and I/O threads.
-    uint32_t _slot_count;
-    i_mailbox **_slots;
+    std::vector<i_mailbox *> _slots;
 
     //  Mailbox for zmq_ctx_term thread.
     mailbox_t _term_mailbox;

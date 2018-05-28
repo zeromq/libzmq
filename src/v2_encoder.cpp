@@ -34,6 +34,8 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
+#include <limits.h>
+
 zmq::v2_encoder_t::v2_encoder_t (size_t bufsize_) :
     encoder_base_t<v2_encoder_t> (bufsize_)
 {
@@ -52,7 +54,7 @@ void zmq::v2_encoder_t::message_ready ()
     protocol_flags = 0;
     if (in_progress->flags () & msg_t::more)
         protocol_flags |= v2_protocol_t::more_flag;
-    if (in_progress->size () > 255)
+    if (in_progress->size () > UCHAR_MAX)
         protocol_flags |= v2_protocol_t::large_flag;
     if (in_progress->flags () & msg_t::command)
         protocol_flags |= v2_protocol_t::command_flag;
@@ -61,7 +63,7 @@ void zmq::v2_encoder_t::message_ready ()
     //  the length is encoded as 8-bit unsigned integer. For larger
     //  messages, 64-bit unsigned integer in network byte order is used.
     const size_t size = in_progress->size ();
-    if (unlikely (size > 255)) {
+    if (unlikely (size > UCHAR_MAX)) {
         put_uint64 (_tmp_buf + 1, size);
         next_step (_tmp_buf, 9, &v2_encoder_t::size_ready, false);
     } else {

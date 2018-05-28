@@ -38,6 +38,13 @@
 #include "session_base.hpp"
 #include "null_mechanism.hpp"
 
+const char error_command_name[] = "\5ERROR";
+const size_t error_command_name_len = sizeof (error_command_name) - 1;
+const size_t error_reason_len_size = 1;
+
+const char ready_command_name[] = "\5READY";
+const size_t ready_command_name_len = sizeof (ready_command_name) - 1;
+
 zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const std::string &peer_address_,
                                          const options_t &options_) :
@@ -96,20 +103,24 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         _error_command_sent = true;
         if (status_code != "300") {
             const size_t status_code_len = 3;
-            const int rc = msg_->init_size (6 + 1 + status_code_len);
+            const int rc = msg_->init_size (
+              error_command_name_len + error_reason_len_size + status_code_len);
             zmq_assert (rc == 0);
             unsigned char *msg_data =
               static_cast<unsigned char *> (msg_->data ());
-            memcpy (msg_data, "\5ERROR", 6);
-            msg_data[6] = status_code_len;
-            memcpy (msg_data + 7, status_code.c_str (), status_code_len);
+            memcpy (msg_data, error_command_name, error_command_name_len);
+            msg_data += error_command_name_len;
+            *msg_data = status_code_len;
+            msg_data += error_reason_len_size;
+            memcpy (msg_data, status_code.c_str (), status_code_len);
             return 0;
         }
         errno = EAGAIN;
         return -1;
     }
 
-    make_command_with_basic_properties (msg_, "\5READY", 6);
+    make_command_with_basic_properties (msg_, ready_command_name,
+                                        ready_command_name_len);
 
     _ready_command_sent = true;
 
@@ -130,9 +141,11 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     const size_t data_size = msg_->size ();
 
     int rc = 0;
-    if (data_size >= 6 && !memcmp (cmd_data, "\5READY", 6))
+    if (data_size >= ready_command_name_len
+        && !memcmp (cmd_data, ready_command_name, ready_command_name_len))
         rc = process_ready_command (cmd_data, data_size);
-    else if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
+    else if (data_size >= error_command_name_len
+             && !memcmp (cmd_data, error_command_name, error_command_name_len))
         rc = process_error_command (cmd_data, data_size);
     else {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -154,13 +167,16 @@ int zmq::null_mechanism_t::process_ready_command (
   const unsigned char *cmd_data_, size_t data_size_)
 {
     _ready_command_received = true;
-    return parse_metadata (cmd_data_ + 6, data_size_ - 6);
+    return parse_metadata (cmd_data_ + ready_command_name_len,
+                           data_size_ - ready_command_name_len);
 }
 
 int zmq::null_mechanism_t::process_error_command (
   const unsigned char *cmd_data_, size_t data_size_)
 {
-    if (data_size_ < 7) {
+    const size_t fixed_prefix_size =
+      error_command_name_len + error_reason_len_size;
+    if (data_size_ < fixed_prefix_size) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
@@ -168,8 +184,9 @@ int zmq::null_mechanism_t::process_error_command (
         errno = EPROTO;
         return -1;
     }
-    const size_t error_reason_len = static_cast<size_t> (cmd_data_[6]);
-    if (error_reason_len > data_size_ - 7) {
+    const size_t error_reason_len =
+      static_cast<size_t> (cmd_data_[error_command_name_len]);
+    if (error_reason_len > data_size_ - fixed_prefix_size) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
@@ -177,7 +194,8 @@ int zmq::null_mechanism_t::process_error_command (
         errno = EPROTO;
         return -1;
     }
-    const char *error_reason = reinterpret_cast<const char *> (cmd_data_) + 7;
+    const char *error_reason =
+      reinterpret_cast<const char *> (cmd_data_) + fixed_prefix_size;
     handle_error_reason (error_reason, error_reason_len);
     _error_command_received = true;
     return 0;

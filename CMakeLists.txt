@@ -740,6 +740,7 @@ set (cxx-sources
 		pgm_socket.hpp
 		pipe.hpp
 		plain_client.hpp
+		plain_common.hpp
 		plain_server.hpp
 		poll.hpp
 		poller.hpp

@@ -218,10 +218,13 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     //  Trim any square brackets surrounding the address. Used for
     //  IPv6 addresses to remove the confusion with the port
-    //  delimiter. Should we validate that the brackets are present if
+    //  delimiter.
+    //  TODO Should we validate that the brackets are present if
     //  'addr' contains ':' ?
-    if (addr.size () >= 2 && addr[0] == '[' && addr[addr.size () - 1] == ']') {
-        addr = addr.substr (1, addr.size () - 2);
+    const size_t brackets_length = 2;
+    if (addr.size () >= brackets_length && addr[0] == '['
+        && addr[addr.size () - 1] == ']') {
+        addr = addr.substr (1, addr.size () - brackets_length);
     }
 
     //  Look for an interface name / zone_id in the address

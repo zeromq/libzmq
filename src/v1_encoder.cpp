@@ -33,6 +33,8 @@
 #include "msg.hpp"
 #include "wire.hpp"
 
+#include <limits.h>
+
 zmq::v1_encoder_t::v1_encoder_t (size_t bufsize_) :
     encoder_base_t<v1_encoder_t> (bufsize_)
 {
@@ -62,12 +64,12 @@ void zmq::v1_encoder_t::message_ready ()
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte
     //  message size. In both cases 'flags' field follows.
-    if (size < 255) {
+    if (size < UCHAR_MAX) {
         _tmpbuf[0] = static_cast<unsigned char> (size);
         _tmpbuf[1] = (in_progress->flags () & msg_t::more);
         next_step (_tmpbuf, 2, &v1_encoder_t::size_ready, false);
     } else {
-        _tmpbuf[0] = 0xff;
+        _tmpbuf[0] = UCHAR_MAX;
         put_uint64 (_tmpbuf + 1, size);
         _tmpbuf[9] = (in_progress->flags () & msg_t::more);
         next_step (_tmpbuf, 10, &v1_encoder_t::size_ready, false);

@@ -35,6 +35,12 @@
 
 namespace zmq
 {
+const char zap_version[] = "1.0";
+const size_t zap_version_len = sizeof (zap_version) - 1;
+
+const char id[] = "1";
+const size_t id_len = sizeof (id) - 1;
+
 zap_client_t::zap_client_t (session_base_t *const session_,
                             const std::string &peer_address_,
                             const options_t &options_) :
@@ -72,17 +78,17 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     errno_assert (rc == 0);
 
     //  Version frame
-    rc = msg.init_size (3);
+    rc = msg.init_size (zap_version_len);
     errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
+    memcpy (msg.data (), zap_version, zap_version_len);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
     //  Request ID frame
-    rc = msg.init_size (1);
+    rc = msg.init_size (id_len);
     errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
+    memcpy (msg.data (), id, id_len);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -136,15 +142,16 @@ void zap_client_t::send_zap_request (const char *mechanism_,
 int zap_client_t::receive_and_process_zap_reply ()
 {
     int rc = 0;
-    msg_t msg[7]; //  ZAP reply consists of 7 frames
+    const size_t zap_reply_frame_count = 7;
+    msg_t msg[zap_reply_frame_count];
 
     //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
+    for (size_t i = 0; i < zap_reply_frame_count; i++) {
         rc = msg[i].init ();
         errno_assert (rc == 0);
     }
 
-    for (int i = 0; i < 7; i++) {
+    for (size_t i = 0; i < zap_reply_frame_count; i++) {
         rc = session->read_zap_msg (&msg[i]);
         if (rc == -1) {
             if (errno == EAGAIN) {
@@ -152,7 +159,8 @@ int zap_client_t::receive_and_process_zap_reply ()
             }
             return close_and_return (msg, -1);
         }
-        if ((msg[i].flags () & msg_t::more) == (i < 6 ? 0 : msg_t::more)) {
+        if ((msg[i].flags () & msg_t::more)
+            == (i < zap_reply_frame_count - 1 ? 0 : msg_t::more)) {
             session->get_socket ()->event_handshake_failed_protocol (
               session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
             errno = EPROTO;
@@ -170,7 +178,8 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Version frame
-    if (msg[1].size () != 3 || memcmp (msg[1].data (), "1.0", 3)) {
+    if (msg[1].size () != zap_version_len
+        || memcmp (msg[1].data (), zap_version, zap_version_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
         errno = EPROTO;
@@ -178,7 +187,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Request id frame
-    if (msg[2].size () != 1 || memcmp (msg[2].data (), "1", 1)) {
+    if (msg[2].size () != id_len || memcmp (msg[2].data (), id, id_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
         errno = EPROTO;
@@ -214,7 +223,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Close all reply frames
-    for (int i = 0; i < 7; i++) {
+    for (size_t i = 0; i < zap_reply_frame_count; i++) {
         const int rc2 = msg[i].close ();
         errno_assert (rc2 == 0);
     }

@@ -27,40 +27,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
-#define __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
-
-#include "options.hpp"
-#include "zap_client.hpp"
+#ifndef __ZMQ_PLAIN_COMMON_HPP_INCLUDED__
+#define __ZMQ_PLAIN_COMMON_HPP_INCLUDED__
 
 namespace zmq
 {
-class msg_t;
-class session_base_t;
+const char hello_prefix[] = "\x05WELCOME";
+const size_t hello_prefix_len = sizeof (hello_prefix) - 1;
 
-class plain_server_t : public zap_client_common_handshake_t
-{
-  public:
-    plain_server_t (session_base_t *session_,
-                    const std::string &peer_address_,
-                    const options_t &options_);
-    virtual ~plain_server_t ();
+const char welcome_prefix[] = "\x07WELCOME";
+const size_t welcome_prefix_len = sizeof (welcome_prefix) - 1;
 
-    // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
+const char initiate_prefix[] = "\x08INITIATE";
+const size_t initiate_prefix_len = sizeof (initiate_prefix) - 1;
 
-  private:
-    void produce_welcome (msg_t *msg_) const;
-    void produce_ready (msg_t *msg_) const;
-    void produce_error (msg_t *msg_) const;
+const char ready_prefix[] = "\x05READY";
+const size_t ready_prefix_len = sizeof (ready_prefix) - 1;
 
-    int process_hello (msg_t *msg_);
-    int process_initiate (msg_t *msg_);
+const char error_prefix[] = "\x05ERROR";
+const size_t error_prefix_len = sizeof (error_prefix) - 1;
 
-    void send_zap_request (const std::string &username_,
-                           const std::string &password_);
-};
+const size_t brief_len_size = sizeof (char);
 }
 
 #endif

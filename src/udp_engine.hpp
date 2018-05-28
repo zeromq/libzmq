@@ -62,8 +62,8 @@ class udp_engine_t : public io_object_t, public i_engine
     const struct sockaddr *_out_address;
     socklen_t _out_address_len;
 
-    unsigned char _out_buffer[MAX_UDP_MSG];
-    unsigned char _in_buffer[MAX_UDP_MSG];
+    char _out_buffer[MAX_UDP_MSG];
+    char _in_buffer[MAX_UDP_MSG];
     bool _send_enabled;
     bool _recv_enabled;
 };

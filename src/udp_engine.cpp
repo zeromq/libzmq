@@ -362,8 +362,8 @@ void zmq::udp_engine_t::out_event ()
         msg_t body_msg;
         rc = _session->pull_msg (&body_msg);
 
-        size_t group_size = group_msg.size ();
-        size_t body_size = body_msg.size ();
+        const size_t group_size = group_msg.size ();
+        const size_t body_size = body_msg.size ();
         size_t size;
 
         if (_options.raw_socket) {
@@ -400,12 +400,11 @@ void zmq::udp_engine_t::out_event ()
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = sendto (_fd, reinterpret_cast<const char *> (_out_buffer),
-                     static_cast<int> (size), 0, _out_address,
+        rc = sendto (_fd, _out_buffer, static_cast<int> (size), 0, _out_address,
                      static_cast<int> (_out_address_len));
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
-        rc = sendto (_fd, (caddr_t) _out_buffer, size, 0,
+        rc = sendto (_fd, reinterpret_cast<caddr_t> (_out_buffer), size, 0,
                      (sockaddr *) _out_address, (int) _out_address_len);
         errno_assert (rc != -1);
 #else
@@ -440,7 +439,7 @@ void zmq::udp_engine_t::in_event ()
     socklen_t in_addrlen = sizeof (sockaddr_storage);
 #ifdef ZMQ_HAVE_WINDOWS
     int nbytes =
-      recvfrom (_fd, reinterpret_cast<char *> (_in_buffer), MAX_UDP_MSG, 0,
+      recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
                 reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
     const int last_error = WSAGetLastError ();
     if (nbytes == SOCKET_ERROR) {
@@ -449,7 +448,7 @@ void zmq::udp_engine_t::in_event ()
         return;
     }
 #elif defined ZMQ_HAVE_VXWORKS
-    int nbytes = recvfrom (_fd, (char *) _in_buffer, MAX_UDP_MSG, 0,
+    int nbytes = recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
                            (sockaddr *) &in_address, (int *) &in_addrlen);
     if (nbytes == -1) {
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
@@ -483,9 +482,10 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes;
         body_offset = 0;
     } else {
-        const char *group_buffer =
-          reinterpret_cast<const char *> (_in_buffer) + 1;
-        int group_size = _in_buffer[0];
+        // TODO in out_event, the group size is an *unsigned* char. what is
+        // the maximum value?
+        const char *group_buffer = _in_buffer + 1;
+        const int group_size = _in_buffer[0];
 
         rc = msg.init_size (group_size);
         errno_assert (rc == 0);

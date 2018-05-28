@@ -36,6 +36,7 @@
 #include "err.hpp"
 #include "plain_server.hpp"
 #include "wire.hpp"
+#include "plain_common.hpp"
 
 zmq::plain_server_t::plain_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
@@ -63,19 +64,16 @@ int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
 
     switch (state) {
         case sending_welcome:
-            rc = produce_welcome (msg_);
-            if (rc == 0)
-                state = waiting_for_initiate;
+            produce_welcome (msg_);
+            state = waiting_for_initiate;
             break;
         case sending_ready:
-            rc = produce_ready (msg_);
-            if (rc == 0)
-                state = ready;
+            produce_ready (msg_);
+            state = ready;
             break;
         case sending_error:
-            rc = produce_error (msg_);
-            if (rc == 0)
-                state = error_sent;
+            produce_error (msg_);
+            state = error_sent;
             break;
         default:
             errno = EAGAIN;
@@ -118,17 +116,18 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (rc == -1)
         return -1;
 
-    const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
+    const char *ptr = static_cast<char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
+    if (bytes_left < hello_prefix_len
+        || memcmp (ptr, hello_prefix, hello_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
-    ptr += 6;
-    bytes_left -= 6;
+    ptr += hello_prefix_len;
+    bytes_left -= hello_prefix_len;
 
     if (bytes_left < 1) {
         //  PLAIN I: invalid PLAIN client, did not send username
@@ -149,7 +148,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    const std::string username = std::string ((char *) ptr, username_length);
+    const std::string username = std::string (ptr, username_length);
     ptr += username_length;
     bytes_left -= username_length;
     if (bytes_left < 1) {
@@ -172,7 +171,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
-    const std::string password = std::string ((char *) ptr, password_length);
+    const std::string password = std::string (ptr, password_length);
     ptr += password_length;
     bytes_left -= password_length;
     if (bytes_left > 0) {
@@ -202,12 +201,11 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
-int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
+void zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 {
-    const int rc = msg_->init_size (8);
+    const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
-    memcpy (msg_->data (), "\x07WELCOME", 8);
-    return 0;
+    memcpy (msg_->data (), welcome_prefix, welcome_prefix_len);
 }
 
 int zmq::plain_server_t::process_initiate (msg_t *msg_)
@@ -215,35 +213,39 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     const size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
+    if (bytes_left < initiate_prefix_len
+        || memcmp (ptr, initiate_prefix, initiate_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
-    const int rc = parse_metadata (ptr + 9, bytes_left - 9);
+    const int rc = parse_metadata (ptr + initiate_prefix_len,
+                                   bytes_left - initiate_prefix_len);
     if (rc == 0)
         state = sending_ready;
     return rc;
 }
 
-int zmq::plain_server_t::produce_ready (msg_t *msg_) const
+void zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
-    make_command_with_basic_properties (msg_, "\5READY", 6);
-
-    return 0;
+    make_command_with_basic_properties (msg_, ready_prefix, ready_prefix_len);
 }
 
-int zmq::plain_server_t::produce_error (msg_t *msg_) const
+void zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
-    zmq_assert (status_code.length () == 3);
-    const int rc = msg_->init_size (6 + 1 + status_code.length ());
+    const char expected_status_code_len = 3;
+    zmq_assert (status_code.length ()
+                == static_cast<size_t> (expected_status_code_len));
+    const size_t status_code_len_size = sizeof (expected_status_code_len);
+    const int rc = msg_->init_size (error_prefix_len + status_code_len_size
+                                    + expected_status_code_len);
     zmq_assert (rc == 0);
     char *msg_data = static_cast<char *> (msg_->data ());
-    memcpy (msg_data, "\5ERROR", 6);
-    msg_data[6] = static_cast<char> (status_code.length ());
-    memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
-    return 0;
+    memcpy (msg_data, error_prefix, error_prefix_len);
+    msg_data[error_prefix_len] = expected_status_code_len;
+    memcpy (msg_data + error_prefix_len + status_code_len_size,
+            status_code.c_str (), status_code.length ());
 }
 
 void zmq::plain_server_t::send_zap_request (const std::string &username_,
@@ -253,6 +255,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username_,
       reinterpret_cast<const uint8_t *> (username_.c_str ()),
       reinterpret_cast<const uint8_t *> (password_.c_str ())};
     size_t credentials_sizes[] = {username_.size (), password_.size ()};
-    zap_client_t::send_zap_request ("PLAIN", 5, credentials, credentials_sizes,
-                                    2);
+    const char plain_mechanism_name[] = "PLAIN";
+    zap_client_t::send_zap_request (
+      plain_mechanism_name, sizeof (plain_mechanism_name) - 1, credentials,
+      credentials_sizes, sizeof (credentials) / sizeof (credentials[0]));
 }

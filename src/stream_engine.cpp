@@ -30,6 +30,7 @@
 #include "precompiled.hpp"
 #include "macros.hpp"
 
+#include <limits.h>
 #include <string.h>
 
 #ifndef ZMQ_HAVE_WINDOWS
@@ -232,7 +233,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         //  Send the 'length' and 'flags' fields of the routing id message.
         //  The 'length' field is encoded in the long format.
         _outpos = _greeting_send;
-        _outpos[_outsize++] = 0xff;
+        _outpos[_outsize++] = UCHAR_MAX;
         put_uint64 (&_outpos[_outsize], _options.routing_id_size + 1);
         _outsize += 8;
         _outpos[_outsize++] = 0x7f;
@@ -587,7 +588,8 @@ bool zmq::stream_engine_t::handshake ()
         //  Since there is no way to tell the encoder to
         //  skip the message header, we simply throw that
         //  header data away.
-        const size_t header_size = _options.routing_id_size + 1 >= 255 ? 10 : 2;
+        const size_t header_size =
+          _options.routing_id_size + 1 >= UCHAR_MAX ? 10 : 2;
         unsigned char tmp[10], *bufferp = tmp;
 
         //  Prepare the routing id message and load it into encoder.
