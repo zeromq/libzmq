@@ -283,13 +283,14 @@ int zmq::ctx_t::get (int option_)
 
 bool zmq::ctx_t::start ()
 {
-    //  Initialise the array of mailboxes. Additional three slots are for
+    //  Initialise the array of mailboxes. Additional two slots are for
     //  zmq_ctx_term thread and reaper thread.
     _opt_sync.lock ();
-    int mazmq = _max_sockets;
-    int ios = _io_thread_count;
+    const int term_and_reaper_threads_count = 2;
+    const int mazmq = _max_sockets;
+    const int ios = _io_thread_count;
     _opt_sync.unlock ();
-    _slot_count = mazmq + ios + 2;
+    _slot_count = mazmq + ios + term_and_reaper_threads_count;
     _slots =
       static_cast<i_mailbox **> (malloc (sizeof (i_mailbox *) * _slot_count));
     if (!_slots) {
@@ -313,7 +314,7 @@ bool zmq::ctx_t::start ()
 
     //  Create I/O thread objects and launch them.
     for (int32_t i = static_cast<int32_t> (_slot_count) - 1;
-         i >= static_cast<int32_t> (2); i--) {
+         i >= static_cast<int32_t> (term_and_reaper_threads_count); i--) {
         _slots[i] = NULL;
     }
 
