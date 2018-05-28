@@ -102,6 +102,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         size_t size = 0;
         bool subscribe = false;
         bool is_subscribe_or_cancel = false;
+        bool notify = false;
 
         const bool first_part = !_more_recv;
         _more_recv = (msg.flags () & msg_t::more) != 0;
@@ -144,25 +145,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 _manual_subscriptions.add (data, size, pipe_);
 
             _pending_pipes.push_back (pipe_);
-
-            //  ZMTP 3.1 hack: we need to support sub/cancel commands, but
-            //  we can't give them back to userspace as it would be an API
-            //  breakage since the payload of the message is completely
-            //  different. Manually craft an old-style message instead.
-            data = data - 1;
-            size = size + 1;
-            if (subscribe)
-                *data = 1;
-            else
-                *data = 0;
-
-            _pending_data.push_back (blob_t (data, size));
-            if (metadata)
-                metadata->add_ref ();
-            _pending_metadata.push_back (metadata);
-            _pending_flags.push_back (0);
         } else {
-            bool notify;
             if (!subscribe) {
                 const mtrie_t::rm_result rm_result =
                   _subscriptions.rm (data, size, pipe_);
@@ -172,25 +155,36 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 const bool first_added = _subscriptions.add (data, size, pipe_);
                 notify = first_added || _verbose_subs;
             }
-
-            //  If the request was a new subscription, or the subscription
-            //  was removed, or verbose mode is enabled, store it so that
-            //  it can be passed to the user on next recv call.
-            if (options.type == ZMQ_XPUB && notify) {
-                data = data - 1;
-                size = size + 1;
-                if (subscribe)
-                    *data = 1;
-                else
-                    *data = 0;
-
-                _pending_data.push_back (blob_t (data, size));
-                if (metadata)
-                    metadata->add_ref ();
-                _pending_metadata.push_back (metadata);
-                _pending_flags.push_back (0);
-            }
         }
+
+        //  If the request was a new subscription, or the subscription
+        //  was removed, or verbose mode or manual mode are enabled, store it
+        //  so that it can be passed to the user on next recv call.
+        if (_manual || (options.type == ZMQ_XPUB && notify)) {
+            //  ZMTP 3.1 hack: we need to support sub/cancel commands, but
+            //  we can't give them back to userspace as it would be an API
+            //  breakage since the payload of the message is completely
+            //  different. Manually craft an old-style message instead.
+            //  Although with other transports it would be possible to simply
+            //  reuse the same buffer and prefix a 0/1 byte to the topic, with
+            //  inproc the subscribe/cancel command string is not present in
+            //  the message, so this optimization is not possible.
+            //  The pushback makes a copy of the data array anyway, so the
+            //  number of buffer copies does not change.
+            blob_t notification (size + 1);
+            if (subscribe)
+                *notification.data () = 1;
+            else
+                *notification.data () = 0;
+            memcpy (notification.data () + 1, data, size);
+
+            _pending_data.push_back (ZMQ_MOVE (notification));
+            if (metadata)
+                metadata->add_ref ();
+            _pending_metadata.push_back (metadata);
+            _pending_flags.push_back (0);
+        }
+
         msg.close ();
     }
 }

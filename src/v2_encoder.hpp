@@ -46,7 +46,8 @@ class v2_encoder_t ZMQ_FINAL : public encoder_base_t<v2_encoder_t>
     void size_ready ();
     void message_ready ();
 
-    unsigned char _tmp_buf[9];
+    //  flags byte + size byte (or 8 bytes) + sub/cancel byte
+    unsigned char _tmp_buf[10];
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (v2_encoder_t)
 };

@@ -212,6 +212,36 @@ int zmq::msg_t::init_leave ()
     return 0;
 }
 
+int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
+{
+    int rc = init_size (size_);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::subscribe);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic);
+            memcpy (data (), topic, size_);
+        }
+    }
+    return rc;
+}
+
+int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
+{
+    int rc = init_size (size_);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::cancel);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic);
+            memcpy (data (), topic, size_);
+        }
+    }
+    return rc;
+}
+
 int zmq::msg_t::close ()
 {
     //  Check the validity of the message.
@@ -487,9 +517,12 @@ size_t zmq::msg_t::command_body_size () const
 {
     if (this->is_ping () || this->is_pong ())
         return this->size () - ping_cmd_name_size;
-    if (this->is_subscribe ())
+    else if (!(this->flags () & msg_t::command)
+             && (this->is_subscribe () || this->is_cancel ()))
+        return this->size ();
+    else if (this->is_subscribe ())
         return this->size () - sub_cmd_name_size;
-    if (this->is_cancel ())
+    else if (this->is_cancel ())
         return this->size () - cancel_cmd_name_size;
 
     return 0;
@@ -498,12 +531,17 @@ size_t zmq::msg_t::command_body_size () const
 void *zmq::msg_t::command_body ()
 {
     unsigned char *data = NULL;
+
     if (this->is_ping () || this->is_pong ())
         data =
           static_cast<unsigned char *> (this->data ()) + ping_cmd_name_size;
-    if (this->is_subscribe ())
+    //  With inproc, command flag is not set for sub/cancel
+    else if (!(this->flags () & msg_t::command)
+             && (this->is_subscribe () || this->is_cancel ()))
+        data = static_cast<unsigned char *> (this->data ());
+    else if (this->is_subscribe ())
         data = static_cast<unsigned char *> (this->data ()) + sub_cmd_name_size;
-    if (this->is_cancel ())
+    else if (this->is_cancel ())
         data =
           static_cast<unsigned char *> (this->data ()) + cancel_cmd_name_size;
 

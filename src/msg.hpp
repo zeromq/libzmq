@@ -54,6 +54,9 @@ namespace zmq
 //  Note that this structure needs to be explicitly constructed
 //  (init functions) and destructed (close function).
 
+static const char cancel_cmd_name[] = "\6CANCEL";
+static const char sub_cmd_name[] = "\x9SUBSCRIBE";
+
 class msg_t
 {
   public:
@@ -109,6 +112,8 @@ class msg_t
     int init_delimiter ();
     int init_join ();
     int init_leave ();
+    int init_subscribe (const size_t size_, const unsigned char *topic);
+    int init_cancel (const size_t size_, const unsigned char *topic);
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
