@@ -299,27 +299,21 @@ int zmq::msg_t::copy (msg_t &src_)
     if (unlikely (rc < 0))
         return rc;
 
-    if (src_._u.base.type == type_lmsg) {
+    // The initial reference count, when a non-shared message is initially
+    // shared (between the original and the copy we create here).
+    const atomic_counter_t::integer_t initial_shared_refcnt = 2;
+
+    if (src_.is_lmsg () || src_.is_zcmsg ()) {
         //  One reference is added to shared messages. Non-shared messages
-        //  are turned into shared messages and reference count is set to 2.
-        if (src_._u.lmsg.flags & msg_t::shared)
-            src_._u.lmsg.content->refcnt.add (1);
+        //  are turned into shared messages.
+        if (src_.flags () & msg_t::shared)
+            src_.refcnt ()->add (1);
         else {
-            src_._u.lmsg.flags |= msg_t::shared;
-            src_._u.lmsg.content->refcnt.set (2);
+            src_.set_flags (msg_t::shared);
+            src_.refcnt ()->set (initial_shared_refcnt);
         }
     }
 
-    if (src_.is_zcmsg ()) {
-        //  One reference is added to shared messages. Non-shared messages
-        //  are turned into shared messages and reference count is set to 2.
-        if (src_._u.zclmsg.flags & msg_t::shared)
-            src_.refcnt ()->add (1);
-        else {
-            src_._u.zclmsg.flags |= msg_t::shared;
-            src_.refcnt ()->set (2);
-        }
-    }
     if (src_._u.base.metadata != NULL)
         src_._u.base.metadata->add_ref ();
 
@@ -429,6 +423,11 @@ bool zmq::msg_t::is_vsm () const
 bool zmq::msg_t::is_cmsg () const
 {
     return _u.base.type == type_cmsg;
+}
+
+bool zmq::msg_t::is_lmsg () const
+{
+    return _u.base.type == type_lmsg;
 }
 
 bool zmq::msg_t::is_zcmsg () const
