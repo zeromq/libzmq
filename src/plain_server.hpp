@@ -51,9 +51,9 @@ class plain_server_t : public zap_client_common_handshake_t
     virtual int process_handshake_command (msg_t *msg_);
 
   private:
-    int produce_welcome (msg_t *msg_) const;
-    int produce_ready (msg_t *msg_) const;
-    int produce_error (msg_t *msg_) const;
+    void produce_welcome (msg_t *msg_) const;
+    void produce_ready (msg_t *msg_) const;
+    void produce_error (msg_t *msg_) const;
 
     int process_hello (msg_t *msg_);
     int process_initiate (msg_t *msg_);

@@ -64,19 +64,16 @@ int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
 
     switch (state) {
         case sending_welcome:
-            rc = produce_welcome (msg_);
-            if (rc == 0)
-                state = waiting_for_initiate;
+            produce_welcome (msg_);
+            state = waiting_for_initiate;
             break;
         case sending_ready:
-            rc = produce_ready (msg_);
-            if (rc == 0)
-                state = ready;
+            produce_ready (msg_);
+            state = ready;
             break;
         case sending_error:
-            rc = produce_error (msg_);
-            if (rc == 0)
-                state = error_sent;
+            produce_error (msg_);
+            state = error_sent;
             break;
         default:
             errno = EAGAIN;
@@ -204,12 +201,11 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
-int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
+void zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 {
     const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
     memcpy (msg_->data (), welcome_prefix, welcome_prefix_len);
-    return 0;
 }
 
 int zmq::plain_server_t::process_initiate (msg_t *msg_)
@@ -231,14 +227,12 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     return rc;
 }
 
-int zmq::plain_server_t::produce_ready (msg_t *msg_) const
+void zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
     make_command_with_basic_properties (msg_, ready_prefix, ready_prefix_len);
-
-    return 0;
 }
 
-int zmq::plain_server_t::produce_error (msg_t *msg_) const
+void zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
     const char expected_status_code_len = 3;
     zmq_assert (status_code.length ()
@@ -252,7 +246,6 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     msg_data[error_prefix_len] = expected_status_code_len;
     memcpy (msg_data + error_prefix_len + status_code_len_size,
             status_code.c_str (), status_code.length ());
-    return 0;
 }
 
 void zmq::plain_server_t::send_zap_request (const std::string &username_,

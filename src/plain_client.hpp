@@ -61,8 +61,8 @@ class plain_client_t : public mechanism_base_t
 
     state_t _state;
 
-    int produce_hello (msg_t *msg_) const;
-    int produce_initiate (msg_t *msg_) const;
+    void produce_hello (msg_t *msg_) const;
+    void produce_initiate (msg_t *msg_) const;
 
     int process_welcome (const unsigned char *cmd_data_, size_t data_size_);
     int process_ready (const unsigned char *cmd_data_, size_t data_size_);

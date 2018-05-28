@@ -56,14 +56,12 @@ int zmq::plain_client_t::next_handshake_command (msg_t *msg_)
 
     switch (_state) {
         case sending_hello:
-            rc = produce_hello (msg_);
-            if (rc == 0)
-                _state = waiting_for_welcome;
+            produce_hello (msg_);
+            _state = waiting_for_welcome;
             break;
         case sending_initiate:
-            rc = produce_initiate (msg_);
-            if (rc == 0)
-                _state = waiting_for_ready;
+            produce_initiate (msg_);
+            _state = waiting_for_ready;
             break;
         default:
             errno = EAGAIN;
@@ -115,7 +113,7 @@ zmq::mechanism_t::status_t zmq::plain_client_t::status () const
         return mechanism_t::handshaking;
 }
 
-int zmq::plain_client_t::produce_hello (msg_t *msg_) const
+void zmq::plain_client_t::produce_hello (msg_t *msg_) const
 {
     const std::string username = options.plain_username;
     zmq_assert (username.length () <= UCHAR_MAX);
@@ -140,8 +138,6 @@ int zmq::plain_client_t::produce_hello (msg_t *msg_) const
 
     *ptr++ = static_cast<unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
-
-    return 0;
 }
 
 int zmq::plain_client_t::process_welcome (const unsigned char *cmd_data_,
@@ -166,12 +162,10 @@ int zmq::plain_client_t::process_welcome (const unsigned char *cmd_data_,
     return 0;
 }
 
-int zmq::plain_client_t::produce_initiate (msg_t *msg_) const
+void zmq::plain_client_t::produce_initiate (msg_t *msg_) const
 {
     make_command_with_basic_properties (msg_, initiate_prefix,
                                         initiate_prefix_len);
-
-    return 0;
 }
 
 int zmq::plain_client_t::process_ready (const unsigned char *cmd_data_,
