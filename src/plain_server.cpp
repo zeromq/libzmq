@@ -36,6 +36,7 @@
 #include "err.hpp"
 #include "plain_server.hpp"
 #include "wire.hpp"
+#include "plain_common.hpp"
 
 zmq::plain_server_t::plain_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
@@ -121,9 +122,6 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     const char *ptr = static_cast<char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    const char hello_prefix[] = "\x05HELLO";
-    const size_t hello_prefix_len = sizeof (hello_prefix) - 1;
-
     if (bytes_left < hello_prefix_len
         || memcmp (ptr, hello_prefix, hello_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -208,8 +206,6 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
 
 int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 {
-    const char welcome_prefix[] = "\x07WELCOME";
-    const size_t welcome_prefix_len = sizeof (welcome_prefix) - 1;
     const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
     memcpy (msg_->data (), welcome_prefix, welcome_prefix_len);
@@ -221,8 +217,6 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     const size_t bytes_left = msg_->size ();
 
-    const char initiate_prefix[] = "\x08INITIATE";
-    const size_t initiate_prefix_len = sizeof (initiate_prefix) - 1;
     if (bytes_left < initiate_prefix_len
         || memcmp (ptr, initiate_prefix, initiate_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -239,8 +233,6 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
 
 int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
-    const char ready_prefix[] = "\5READY";
-    const size_t ready_prefix_len = sizeof (ready_prefix) - 1;
     make_command_with_basic_properties (msg_, ready_prefix, ready_prefix_len);
 
     return 0;
@@ -248,17 +240,16 @@ int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 
 int zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
-    zmq_assert (status_code.length () == 3);
-    const char error_prefix[] = "\5ERROR";
-    const size_t error_prefix_len = sizeof (error_prefix) - 1;
-    const char status_code_len = static_cast<char> (status_code.length ());
-    const size_t status_code_len_size = sizeof (status_code_len);
+    const char expected_status_code_len = 3;
+    zmq_assert (status_code.length ()
+                == static_cast<size_t> (expected_status_code_len));
+    const size_t status_code_len_size = sizeof (expected_status_code_len);
     const int rc = msg_->init_size (error_prefix_len + status_code_len_size
-                                    + status_code_len);
+                                    + expected_status_code_len);
     zmq_assert (rc == 0);
     char *msg_data = static_cast<char *> (msg_->data ());
     memcpy (msg_data, error_prefix, error_prefix_len);
-    msg_data[error_prefix_len] = status_code_len;
+    msg_data[error_prefix_len] = expected_status_code_len;
     memcpy (msg_data + error_prefix_len + status_code_len_size,
             status_code.c_str (), status_code.length ());
     return 0;

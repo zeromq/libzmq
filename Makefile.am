@@ -134,6 +134,7 @@ src_libzmq_la_SOURCES = \
 	src/pipe.hpp \
 	src/plain_client.cpp \
 	src/plain_client.hpp \
+	src/plain_common.hpp \
 	src/plain_server.cpp \
 	src/plain_server.hpp \
 	src/platform.hpp \
