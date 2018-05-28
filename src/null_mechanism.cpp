@@ -95,14 +95,21 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
     if (_zap_reply_received && status_code != "200") {
         _error_command_sent = true;
         if (status_code != "300") {
+            const char *error_command_name = "\5ERROR";
+            const size_t error_command_name_size =
+              sizeof (error_command_name) - 1;
+            const size_t status_code_len_size = 1;
             const size_t status_code_len = 3;
-            const int rc = msg_->init_size (6 + 1 + status_code_len);
+            const int rc = msg_->init_size (
+              error_command_name_size + status_code_len_size + status_code_len);
             zmq_assert (rc == 0);
             unsigned char *msg_data =
               static_cast<unsigned char *> (msg_->data ());
-            memcpy (msg_data, "\5ERROR", 6);
-            msg_data[6] = status_code_len;
-            memcpy (msg_data + 7, status_code.c_str (), status_code_len);
+            memcpy (msg_data, error_command_name, error_command_name_size);
+            msg_data += error_command_name_size;
+            *msg_data = status_code_len;
+            msg_data += status_code_len_size;
+            memcpy (msg_data, status_code.c_str (), status_code_len);
             return 0;
         }
         errno = EAGAIN;
