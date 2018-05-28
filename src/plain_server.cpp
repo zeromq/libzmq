@@ -118,17 +118,21 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (rc == -1)
         return -1;
 
-    const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
+    const char *ptr = static_cast<char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
+    const char hello_prefix[] = "\x05HELLO";
+    const size_t hello_prefix_len = sizeof (hello_prefix) - 1;
+
+    if (bytes_left < hello_prefix_len
+        || memcmp (ptr, hello_prefix, hello_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
-    ptr += 6;
-    bytes_left -= 6;
+    ptr += hello_prefix_len;
+    bytes_left -= hello_prefix_len;
 
     if (bytes_left < 1) {
         //  PLAIN I: invalid PLAIN client, did not send username
@@ -149,7 +153,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    const std::string username = std::string ((char *) ptr, username_length);
+    const std::string username = std::string (ptr, username_length);
     ptr += username_length;
     bytes_left -= username_length;
     if (bytes_left < 1) {
@@ -172,7 +176,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
-    const std::string password = std::string ((char *) ptr, password_length);
+    const std::string password = std::string (ptr, password_length);
     ptr += password_length;
     bytes_left -= password_length;
     if (bytes_left > 0) {
@@ -204,9 +208,11 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
 
 int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 {
-    const int rc = msg_->init_size (8);
+    const char welcome_prefix[] = "\x07WELCOME";
+    const size_t welcome_prefix_len = sizeof (welcome_prefix) - 1;
+    const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
-    memcpy (msg_->data (), "\x07WELCOME", 8);
+    memcpy (msg_->data (), welcome_prefix, welcome_prefix_len);
     return 0;
 }
 
@@ -215,13 +221,17 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
     const size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
+    const char initiate_prefix[] = "\x08INITIATE";
+    const size_t initiate_prefix_len = sizeof (initiate_prefix) - 1;
+    if (bytes_left < initiate_prefix_len
+        || memcmp (ptr, initiate_prefix, initiate_prefix_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
-    const int rc = parse_metadata (ptr + 9, bytes_left - 9);
+    const int rc = parse_metadata (ptr + initiate_prefix_len,
+                                   bytes_left - initiate_prefix_len);
     if (rc == 0)
         state = sending_ready;
     return rc;
@@ -229,7 +239,9 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
 
 int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
-    make_command_with_basic_properties (msg_, "\5READY", 6);
+    const char ready_prefix[] = "\5READY";
+    const size_t ready_prefix_len = sizeof (ready_prefix) - 1;
+    make_command_with_basic_properties (msg_, ready_prefix, ready_prefix_len);
 
     return 0;
 }
@@ -237,12 +249,18 @@ int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 int zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
     zmq_assert (status_code.length () == 3);
-    const int rc = msg_->init_size (6 + 1 + status_code.length ());
+    const char error_prefix[] = "\5ERROR";
+    const size_t error_prefix_len = sizeof (error_prefix) - 1;
+    const char status_code_len = static_cast<char> (status_code.length ());
+    const size_t status_code_len_size = sizeof (status_code_len);
+    const int rc = msg_->init_size (error_prefix_len + status_code_len_size
+                                    + status_code_len);
     zmq_assert (rc == 0);
     char *msg_data = static_cast<char *> (msg_->data ());
-    memcpy (msg_data, "\5ERROR", 6);
-    msg_data[6] = static_cast<char> (status_code.length ());
-    memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
+    memcpy (msg_data, error_prefix, error_prefix_len);
+    msg_data[error_prefix_len] = status_code_len;
+    memcpy (msg_data + error_prefix_len + status_code_len_size,
+            status_code.c_str (), status_code.length ());
     return 0;
 }
 
@@ -253,6 +271,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username_,
       reinterpret_cast<const uint8_t *> (username_.c_str ()),
       reinterpret_cast<const uint8_t *> (password_.c_str ())};
     size_t credentials_sizes[] = {username_.size (), password_.size ()};
-    zap_client_t::send_zap_request ("PLAIN", 5, credentials, credentials_sizes,
-                                    2);
+    const char plain_mechanism_name[] = "PLAIN";
+    zap_client_t::send_zap_request (
+      plain_mechanism_name, sizeof (plain_mechanism_name) - 1, credentials,
+      credentials_sizes, sizeof (credentials) / sizeof (credentials[0]));
 }
