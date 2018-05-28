@@ -65,7 +65,7 @@ void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
     _user_id.set (static_cast<const unsigned char *> (data_), size_);
     zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_USER_ID),
-      std::string ((char *) data_, size_));
+      std::string (reinterpret_cast<const char *> (data_), size_));
 }
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const
@@ -238,7 +238,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         if (bytes_left < name_length)
             break;
 
-        const std::string name = std::string ((char *) ptr_, name_length);
+        const std::string name =
+          std::string (reinterpret_cast<const char *> (ptr_), name_length);
         ptr_ += name_length;
         bytes_left -= name_length;
         if (bytes_left < value_len_size)
@@ -269,7 +270,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         }
         (zap_flag_ ? zap_properties : zmtp_properties)
           .ZMQ_MAP_INSERT_OR_EMPLACE (
-            name, std::string ((char *) value, value_length));
+            name,
+            std::string (reinterpret_cast<const char *> (value), value_length));
     }
     if (bytes_left > 0) {
         errno = EPROTO;

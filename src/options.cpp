@@ -263,7 +263,8 @@ int zmq::options_t::set_curve_key (uint8_t *destination_,
             return 0;
 
         case CURVE_KEYSIZE_Z85 + 1:
-            if (zmq_z85_decode (destination_, (char *) optval_)) {
+            if (zmq_z85_decode (destination_,
+                                reinterpret_cast<const char *> (optval_))) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -271,7 +272,8 @@ int zmq::options_t::set_curve_key (uint8_t *destination_,
 
         case CURVE_KEYSIZE_Z85:
             char z85_key[CURVE_KEYSIZE_Z85 + 1];
-            memcpy (z85_key, (char *) optval_, optvallen_);
+            memcpy (z85_key, reinterpret_cast<const char *> (optval_),
+                    optvallen_);
             z85_key[CURVE_KEYSIZE_Z85] = 0;
             if (zmq_z85_decode (destination_, z85_key)) {
                 mechanism = ZMQ_CURVE;
@@ -719,15 +721,14 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_METADATA:
             if (optvallen_ > 0 && !is_int) {
-                std::string s ((char *) optval_);
-                size_t pos = 0;
-                std::string key, val, delimiter = ":";
-                pos = s.find (delimiter);
+                const std::string s (reinterpret_cast<const char *> (optval_));
+                const size_t pos = s.find (":");
                 if (pos != std::string::npos && pos != 0
                     && pos != s.length () - 1) {
-                    key = s.substr (0, pos);
-                    if (key.compare (0, 2, "X-") == 0 && key.length () < 256) {
-                        val = s.substr (pos + 1, s.length ());
+                    std::string key = s.substr (0, pos);
+                    if (key.compare (0, 2, "X-") == 0
+                        && key.length () <= UCHAR_MAX) {
+                        std::string val = s.substr (pos + 1, s.length ());
                         app_metadata.insert (
                           std::pair<std::string, std::string> (key, val));
                         return 0;
@@ -736,7 +737,6 @@ int zmq::options_t::setsockopt (int option_,
             }
             errno = EINVAL;
             return -1;
-            break;
 
         case ZMQ_MULTICAST_LOOP:
             return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
