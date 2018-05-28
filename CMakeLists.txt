@@ -35,6 +35,18 @@ if(COMPILER_SUPPORTS_C11)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 endif()
 
+if(NOT MSVC)
+    # clang 6 has a warning that does not make sense on multi-platform code
+    CHECK_CXX_COMPILER_FLAG("-Wno-tautological-constant-compare" CXX_HAS_TAUT_WARNING)
+    if(CXX_HAS_TAUT_WARNING)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-tautological-constant-compare")
+    endif()
+    CHECK_C_COMPILER_FLAG("-Wno-tautological-constant-compare" CC_HAS_TAUT_WARNING)
+    if(CC_HAS_TAUT_WARNING)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-tautological-constant-compare")
+    endif()
+endif()
+
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set (pkg_config_libs_private "")
 
