@@ -1762,3 +1762,102 @@ void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
         _monitor_events = 0;
     }
 }
+
+zmq::routing_socket_base_t::routing_socket_base_t (class ctx_t *parent_,
+                                                   uint32_t tid_,
+                                                   int sid_) :
+    socket_base_t (parent_, tid_, sid_)
+{
+}
+
+zmq::routing_socket_base_t::~routing_socket_base_t ()
+{
+    zmq_assert (_out_pipes.empty ());
+}
+
+int zmq::routing_socket_base_t::xsetsockopt (int option_,
+                                             const void *optval_,
+                                             size_t optvallen_)
+{
+    switch (option_) {
+        case ZMQ_CONNECT_ROUTING_ID:
+            // TODO why isn't it possible to set an empty connect_routing_id
+            //   (which is the default value)
+            if (optval_ && optvallen_) {
+                _connect_routing_id.assign (static_cast<const char *> (optval_),
+                                            optvallen_);
+                return 0;
+            }
+            break;
+    }
+    errno = EINVAL;
+    return -1;
+}
+
+void zmq::routing_socket_base_t::xwrite_activated (pipe_t *pipe_)
+{
+    out_pipes_t::iterator it;
+    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
+        if (it->second.pipe == pipe_)
+            break;
+
+    zmq_assert (it != _out_pipes.end ());
+    zmq_assert (!it->second.active);
+    it->second.active = true;
+}
+
+std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
+{
+    std::string res = ZMQ_MOVE (_connect_routing_id);
+    _connect_routing_id.clear ();
+    return res;
+}
+
+void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id, pipe_t *pipe_)
+{
+    //  Add the record into output pipes lookup table
+    const out_pipe_t outpipe = {pipe_, true};
+    const bool ok =
+      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
+        .second;
+    zmq_assert (ok);
+}
+
+bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id) const
+{
+    return 0 != _out_pipes.count (routing_id);
+}
+
+zmq::routing_socket_base_t::out_pipe_t *
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id)
+{
+    // TODO we could probably avoid constructor a temporary blob_t to call this function
+    out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    return it == _out_pipes.end () ? NULL : &it->second;
+}
+
+const zmq::routing_socket_base_t::out_pipe_t *
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id) const
+{
+    // TODO we could probably avoid constructor a temporary blob_t to call this function
+    out_pipes_t::const_iterator it = _out_pipes.find (routing_id);
+    return it == _out_pipes.end () ? NULL : &it->second;
+}
+
+void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
+{
+    const size_t erased = _out_pipes.erase (pipe_->get_routing_id ());
+    zmq_assert (erased);
+}
+
+zmq::routing_socket_base_t::out_pipe_t
+zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id)
+{
+    const out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    out_pipe_t res = {NULL, false};
+    if (it != _out_pipes.end ()) {
+        res = it->second;
+        _out_pipes.erase (it);
+    }
+    return res;
+}

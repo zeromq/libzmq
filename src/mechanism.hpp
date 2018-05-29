@@ -81,9 +81,12 @@ class mechanism_t
 
     const blob_t &get_user_id () const;
 
-    const metadata_t::dict_t &get_zmtp_properties () { return zmtp_properties; }
+    const metadata_t::dict_t &get_zmtp_properties ()
+    {
+        return _zmtp_properties;
+    }
 
-    const metadata_t::dict_t &get_zap_properties () { return zap_properties; }
+    const metadata_t::dict_t &get_zap_properties () { return _zap_properties; }
 
   protected:
     //  Only used to identify the socket for the Socket-Type
@@ -123,15 +126,15 @@ class mechanism_t
     virtual int
     property (const std::string &name_, const void *value_, size_t length_);
 
-    //  Properties received from ZMTP peer.
-    metadata_t::dict_t zmtp_properties;
-
-    //  Properties received from ZAP server.
-    metadata_t::dict_t zap_properties;
-
     const options_t options;
 
   private:
+    //  Properties received from ZMTP peer.
+    metadata_t::dict_t _zmtp_properties;
+
+    //  Properties received from ZAP server.
+    metadata_t::dict_t _zap_properties;
+
     blob_t _routing_id;
 
     blob_t _user_id;

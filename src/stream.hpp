@@ -39,7 +39,7 @@ namespace zmq
 class ctx_t;
 class pipe_t;
 
-class stream_t : public socket_base_t
+class stream_t : public routing_socket_base_t
 {
   public:
     stream_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -52,7 +52,6 @@ class stream_t : public socket_base_t
     bool xhas_in ();
     bool xhas_out ();
     void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
     int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
 
@@ -75,16 +74,6 @@ class stream_t : public socket_base_t
 
     //  Holds the prefetched message.
     msg_t _prefetched_msg;
-
-    struct outpipe_t
-    {
-        zmq::pipe_t *pipe;
-        bool active;
-    };
-
-    //  Outbound pipes indexed by the peer IDs.
-    typedef std::map<blob_t, outpipe_t> outpipes_t;
-    outpipes_t _outpipes;
 
     //  The pipe we are currently writing to.
     zmq::pipe_t *_current_out;

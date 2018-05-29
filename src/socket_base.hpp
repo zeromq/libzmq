@@ -184,9 +184,6 @@ class socket_base_t : public own_t,
     //  Delay actual destruction of the socket.
     void process_destroy ();
 
-    // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
-    std::string connect_routing_id;
-
   private:
     // test if event should be sent and then dispatch it
     void event (const std::string &addr_, intptr_t fd_, int type_);
@@ -299,6 +296,53 @@ class socket_base_t : public own_t,
 
     socket_base_t (const socket_base_t &);
     const socket_base_t &operator= (const socket_base_t &);
+};
+
+class routing_socket_base_t : public socket_base_t
+{
+  protected:
+    routing_socket_base_t (class ctx_t *parent_, uint32_t tid_, int sid_);
+    ~routing_socket_base_t ();
+
+    // methods from socket_base_t
+    virtual int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    virtual void xwrite_activated (pipe_t *pipe_);
+
+    // own methods
+    std::string extract_connect_routing_id ();
+
+    struct out_pipe_t
+    {
+        pipe_t *pipe;
+        bool active;
+    };
+
+    void add_out_pipe (blob_t routing_id, pipe_t *pipe_);
+    bool has_out_pipe (const blob_t &routing_id) const;
+    out_pipe_t *lookup_out_pipe (const blob_t &routing_id);
+    const out_pipe_t *lookup_out_pipe (const blob_t &routing_id) const;
+    void erase_out_pipe (pipe_t *pipe_);
+    out_pipe_t try_erase_out_pipe (const blob_t &routing_id);
+    template <typename Func> bool any_of_out_pipes (Func func)
+    {
+        bool res = false;
+        for (out_pipes_t::iterator it = _out_pipes.begin ();
+             it != _out_pipes.end (); ++it) {
+            if (res |= func (*it->second.pipe))
+                break;
+        }
+
+        return res;
+    }
+
+  private:
+    //  Outbound pipes indexed by the peer IDs.
+    typedef std::map<blob_t, out_pipe_t> out_pipes_t;
+    out_pipes_t _out_pipes;
+
+    // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
+    std::string _connect_routing_id;
 };
 }
 
