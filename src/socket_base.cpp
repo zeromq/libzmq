@@ -1813,9 +1813,51 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     return res;
 }
 
+void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id, pipe_t *pipe_)
+{
+    //  Add the record into output pipes lookup table
+    const out_pipe_t outpipe = {pipe_, true};
+    const bool ok =
+      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
+        .second;
+    zmq_assert (ok);
+}
+
+bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id) const
+{
+    return 0 != _out_pipes.count (routing_id);
+}
+
+zmq::routing_socket_base_t::out_pipe_t *
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id)
+{
+    // TODO we could probably avoid constructor a temporary blob_t to call this function
+    out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    return it == _out_pipes.end () ? NULL : &it->second;
+}
+
+const zmq::routing_socket_base_t::out_pipe_t *
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id) const
+{
+    // TODO we could probably avoid constructor a temporary blob_t to call this function
+    out_pipes_t::const_iterator it = _out_pipes.find (routing_id);
+    return it == _out_pipes.end () ? NULL : &it->second;
+}
+
 void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
 {
-    out_pipes_t::iterator it = _out_pipes.find (pipe_->get_routing_id ());
-    zmq_assert (it != _out_pipes.end ());
-    _out_pipes.erase (it);
+    const size_t erased = _out_pipes.erase (pipe_->get_routing_id ());
+    zmq_assert (erased);
+}
+
+zmq::routing_socket_base_t::out_pipe_t
+zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id)
+{
+    const out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    out_pipe_t res = {NULL, false};
+    if (it != _out_pipes.end ()) {
+        res = it->second;
+        _out_pipes.erase (it);
+    }
+    return res;
 }

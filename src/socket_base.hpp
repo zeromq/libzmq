@@ -312,19 +312,35 @@ class routing_socket_base_t : public socket_base_t
     // own methods
     std::string extract_connect_routing_id ();
 
-    void erase_out_pipe (pipe_t *pipe_);
-
     struct out_pipe_t
     {
         pipe_t *pipe;
         bool active;
     };
 
+    void add_out_pipe (blob_t routing_id, pipe_t *pipe_);
+    bool has_out_pipe (const blob_t &routing_id) const;
+    out_pipe_t *lookup_out_pipe (const blob_t &routing_id);
+    const out_pipe_t *lookup_out_pipe (const blob_t &routing_id) const;
+    void erase_out_pipe (pipe_t *pipe_);
+    out_pipe_t try_erase_out_pipe (const blob_t &routing_id);
+    template <typename Func> bool any_of_out_pipes (Func func)
+    {
+        bool res = false;
+        for (out_pipes_t::iterator it = _out_pipes.begin ();
+             it != _out_pipes.end (); ++it) {
+            if (res |= func (*it->second.pipe))
+                break;
+        }
+
+        return res;
+    }
+
+  private:
     //  Outbound pipes indexed by the peer IDs.
     typedef std::map<blob_t, out_pipe_t> out_pipes_t;
     out_pipes_t _out_pipes;
 
-  private:
     // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
     std::string _connect_routing_id;
 };
