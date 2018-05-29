@@ -306,11 +306,14 @@ class routing_socket_base_t : public socket_base_t
     virtual int
     xsetsockopt (int option_, const void *optval_, size_t optvallen_);
 
+    void xwrite_activated (pipe_t *pipe_);
+
+
     std::string extract_connect_routing_id ();
 
     struct out_pipe_t
     {
-        zmq::pipe_t *pipe;
+        pipe_t *pipe;
         bool active;
     };
 

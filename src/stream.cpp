@@ -74,6 +74,8 @@ void zmq::stream_t::xpipe_terminated (pipe_t *pipe_)
     zmq_assert (it != _out_pipes.end ());
     _out_pipes.erase (it);
     _fq.pipe_terminated (pipe_);
+    // TODO router_t calls pipe_->rollback() here; should this be done here as
+    // well? then xpipe_terminated could be pulled up to routing_socket_base_t
     if (pipe_ == _current_out)
         _current_out = NULL;
 }
@@ -81,18 +83,6 @@ void zmq::stream_t::xpipe_terminated (pipe_t *pipe_)
 void zmq::stream_t::xread_activated (pipe_t *pipe_)
 {
     _fq.activated (pipe_);
-}
-
-void zmq::stream_t::xwrite_activated (pipe_t *pipe_)
-{
-    out_pipes_t::iterator it;
-    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
-        if (it->second.pipe == pipe_)
-            break;
-
-    zmq_assert (it != _out_pipes.end ());
-    zmq_assert (!it->second.active);
-    it->second.active = true;
 }
 
 int zmq::stream_t::xsend (msg_t *msg_)

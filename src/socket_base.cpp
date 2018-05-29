@@ -1789,6 +1789,18 @@ int zmq::routing_socket_base_t::xsetsockopt (int option_,
     return -1;
 }
 
+void zmq::routing_socket_base_t::xwrite_activated (pipe_t *pipe_)
+{
+    out_pipes_t::iterator it;
+    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
+        if (it->second.pipe == pipe_)
+            break;
+
+    zmq_assert (it != _out_pipes.end ());
+    zmq_assert (!it->second.active);
+    it->second.active = true;
+}
+
 std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
 {
     std::string res = ZMQ_MOVE (_connect_routing_id);

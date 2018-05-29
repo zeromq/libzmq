@@ -176,18 +176,6 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
     }
 }
 
-void zmq::router_t::xwrite_activated (pipe_t *pipe_)
-{
-    out_pipes_t::iterator it;
-    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
-        if (it->second.pipe == pipe_)
-            break;
-
-    zmq_assert (it != _out_pipes.end ());
-    zmq_assert (!it->second.active);
-    it->second.active = true;
-}
-
 int zmq::router_t::xsend (msg_t *msg_)
 {
     //  If this is the first part of the message it's the ID of the

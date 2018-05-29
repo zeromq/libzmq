@@ -59,7 +59,6 @@ class router_t : public routing_socket_base_t
     bool xhas_in ();
     bool xhas_out ();
     void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
     int get_peer_state (const void *identity_, size_t identity_size_) const;
 
