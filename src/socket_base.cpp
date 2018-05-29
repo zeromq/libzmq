@@ -1770,6 +1770,11 @@ zmq::routing_socket_base_t::routing_socket_base_t (class ctx_t *parent_,
 {
 }
 
+zmq::routing_socket_base_t::~routing_socket_base_t ()
+{
+    zmq_assert (_out_pipes.empty ());
+}
+
 int zmq::routing_socket_base_t::xsetsockopt (int option_,
                                              const void *optval_,
                                              size_t optvallen_)
@@ -1806,4 +1811,11 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     std::string res = ZMQ_MOVE (_connect_routing_id);
     _connect_routing_id.clear ();
     return res;
+}
+
+void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
+{
+    out_pipes_t::iterator it = _out_pipes.find (pipe_->get_routing_id ());
+    zmq_assert (it != _out_pipes.end ());
+    _out_pipes.erase (it);
 }

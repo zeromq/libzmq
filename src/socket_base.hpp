@@ -302,14 +302,17 @@ class routing_socket_base_t : public socket_base_t
 {
   protected:
     routing_socket_base_t (class ctx_t *parent_, uint32_t tid_, int sid_);
+    ~routing_socket_base_t ();
 
+    // methods from socket_base_t
     virtual int
     xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    virtual void xwrite_activated (pipe_t *pipe_);
 
-    void xwrite_activated (pipe_t *pipe_);
-
-
+    // own methods
     std::string extract_connect_routing_id ();
+
+    void erase_out_pipe (pipe_t *pipe_);
 
     struct out_pipe_t
     {

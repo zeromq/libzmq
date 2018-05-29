@@ -53,7 +53,6 @@ zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 
 zmq::stream_t::~stream_t ()
 {
-    zmq_assert (_out_pipes.empty ());
     _prefetched_routing_id.close ();
     _prefetched_msg.close ();
 }
@@ -70,9 +69,7 @@ void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::stream_t::xpipe_terminated (pipe_t *pipe_)
 {
-    out_pipes_t::iterator it = _out_pipes.find (pipe_->get_routing_id ());
-    zmq_assert (it != _out_pipes.end ());
-    _out_pipes.erase (it);
+    erase_out_pipe (pipe_);
     _fq.pipe_terminated (pipe_);
     // TODO router_t calls pipe_->rollback() here; should this be done here as
     // well? then xpipe_terminated could be pulled up to routing_socket_base_t

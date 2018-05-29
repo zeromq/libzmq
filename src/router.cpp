@@ -152,9 +152,7 @@ void zmq::router_t::xpipe_terminated (pipe_t *pipe_)
     if (it != _anonymous_pipes.end ())
         _anonymous_pipes.erase (it);
     else {
-        out_pipes_t::iterator iter = _out_pipes.find (pipe_->get_routing_id ());
-        zmq_assert (iter != _out_pipes.end ());
-        _out_pipes.erase (iter);
+        erase_out_pipe (pipe_);
         _fq.pipe_terminated (pipe_);
         pipe_->rollback ();
         if (pipe_ == _current_out)
