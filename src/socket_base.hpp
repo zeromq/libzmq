@@ -184,9 +184,6 @@ class socket_base_t : public own_t,
     //  Delay actual destruction of the socket.
     void process_destroy ();
 
-    // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
-    std::string connect_routing_id;
-
   private:
     // test if event should be sent and then dispatch it
     void event (const std::string &addr_, intptr_t fd_, int type_);
@@ -299,6 +296,21 @@ class socket_base_t : public own_t,
 
     socket_base_t (const socket_base_t &);
     const socket_base_t &operator= (const socket_base_t &);
+};
+
+class routing_socket_base_t : public socket_base_t
+{
+  protected:
+    routing_socket_base_t (class ctx_t *parent_, uint32_t tid_, int sid_);
+
+    virtual int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+
+    std::string extract_connect_routing_id ();
+
+  private:
+    // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
+    std::string _connect_routing_id;
 };
 }
 

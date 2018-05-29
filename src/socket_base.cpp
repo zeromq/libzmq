@@ -1762,3 +1762,36 @@ void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
         _monitor_events = 0;
     }
 }
+
+zmq::routing_socket_base_t::routing_socket_base_t (class ctx_t *parent_,
+                                                   uint32_t tid_,
+                                                   int sid_) :
+    socket_base_t (parent_, tid_, sid_)
+{
+}
+
+int zmq::routing_socket_base_t::xsetsockopt (int option_,
+                                             const void *optval_,
+                                             size_t optvallen_)
+{
+    switch (option_) {
+        case ZMQ_CONNECT_ROUTING_ID:
+            // TODO why isn't it possible to set an empty connect_routing_id
+            //   (which is the default value)
+            if (optval_ && optvallen_) {
+                _connect_routing_id.assign (static_cast<const char *> (optval_),
+                                            optvallen_);
+                return 0;
+            }
+            break;
+    }
+    errno = EINVAL;
+    return -1;
+}
+
+std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
+{
+    std::string res = ZMQ_MOVE (_connect_routing_id);
+    _connect_routing_id.clear ();
+    return res;
+}

@@ -37,7 +37,7 @@
 #include "err.hpp"
 
 zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_),
+    routing_socket_base_t (parent_, tid_, sid_),
     _prefetched (false),
     _routing_id_sent (false),
     _current_out (NULL),
@@ -177,25 +177,14 @@ int zmq::stream_t::xsetsockopt (int option_,
                                 size_t optvallen_)
 {
     switch (option_) {
-        case ZMQ_CONNECT_ROUTING_ID:
-            // TODO why isn't it possible to set an empty connect_routing_id
-            //   (which is the default value)
-            if (optval_ && optvallen_) {
-                connect_routing_id.assign ((char *) optval_, optvallen_);
-                return 0;
-            }
-            break;
-
         case ZMQ_STREAM_NOTIFY:
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &options.raw_notify);
-            break;
 
         default:
-            break;
+            return routing_socket_base_t::xsetsockopt (option_, optval_,
+                                                       optvallen_);
     }
-    errno = EINVAL;
-    return -1;
 }
 
 int zmq::stream_t::xrecv (msg_t *msg_)
@@ -293,12 +282,13 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     unsigned char buffer[5];
     buffer[0] = 0;
     blob_t routing_id;
-    if (connect_routing_id.length ()) {
-        routing_id.set ((unsigned char *) connect_routing_id.c_str (),
-                        connect_routing_id.length ());
-        connect_routing_id.clear ();
-        outpipes_t::iterator it = _outpipes.find (routing_id);
-        zmq_assert (it == _outpipes.end ());
+    const std::string connect_routing_id = extract_connect_routing_id ();
+    if (!connect_routing_id.empty ()) {
+        routing_id.set (
+          reinterpret_cast<const unsigned char *> (connect_routing_id.c_str ()),
+          connect_routing_id.length ());
+        //  Not allowed to duplicate an existing rid
+        zmq_assert (0 == _outpipes.count (routing_id));
     } else {
         put_uint32 (buffer + 1, _next_integral_routing_id++);
         routing_id.set (buffer, sizeof buffer);

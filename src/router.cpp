@@ -37,7 +37,7 @@
 #include "err.hpp"
 
 zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_),
+    routing_socket_base_t (parent_, tid_, sid_),
     _prefetched (false),
     _routing_id_sent (false),
     _current_in (NULL),
@@ -99,21 +99,12 @@ int zmq::router_t::xsetsockopt (int option_,
                                 const void *optval_,
                                 size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));
 
     switch (option_) {
-        case ZMQ_CONNECT_ROUTING_ID:
-            // TODO why isn't it possible to set an empty connect_routing_id
-            //   (which is the default value)
-            if (optval_ && optvallen_) {
-                connect_routing_id.assign ((char *) optval_, optvallen_);
-                return 0;
-            }
-            break;
-
         case ZMQ_ROUTER_RAW:
             if (is_int && value >= 0) {
                 _raw_socket = (value != 0);
@@ -147,7 +138,8 @@ int zmq::router_t::xsetsockopt (int option_,
             break;
 
         default:
-            break;
+            return routing_socket_base_t::xsetsockopt (option_, optval_,
+                                                       optvallen_);
     }
     errno = EINVAL;
     return -1;
@@ -469,13 +461,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     bool ok;
     blob_t routing_id;
 
-    if (connect_routing_id.length ()) {
-        routing_id.set ((unsigned char *) connect_routing_id.c_str (),
-                        connect_routing_id.length ());
-        connect_routing_id.clear ();
-        outpipes_t::iterator it = _out_pipes.find (routing_id);
-        if (it != _out_pipes.end ())
-            zmq_assert (false); //  Not allowed to duplicate an existing rid
+    const std::string connect_routing_id = extract_connect_routing_id ();
+    if (!connect_routing_id.empty ()) {
+        routing_id.set (
+          reinterpret_cast<const unsigned char *> (connect_routing_id.c_str ()),
+          connect_routing_id.length ());
+        //  Not allowed to duplicate an existing rid
+        zmq_assert (0 == _out_pipes.count (routing_id));
     } else if (
       options
         .raw_socket) { //  Always assign an integral routing id for raw-socket
