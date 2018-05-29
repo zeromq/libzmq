@@ -63,7 +63,7 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
     _user_id.set (static_cast<const unsigned char *> (data_), size_);
-    zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
+    _zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_USER_ID),
       std::string (reinterpret_cast<const char *> (data_), size_));
 }
@@ -268,7 +268,7 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
             if (rc == -1)
                 return -1;
         }
-        (zap_flag_ ? zap_properties : zmtp_properties)
+        (zap_flag_ ? _zap_properties : _zmtp_properties)
           .ZMQ_MAP_INSERT_OR_EMPLACE (
             name,
             std::string (reinterpret_cast<const char *> (value), value_length));
