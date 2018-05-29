@@ -97,18 +97,8 @@ class router_t : public routing_socket_base_t
     //  If true, more incoming message parts are expected.
     bool _more_in;
 
-    struct out_pipe_t
-    {
-        zmq::pipe_t *pipe;
-        bool active;
-    };
-
     //  We keep a set of pipes that have not been identified yet.
     std::set<pipe_t *> _anonymous_pipes;
-
-    //  Outbound pipes indexed by the peer IDs.
-    typedef std::map<blob_t, out_pipe_t> outpipes_t;
-    outpipes_t _out_pipes;
 
     //  The pipe we are currently writing to.
     zmq::pipe_t *_current_out;

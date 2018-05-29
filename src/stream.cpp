@@ -53,7 +53,7 @@ zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 
 zmq::stream_t::~stream_t ()
 {
-    zmq_assert (_outpipes.empty ());
+    zmq_assert (_out_pipes.empty ());
     _prefetched_routing_id.close ();
     _prefetched_msg.close ();
 }
@@ -70,9 +70,9 @@ void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::stream_t::xpipe_terminated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it = _outpipes.find (pipe_->get_routing_id ());
-    zmq_assert (it != _outpipes.end ());
-    _outpipes.erase (it);
+    out_pipes_t::iterator it = _out_pipes.find (pipe_->get_routing_id ());
+    zmq_assert (it != _out_pipes.end ());
+    _out_pipes.erase (it);
     _fq.pipe_terminated (pipe_);
     if (pipe_ == _current_out)
         _current_out = NULL;
@@ -85,12 +85,12 @@ void zmq::stream_t::xread_activated (pipe_t *pipe_)
 
 void zmq::stream_t::xwrite_activated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it;
-    for (it = _outpipes.begin (); it != _outpipes.end (); ++it)
+    out_pipes_t::iterator it;
+    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
         if (it->second.pipe == pipe_)
             break;
 
-    zmq_assert (it != _outpipes.end ());
+    zmq_assert (it != _out_pipes.end ());
     zmq_assert (!it->second.active);
     it->second.active = true;
 }
@@ -110,9 +110,9 @@ int zmq::stream_t::xsend (msg_t *msg_)
             //  If there's no such pipe return an error
             blob_t routing_id (static_cast<unsigned char *> (msg_->data ()),
                                msg_->size ());
-            outpipes_t::iterator it = _outpipes.find (routing_id);
+            out_pipes_t::iterator it = _out_pipes.find (routing_id);
 
-            if (it != _outpipes.end ()) {
+            if (it != _out_pipes.end ()) {
                 _current_out = it->second.pipe;
                 if (!_current_out->check_write ()) {
                     it->second.active = false;
@@ -288,7 +288,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
           reinterpret_cast<const unsigned char *> (connect_routing_id.c_str ()),
           connect_routing_id.length ());
         //  Not allowed to duplicate an existing rid
-        zmq_assert (0 == _outpipes.count (routing_id));
+        zmq_assert (0 == _out_pipes.count (routing_id));
     } else {
         put_uint32 (buffer + 1, _next_integral_routing_id++);
         routing_id.set (buffer, sizeof buffer);
@@ -298,9 +298,9 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     }
     pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
-    outpipe_t outpipe = {pipe_, true};
+    out_pipe_t outpipe = {pipe_, true};
     const bool ok =
-      _outpipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
+      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
         .second;
     zmq_assert (ok);
 }

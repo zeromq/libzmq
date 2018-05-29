@@ -152,7 +152,7 @@ void zmq::router_t::xpipe_terminated (pipe_t *pipe_)
     if (it != _anonymous_pipes.end ())
         _anonymous_pipes.erase (it);
     else {
-        outpipes_t::iterator iter = _out_pipes.find (pipe_->get_routing_id ());
+        out_pipes_t::iterator iter = _out_pipes.find (pipe_->get_routing_id ());
         zmq_assert (iter != _out_pipes.end ());
         _out_pipes.erase (iter);
         _fq.pipe_terminated (pipe_);
@@ -178,7 +178,7 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
 
 void zmq::router_t::xwrite_activated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it;
+    out_pipes_t::iterator it;
     for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
         if (it->second.pipe == pipe_)
             break;
@@ -206,7 +206,7 @@ int zmq::router_t::xsend (msg_t *msg_)
             //  router_mandatory is set.
             blob_t routing_id (static_cast<unsigned char *> (msg_->data ()),
                                msg_->size (), zmq::reference_tag_t ());
-            outpipes_t::iterator it = _out_pipes.find (routing_id);
+            out_pipes_t::iterator it = _out_pipes.find (routing_id);
 
             if (it != _out_pipes.end ()) {
                 _current_out = it->second.pipe;
@@ -422,7 +422,7 @@ bool zmq::router_t::xhas_out ()
         return true;
 
     bool has_out = false;
-    outpipes_t::iterator it;
+    out_pipes_t::iterator it;
     for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
         has_out |= it->second.pipe->check_hwm ();
 
@@ -440,7 +440,7 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
     int res = 0;
 
     blob_t routing_id_blob ((unsigned char *) routing_id_, routing_id_size_);
-    outpipes_t::const_iterator it = _out_pipes.find (routing_id_blob);
+    out_pipes_t::const_iterator it = _out_pipes.find (routing_id_blob);
     if (it == _out_pipes.end ()) {
         errno = EHOSTUNREACH;
         return -1;
@@ -492,7 +492,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         } else {
             routing_id.set (static_cast<unsigned char *> (msg.data ()),
                             msg.size ());
-            outpipes_t::iterator it = _out_pipes.find (routing_id);
+            out_pipes_t::iterator it = _out_pipes.find (routing_id);
             msg.close ();
 
             if (it != _out_pipes.end ()) {

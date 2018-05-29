@@ -308,6 +308,16 @@ class routing_socket_base_t : public socket_base_t
 
     std::string extract_connect_routing_id ();
 
+    struct out_pipe_t
+    {
+        zmq::pipe_t *pipe;
+        bool active;
+    };
+
+    //  Outbound pipes indexed by the peer IDs.
+    typedef std::map<blob_t, out_pipe_t> out_pipes_t;
+    out_pipes_t _out_pipes;
+
   private:
     // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
     std::string _connect_routing_id;

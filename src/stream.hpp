@@ -76,16 +76,6 @@ class stream_t : public routing_socket_base_t
     //  Holds the prefetched message.
     msg_t _prefetched_msg;
 
-    struct outpipe_t
-    {
-        zmq::pipe_t *pipe;
-        bool active;
-    };
-
-    //  Outbound pipes indexed by the peer IDs.
-    typedef std::map<blob_t, outpipe_t> outpipes_t;
-    outpipes_t _outpipes;
-
     //  The pipe we are currently writing to.
     zmq::pipe_t *_current_out;
 
