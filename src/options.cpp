@@ -183,16 +183,20 @@ int do_setsockopt_set (const void *const optval_,
     if (optvallen_ == 0 && optval_ == NULL) {
         set_->clear ();
         return 0;
-    } else if (optvallen_ == sizeof (T) && optval_ != NULL) {
-        set_->insert (*((const T *) optval_));
+    }
+    if (optvallen_ == sizeof (T) && optval_ != NULL) {
+        set_->insert (*(static_cast<const T *> (optval_)));
         return 0;
     }
     return sockopt_invalid ();
 }
 
+// TODO why is 1000 a sensible default?
+const int default_hwm = 1000;
+
 zmq::options_t::options_t () :
-    sndhwm (1000),
-    rcvhwm (1000),
+    sndhwm (default_hwm),
+    rcvhwm (default_hwm),
     affinity (0),
     routing_id_size (0),
     rate (100),
@@ -321,7 +325,7 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_ROUTING_ID:
             //  Routing id is any binary string from 1 to 255 octets
-            if (optvallen_ > 0 && optvallen_ < 256) {
+            if (optvallen_ > 0 && optvallen_ <= UCHAR_MAX) {
                 routing_id_size = static_cast<unsigned char> (optvallen_);
                 memcpy (routing_id, optval_, routing_id_size);
                 return 0;
@@ -538,7 +542,8 @@ int zmq::options_t::setsockopt (int option_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
                 return 0;
-            } else if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            } else if (optvallen_ > 0 && optvallen_ <= UCHAR_MAX
+                       && optval_ != NULL) {
                 plain_username.assign (static_cast<const char *> (optval_),
                                        optvallen_);
                 as_server = 0;
@@ -551,7 +556,8 @@ int zmq::options_t::setsockopt (int option_,
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
                 return 0;
-            } else if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            } else if (optvallen_ > 0 && optvallen_ <= UCHAR_MAX
+                       && optval_ != NULL) {
                 plain_password.assign (static_cast<const char *> (optval_),
                                        optvallen_);
                 as_server = 0;
@@ -610,7 +616,7 @@ int zmq::options_t::setsockopt (int option_,
             break;
 
         case ZMQ_GSSAPI_PRINCIPAL:
-            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            if (optvallen_ > 0 && optvallen_ <= UCHAR_MAX && optval_ != NULL) {
                 gss_principal.assign ((const char *) optval_, optvallen_);
                 mechanism = ZMQ_GSSAPI;
                 return 0;
@@ -618,7 +624,7 @@ int zmq::options_t::setsockopt (int option_,
             break;
 
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL:
-            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+            if (optvallen_ > 0 && optvallen_ <= UCHAR_MAX && optval_ != NULL) {
                 gss_service_principal.assign ((const char *) optval_,
                                               optvallen_);
                 mechanism = ZMQ_GSSAPI;
@@ -721,11 +727,11 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_METADATA:
             if (optvallen_ > 0 && !is_int) {
-                const std::string s (reinterpret_cast<const char *> (optval_));
-                const size_t pos = s.find (":");
+                const std::string s (static_cast<const char *> (optval_));
+                const size_t pos = s.find (':');
                 if (pos != std::string::npos && pos != 0
                     && pos != s.length () - 1) {
-                    std::string key = s.substr (0, pos);
+                    const std::string key = s.substr (0, pos);
                     if (key.compare (0, 2, "X-") == 0
                         && key.length () <= UCHAR_MAX) {
                         std::string val = s.substr (pos + 1, s.length ());
@@ -773,7 +779,7 @@ int zmq::options_t::getsockopt (int option_,
                                 void *optval_,
                                 size_t *optvallen_) const
 {
-    bool is_int = (*optvallen_ == sizeof (int));
+    const bool is_int = (*optvallen_ == sizeof (int));
     int *value = static_cast<int *> (optval_);
 #if defined(ZMQ_ACT_MILITANT)
     bool malformed = true; //  Did caller pass a bad option value?
@@ -1155,10 +1161,4 @@ int zmq::options_t::getsockopt (int option_,
 #endif
     errno = EINVAL;
     return -1;
-}
-
-bool zmq::options_t::is_valid (int option_) const
-{
-    LIBZMQ_UNUSED (option_);
-    return true;
 }

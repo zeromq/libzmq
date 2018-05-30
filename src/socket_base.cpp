@@ -364,11 +364,6 @@ int zmq::socket_base_t::setsockopt (int option_,
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    if (!options.is_valid (option_)) {
-        errno = EINVAL;
-        return -1;
-    }
-
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
