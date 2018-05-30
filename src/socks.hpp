@@ -39,7 +39,7 @@ namespace zmq
 struct socks_greeting_t
 {
     socks_greeting_t (uint8_t method_);
-    socks_greeting_t (uint8_t *methods_, uint8_t num_methods_);
+    socks_greeting_t (const uint8_t *methods_, uint8_t num_methods_);
 
     uint8_t methods[UINT8_MAX];
     const size_t num_methods;
