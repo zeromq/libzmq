@@ -76,8 +76,10 @@ struct address_t
     ctx_t *const parent;
 
     //  Protocol specific resolved address
+    //  All members must be pointers to allow for consistent initialization
     union
     {
+        void *dummy;
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \

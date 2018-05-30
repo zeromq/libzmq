@@ -51,7 +51,7 @@ zmq::address_t::address_t (const std::string &protocol_,
     address (address_),
     parent (parent_)
 {
-    memset (&resolved, 0, sizeof resolved);
+    resolved.dummy = NULL;
 }
 
 zmq::address_t::~address_t ()
