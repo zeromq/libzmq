@@ -228,7 +228,7 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
     } else if (mask_str == "0")
         _address_mask = 0;
     else {
-        const int mask = atoi (mask_str.c_str ());
+        const long mask = strtol (mask_str.c_str (), NULL, 10);
         if ((mask < 1)
             || (_network_address.family () == AF_INET6 && mask > full_mask_ipv6)
             || (_network_address.family () != AF_INET6
@@ -236,7 +236,7 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
             errno = EINVAL;
             return -1;
         }
-        _address_mask = mask;
+        _address_mask = static_cast<int> (mask);
     }
 
     return 0;
