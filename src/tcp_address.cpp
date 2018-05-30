@@ -71,10 +71,6 @@ zmq::tcp_address_t::tcp_address_t (const sockaddr *sa_, socklen_t sa_len_) :
         memcpy (&_address.ipv6, sa_, sizeof (_address.ipv6));
 }
 
-zmq::tcp_address_t::~tcp_address_t ()
-{
-}
-
 int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 {
     // Test the ';' to know if we have a source address in name_
@@ -117,7 +113,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     return resolver.resolve (&_address, name_);
 }
 
-int zmq::tcp_address_t::to_string (std::string &addr_)
+int zmq::tcp_address_t::to_string (std::string &addr_) const
 {
     if (_address.family () != AF_INET && _address.family () != AF_INET6) {
         addr_.clear ();
@@ -127,8 +123,8 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
     //  Not using service resolving because of
     //  https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
     char hbuf[NI_MAXHOST];
-    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0,
-                          NI_NUMERICHOST);
+    const int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL,
+                                0, NI_NUMERICHOST);
     if (rc != 0) {
         addr_.clear ();
         return rc;
@@ -148,28 +144,22 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
 
 const sockaddr *zmq::tcp_address_t::addr () const
 {
-    return &_address.generic;
+    return _address.as_sockaddr ();
 }
 
 socklen_t zmq::tcp_address_t::addrlen () const
 {
-    if (_address.generic.sa_family == AF_INET6)
-        return static_cast<socklen_t> (sizeof (_address.ipv6));
-
-    return static_cast<socklen_t> (sizeof (_address.ipv4));
+    return _address.sockaddr_len ();
 }
 
 const sockaddr *zmq::tcp_address_t::src_addr () const
 {
-    return &_source_address.generic;
+    return _source_address.as_sockaddr ();
 }
 
 socklen_t zmq::tcp_address_t::src_addrlen () const
 {
-    if (_address.family () == AF_INET6)
-        return static_cast<socklen_t> (sizeof (_source_address.ipv6));
-
-    return static_cast<socklen_t> (sizeof (_source_address.ipv4));
+    return _source_address.sockaddr_len ();
 }
 
 bool zmq::tcp_address_t::has_src_addr () const
@@ -186,10 +176,9 @@ sa_family_t zmq::tcp_address_t::family () const
     return _address.family ();
 }
 
-zmq::tcp_address_mask_t::tcp_address_mask_t () :
-    tcp_address_t (),
-    _address_mask (-1)
+zmq::tcp_address_mask_t::tcp_address_mask_t () : _address_mask (-1)
 {
+    memset (&_network_address, 0, sizeof (_network_address));
 }
 
 int zmq::tcp_address_mask_t::mask () const
@@ -224,23 +213,26 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 
     ip_resolver_t resolver (resolver_opts);
 
-    const int rc = resolver.resolve (&_address, addr_str.c_str ());
+    const int rc = resolver.resolve (&_network_address, addr_str.c_str ());
     if (rc != 0)
         return rc;
 
     // Parse the cidr mask number.
-    const int full_mask_ipv4 = sizeof (_address.ipv4.sin_addr) * CHAR_BIT;
-    const int full_mask_ipv6 = sizeof (_address.ipv6.sin6_addr) * CHAR_BIT;
+    const int full_mask_ipv4 =
+      sizeof (_network_address.ipv4.sin_addr) * CHAR_BIT;
+    const int full_mask_ipv6 =
+      sizeof (_network_address.ipv6.sin6_addr) * CHAR_BIT;
     if (mask_str.empty ()) {
-        _address_mask =
-          _address.family () == AF_INET6 ? full_mask_ipv6 : full_mask_ipv4;
+        _address_mask = _network_address.family () == AF_INET6 ? full_mask_ipv6
+                                                               : full_mask_ipv4;
     } else if (mask_str == "0")
         _address_mask = 0;
     else {
         const int mask = atoi (mask_str.c_str ());
         if ((mask < 1)
-            || (_address.family () == AF_INET6 && mask > full_mask_ipv6)
-            || (_address.family () != AF_INET6 && mask > full_mask_ipv4)) {
+            || (_network_address.family () == AF_INET6 && mask > full_mask_ipv6)
+            || (_network_address.family () != AF_INET6
+                && mask > full_mask_ipv4)) {
             errno = EINVAL;
             return -1;
         }
@@ -250,9 +242,10 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
     return 0;
 }
 
-int zmq::tcp_address_mask_t::to_string (std::string &addr_)
+int zmq::tcp_address_mask_t::to_string (std::string &addr_) const
 {
-    if (_address.family () != AF_INET && _address.family () != AF_INET6) {
+    if (_network_address.family () != AF_INET
+        && _network_address.family () != AF_INET6) {
         addr_.clear ();
         return -1;
     }
@@ -262,14 +255,15 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
     }
 
     char hbuf[NI_MAXHOST];
-    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0,
-                          NI_NUMERICHOST);
+    const int rc = getnameinfo (_network_address.as_sockaddr (),
+                                _network_address.sockaddr_len (), hbuf,
+                                sizeof (hbuf), NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
         addr_.clear ();
         return rc;
     }
 
-    if (_address.family () == AF_INET6) {
+    if (_network_address.family () == AF_INET6) {
         std::stringstream s;
         s << "[" << hbuf << "]/" << _address_mask;
         addr_ = s.str ();
@@ -285,9 +279,10 @@ bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss_,
                                              const socklen_t ss_len_) const
 {
     zmq_assert (_address_mask != -1 && ss_ != NULL
-                && ss_len_ >= (socklen_t) sizeof (struct sockaddr));
+                && ss_len_
+                     >= static_cast<socklen_t> (sizeof (struct sockaddr)));
 
-    if (ss_->sa_family != _address.generic.sa_family)
+    if (ss_->sa_family != _network_address.generic.sa_family)
         return false;
 
     if (_address_mask > 0) {
@@ -298,15 +293,15 @@ bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss_,
             their_bytes = reinterpret_cast<const uint8_t *> (
               &((reinterpret_cast<const struct sockaddr_in6 *> (ss_))
                   ->sin6_addr));
-            our_bytes =
-              reinterpret_cast<const uint8_t *> (&_address.ipv6.sin6_addr);
+            our_bytes = reinterpret_cast<const uint8_t *> (
+              &_network_address.ipv6.sin6_addr);
             mask = sizeof (struct in6_addr) * 8;
         } else {
             zmq_assert (ss_len_ == sizeof (struct sockaddr_in));
             their_bytes = reinterpret_cast<const uint8_t *> (&(
               (reinterpret_cast<const struct sockaddr_in *> (ss_))->sin_addr));
-            our_bytes =
-              reinterpret_cast<const uint8_t *> (&_address.ipv4.sin_addr);
+            our_bytes = reinterpret_cast<const uint8_t *> (
+              &_network_address.ipv4.sin_addr);
             mask = sizeof (struct in_addr) * 8;
         }
         if (_address_mask < mask)
