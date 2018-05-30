@@ -87,10 +87,10 @@ struct iovec
 #include "msg.hpp"
 #include "fd.hpp"
 #include "metadata.hpp"
-#include "signaler.hpp"
 #include "socket_poller.hpp"
 #include "timers.hpp"
 #include "ip.hpp"
+#include "address.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -1489,7 +1489,7 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
 int zmq_has (const char *capability_)
 {
 #if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
-    if (strcmp (capability_, "ipc") == 0)
+    if (strcmp (capability_, zmq::protocol_name::ipc) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_OPENPGM)
@@ -1497,7 +1497,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_TIPC)
-    if (strcmp (capability_, "tipc") == 0)
+    if (strcmp (capability_, zmq::protocol_name::tipc) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_NORM)
@@ -1513,7 +1513,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_VMCI)
-    if (strcmp (capability_, "vmci") == 0)
+    if (strcmp (capability_, zmq::protocol_name::vmci) == 0)
         return true;
 #endif
 #if defined(ZMQ_BUILD_DRAFT_API)

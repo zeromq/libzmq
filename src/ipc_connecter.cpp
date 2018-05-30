@@ -67,7 +67,7 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
-    zmq_assert (addr->protocol == "ipc");
+    zmq_assert (addr->protocol == protocol_name::ipc);
     addr->to_string (endpoint);
     socket = session->get_socket ();
 }

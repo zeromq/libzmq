@@ -295,9 +295,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     if (protocol_ != "inproc"
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-        && protocol_ != "ipc"
+        && protocol_ != protocol_name::ipc
 #endif
-        && protocol_ != "tcp"
+        && protocol_ != protocol_name::tcp
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -305,15 +305,15 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 #endif
 #if defined ZMQ_HAVE_TIPC
         // TIPC transport is only available on Linux.
-        && protocol_ != "tipc"
+        && protocol_ != protocol_name::tipc
 #endif
 #if defined ZMQ_HAVE_NORM
         && protocol_ != "norm"
 #endif
 #if defined ZMQ_HAVE_VMCI
-        && protocol_ != "vmci"
+        && protocol_ != protocol_name::vmci
 #endif
-        && protocol_ != "udp") {
+        && protocol_ != protocol_name::udp) {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -330,7 +330,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     }
 #endif
 
-    if (protocol_ == "udp"
+    if (protocol_ == protocol_name::udp
         && (options.type != ZMQ_DISH && options.type != ZMQ_RADIO
             && options.type != ZMQ_DGRAM)) {
         errno = ENOCOMPATPROTO;
@@ -511,7 +511,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "udp") {
+    if (protocol == protocol_name::udp) {
         if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
             errno = ENOCOMPATPROTO;
             return -1;
@@ -575,7 +575,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return -1;
     }
 
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         tcp_listener_t *listener =
           new (std::nothrow) tcp_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -596,7 +596,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    if (protocol == "ipc") {
+    if (protocol == protocol_name::ipc) {
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -616,7 +616,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    if (protocol == "tipc") {
+    if (protocol == protocol_name::tipc) {
         tipc_listener_t *listener =
           new (std::nothrow) tipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -636,7 +636,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
-    if (protocol == "vmci") {
+    if (protocol == protocol_name::vmci) {
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -809,7 +809,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         //  Do some basic sanity checks on tcp:// address syntax
         //  - hostname starts with digit or letter, with embedded '-' or '.'
         //  - IPv6 address may contain hex chars and colons.
@@ -853,7 +853,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    else if (protocol == "ipc") {
+    else if (protocol == protocol_name::ipc) {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
@@ -864,7 +864,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 
-    if (protocol == "udp") {
+    if (protocol == protocol_name::udp) {
         if (options.type != ZMQ_RADIO) {
             errno = ENOCOMPATPROTO;
             LIBZMQ_DELETE (paddr);
@@ -897,7 +897,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
+    else if (protocol == protocol_name::tipc) {
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
@@ -917,7 +917,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
-    else if (protocol == "vmci") {
+    else if (protocol == protocol_name::vmci) {
         paddr->resolved.vmci_addr =
           new (std::nothrow) vmci_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vmci_addr);
@@ -937,7 +937,8 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
     bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
-                            || protocol == "norm" || protocol == "udp";
+                            || protocol == "norm"
+                            || protocol == protocol_name::udp;
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
@@ -1039,7 +1040,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
     // resolve before giving up. Given at this stage we don't know whether a
     // socket is connected or bound, try with both.
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         if (_endpoints.find (resolved_addr) == _endpoints.end ()) {
             tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
             alloc_assert (tcp_addr);
