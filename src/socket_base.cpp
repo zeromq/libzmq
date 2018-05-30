@@ -1577,7 +1577,7 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
     _rcvmore = (msg_->flags () & msg_t::more) != 0;
 }
 
-int zmq::socket_base_t::monitor (const char *addr_, int events_)
+int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
 {
     scoped_lock_t lock (_monitor_sync);
 
@@ -1587,14 +1587,14 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     }
 
     //  Support deregistering monitoring endpoints as well
-    if (addr_ == NULL) {
+    if (endpoint_ == NULL) {
         stop_monitor ();
         return 0;
     }
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
+    if (parse_uri (endpoint_, protocol, address) || check_protocol (protocol))
         return -1;
 
     //  Event notification only supported over inproc://
@@ -1620,7 +1620,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
         stop_monitor (false);
 
     //  Spawn the monitor socket endpoint
-    rc = zmq_bind (_monitor_socket, addr_);
+    rc = zmq_bind (_monitor_socket, endpoint_);
     if (rc == -1)
         stop_monitor (false);
     return rc;
@@ -1809,34 +1809,35 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     return res;
 }
 
-void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id, pipe_t *pipe_)
+void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id_,
+                                               pipe_t *pipe_)
 {
     //  Add the record into output pipes lookup table
     const out_pipe_t outpipe = {pipe_, true};
     const bool ok =
-      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
+      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id_), outpipe)
         .second;
     zmq_assert (ok);
 }
 
-bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id) const
+bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id_) const
 {
-    return 0 != _out_pipes.count (routing_id);
+    return 0 != _out_pipes.count (routing_id_);
 }
 
 zmq::routing_socket_base_t::out_pipe_t *
-zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id)
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_)
 {
     // TODO we could probably avoid constructor a temporary blob_t to call this function
-    out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    out_pipes_t::iterator it = _out_pipes.find (routing_id_);
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 
 const zmq::routing_socket_base_t::out_pipe_t *
-zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id) const
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_) const
 {
     // TODO we could probably avoid constructor a temporary blob_t to call this function
-    out_pipes_t::const_iterator it = _out_pipes.find (routing_id);
+    out_pipes_t::const_iterator it = _out_pipes.find (routing_id_);
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 
@@ -1847,9 +1848,9 @@ void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
 }
 
 zmq::routing_socket_base_t::out_pipe_t
-zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id)
+zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id_)
 {
-    const out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    const out_pipes_t::iterator it = _out_pipes.find (routing_id_);
     out_pipe_t res = {NULL, false};
     if (it != _out_pipes.end ()) {
         res = it->second;

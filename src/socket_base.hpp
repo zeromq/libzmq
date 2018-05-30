@@ -137,8 +137,8 @@ class socket_base_t : public own_t,
 
     //  Query the state of a specific peer. The default implementation
     //  always returns an ENOTSUP error.
-    virtual int get_peer_state (const void *identity_,
-                                size_t identity_size_) const;
+    virtual int get_peer_state (const void *routing_id_,
+                                size_t routing_id_size_) const;
 
   protected:
     socket_base_t (zmq::ctx_t *parent_,
@@ -186,7 +186,7 @@ class socket_base_t : public own_t,
 
   private:
     // test if event should be sent and then dispatch it
-    void event (const std::string &addr_, intptr_t fd_, int type_);
+    void event (const std::string &addr_, intptr_t value_, int type_);
 
     // Socket event data dispatch
     void monitor_event (int event_, intptr_t value_, const std::string &addr_);
@@ -318,18 +318,18 @@ class routing_socket_base_t : public socket_base_t
         bool active;
     };
 
-    void add_out_pipe (blob_t routing_id, pipe_t *pipe_);
-    bool has_out_pipe (const blob_t &routing_id) const;
-    out_pipe_t *lookup_out_pipe (const blob_t &routing_id);
-    const out_pipe_t *lookup_out_pipe (const blob_t &routing_id) const;
+    void add_out_pipe (blob_t routing_id_, pipe_t *pipe_);
+    bool has_out_pipe (const blob_t &routing_id_) const;
+    out_pipe_t *lookup_out_pipe (const blob_t &routing_id_);
+    const out_pipe_t *lookup_out_pipe (const blob_t &routing_id_) const;
     void erase_out_pipe (pipe_t *pipe_);
-    out_pipe_t try_erase_out_pipe (const blob_t &routing_id);
-    template <typename Func> bool any_of_out_pipes (Func func)
+    out_pipe_t try_erase_out_pipe (const blob_t &routing_id_);
+    template <typename Func> bool any_of_out_pipes (Func func_)
     {
         bool res = false;
         for (out_pipes_t::iterator it = _out_pipes.begin ();
              it != _out_pipes.end () && !res; ++it) {
-            res |= func (*it->second.pipe);
+            res |= func_ (*it->second.pipe);
         }
 
         return res;
