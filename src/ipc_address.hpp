@@ -44,7 +44,7 @@ class ipc_address_t
 {
   public:
     ipc_address_t ();
-    ipc_address_t (const sockaddr *sa, socklen_t sa_len);
+    ipc_address_t (const sockaddr *sa_, socklen_t sa_len_);
     ~ipc_address_t ();
 
     //  This function sets up the address for UNIX domain transport.

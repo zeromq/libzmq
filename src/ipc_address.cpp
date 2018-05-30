@@ -43,13 +43,13 @@ zmq::ipc_address_t::ipc_address_t ()
     memset (&address, 0, sizeof address);
 }
 
-zmq::ipc_address_t::ipc_address_t (const sockaddr *sa, socklen_t sa_len)
+zmq::ipc_address_t::ipc_address_t (const sockaddr *sa_, socklen_t sa_len_)
 {
-    zmq_assert (sa && sa_len > 0);
+    zmq_assert (sa_ && sa_len_ > 0);
 
     memset (&address, 0, sizeof address);
-    if (sa->sa_family == AF_UNIX)
-        memcpy (&address, sa, sa_len);
+    if (sa_->sa_family == AF_UNIX)
+        memcpy (&address, sa_, sa_len_);
 }
 
 zmq::ipc_address_t::~ipc_address_t ()
