@@ -19,6 +19,8 @@
 #cmakedefine HAVE_MKDTEMP
 #cmakedefine ZMQ_HAVE_UIO
 
+#cmakedefine ZMQ_HAVE_NOEXCEPT
+
 #cmakedefine ZMQ_HAVE_EVENTFD
 #cmakedefine ZMQ_HAVE_EVENTFD_CLOEXEC
 #cmakedefine ZMQ_HAVE_IFADDRS

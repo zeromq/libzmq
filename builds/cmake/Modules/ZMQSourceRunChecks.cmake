@@ -293,3 +293,21 @@ int main (int argc, char *argv [])
 "
     ZMQ_HAVE_GETRANDOM)
 endmacro()
+
+macro(zmq_check_noexcept)
+  message(STATUS "Checking whether noexcept is supported")
+  check_cxx_source_compiles(
+"
+struct X 
+{
+    X(int i) noexcept {}
+};
+
+int main(int argc, char *argv [])
+{
+    X x(5);
+    return 0;
+}
+"
+    ZMQ_HAVE_NOEXCEPT)
+endmacro()
