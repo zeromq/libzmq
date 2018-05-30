@@ -328,9 +328,8 @@ class routing_socket_base_t : public socket_base_t
     {
         bool res = false;
         for (out_pipes_t::iterator it = _out_pipes.begin ();
-             it != _out_pipes.end (); ++it) {
-            if (res |= func (*it->second.pipe))
-                break;
+             it != _out_pipes.end () && !res; ++it) {
+            res |= func (*it->second.pipe);
         }
 
         return res;
