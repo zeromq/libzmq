@@ -60,12 +60,12 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
     msg_->set_flags (msg_t::routing_id);
 }
 
-void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
+void zmq::mechanism_t::set_user_id (const void *user_id_, size_t size_)
 {
-    _user_id.set (static_cast<const unsigned char *> (data_), size_);
+    _user_id.set (static_cast<const unsigned char *> (user_id_), size_);
     _zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
       std::string (ZMQ_MSG_PROPERTY_USER_ID),
-      std::string (reinterpret_cast<const char *> (data_), size_));
+      std::string (reinterpret_cast<const char *> (user_id_), size_));
 }
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const
@@ -159,20 +159,20 @@ size_t zmq::mechanism_t::property_len (const char *name_, size_t value_len_)
 #define ZMTP_PROPERTY_SOCKET_TYPE "Socket-Type"
 #define ZMTP_PROPERTY_IDENTITY "Identity"
 
-size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf_,
-                                               size_t buf_capacity_) const
+size_t zmq::mechanism_t::add_basic_properties (unsigned char *ptr_,
+                                               size_t ptr_capacity_) const
 {
-    unsigned char *ptr = buf_;
+    unsigned char *ptr = ptr_;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, buf_capacity_, ZMTP_PROPERTY_SOCKET_TYPE,
+    ptr += add_property (ptr, ptr_capacity_, ZMTP_PROPERTY_SOCKET_TYPE,
                          socket_type, strlen (socket_type));
 
     //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER) {
-        ptr += add_property (ptr, buf_capacity_ - (ptr - buf_),
+        ptr += add_property (ptr, ptr_capacity_ - (ptr - ptr_),
                              ZMTP_PROPERTY_IDENTITY, options.routing_id,
                              options.routing_id_size);
     }
@@ -182,10 +182,10 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf_,
            options.app_metadata.begin ();
          it != options.app_metadata.end (); ++it)
         ptr +=
-          add_property (ptr, buf_capacity_ - (ptr - buf_), it->first.c_str (),
+          add_property (ptr, ptr_capacity_ - (ptr - ptr_), it->first.c_str (),
                         it->second.c_str (), strlen (it->second.c_str ()));
 
-    return ptr - buf_;
+    return ptr - ptr_;
 }
 
 size_t zmq::mechanism_t::basic_properties_len () const
