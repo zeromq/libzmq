@@ -205,7 +205,7 @@ void zmq::zmtp_engine_t::receive_greeting_versioned ()
                 || _greeting_recv[revision_pos] == ZMTP_2_0)
                 _outpos[_outsize++] = _options.type;
             else {
-                _outpos[_outsize++] = 0; //  Minor version number
+                _outpos[_outsize++] = 1; //  Minor version number
                 memset (_outpos + _outsize, 0, 20);
 
                 zmq_assert (_options.mechanism == ZMQ_NULL
