@@ -52,17 +52,17 @@ void zmq::v2_encoder_t::message_ready ()
     //  Encode flags.
     unsigned char &protocol_flags = _tmp_buf[0];
     protocol_flags = 0;
-    if (in_progress->flags () & msg_t::more)
+    if (in_progress ()->flags () & msg_t::more)
         protocol_flags |= v2_protocol_t::more_flag;
-    if (in_progress->size () > UCHAR_MAX)
+    if (in_progress ()->size () > UCHAR_MAX)
         protocol_flags |= v2_protocol_t::large_flag;
-    if (in_progress->flags () & msg_t::command)
+    if (in_progress ()->flags () & msg_t::command)
         protocol_flags |= v2_protocol_t::command_flag;
 
     //  Encode the message length. For messages less then 256 bytes,
     //  the length is encoded as 8-bit unsigned integer. For larger
     //  messages, 64-bit unsigned integer in network byte order is used.
-    const size_t size = in_progress->size ();
+    const size_t size = in_progress ()->size ();
     if (unlikely (size > UCHAR_MAX)) {
         put_uint64 (_tmp_buf + 1, size);
         next_step (_tmp_buf, 9, &v2_encoder_t::size_ready, false);
@@ -75,6 +75,6 @@ void zmq::v2_encoder_t::message_ready ()
 void zmq::v2_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    next_step (in_progress->data (), in_progress->size (),
+    next_step (in_progress ()->data (), in_progress ()->size (),
                &v2_encoder_t::message_ready, true);
 }

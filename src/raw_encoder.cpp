@@ -45,6 +45,6 @@ zmq::raw_encoder_t::~raw_encoder_t ()
 
 void zmq::raw_encoder_t::raw_message_ready ()
 {
-    next_step (in_progress->data (), in_progress->size (),
+    next_step (in_progress ()->data (), in_progress ()->size (),
                &raw_encoder_t::raw_message_ready, true);
 }
