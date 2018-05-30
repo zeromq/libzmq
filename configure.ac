@@ -813,8 +813,14 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
 
 # clang 6 has a warning that does not make sense on multi-platform code
+AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
-    [CFLAGS+=" -Wno-tautological-constant-compare" CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [CFLAGS+=" -Wno-tautological-constant-compare"],
+    [],
+    [-Werror])
+AC_LANG_POP([C])
+AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+    [CXXFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 
