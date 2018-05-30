@@ -65,7 +65,7 @@ class io_object_t : public i_poll_events
     void reset_pollin (handle_t handle_);
     void set_pollout (handle_t handle_);
     void reset_pollout (handle_t handle_);
-    void add_timer (int timout_, int id_);
+    void add_timer (int timeout_, int id_);
     void cancel_timer (int id_);
 
     //  i_poll_events interface implementation.
