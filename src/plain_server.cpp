@@ -120,7 +120,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < hello_prefix_len
-        || memcmp (ptr, hello_prefix, hello_prefix_len)) {
+        || memcmp (ptr, hello_prefix, hello_prefix_len) != 0) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
@@ -214,7 +214,7 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const size_t bytes_left = msg_->size ();
 
     if (bytes_left < initiate_prefix_len
-        || memcmp (ptr, initiate_prefix, initiate_prefix_len)) {
+        || memcmp (ptr, initiate_prefix, initiate_prefix_len) != 0) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
