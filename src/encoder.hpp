@@ -54,14 +54,14 @@ namespace zmq
 template <typename T> class encoder_base_t : public i_encoder
 {
   public:
-    inline encoder_base_t (size_t bufsize_) :
+    inline explicit encoder_base_t (size_t bufsize_) :
         _write_pos (0),
         _to_write (0),
         _next (NULL),
         _new_msg_flag (false),
         _buf_size (bufsize_),
         _buf (static_cast<unsigned char *> (malloc (bufsize_))),
-        in_progress (NULL)
+        _in_progress (NULL)
     {
         alloc_assert (_buf);
     }
@@ -78,7 +78,7 @@ template <typename T> class encoder_base_t : public i_encoder
         unsigned char *buffer = !*data_ ? _buf : *data_;
         size_t buffersize = !*data_ ? _buf_size : size_;
 
-        if (in_progress == NULL)
+        if (in_progress () == NULL)
             return 0;
 
         size_t pos = 0;
@@ -88,11 +88,11 @@ template <typename T> class encoder_base_t : public i_encoder
             //  in the buffer.
             if (!_to_write) {
                 if (_new_msg_flag) {
-                    int rc = in_progress->close ();
+                    int rc = _in_progress->close ();
                     errno_assert (rc == 0);
-                    rc = in_progress->init ();
+                    rc = _in_progress->init ();
                     errno_assert (rc == 0);
-                    in_progress = NULL;
+                    _in_progress = NULL;
                     break;
                 }
                 (static_cast<T *> (this)->*_next) ();
@@ -130,8 +130,8 @@ template <typename T> class encoder_base_t : public i_encoder
 
     void load_msg (msg_t *msg_)
     {
-        zmq_assert (in_progress == NULL);
-        in_progress = msg_;
+        zmq_assert (in_progress () == NULL);
+        _in_progress = msg_;
         (static_cast<T *> (this)->*_next) ();
     }
 
@@ -151,6 +151,8 @@ template <typename T> class encoder_base_t : public i_encoder
         _next = next_;
         _new_msg_flag = new_msg_flag_;
     }
+
+    msg_t *in_progress () { return _in_progress; }
 
   private:
     //  Where to get the data to write from.
@@ -172,8 +174,7 @@ template <typename T> class encoder_base_t : public i_encoder
     encoder_base_t (const encoder_base_t &);
     void operator= (const encoder_base_t &);
 
-  protected:
-    msg_t *in_progress;
+    msg_t *_in_progress;
 };
 }
 

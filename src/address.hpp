@@ -46,6 +46,23 @@ class tipc_address_t;
 #if defined ZMQ_HAVE_VMCI
 class vmci_address_t;
 #endif
+
+namespace protocol_name
+{
+static const char tcp[] = "tcp";
+static const char udp[] = "udp";
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
+static const char ipc[] = "ipc";
+#endif
+#if defined ZMQ_HAVE_TIPC
+static const char tipc[] = "tipc";
+#endif
+#if defined ZMQ_HAVE_VMCI
+static const char vmci[] = "vmci";
+#endif
+}
+
 struct address_t
 {
     address_t (const std::string &protocol_,
@@ -59,8 +76,10 @@ struct address_t
     ctx_t *const parent;
 
     //  Protocol specific resolved address
+    //  All members must be pointers to allow for consistent initialization
     union
     {
+        void *dummy;
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \

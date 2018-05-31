@@ -88,6 +88,17 @@ class ip_resolver_t
     int resolve (ip_addr_t *ip_addr_, const char *name_);
 
   protected:
+    //  Virtual functions that are overridden in tests
+    virtual int do_getaddrinfo (const char *node_,
+                                const char *service_,
+                                const struct addrinfo *hints_,
+                                struct addrinfo **res_);
+
+    virtual void do_freeaddrinfo (struct addrinfo *res_);
+
+    virtual unsigned int do_if_nametoindex (const char *ifname_);
+
+  private:
     ip_resolver_options_t _options;
 
     int resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_);
@@ -97,16 +108,6 @@ class ip_resolver_t
     int get_interface_name (unsigned long index_, char **dest_) const;
     int wchar_to_utf8 (const WCHAR *src_, char **dest_) const;
 #endif
-
-    //  Virtual functions that are overriden in tests
-    virtual int do_getaddrinfo (const char *node_,
-                                const char *service_,
-                                const struct addrinfo *hints_,
-                                struct addrinfo **res_);
-
-    virtual void do_freeaddrinfo (struct addrinfo *res_);
-
-    virtual unsigned int do_if_nametoindex (const char *ifname_);
 };
 }
 

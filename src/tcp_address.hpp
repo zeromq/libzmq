@@ -44,7 +44,6 @@ class tcp_address_t
   public:
     tcp_address_t ();
     tcp_address_t (const sockaddr *sa_, socklen_t sa_len_);
-    virtual ~tcp_address_t ();
 
     //  This function translates textual TCP address into an address
     //  structure. If 'local' is true, names are resolved as local interface
@@ -53,7 +52,7 @@ class tcp_address_t
     int resolve (const char *name_, bool local_, bool ipv6_);
 
     //  The opposite to resolve()
-    virtual int to_string (std::string &addr_);
+    int to_string (std::string &addr_) const;
 
 #if defined ZMQ_HAVE_WINDOWS
     unsigned short family () const;
@@ -67,13 +66,13 @@ class tcp_address_t
     socklen_t src_addrlen () const;
     bool has_src_addr () const;
 
-  protected:
+  private:
     ip_addr_t _address;
     ip_addr_t _source_address;
     bool _has_src_addr;
 };
 
-class tcp_address_mask_t : public tcp_address_t
+class tcp_address_mask_t
 {
   public:
     tcp_address_mask_t ();
@@ -84,7 +83,7 @@ class tcp_address_mask_t : public tcp_address_t
     int resolve (const char *name_, bool ipv6_);
 
     // The opposite to resolve()
-    int to_string (std::string &addr_);
+    int to_string (std::string &addr_) const;
 
     int mask () const;
 
@@ -92,6 +91,7 @@ class tcp_address_mask_t : public tcp_address_t
                         const socklen_t ss_len_) const;
 
   private:
+    ip_addr_t _network_address;
     int _address_mask;
 };
 }

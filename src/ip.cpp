@@ -667,14 +667,14 @@ void zmq::make_socket_noninheritable (fd_t sock_)
     const BOOL brc = SetHandleInformation (reinterpret_cast<HANDLE> (sock_),
                                            HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
-#endif
-
-#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                  \
+#elif (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4)                \
   && defined FD_CLOEXEC
     //  If there 's no SOCK_CLOEXEC, let's try the second best option.
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
     const int rc = fcntl (sock_, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
+#else
+    LIBZMQ_UNUSED (sock_);
 #endif
 }

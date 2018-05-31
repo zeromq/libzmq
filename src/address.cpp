@@ -51,73 +51,52 @@ zmq::address_t::address_t (const std::string &protocol_,
     address (address_),
     parent (parent_)
 {
-    memset (&resolved, 0, sizeof resolved);
+    resolved.dummy = NULL;
 }
 
 zmq::address_t::~address_t ()
 {
-    if (protocol == "tcp") {
-        if (resolved.tcp_addr) {
-            LIBZMQ_DELETE (resolved.tcp_addr);
-        }
-    }
-    if (protocol == "udp") {
-        if (resolved.udp_addr) {
-            LIBZMQ_DELETE (resolved.udp_addr);
-        }
+    if (protocol == protocol_name::tcp) {
+        LIBZMQ_DELETE (resolved.tcp_addr);
+    } else if (protocol == protocol_name::udp) {
+        LIBZMQ_DELETE (resolved.udp_addr);
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    else if (protocol == "ipc") {
-        if (resolved.ipc_addr) {
-            LIBZMQ_DELETE (resolved.ipc_addr);
-        }
+    else if (protocol == protocol_name::ipc) {
+        LIBZMQ_DELETE (resolved.ipc_addr);
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
-        if (resolved.tipc_addr) {
-            LIBZMQ_DELETE (resolved.tipc_addr);
-        }
+    else if (protocol == protocol_name::tipc) {
+        LIBZMQ_DELETE (resolved.tipc_addr);
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
-    else if (protocol == "vmci") {
-        if (resolved.vmci_addr) {
-            LIBZMQ_DELETE (resolved.vmci_addr);
-        }
+    else if (protocol == protocol_name::vmci) {
+        LIBZMQ_DELETE (resolved.vmci_addr);
     }
 #endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
 {
-    if (protocol == "tcp") {
-        if (resolved.tcp_addr)
-            return resolved.tcp_addr->to_string (addr_);
-    }
-    if (protocol == "udp") {
-        if (resolved.udp_addr)
-            return resolved.udp_addr->to_string (addr_);
-    }
+    if (protocol == protocol_name::tcp && resolved.tcp_addr)
+        return resolved.tcp_addr->to_string (addr_);
+    if (protocol == protocol_name::udp && resolved.udp_addr)
+        return resolved.udp_addr->to_string (addr_);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    else if (protocol == "ipc") {
-        if (resolved.ipc_addr)
-            return resolved.ipc_addr->to_string (addr_);
-    }
+    if (protocol == protocol_name::ipc && resolved.ipc_addr)
+        return resolved.ipc_addr->to_string (addr_);
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
-        if (resolved.tipc_addr)
-            return resolved.tipc_addr->to_string (addr_);
-    }
+    if (protocol == protocol_name::tipc && resolved.tipc_addr)
+        return resolved.tipc_addr->to_string (addr_);
 #endif
 #if defined ZMQ_HAVE_VMCI
-    else if (protocol == "vmci") {
-        if (resolved.vmci_addr)
-            return resolved.vmci_addr->to_string (addr_);
-    }
+    if (protocol == protocol_name::vmci && resolved.vmci_addr)
+        return resolved.vmci_addr->to_string (addr_);
 #endif
 
     if (!protocol.empty () && !address.empty ()) {

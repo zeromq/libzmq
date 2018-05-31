@@ -45,7 +45,7 @@ zmq::socks_greeting_t::socks_greeting_t (uint8_t method_) : num_methods (1)
     methods[0] = method_;
 }
 
-zmq::socks_greeting_t::socks_greeting_t (uint8_t *methods_,
+zmq::socks_greeting_t::socks_greeting_t (const uint8_t *methods_,
                                          uint8_t num_methods_) :
     num_methods (num_methods_)
 {
@@ -273,8 +273,8 @@ bool zmq::socks_response_decoder_t::message_ready () const
         return _bytes_read == 10;
     if (atyp == 0x03)
         return _bytes_read > 4 && _bytes_read == 4 + 1 + _buf[4] + 2u;
-    else
-        return _bytes_read == 22;
+
+    return _bytes_read == 22;
 }
 
 zmq::socks_response_t zmq::socks_response_decoder_t::decode ()

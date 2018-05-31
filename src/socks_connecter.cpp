@@ -72,7 +72,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     _current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (_addr);
-    zmq_assert (_addr->protocol == "tcp");
+    zmq_assert (_addr->protocol == protocol_name::tcp);
     _proxy_addr->to_string (_endpoint);
     _socket = _session->get_socket ();
 }

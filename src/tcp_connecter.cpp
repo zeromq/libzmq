@@ -82,7 +82,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     _socket (_session->get_socket ())
 {
     zmq_assert (_addr);
-    zmq_assert (_addr->protocol == "tcp");
+    zmq_assert (_addr->protocol == protocol_name::tcp);
     _addr->to_string (_endpoint);
     // TODO the return value is unused! what if it fails? if this is impossible
     // or does not matter, change such that endpoint in initialized using an

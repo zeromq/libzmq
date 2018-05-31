@@ -295,9 +295,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     if (protocol_ != "inproc"
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-        && protocol_ != "ipc"
+        && protocol_ != protocol_name::ipc
 #endif
-        && protocol_ != "tcp"
+        && protocol_ != protocol_name::tcp
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -305,15 +305,15 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 #endif
 #if defined ZMQ_HAVE_TIPC
         // TIPC transport is only available on Linux.
-        && protocol_ != "tipc"
+        && protocol_ != protocol_name::tipc
 #endif
 #if defined ZMQ_HAVE_NORM
         && protocol_ != "norm"
 #endif
 #if defined ZMQ_HAVE_VMCI
-        && protocol_ != "vmci"
+        && protocol_ != protocol_name::vmci
 #endif
-        && protocol_ != "udp") {
+        && protocol_ != protocol_name::udp) {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -330,7 +330,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     }
 #endif
 
-    if (protocol_ == "udp"
+    if (protocol_ == protocol_name::udp
         && (options.type != ZMQ_DISH && options.type != ZMQ_RADIO
             && options.type != ZMQ_DGRAM)) {
         errno = ENOCOMPATPROTO;
@@ -363,11 +363,6 @@ int zmq::socket_base_t::setsockopt (int option_,
                                     size_t optvallen_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
-
-    if (!options.is_valid (option_)) {
-        errno = EINVAL;
-        return -1;
-    }
 
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
@@ -516,7 +511,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "udp") {
+    if (protocol == protocol_name::udp) {
         if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
             errno = ENOCOMPATPROTO;
             return -1;
@@ -580,7 +575,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return -1;
     }
 
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         tcp_listener_t *listener =
           new (std::nothrow) tcp_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -601,7 +596,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    if (protocol == "ipc") {
+    if (protocol == protocol_name::ipc) {
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -621,7 +616,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    if (protocol == "tipc") {
+    if (protocol == protocol_name::tipc) {
         tipc_listener_t *listener =
           new (std::nothrow) tipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -641,7 +636,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
-    if (protocol == "vmci") {
+    if (protocol == protocol_name::vmci) {
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
         alloc_assert (listener);
@@ -814,7 +809,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         //  Do some basic sanity checks on tcp:// address syntax
         //  - hostname starts with digit or letter, with embedded '-' or '.'
         //  - IPv6 address may contain hex chars and colons.
@@ -858,7 +853,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    else if (protocol == "ipc") {
+    else if (protocol == protocol_name::ipc) {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
@@ -869,7 +864,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 
-    if (protocol == "udp") {
+    if (protocol == protocol_name::udp) {
         if (options.type != ZMQ_RADIO) {
             errno = ENOCOMPATPROTO;
             LIBZMQ_DELETE (paddr);
@@ -902,7 +897,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
+    else if (protocol == protocol_name::tipc) {
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
@@ -922,7 +917,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 #if defined ZMQ_HAVE_VMCI
-    else if (protocol == "vmci") {
+    else if (protocol == protocol_name::vmci) {
         paddr->resolved.vmci_addr =
           new (std::nothrow) vmci_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vmci_addr);
@@ -942,7 +937,8 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
     bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
-                            || protocol == "norm" || protocol == "udp";
+                            || protocol == "norm"
+                            || protocol == protocol_name::udp;
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
@@ -1044,7 +1040,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
     // resolve before giving up. Given at this stage we don't know whether a
     // socket is connected or bound, try with both.
-    if (protocol == "tcp") {
+    if (protocol == protocol_name::tcp) {
         if (_endpoints.find (resolved_addr) == _endpoints.end ()) {
             tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
             alloc_assert (tcp_addr);
@@ -1581,7 +1577,7 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
     _rcvmore = (msg_->flags () & msg_t::more) != 0;
 }
 
-int zmq::socket_base_t::monitor (const char *addr_, int events_)
+int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
 {
     scoped_lock_t lock (_monitor_sync);
 
@@ -1591,14 +1587,14 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     }
 
     //  Support deregistering monitoring endpoints as well
-    if (addr_ == NULL) {
+    if (endpoint_ == NULL) {
         stop_monitor ();
         return 0;
     }
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
+    if (parse_uri (endpoint_, protocol, address) || check_protocol (protocol))
         return -1;
 
     //  Event notification only supported over inproc://
@@ -1624,7 +1620,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
         stop_monitor (false);
 
     //  Spawn the monitor socket endpoint
-    rc = zmq_bind (_monitor_socket, addr_);
+    rc = zmq_bind (_monitor_socket, endpoint_);
     if (rc == -1)
         stop_monitor (false);
     return rc;
@@ -1813,34 +1809,35 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     return res;
 }
 
-void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id, pipe_t *pipe_)
+void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id_,
+                                               pipe_t *pipe_)
 {
     //  Add the record into output pipes lookup table
     const out_pipe_t outpipe = {pipe_, true};
     const bool ok =
-      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id), outpipe)
+      _out_pipes.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE (routing_id_), outpipe)
         .second;
     zmq_assert (ok);
 }
 
-bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id) const
+bool zmq::routing_socket_base_t::has_out_pipe (const blob_t &routing_id_) const
 {
-    return 0 != _out_pipes.count (routing_id);
+    return 0 != _out_pipes.count (routing_id_);
 }
 
 zmq::routing_socket_base_t::out_pipe_t *
-zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id)
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_)
 {
     // TODO we could probably avoid constructor a temporary blob_t to call this function
-    out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    out_pipes_t::iterator it = _out_pipes.find (routing_id_);
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 
 const zmq::routing_socket_base_t::out_pipe_t *
-zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id) const
+zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_) const
 {
     // TODO we could probably avoid constructor a temporary blob_t to call this function
-    out_pipes_t::const_iterator it = _out_pipes.find (routing_id);
+    out_pipes_t::const_iterator it = _out_pipes.find (routing_id_);
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 
@@ -1851,9 +1848,9 @@ void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
 }
 
 zmq::routing_socket_base_t::out_pipe_t
-zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id)
+zmq::routing_socket_base_t::try_erase_out_pipe (const blob_t &routing_id_)
 {
-    const out_pipes_t::iterator it = _out_pipes.find (routing_id);
+    const out_pipes_t::iterator it = _out_pipes.find (routing_id_);
     out_pipe_t res = {NULL, false};
     if (it != _out_pipes.end ()) {
         res = it->second;

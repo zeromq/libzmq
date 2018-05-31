@@ -59,19 +59,18 @@ int zmq::msg_t::init (void *data_,
                       content_t *content_)
 {
     if (size_ < max_vsm_size) {
-        int const rc = init_size (size_);
+        const int rc = init_size (size_);
 
         if (rc != -1) {
             memcpy (data (), data_, size_);
             return 0;
         }
         return -1;
-
-    } else if (content_) {
-        return init_external_storage (content_, data_, size_, ffn_, hint_);
-    } else {
-        return init_data (data_, size_, ffn_, hint_);
     }
+    if (content_) {
+        return init_external_storage (content_, data_, size_, ffn_, hint_);
+    }
+    return init_data (data_, size_, ffn_, hint_);
 }
 
 int zmq::msg_t::init ()
