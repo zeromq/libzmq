@@ -138,7 +138,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         return -1;
     }
     const uint8_t username_length = *ptr++;
-    bytes_left -= 1;
+    bytes_left -= sizeof (username_length);
 
     if (bytes_left < username_length) {
         //  PLAIN I: invalid PLAIN client, sent malformed username
@@ -161,9 +161,10 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     }
 
     const uint8_t password_length = *ptr++;
-    bytes_left -= 1;
-    if (bytes_left < password_length) {
-        //  PLAIN I: invalid PLAIN client, sent malformed password
+    bytes_left -= sizeof (password_length);
+    if (bytes_left != password_length) {
+        //  PLAIN I: invalid PLAIN client, sent malformed password or
+        //  extraneous data
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
@@ -172,16 +173,6 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     }
 
     const std::string password = std::string (ptr, password_length);
-    ptr += password_length;
-    bytes_left -= password_length;
-    if (bytes_left > 0) {
-        //  PLAIN I: invalid PLAIN client, sent extraneous data
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
-        errno = EPROTO;
-        return -1;
-    }
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
     rc = session->zap_connect ();
