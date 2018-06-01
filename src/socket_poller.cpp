@@ -618,7 +618,9 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
 
     bool first_pass = true;
 
-    fd_set inset, outset, errset;
+    optimized_fd_set_t inset (_pollset_size);
+    optimized_fd_set_t outset (_pollset_size);
+    optimized_fd_set_t errset (_pollset_size);
 
     while (true) {
         //  Compute the timeout for the subsequent poll.
@@ -638,11 +640,14 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
-            memcpy (&inset, &_pollset_in, valid_pollset_bytes (_pollset_in));
-            memcpy (&outset, &_pollset_out, valid_pollset_bytes (_pollset_out));
-            memcpy (&errset, &_pollset_err, valid_pollset_bytes (_pollset_err));
-            const int rc = select (static_cast<int> (_max_fd + 1), &inset,
-                                   &outset, &errset, ptimeout);
+            memcpy (inset.get (), &_pollset_in,
+                    valid_pollset_bytes (_pollset_in));
+            memcpy (outset.get (), &_pollset_out,
+                    valid_pollset_bytes (_pollset_out));
+            memcpy (errset.get (), &_pollset_err,
+                    valid_pollset_bytes (_pollset_err));
+            const int rc = select (static_cast<int> (_max_fd + 1), inset.get (),
+                                   outset.get (), errset.get (), ptimeout);
 #if defined ZMQ_HAVE_WINDOWS
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = wsa_error_to_errno (WSAGetLastError ());
@@ -662,8 +667,8 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
             _signaler->recv ();
 
         //  Check for the events.
-        const int found =
-          check_events (events_, n_events_, inset, outset, errset);
+        const int found = check_events (events_, n_events_, *inset.get (),
+                                        *outset.get (), *errset.get ());
         if (found) {
             if (found > 0)
                 zero_trail_events (events_, n_events_, found);
