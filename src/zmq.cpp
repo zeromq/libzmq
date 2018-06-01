@@ -793,6 +793,36 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #endif // ZMQ_HAVE_POLLER
 
 #if !defined ZMQ_HAVE_POLLER
+template <typename T, size_t S> class fast_vector_t
+{
+  public:
+    fast_vector_t (const size_t nitems_)
+    {
+        if (nitems_ > S) {
+            _buf = static_cast<T *> (malloc (nitems_ * sizeof (T)));
+            //  TODO since this function is called by a client, we could return errno == ENOMEM here
+            alloc_assert (_buf);
+        } else {
+            _buf = _static_buf;
+        }
+    }
+
+    T &operator[] (const size_t i) { return _buf[i]; }
+
+    ~fast_vector_t ()
+    {
+        if (_buf != _static_buf)
+            free (_buf);
+    }
+
+  private:
+    fast_vector_t (const fast_vector_t &);
+    fast_vector_t &operator= (const fast_vector_t &);
+
+    T _static_buf[S];
+    T *_buf;
+};
+
 #if defined ZMQ_POLL_BASED_ON_POLL
 typedef int timeout_t;
 
@@ -850,14 +880,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     uint64_t now = 0;
     uint64_t end = 0;
 #if defined ZMQ_POLL_BASED_ON_POLL
-    pollfd spollfds[ZMQ_POLLITEMS_DFLT];
-    pollfd *pollfds = spollfds;
-
-    if (nitems_ > ZMQ_POLLITEMS_DFLT) {
-        pollfds = static_cast<pollfd *> (malloc (nitems_ * sizeof (pollfd)));
-        //  TODO since this function is called by a client, we could return errno == ENOMEM here
-        alloc_assert (pollfds);
-    }
+    fast_vector_t<pollfd, ZMQ_POLLITEMS_DFLT> pollfds (nitems_);
 
     //  Build pollset for poll () system call.
     for (int i = 0; i != nitems_; i++) {
@@ -868,8 +891,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             if (zmq_getsockopt (items_[i].socket, ZMQ_FD, &pollfds[i].fd,
                                 &zmq_fd_size)
                 == -1) {
-                if (pollfds != spollfds)
-                    free (pollfds);
                 return -1;
             }
             pollfds[i].events = items_[i].events ? POLLIN : 0;
@@ -944,10 +965,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Wait for events.
         {
-            int rc = poll (pollfds, nitems_, timeout);
+            int rc = poll (&pollfds[0], nitems_, timeout);
             if (rc == -1 && errno == EINTR) {
-                if (pollfds != spollfds)
-                    free (pollfds);
                 return -1;
             }
             errno_assert (rc >= 0);
@@ -964,8 +983,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 if (zmq_getsockopt (items_[i].socket, ZMQ_EVENTS, &zmq_events,
                                     &zmq_events_size)
                     == -1) {
-                    if (pollfds != spollfds)
-                        free (pollfds);
                     return -1;
                 }
                 if ((items_[i].events & ZMQ_POLLOUT)
@@ -1117,10 +1134,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (now >= end)
             break;
     }
-#if defined ZMQ_POLL_BASED_ON_POLL
-    if (pollfds != spollfds)
-        free (pollfds);
-#endif
 
     return nevents;
 #else
