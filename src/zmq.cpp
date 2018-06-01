@@ -840,13 +840,19 @@ static timeout_t compute_timeout (const bool first_pass_,
           std::min<uint64_t> (end_ - now_, INT_MAX));
 }
 #elif defined ZMQ_POLL_BASED_ON_SELECT
-#if defined ZMQ_HAVE_WINDOWS
 static size_t valid_pollset_bytes (const fd_set &pollset_)
 {
+#if defined ZMQ_HAVE_WINDOWS
+    // On Windows we don't need to copy the whole fd_set.
+    // SOCKETS are continuous from the beginning of fd_array in fd_set.
+    // We just need to copy fd_count elements of fd_array.
+    // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
     return reinterpret_cast<char *> (pollset_.fd_array + pollset_.fd_count)
            - reinterpret_cast<char *> (&pollset_);
-}
+#else
+    return sizeof (fd_set);
 #endif
+}
 #endif
 #endif
 
@@ -1035,14 +1041,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
-#if defined ZMQ_HAVE_WINDOWS
-            // On Windows we don't need to copy the whole fd_set.
-            // SOCKETS are continuous from the beginning of fd_array in fd_set.
-            // We just need to copy fd_count elements of fd_array.
-            // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
             memcpy (&inset, &pollset_in, valid_pollset_bytes (pollset_in));
             memcpy (&outset, &pollset_out, valid_pollset_bytes (pollset_out));
             memcpy (&errset, &pollset_err, valid_pollset_bytes (pollset_err));
+#if defined ZMQ_HAVE_WINDOWS
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
@@ -1050,9 +1052,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 return -1;
             }
 #else
-            memcpy (&inset, &pollset_in, sizeof (fd_set));
-            memcpy (&outset, &pollset_out, sizeof (fd_set));
-            memcpy (&errset, &pollset_err, sizeof (fd_set));
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);
