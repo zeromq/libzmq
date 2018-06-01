@@ -50,6 +50,7 @@
 
 #include "socket_base.hpp"
 #include "signaler.hpp"
+#include "polling_util.hpp"
 
 namespace zmq
 {
@@ -135,9 +136,9 @@ class socket_poller_t
 #if defined ZMQ_POLL_BASED_ON_POLL
     pollfd *_pollfds;
 #elif defined ZMQ_POLL_BASED_ON_SELECT
-    fd_set _pollset_in;
-    fd_set _pollset_out;
-    fd_set _pollset_err;
+    resizable_optimized_fd_set_t _pollset_in;
+    resizable_optimized_fd_set_t _pollset_out;
+    resizable_optimized_fd_set_t _pollset_err;
     zmq::fd_t _max_fd;
 #endif
 

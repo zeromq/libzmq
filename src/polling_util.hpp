@@ -31,6 +31,7 @@
 #define __ZMQ_SOCKET_POLLING_UTIL_HPP_INCLUDED__
 
 #include <stdlib.h>
+#include <vector>
 
 #include "stdint.hpp"
 #include "platform.hpp"
@@ -66,6 +67,40 @@ template <typename T, size_t S> class fast_vector_t
 
     T _static_buf[S];
     T *_buf;
+};
+
+template <typename T, size_t S> class resizable_fast_vector_t
+{
+  public:
+    resizable_fast_vector_t () : _dynamic_buf (NULL) {}
+
+    void resize (const size_t nitems_)
+    {
+        if (_dynamic_buf)
+            _dynamic_buf->resize (nitems_);
+        if (nitems_ > S) {
+            _dynamic_buf = new (std::nothrow) std::vector<T>;
+            //  TODO since this function is called by a client, we could return errno == ENOMEM here
+            alloc_assert (_dynamic_buf);
+        }
+    }
+
+    T *get_buf ()
+    {
+        // e.g. MSVC 2008 does not have std::vector::data, so we use &...[0]
+        return _dynamic_buf ? &(*_dynamic_buf)[0] : _static_buf;
+    }
+
+    T &operator[] (const size_t i) { return get_buf ()[i]; }
+
+    ~resizable_fast_vector_t () { delete _dynamic_buf; }
+
+  private:
+    resizable_fast_vector_t (const resizable_fast_vector_t &);
+    resizable_fast_vector_t &operator= (const resizable_fast_vector_t &);
+
+    T _static_buf[S];
+    std::vector<T> *_dynamic_buf;
 };
 
 #if defined ZMQ_POLL_BASED_ON_POLL
@@ -104,6 +139,20 @@ class optimized_fd_set_t
     fast_vector_t<char, sizeof (u_int) + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
       _fd_set;
 };
+
+class resizable_optimized_fd_set_t
+{
+  public:
+    void resize (size_t nevents_) { _fd_set.resize (nevents_); }
+
+    fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
+
+  private:
+    resizable_fast_vector_t<char,
+                            sizeof (u_int)
+                              + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
+      _fd_set;
+};
 #else
 class optimized_fd_set_t
 {
@@ -114,6 +163,14 @@ class optimized_fd_set_t
 
   private:
     fd_set _fd_set;
+};
+
+class resizable_optimized_fd_set_t : public optimized_fd_set_t
+{
+  public:
+    resizable_optimized_fd_set_t () : optimized_fd_set_t (0) {}
+
+    void resize (size_t /*nevents_*/) {}
 };
 #endif
 #endif
