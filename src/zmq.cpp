@@ -853,6 +853,31 @@ static size_t valid_pollset_bytes (const fd_set &pollset_)
     return sizeof (fd_set);
 #endif
 }
+
+#if defined ZMQ_HAVE_WINDOWS
+class optimized_fd_set_t
+{
+  public:
+    optimized_fd_set_t (size_t nevents_) : _fd_set (nevents_) {}
+
+    fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
+
+  private:
+    fast_vector_t<char, sizeof (u_int) + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
+      _fd_set;
+};
+#else
+class optimized_fd_set_t
+{
+  public:
+    optimized_fd_set_t (size_t /*nevents_*/) {}
+
+    fd_set *get () { return &_fd_set; }
+
+  private:
+    fd_set _fd_set;
+};
+#endif
 #endif
 #endif
 
@@ -924,12 +949,12 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     //  TODO since this function is called by a client, we could return errno EINVAL/ENOMEM/... here
     zmq_assert (nitems_ <= FD_SETSIZE);
 
-    fd_set pollset_in;
-    FD_ZERO (&pollset_in);
-    fd_set pollset_out;
-    FD_ZERO (&pollset_out);
-    fd_set pollset_err;
-    FD_ZERO (&pollset_err);
+    optimized_fd_set_t pollset_in (nitems_);
+    FD_ZERO (pollset_in.get ());
+    optimized_fd_set_t pollset_out (nitems_);
+    FD_ZERO (pollset_out.get ());
+    optimized_fd_set_t pollset_err (nitems_);
+    FD_ZERO (pollset_err.get ());
 
     zmq::fd_t maxfd = 0;
 
@@ -945,7 +970,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 == -1)
                 return -1;
             if (items_[i].events) {
-                FD_SET (notify_fd, &pollset_in);
+                FD_SET (notify_fd, pollset_in.get ());
                 if (maxfd < notify_fd)
                     maxfd = notify_fd;
             }
@@ -954,17 +979,19 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  events to the appropriate fd_sets.
         else {
             if (items_[i].events & ZMQ_POLLIN)
-                FD_SET (items_[i].fd, &pollset_in);
+                FD_SET (items_[i].fd, pollset_in.get ());
             if (items_[i].events & ZMQ_POLLOUT)
-                FD_SET (items_[i].fd, &pollset_out);
+                FD_SET (items_[i].fd, pollset_out.get ());
             if (items_[i].events & ZMQ_POLLERR)
-                FD_SET (items_[i].fd, &pollset_err);
+                FD_SET (items_[i].fd, pollset_err.get ());
             if (maxfd < items_[i].fd)
                 maxfd = items_[i].fd;
         }
     }
 
-    fd_set inset, outset, errset;
+    optimized_fd_set_t inset (nitems_);
+    optimized_fd_set_t outset (nitems_);
+    optimized_fd_set_t errset (nitems_);
 #endif
 
     bool first_pass = true;
@@ -1041,18 +1068,23 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
-            memcpy (&inset, &pollset_in, valid_pollset_bytes (pollset_in));
-            memcpy (&outset, &pollset_out, valid_pollset_bytes (pollset_out));
-            memcpy (&errset, &pollset_err, valid_pollset_bytes (pollset_err));
+            memcpy (inset.get (), pollset_in.get (),
+                    valid_pollset_bytes (*pollset_in.get ()));
+            memcpy (outset.get (), pollset_out.get (),
+                    valid_pollset_bytes (*pollset_out.get ()));
+            memcpy (errset.get (), pollset_err.get (),
+                    valid_pollset_bytes (*pollset_err.get ()));
 #if defined ZMQ_HAVE_WINDOWS
-            int rc = select (0, &inset, &outset, &errset, ptimeout);
+            int rc =
+              select (0, inset.get (), outset.get (), errset.get (), ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
                 wsa_assert (errno == ENOTSOCK);
                 return -1;
             }
 #else
-            int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
+            int rc = select (maxfd + 1, inset.get (), outset.get (),
+                             errset.get (), ptimeout);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);
                 return -1;
@@ -1084,11 +1116,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             //  Else, the poll item is a raw file descriptor, simply convert
             //  the events to zmq_pollitem_t-style format.
             else {
-                if (FD_ISSET (items_[i].fd, &inset))
+                if (FD_ISSET (items_[i].fd, inset.get ()))
                     items_[i].revents |= ZMQ_POLLIN;
-                if (FD_ISSET (items_[i].fd, &outset))
+                if (FD_ISSET (items_[i].fd, outset.get ()))
                     items_[i].revents |= ZMQ_POLLOUT;
-                if (FD_ISSET (items_[i].fd, &errset))
+                if (FD_ISSET (items_[i].fd, errset.get ()))
                     items_[i].revents |= ZMQ_POLLERR;
             }
 
