@@ -792,6 +792,27 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 }
 #endif // ZMQ_HAVE_POLLER
 
+#if !defined ZMQ_HAVE_POLLER
+#if defined ZMQ_POLL_BASED_ON_POLL
+typedef int timeout_t;
+
+static timeout_t compute_timeout (const bool first_pass_,
+                                  const long timeout_,
+                                  const uint64_t now_,
+                                  const uint64_t end_)
+{
+    if (first_pass_)
+        return 0;
+    else if (timeout_ < 0)
+        return -1;
+    else
+        return static_cast<timeout_t> (
+          std::min<uint64_t> (end_ - now_, INT_MAX));
+}
+#elif defined ZMQ_POLL_BASED_ON_SELECT
+#endif
+#endif
+
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
 //  TODO: the function implementation can just call zmq_pollfd_poll with
@@ -820,21 +841,21 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         return usleep (timeout_ * 1000);
 #endif
     }
-
-    zmq::clock_t clock;
-    uint64_t now = 0;
-    uint64_t end = 0;
-#if defined ZMQ_POLL_BASED_ON_POLL
     if (!items_) {
         errno = EFAULT;
         return -1;
     }
 
+    zmq::clock_t clock;
+    uint64_t now = 0;
+    uint64_t end = 0;
+#if defined ZMQ_POLL_BASED_ON_POLL
     pollfd spollfds[ZMQ_POLLITEMS_DFLT];
     pollfd *pollfds = spollfds;
 
     if (nitems_ > ZMQ_POLLITEMS_DFLT) {
         pollfds = static_cast<pollfd *> (malloc (nitems_ * sizeof (pollfd)));
+        //  TODO since this function is called by a client, we could return errno == ENOMEM here
         alloc_assert (pollfds);
     }
 
@@ -866,6 +887,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #else
     //  Ensure we do not attempt to select () on more than FD_SETSIZE
     //  file descriptors.
+    //  TODO since this function is called by a client, we could return errno EINVAL/ENOMEM/... here
     zmq_assert (nitems_ <= FD_SETSIZE);
 
     fd_set pollset_in;
@@ -918,14 +940,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_POLL_BASED_ON_POLL
 
         //  Compute the timeout for the subsequent poll.
-        int timeout;
-        if (first_pass)
-            timeout = 0;
-        else if (timeout_ < 0)
-            timeout = -1;
-        else
-            timeout =
-              static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
+        timeout_t timeout = compute_timeout (first_pass, timeout_, now, end);
 
         //  Wait for events.
         {
