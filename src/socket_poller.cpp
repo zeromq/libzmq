@@ -30,6 +30,7 @@
 #include "precompiled.hpp"
 #include "socket_poller.hpp"
 #include "err.hpp"
+#include "polling_util.hpp"
 
 #include <limits.h>
 
@@ -637,34 +638,18 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
+            memcpy (&inset, &_pollset_in, valid_pollset_bytes (_pollset_in));
+            memcpy (&outset, &_pollset_out, valid_pollset_bytes (_pollset_out));
+            memcpy (&errset, &_pollset_err, valid_pollset_bytes (_pollset_err));
+            const int rc = select (static_cast<int> (_max_fd + 1), &inset,
+                                   &outset, &errset, ptimeout);
 #if defined ZMQ_HAVE_WINDOWS
-            // On Windows we don't need to copy the whole fd_set.
-            // SOCKETS are continuous from the beginning of fd_array in fd_set.
-            // We just need to copy fd_count elements of fd_array.
-            // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
-            memcpy (&inset, &_pollset_in,
-                    reinterpret_cast<char *> (_pollset_in.fd_array
-                                              + _pollset_in.fd_count)
-                      - reinterpret_cast<char *> (&_pollset_in));
-            memcpy (&outset, &_pollset_out,
-                    reinterpret_cast<char *> (_pollset_out.fd_array
-                                              + _pollset_out.fd_count)
-                      - reinterpret_cast<char *> (&_pollset_out));
-            memcpy (&errset, &_pollset_err,
-                    reinterpret_cast<char *> (_pollset_err.fd_array
-                                              + _pollset_err.fd_count)
-                      - reinterpret_cast<char *> (&_pollset_err));
-            int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
-                errno = zmq::wsa_error_to_errno (WSAGetLastError ());
+                errno = wsa_error_to_errno (WSAGetLastError ());
                 wsa_assert (errno == ENOTSOCK);
                 return -1;
             }
 #else
-            memcpy (&inset, &_pollset_in, sizeof (fd_set));
-            memcpy (&outset, &_pollset_out, sizeof (fd_set));
-            memcpy (&errset, &_pollset_err, sizeof (fd_set));
-            int rc = select (_max_fd + 1, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);
                 return -1;
@@ -677,7 +662,8 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
             _signaler->recv ();
 
         //  Check for the events.
-        int found = check_events (events_, n_events_, inset, outset, errset);
+        const int found =
+          check_events (events_, n_events_, inset, outset, errset);
         if (found) {
             if (found > 0)
                 zero_trail_events (events_, n_events_, found);
