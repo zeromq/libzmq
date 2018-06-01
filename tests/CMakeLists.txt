@@ -224,7 +224,7 @@ if(WIN32 AND ${POLLER} MATCHES "epoll")
   set_tests_properties(test_many_sockets PROPERTIES TIMEOUT 120)
 endif()
 
-if(WIN32)
+if(WIN32 AND ENABLE_DRAFTS)
   set_tests_properties(test_radio_dish PROPERTIES TIMEOUT 30)
 endif()
 
