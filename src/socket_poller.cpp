@@ -42,10 +42,7 @@ static bool is_thread_safe (zmq::socket_base_t &socket_)
 
 zmq::socket_poller_t::socket_poller_t () :
     _tag (0xCAFEBABE),
-    _signaler (NULL),
-    _need_rebuild (true),
-    _use_signaler (false),
-    _pollset_size (0)
+    _signaler (NULL)
 #if defined ZMQ_POLL_BASED_ON_POLL
     ,
     _pollfds (NULL)
@@ -54,20 +51,7 @@ zmq::socket_poller_t::socket_poller_t () :
     _max_fd (0)
 #endif
 {
-#if defined ZMQ_POLL_BASED_ON_SELECT
-#if defined ZMQ_HAVE_WINDOWS
-    // On Windows fd_set contains array of SOCKETs, each 4 bytes.
-    // For large fd_sets memset() could be expensive and it is unnecessary.
-    // It is enough to set fd_count to 0, exactly what FD_ZERO() macro does.
-    FD_ZERO (&_pollset_in);
-    FD_ZERO (&_pollset_out);
-    FD_ZERO (&_pollset_err);
-#else
-    memset (&_pollset_in, 0, sizeof (_pollset_in));
-    memset (&_pollset_out, 0, sizeof (_pollset_out));
-    memset (&_pollset_err, 0, sizeof (_pollset_err));
-#endif
-#endif
+    rebuild ();
 }
 
 zmq::socket_poller_t::~socket_poller_t ()
@@ -271,16 +255,16 @@ int zmq::socket_poller_t::remove_fd (fd_t fd_)
 
 void zmq::socket_poller_t::rebuild ()
 {
+    _use_signaler = false;
+    _pollset_size = 0;
+    _need_rebuild = false;
+
 #if defined ZMQ_POLL_BASED_ON_POLL
 
     if (_pollfds) {
         free (_pollfds);
         _pollfds = NULL;
     }
-
-    _use_signaler = false;
-
-    _pollset_size = 0;
 
     for (items_t::iterator it = _items.begin (); it != _items.end (); ++it) {
         if (it->events) {
@@ -342,10 +326,6 @@ void zmq::socket_poller_t::rebuild ()
     //  file descriptors.
     zmq_assert (_items.size () <= FD_SETSIZE);
 
-    _pollset_size = 0;
-
-    _use_signaler = false;
-
     for (items_t::iterator it = _items.begin (); it != _items.end (); ++it) {
         if (it->socket && is_thread_safe (*it->socket) && it->events) {
             _use_signaler = true;
@@ -395,8 +375,6 @@ void zmq::socket_poller_t::rebuild ()
     }
 
 #endif
-
-    _need_rebuild = false;
 }
 
 void zmq::socket_poller_t::zero_trail_events (
