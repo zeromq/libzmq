@@ -840,6 +840,13 @@ static timeout_t compute_timeout (const bool first_pass_,
           std::min<uint64_t> (end_ - now_, INT_MAX));
 }
 #elif defined ZMQ_POLL_BASED_ON_SELECT
+#if defined ZMQ_HAVE_WINDOWS
+static size_t valid_pollset_bytes (const fd_set &pollset_)
+{
+    return reinterpret_cast<char *> (pollset_.fd_array + pollset_.fd_count)
+           - reinterpret_cast<char *> (&pollset_);
+}
+#endif
 #endif
 #endif
 
@@ -1033,18 +1040,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             // SOCKETS are continuous from the beginning of fd_array in fd_set.
             // We just need to copy fd_count elements of fd_array.
             // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
-            memcpy (&inset, &pollset_in,
-                    reinterpret_cast<char *> (pollset_in.fd_array
-                                              + pollset_in.fd_count)
-                      - reinterpret_cast<char *> (&pollset_in));
-            memcpy (&outset, &pollset_out,
-                    reinterpret_cast<char *> (pollset_out.fd_array
-                                              + pollset_out.fd_count)
-                      - reinterpret_cast<char *> (&pollset_out));
-            memcpy (&errset, &pollset_err,
-                    reinterpret_cast<char *> (pollset_err.fd_array
-                                              + pollset_err.fd_count)
-                      - reinterpret_cast<char *> (&pollset_err));
+            memcpy (&inset, &pollset_in, valid_pollset_bytes (pollset_in));
+            memcpy (&outset, &pollset_out, valid_pollset_bytes (pollset_out));
+            memcpy (&errset, &pollset_err, valid_pollset_bytes (pollset_err));
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
