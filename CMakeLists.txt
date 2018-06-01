@@ -624,6 +624,7 @@ set (cxx-sources
         plain_server.cpp
         poll.cpp
         poller_base.cpp
+        polling_util.cpp
         pollset.cpp
         proxy.cpp
         pub.cpp
@@ -746,6 +747,7 @@ set (cxx-sources
 		poll.hpp
 		poller.hpp
 		poller_base.hpp
+		polling_util.hpp
 		pollset.hpp
 		precompiled.hpp
 		proxy.hpp

@@ -41,12 +41,16 @@
 #include "macros.hpp"
 #include "poller.hpp"
 
+#if !defined ZMQ_HAVE_POLLER
 //  On AIX platform, poll.h has to be included first to get consistent
 //  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
 #if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
+#endif
+
+#include "polling_util.hpp"
 #endif
 
 // TODO: determine if this is an issue, since zmq.h is being loaded from pch.
@@ -792,95 +796,6 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 }
 #endif // ZMQ_HAVE_POLLER
 
-#if !defined ZMQ_HAVE_POLLER
-template <typename T, size_t S> class fast_vector_t
-{
-  public:
-    fast_vector_t (const size_t nitems_)
-    {
-        if (nitems_ > S) {
-            _buf = static_cast<T *> (malloc (nitems_ * sizeof (T)));
-            //  TODO since this function is called by a client, we could return errno == ENOMEM here
-            alloc_assert (_buf);
-        } else {
-            _buf = _static_buf;
-        }
-    }
-
-    T &operator[] (const size_t i) { return _buf[i]; }
-
-    ~fast_vector_t ()
-    {
-        if (_buf != _static_buf)
-            free (_buf);
-    }
-
-  private:
-    fast_vector_t (const fast_vector_t &);
-    fast_vector_t &operator= (const fast_vector_t &);
-
-    T _static_buf[S];
-    T *_buf;
-};
-
-#if defined ZMQ_POLL_BASED_ON_POLL
-typedef int timeout_t;
-
-static timeout_t compute_timeout (const bool first_pass_,
-                                  const long timeout_,
-                                  const uint64_t now_,
-                                  const uint64_t end_)
-{
-    if (first_pass_)
-        return 0;
-    else if (timeout_ < 0)
-        return -1;
-    else
-        return static_cast<timeout_t> (
-          std::min<uint64_t> (end_ - now_, INT_MAX));
-}
-#elif defined ZMQ_POLL_BASED_ON_SELECT
-static size_t valid_pollset_bytes (const fd_set &pollset_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    // On Windows we don't need to copy the whole fd_set.
-    // SOCKETS are continuous from the beginning of fd_array in fd_set.
-    // We just need to copy fd_count elements of fd_array.
-    // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
-    return reinterpret_cast<char *> (pollset_.fd_array + pollset_.fd_count)
-           - reinterpret_cast<char *> (&pollset_);
-#else
-    return sizeof (fd_set);
-#endif
-}
-
-#if defined ZMQ_HAVE_WINDOWS
-class optimized_fd_set_t
-{
-  public:
-    optimized_fd_set_t (size_t nevents_) : _fd_set (nevents_) {}
-
-    fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
-
-  private:
-    fast_vector_t<char, sizeof (u_int) + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
-      _fd_set;
-};
-#else
-class optimized_fd_set_t
-{
-  public:
-    optimized_fd_set_t (size_t /*nevents_*/) {}
-
-    fd_set *get () { return &_fd_set; }
-
-  private:
-    fd_set _fd_set;
-};
-#endif
-#endif
-#endif
-
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
 //  TODO: the function implementation can just call zmq_pollfd_poll with
@@ -918,7 +833,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     uint64_t now = 0;
     uint64_t end = 0;
 #if defined ZMQ_POLL_BASED_ON_POLL
-    fast_vector_t<pollfd, ZMQ_POLLITEMS_DFLT> pollfds (nitems_);
+    zmq::fast_vector_t<pollfd, ZMQ_POLLITEMS_DFLT> pollfds (nitems_);
 
     //  Build pollset for poll () system call.
     for (int i = 0; i != nitems_; i++) {
@@ -949,11 +864,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     //  TODO since this function is called by a client, we could return errno EINVAL/ENOMEM/... here
     zmq_assert (nitems_ <= FD_SETSIZE);
 
-    optimized_fd_set_t pollset_in (nitems_);
+    zmq::optimized_fd_set_t pollset_in (nitems_);
     FD_ZERO (pollset_in.get ());
-    optimized_fd_set_t pollset_out (nitems_);
+    zmq::optimized_fd_set_t pollset_out (nitems_);
     FD_ZERO (pollset_out.get ());
-    optimized_fd_set_t pollset_err (nitems_);
+    zmq::optimized_fd_set_t pollset_err (nitems_);
     FD_ZERO (pollset_err.get ());
 
     zmq::fd_t maxfd = 0;
@@ -989,9 +904,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         }
     }
 
-    optimized_fd_set_t inset (nitems_);
-    optimized_fd_set_t outset (nitems_);
-    optimized_fd_set_t errset (nitems_);
+    zmq::optimized_fd_set_t inset (nitems_);
+    zmq::optimized_fd_set_t outset (nitems_);
+    zmq::optimized_fd_set_t errset (nitems_);
 #endif
 
     bool first_pass = true;
@@ -1001,7 +916,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_POLL_BASED_ON_POLL
 
         //  Compute the timeout for the subsequent poll.
-        timeout_t timeout = compute_timeout (first_pass, timeout_, now, end);
+        zmq::timeout_t timeout =
+          zmq::compute_timeout (first_pass, timeout_, now, end);
 
         //  Wait for events.
         {
@@ -1069,11 +985,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
             memcpy (inset.get (), pollset_in.get (),
-                    valid_pollset_bytes (*pollset_in.get ()));
+                    zmq::valid_pollset_bytes (*pollset_in.get ()));
             memcpy (outset.get (), pollset_out.get (),
-                    valid_pollset_bytes (*pollset_out.get ()));
+                    zmq::valid_pollset_bytes (*pollset_out.get ()));
             memcpy (errset.get (), pollset_err.get (),
-                    valid_pollset_bytes (*pollset_err.get ()));
+                    zmq::valid_pollset_bytes (*pollset_err.get ()));
 #if defined ZMQ_HAVE_WINDOWS
             int rc =
               select (0, inset.get (), outset.get (), errset.get (), ptimeout);
