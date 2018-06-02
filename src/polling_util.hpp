@@ -128,30 +128,32 @@ inline size_t valid_pollset_bytes (const fd_set &pollset_)
 }
 
 #if defined ZMQ_HAVE_WINDOWS
+// struct fd_set {
+//  u_int   fd_count;
+//  SOCKET  fd_array[1];
+// };
+// NOTE: offsetof(fd_set, fd_array)==sizeof(SOCKET) on both x86 and x64
+//       due to alignment bytes for the latter.
 class optimized_fd_set_t
 {
   public:
-    explicit optimized_fd_set_t (size_t nevents_) : _fd_set (nevents_) {}
+    explicit optimized_fd_set_t (size_t nevents_) : _fd_set (1 + nevents_) {}
 
     fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
 
   private:
-    fast_vector_t<char, sizeof (u_int) + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
-      _fd_set;
+    fast_vector_t<SOCKET, 1 + ZMQ_POLLITEMS_DFLT> _fd_set;
 };
 
 class resizable_optimized_fd_set_t
 {
   public:
-    void resize (size_t nevents_) { _fd_set.resize (nevents_); }
+    void resize (size_t nevents_) { _fd_set.resize (1 + nevents_); }
 
     fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
 
   private:
-    resizable_fast_vector_t<char,
-                            sizeof (u_int)
-                              + ZMQ_POLLITEMS_DFLT * sizeof (SOCKET)>
-      _fd_set;
+    resizable_fast_vector_t<SOCKET, 1 + ZMQ_POLLITEMS_DFLT> _fd_set;
 };
 #else
 class optimized_fd_set_t
