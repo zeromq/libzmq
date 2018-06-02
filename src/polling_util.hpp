@@ -137,23 +137,23 @@ inline size_t valid_pollset_bytes (const fd_set &pollset_)
 class optimized_fd_set_t
 {
   public:
-    explicit optimized_fd_set_t (size_t nevents_) : _fd_set (1+nevents_) {}
+    explicit optimized_fd_set_t (size_t nevents_) : _fd_set (1 + nevents_) {}
 
     fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
 
   private:
-    fast_vector_t<SOCKET, 1+ZMQ_POLLITEMS_DFLT> _fd_set;
+    fast_vector_t<SOCKET, 1 + ZMQ_POLLITEMS_DFLT> _fd_set;
 };
 
 class resizable_optimized_fd_set_t
 {
   public:
-    void resize (size_t nevents_) { _fd_set.resize (1+nevents_); }
+    void resize (size_t nevents_) { _fd_set.resize (1 + nevents_); }
 
     fd_set *get () { return reinterpret_cast<fd_set *> (&_fd_set[0]); }
 
   private:
-    resizable_fast_vector_t<SOCKET, 1+ZMQ_POLLITEMS_DFLT> _fd_set;
+    resizable_fast_vector_t<SOCKET, 1 + ZMQ_POLLITEMS_DFLT> _fd_set;
 };
 #else
 class optimized_fd_set_t
