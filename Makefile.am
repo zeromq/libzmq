@@ -257,6 +257,11 @@ src_libzmq_la_SOURCES = \
 	src/zap_client.hpp \
 	src/zmq_draft.h
 
+if USE_WEPOLL
+src_libzmq_la_SOURCES += \
+	external/wepoll/wepoll.c
+endif
+
 if USE_TWEETNACL
 src_libzmq_la_SOURCES += \
 	src/tweetnacl.c \
