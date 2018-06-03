@@ -1052,7 +1052,7 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     # Allow user to override poller autodetection
     AC_ARG_WITH([poller],
         [AS_HELP_STRING([--with-poller],
-        [choose I/O thread polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', or 'auto'. [default=auto]])])
+        [choose I/O thread polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', 'wepoll', or 'auto'. [default=auto]])])
 
     # Allow user to override poller autodetection
     AC_ARG_WITH([api_poller],
@@ -1134,6 +1134,12 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                     poller_found=1
                 ])
             ;;
+            wepoll)
+                # wepoll can only be manually selected
+                AC_MSG_NOTICE([Using 'wepoll' I/O thread polling system])
+                AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
+                poller_found=1
+            ;;
         esac
         test $poller_found -eq 1 && break
     done
@@ -1145,6 +1151,8 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     fi
 	if test "x$with_api_poller" == "xauto"; then
 		if test $poller == "select"; then
+			api_poller=select
+		elif test $poller == "wepoll"; then
 			api_poller=select
 		else		
 			api_poller=poll
