@@ -259,7 +259,8 @@ src_libzmq_la_SOURCES = \
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
-	external/wepoll/wepoll.c
+	external/wepoll/wepoll.c \
+	external/wepoll/wepoll.h
 endif
 
 if USE_TWEETNACL
@@ -974,6 +975,9 @@ endif
 EXTRA_DIST = \
 	external/unity/license.txt \
 	external/unity/version.txt \
+	external/wepoll/license.txt \
+	external/wepoll/version.txt \
+	external/wepoll/README.md \
 	CMakeLists.txt \
 	autogen.sh	\
 	version.sh	\
