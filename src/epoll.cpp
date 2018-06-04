@@ -54,7 +54,7 @@ const zmq::epoll_t::epoll_fd_t zmq::epoll_t::epoll_retired_fd =
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_)
 {
-#ifdef ZMQ_USE_EPOLL_CLOEXEC
+#ifdef ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions
     //  are used. Old sockets are closed and don't block TCP ports, avoid
     //  leaks, etc.
