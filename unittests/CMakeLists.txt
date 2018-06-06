@@ -23,6 +23,7 @@ if(WIN32)
 endif()
 
 include_directories("${CMAKE_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/src" "${CMAKE_BINARY_DIR}")
+include_directories("${CMAKE_SOURCE_DIR}/external/unity")
 
 foreach(test ${unittests})
   # target_sources not supported before CMake 3.1
