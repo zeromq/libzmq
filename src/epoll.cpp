@@ -112,9 +112,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
     int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
-    _retired_sync.lock ();
     _retired.push_back (pe);
-    _retired_sync.unlock ();
 
     //  Decrease the load metric of the thread.
     adjust_load (-1);
@@ -209,13 +207,11 @@ void zmq::epoll_t::loop ()
         }
 
         //  Destroy retired event sources.
-        _retired_sync.lock ();
         for (retired_t::iterator it = _retired.begin (); it != _retired.end ();
              ++it) {
             LIBZMQ_DELETE (*it);
         }
         _retired.clear ();
-        _retired_sync.unlock ();
     }
 }
 
