@@ -106,9 +106,6 @@ class epoll_t : public worker_poller_base_t
     //  Handle of the physical thread doing the I/O work.
     thread_t _worker;
 
-    //  Synchronisation of retired event sources
-    mutex_t _retired_sync;
-
     epoll_t (const epoll_t &);
     const epoll_t &operator= (const epoll_t &);
 };
