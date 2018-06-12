@@ -268,10 +268,12 @@ void zmq::socks_connecter_t::error ()
 
 void zmq::socks_connecter_t::start_timer ()
 {
-    const int interval = get_new_reconnect_ivl ();
-    add_timer (interval, reconnect_timer_id);
-    _status = waiting_for_reconnect_time;
-    _socket->event_connect_retried (_endpoint, interval);
+	if (options.reconnect_ivl != -1) {
+		const int interval = get_new_reconnect_ivl ();
+		add_timer (interval, reconnect_timer_id);
+		_status = waiting_for_reconnect_time;
+		_socket->event_connect_retried (_endpoint, interval);
+	}
 }
 
 int zmq::socks_connecter_t::get_new_reconnect_ivl ()
