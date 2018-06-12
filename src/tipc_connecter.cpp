@@ -178,12 +178,12 @@ void zmq::tipc_connecter_t::start_connecting ()
 
 void zmq::tipc_connecter_t::add_reconnect_timer ()
 {
-	if (options.reconnect_ivl != -1) {
-		int rc_ivl = get_new_reconnect_ivl ();
-		add_timer (rc_ivl, reconnect_timer_id);
-		socket->event_connect_retried (endpoint, rc_ivl);
-		timer_started = true;
-	}
+    if (options.reconnect_ivl != -1) {
+        int rc_ivl = get_new_reconnect_ivl ();
+        add_timer (rc_ivl, reconnect_timer_id);
+        socket->event_connect_retried (endpoint, rc_ivl);
+        timer_started = true;
+    }
 }
 
 int zmq::tipc_connecter_t::get_new_reconnect_ivl ()
