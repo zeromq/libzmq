@@ -226,10 +226,12 @@ void zmq::tcp_connecter_t::add_connect_timer ()
 
 void zmq::tcp_connecter_t::add_reconnect_timer ()
 {
-    const int interval = get_new_reconnect_ivl ();
-    add_timer (interval, reconnect_timer_id);
-    _socket->event_connect_retried (_endpoint, interval);
-    _reconnect_timer_started = true;
+    if (options.reconnect_ivl != -1) {
+        const int interval = get_new_reconnect_ivl ();
+        add_timer (interval, reconnect_timer_id);
+        _socket->event_connect_retried (_endpoint, interval);
+        _reconnect_timer_started = true;
+    }
 }
 
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
