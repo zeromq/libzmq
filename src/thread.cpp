@@ -228,7 +228,7 @@ void zmq::thread_t::
         return;
     }
 #endif
-    int rc = pthread_getschedparam (_descriptor, &policy, &param);
+    int rc = pthread_getschedparam (pthread_self (), &policy, &param);
     posix_assert (rc);
 
     if (_thread_sched_policy != ZMQ_THREAD_SCHED_POLICY_DFLT) {
@@ -257,7 +257,7 @@ void zmq::thread_t::
         param.sched_priority = -1;
 #endif
 
-    rc = pthread_setschedparam (_descriptor, policy, &param);
+    rc = pthread_setschedparam (pthread_self (), policy, &param);
 
 #if defined(__FreeBSD_kernel__) || defined(__FreeBSD__)
     // If this feature is unavailable at run-time, don't abort.
