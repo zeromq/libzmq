@@ -6,7 +6,7 @@ cd ../..
 
 # always install custom builds from dist
 # to make sure that `make dist` doesn't omit any files required to build & test
-if [ -z $DO_CLANG_FORMAT_CHECK -a -z $CLANG_TIDY ]; then
+if [ -z "$DO_CLANG_FORMAT_CHECK" -a -z "$CLANG_TIDY" ]; then
     ./autogen.sh
     ./configure
     make -j5 dist-gzip
