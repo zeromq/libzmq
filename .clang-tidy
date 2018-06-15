@@ -40,7 +40,7 @@ Checks:        "*,\
 -hicpp-use-auto,\
 -hicpp-use-nullptr,\
 -hicpp-no-array-decay,\
--hicpp-member-init“
+-hicpp-member-init"
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 # AnalyzeTemporaryDtors: false
