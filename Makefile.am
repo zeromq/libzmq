@@ -295,10 +295,17 @@ src_libzmq_la_LDFLAGS = \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl,--version-script=$(srcdir)/src/libzmq.vers
 else
+if ON_GNU
+src_libzmq_la_LDFLAGS = \
+	-version-info @LTVER@ \
+	@LIBZMQ_EXTRA_LDFLAGS@ \
+	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+else
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl
+endif
 endif
 endif
 endif

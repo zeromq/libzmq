@@ -207,6 +207,12 @@ case "${host_os}" in
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
+        case "${host_os}" in
+            # On Debian/kFreeBSD with gnu set the --version-script flag
+            kfreebsd*-gnu*)
+                libzmq_on_gnu="yes"
+            ;;
+        esac
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
