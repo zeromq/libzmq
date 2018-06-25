@@ -295,10 +295,17 @@ src_libzmq_la_LDFLAGS = \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl,--version-script=$(srcdir)/src/libzmq.vers
 else
+if ON_GNU
+src_libzmq_la_LDFLAGS = \
+	-version-info @LTVER@ \
+	@LIBZMQ_EXTRA_LDFLAGS@ \
+	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+else
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl
+endif
 endif
 endif
 endif
@@ -438,6 +445,7 @@ test_apps = \
 	tests/test_bind_after_connect_tcp \
 	tests/test_sodium \
 	tests/test_reconnect_ivl \
+	tests/test_mock_pub_sub \
 	tests/test_socket_null
 
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
@@ -692,6 +700,10 @@ tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
 tests_test_reconnect_ivl_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_reconnect_ivl_CPPFLAGS = ${UNITY_CPPFLAGS}
 
+tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
+tests_test_mock_pub_sub_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_mock_pub_sub_CPPFLAGS = ${UNITY_CPPFLAGS}
+
 if HAVE_CURVE
 
 test_apps += \
@@ -856,12 +868,12 @@ if HAVE_VMCI
 test_apps += test_pair_vmci test_reqrep_vmci
 
 test_pair_vmci_SOURCES = tests/test_pair_vmci.cpp
-test_pair_vmci_LDADD = libzmq.la
+test_pair_vmci_LDADD = src/libzmq.la
 test_pair_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
 test_pair_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
 test_reqrep_vmci_SOURCES = tests/test_reqrep_vmci.cpp
-test_reqrep_vmci_LDADD = libzmq.la
+test_reqrep_vmci_LDADD = src/libzmq.la
 test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
 test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 

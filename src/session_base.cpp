@@ -163,7 +163,9 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
 
 int zmq::session_base_t::push_msg (msg_t *msg_)
 {
-    if (msg_->flags () & msg_t::command)
+    //  pass subscribe/cancel to the sockets
+    if ((msg_->flags () & msg_t::command) && !msg_->is_subscribe ()
+        && !msg_->is_cancel ())
         return 0;
     if (_pipe && _pipe->write (msg_)) {
         int rc = msg_->init ();

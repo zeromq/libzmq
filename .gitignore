@@ -1,12 +1,13 @@
 syntax: glob # for hg-git users
 /Makefile
 builds/Makefile
-builds/msvc/Makefile
+builds/deprecated-msvc/Makefile
 configure
 doc/Makefile
 Makefile.in
 configure
 libtool
+libunity.a
 config
 config.status
 config.log
@@ -141,8 +142,21 @@ test_bind_after_connect_tcp
 test_sodium
 test_zmq_poll_fd
 test_reconnect_ivl
+test_address_tipc
+test_app_meta
+test_security_zap
+test_socket_null
+test_xpub_verbose
+test_mock_pub_sub
+unittest_ip_resolver
+unittest_mtrie
+unittest_poller
+unittest_udp_address
+unittest_ypipe
 tests/test*.log
 tests/test*.trs
+unittests/unittest*.log
+unittests/unittest*.trs
 src/platform.hpp*
 src/stamp-h1
 local_lat

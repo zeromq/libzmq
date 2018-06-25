@@ -39,6 +39,9 @@
 #include "atomic_counter.hpp"
 #include "metadata.hpp"
 
+//  bits 2-5
+#define CMD_TYPE_MASK 0x1c
+
 //  Signature for free function to deallocate the message content.
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
@@ -75,6 +78,12 @@ class msg_t
     {
         more = 1,    //  Followed by more parts
         command = 2, //  Command frame (see ZMTP spec)
+        //  Command types, use only bits 2-5 and compare with ==, not bitwise,
+        //  a command can never be of more that one type at the same time
+        ping = 4,
+        pong = 8,
+        subscribe = 12,
+        cancel = 16,
         credential = 32,
         routing_id = 64,
         shared = 128
@@ -115,6 +124,22 @@ class msg_t
     bool is_delimiter () const;
     bool is_join () const;
     bool is_leave () const;
+    bool is_ping () const;
+    bool is_pong () const;
+
+    //  These are called on each message received by the session_base class,
+    //  so get them inlined to avoid the overhead of 2 function calls per msg
+    inline bool is_subscribe () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == subscribe;
+    }
+    inline bool is_cancel () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == cancel;
+    }
+
+    size_t command_body_size () const;
+    void *command_body ();
     bool is_vsm () const;
     bool is_cmsg () const;
     bool is_lmsg () const;
@@ -144,6 +169,12 @@ class msg_t
     {
         max_vsm_size =
           msg_t_size - (sizeof (metadata_t *) + 3 + 16 + sizeof (uint32_t))
+    };
+    enum
+    {
+        ping_cmd_name_size = 5,   // 4PING
+        cancel_cmd_name_size = 7, // 6CANCEL
+        sub_cmd_name_size = 10    // 9SUBSCRIBE
     };
 
   private:
