@@ -129,7 +129,7 @@ support multi-part messages, in particular, only one part of it is kept
 in the socket internal queue.
 
 NOTE: If recv is not called on the inbound socket, the queue and memory will
-grow with each message received. Use linkzmq:zmq_getsockopt[3]with ZMQ_EVENTS
+grow with each message received. Use linkzmq:zmq_getsockopt[3] with ZMQ_EVENTS
 to trigger the conflation of the messages.
 
 [horizontal]
