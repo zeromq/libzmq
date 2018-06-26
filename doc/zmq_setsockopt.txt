@@ -128,6 +128,10 @@ to be sent. Ignores 'ZMQ_RCVHWM' and 'ZMQ_SNDHWM' options. Does not
 support multi-part messages, in particular, only one part of it is kept
 in the socket internal queue.
 
+NOTE: If recv is not called on the inbound socket, the queue and memory will
+grow with each message received. Use linkzmq:zmq_getsockopt[3] with ZMQ_EVENTS
+to trigger the conflation of the messages.
+
 [horizontal]
 Option value type:: int
 Option value unit:: boolean
