@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include "poller.hpp"
+#include "polling_util.hpp"
 
 #if defined ZMQ_POLL_BASED_ON_POLL
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_AIX
@@ -270,19 +271,21 @@ int zmq::signaler_t::wait (int timeout_)
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 
-    fd_set fds;
-    FD_ZERO (&fds);
-    FD_SET (_r, &fds);
+    optimized_fd_set_t fds (FD_SETSIZE);
+    FD_ZERO (fds.get ());
+    FD_SET (_r, fds.get ());
     struct timeval timeout;
     if (timeout_ >= 0) {
         timeout.tv_sec = timeout_ / 1000;
         timeout.tv_usec = timeout_ % 1000 * 1000;
     }
 #ifdef ZMQ_HAVE_WINDOWS
-    int rc = select (0, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    int rc =
+      select (0, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = select (_r + 1, &fds, NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    int rc =
+      select (_r + 1, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
