@@ -35,6 +35,8 @@ if(COMPILER_SUPPORTS_C11)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 endif()
 
+include (ZMQSupportMacros)
+
 if(NOT MSVC)
     # clang 6 has a warning that does not make sense on multi-platform code
     CHECK_CXX_COMPILER_FLAG("-Wno-tautological-constant-compare" CXX_HAS_TAUT_WARNING)
@@ -549,8 +551,17 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
       FORCE)
 endif ()
 
-set (EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set (LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
+#-----------------------------------------------------------------------------
+# output directories
+
+zmq_set_with_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ZeroMQ_BINARY_DIR}/bin")
+if(UNIX)
+  set(zmq_library_directory "lib")
+else()
+  set(zmq_library_directory "bin")
+endif()
+zmq_set_with_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${ZeroMQ_BINARY_DIR}/${zmq_library_directory}")
+zmq_set_with_default(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${ZeroMQ_BINARY_DIR}/lib")
 
 #-----------------------------------------------------------------------------
 # platform specifics
