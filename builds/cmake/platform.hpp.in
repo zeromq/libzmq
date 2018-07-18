@@ -55,7 +55,7 @@
   #define ZMQ_HAVE_AIX
 #endif
 
-#if defined ANDROID
+#if defined __ANDROID__
   #define ZMQ_HAVE_ANDROID
 #endif
 
