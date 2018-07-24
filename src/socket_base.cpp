@@ -341,14 +341,16 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     return 0;
 }
 
-void zmq::socket_base_t::attach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::socket_base_t::attach_pipe (pipe_t *pipe_,
+                                      bool subscribe_to_all_,
+                                      bool locally_initiated_)
 {
     //  First, register the pipe so that we can terminate it later on.
     pipe_->set_event_sink (this);
     _pipes.push_back (pipe_);
 
     //  Let the derived socket type know about new pipe.
-    xattach_pipe (pipe_, subscribe_to_all_);
+    xattach_pipe (pipe_, subscribe_to_all_, locally_initiated_);
 
     //  If the socket is already being closed, ask any new pipes to terminate
     //  straight away.
@@ -553,7 +555,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
-        attach_pipe (new_pipes[0], true);
+        attach_pipe (new_pipes[0], true, true);
         newpipe = new_pipes[0];
 
         //  Attach remote end of the pipe to the session object later on.
@@ -773,7 +775,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
 
         //  Attach local end of the pipe to this socket object.
-        attach_pipe (new_pipes[0]);
+        attach_pipe (new_pipes[0], false, true);
 
         // Save last endpoint URI
         _last_endpoint.assign (addr_);
@@ -959,7 +961,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
-        attach_pipe (new_pipes[0], subscribe_to_all);
+        attach_pipe (new_pipes[0], subscribe_to_all, true);
         newpipe = new_pipes[0];
 
         //  Attach remote end of the pipe to the session object later on.
@@ -1807,6 +1809,11 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     std::string res = ZMQ_MOVE (_connect_routing_id);
     _connect_routing_id.clear ();
     return res;
+}
+
+bool zmq::routing_socket_base_t::connect_routing_id_is_set ()
+{
+    return !_connect_routing_id.empty ();
 }
 
 void zmq::routing_socket_base_t::add_out_pipe (blob_t routing_id_,

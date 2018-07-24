@@ -54,9 +54,12 @@ zmq::dish_t::~dish_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::dish_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::dish_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     zmq_assert (pipe_);
     _fq.attach (pipe_);

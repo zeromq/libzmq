@@ -44,9 +44,12 @@ zmq::dealer_t::~dealer_t ()
 {
 }
 
-void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::dealer_t::xattach_pipe (pipe_t *pipe_,
+                                  bool subscribe_to_all_,
+                                  bool locally_initated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initated_);
 
     zmq_assert (pipe_);
 

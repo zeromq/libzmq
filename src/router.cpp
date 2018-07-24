@@ -67,7 +67,9 @@ zmq::router_t::~router_t ()
     _prefetched_msg.close ();
 }
 
-void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::router_t::xattach_pipe (pipe_t *pipe_,
+                                  bool subscribe_to_all_,
+                                  bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
 
@@ -88,7 +90,7 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
         errno_assert (rc == 0);
     }
 
-    bool routing_id_ok = identify_peer (pipe_);
+    bool routing_id_ok = identify_peer (pipe_, locally_initiated_);
     if (routing_id_ok)
         _fq.attach (pipe_);
     else
@@ -166,7 +168,7 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
     if (it == _anonymous_pipes.end ())
         _fq.activated (pipe_);
     else {
-        bool routing_id_ok = identify_peer (pipe_);
+        bool routing_id_ok = identify_peer (pipe_, false);
         if (routing_id_ok) {
             _anonymous_pipes.erase (it);
             _fq.attach (pipe_);
@@ -440,13 +442,13 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
     return res;
 }
 
-bool zmq::router_t::identify_peer (pipe_t *pipe_)
+bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
 {
     msg_t msg;
     blob_t routing_id;
 
-    const std::string connect_routing_id = extract_connect_routing_id ();
-    if (!connect_routing_id.empty ()) {
+    if (locally_initiated_ && connect_routing_id_is_set ()) {
+        const std::string connect_routing_id = extract_connect_routing_id ();
         routing_id.set (
           reinterpret_cast<const unsigned char *> (connect_routing_id.c_str ()),
           connect_routing_id.length ());

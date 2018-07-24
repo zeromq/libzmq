@@ -57,8 +57,12 @@ zmq::xpub_t::~xpub_t ()
     _welcome_msg.close ();
 }
 
-void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
+    LIBZMQ_UNUSED (locally_initiated_);
+
     zmq_assert (pipe_);
     _dist.attach (pipe_);
 

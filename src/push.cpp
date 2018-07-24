@@ -44,9 +44,12 @@ zmq::push_t::~push_t ()
 {
 }
 
-void zmq::push_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::push_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     //  Don't delay pipe termination as there is no one
     //  to receive the delimiter.

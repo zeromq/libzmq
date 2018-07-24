@@ -46,7 +46,9 @@ class stream_t : public routing_socket_base_t
     ~stream_t ();
 
     //  Overrides of functions from socket_base_t.
-    void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
+    void xattach_pipe (zmq::pipe_t *pipe_,
+                       bool subscribe_to_all_,
+                       bool locally_initiated_);
     int xsend (zmq::msg_t *msg_);
     int xrecv (zmq::msg_t *msg_);
     bool xhas_in ();
@@ -57,7 +59,7 @@ class stream_t : public routing_socket_base_t
 
   private:
     //  Generate peer's id and update lookup map
-    void identify_peer (pipe_t *pipe_);
+    void identify_peer (pipe_t *pipe_, bool locally_initiated_);
 
     //  Fair queueing object for inbound pipes.
     fq_t _fq;
