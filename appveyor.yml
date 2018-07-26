@@ -69,11 +69,17 @@ environment:
       WITH_LIBSODIUM: OFF
       ENABLE_CURVE: ON
       CMAKE_GENERATOR: "Unix Makefiles"
+    - platform: mingw64
+      configuration: Release
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Unix Makefiles"
 
 matrix:
   fast_finish: false
   allow_failures:
     - platform: cygwin64 # TODO allow failures until tests are fixed
+    - platform: mingw64  # TODO allow failures until tests are fixed
 
 init:
   - cmd: if "%NO_PR%"=="TRUE" (
@@ -94,18 +100,19 @@ cache:
 install:
   - cmd: if "%Platform%"=="cygwin64" C:\cygwin64\setup-x86_64.exe --quiet-mode --no-shortcuts --upgrade-also --packages cmake,cygwin-devel,gcc-g++,libncurses-devel,make,pkg-config
   - cmd: if "%Platform%"=="cygwin64" set PATH=C:\cygwin64\bin;%PATH%
+  - cmd: if "%Platform%"=="mingw64" set PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\bin;C:\MinGW\msys\1.0\bin;%PATH%
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
-  - if "%WITH_LIBSODIUM%"=="ON" (
-      if not exist "%LIBSODIUMDIR%" (
-      git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
-      ) else (
-      cd "%LIBSODIUMDIR%" &&
-      git pull
-      )
-    )
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" (
+            if not exist "%LIBSODIUMDIR%" (
+                git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+            ) else (
+                cd "%LIBSODIUMDIR%" &&
+                git pull
+            )
+         )
   - cmd: if "%WITH_LIBSODIUM%"=="ON" msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
@@ -122,8 +129,9 @@ before_build:
   # - cmd: set BUILDLOG="%LIBZMQ_SRCDIR%\build.log"
   - cmd: md "%LIBZMQ_BUILDDIR%"
   - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" ==  "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
-  - cmd: if "%PLATFORM%" NEQ "cygwin64" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
+  - cmd: if "%PLATFORM%" == "Win32" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
+  - cmd: if "%PLATFORM%" == "x64"   set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
+  - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
   - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="ON" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
@@ -132,16 +140,26 @@ build_script:
   - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
   - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" NEQ "cygwin64" (
+  - cmd: if "%PLATFORM%" == "Win32" (
             if "%MSVCYEAR%"=="vs2008" (
                 cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
             ) else (
                 cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
             )
          )
-  - cmd: if "%PLATFORM%" ==  "cygwin64" cmake --build . -- -j5
-  # TODO this is definitely not the optimal place&way to do this
-  - cmd: if "%PLATFORM%" ==  "cygwin64" cp lib/libzmq-5.dll bin
+  - cmd: if "%PLATFORM%" == "x64" (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+         )
+  - cmd: if "%PLATFORM%" == "cygwin64" (
+            cmake --build . -- -j5
+            # TODO this is definitely not the optimal place&way to do this
+            cp lib/libzmq-5.dll bin
+         )
+  - cmd: if "%PLATFORM%" == "mingw64" (
+            cmake --build . -- -j5
+            # TODO this is definitely not the optimal place&way to do this
+            cp lib/libzmq-5.dll bin
+         )
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
 # build_script:
