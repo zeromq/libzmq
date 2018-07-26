@@ -150,14 +150,13 @@ build_script:
   - cmd: if "%PLATFORM%" == "x64" (
             cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
          )
+  # TODO: copying the dll here for cygwin64/mingw64 is definitely not the optimal place & way to do this
   - cmd: if "%PLATFORM%" == "cygwin64" (
             cmake --build . -- -j5
-            # TODO this is definitely not the optimal place&way to do this
             cp lib/libzmq-5.dll bin
          )
   - cmd: if "%PLATFORM%" == "mingw64" (
             cmake --build . -- -j5
-            # TODO this is definitely not the optimal place&way to do this
             cp lib/libzmq-5.dll bin
          )
 
