@@ -1219,7 +1219,7 @@ endif ()
 #-----------------------------------------------------------------------------
 # installer
 
-if (MSVC)
+if (MSVC AND (BUILD_SHARED OR BUILD_STATIC))
   install (TARGETS ${target_outputs}
           EXPORT ${PROJECT_NAME}-targets
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -1238,7 +1238,7 @@ if (MSVC)
             PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             COMPONENT Runtime)
   endif ()
-else ()
+elseif (BUILD_SHARED OR BUILD_STATIC)
   install (TARGETS ${target_outputs}
           EXPORT ${PROJECT_NAME}-targets
           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -1281,7 +1281,7 @@ else()
   set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
 endif()
 
-if (NOT CMAKE_VERSION VERSION_LESS 3.0)
+if ((NOT CMAKE_VERSION VERSION_LESS 3.0) AND (BUILD_SHARED OR BUILD_STATIC))
   export(EXPORT ${PROJECT_NAME}-targets
          FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 endif()
@@ -1291,12 +1291,14 @@ configure_package_config_file(builds/cmake/${PROJECT_NAME}Config.cmake.in
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
                                  VERSION ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}
                                  COMPATIBILITY AnyNewerVersion)
-install(EXPORT ${PROJECT_NAME}-targets
-        FILE ${PROJECT_NAME}Targets.cmake
-        DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-              DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
+if (BUILD_SHARED OR BUILD_STATIC)
+  install(EXPORT ${PROJECT_NAME}-targets
+          FILE ${PROJECT_NAME}Targets.cmake
+          DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+                DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
+endif()
 
 option(ENABLE_CPACK "Enables cpack rules" ON)
 if (MSVC AND ENABLE_CPACK)
