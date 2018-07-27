@@ -153,11 +153,11 @@ build_script:
          )
   # TODO: copying the dll here for cygwin64/mingw64 is definitely not the optimal place & way to do this
   - cmd: if "%PLATFORM%" == "cygwin64" (
-            cmake --build . -- -j5
+            cmake --build . -- -j5 &&
             cp lib/libzmq-5.dll bin
          )
   - cmd: if "%PLATFORM%" == "mingw64" (
-            cmake --build . -- -j5
+            cmake --build . -- -j5 &&
             cp lib/libzmq-5.dll bin
          )
 
