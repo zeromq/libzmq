@@ -543,6 +543,25 @@ ZMQ_EXPORT int zmq_atomic_counter_dec (void *counter_);
 ZMQ_EXPORT int zmq_atomic_counter_value (void *counter_);
 ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p_);
 
+/******************************************************************************/
+/*  Scheduling timers                                                         */
+/******************************************************************************/
+
+#define ZMQ_HAVE_TIMERS
+
+typedef void(zmq_timer_fn) (int timer_id, void *arg);
+
+ZMQ_EXPORT void *zmq_timers_new (void);
+ZMQ_EXPORT int zmq_timers_destroy (void **timers_p);
+ZMQ_EXPORT int
+zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
+ZMQ_EXPORT int zmq_timers_cancel (void *timers, int timer_id);
+ZMQ_EXPORT int
+zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
+ZMQ_EXPORT int zmq_timers_reset (void *timers, int timer_id);
+ZMQ_EXPORT long zmq_timers_timeout (void *timers);
+ZMQ_EXPORT int zmq_timers_execute (void *timers);
+
 
 /******************************************************************************/
 /*  These functions are not documented by man pages -- use at your own risk.  */
@@ -705,25 +724,6 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
                                           const void *routing_id,
                                           size_t routing_id_size);
-
-/******************************************************************************/
-/*  Scheduling timers                                                         */
-/******************************************************************************/
-
-#define ZMQ_HAVE_TIMERS
-
-typedef void(zmq_timer_fn) (int timer_id, void *arg);
-
-ZMQ_EXPORT void *zmq_timers_new (void);
-ZMQ_EXPORT int zmq_timers_destroy (void **timers_p);
-ZMQ_EXPORT int
-zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
-ZMQ_EXPORT int zmq_timers_cancel (void *timers, int timer_id);
-ZMQ_EXPORT int
-zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
-ZMQ_EXPORT int zmq_timers_reset (void *timers, int timer_id);
-ZMQ_EXPORT long zmq_timers_timeout (void *timers);
-ZMQ_EXPORT int zmq_timers_execute (void *timers);
 
 #endif // ZMQ_BUILD_DRAFT_API
 

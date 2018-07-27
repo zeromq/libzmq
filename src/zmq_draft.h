@@ -162,24 +162,6 @@ int zmq_socket_get_peer_state (void *socket_,
                                const void *routing_id_,
                                size_t routing_id_size_);
 
-/******************************************************************************/
-/*  Scheduling timers                                                         */
-/******************************************************************************/
-
-typedef void(zmq_timer_fn) (int timer_id_, void *arg_);
-
-void *zmq_timers_new (void);
-int zmq_timers_destroy (void **timers_p_);
-int zmq_timers_add (void *timers_,
-                    size_t interval_,
-                    zmq_timer_fn handler_,
-                    void *arg_);
-int zmq_timers_cancel (void *timers_, int timer_id_);
-int zmq_timers_set_interval (void *timers_, int timer_id_, size_t interval_);
-int zmq_timers_reset (void *timers_, int timer_id_);
-long zmq_timers_timeout (void *timers_);
-int zmq_timers_execute (void *timers_);
-
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_DRAFT_H_INCLUDED__
