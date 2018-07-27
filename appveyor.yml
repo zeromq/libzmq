@@ -133,6 +133,7 @@ before_build:
   - cmd: if "%PLATFORM%" == "Win32" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
   - cmd: if "%PLATFORM%" == "x64"   set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
   - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
+  - cmd: if "%PLATFORM%" == "mingw64" set EXTRA_FLAGS='-D WITH_DOC="OFF"'
   - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="ON" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
@@ -151,14 +152,11 @@ build_script:
   - cmd: if "%PLATFORM%" == "x64" (
             cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
          )
-  # TODO: copying the dll here for cygwin64/mingw64 is definitely not the optimal place & way to do this
   - cmd: if "%PLATFORM%" == "cygwin64" (
-            cmake --build . -- -j5 &&
-            cp lib/libzmq-5.dll bin
+            cmake --build . -- -j5
          )
   - cmd: if "%PLATFORM%" == "mingw64" (
-            cmake --build . -- -j5 &&
-            cp lib/libzmq-5.dll bin
+            cmake --build . -- -j5
          )
 
 # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
