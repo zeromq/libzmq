@@ -189,6 +189,106 @@ void test_router_2_router (bool named_)
     zmq_ctx_destroy (ctx);
 }
 
+void test_router_2_router_while_receiving ()
+{
+    void *xbind, *zbind, *yconn;
+    int ret;
+    char buff[256];
+    char msg[] = "hi 1";
+    const char *wildcard_bind = "tcp://127.0.0.1:*";
+    int zero = 0;
+    size_t len = MAX_SOCKET_STRING;
+    char x_endpoint[MAX_SOCKET_STRING];
+    char z_endpoint[MAX_SOCKET_STRING];
+    void *ctx = zmq_ctx_new ();
+
+    //  Create xbind socket.
+    xbind = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (xbind);
+    ret = zmq_setsockopt (xbind, ZMQ_LINGER, &zero, sizeof (zero));
+    assert (0 == ret);
+    ret = zmq_bind (xbind, wildcard_bind);
+    assert (0 == ret);
+    ret = zmq_getsockopt (xbind, ZMQ_LAST_ENDPOINT, x_endpoint, &len);
+    assert (0 == ret);
+
+    //  Create zbind socket.
+    zbind = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (zbind);
+    ret = zmq_setsockopt (zbind, ZMQ_LINGER, &zero, sizeof (zero));
+    assert (0 == ret);
+    ret = zmq_bind (zbind, wildcard_bind);
+    assert (0 == ret);
+    ret = zmq_getsockopt (zbind, ZMQ_LAST_ENDPOINT, z_endpoint, &len);
+    assert (0 == ret);
+
+    //  Create connection socket.
+    yconn = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (yconn);
+    ret = zmq_setsockopt (yconn, ZMQ_LINGER, &zero, sizeof (zero));
+    assert (0 == ret);
+
+    // set identites for each socket
+    ret = zmq_setsockopt (xbind, ZMQ_ROUTING_ID, "X", 2);
+    ret = zmq_setsockopt (yconn, ZMQ_ROUTING_ID, "Y", 2);
+    ret = zmq_setsockopt (zbind, ZMQ_ROUTING_ID, "Z", 2);
+
+    //  Connect Y to X using a routing id
+    ret = zmq_setsockopt (yconn, ZMQ_CONNECT_ROUTING_ID, "X", 2);
+    assert (0 == ret);
+    ret = zmq_connect (yconn, x_endpoint);
+    assert (0 == ret);
+
+    //  Send some data from Y to X.
+    ret = zmq_send (yconn, "X", 2, ZMQ_SNDMORE);
+    assert (2 == ret);
+    ret = zmq_send (yconn, msg, 5, 0);
+    assert (5 == ret);
+
+    // wait for the Y->X message to be received
+    msleep (SETTLE_TIME);
+
+    // Now X tries to connect to Z and send a message
+    ret = zmq_setsockopt (xbind, ZMQ_CONNECT_ROUTING_ID, "Z", 2);
+    assert (0 == ret);
+    ret = zmq_connect (xbind, z_endpoint);
+    assert (0 == ret);
+
+    //  Try to send some data from X to Z.
+    ret = zmq_send (xbind, "Z", 2, ZMQ_SNDMORE);
+    assert (2 == ret);
+    ret = zmq_send (xbind, msg, 5, 0);
+    assert (5 == ret);
+
+    // wait for the X->Z message to be received (so that our non-blocking check will actually
+    // fail if the message is routed to Y)
+    msleep (SETTLE_TIME);
+
+    // nothing should have been received on the Y socket
+    ret = zmq_recv (yconn, buff, 256, ZMQ_DONTWAIT);
+    assert (ret == -1);
+    assert (zmq_errno () == EAGAIN);
+
+    // the message should have been received on the Z socket
+    ret = zmq_recv (zbind, buff, 256, 0);
+    assert (ret && 'X' == buff[0]);
+    ret = zmq_recv (zbind, buff + 128, 128, 0);
+    assert (5 == ret && 'h' == buff[128]);
+
+    ret = zmq_unbind (xbind, x_endpoint);
+    assert (0 == ret);
+    ret = zmq_unbind (zbind, z_endpoint);
+    assert (0 == ret);
+    ret = zmq_close (yconn);
+    assert (0 == ret);
+    ret = zmq_close (xbind);
+    assert (0 == ret);
+    ret = zmq_close (zbind);
+    assert (0 == ret);
+
+    zmq_ctx_destroy (ctx);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -196,6 +296,7 @@ int main (void)
     test_stream_2_stream ();
     test_router_2_router (false);
     test_router_2_router (true);
+    test_router_2_router_while_receiving ();
 
     return 0;
 }

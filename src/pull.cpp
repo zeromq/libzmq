@@ -44,9 +44,12 @@ zmq::pull_t::~pull_t ()
 {
 }
 
-void zmq::pull_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::pull_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     zmq_assert (pipe_);
     _fq.attach (pipe_);
