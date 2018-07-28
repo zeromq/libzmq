@@ -1,0 +1,162 @@
+zmq_timers(3)
+============
+
+
+NAME
+----
+zmq_timers - helper functions for cross-platform timers callbacks
+
+
+SYNOPSIS
+--------
+
+*typedef void(zmq_timer_fn) (int 'timer_id', void *'arg');*
+
+*void *zmq_timers_new (void);*
+
+*int zmq_timers_destroy (void **'timers_p');*
+
+*int zmq_timers_add (void *'timers', size_t 'interval', zmq_timer_fn 'handler', void *'arg');*
+
+*int zmq_timers_cancel (void *'timers', int 'timer_id');*
+
+*int zmq_timers_set_interval (void *'timers', int 'timer_id', size_t 'interval');*
+
+*int zmq_timers_reset (void *'timers', int 'timer_id');*
+
+*long zmq_timers_timeout (void *'timers');*
+
+*int zmq_timers_execute (void *'timers');*
+
+
+DESCRIPTION
+-----------
+The _zmq_timers_*_ functions provide cross-platform access to timers callbacks.
+Once a timer has been registered, it will repeat at the specified interval until
+it gets manually cancelled. To run the callbacks, _zmq_timers_execute_ must be
+ran.
+
+_zmq_timers_new_ and _zmq_timers_destroy_ manage the lifetime of a timer
+instance. _zmq_timers_new_ creates and returns a new timer instance, while
+_zmq_timers_destroy_ destroys it. A pointer to a valid timer must be passed
+as the _timers_p_ argument of _zmq_timers_destroy_. In particular,
+_zmq_timers_destroy_ may not be called multiple times for the same timer
+instance. _zmq_timers_destroy_ sets the passed pointer to NULL in case of a
+successful execution.
+
+_zmq_timers_add_ and _zmq_timers_cancel_ manage the timers registered.
+
+_zmq_timers_add_ registers a new _timer_ with a given instance. _timers_ must
+point to a valid _timers_ object. The _interval_ parameter specifies the
+expiration of the timer in milliseconds. _handler_ and _arg_ specify the callback
+that will be invoked on expiration and the optional parameter that will be passed
+through. The callback must be a valid function implementing the _zmq_timer_fn_
+prototype. An ID will be returned that can be used to modify or cancel the timer.
+
+_zmq_timers_cancel_ will cancel the timer associated with _timer_id_ from the
+instance _timers_.
+
+_zmq_timers_set_interval_ will set the expiration of the timer associated with
+_timer_id_ from the instance _timers_ to _interval_ milliseconds into the future.
+
+_zmq_timers_reset_ will restart the timer associated with _timer_id_ from the
+instance _timers_.
+
+_zmq_timers_timeout_ will return the time left in milliseconds until the next
+timer registered with _timers_ expires.
+
+_zmq_timers_execute_ will run callbacks of all expired timers from the instance
+_timers_.
+
+
+THREAD SAFETY
+-------------
+Like most other 0MQ objects, timers are not thread-safe. All operations must
+be called from the same thread. Otherwise, behaviour is undefined.
+
+
+RETURN VALUE
+------------
+_zmq_timers_new_ always returns a valid pointer to a poller.
+
+All functions that return an int, return -1 in case of a failure. In that case,
+zmq_errno() can be used to query the type of the error as described below.
+
+_zmq_timers_timeout_ returns the time left in milliseconds until the next
+timer registered with _timers_ expires, or -1 if there are no timers left.
+
+All other functions return 0 in case of a successful execution.
+
+
+ERRORS
+------
+On _zmq_timers_destroy_, _zmq_poller_cancel_, _zmq_timers_set_interval_,
+_zmq_timers_reset_, zmq_timers_timeout_, and _zmq_timers_execute_:
+*EFAULT*::
+_timers_ did not point to a valid timer. Note that passing an
+invalid pointer (e.g. pointer to deallocated memory) may cause undefined
+behaviour (e.g. an access violation).
+
+On _zmq_timers_add_:
+*EFAULT*::
+_timers_ did not point to a valid timer or _handler_ did not point to a valid
+function.
+
+On _zmq_poller_cancel_, _zmq_timers_set_interval_ and zmq_timers_timeout_:
+*EINVAL*::
+_timer_id_ did not exist or was already cancelled.
+
+
+EXAMPLE
+-------
+.Add one timer with a simple callback that changes a boolean.
+----
+    void handler (int timer_id_, void *arg_)
+    {
+        (void) timer_id_; //  Stop 'unused' compiler warnings
+        *((bool *) arg_) = true;
+    }
+
+    ...
+
+    void *timers = zmq_timers_new ();
+    assert (timers);
+
+    bool timer_invoked = false;
+
+    const unsigned long full_timeout = 100;
+
+    int timer_id =
+      zmq_timers_add (timers, full_timeout, handler, &timer_invoked);
+    assert (timer_id);
+
+    //  Timer should not have been invoked yet
+    int rc = zmq_timers_execute (timers);
+    assert (rc == 0);
+
+    //  Wait half the time and check again
+    long timeout = zmq_timers_timeout (timers);
+    assert (rc != -1);
+    msleep (timeout / 2);
+    rc = zmq_timers_execute (timers);
+    assert (rc == 0);
+
+    // Wait until the end
+    rc = msleep (zmq_timers_timeout (timers));
+    assert (rc == 0);
+    assert (timer_invoked);
+
+    rc = zmq_timers_destroy (&timers);
+    assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
