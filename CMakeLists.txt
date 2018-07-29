@@ -459,12 +459,10 @@ elseif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
   add_definitions (-D_DARWIN_C_SOURCE)
 endif ()
 
-set (CMAKE_PYTHON_VERSION 2.7 2.6 2.5 2.4)
-find_package (PythonInterp)
 find_package (AsciiDoc)
 
 cmake_dependent_option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" ON
-                       "PYTHONINTERP_FOUND;ASCIIDOC_FOUND" OFF)
+                       "ASCIIDOC_FOUND;NOT WIN32" OFF)  # Do not build docs on Windows due to issues with symlinks
 
 if (MSVC)
   if (WITH_OPENPGM)
