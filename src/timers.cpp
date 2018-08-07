@@ -135,65 +135,50 @@ int zmq::timers_t::reset (int timer_id_)
 
 long zmq::timers_t::timeout ()
 {
-    timersmap_t::iterator it = _timers.begin ();
+    const uint64_t now = _clock.now_ms ();
+    long res = -1;
 
-    uint64_t now = _clock.now_ms ();
-
-    while (it != _timers.end ()) {
-        cancelled_timers_t::iterator cancelled_it =
-          _cancelled_timers.find (it->second.timer_id);
-
-        //  Live timer, lets return the timeout
-        if (cancelled_it == _cancelled_timers.end ()) {
-            if (it->first > now)
-                return static_cast<long> (it->first - now);
-
-            return 0;
+    const timersmap_t::iterator begin = _timers.begin ();
+    const timersmap_t::iterator end = _timers.end ();
+    timersmap_t::iterator it = begin;
+    for (; it != end; ++it) {
+        if (0 == _cancelled_timers.erase (it->second.timer_id)) {
+            //  Live timer, lets return the timeout
+            res = it->first > now ? static_cast<long> (it->first - now) : 0;
+            break;
         }
-
-        // Let's remove it from the beginning of the list
-        timersmap_t::iterator old = it;
-        ++it;
-        _timers.erase (old);
-        _cancelled_timers.erase (cancelled_it);
     }
 
-    //  Wait forever as no timers are alive
-    return -1;
+    //  Remove timed-out timers
+    _timers.erase (begin, it);
+
+    return res;
 }
 
 int zmq::timers_t::execute ()
 {
+    const uint64_t now = _clock.now_ms ();
+
+    const timersmap_t::iterator begin = _timers.begin ();
+    const timersmap_t::iterator end = _timers.end ();
     timersmap_t::iterator it = _timers.begin ();
+    for (; it != end; ++it) {
+        if (0 == _cancelled_timers.erase (it->second.timer_id)) {
+            //  Timer is not cancelled
 
-    uint64_t now = _clock.now_ms ();
+            //  Map is ordered, if we have to wait for current timer we can stop.
+            if (it->first > now)
+                break;
 
-    while (it != _timers.end ()) {
-        cancelled_timers_t::iterator cancelled_it =
-          _cancelled_timers.find (it->second.timer_id);
+            const timer_t &timer = it->second;
 
-        //  Dead timer, lets remove it and continue
-        if (cancelled_it != _cancelled_timers.end ()) {
-            timersmap_t::iterator old = it;
-            ++it;
-            _timers.erase (old);
-            _cancelled_timers.erase (cancelled_it);
-            continue;
+            timer.handler (timer.timer_id, timer.arg);
+
+            _timers.insert (
+              timersmap_t::value_type (now + timer.interval, timer));
         }
-
-        //  Map is ordered, if we have to wait for current timer we can stop.
-        if (it->first > now)
-            break;
-
-        timer_t timer = it->second;
-
-        timer.handler (timer.timer_id, timer.arg);
-
-        timersmap_t::iterator old = it;
-        ++it;
-        _timers.erase (old);
-        _timers.insert (timersmap_t::value_type (now + timer.interval, timer));
     }
+    _timers.erase (begin, it);
 
     return 0;
 }
