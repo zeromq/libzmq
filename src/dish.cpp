@@ -207,9 +207,9 @@ bool zmq::dish_t::xhas_in ()
     if (_has_message)
         return true;
 
-    while (true) {
+    do {
         //  Get a message using fair queueing algorithm.
-        int rc = _fq.recv (&_message);
+        const int rc = _fq.recv (&_message);
 
         //  If there's no message available, return immediately.
         //  The same when error occurs.
@@ -218,14 +218,12 @@ bool zmq::dish_t::xhas_in ()
             return false;
         }
 
-        //  Filtering non matching messages
-        subscriptions_t::iterator it =
-          _subscriptions.find (std::string (_message.group ()));
-        if (it != _subscriptions.end ()) {
-            _has_message = true;
-            return true;
-        }
-    }
+        //  Filter out non matching messages
+    } while (0 == _subscriptions.count (std::string (_message.group ())));
+
+    //  Matching message found
+    _has_message = true;
+    return true;
 }
 
 const zmq::blob_t &zmq::dish_t::get_credential () const
