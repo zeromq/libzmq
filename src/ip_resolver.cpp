@@ -640,12 +640,10 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
             if (((str_rc1 == 0) && (!strcmp (nic_, if_name)))
                 || ((str_rc2 == 0) && (!strcmp (nic_, if_friendly_name)))) {
                 //  Iterate over all unicast addresses bound to the current network interface
-                IP_ADAPTER_UNICAST_ADDRESS *unicast_address =
-                  current_addresses->FirstUnicastAddress;
-                IP_ADAPTER_UNICAST_ADDRESS *current_unicast_address =
-                  unicast_address;
-
-                while (current_unicast_address) {
+                for (const IP_ADAPTER_UNICAST_ADDRESS *current_unicast_address =
+                       current_addresses->FirstUnicastAddress;
+                     current_unicast_address;
+                     current_unicast_address = current_unicast_address->Next) {
                     const ADDRESS_FAMILY family =
                       current_unicast_address->Address.lpSockaddr->sa_family;
 
@@ -657,8 +655,6 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
                         found = true;
                         break;
                     }
-
-                    current_unicast_address = current_unicast_address->Next;
                 }
 
                 if (found)
