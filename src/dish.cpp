@@ -184,6 +184,11 @@ int zmq::dish_t::xrecv (msg_t *msg_)
         return 0;
     }
 
+    return xxrecv (msg_);
+}
+
+int zmq::dish_t::xxrecv (msg_t *msg_)
+{
     do {
         //  Get a message using fair queueing algorithm.
         const int rc = _fq.recv (msg_);
@@ -207,19 +212,11 @@ bool zmq::dish_t::xhas_in ()
     if (_has_message)
         return true;
 
-    do {
-        //  Get a message using fair queueing algorithm.
-        const int rc = _fq.recv (&_message);
-
-        //  If there's no message available, return immediately.
-        //  The same when error occurs.
-        if (rc != 0) {
-            errno_assert (errno == EAGAIN);
-            return false;
-        }
-
-        //  Filter out non matching messages
-    } while (0 == _subscriptions.count (std::string (_message.group ())));
+    const int rc = xxrecv (&_message);
+    if (rc != 0) {
+        errno_assert (errno == EAGAIN);
+        return false;
+    }
 
     //  Matching message found
     _has_message = true;
