@@ -448,10 +448,7 @@ int zmq::thread_ctx_t::set (int option_, int optval_)
         _thread_affinity_cpus.insert (optval_);
     } else if (option_ == ZMQ_THREAD_AFFINITY_CPU_REMOVE && optval_ >= 0) {
         scoped_lock_t locker (_opt_sync);
-        std::set<int>::iterator it = _thread_affinity_cpus.find (optval_);
-        if (it != _thread_affinity_cpus.end ()) {
-            _thread_affinity_cpus.erase (it);
-        } else {
+        if (0 == _thread_affinity_cpus.erase (optval_)) {
             errno = EINVAL;
             rc = -1;
         }
@@ -531,15 +528,16 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 {
     scoped_lock_t locker (_endpoints_sync);
 
-    endpoints_t::iterator it = _endpoints.begin ();
-    while (it != _endpoints.end ()) {
-        if (it->second.socket == socket_) {
-            endpoints_t::iterator to_erase = it;
+    for (endpoints_t::iterator it = _endpoints.begin ();
+         it != _endpoints.end ();) {
+        if (it->second.socket == socket_)
+#if __cplusplus >= 201103L
+            it = _endpoints.erase (it);
+#else
+            _endpoints.erase (it++);
+#endif
+        else
             ++it;
-            _endpoints.erase (to_erase);
-            continue;
-        }
-        ++it;
     }
 }
 

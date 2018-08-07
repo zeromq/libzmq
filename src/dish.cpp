@@ -137,15 +137,10 @@ int zmq::dish_t::xleave (const char *group_)
         return -1;
     }
 
-    subscriptions_t::iterator it =
-      std::find (_subscriptions.begin (), _subscriptions.end (), group);
-
-    if (it == _subscriptions.end ()) {
+    if (0 == _subscriptions.erase (group)) {
         errno = EINVAL;
         return -1;
     }
-
-    _subscriptions.erase (it);
 
     msg_t msg;
     int rc = msg.init_leave ();

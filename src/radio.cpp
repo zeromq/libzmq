@@ -122,12 +122,14 @@ int zmq::radio_t::xsetsockopt (int option_,
 
 void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
-    //  NOTE: erase invalidates an iterator, and that's why it's not incrementing in post-loop
-    //  read-after-free caught by Valgrind, see https://github.com/zeromq/libzmq/pull/1771
     for (subscriptions_t::iterator it = _subscriptions.begin ();
          it != _subscriptions.end ();) {
         if (it->second == pipe_) {
+#if __cplusplus >= 201103L
+            it = _subscriptions.erase (it);
+#else
             _subscriptions.erase (it++);
+#endif
         } else {
             ++it;
         }
