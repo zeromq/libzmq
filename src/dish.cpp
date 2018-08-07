@@ -178,27 +178,26 @@ int zmq::dish_t::xrecv (msg_t *msg_)
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
     if (_has_message) {
-        int rc = msg_->move (_message);
+        const int rc = msg_->move (_message);
         errno_assert (rc == 0);
         _has_message = false;
         return 0;
     }
 
-    while (true) {
+    do {
         //  Get a message using fair queueing algorithm.
-        int rc = _fq.recv (msg_);
+        const int rc = _fq.recv (msg_);
 
         //  If there's no message available, return immediately.
         //  The same when error occurs.
         if (rc != 0)
             return -1;
 
-        //  Filtering non matching messages
-        subscriptions_t::iterator it =
-          _subscriptions.find (std::string (msg_->group ()));
-        if (it != _subscriptions.end ())
-            return 0;
-    }
+        //  Skip non matching messages
+    } while (0 == _subscriptions.count (std::string (msg_->group ())));
+
+    //  Found a matching message
+    return 0;
 }
 
 bool zmq::dish_t::xhas_in ()
