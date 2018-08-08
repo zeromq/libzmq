@@ -32,6 +32,8 @@
 #include "clock.hpp"
 #include "err.hpp"
 
+#include <algorithm>
+
 zmq::mailbox_safe_t::mailbox_safe_t (mutex_t *sync_) : _sync (sync_)
 {
     //  Get the pipe into passive state. That way, if the users starts by
@@ -58,13 +60,9 @@ void zmq::mailbox_safe_t::add_signaler (signaler_t *signaler_)
 
 void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler_)
 {
-    std::vector<signaler_t *>::iterator it = _signalers.begin ();
-
     // TODO: make a copy of array and signal outside the lock
-    for (; it != _signalers.end (); ++it) {
-        if (*it == signaler_)
-            break;
-    }
+    std::vector<signaler_t *>::iterator it =
+      std::find (_signalers.begin (), _signalers.end (), signaler_);
 
     if (it != _signalers.end ())
         _signalers.erase (it);

@@ -1317,12 +1317,7 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
 
 int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
 {
-    int rc;
-    command_t cmd;
-    if (timeout_ != 0) {
-        //  If we are asked to wait, simply ask mailbox to wait.
-        rc = _mailbox->recv (&cmd, timeout_);
-    } else {
+    if (timeout_ == 0) {
         //  If we are asked not to wait, check whether we haven't processed
         //  commands recently, so that we can throttle the new commands.
 
@@ -1343,10 +1338,11 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
                 return 0;
             _last_tsc = tsc;
         }
-
-        //  Check whether there are any commands pending for this thread.
-        rc = _mailbox->recv (&cmd, 0);
     }
+
+    //  Check whether there are any commands pending for this thread.
+    command_t cmd;
+    int rc = _mailbox->recv (&cmd, timeout_);
 
     //  Process all available commands.
     while (rc == 0) {

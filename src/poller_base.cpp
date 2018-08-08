@@ -82,29 +82,32 @@ uint64_t zmq::poller_base_t::execute_timers ()
         return 0;
 
     //  Get the current time.
-    uint64_t current = _clock.now_ms ();
+    const uint64_t current = _clock.now_ms ();
 
     //   Execute the timers that are already due.
-    timers_t::iterator it = _timers.begin ();
-    while (it != _timers.end ()) {
+    const timers_t::iterator begin = _timers.begin ();
+    const timers_t::iterator end = _timers.end ();
+    uint64_t res = 0;
+    timers_t::iterator it = begin;
+    for (; it != end; ++it) {
         //  If we have to wait to execute the item, same will be true about
         //  all the following items (multimap is sorted). Thus we can stop
-        //  checking the subsequent timers and return the time to wait for
-        //  the next timer (at least 1ms).
-        if (it->first > current)
-            return it->first - current;
+        //  checking the subsequent timers.
+        if (it->first > current) {
+            res = it->first - current;
+            break;
+        }
 
         //  Trigger the timer.
         it->second.sink->timer_event (it->second.id);
-
-        //  Remove it from the list of active timers.
-        timers_t::iterator o = it;
-        ++it;
-        _timers.erase (o);
     }
 
-    //  There are no more timers.
-    return 0;
+    //  Remove them from the list of active timers.
+    _timers.erase (begin, it);
+
+    //  Return the time to wait for the next timer (at least 1ms), or 0, if
+    //  there are no more timers.
+    return res;
 }
 
 zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :

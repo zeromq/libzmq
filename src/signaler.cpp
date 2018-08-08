@@ -187,15 +187,10 @@ void zmq::signaler_t::send ()
     errno_assert (sz == sizeof (inc));
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
-    while (true) {
-        int nbytes =
-          ::send (_w, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
-        wsa_assert (nbytes != SOCKET_ERROR);
-        if (unlikely (nbytes == SOCKET_ERROR))
-            continue;
-        zmq_assert (nbytes == sizeof (dummy));
-        break;
-    }
+    const int nbytes =
+      ::send (_w, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
+    wsa_assert (nbytes != SOCKET_ERROR);
+    zmq_assert (nbytes == sizeof (dummy));
 #elif defined ZMQ_HAVE_VXWORKS
     unsigned char dummy = 0;
     while (true) {

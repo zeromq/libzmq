@@ -68,6 +68,8 @@ class dish_t : public socket_base_t
     int xleave (const char *group_);
 
   private:
+    int xxrecv (zmq::msg_t *msg_);
+
     //  Send subscriptions to a pipe
     void send_subscriptions (pipe_t *pipe_);
 
