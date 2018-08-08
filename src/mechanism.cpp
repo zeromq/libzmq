@@ -178,12 +178,14 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *ptr_,
     }
 
 
-    for (std::map<std::string, std::string>::const_iterator it =
-           options.app_metadata.begin ();
-         it != options.app_metadata.end (); ++it)
+    for (std::map<std::string, std::string>::const_iterator
+           it = options.app_metadata.begin (),
+           end = options.app_metadata.end ();
+         it != end; ++it) {
         ptr +=
           add_property (ptr, ptr_capacity_ - (ptr - ptr_), it->first.c_str (),
                         it->second.c_str (), strlen (it->second.c_str ()));
+    }
 
     return ptr - ptr_;
 }
@@ -193,9 +195,10 @@ size_t zmq::mechanism_t::basic_properties_len () const
     const char *socket_type = socket_type_string (options.type);
     size_t meta_len = 0;
 
-    for (std::map<std::string, std::string>::const_iterator it =
-           options.app_metadata.begin ();
-         it != options.app_metadata.end (); ++it) {
+    for (std::map<std::string, std::string>::const_iterator
+           it = options.app_metadata.begin (),
+           end = options.app_metadata.end ();
+         it != end; ++it) {
         meta_len +=
           property_len (it->first.c_str (), strlen (it->second.c_str ()));
     }

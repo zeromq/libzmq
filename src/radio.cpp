@@ -122,8 +122,9 @@ int zmq::radio_t::xsetsockopt (int option_,
 
 void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
-    for (subscriptions_t::iterator it = _subscriptions.begin ();
-         it != _subscriptions.end ();) {
+    for (subscriptions_t::iterator it = _subscriptions.begin (),
+                                   end = _subscriptions.end ();
+         it != end;) {
         if (it->second == pipe_) {
 #if __cplusplus >= 201103L
             it = _subscriptions.erase (it);
@@ -135,10 +136,13 @@ void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
         }
     }
 
-    udp_pipes_t::iterator it =
-      std::find (_udp_pipes.begin (), _udp_pipes.end (), pipe_);
-    if (it != _udp_pipes.end ())
-        _udp_pipes.erase (it);
+    {
+        const udp_pipes_t::iterator end = _udp_pipes.end ();
+        const udp_pipes_t::iterator it =
+          std::find (_udp_pipes.begin (), end, pipe_);
+        if (it != end)
+            _udp_pipes.erase (it);
+    }
 
     _dist.pipe_terminated (pipe_);
 }
@@ -159,8 +163,9 @@ int zmq::radio_t::xsend (msg_t *msg_)
     for (subscriptions_t::iterator it = range.first; it != range.second; ++it)
         _dist.match (it->second);
 
-    for (udp_pipes_t::iterator it = _udp_pipes.begin ();
-         it != _udp_pipes.end (); ++it)
+    for (udp_pipes_t::iterator it = _udp_pipes.begin (),
+                               end = _udp_pipes.end ();
+         it != end; ++it)
         _dist.match (*it);
 
     int rc = -1;

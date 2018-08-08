@@ -137,8 +137,8 @@ int zmq::ctx_t::terminate ()
 
     // Connect up any pending inproc connections, otherwise we will hang
     pending_connections_t copy = _pending_connections;
-    for (pending_connections_t::iterator p = copy.begin (); p != copy.end ();
-         ++p) {
+    for (pending_connections_t::iterator p = copy.begin (), end = copy.end ();
+         p != end; ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
         // create_socket might fail eg: out of memory/sockets limit reached
         zmq_assert (s);
@@ -528,8 +528,9 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 {
     scoped_lock_t locker (_endpoints_sync);
 
-    for (endpoints_t::iterator it = _endpoints.begin ();
-         it != _endpoints.end ();) {
+    for (endpoints_t::iterator it = _endpoints.begin (),
+                               end = _endpoints.end ();
+         it != end;) {
         if (it->second.socket == socket_)
 #if __cplusplus >= 201103L
             it = _endpoints.erase (it);
