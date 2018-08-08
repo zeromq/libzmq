@@ -1,1 +1,1 @@
-https://github.com/piscisaureus/wepoll/tree/v1.5.0
+https://github.com/piscisaureus/wepoll/tree/v1.5.2
