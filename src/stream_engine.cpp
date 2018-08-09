@@ -1158,9 +1158,7 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
         //  Given the engine goes straight to out_event, sequential PINGs will
         //  not be a problem.
         const size_t context_len =
-          msg_->size () - ping_ttl_len > ping_max_ctx_len
-            ? ping_max_ctx_len
-            : msg_->size () - ping_ttl_len;
+          std::min (msg_->size () - ping_ttl_len, ping_max_ctx_len);
         const int rc =
           _pong_msg.init_size (msg_t::ping_cmd_name_size + context_len);
         errno_assert (rc == 0);
