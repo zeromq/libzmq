@@ -409,7 +409,7 @@ void zmq::pipe_t::terminate (bool delay_)
     }
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
-    else if (_state == active) {
+    if (_state == active) {
         send_pipe_term (_peer);
         _state = term_req_sent1;
     }

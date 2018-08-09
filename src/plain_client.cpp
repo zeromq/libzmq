@@ -105,12 +105,14 @@ int zmq::plain_client_t::process_handshake_command (msg_t *msg_)
 
 zmq::mechanism_t::status_t zmq::plain_client_t::status () const
 {
-    if (_state == ready)
-        return mechanism_t::ready;
-    if (_state == error_command_received)
-        return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
+    switch (_state) {
+        case ready:
+            return mechanism_t::ready;
+        case error_command_received:
+            return mechanism_t::error;
+        default:
+            return mechanism_t::handshaking;
+    }
 }
 
 void zmq::plain_client_t::produce_hello (msg_t *msg_) const

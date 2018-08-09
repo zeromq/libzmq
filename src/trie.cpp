@@ -62,7 +62,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
         return _refcnt == 1;
     }
 
-    unsigned char c = *prefix_;
+    const unsigned char c = *prefix_;
     if (c < _min || c >= _min + _count) {
         //  The character is out of range of currently handled
         //  characters. We have to extend the table.
@@ -71,7 +71,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             _count = 1;
             _next.node = NULL;
         } else if (_count == 1) {
-            unsigned char oldc = _min;
+            const unsigned char oldc = _min;
             trie_t *oldp = _next.node;
             _count = (_min < c ? c - _min : _min - c) + 1;
             _next.table =
@@ -83,7 +83,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             _next.table[oldc - _min] = oldp;
         } else if (_min < c) {
             //  The new character is above the current character range.
-            unsigned short old_count = _count;
+            const unsigned short old_count = _count;
             _count = c - _min + 1;
             _next.table = static_cast<trie_t **> (
               realloc (_next.table, sizeof (trie_t *) * _count));
@@ -92,10 +92,10 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
                 _next.table[i] = NULL;
         } else {
             //  The new character is below the current character range.
-            unsigned short old_count = _count;
+            const unsigned short old_count = _count;
             _count = (_min + old_count) - c;
             _next.table = static_cast<trie_t **> (
-              realloc ((void *) _next.table, sizeof (trie_t *) * _count));
+              realloc (_next.table, sizeof (trie_t *) * _count));
             zmq_assert (_next.table);
             memmove (_next.table + _min - c, _next.table,
                      old_count * sizeof (trie_t *));
@@ -133,7 +133,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
         _refcnt--;
         return _refcnt == 0;
     }
-    unsigned char c = *prefix_;
+    const unsigned char c = *prefix_;
     if (!_count || c < _min || c >= _min + _count)
         return false;
 
@@ -142,7 +142,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
     if (!next_node)
         return false;
 
-    bool ret = next_node->rm (prefix_ + 1, size_ - 1);
+    const bool ret = next_node->rm (prefix_ + 1, size_ - 1);
 
     //  Prune redundant nodes
     if (next_node->is_redundant ()) {
@@ -252,7 +252,7 @@ bool zmq::trie_t::check (unsigned char *data_, size_t size_)
 
         //  If there's no corresponding slot for the first character
         //  of the prefix, the message does not match.
-        unsigned char c = *data_;
+        const unsigned char c = *data_;
         if (c < current->_min || c >= current->_min + current->_count)
             return false;
 
@@ -283,7 +283,7 @@ void zmq::trie_t::apply_helper (unsigned char **buff_,
                                 void (*func_) (unsigned char *data_,
                                                size_t size_,
                                                void *arg_),
-                                void *arg_)
+                                void *arg_) const
 {
     //  If this node is a subscription, apply the function.
     if (_refcnt)

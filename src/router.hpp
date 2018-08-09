@@ -62,7 +62,7 @@ class router_t : public routing_socket_base_t
     bool xhas_out ();
     void xread_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
-    int get_peer_state (const void *identity_, size_t identity_size_) const;
+    int get_peer_state (const void *routing_id_, size_t routing_id_size_) const;
 
   protected:
     //  Rollback any message parts that were sent but not yet flushed.
@@ -71,7 +71,7 @@ class router_t : public routing_socket_base_t
 
   private:
     //  Receive peer id and update lookup map
-    bool identify_peer (pipe_t *pipe_, bool locally_initiated);
+    bool identify_peer (pipe_t *pipe_, bool locally_initiated_);
 
     //  Fair queueing object for inbound pipes.
     fq_t _fq;

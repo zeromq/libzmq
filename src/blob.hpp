@@ -30,6 +30,7 @@
 #ifndef __ZMQ_BLOB_HPP_INCLUDED__
 #define __ZMQ_BLOB_HPP_INCLUDED__
 
+#include "macros.hpp"
 #include "err.hpp"
 
 #include <stdlib.h>
@@ -116,7 +117,7 @@ struct blob_t
     //  Defines an order relationship on blob_t.
     bool operator< (blob_t const &other_) const
     {
-        int cmpres =
+        const int cmpres =
           memcmp (_data, other_._data, std::min (_size, other_._size));
         return cmpres < 0 || (cmpres == 0 && _size < other_._size);
     }
@@ -164,14 +165,13 @@ struct blob_t
     blob_t (const blob_t &) = delete;
     blob_t &operator= (const blob_t &) = delete;
 
-    blob_t (blob_t &&other_) :
-        _data (other_._data),
-        _size (other_._size),
-        _owned (other_._owned)
+    blob_t (blob_t &&other_) ZMQ_NOEXCEPT : _data (other_._data),
+                                            _size (other_._size),
+                                            _owned (other_._owned)
     {
         other_._owned = false;
     }
-    blob_t &operator= (blob_t &&other_)
+    blob_t &operator= (blob_t &&other_) ZMQ_NOEXCEPT
     {
         if (this != &other_) {
             clear ();

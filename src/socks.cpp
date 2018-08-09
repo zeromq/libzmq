@@ -33,6 +33,7 @@
 #include "err.hpp"
 #include "socks.hpp"
 #include "tcp.hpp"
+#include "blob.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <sys/socket.h>
@@ -132,7 +133,7 @@ zmq::socks_request_t::socks_request_t (uint8_t command_,
                                        std::string hostname_,
                                        uint16_t port_) :
     command (command_),
-    hostname (hostname_),
+    hostname (ZMQ_MOVE (hostname_)),
     port (port_)
 {
     zmq_assert (hostname_.size () <= UINT8_MAX);

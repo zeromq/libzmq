@@ -30,6 +30,8 @@
 #ifndef __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 #define __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 
+#include "macros.hpp"
+
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
@@ -62,14 +64,6 @@
 #include <atomic.h>
 #elif defined ZMQ_ATOMIC_PTR_TILE
 #include <arch/atomic.h>
-#endif
-
-#if !defined ZMQ_NOEXCEPT
-#if defined ZMQ_HAVE_NOEXCEPT
-#define ZMQ_NOEXCEPT noexcept
-#else
-#define ZMQ_NOEXCEPT
-#endif
 #endif
 
 namespace zmq

@@ -242,7 +242,7 @@ int zmq::signaler_t::wait (int timeout_)
     struct pollfd pfd;
     pfd.fd = _r;
     pfd.events = POLLIN;
-    int rc = poll (&pfd, 1, timeout_);
+    const int rc = poll (&pfd, 1, timeout_);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
@@ -319,7 +319,7 @@ void zmq::signaler_t::recv ()
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes =
+    const int nbytes =
       ::recv (_r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
@@ -343,24 +343,24 @@ int zmq::signaler_t::recv_failable ()
     if (sz == -1) {
         errno_assert (errno == EAGAIN);
         return -1;
-    } else {
-        errno_assert (sz == sizeof (dummy));
-
-        //  If we accidentally grabbed the next signal(s) along with the current
-        //  one, return it back to the eventfd object.
-        if (unlikely (dummy > 1)) {
-            const uint64_t inc = dummy - 1;
-            ssize_t sz2 = write (_w, &inc, sizeof (inc));
-            errno_assert (sz2 == sizeof (inc));
-            return 0;
-        }
-
-        zmq_assert (dummy == 1);
     }
+    errno_assert (sz == sizeof (dummy));
+
+    //  If we accidentally grabbed the next signal(s) along with the current
+    //  one, return it back to the eventfd object.
+    if (unlikely (dummy > 1)) {
+        const uint64_t inc = dummy - 1;
+        ssize_t sz2 = write (_w, &inc, sizeof (inc));
+        errno_assert (sz2 == sizeof (inc));
+        return 0;
+    }
+
+    zmq_assert (dummy == 1);
+
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes =
+    const int nbytes =
       ::recv (_r, reinterpret_cast<char *> (&dummy), sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
         const int last_error = WSAGetLastError ();

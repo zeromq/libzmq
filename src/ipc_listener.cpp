@@ -117,9 +117,7 @@ int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
     path_.assign (&buffer[0]);
     file_ = path_ + "/socket";
 #else
-    // Silence -Wunused-parameter. #pragma and __attribute__((unused)) are not
-    // very portable unfortunately...
-    (void) path_;
+    LIBZMQ_UNUSED (path_);
     int fd = mkstemp (&buffer[0]);
     if (fd == -1)
         return -1;

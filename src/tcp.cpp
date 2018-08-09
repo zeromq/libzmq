@@ -236,7 +236,7 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
     return nbytes;
 
 #else
-    ssize_t nbytes = send (s_, (char *) data_, size_, 0);
+    ssize_t nbytes = send (s_, static_cast<const char *> (data_), size_, 0);
 
     //  Several errors are OK. When speculative write is being done we may not
     //  be able to write a single byte from the socket. Also, SIGSTOP issued

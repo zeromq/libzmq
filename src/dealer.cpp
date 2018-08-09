@@ -60,7 +60,7 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_,
 
         rc = pipe_->write (&probe_msg);
         // zmq_assert (rc) is not applicable here, since it is not a bug.
-        (void) rc;
+        LIBZMQ_UNUSED (rc);
 
         pipe_->flush ();
 

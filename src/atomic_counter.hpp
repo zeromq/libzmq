@@ -31,6 +31,7 @@
 #define __ZMQ_ATOMIC_COUNTER_HPP_INCLUDED__
 
 #include "stdint.hpp"
+#include "macros.hpp"
 
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_COUNTER_MUTEX
@@ -64,14 +65,6 @@
 #include <atomic.h>
 #elif defined ZMQ_ATOMIC_COUNTER_TILE
 #include <arch/atomic.h>
-#endif
-
-#if !defined ZMQ_NOEXCEPT
-#if defined ZMQ_HAVE_NOEXCEPT
-#define ZMQ_NOEXCEPT noexcept
-#else
-#define ZMQ_NOEXCEPT
-#endif
 #endif
 
 namespace zmq
