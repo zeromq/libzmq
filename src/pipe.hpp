@@ -86,11 +86,11 @@ class pipe_t : public object_t,
 
     //  Pipe endpoint can store an routing ID to be used by its clients.
     void set_server_socket_routing_id (uint32_t routing_id_);
-    uint32_t get_server_socket_routing_id ();
+    uint32_t get_server_socket_routing_id () const;
 
     //  Pipe endpoint can store an opaque ID to be used by its clients.
     void set_router_socket_routing_id (const blob_t &identity_);
-    const blob_t &get_routing_id ();
+    const blob_t &get_routing_id () const;
 
     const blob_t &get_credential () const;
 
@@ -111,7 +111,7 @@ class pipe_t : public object_t,
     bool write (msg_t *msg_);
 
     //  Remove unfinished parts of the outbound message from the pipe.
-    void rollback ();
+    void rollback () const;
 
     //  Flush the messages downstream.
     void flush ();

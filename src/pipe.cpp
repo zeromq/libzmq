@@ -127,7 +127,7 @@ void zmq::pipe_t::set_server_socket_routing_id (
     _server_socket_routing_id = server_socket_routing_id_;
 }
 
-uint32_t zmq::pipe_t::get_server_socket_routing_id ()
+uint32_t zmq::pipe_t::get_server_socket_routing_id () const
 {
     return _server_socket_routing_id;
 }
@@ -138,7 +138,7 @@ void zmq::pipe_t::set_router_socket_routing_id (
     _router_socket_routing_id.set_deep_copy (router_socket_routing_id_);
 }
 
-const zmq::blob_t &zmq::pipe_t::get_routing_id ()
+const zmq::blob_t &zmq::pipe_t::get_routing_id () const
 {
     return _router_socket_routing_id;
 }
@@ -165,7 +165,7 @@ bool zmq::pipe_t::check_read ()
     //  initiate termination process.
     if (_in_pipe->probe (is_delimiter)) {
         msg_t msg;
-        bool ok = _in_pipe->read (&msg);
+        const bool ok = _in_pipe->read (&msg);
         zmq_assert (ok);
         process_delimiter ();
         return false;
@@ -218,7 +218,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!_out_active || _state != active))
         return false;
 
-    bool full = !check_hwm ();
+    const bool full = !check_hwm ();
 
     if (unlikely (full)) {
         _out_active = false;
@@ -233,7 +233,7 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write ()))
         return false;
 
-    bool more = (msg_->flags () & msg_t::more) != 0;
+    const bool more = (msg_->flags () & msg_t::more) != 0;
     const bool is_routing_id = msg_->is_routing_id ();
     _out_pipe->write (*msg_, more);
     if (!more && !is_routing_id)
@@ -242,14 +242,14 @@ bool zmq::pipe_t::write (msg_t *msg_)
     return true;
 }
 
-void zmq::pipe_t::rollback ()
+void zmq::pipe_t::rollback () const
 {
     //  Remove incomplete message from the outbound pipe.
     msg_t msg;
     if (_out_pipe) {
         while (_out_pipe->unwrite (&msg)) {
             zmq_assert (msg.flags () & msg_t::more);
-            int rc = msg.close ();
+            const int rc = msg.close ();
             errno_assert (rc == 0);
         }
     }
@@ -294,7 +294,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
     while (_out_pipe->read (&msg)) {
         if (!(msg.flags () & msg_t::more))
             _msgs_written--;
-        int rc = msg.close ();
+        const int rc = msg.close ();
         errno_assert (rc == 0);
     }
     LIBZMQ_DELETE (_out_pipe);
@@ -372,7 +372,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
     if (!_conflate) {
         msg_t msg;
         while (_in_pipe->read (&msg)) {
-            int rc = msg.close ();
+            const int rc = msg.close ();
             errno_assert (rc == 0);
         }
     }
@@ -476,7 +476,7 @@ int zmq::pipe_t::compute_lwm (int hwm_)
     //  Given the 3. it would be good to keep HWM and LWM as far apart as
     //  possible to reduce the thread switching overhead to almost zero.
     //  Let's make LWM 1/2 of HWM.
-    int result = (hwm_ + 1) / 2;
+    const int result = (hwm_ + 1) / 2;
 
     return result;
 }
@@ -502,20 +502,18 @@ void zmq::pipe_t::hiccup ()
 
     //  We'll drop the pointer to the inpipe. From now on, the peer is
     //  responsible for deallocating it.
-    _in_pipe = NULL;
 
     //  Create new inpipe.
-    if (_conflate)
-        _in_pipe = new (std::nothrow) ypipe_conflate_t<msg_t> ();
-    else
-        _in_pipe =
-          new (std::nothrow) ypipe_t<msg_t, message_pipe_granularity> ();
+    _in_pipe =
+      _conflate
+        ? static_cast<upipe_t *> (new (std::nothrow) ypipe_conflate_t<msg_t> ())
+        : new (std::nothrow) ypipe_t<msg_t, message_pipe_granularity> ();
 
     alloc_assert (_in_pipe);
     _in_active = true;
 
     //  Notify the peer about the hiccup.
-    send_hiccup (_peer, (void *) _in_pipe);
+    send_hiccup (_peer, _in_pipe);
 }
 
 void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
@@ -542,7 +540,8 @@ void zmq::pipe_t::set_hwms_boost (int inhwmboost_, int outhwmboost_)
 
 bool zmq::pipe_t::check_hwm () const
 {
-    bool full = _hwm > 0 && _msgs_written - _peers_msgs_read >= uint64_t (_hwm);
+    const bool full =
+      _hwm > 0 && _msgs_written - _peers_msgs_read >= uint64_t (_hwm);
     return (!full);
 }
 

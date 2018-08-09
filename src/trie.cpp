@@ -86,7 +86,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             unsigned short old_count = _count;
             _count = c - _min + 1;
             _next.table = static_cast<trie_t **> (
-              realloc ((void *) _next.table, sizeof (trie_t *) * _count));
+              realloc (_next.table, sizeof (trie_t *) * _count));
             zmq_assert (_next.table);
             for (unsigned short i = old_count; i != _count; i++)
                 _next.table[i] = NULL;
