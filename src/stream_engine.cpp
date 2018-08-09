@@ -485,6 +485,9 @@ void zmq::stream_engine_t::restart_input ()
     }
 }
 
+//  Position of the revision field in the greeting.
+const size_t revision_pos = 10;
+
 bool zmq::stream_engine_t::handshake ()
 {
     zmq_assert (_handshaking);
@@ -494,9 +497,6 @@ bool zmq::stream_engine_t::handshake ()
     if (rc == -1)
         return false;
     const bool unversioned = rc != 0;
-
-    //  Position of the revision field in the greeting.
-    const size_t revision_pos = 10;
 
     if (!(this
             ->*select_handshake_fun (unversioned,
@@ -579,8 +579,8 @@ void zmq::stream_engine_t::receive_greeting_versioned ()
                 set_pollout (_handle);
 
             //  Use ZMTP/2.0 to talk to older peers.
-            if (_greeting_recv[10] == ZMTP_1_0
-                || _greeting_recv[10] == ZMTP_2_0)
+            if (_greeting_recv[revision_pos] == ZMTP_1_0
+                || _greeting_recv[revision_pos] == ZMTP_2_0)
                 _outpos[_outsize++] = _options.type;
             else {
                 _outpos[_outsize++] = 0; //  Minor version number
