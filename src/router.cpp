@@ -165,7 +165,7 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
     if (it == _anonymous_pipes.end ())
         _fq.activated (pipe_);
     else {
-        bool routing_id_ok = identify_peer (pipe_, false);
+        const bool routing_id_ok = identify_peer (pipe_, false);
         if (routing_id_ok) {
             _anonymous_pipes.erase (it);
             _fq.attach (pipe_);

@@ -61,10 +61,11 @@ void zmq::mailbox_safe_t::add_signaler (signaler_t *signaler_)
 void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler_)
 {
     // TODO: make a copy of array and signal outside the lock
+    const std::vector<zmq::signaler_t *>::iterator end = _signalers.end ();
     std::vector<signaler_t *>::iterator it =
-      std::find (_signalers.begin (), _signalers.end (), signaler_);
+      std::find (_signalers.begin (), end, signaler_);
 
-    if (it != _signalers.end ())
+    if (it != end)
         _signalers.erase (it);
 }
 
@@ -81,8 +82,10 @@ void zmq::mailbox_safe_t::send (const command_t &cmd_)
 
     if (!ok) {
         _cond_var.broadcast ();
-        for (std::vector<signaler_t *>::iterator it = _signalers.begin ();
-             it != _signalers.end (); ++it) {
+
+        for (std::vector<signaler_t *>::iterator it = _signalers.begin (),
+                                                 end = _signalers.end ();
+             it != end; ++it) {
             (*it)->send ();
         }
     }

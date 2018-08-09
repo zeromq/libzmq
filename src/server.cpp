@@ -86,8 +86,9 @@ void zmq::server_t::xread_activated (pipe_t *pipe_)
 
 void zmq::server_t::xwrite_activated (pipe_t *pipe_)
 {
+    const out_pipes_t::iterator end = _out_pipes.end ();
     out_pipes_t::iterator it;
-    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
+    for (it = _out_pipes.begin (); it != end; ++it)
         if (it->second.pipe == pipe_)
             break;
 

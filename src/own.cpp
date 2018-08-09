@@ -158,7 +158,8 @@ void zmq::own_t::process_term (int linger_)
     zmq_assert (!_terminating);
 
     //  Send termination request to all owned objects.
-    for (owned_t::iterator it = _owned.begin (); it != _owned.end (); ++it)
+    for (owned_t::iterator it = _owned.begin (), end = _owned.end (); it != end;
+         ++it)
         send_term (*it, linger_);
     register_term_acks (static_cast<int> (_owned.size ()));
     _owned.clear ();

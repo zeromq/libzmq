@@ -543,8 +543,6 @@ int zmq::socket_base_t::bind (const char *addr_)
           session_base_t::create (io_thread, true, this, options, paddr);
         errno_assert (session);
 
-        pipe_t *newpipe = NULL;
-
         //  Create a bi-directional pipe.
         object_t *parents[2] = {this, session};
         pipe_t *new_pipes[2] = {NULL, NULL};
@@ -556,7 +554,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
         //  Attach local end of the pipe to the socket object.
         attach_pipe (new_pipes[0], true, true);
-        newpipe = new_pipes[0];
+        pipe_t *const newpipe = new_pipes[0];
 
         //  Attach remote end of the pipe to the session object later on.
         session->attach_pipe (new_pipes[1]);
@@ -564,7 +562,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         //  Save last endpoint URI
         paddr->to_string (_last_endpoint);
 
-        add_endpoint (addr_, (own_t *) session, newpipe);
+        add_endpoint (addr_, static_cast<own_t *> (session), newpipe);
 
         return 0;
     }
@@ -786,12 +784,11 @@ int zmq::socket_base_t::connect (const char *addr_)
         options.connected = true;
         return 0;
     }
-    bool is_single_connect =
+    const bool is_single_connect =
       (options.type == ZMQ_DEALER || options.type == ZMQ_SUB
        || options.type == ZMQ_PUB || options.type == ZMQ_REQ);
     if (unlikely (is_single_connect)) {
-        const endpoints_t::iterator it = _endpoints.find (addr_);
-        if (it != _endpoints.end ()) {
+        if (0 != _endpoints.count (addr_)) {
             // There is no valid use for multiple connects for SUB-PUB nor
             // DEALER-ROUTER nor REQ-REP. Multiple connects produces
             // nonsensical results.
@@ -1551,8 +1548,8 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
     xpipe_terminated (pipe_);
 
     // Remove pipe from inproc pipes
-    for (inprocs_t::iterator it = _inprocs.begin (); it != _inprocs.end ();
-         ++it)
+    for (inprocs_t::iterator it = _inprocs.begin (), end = _inprocs.end ();
+         it != end; ++it)
         if (it->second == pipe_) {
             _inprocs.erase (it);
             break;
@@ -1790,12 +1787,13 @@ int zmq::routing_socket_base_t::xsetsockopt (int option_,
 
 void zmq::routing_socket_base_t::xwrite_activated (pipe_t *pipe_)
 {
+    const out_pipes_t::iterator end = _out_pipes.end ();
     out_pipes_t::iterator it;
-    for (it = _out_pipes.begin (); it != _out_pipes.end (); ++it)
+    for (it = _out_pipes.begin (); it != end; ++it)
         if (it->second.pipe == pipe_)
             break;
 
-    zmq_assert (it != _out_pipes.end ());
+    zmq_assert (it != end);
     zmq_assert (!it->second.active);
     it->second.active = true;
 }
