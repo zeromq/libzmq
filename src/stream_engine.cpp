@@ -105,7 +105,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
     //  Put the socket into non-blocking mode.
     unblock_socket (_s);
 
-    int family = get_peer_ip_address (_s, _peer_address);
+    const int family = get_peer_ip_address (_s, _peer_address);
     if (family == 0)
         _peer_address.clear ();
 #if defined ZMQ_HAVE_SO_PEERCRED
@@ -1094,20 +1094,18 @@ void zmq::stream_engine_t::timer_event (int id_)
 
 int zmq::stream_engine_t::produce_ping_message (msg_t *msg_)
 {
-    int rc = 0;
     // 16-bit TTL + \4PING == 7
     const size_t ping_ttl_len = msg_t::ping_cmd_name_size + 2;
     zmq_assert (_mechanism != NULL);
 
-    rc = msg_->init_size (ping_ttl_len);
+    int rc = msg_->init_size (ping_ttl_len);
     errno_assert (rc == 0);
     msg_->set_flags (msg_t::command);
     // Copy in the command message
     memcpy (msg_->data (), "\4PING", msg_t::ping_cmd_name_size);
 
     uint16_t ttl_val = htons (_options.heartbeat_ttl);
-    memcpy ((static_cast<uint8_t *> (msg_->data ()))
-              + msg_t::ping_cmd_name_size,
+    memcpy (static_cast<uint8_t *> (msg_->data ()) + msg_t::ping_cmd_name_size,
             &ttl_val, sizeof (ttl_val));
 
     rc = _mechanism->encode (msg_);
@@ -1121,10 +1119,9 @@ int zmq::stream_engine_t::produce_ping_message (msg_t *msg_)
 
 int zmq::stream_engine_t::produce_pong_message (msg_t *msg_)
 {
-    int rc = 0;
     zmq_assert (_mechanism != NULL);
 
-    rc = msg_->move (_pong_msg);
+    int rc = msg_->move (_pong_msg);
     errno_assert (rc == 0);
 
     rc = _mechanism->encode (msg_);
@@ -1160,17 +1157,19 @@ int zmq::stream_engine_t::process_heartbeat_message (msg_t *msg_)
         //  here and store it. Truncate it if it's too long.
         //  Given the engine goes straight to out_event, sequential PINGs will
         //  not be a problem.
-        size_t context_len = msg_->size () - ping_ttl_len > ping_max_ctx_len
-                               ? ping_max_ctx_len
-                               : msg_->size () - ping_ttl_len;
-        int rc = _pong_msg.init_size (msg_t::ping_cmd_name_size + context_len);
+        const size_t context_len =
+          msg_->size () - ping_ttl_len > ping_max_ctx_len
+            ? ping_max_ctx_len
+            : msg_->size () - ping_ttl_len;
+        const int rc =
+          _pong_msg.init_size (msg_t::ping_cmd_name_size + context_len);
         errno_assert (rc == 0);
         _pong_msg.set_flags (msg_t::command);
         memcpy (_pong_msg.data (), "\4PONG", msg_t::ping_cmd_name_size);
         if (context_len > 0)
-            memcpy ((static_cast<uint8_t *> (_pong_msg.data ()))
+            memcpy (static_cast<uint8_t *> (_pong_msg.data ())
                       + msg_t::ping_cmd_name_size,
-                    (static_cast<uint8_t *> (msg_->data ())) + ping_ttl_len,
+                    static_cast<uint8_t *> (msg_->data ()) + ping_ttl_len,
                     context_len);
 
         _next_msg = &stream_engine_t::produce_pong_message;

@@ -543,8 +543,6 @@ int zmq::socket_base_t::bind (const char *addr_)
           session_base_t::create (io_thread, true, this, options, paddr);
         errno_assert (session);
 
-        pipe_t *newpipe = NULL;
-
         //  Create a bi-directional pipe.
         object_t *parents[2] = {this, session};
         pipe_t *new_pipes[2] = {NULL, NULL};
@@ -556,7 +554,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
         //  Attach local end of the pipe to the socket object.
         attach_pipe (new_pipes[0], true, true);
-        newpipe = new_pipes[0];
+        pipe_t *const newpipe = new_pipes[0];
 
         //  Attach remote end of the pipe to the session object later on.
         session->attach_pipe (new_pipes[1]);
@@ -564,7 +562,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         //  Save last endpoint URI
         paddr->to_string (_last_endpoint);
 
-        add_endpoint (addr_, (own_t *) session, newpipe);
+        add_endpoint (addr_, static_cast<own_t *> (session), newpipe);
 
         return 0;
     }
