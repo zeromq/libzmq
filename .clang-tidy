@@ -8,18 +8,23 @@ Checks:        "*,\
 -readability-named-parameter,\
 -fuchsia-default-arguments,\
 -google-readability-todo,\
+-google-runtime-int,\
 -cppcoreguidelines-pro-type-member-init,\
 -cppcoreguidelines-pro-type-static-cast-downcast,\
+# not applicable\
+-fuchsia-overloaded-operator,\
 # not currently a coding convention, C++11-specific, but conceivable,\
 -modernize-use-nullptr,\
 -modernize-use-equals-default,\
 -modernize-deprecated-headers,\
 # not currently a coding convention, C++11-specific and hard to implement,\
+-hicpp-no-malloc,\
 -modernize-pass-by-value,\
 -modernize-loop-convert,\
 -modernize-use-auto,\
 -modernize-use-using,\
 -modernize-return-braced-init-list,\
+-cppcoreguidelines-no-malloc,\
 -cppcoreguidelines-owning-memory,\
 -cppcoreguidelines-pro-type-union-access,\
 -cppcoreguidelines-pro-bounds-array-to-pointer-decay,\
