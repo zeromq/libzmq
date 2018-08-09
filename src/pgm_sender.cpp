@@ -137,9 +137,10 @@ void zmq::pgm_sender_t::restart_output ()
     out_event ();
 }
 
-void zmq::pgm_sender_t::restart_input ()
+bool zmq::pgm_sender_t::restart_input ()
 {
     zmq_assert (false);
+    return true;
 }
 
 const char *zmq::pgm_sender_t::get_endpoint () const

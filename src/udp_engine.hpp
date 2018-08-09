@@ -32,7 +32,7 @@ class udp_engine_t : public io_object_t, public i_engine
 
     //  This method is called by the session to signalise that more
     //  messages can be written to the pipe.
-    void restart_input ();
+    bool restart_input ();
 
     //  This method is called by the session to signalise that there
     //  are messages to send available.

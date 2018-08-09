@@ -537,11 +537,12 @@ void zmq::udp_engine_t::in_event ()
     _session->flush ();
 }
 
-void zmq::udp_engine_t::restart_input ()
+bool zmq::udp_engine_t::restart_input ()
 {
-    if (!_recv_enabled)
-        return;
+    if (_recv_enabled) {
+        set_pollin (_handle);
+        in_event ();
+    }
 
-    set_pollin (_handle);
-    in_event ();
+    return true;
 }
