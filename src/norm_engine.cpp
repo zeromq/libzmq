@@ -382,7 +382,7 @@ void zmq::norm_engine_t::in_event ()
     }
 } // zmq::norm_engine_t::in_event()
 
-void zmq::norm_engine_t::restart_input ()
+bool zmq::norm_engine_t::restart_input ()
 {
     // TBD - should we check/assert that zmq_input_ready was false???
     zmq_input_ready = true;
@@ -390,6 +390,7 @@ void zmq::norm_engine_t::restart_input ()
     if (!msg_ready_list.IsEmpty ())
         recv_data (NORM_OBJECT_INVALID);
 
+    return true;
 } // end zmq::norm_engine_t::restart_input()
 
 void zmq::norm_engine_t::recv_data (NormObjectHandle object)

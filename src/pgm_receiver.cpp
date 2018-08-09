@@ -116,7 +116,7 @@ void zmq::pgm_receiver_t::restart_output ()
     drop_subscriptions ();
 }
 
-void zmq::pgm_receiver_t::restart_input ()
+bool zmq::pgm_receiver_t::restart_input ()
 {
     zmq_assert (session != NULL);
     zmq_assert (active_tsi != NULL);
@@ -135,7 +135,7 @@ void zmq::pgm_receiver_t::restart_input ()
             //  HWM reached; we will try later.
             if (errno == EAGAIN) {
                 session->flush ();
-                return;
+                return true;
             }
             //  Data error. Delete message decoder, mark the
             //  peer as not joined and drop remaining data.
@@ -151,6 +151,8 @@ void zmq::pgm_receiver_t::restart_input ()
 
     active_tsi = NULL;
     in_event ();
+
+    return true;
 }
 
 const char *zmq::pgm_receiver_t::get_endpoint () const

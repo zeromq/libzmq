@@ -57,7 +57,7 @@ class pgm_receiver_t : public io_object_t, public i_engine
     //  i_engine interface implementation.
     void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
     void terminate ();
-    void restart_input ();
+    bool restart_input ();
     void restart_output ();
     void zap_msg_available () {}
     const char *get_endpoint () const;

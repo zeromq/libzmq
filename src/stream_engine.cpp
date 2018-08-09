@@ -441,7 +441,7 @@ void zmq::stream_engine_t::restart_output ()
     out_event ();
 }
 
-void zmq::stream_engine_t::restart_input ()
+bool zmq::stream_engine_t::restart_input ()
 {
     zmq_assert (_input_stopped);
     zmq_assert (_session != NULL);
@@ -451,9 +451,11 @@ void zmq::stream_engine_t::restart_input ()
     if (rc == -1) {
         if (errno == EAGAIN)
             _session->flush ();
-        else
+        else {
             error (protocol_error);
-        return;
+            return false;
+        }
+        return true;
     }
 
     while (_insize > 0) {
@@ -471,10 +473,14 @@ void zmq::stream_engine_t::restart_input ()
 
     if (rc == -1 && errno == EAGAIN)
         _session->flush ();
-    else if (_io_error)
+    else if (_io_error) {
         error (connection_error);
-    else if (rc == -1)
+        return false;
+    } else if (rc == -1) {
         error (protocol_error);
+        return false;
+    }
+
     else {
         _input_stopped = false;
         set_pollin (_handle);
@@ -483,6 +489,8 @@ void zmq::stream_engine_t::restart_input ()
         //  Speculative read.
         in_event ();
     }
+
+    return true;
 }
 
 bool zmq::stream_engine_t::handshake ()
@@ -814,7 +822,8 @@ void zmq::stream_engine_t::zap_msg_available ()
         return;
     }
     if (_input_stopped)
-        restart_input ();
+        if (!restart_input ())
+            return;
     if (_output_stopped)
         restart_output ();
 }
