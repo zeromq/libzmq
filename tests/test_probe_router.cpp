@@ -28,59 +28,61 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_probe_router_router ()
+{
     //  Create server and bind to endpoint
-    void *server = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (server);
-    int rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_ROUTER);
+
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
 
     //  Create client and connect to server, doing a probe
-    void *client = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (client);
-    rc = zmq_setsockopt (client, ZMQ_ROUTING_ID, "X", 1);
-    assert (rc == 0);
+    void *client = test_context_socket (ZMQ_ROUTER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (client, ZMQ_ROUTING_ID, "X", 1));
     int probe = 1;
-    rc = zmq_setsockopt (client, ZMQ_PROBE_ROUTER, &probe, sizeof (probe));
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PROBE_ROUTER, &probe, sizeof (probe)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
     //  We expect a routing id=X + empty message from client
+    recv_string_expect_success (server, "X", 0);
     unsigned char buffer[255];
-    rc = zmq_recv (server, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer[0] == 'X');
-    rc = zmq_recv (server, buffer, 255, 0);
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (
+      0, TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (server, buffer, 255, 0)));
 
     //  Send a message to client now
-    rc = zmq_send (server, "X", 1, ZMQ_SNDMORE);
-    assert (rc == 1);
-    rc = zmq_send (server, "Hello", 5, 0);
-    assert (rc == 5);
+    send_string_expect_success (server, "X", ZMQ_SNDMORE);
+    send_string_expect_success (server, "Hello", 0);
 
-    rc = zmq_recv (client, buffer, 255, 0);
-    assert (rc == 5);
+    TEST_ASSERT_EQUAL_INT (
+      5, TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (client, buffer, 255, 0)));
 
-    rc = zmq_close (server);
-    assert (rc == 0);
+    // TODO shouldn't this be the following? but that fails, since the content is different (but of length 5)
+    // recv_string_expect_success (client, "Hello", 0);
 
-    rc = zmq_close (client);
-    assert (rc == 0);
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+int main ()
+{
+    setup_test_environment ();
 
-    return 0;
+    UNITY_BEGIN ();
+
+    RUN_TEST (test_probe_router_router);
+
+    return UNITY_END ();
 }
