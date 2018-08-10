@@ -11,3 +11,11 @@
     }
 
 /******************************************************************************/
+
+#if !defined ZMQ_NOEXCEPT
+#if defined ZMQ_HAVE_NOEXCEPT
+#define ZMQ_NOEXCEPT noexcept
+#else
+#define ZMQ_NOEXCEPT
+#endif
+#endif

@@ -76,7 +76,7 @@ class ipc_listener_t : public own_t, public io_object_t
     //  Filter new connections if the OS provides a mechanism to get
     //  the credentials of the peer process.  Called from accept().
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-    bool filter (fd_t sock);
+    bool filter (fd_t sock_);
 #endif
 
     //  Accept the new connection. Returns the file descriptor of the

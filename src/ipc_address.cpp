@@ -75,7 +75,7 @@ int zmq::ipc_address_t::resolve (const char *path_)
     return 0;
 }
 
-int zmq::ipc_address_t::to_string (std::string &addr_)
+int zmq::ipc_address_t::to_string (std::string &addr_) const
 {
     if (address.sun_family != AF_UNIX) {
         addr_.clear ();
@@ -94,7 +94,7 @@ int zmq::ipc_address_t::to_string (std::string &addr_)
 
 const sockaddr *zmq::ipc_address_t::addr () const
 {
-    return (sockaddr *) &address;
+    return reinterpret_cast<const sockaddr *> (&address);
 }
 
 socklen_t zmq::ipc_address_t::addrlen () const

@@ -63,7 +63,7 @@ class socket_base_t : public own_t,
 
   public:
     //  Returns false if object is not a socket.
-    bool check_tag ();
+    bool check_tag () const;
 
     //  Returns whether the socket is thread-safe.
     bool is_thread_safe () const;
@@ -73,7 +73,7 @@ class socket_base_t : public own_t,
     create (int type_, zmq::ctx_t *parent_, uint32_t tid_, int sid_);
 
     //  Returns the mailbox associated with this socket.
-    i_mailbox *get_mailbox ();
+    i_mailbox *get_mailbox () const;
 
     //  Interrupt blocking call if the socket is stuck in one.
     //  This function can be called from a different thread!
@@ -190,7 +190,8 @@ class socket_base_t : public own_t,
     void event (const std::string &addr_, intptr_t value_, int type_);
 
     // Socket event data dispatch
-    void monitor_event (int event_, intptr_t value_, const std::string &addr_);
+    void
+    monitor_event (int event_, intptr_t value_, const std::string &addr_) const;
 
     // Monitor socket cleanup
     void stop_monitor (bool send_monitor_stopped_event_ = true);
@@ -227,12 +228,12 @@ class socket_base_t : public own_t,
     bool _destroyed;
 
     //  Parse URI string.
-    int
+    static int
     parse_uri (const char *uri_, std::string &protocol_, std::string &address_);
 
     //  Check whether transport protocol, as specified in connect or
     //  bind, is available and compatible with the socket type.
-    int check_protocol (const std::string &protocol_);
+    int check_protocol (const std::string &protocol_) const;
 
     //  Register the pipe with this socket.
     void attach_pipe (zmq::pipe_t *pipe_,
@@ -314,7 +315,7 @@ class routing_socket_base_t : public socket_base_t
 
     // own methods
     std::string extract_connect_routing_id ();
-    bool connect_routing_id_is_set ();
+    bool connect_routing_id_is_set () const;
 
     struct out_pipe_t
     {

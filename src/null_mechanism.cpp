@@ -215,16 +215,13 @@ int zmq::null_mechanism_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
+    if (_ready_command_sent && _ready_command_received)
+        return ready;
+
     const bool command_sent = _ready_command_sent || _error_command_sent;
     const bool command_received =
       _ready_command_received || _error_command_received;
-
-    if (_ready_command_sent && _ready_command_received)
-        return mechanism_t::ready;
-    if (command_sent && command_received)
-        return error;
-    else
-        return handshaking;
+    return command_sent && command_received ? error : handshaking;
 }
 
 void zmq::null_mechanism_t::send_zap_request ()

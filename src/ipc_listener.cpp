@@ -115,11 +115,9 @@ int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
     }
 
     path_.assign (&buffer[0]);
-    file_.assign (path_ + "/socket");
+    file_ = path_ + "/socket";
 #else
-    // Silence -Wunused-parameter. #pragma and __attribute__((unused)) are not
-    // very portable unfortunately...
-    (void) path_;
+    LIBZMQ_UNUSED (path_);
     int fd = mkstemp (&buffer[0]);
     if (fd == -1)
         return -1;
@@ -138,7 +136,7 @@ zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
     io_object_t (io_thread_),
     has_file (false),
     s (retired_fd),
-    handle ((handle_t) NULL),
+    handle (static_cast<handle_t> (NULL)),
     socket (socket_)
 {
 }
@@ -239,10 +237,10 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (rc != 0) {
         if (!tmp_socket_dirname.empty ()) {
             // We need to preserve errno to return to the user
-            int errno_ = errno;
+            int tmp_errno = errno;
             ::rmdir (tmp_socket_dirname.c_str ());
             tmp_socket_dirname.clear ();
-            errno = errno_;
+            errno = tmp_errno;
         }
         return -1;
     }
@@ -257,10 +255,10 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         if (s == -1) {
             if (!tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
-                int errno_ = errno;
+                int tmp_errno = errno;
                 ::rmdir (tmp_socket_dirname.c_str ());
                 tmp_socket_dirname.clear ();
-                errno = errno_;
+                errno = tmp_errno;
             }
             return -1;
         }
@@ -277,7 +275,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
             goto error;
     }
 
-    filename.assign (addr.c_str ());
+    filename = ZMQ_MOVE (addr);
     has_file = true;
 
     socket->event_listening (endpoint, s);
@@ -319,7 +317,7 @@ int zmq::ipc_listener_t::close ()
 
 #if defined ZMQ_HAVE_SO_PEERCRED
 
-bool zmq::ipc_listener_t::filter (fd_t sock)
+bool zmq::ipc_listener_t::filter (fd_t sock_)
 {
     if (options.ipc_uid_accept_filters.empty ()
         && options.ipc_pid_accept_filters.empty ()
@@ -329,7 +327,7 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
     struct ucred cred;
     socklen_t size = sizeof (cred);
 
-    if (getsockopt (sock, SOL_SOCKET, SO_PEERCRED, &cred, &size))
+    if (getsockopt (sock_, SOL_SOCKET, SO_PEERCRED, &cred, &size))
         return false;
     if (options.ipc_uid_accept_filters.find (cred.uid)
           != options.ipc_uid_accept_filters.end ()
@@ -359,7 +357,7 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
 
 #elif defined ZMQ_HAVE_LOCAL_PEERCRED
 
-bool zmq::ipc_listener_t::filter (fd_t sock)
+bool zmq::ipc_listener_t::filter (fd_t sock_)
 {
     if (options.ipc_uid_accept_filters.empty ()
         && options.ipc_gid_accept_filters.empty ())
@@ -368,7 +366,7 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
     struct xucred cred;
     socklen_t size = sizeof (cred);
 
-    if (getsockopt (sock, 0, LOCAL_PEERCRED, &cred, &size))
+    if (getsockopt (sock_, 0, LOCAL_PEERCRED, &cred, &size))
         return false;
     if (cred.cr_version != XUCRED_VERSION)
         return false;

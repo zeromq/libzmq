@@ -29,6 +29,7 @@
 
 #include "precompiled.hpp"
 #include "err.hpp"
+#include "macros.hpp"
 
 const char *zmq::errno_to_string (int errno_)
 {
@@ -82,7 +83,7 @@ void zmq::zmq_abort (const char *errmsg_)
     extra_info[0] = (ULONG_PTR) errmsg_;
     RaiseException (0x40000015, EXCEPTION_NONCONTINUABLE, 1, extra_info);
 #else
-    (void) errmsg_;
+    LIBZMQ_UNUSED (errmsg_);
     print_backtrace ();
     abort ();
 #endif

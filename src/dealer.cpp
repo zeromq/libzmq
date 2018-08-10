@@ -46,10 +46,10 @@ zmq::dealer_t::~dealer_t ()
 
 void zmq::dealer_t::xattach_pipe (pipe_t *pipe_,
                                   bool subscribe_to_all_,
-                                  bool locally_initated_)
+                                  bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
-    LIBZMQ_UNUSED (locally_initated_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     zmq_assert (pipe_);
 
@@ -60,7 +60,7 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_,
 
         rc = pipe_->write (&probe_msg);
         // zmq_assert (rc) is not applicable here, since it is not a bug.
-        (void) rc;
+        LIBZMQ_UNUSED (rc);
 
         pipe_->flush ();
 

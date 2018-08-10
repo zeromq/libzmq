@@ -154,6 +154,8 @@ static void manage_random (bool init_)
     } else {
         randombytes_close ();
     }
+#else
+    LIBZMQ_UNUSED (init_);
 #endif
 }
 

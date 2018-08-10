@@ -36,13 +36,13 @@
 
 zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) : _allocator (bufsize_, 1)
 {
-    int rc = _in_progress.init ();
+    const int rc = _in_progress.init ();
     errno_assert (rc == 0);
 }
 
 zmq::raw_decoder_t::~raw_decoder_t ()
 {
-    int rc = _in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 
@@ -56,7 +56,7 @@ int zmq::raw_decoder_t::decode (const uint8_t *data_,
                                 size_t size_,
                                 size_t &bytes_used_)
 {
-    int rc =
+    const int rc =
       _in_progress.init (const_cast<unsigned char *> (data_), size_,
                          shared_message_memory_allocator::call_dec_ref,
                          _allocator.buffer (), _allocator.provide_content ());

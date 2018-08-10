@@ -51,7 +51,7 @@ class ipc_address_t
     int resolve (const char *path_);
 
     //  The opposite to resolve()
-    int to_string (std::string &addr_);
+    int to_string (std::string &addr_) const;
 
     const sockaddr *addr () const;
     socklen_t addrlen () const;

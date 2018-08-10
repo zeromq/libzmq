@@ -97,7 +97,7 @@
 #include "scatter.hpp"
 #include "dgram.hpp"
 
-bool zmq::socket_base_t::check_tag ()
+bool zmq::socket_base_t::check_tag () const
 {
     return _tag == 0xbaddecaf;
 }
@@ -253,7 +253,7 @@ zmq::socket_base_t::~socket_base_t ()
     zmq_assert (_destroyed);
 }
 
-zmq::i_mailbox *zmq::socket_base_t::get_mailbox ()
+zmq::i_mailbox *zmq::socket_base_t::get_mailbox () const
 {
     return _mailbox;
 }
@@ -274,7 +274,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
     zmq_assert (uri_ != NULL);
 
     std::string uri (uri_);
-    std::string::size_type pos = uri.find ("://");
+    const std::string::size_type pos = uri.find ("://");
     if (pos == std::string::npos) {
         errno = EINVAL;
         return -1;
@@ -289,7 +289,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
     return 0;
 }
 
-int zmq::socket_base_t::check_protocol (const std::string &protocol_)
+int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
@@ -413,7 +413,7 @@ int zmq::socket_base_t::getsockopt (int option_,
     }
 
     if (option_ == ZMQ_EVENTS) {
-        int rc = process_commands (0, false);
+        const int rc = process_commands (0, false);
         if (rc != 0 && (errno == EINTR || errno == ETERM)) {
             return -1;
         }
@@ -439,20 +439,14 @@ int zmq::socket_base_t::join (const char *group_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    int rc = xjoin (group_);
-
-
-    return rc;
+    return xjoin (group_);
 }
 
 int zmq::socket_base_t::leave (const char *group_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    int rc = xleave (group_);
-
-
-    return rc;
+    return xleave (group_);
 }
 
 void zmq::socket_base_t::add_signaler (signaler_t *s_)
@@ -589,7 +583,8 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), (own_t *) listener, NULL);
+        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
+                      NULL);
         options.connected = true;
         return 0;
     }
@@ -610,7 +605,8 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), (own_t *) listener, NULL);
+        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
+                      NULL);
         options.connected = true;
         return 0;
     }
@@ -630,7 +626,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (_last_endpoint);
 
-        add_endpoint (addr_, (own_t *) listener, NULL);
+        add_endpoint (addr_, static_cast<own_t *> (listener), NULL);
         options.connected = true;
         return 0;
     }
@@ -649,7 +645,8 @@ int zmq::socket_base_t::bind (const char *addr_)
 
         listener->get_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), (own_t *) listener, NULL);
+        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
+                      NULL);
         options.connected = true;
         return 0;
     }
@@ -687,7 +684,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  is in place we should follow generic pipe creation algorithm.
 
         //  Find the peer endpoint.
-        endpoint_t peer = find_endpoint (addr_);
+        const endpoint_t peer = find_endpoint (addr_);
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
@@ -706,7 +703,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents[2] = {this, peer.socket == NULL ? this : peer.socket};
         pipe_t *new_pipes[2] = {NULL, NULL};
 
-        bool conflate =
+        const bool conflate =
           options.conflate
           && (options.type == ZMQ_DEALER || options.type == ZMQ_PULL
               || options.type == ZMQ_PUSH || options.type == ZMQ_PUB
@@ -733,7 +730,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             errno_assert (rc == 0);
             memcpy (id.data (), options.routing_id, options.routing_id_size);
             id.set_flags (msg_t::routing_id);
-            bool written = new_pipes[0]->write (&id);
+            const bool written = new_pipes[0]->write (&id);
             zmq_assert (written);
             new_pipes[0]->flush ();
 
@@ -748,7 +745,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 memcpy (id.data (), options.routing_id,
                         options.routing_id_size);
                 id.set_flags (msg_t::routing_id);
-                bool written = new_pipes[0]->write (&id);
+                const bool written = new_pipes[0]->write (&id);
                 zmq_assert (written);
                 new_pipes[0]->flush ();
             }
@@ -761,7 +758,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 memcpy (id.data (), peer.options.routing_id,
                         peer.options.routing_id_size);
                 id.set_flags (msg_t::routing_id);
-                bool written = new_pipes[1]->write (&id);
+                const bool written = new_pipes[1]->write (&id);
                 zmq_assert (written);
                 new_pipes[1]->flush ();
             }
@@ -935,9 +932,9 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
-    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
-                            || protocol == "norm"
-                            || protocol == protocol_name::udp;
+    const bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
+                                  || protocol == "norm"
+                                  || protocol == protocol_name::udp;
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
@@ -945,7 +942,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents[2] = {this, session};
         pipe_t *new_pipes[2] = {NULL, NULL};
 
-        bool conflate =
+        const bool conflate =
           options.conflate
           && (options.type == ZMQ_DEALER || options.type == ZMQ_PULL
               || options.type == ZMQ_PUSH || options.type == ZMQ_PUB
@@ -968,7 +965,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Save last endpoint URI
     paddr->to_string (_last_endpoint);
 
-    add_endpoint (addr_, (own_t *) session, newpipe);
+    add_endpoint (addr_, static_cast<own_t *> (session), newpipe);
     return 0;
 }
 
@@ -1019,7 +1016,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         if (unregister_endpoint (addr_str, this) == 0) {
             return 0;
         }
-        std::pair<inprocs_t::iterator, inprocs_t::iterator> range =
+        const std::pair<inprocs_t::iterator, inprocs_t::iterator> range =
           _inprocs.equal_range (addr_str);
         if (range.first == range.second) {
             errno = ENOENT;
@@ -1126,7 +1123,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     //  Compute the time when the timeout should occur.
     //  If the timeout is infinite, don't care.
     int timeout = options.sndtimeo;
-    uint64_t end = timeout < 0 ? 0 : (_clock.now_ms () + timeout);
+    const uint64_t end = timeout < 0 ? 0 : (_clock.now_ms () + timeout);
 
     //  Oops, we couldn't send the message. Wait for the next
     //  command, process it and try to send the message again.
@@ -1218,7 +1215,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     //  Compute the time when the timeout should occur.
     //  If the timeout is infinite, don't care.
     int timeout = options.rcvtimeo;
-    uint64_t end = timeout < 0 ? 0 : (_clock.now_ms () + timeout);
+    const uint64_t end = timeout < 0 ? 0 : (_clock.now_ms () + timeout);
 
     //  In blocking scenario, commands are processed over and over again until
     //  we are able to fetch a message.
@@ -1715,7 +1712,7 @@ void zmq::socket_base_t::event (const std::string &addr_,
 //  Send a monitor event
 void zmq::socket_base_t::monitor_event (int event_,
                                         intptr_t value_,
-                                        const std::string &addr_)
+                                        const std::string &addr_) const
 {
     // this is a private method which is only called from
     // contexts where the mutex has been locked before
@@ -1805,7 +1802,7 @@ std::string zmq::routing_socket_base_t::extract_connect_routing_id ()
     return res;
 }
 
-bool zmq::routing_socket_base_t::connect_routing_id_is_set ()
+bool zmq::routing_socket_base_t::connect_routing_id_is_set () const
 {
     return !_connect_routing_id.empty ();
 }
@@ -1838,7 +1835,7 @@ const zmq::routing_socket_base_t::out_pipe_t *
 zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_) const
 {
     // TODO we could probably avoid constructor a temporary blob_t to call this function
-    out_pipes_t::const_iterator it = _out_pipes.find (routing_id_);
+    const out_pipes_t::const_iterator it = _out_pipes.find (routing_id_);
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 

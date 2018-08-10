@@ -397,9 +397,9 @@ bool zmq::router_t::xhas_in ()
     return true;
 }
 
-static bool check_pipe_hwm (const zmq::pipe_t &pipe)
+static bool check_pipe_hwm (const zmq::pipe_t &pipe_)
 {
-    return pipe.check_hwm ();
+    return pipe_.check_hwm ();
 }
 
 bool zmq::router_t::xhas_out ()
@@ -424,7 +424,10 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
 {
     int res = 0;
 
-    blob_t routing_id_blob ((unsigned char *) routing_id_, routing_id_size_);
+    // TODO remove the const_cast, see comment in lookup_out_pipe
+    const blob_t routing_id_blob (
+      static_cast<unsigned char *> (const_cast<void *> (routing_id_)),
+      routing_id_size_);
     const out_pipe_t *out_pipe = lookup_out_pipe (routing_id_blob);
     if (!out_pipe) {
         errno = EHOSTUNREACH;

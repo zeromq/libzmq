@@ -125,7 +125,7 @@ void zmq::unblock_socket (fd_t s_)
 
 void zmq::enable_ipv4_mapping (fd_t s_)
 {
-    (void) s_;
+    LIBZMQ_UNUSED (s_);
 
 #if defined IPV6_V6ONLY && !defined ZMQ_HAVE_OPENBSD
 #ifdef ZMQ_HAVE_WINDOWS

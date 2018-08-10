@@ -64,7 +64,7 @@ class trie_t
                        void (*func_) (unsigned char *data_,
                                       size_t size_,
                                       void *arg_),
-                       void *arg_);
+                       void *arg_) const;
     bool is_redundant () const;
 
     uint32_t _refcnt;

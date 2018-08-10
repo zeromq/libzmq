@@ -85,12 +85,12 @@ class pipe_t : public object_t,
     void set_event_sink (i_pipe_events *sink_);
 
     //  Pipe endpoint can store an routing ID to be used by its clients.
-    void set_server_socket_routing_id (uint32_t routing_id_);
-    uint32_t get_server_socket_routing_id ();
+    void set_server_socket_routing_id (uint32_t server_socket_routing_id_);
+    uint32_t get_server_socket_routing_id () const;
 
     //  Pipe endpoint can store an opaque ID to be used by its clients.
-    void set_router_socket_routing_id (const blob_t &identity_);
-    const blob_t &get_routing_id ();
+    void set_router_socket_routing_id (const blob_t &router_socket_routing_id_);
+    const blob_t &get_routing_id () const;
 
     const blob_t &get_credential () const;
 
@@ -111,7 +111,7 @@ class pipe_t : public object_t,
     bool write (msg_t *msg_);
 
     //  Remove unfinished parts of the outbound message from the pipe.
-    void rollback ();
+    void rollback () const;
 
     //  Flush the messages downstream.
     void flush ();
@@ -168,7 +168,7 @@ class pipe_t : public object_t,
 
     //  Pipepair uses this function to let us know about
     //  the peer pipe object.
-    void set_peer (pipe_t *pipe_);
+    void set_peer (pipe_t *peer_);
 
     //  Destructor is private. Pipe objects destroy themselves.
     ~pipe_t ();
