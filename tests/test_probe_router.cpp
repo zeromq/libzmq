@@ -66,11 +66,12 @@ void test_probe_router_router ()
     send_string_expect_success (server, "X", ZMQ_SNDMORE);
     send_string_expect_success (server, "Hello", 0);
 
+    // receive the routing ID, which is auto-generated in this case, since the
+    // peer did not set one explicitly
     TEST_ASSERT_EQUAL_INT (
       5, TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (client, buffer, 255, 0)));
 
-    // TODO shouldn't this be the following? but that fails, since the content is different (but of length 5)
-    // recv_string_expect_success (client, "Hello", 0);
+    recv_string_expect_success (client, "Hello", 0);
 
     test_context_socket_close (server);
     test_context_socket_close (client);
