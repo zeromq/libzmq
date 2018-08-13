@@ -57,7 +57,6 @@ class xsub_t : public socket_base_t
     bool xhas_out ();
     int xrecv (zmq::msg_t *msg_);
     bool xhas_in ();
-    const blob_t &get_credential () const;
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xhiccuped (pipe_t *pipe_);

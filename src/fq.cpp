@@ -64,7 +64,6 @@ void zmq::fq_t::pipe_terminated (pipe_t *pipe_)
     _pipes.erase (pipe_);
 
     if (_last_in == pipe_) {
-        _saved_credential.set_deep_copy (_last_in->get_credential ());
         _last_in = NULL;
     }
 }
@@ -148,9 +147,4 @@ bool zmq::fq_t::has_in ()
     }
 
     return false;
-}
-
-const zmq::blob_t &zmq::fq_t::get_credential () const
-{
-    return _last_in ? _last_in->get_credential () : _saved_credential;
 }

@@ -117,12 +117,6 @@ bool zmq::dealer_t::xhas_out ()
     return _lb.has_out ();
 }
 
-const zmq::blob_t &zmq::dealer_t::get_credential () const
-{
-    return _fq.get_credential ();
-}
-
-
 void zmq::dealer_t::xread_activated (pipe_t *pipe_)
 {
     _fq.activated (pipe_);

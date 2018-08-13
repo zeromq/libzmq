@@ -63,9 +63,6 @@ class server_t : public socket_base_t
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 
-  protected:
-    const blob_t &get_credential () const;
-
   private:
     //  Fair queueing object for inbound pipes.
     fq_t _fq;

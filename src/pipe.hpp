@@ -92,8 +92,6 @@ class pipe_t : public object_t,
     void set_router_socket_routing_id (const blob_t &router_socket_routing_id_);
     const blob_t &get_routing_id () const;
 
-    const blob_t &get_credential () const;
-
     //  Returns true if there is at least one message to read in the pipe.
     bool check_read ();
 

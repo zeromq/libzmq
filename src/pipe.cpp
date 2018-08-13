@@ -143,11 +143,6 @@ const zmq::blob_t &zmq::pipe_t::get_routing_id () const
     return _router_socket_routing_id;
 }
 
-const zmq::blob_t &zmq::pipe_t::get_credential () const
-{
-    return _credential;
-}
-
 bool zmq::pipe_t::check_read ()
 {
     if (unlikely (!_in_active))
@@ -187,11 +182,8 @@ bool zmq::pipe_t::read (msg_t *msg_)
             return false;
         }
 
-        //  If this is a credential, save a copy and receive next message.
+        //  If this is a credential, ignore it and receive next message.
         if (unlikely (msg_->is_credential ())) {
-            const unsigned char *data =
-              static_cast<const unsigned char *> (msg_->data ());
-            _credential.set (data, msg_->size ());
             const int rc = msg_->close ();
             zmq_assert (rc == 0);
         } else

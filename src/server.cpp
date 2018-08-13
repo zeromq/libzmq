@@ -179,8 +179,3 @@ bool zmq::server_t::xhas_out ()
     //  to be routed to.
     return true;
 }
-
-const zmq::blob_t &zmq::server_t::get_credential () const
-{
-    return _fq.get_credential ();
-}
