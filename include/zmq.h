@@ -618,6 +618,8 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_LOOPBACK_FASTPATH 94
 #define ZMQ_METADATA 95
 #define ZMQ_MULTICAST_LOOP 96
+#define ZMQ_ROUTER_NOTIFY 97
+
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 /*  Unspecified system errors during handshake. Event value is an errno.      */
@@ -677,6 +679,10 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE "Socket-Type"
 #define ZMQ_MSG_PROPERTY_USER_ID "User-Id"
 #define ZMQ_MSG_PROPERTY_PEER_ADDRESS "Peer-Address"
+
+/*  Router notify options                                                     */
+#define ZMQ_NOTIFY_CONNECT 1
+#define ZMQ_NOTIFY_DISCONNECT 2
 
 /******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */

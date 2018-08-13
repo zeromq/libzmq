@@ -243,7 +243,8 @@ zmq::options_t::options_t () :
     zap_enforce_domain (false),
     loopback_fastpath (false),
     multicast_loop (true),
-    zero_copy (true)
+    zero_copy (true),
+    router_notify (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);

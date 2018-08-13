@@ -261,6 +261,9 @@ struct options_t
     // Use zero copy strategy for storing message content when decoding.
     bool zero_copy;
 
+    // Router socket connect(1)/disconnect(2) notifications
+    int router_notify;
+
     // Application metadata
     std::map<std::string, std::string> app_metadata;
 };

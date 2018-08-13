@@ -897,6 +897,8 @@ void zmq::stream_engine_t::mechanism_ready ()
         _has_heartbeat_timer = true;
     }
 
+    bool flush_session = false;
+
     if (_options.recv_routing_id) {
         msg_t routing_id;
         _mechanism->peer_routing_id (&routing_id);
@@ -908,8 +910,24 @@ void zmq::stream_engine_t::mechanism_ready ()
             return;
         }
         errno_assert (rc == 0);
-        _session->flush ();
+        flush_session = true;
     }
+
+    if (_options.router_notify & ZMQ_NOTIFY_CONNECT) {
+        msg_t connector;
+        connector.init ();
+        const int rc = _session->push_msg (&connector);
+        if (rc == -1 && errno == EAGAIN) {
+            // See above comment
+            return;
+        }
+        errno_assert (rc == 0);
+        flush_session = true;
+    }
+
+    if (flush_session)
+        _session->flush ();
+
 
     _next_msg = &stream_engine_t::pull_and_encode;
     _process_msg = &stream_engine_t::write_credential;
@@ -1029,8 +1047,9 @@ int zmq::stream_engine_t::push_one_then_decode_and_push (msg_t *msg_)
 
 void zmq::stream_engine_t::error (error_reason_t reason_)
 {
-    if (_options.raw_socket && _options.raw_notify) {
-        //  For raw sockets, send a final 0-length message to the application
+    if ((_options.raw_socket && _options.raw_notify)
+        || ((_options.router_notify & ZMQ_NOTIFY_DISCONNECT) && !_handshaking)) {
+        //  For raw or router sockets, send a final 0-length message to the application
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
         terminator.init ();
