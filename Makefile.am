@@ -538,7 +538,8 @@ tests_test_router_handover_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_router_handover_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_probe_router_SOURCES = tests/test_probe_router.cpp
-tests_test_probe_router_LDADD = src/libzmq.la
+tests_test_probe_router_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_probe_router_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_stream_SOURCES = tests/test_stream.cpp
 tests_test_stream_LDADD = src/libzmq.la
