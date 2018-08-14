@@ -1048,9 +1048,8 @@ int zmq::stream_engine_t::push_one_then_decode_and_push (msg_t *msg_)
 
 void zmq::stream_engine_t::error (error_reason_t reason_)
 {
-    if ((_options.raw_socket && _options.raw_notify)
-        || ((_options.router_notify & ZMQ_NOTIFY_DISCONNECT) && !_handshaking)) {
-        //  For raw or router sockets, send a final 0-length message to the application
+    if (_options.raw_socket && _options.raw_notify) {
+        //  For raw sockets, send a final 0-length message to the application
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
         terminator.init ();
@@ -1058,6 +1057,18 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         terminator.close ();
     }
     zmq_assert (_session);
+
+    if ((_options.router_notify & ZMQ_NOTIFY_DISCONNECT) && !_handshaking) {
+        // For router sockets with disconnect notification, rollback
+        // any incomplete message in the pipe, and push the disconnect
+        // notification message.
+        _session->rollback ();
+
+        msg_t disconnect_notification;
+        disconnect_notification.init ();
+        _session->push_msg (&disconnect_notification);
+    }
+
 #ifdef ZMQ_BUILD_DRAFT_API
     // protocol errors have been signaled already at the point where they occurred
     if (reason_ != protocol_error

@@ -144,7 +144,7 @@ void test_sockopt_router_notify ()
 }
 
 
-void test_router_notify_helper (int notify_opt)
+void test_router_notify_helper (int opt_notify)
 {
     void *router = test_context_socket (ZMQ_ROUTER);
     int opt_more;
@@ -155,7 +155,7 @@ void test_router_notify_helper (int notify_opt)
 
     // valid values
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-      router, ZMQ_ROUTER_NOTIFY, &notify_opt, sizeof (notify_opt)));
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
 
@@ -169,7 +169,7 @@ void test_router_notify_helper (int notify_opt)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, ENDPOINT_0));
 
     // connection notification msg
-    if (notify_opt & ZMQ_NOTIFY_CONNECT) {
+    if (opt_notify & ZMQ_NOTIFY_CONNECT) {
         // routing-id only message of the connect
         recv_string_expect_success (router, dealer_routing_id,
                                     0);             // 1st part: routing-id
@@ -195,7 +195,7 @@ void test_router_notify_helper (int notify_opt)
     zmq_getsockopt (dealer, ZMQ_EVENTS, &opt_events, &opt_events_length);
 
     // connection notification msg
-    if (notify_opt & ZMQ_NOTIFY_DISCONNECT) {
+    if (opt_notify & ZMQ_NOTIFY_DISCONNECT) {
         // routing-id only message of the connect
         recv_string_expect_success (router, dealer_routing_id,
                                     0);             // 1st part: routing-id
@@ -230,6 +230,7 @@ void test_router_notify_both ()
 
 void test_handshake_fail ()
 {
+    // setup router socket
     void *router = test_context_socket (ZMQ_ROUTER);
     int opt_timeout = 200;
     int opt_notify = ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT;
@@ -260,6 +261,57 @@ void test_handshake_fail ()
     test_context_socket_close (router);
 }
 
+
+void test_error_during_multipart ()
+{
+    /*
+     * If the disconnect occurs in the middle of the multipart
+     * message, the socket should not add the notification at the
+     * end of the incomplete message. It must discard the incomplete
+     * message, and delivert the notification as a new message.
+     */
+
+    char long_str[128] = {0};
+    memset (long_str, '*', sizeof (long_str) - 1);
+
+    // setup router
+    void *router = test_context_socket (ZMQ_ROUTER);
+
+    int opt_notify = ZMQ_NOTIFY_DISCONNECT;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
+
+    int64_t opt_maxmsgsize = 64; // the handshake fails if this is too small
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      router, ZMQ_MAXMSGSIZE, &opt_maxmsgsize, sizeof (opt_maxmsgsize)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
+
+
+    // setup dealer
+    void *dealer = test_context_socket (ZMQ_DEALER);
+    const char *dealer_routing_id = "X";
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer, ZMQ_ROUTING_ID, dealer_routing_id, 1));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, ENDPOINT_0));
+
+
+    // send multipart message, the 2nd part causes a disconnect.
+    send_string_expect_success (dealer, "Hello2", ZMQ_SNDMORE);
+    send_string_expect_success (dealer, long_str, 0);
+
+    // disconnect notification
+    recv_string_expect_success (router, dealer_routing_id, 0);
+    recv_string_expect_success (router, "", 0);
+
+
+    test_context_socket_close (dealer);
+    test_context_socket_close (router);
+}
+
+
 int main (void)
 {
     setup_test_environment ();
@@ -270,6 +322,7 @@ int main (void)
     RUN_TEST (test_router_notify_disconnect);
     RUN_TEST (test_router_notify_both);
     RUN_TEST (test_handshake_fail);
+    RUN_TEST (test_error_during_multipart);
 
     return UNITY_END ();
 }

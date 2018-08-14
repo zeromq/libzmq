@@ -906,7 +906,7 @@ Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
 
 
 ZMQ_ROUTER_NOTIFY: Retrieve router socket notification settings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the current notification settings of a router socket. The returned
 value is a bitmask composed of ZMQ_NOTIFY_CONNECT and ZMQ_NOTIFY_DISCONNECT
 flags, meaning connect and disconnect notifications are enabled, respectively.

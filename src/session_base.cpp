@@ -217,6 +217,12 @@ void zmq::session_base_t::flush ()
         _pipe->flush ();
 }
 
+void zmq::session_base_t::rollback ()
+{
+    if (_pipe)
+        _pipe->rollback ();
+}
+
 void zmq::session_base_t::clean_pipes ()
 {
     zmq_assert (_pipe != NULL);
