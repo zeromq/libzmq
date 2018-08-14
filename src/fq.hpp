@@ -55,7 +55,6 @@ class fq_t
     int recv (msg_t *msg_);
     int recvpipe (msg_t *msg_, pipe_t **pipe_);
     bool has_in ();
-    const blob_t &get_credential () const;
 
   private:
     //  Inbound pipes.
@@ -77,9 +76,6 @@ class fq_t
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting in the current pipe.
     bool _more;
-
-    //  Holds credential after the last_active_pipe has terminated.
-    blob_t _saved_credential;
 
     fq_t (const fq_t &);
     const fq_t &operator= (const fq_t &);

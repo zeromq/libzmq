@@ -223,11 +223,6 @@ bool zmq::xsub_t::xhas_in ()
     }
 }
 
-const zmq::blob_t &zmq::xsub_t::get_credential () const
-{
-    return _fq.get_credential ();
-}
-
 bool zmq::xsub_t::match (msg_t *msg_)
 {
     bool matching = _subscriptions.check (

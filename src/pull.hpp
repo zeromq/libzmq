@@ -54,7 +54,6 @@ class pull_t : public socket_base_t
                        bool locally_initiated_);
     int xrecv (zmq::msg_t *msg_);
     bool xhas_in ();
-    const blob_t &get_credential () const;
     void xread_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 

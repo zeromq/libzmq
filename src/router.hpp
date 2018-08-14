@@ -67,7 +67,6 @@ class router_t : public routing_socket_base_t
   protected:
     //  Rollback any message parts that were sent but not yet flushed.
     int rollback ();
-    const blob_t &get_credential () const;
 
   private:
     //  Receive peer id and update lookup map
