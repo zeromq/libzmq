@@ -42,47 +42,104 @@ void tearDown ()
     teardown_test_context ();
 }
 
-void test_setsockopt_router_notify ()
+void test_sockopt_router_notify ()
 {
     void *router = test_context_socket (ZMQ_ROUTER);
-    int notify_opt;
+    int opt_notify;
 
-    // valid values
-    notify_opt = 0;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-      router, ZMQ_ROUTER_NOTIFY, &notify_opt, sizeof (notify_opt)));
+    int opt_notify_read;
+    size_t opt_notify_read_size = sizeof (opt_notify_read);
 
-    notify_opt = ZMQ_NOTIFY_CONNECT;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-      router, ZMQ_ROUTER_NOTIFY, &notify_opt, sizeof (notify_opt)));
 
-    notify_opt = ZMQ_NOTIFY_DISCONNECT;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-      router, ZMQ_ROUTER_NOTIFY, &notify_opt, sizeof (notify_opt)));
+    // default value is off when socket is constructed
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
 
-    notify_opt = ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT;
+    TEST_ASSERT_EQUAL (0, opt_notify_read);
+
+
+    // valid value - Connect
+    opt_notify = ZMQ_NOTIFY_CONNECT;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-      router, ZMQ_ROUTER_NOTIFY, &notify_opt, sizeof (notify_opt)));
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (opt_notify, opt_notify_read);
+
+
+    // valid value - Disconnect
+    opt_notify = ZMQ_NOTIFY_DISCONNECT;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (opt_notify, opt_notify_read);
+
+
+    // valid value - Off
+    opt_notify = 0;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (opt_notify, opt_notify_read);
+
+
+    // valid value - Both
+    opt_notify = ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (opt_notify, opt_notify_read);
+
 
     // value boundary
-    notify_opt = -1;
+    opt_notify = -1;
     TEST_ASSERT_FAILURE_ERRNO (
-      EINVAL, zmq_setsockopt (router, ZMQ_ROUTER_NOTIFY, &notify_opt,
-                              sizeof (notify_opt)));
+      EINVAL, zmq_setsockopt (router, ZMQ_ROUTER_NOTIFY, &opt_notify,
+                              sizeof (opt_notify)));
 
-    notify_opt = (ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT) + 1;
+    opt_notify = (ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT) + 1;
     TEST_ASSERT_FAILURE_ERRNO (
-      EINVAL, zmq_setsockopt (router, ZMQ_ROUTER_NOTIFY, &notify_opt,
-                              sizeof (notify_opt)));
+      EINVAL, zmq_setsockopt (router, ZMQ_ROUTER_NOTIFY, &opt_notify,
+                              sizeof (opt_notify)));
+
+    // failures don't update the value
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      router, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT,
+                       opt_notify_read);
+
 
     test_context_socket_close (router);
 
-    //check a non-router socket type
+
+    // check a non-router socket type
     void *dealer = test_context_socket (ZMQ_DEALER);
-    notify_opt = ZMQ_NOTIFY_CONNECT;
+
+    // setsockopt fails for non-router sockets
+    opt_notify = ZMQ_NOTIFY_CONNECT;
     TEST_ASSERT_FAILURE_ERRNO (
-      EINVAL, zmq_setsockopt (dealer, ZMQ_ROUTER_NOTIFY, &notify_opt,
-                              sizeof (notify_opt)));
+      EINVAL, zmq_setsockopt (dealer, ZMQ_ROUTER_NOTIFY, &opt_notify,
+                              sizeof (opt_notify)));
+
+    // getsockopts returns off for any non-router socket
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      dealer, ZMQ_ROUTER_NOTIFY, &opt_notify_read, &opt_notify_read_size));
+
+    TEST_ASSERT_EQUAL (0, opt_notify_read);
+
+
     test_context_socket_close (dealer);
 }
 
@@ -140,7 +197,6 @@ void test_router_notify_helper (int notify_opt)
     // connection notification msg
     if (notify_opt & ZMQ_NOTIFY_DISCONNECT) {
         // routing-id only message of the connect
-        printf ("ehe\n");
         recv_string_expect_success (router, dealer_routing_id,
                                     0);             // 1st part: routing-id
         recv_string_expect_success (router, "", 0); // 2nd part: empty
@@ -209,7 +265,7 @@ int main (void)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_setsockopt_router_notify);
+    RUN_TEST (test_sockopt_router_notify);
     RUN_TEST (test_router_notify_connect);
     RUN_TEST (test_router_notify_disconnect);
     RUN_TEST (test_router_notify_both);

@@ -904,6 +904,23 @@ Option value unit:: 0, 1
 Default value:: 1
 Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
 
+
+ZMQ_ROUTER_NOTIFY: Retrieve router socket notification settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the current notification settings of a router socket. The returned
+value is a bitmask composed of ZMQ_NOTIFY_CONNECT and ZMQ_NOTIFY_DISCONNECT
+flags, meaning connect and disconnect notifications are enabled, respectively.
+A value of '0' means the notifications are off.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT|ZMQ_NOTIFY_DISCONNECT
+Default value:: 0
+Applicable socket types:: ZMQ_ROUTER
+
+
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it

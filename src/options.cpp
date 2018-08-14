@@ -1150,6 +1150,16 @@ int zmq::options_t::getsockopt (int option_,
             }
             break;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_ROUTER_NOTIFY:
+            if (is_int) {
+                *value = router_notify;
+                return 0;
+            }
+            break;
+#endif
+
+
         default:
 #if defined(ZMQ_ACT_MILITANT)
             malformed = false;

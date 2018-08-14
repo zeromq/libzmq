@@ -914,11 +914,13 @@ void zmq::stream_engine_t::mechanism_ready ()
     }
 
     if (_options.router_notify & ZMQ_NOTIFY_CONNECT) {
-        msg_t connector;
-        connector.init ();
-        const int rc = _session->push_msg (&connector);
+        msg_t connect_notification;
+        connect_notification.init ();
+        const int rc = _session->push_msg (&connect_notification);
         if (rc == -1 && errno == EAGAIN) {
-            // See above comment
+            // If the write is failing at this stage with
+            // an EAGAIN the pipe must be being shut down,
+            // so we can just bail out of the notification.
             return;
         }
         errno_assert (rc == 0);
@@ -927,7 +929,6 @@ void zmq::stream_engine_t::mechanism_ready ()
 
     if (flush_session)
         _session->flush ();
-
 
     _next_msg = &stream_engine_t::pull_and_encode;
     _process_msg = &stream_engine_t::write_credential;
