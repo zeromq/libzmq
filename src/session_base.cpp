@@ -560,46 +560,44 @@ void zmq::session_base_t::start_connecting (bool wait_)
     zmq_assert (io_thread);
 
     //  Create the connecter object.
-
+    own_t *connecter = NULL;
     if (_addr->protocol == protocol_name::tcp) {
         if (!options.socks_proxy_address.empty ()) {
             address_t *proxy_address = new (std::nothrow)
               address_t (protocol_name::tcp, options.socks_proxy_address,
                          this->get_ctx ());
             alloc_assert (proxy_address);
-            socks_connecter_t *connecter = new (std::nothrow)
-              socks_connecter_t (io_thread, this, options, _addr, proxy_address,
-                                 wait_);
-            alloc_assert (connecter);
-            launch_child (connecter);
+            connecter = new (std::nothrow) socks_connecter_t (
+              io_thread, this, options, _addr, proxy_address, wait_);
         } else {
-            tcp_connecter_t *connecter = new (std::nothrow)
+            connecter = new (std::nothrow)
               tcp_connecter_t (io_thread, this, options, _addr, wait_);
-            alloc_assert (connecter);
-            launch_child (connecter);
         }
-        return;
     }
-
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    if (_addr->protocol == protocol_name::ipc) {
-        ipc_connecter_t *connecter = new (std::nothrow)
+    else if (_addr->protocol == protocol_name::ipc) {
+        connecter = new (std::nothrow)
           ipc_connecter_t (io_thread, this, options, _addr, wait_);
-        alloc_assert (connecter);
-        launch_child (connecter);
-        return;
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    if (_addr->protocol == protocol_name::tipc) {
-        tipc_connecter_t *connecter = new (std::nothrow)
+    else if (_addr->protocol == protocol_name::tipc) {
+        connecter = new (std::nothrow)
           tipc_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+#if defined ZMQ_HAVE_VMCI
+    else if (_addr->protocol == protocol_name::vmci) {
+        connecter = new (std::nothrow)
+          vmci_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+    if (connecter != NULL) {
         alloc_assert (connecter);
         launch_child (connecter);
         return;
     }
-#endif
 
     if (_addr->protocol == protocol_name::udp) {
         zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO
@@ -701,16 +699,6 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif // ZMQ_HAVE_NORM
-
-#if defined ZMQ_HAVE_VMCI
-    if (_addr->protocol == protocol_name::vmci) {
-        vmci_connecter_t *connecter = new (std::nothrow)
-          vmci_connecter_t (io_thread, this, options, _addr, wait_);
-        alloc_assert (connecter);
-        launch_child (connecter);
-        return;
-    }
-#endif
 
     zmq_assert (false);
 }
