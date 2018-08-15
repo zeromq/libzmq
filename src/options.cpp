@@ -243,7 +243,8 @@ zmq::options_t::options_t () :
     zap_enforce_domain (false),
     loopback_fastpath (false),
     multicast_loop (true),
-    zero_copy (true)
+    zero_copy (true),
+    router_notify (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
@@ -1148,6 +1149,16 @@ int zmq::options_t::getsockopt (int option_,
                 return 0;
             }
             break;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_ROUTER_NOTIFY:
+            if (is_int) {
+                *value = router_notify;
+                return 0;
+            }
+            break;
+#endif
+
 
         default:
 #if defined(ZMQ_ACT_MILITANT)

@@ -1289,6 +1289,24 @@ Option value unit:: 0, 1
 Default value:: 1
 Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
 
+
+ZMQ_ROUTER_NOTIFY: Send connect and disconnect notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enable connect and disconnect notifications on a ROUTER socket.
+When enabled, the socket delivers a zero-length message (with routing-id
+as first frame) when a peer connects or disconnects. It's possible
+to notify both events for a peer by OR-ing the flag values. This option
+only applies to stream oriented (tcp, ipc) transports.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT|ZMQ_NOTIFY_DISCONNECT
+Default value:: 0
+Applicable socket types:: ZMQ_ROUTER
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it

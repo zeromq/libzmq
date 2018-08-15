@@ -136,6 +136,7 @@ IF (ENABLE_DRAFTS)
         test_scatter_gather
         test_dgram
         test_app_meta
+        test_router_notify
     )
 ENDIF (ENABLE_DRAFTS)
 

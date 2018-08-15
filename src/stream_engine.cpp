@@ -897,6 +897,8 @@ void zmq::stream_engine_t::mechanism_ready ()
         _has_heartbeat_timer = true;
     }
 
+    bool flush_session = false;
+
     if (_options.recv_routing_id) {
         msg_t routing_id;
         _mechanism->peer_routing_id (&routing_id);
@@ -908,8 +910,25 @@ void zmq::stream_engine_t::mechanism_ready ()
             return;
         }
         errno_assert (rc == 0);
-        _session->flush ();
+        flush_session = true;
     }
+
+    if (_options.router_notify & ZMQ_NOTIFY_CONNECT) {
+        msg_t connect_notification;
+        connect_notification.init ();
+        const int rc = _session->push_msg (&connect_notification);
+        if (rc == -1 && errno == EAGAIN) {
+            // If the write is failing at this stage with
+            // an EAGAIN the pipe must be being shut down,
+            // so we can just bail out of the notification.
+            return;
+        }
+        errno_assert (rc == 0);
+        flush_session = true;
+    }
+
+    if (flush_session)
+        _session->flush ();
 
     _next_msg = &stream_engine_t::pull_and_encode;
     _process_msg = &stream_engine_t::write_credential;
@@ -1038,6 +1057,18 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         terminator.close ();
     }
     zmq_assert (_session);
+
+    if ((_options.router_notify & ZMQ_NOTIFY_DISCONNECT) && !_handshaking) {
+        // For router sockets with disconnect notification, rollback
+        // any incomplete message in the pipe, and push the disconnect
+        // notification message.
+        _session->rollback ();
+
+        msg_t disconnect_notification;
+        disconnect_notification.init ();
+        _session->push_msg (&disconnect_notification);
+    }
+
 #ifdef ZMQ_BUILD_DRAFT_API
     // protocol errors have been signaled already at the point where they occurred
     if (reason_ != protocol_error

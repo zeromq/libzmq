@@ -139,6 +139,16 @@ int zmq::router_t::xsetsockopt (int option_,
             }
             break;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_ROUTER_NOTIFY:
+            if (is_int && value >= 0
+                && value <= (ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT)) {
+                options.router_notify = value;
+                return 0;
+            }
+            break;
+#endif
+
         default:
             return routing_socket_base_t::xsetsockopt (option_, optval_,
                                                        optvallen_);
