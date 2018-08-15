@@ -721,42 +721,19 @@ int zmq::socket_base_t::connect (const char *addr_)
             //  to send the routing id message or not. To resolve this,
             //  we always send our routing id and drop it later if
             //  the peer doesn't expect it.
-            msg_t id;
-            rc = id.init_size (options.routing_id_size);
-            errno_assert (rc == 0);
-            memcpy (id.data (), options.routing_id, options.routing_id_size);
-            id.set_flags (msg_t::routing_id);
-            const bool written = new_pipes[0]->write (&id);
-            zmq_assert (written);
-            new_pipes[0]->flush ();
+            send_routing_id (new_pipes[0], options);
 
             const endpoint_t endpoint = {this, options};
             pend_connection (std::string (addr_), endpoint, new_pipes);
         } else {
             //  If required, send the routing id of the local socket to the peer.
             if (peer.options.recv_routing_id) {
-                msg_t id;
-                rc = id.init_size (options.routing_id_size);
-                errno_assert (rc == 0);
-                memcpy (id.data (), options.routing_id,
-                        options.routing_id_size);
-                id.set_flags (msg_t::routing_id);
-                const bool written = new_pipes[0]->write (&id);
-                zmq_assert (written);
-                new_pipes[0]->flush ();
+                send_routing_id (new_pipes[0], options);
             }
 
             //  If required, send the routing id of the peer to the local socket.
             if (options.recv_routing_id) {
-                msg_t id;
-                rc = id.init_size (peer.options.routing_id_size);
-                errno_assert (rc == 0);
-                memcpy (id.data (), peer.options.routing_id,
-                        peer.options.routing_id_size);
-                id.set_flags (msg_t::routing_id);
-                const bool written = new_pipes[1]->write (&id);
-                zmq_assert (written);
-                new_pipes[1]->flush ();
+                send_routing_id (new_pipes[1], peer.options);
             }
 
             //  Attach remote end of the pipe to the peer socket. Note that peer's
