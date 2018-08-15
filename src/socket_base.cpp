@@ -703,11 +703,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents[2] = {this, peer.socket == NULL ? this : peer.socket};
         pipe_t *new_pipes[2] = {NULL, NULL};
 
-        const bool conflate =
-          options.conflate
-          && (options.type == ZMQ_DEALER || options.type == ZMQ_PULL
-              || options.type == ZMQ_PUSH || options.type == ZMQ_PUB
-              || options.type == ZMQ_SUB);
+        const bool conflate = get_effective_conflate_option (options);
 
         int hwms[2] = {conflate ? -1 : sndhwm, conflate ? -1 : rcvhwm};
         bool conflates[2] = {conflate, conflate};
@@ -942,11 +938,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents[2] = {this, session};
         pipe_t *new_pipes[2] = {NULL, NULL};
 
-        const bool conflate =
-          options.conflate
-          && (options.type == ZMQ_DEALER || options.type == ZMQ_PULL
-              || options.type == ZMQ_PUSH || options.type == ZMQ_PUB
-              || options.type == ZMQ_SUB);
+        const bool conflate = get_effective_conflate_option (options);
 
         int hwms[2] = {conflate ? -1 : options.sndhwm,
                        conflate ? -1 : options.rcvhwm};

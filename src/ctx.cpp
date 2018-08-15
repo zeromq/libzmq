@@ -617,15 +617,7 @@ void zmq::ctx_t::connect_inproc_sockets (
         errno_assert (rc == 0);
     }
 
-    bool conflate =
-      pending_connection_.endpoint.options.conflate
-      && (pending_connection_.endpoint.options.type == ZMQ_DEALER
-          || pending_connection_.endpoint.options.type == ZMQ_PULL
-          || pending_connection_.endpoint.options.type == ZMQ_PUSH
-          || pending_connection_.endpoint.options.type == ZMQ_PUB
-          || pending_connection_.endpoint.options.type == ZMQ_SUB);
-
-    if (!conflate) {
+    if (!get_effective_conflate_option (pending_connection_.endpoint.options)) {
         pending_connection_.connect_pipe->set_hwms_boost (bind_options_.sndhwm,
                                                           bind_options_.rcvhwm);
         pending_connection_.bind_pipe->set_hwms_boost (
