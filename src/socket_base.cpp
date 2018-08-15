@@ -326,7 +326,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
 int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 {
     //  First check out whether the protocol is something we are aware of.
-    if (protocol_ != "inproc"
+    if (protocol_ != protocol_name::inproc
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
         && protocol_ != protocol_name::ipc
@@ -522,7 +522,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return -1;
     }
 
-    if (protocol == "inproc") {
+    if (protocol == protocol_name::inproc) {
         const endpoint_t endpoint = {this, options};
         rc = register_endpoint (endpoint_uri_, endpoint);
         if (rc == 0) {
@@ -714,7 +714,7 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
         return -1;
     }
 
-    if (protocol == "inproc") {
+    if (protocol == protocol_name::inproc) {
         //  TODO: inproc connect is specific with respect to creating pipes
         //  as there's no 'reconnect' functionality implemented. Once that
         //  is in place we should follow generic pipe creation algorithm.
@@ -1045,7 +1045,7 @@ int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
     const std::string endpoint_uri_str = std::string (endpoint_uri_);
 
     // Disconnect an inproc socket
-    if (uri_protocol == "inproc") {
+    if (uri_protocol == protocol_name::inproc) {
         return unregister_endpoint (endpoint_uri_str, this) == 0
                  ? 0
                  : _inprocs.erase_pipes (endpoint_uri_str);
@@ -1578,7 +1578,7 @@ int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
         return -1;
 
     //  Event notification only supported over inproc://
-    if (protocol != "inproc") {
+    if (protocol != protocol_name::inproc) {
         errno = EPROTONOSUPPORT;
         return -1;
     }
