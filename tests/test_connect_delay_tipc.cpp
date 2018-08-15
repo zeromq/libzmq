@@ -28,14 +28,22 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void setUp ()
 {
-    if (!is_tipc_available ()) {
-        printf ("TIPC environment unavailable, skipping test\n");
-        return 77;
-    }
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_send_one_connected_one_unconnected ()
+{
     int val;
     int rc;
     char buffer[16];
@@ -101,6 +109,13 @@ int main (void)
 
     rc = zmq_ctx_term (context);
     assert (rc == 0);
+}
+
+void test_send_one_connected_one_unconnected_with_delay ()
+{
+    int val;
+    int rc;
+    char buffer[16];
 
     // TEST 2
     // This time we will do the same thing, connect two pipes,
@@ -109,10 +124,10 @@ int main (void)
     // also set the delay attach on connect flag, which should
     // cause the pipe attachment to be delayed until the connection
     // succeeds.
-    context = zmq_ctx_new ();
+    void *context = zmq_ctx_new ();
 
     // Bind the valid socket
-    to = zmq_socket (context, ZMQ_PULL);
+    void *to = zmq_socket (context, ZMQ_PULL);
     assert (to);
     rc = zmq_bind (to, "tipc://{5560,0,0}");
     assert (rc == 0);
@@ -122,7 +137,7 @@ int main (void)
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - all messages should arrive.
-    from = zmq_socket (context, ZMQ_PUSH);
+    void *from = zmq_socket (context, ZMQ_PUSH);
     assert (from);
 
     val = 0;
@@ -146,10 +161,11 @@ int main (void)
         rc = zmq_send (from, "Hello", 5, 0);
         assert (rc == 5);
     }
+    int timeout = 250;
     rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 
-    seen = 0;
+    int seen = 0;
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
         if (rc == -1)
@@ -166,13 +182,19 @@ int main (void)
 
     rc = zmq_ctx_term (context);
     assert (rc == 0);
+}
+
+void test_send_disconnected_with_delay ()
+{
+    int rc;
+    char buffer[16];
 
     // TEST 3
     // This time we want to validate that the same blocking behaviour
     // occurs with an existing connection that is broken. We will send
     // messages to a connected pipe, disconnect and verify the messages
     // block. Then we reconnect and verify messages flow again.
-    context = zmq_ctx_new ();
+    void *context = zmq_ctx_new ();
 
     void *backend = zmq_socket (context, ZMQ_DEALER);
     assert (backend);
@@ -240,4 +262,18 @@ int main (void)
 
     rc = zmq_ctx_term (context);
     assert (rc == 0);
+}
+
+int main (void)
+{
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_send_one_connected_one_unconnected);
+    RUN_TEST (test_send_one_connected_one_unconnected_with_delay);
+    RUN_TEST (test_send_disconnected_with_delay);
+    return UNITY_END ();
 }

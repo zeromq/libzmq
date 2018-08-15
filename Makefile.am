@@ -819,7 +819,8 @@ test_apps += \
 	tests/test_address_tipc
 
 tests_test_connect_delay_tipc_SOURCES = tests/test_connect_delay_tipc.cpp
-tests_test_connect_delay_tipc_LDADD = src/libzmq.la
+tests_test_connect_delay_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_connect_delay_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_pair_tipc_SOURCES = tests/test_pair_tipc.cpp
 tests_test_pair_tipc_LDADD = src/libzmq.la
