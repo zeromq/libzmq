@@ -259,6 +259,9 @@ class socket_base_t : public own_t,
 
     void update_pipe_options (int option_);
 
+    std::string resolve_tcp_addr (std::string endpoint_address_,
+                                  const char *tcp_address_);
+
     //  Socket's mailbox object.
     i_mailbox *_mailbox;
 

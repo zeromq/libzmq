@@ -968,6 +968,33 @@ int zmq::socket_base_t::connect (const char *addr_)
     return 0;
 }
 
+std::string zmq::socket_base_t::resolve_tcp_addr (std::string endpoint_address_,
+                                                  const char *tcp_address_)
+{
+    // The resolved last_endpoint is used as a key in the endpoints map.
+    // The address passed by the user might not match in the TCP case due to
+    // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
+    // resolve before giving up. Given at this stage we don't know whether a
+    // socket is connected or bound, try with both.
+    if (_endpoints.find (endpoint_address_) == _endpoints.end ()) {
+        tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
+        alloc_assert (tcp_addr);
+        int rc = tcp_addr->resolve (tcp_address_, false, options.ipv6);
+
+        if (rc == 0) {
+            tcp_addr->to_string (endpoint_address_);
+            if (_endpoints.find (endpoint_address_) == _endpoints.end ()) {
+                rc = tcp_addr->resolve (tcp_address_, true, options.ipv6);
+                if (rc == 0) {
+                    tcp_addr->to_string (endpoint_address_);
+                }
+            }
+        }
+        LIBZMQ_DELETE (tcp_addr);
+    }
+    return endpoint_address_;
+}
+
 void zmq::socket_base_t::add_endpoint (const char *addr_,
                                        own_t *endpoint_,
                                        pipe_t *pipe_)
@@ -996,7 +1023,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
 
     //  Process pending commands, if any, since there could be pending unprocessed process_own()'s
     //  (from launch_child() for example) we're asked to terminate now.
-    int rc = process_commands (0, false);
+    const int rc = process_commands (0, false);
     if (unlikely (rc != 0)) {
         return -1;
     }
@@ -1008,41 +1035,19 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return -1;
     }
 
+    const std::string addr_str = std::string (addr_);
+
     // Disconnect an inproc socket
     if (protocol == "inproc") {
-        const std::string addr_str = std::string (addr_);
-
         return unregister_endpoint (addr_str, this) == 0
                  ? 0
                  : _inprocs.erase_pipes (addr_str);
     }
 
-    std::string resolved_addr = addr_;
-
-    // The resolved last_endpoint is used as a key in the endpoints map.
-    // The address passed by the user might not match in the TCP case due to
-    // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
-    // resolve before giving up. Given at this stage we don't know whether a
-    // socket is connected or bound, try with both.
-    if (protocol == protocol_name::tcp) {
-        if (_endpoints.find (resolved_addr) == _endpoints.end ()) {
-            tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
-            alloc_assert (tcp_addr);
-            rc = tcp_addr->resolve (address.c_str (), false, options.ipv6);
-
-            if (rc == 0) {
-                tcp_addr->to_string (resolved_addr);
-                if (_endpoints.find (resolved_addr) == _endpoints.end ()) {
-                    rc =
-                      tcp_addr->resolve (address.c_str (), true, options.ipv6);
-                    if (rc == 0) {
-                        tcp_addr->to_string (resolved_addr);
-                    }
-                }
-            }
-            LIBZMQ_DELETE (tcp_addr);
-        }
-    }
+    const std::string resolved_addr =
+      protocol == protocol_name::tcp
+        ? resolve_tcp_addr (addr_str, address.c_str ())
+        : addr_str;
 
     //  Find the endpoints range (if any) corresponding to the addr_ string.
     const std::pair<endpoints_t::iterator, endpoints_t::iterator> range =
