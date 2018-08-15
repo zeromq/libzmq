@@ -145,9 +145,6 @@ class stream_engine_t : public io_object_t, public i_engine
     //  Underlying socket.
     fd_t _s;
 
-    //  True iff this is server's engine.
-    bool _as_server;
-
     msg_t _tx_msg;
     //  Need to store PING payload for PONG
     msg_t _pong_msg;
