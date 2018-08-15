@@ -235,9 +235,6 @@ class pipe_t : public object_t,
     //  Routing id of the writer. Used uniquely by the reader side.
     int _server_socket_routing_id;
 
-    //  Pipe's credential.
-    blob_t _credential;
-
     //  Returns true if the message is delimiter; false otherwise.
     static bool is_delimiter (const msg_t &msg_);
 
