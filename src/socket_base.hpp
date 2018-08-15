@@ -200,7 +200,17 @@ class socket_base_t : public own_t,
     endpoints_t _endpoints;
 
     //  Map of open inproc endpoints.
-    typedef std::multimap<std::string, pipe_t *> inprocs_t;
+    class inprocs_t
+    {
+      public:
+        void emplace (const char *addr_, pipe_t *pipe_);
+        int erase_pipes (const std::string &addr_str_);
+        void erase_pipe (pipe_t *pipe_);
+
+      private:
+        typedef std::multimap<std::string, pipe_t *> map_t;
+        map_t _inprocs;
+    };
     inprocs_t _inprocs;
 
     //  To be called after processing commands or invoking any command

@@ -97,6 +97,36 @@
 #include "scatter.hpp"
 #include "dgram.hpp"
 
+void zmq::socket_base_t::inprocs_t::emplace (const char *addr_, pipe_t *pipe_)
+{
+    _inprocs.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (addr_), pipe_);
+}
+
+int zmq::socket_base_t::inprocs_t::erase_pipes (const std::string &addr_str_)
+{
+    const std::pair<map_t::iterator, map_t::iterator> range =
+      _inprocs.equal_range (addr_str_);
+    if (range.first == range.second) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    for (map_t::iterator it = range.first; it != range.second; ++it)
+        it->second->terminate (true);
+    _inprocs.erase (range.first, range.second);
+    return 0;
+}
+
+void zmq::socket_base_t::inprocs_t::erase_pipe (pipe_t *pipe_)
+{
+    for (map_t::iterator it = _inprocs.begin (), end = _inprocs.end ();
+         it != end; ++it)
+        if (it->second == pipe_) {
+            _inprocs.erase (it);
+            break;
+        }
+}
+
 bool zmq::socket_base_t::check_tag () const
 {
     return _tag == 0xbaddecaf;
@@ -749,7 +779,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         _last_endpoint.assign (addr_);
 
         // remember inproc connections for disconnect
-        _inprocs.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (addr_), new_pipes[0]);
+        _inprocs.emplace (addr_, new_pipes[0]);
 
         options.connected = true;
         return 0;
@@ -978,24 +1008,13 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return -1;
     }
 
-    const std::string addr_str = std::string (addr_);
-
     // Disconnect an inproc socket
     if (protocol == "inproc") {
-        if (unregister_endpoint (addr_str, this) == 0) {
-            return 0;
-        }
-        const std::pair<inprocs_t::iterator, inprocs_t::iterator> range =
-          _inprocs.equal_range (addr_str);
-        if (range.first == range.second) {
-            errno = ENOENT;
-            return -1;
-        }
+        const std::string addr_str = std::string (addr_);
 
-        for (inprocs_t::iterator it = range.first; it != range.second; ++it)
-            it->second->terminate (true);
-        _inprocs.erase (range.first, range.second);
-        return 0;
+        return unregister_endpoint (addr_str, this) == 0
+                 ? 0
+                 : _inprocs.erase_pipes (addr_str);
     }
 
     std::string resolved_addr = addr_;
@@ -1507,12 +1526,7 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
     xpipe_terminated (pipe_);
 
     // Remove pipe from inproc pipes
-    for (inprocs_t::iterator it = _inprocs.begin (), end = _inprocs.end ();
-         it != end; ++it)
-        if (it->second == pipe_) {
-            _inprocs.erase (it);
-            break;
-        }
+    _inprocs.erase_pipe (pipe_);
 
     //  Remove the pipe from the list of attached pipes and confirm its
     //  termination if we are already shutting down.
