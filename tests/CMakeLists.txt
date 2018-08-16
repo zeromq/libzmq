@@ -172,7 +172,7 @@ link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
 else ()
 link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
 endif ()
-include_directories("${CMAKE_SOURCE_DIR}/../include" "${CMAKE_BINARY_DIR}")
+include_directories("${ZeroMQ_SOURCE_DIR}/../include" "${ZeroMQ_BINARY_DIR}")
 
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1
@@ -199,7 +199,7 @@ foreach(test ${tests})
   else()
     # per-test directories not generated on OS X / Darwin
     if (NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang.*")
-        link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
+        link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
 
