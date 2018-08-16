@@ -45,8 +45,6 @@ void tearDown ()
 void test_send_one_connected_one_unconnected ()
 {
     int val;
-    int rc;
-    char buffer[16];
     // TEST 1.
     // First we're going to attempt to send messages to two
     // pipes, one connected, the other not. We should see
@@ -54,68 +52,57 @@ void test_send_one_connected_one_unconnected ()
     // of the messages getting queued, as connect() creates a
     // pipe immediately.
 
-    void *context = zmq_ctx_new ();
-    assert (context);
-    void *to = zmq_socket (context, ZMQ_PULL);
-    assert (to);
+    void *to = test_context_socket (ZMQ_PULL);
 
     // Bind the one valid receiver
     val = 0;
-    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
-    assert (rc == 0);
-    rc = zmq_bind (to, "tipc://{6555,0,0}");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (to, "tipc://{6555,0,0}"));
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
-    void *from = zmq_socket (context, ZMQ_PUSH);
-    assert (from);
+    void *from = test_context_socket (ZMQ_PUSH);
 
     val = 0;
-    zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val)));
     // This pipe will not connect
-    rc = zmq_connect (from, "tipc://{5556,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tipc://{5556,0}@0.0.0"));
     // This pipe will
-    rc = zmq_connect (from, "tipc://{6555,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tipc://{6555,0}@0.0.0"));
 
     // We send 10 messages, 5 should just get stuck in the queue
     // for the not-yet-connected pipe
-    for (int i = 0; i < 10; ++i) {
-        rc = zmq_send (from, "Hello", 5, 0);
-        assert (rc == 5);
+    const int send_count = 10;
+    for (int i = 0; i < send_count; ++i) {
+        send_string_expect_success (from, "Hello", 0);
     }
 
     // We now consume from the connected pipe
     // - we should see just 5
-    int timeout = 250;
-    rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
+    int timeout = SETTLE_TIME;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
     int seen = 0;
     while (true) {
-        rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
-        if (rc == -1)
+        char buffer[16];
+        int rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
+        if (rc == -1) {
+            TEST_ASSERT_EQUAL_INT (EAGAIN, zmq_errno ());
             break; //  Break when we didn't get a message
+        }
         seen++;
     }
-    assert (seen == 5);
+    TEST_ASSERT_EQUAL_INT (send_count / 2, seen);
 
-    rc = zmq_close (from);
-    assert (rc == 0);
-
-    rc = zmq_close (to);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (context);
-    assert (rc == 0);
+    test_context_socket_close (from);
+    test_context_socket_close (to);
 }
 
 void test_send_one_connected_one_unconnected_with_delay ()
 {
     int val;
-    int rc;
-    char buffer[16];
 
     // TEST 2
     // This time we will do the same thing, connect two pipes,
@@ -124,144 +111,110 @@ void test_send_one_connected_one_unconnected_with_delay ()
     // also set the delay attach on connect flag, which should
     // cause the pipe attachment to be delayed until the connection
     // succeeds.
-    void *context = zmq_ctx_new ();
 
     // Bind the valid socket
-    void *to = zmq_socket (context, ZMQ_PULL);
-    assert (to);
-    rc = zmq_bind (to, "tipc://{5560,0,0}");
-    assert (rc == 0);
+    void *to = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (to, "tipc://{5560,0,0}"));
 
     val = 0;
-    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof (val)));
 
     // Create a socket pushing to two endpoints - all messages should arrive.
-    void *from = zmq_socket (context, ZMQ_PUSH);
-    assert (from);
+    void *from = test_context_socket (ZMQ_PUSH);
 
     val = 0;
-    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val)));
 
     // Set the key flag
     val = 1;
-    rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof (val));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof (val)));
 
     // Connect to the invalid socket
-    rc = zmq_connect (from, "tipc://{5561,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tipc://{5561,0}@0.0.0"));
     // Connect to the valid socket
-    rc = zmq_connect (from, "tipc://{5560,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tipc://{5560,0}@0.0.0"));
 
     // Send 10 messages, all should be routed to the connected pipe
-    for (int i = 0; i < 10; ++i) {
-        rc = zmq_send (from, "Hello", 5, 0);
-        assert (rc == 5);
+    const int send_count = 10;
+    for (int i = 0; i < send_count; ++i) {
+        send_string_expect_success (from, "Hello", 0);
     }
-    int timeout = 250;
-    rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
+    int timeout = SETTLE_TIME;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
     int seen = 0;
     while (true) {
-        rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
-        if (rc == -1)
+        char buffer[16];
+        int rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
+        if (rc == -1) {
+            TEST_ASSERT_EQUAL_INT (EAGAIN, zmq_errno ());
             break; //  Break when we didn't get a message
+        }
         seen++;
     }
-    assert (seen == 10);
+    TEST_ASSERT_EQUAL_INT (send_count, seen);
 
-    rc = zmq_close (from);
-    assert (rc == 0);
-
-    rc = zmq_close (to);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (context);
-    assert (rc == 0);
+    test_context_socket_close (from);
+    test_context_socket_close (to);
 }
 
 void test_send_disconnected_with_delay ()
 {
-    int rc;
-    char buffer[16];
-
     // TEST 3
     // This time we want to validate that the same blocking behaviour
     // occurs with an existing connection that is broken. We will send
     // messages to a connected pipe, disconnect and verify the messages
     // block. Then we reconnect and verify messages flow again.
-    void *context = zmq_ctx_new ();
-
-    void *backend = zmq_socket (context, ZMQ_DEALER);
-    assert (backend);
-    void *frontend = zmq_socket (context, ZMQ_DEALER);
-    assert (frontend);
+    void *backend = test_context_socket (ZMQ_DEALER);
+    void *frontend = test_context_socket (ZMQ_DEALER);
     int zero = 0;
-    rc = zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero));
-    assert (rc == 0);
-    rc = zmq_setsockopt (frontend, ZMQ_LINGER, &zero, sizeof (zero));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (frontend, ZMQ_LINGER, &zero, sizeof (zero)));
 
     //  Frontend connects to backend using DELAY_ATTACH_ON_CONNECT
     int on = 1;
-    rc =
-      zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on));
-    assert (rc == 0);
-    rc = zmq_bind (backend, "tipc://{5560,0,0}");
-    assert (rc == 0);
-    rc = zmq_connect (frontend, "tipc://{5560,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (backend, "tipc://{5560,0,0}"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (frontend, "tipc://{5560,0}@0.0.0"));
 
     //  Ping backend to frontend so we know when the connection is up
-    rc = zmq_send (backend, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (frontend, buffer, 255, 0);
-    assert (rc == 5);
+    send_string_expect_success (backend, "Hello", 0);
+    recv_string_expect_success (frontend, "Hello", 0);
 
     // Send message from frontend to backend
-    rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
-    assert (rc == 5);
+    send_string_expect_success (frontend, "Hello", ZMQ_DONTWAIT);
 
-    rc = zmq_close (backend);
-    assert (rc == 0);
+    test_context_socket_close (backend);
 
     //  Give time to process disconnect
     msleep (SETTLE_TIME);
 
     // Send a message, should fail
-    rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
+                               zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT));
 
     //  Recreate backend socket
-    backend = zmq_socket (context, ZMQ_DEALER);
-    assert (backend);
-    rc = zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero));
-    assert (rc == 0);
-    rc = zmq_bind (backend, "tipc://{5560,0,0}");
-    assert (rc == 0);
+    backend = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (backend, "tipc://{5560,0,0}"));
 
     //  Ping backend to frontend so we know when the connection is up
-    rc = zmq_send (backend, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (frontend, buffer, 255, 0);
-    assert (rc == 5);
+    send_string_expect_success (backend, "Hello", 0);
+    recv_string_expect_success (frontend, "Hello", 0);
 
     // After the reconnect, should succeed
-    rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
-    assert (rc == 5);
+    send_string_expect_success (frontend, "Hello", ZMQ_DONTWAIT);
 
-    rc = zmq_close (backend);
-    assert (rc == 0);
-
-    rc = zmq_close (frontend);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (context);
-    assert (rc == 0);
+    test_context_socket_close (backend);
+    test_context_socket_close (frontend);
 }
 
 int main (void)
