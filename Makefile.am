@@ -404,7 +404,6 @@ test_apps = \
 	tests/test_stream_disconnect \
 	tests/test_stream_timeout \
 	tests/test_disconnect_inproc \
-	tests/test_unbind_inproc \
 	tests/test_unbind_wildcard \
 	tests/test_ctx_options \
 	tests/test_ctx_destroy \
@@ -555,9 +554,6 @@ tests_test_stream_disconnect_LDADD = src/libzmq.la
 
 tests_test_disconnect_inproc_SOURCES = tests/test_disconnect_inproc.cpp
 tests_test_disconnect_inproc_LDADD = src/libzmq.la
-
-tests_test_unbind_inproc_SOURCES = tests/test_unbind_inproc.cpp
-tests_test_unbind_inproc_LDADD = src/libzmq.la
 
 tests_test_unbind_wildcard_SOURCES = tests/test_unbind_wildcard.cpp
 tests_test_unbind_wildcard_LDADD = src/libzmq.la
