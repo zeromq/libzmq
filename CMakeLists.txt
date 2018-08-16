@@ -577,7 +577,9 @@ if (MSVC)
   set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 
   # Compile the static lib with debug information included
+  # note: we assume here that the default flags contain some /Z flag
   string (REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  string (REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
   # Optimization flags.
   # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
