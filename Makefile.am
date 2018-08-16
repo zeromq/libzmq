@@ -775,7 +775,8 @@ tests_test_timeo_SOURCES = tests/test_timeo.cpp
 tests_test_timeo_LDADD = src/libzmq.la
 
 tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
-tests_test_filter_ipc_LDADD = src/libzmq.la
+tests_test_filter_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_filter_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_use_fd_ipc_SOURCES = \
 	tests/test_use_fd_ipc.cpp \
