@@ -67,7 +67,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
                                        const options_t &options_,
                                        const std::string &endpoint_) :
     _s (fd_),
-    _as_server (false),
     _handle (static_cast<handle_t> (NULL)),
     _inpos (NULL),
     _insize (0),

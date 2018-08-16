@@ -617,15 +617,7 @@ void zmq::ctx_t::connect_inproc_sockets (
         errno_assert (rc == 0);
     }
 
-    bool conflate =
-      pending_connection_.endpoint.options.conflate
-      && (pending_connection_.endpoint.options.type == ZMQ_DEALER
-          || pending_connection_.endpoint.options.type == ZMQ_PULL
-          || pending_connection_.endpoint.options.type == ZMQ_PUSH
-          || pending_connection_.endpoint.options.type == ZMQ_PUB
-          || pending_connection_.endpoint.options.type == ZMQ_SUB);
-
-    if (!conflate) {
+    if (!get_effective_conflate_option (pending_connection_.endpoint.options)) {
         pending_connection_.connect_pipe->set_hwms_boost (bind_options_.sndhwm,
                                                           bind_options_.rcvhwm);
         pending_connection_.bind_pipe->set_hwms_boost (
@@ -660,15 +652,7 @@ void zmq::ctx_t::connect_inproc_sockets (
     // is open before sending.
     if (pending_connection_.endpoint.options.recv_routing_id
         && pending_connection_.endpoint.socket->check_tag ()) {
-        msg_t routing_id;
-        const int rc = routing_id.init_size (bind_options_.routing_id_size);
-        errno_assert (rc == 0);
-        memcpy (routing_id.data (), bind_options_.routing_id,
-                bind_options_.routing_id_size);
-        routing_id.set_flags (msg_t::routing_id);
-        const bool written = pending_connection_.bind_pipe->write (&routing_id);
-        zmq_assert (written);
-        pending_connection_.bind_pipe->flush ();
+        send_routing_id (pending_connection_.bind_pipe, bind_options_);
     }
 }
 

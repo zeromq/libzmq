@@ -49,6 +49,7 @@ class vmci_address_t;
 
 namespace protocol_name
 {
+static const char inproc[] = "inproc";
 static const char tcp[] = "tcp";
 static const char udp[] = "udp";
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \

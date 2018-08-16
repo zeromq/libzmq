@@ -36,6 +36,7 @@
 #include "stdint.hpp"
 #include "array.hpp"
 #include "blob.hpp"
+#include "options.hpp"
 
 namespace zmq
 {
@@ -235,9 +236,6 @@ class pipe_t : public object_t,
     //  Routing id of the writer. Used uniquely by the reader side.
     int _server_socket_routing_id;
 
-    //  Pipe's credential.
-    blob_t _credential;
-
     //  Returns true if the message is delimiter; false otherwise.
     static bool is_delimiter (const msg_t &msg_);
 
@@ -250,6 +248,8 @@ class pipe_t : public object_t,
     pipe_t (const pipe_t &);
     const pipe_t &operator= (const pipe_t &);
 };
+
+void send_routing_id (pipe_t *pipe_, const options_t &options_);
 }
 
 #endif
