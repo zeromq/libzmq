@@ -633,7 +633,8 @@ tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = src/libzmq.la
 
 tests_test_connect_rid_SOURCES = tests/test_connect_rid.cpp
-tests_test_connect_rid_LDADD = src/libzmq.la
+tests_test_connect_rid_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_connect_rid_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_bind_src_address_SOURCES = tests/test_bind_src_address.cpp
 tests_test_bind_src_address_LDADD = src/libzmq.la ${UNITY_LIBS}
