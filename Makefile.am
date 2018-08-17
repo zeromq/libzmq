@@ -668,7 +668,8 @@ tests_test_sockopt_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_sockopt_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
-tests_test_setsockopt_LDADD = src/libzmq.la
+tests_test_setsockopt_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_setsockopt_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
 tests_test_heartbeats_LDADD = src/libzmq.la ${UNITY_LIBS}
