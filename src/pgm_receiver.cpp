@@ -181,6 +181,7 @@ void zmq::pgm_receiver_t::in_event ()
     while (true) {
         //  Get new batch of data.
         //  Note the workaround made not to break strict-aliasing rules.
+	
 	insize = 0;
         void *tmp = NULL;
         ssize_t received = pgm_socket.receive (&tmp, &tsi);
