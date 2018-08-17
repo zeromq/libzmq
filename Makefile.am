@@ -592,7 +592,8 @@ tests_test_spec_dealer_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_spec_dealer_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_router_SOURCES = tests/test_spec_router.cpp
-tests_test_spec_router_LDADD = src/libzmq.la
+tests_test_spec_router_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_spec_router_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_pushpull_SOURCES = tests/test_spec_pushpull.cpp
 tests_test_spec_pushpull_LDADD = src/libzmq.la
