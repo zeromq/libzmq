@@ -198,7 +198,7 @@ int zmq::router_t::xsend (msg_t *msg_)
 
             //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe just silently ignore the message, unless
-            //  router_mandatory is set.            ;
+            //  router_mandatory is set.
             out_pipe_t *out_pipe = lookup_out_pipe (
               blob_t (static_cast<unsigned char *> (msg_->data ()),
                       msg_->size (), zmq::reference_tag_t ()));
@@ -487,9 +487,9 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
 
             //  Try to remove an existing routing id entry to allow the new
             //  connection to take the routing id.
-            out_pipe_t existing_outpipe = try_erase_out_pipe (routing_id);
+            out_pipe_t *existing_outpipe = lookup_out_pipe (routing_id);
 
-            if (existing_outpipe.pipe) {
+            if (existing_outpipe) {
                 if (!_handover)
                     //  Ignore peers with duplicate ID
                     return false;
@@ -502,15 +502,16 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
                 put_uint32 (buf + 1, _next_integral_routing_id++);
                 blob_t new_routing_id (buf, sizeof buf);
 
-                existing_outpipe.pipe->set_router_socket_routing_id (
-                  new_routing_id);
+                pipe_t *const old_pipe = existing_outpipe->pipe;
 
-                add_out_pipe (ZMQ_MOVE (new_routing_id), existing_outpipe.pipe);
+                erase_out_pipe (old_pipe);
+                old_pipe->set_router_socket_routing_id (new_routing_id);
+                add_out_pipe (ZMQ_MOVE (new_routing_id), old_pipe);
 
-                if (existing_outpipe.pipe == _current_in)
+                if (old_pipe == _current_in)
                     _terminate_current_in = true;
                 else
-                    existing_outpipe.pipe->terminate (true);
+                    old_pipe->terminate (true);
             }
         }
     }
