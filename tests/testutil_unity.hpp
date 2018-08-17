@@ -90,8 +90,8 @@ int test_assert_success_message_raw_errno_helper (int rc_,
 
 #define TEST_ASSERT_FAILURE_ERRNO(error_code, expr)                            \
     {                                                                          \
-        int rc = (expr);                                                       \
-        TEST_ASSERT_EQUAL_INT (-1, rc);                                        \
+        int _rc = (expr);                                                      \
+        TEST_ASSERT_EQUAL_INT (-1, _rc);                                       \
         TEST_ASSERT_EQUAL_INT (error_code, errno);                             \
     }
 

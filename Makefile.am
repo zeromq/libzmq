@@ -517,7 +517,8 @@ tests_test_last_endpoint_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_last_endpoint_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_term_endpoint_SOURCES = tests/test_term_endpoint.cpp
-tests_test_term_endpoint_LDADD = src/libzmq.la
+tests_test_term_endpoint_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_term_endpoint_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_srcfd_SOURCES = tests/test_srcfd.cpp
 tests_test_srcfd_LDADD = src/libzmq.la
@@ -591,7 +592,8 @@ tests_test_spec_dealer_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_spec_dealer_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_router_SOURCES = tests/test_spec_router.cpp
-tests_test_spec_router_LDADD = src/libzmq.la
+tests_test_spec_router_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_spec_router_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_pushpull_SOURCES = tests/test_spec_pushpull.cpp
 tests_test_spec_pushpull_LDADD = src/libzmq.la
@@ -632,7 +634,8 @@ tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = src/libzmq.la
 
 tests_test_connect_rid_SOURCES = tests/test_connect_rid.cpp
-tests_test_connect_rid_LDADD = src/libzmq.la
+tests_test_connect_rid_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_connect_rid_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_bind_src_address_SOURCES = tests/test_bind_src_address.cpp
 tests_test_bind_src_address_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -666,7 +669,8 @@ tests_test_sockopt_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_sockopt_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
-tests_test_setsockopt_LDADD = src/libzmq.la
+tests_test_setsockopt_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_setsockopt_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
 tests_test_heartbeats_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -775,7 +779,8 @@ tests_test_timeo_SOURCES = tests/test_timeo.cpp
 tests_test_timeo_LDADD = src/libzmq.la
 
 tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
-tests_test_filter_ipc_LDADD = src/libzmq.la
+tests_test_filter_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_filter_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_use_fd_ipc_SOURCES = \
 	tests/test_use_fd_ipc.cpp \

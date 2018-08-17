@@ -28,126 +28,129 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-void test_setsockopt_tcp_recv_buffer (void)
+void setUp ()
 {
-    int rc;
-    void *ctx = zmq_ctx_new ();
-    void *socket = zmq_socket (ctx, ZMQ_PUSH);
-
-    int val = 0;
-    size_t placeholder = sizeof (val);
-
-    rc = zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == -1);
-
-    val = 16384;
-
-    rc = zmq_setsockopt (socket, ZMQ_RCVBUF, &val, sizeof (val));
-    assert (rc == 0);
-    assert (val == 16384);
-
-    rc = zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 16384);
-
-    zmq_close (socket);
-    zmq_ctx_term (ctx);
+    setup_test_context ();
 }
 
-void test_setsockopt_tcp_send_buffer (void)
+void tearDown ()
 {
-    int rc;
-    void *ctx = zmq_ctx_new ();
-    void *socket = zmq_socket (ctx, ZMQ_PUSH);
+    teardown_test_context ();
+}
+
+void test_setsockopt_tcp_recv_buffer ()
+{
+    void *socket = test_context_socket (ZMQ_PUSH);
 
     int val = 0;
     size_t placeholder = sizeof (val);
 
-    rc = zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == -1);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (-1, val);
 
     val = 16384;
 
-    rc = zmq_setsockopt (socket, ZMQ_SNDBUF, &val, sizeof (val));
-    assert (rc == 0);
-    assert (val == 16384);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_RCVBUF, &val, sizeof (val)));
+    TEST_ASSERT_EQUAL_INT (16384, val);
 
-    rc = zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 16384);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (16384, val);
 
-    zmq_close (socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (socket);
+}
+
+void test_setsockopt_tcp_send_buffer ()
+{
+    void *socket = test_context_socket (ZMQ_PUSH);
+
+    int val = 0;
+    size_t placeholder = sizeof (val);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (-1, val);
+
+    val = 16384;
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_SNDBUF, &val, sizeof (val)));
+    TEST_ASSERT_EQUAL_INT (16384, val);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (16384, val);
+
+    test_context_socket_close (socket);
 }
 
 void test_setsockopt_use_fd ()
 {
-    int rc;
-    void *ctx = zmq_ctx_new ();
-    void *socket = zmq_socket (ctx, ZMQ_PUSH);
+    void *socket = test_context_socket (ZMQ_PUSH);
 
     int val = 0;
     size_t placeholder = sizeof (val);
 
-    rc = zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == -1);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (-1, val);
 
     val = 3;
 
-    rc = zmq_setsockopt (socket, ZMQ_USE_FD, &val, sizeof (val));
-    assert (rc == 0);
-    assert (val == 3);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_USE_FD, &val, sizeof (val)));
+    TEST_ASSERT_EQUAL_INT (3, val);
 
-    rc = zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 3);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_USE_FD, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (3, val);
 
-    zmq_close (socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (socket);
 }
 
 #define BOUNDDEVBUFSZ 16
 void test_setsockopt_bindtodevice ()
 {
-    void *ctx = zmq_ctx_new ();
-    void *socket = zmq_socket (ctx, ZMQ_PUSH);
+    void *socket = test_context_socket (ZMQ_PUSH);
 
 #ifdef ZMQ_BINDTODEVICE
-    int rc;
     char devname[BOUNDDEVBUFSZ];
     size_t buflen = BOUNDDEVBUFSZ;
 
-    rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
-    assert (rc == 0);
-    assert (devname[0] == '\0');
-    assert (buflen == 1);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen));
+    TEST_ASSERT_EQUAL_INT8 ('\0', devname[0]);
+    TEST_ASSERT_EQUAL_UINT (1, buflen);
 
     sprintf (devname, "testdev");
     buflen = strlen (devname);
 
-    rc = zmq_setsockopt (socket, ZMQ_BINDTODEVICE, devname, buflen);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_BINDTODEVICE, devname, buflen));
 
     buflen = BOUNDDEVBUFSZ;
     memset (devname, 0, buflen);
 
-    rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
-    assert (rc == 0);
-    assert (!strncmp ("testdev", devname, buflen));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen));
+    TEST_ASSERT_EQUAL_STRING_LEN ("testdev", devname, buflen);
 #endif
 
-    zmq_close (socket);
-    zmq_ctx_term (ctx);
+    test_context_socket_close (socket);
 }
 
-int main (void)
+int main ()
 {
-    test_setsockopt_tcp_recv_buffer ();
-    test_setsockopt_tcp_send_buffer ();
-    test_setsockopt_use_fd ();
-    test_setsockopt_bindtodevice ();
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_setsockopt_tcp_recv_buffer);
+    RUN_TEST (test_setsockopt_tcp_send_buffer);
+    RUN_TEST (test_setsockopt_use_fd);
+    RUN_TEST (test_setsockopt_bindtodevice);
+    return UNITY_END ();
 }
