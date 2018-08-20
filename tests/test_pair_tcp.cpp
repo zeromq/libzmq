@@ -28,6 +28,18 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
 
 typedef void (*extra_func_t) (void *socket_);
 
@@ -43,50 +55,47 @@ void set_sockopt_fastpath (void *socket)
 
 void test_pair_tcp (extra_func_t extra_func_ = NULL)
 {
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
+    void *sb = test_context_socket (ZMQ_PAIR);
 
     if (extra_func_)
         extra_func_ (sb);
 
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (sb, my_endpoint, sizeof my_endpoint);
 
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
+    void *sc = test_context_socket (ZMQ_PAIR);
     if (extra_func_)
         extra_func_ (sc);
 
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
 }
 
-int main (void)
+void test_pair_tcp_regular ()
+{
+    test_pair_tcp ();
+}
+
+#ifdef ZMQ_BUILD_DRAFT
+void test_pair_tcp_fastpath ()
+{
+    test_pair_tcp (set_sockopt_fastpath);
+}
+#endif
+
+int main ()
 {
     setup_test_environment ();
 
-    test_pair_tcp ();
+    UNITY_BEGIN ();
+    RUN_TEST (test_pair_tcp_regular);
 #ifdef ZMQ_BUILD_DRAFT
-    test_pair_tcp (set_sockopt_fastpath);
+    RUN_TEST (test_pair_tcp_fastpath);
 #endif
 
-    return 0;
+    return UNITY_END ();
 }

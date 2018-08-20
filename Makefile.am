@@ -468,7 +468,8 @@ tests_test_pair_inproc_LDADD = src/libzmq.la
 tests_test_pair_tcp_SOURCES = \
 	tests/test_pair_tcp.cpp \
 	tests/testutil.hpp
-tests_test_pair_tcp_LDADD = src/libzmq.la
+tests_test_pair_tcp_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_pair_tcp_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reqrep_inproc_SOURCES = \
 	tests/test_reqrep_inproc.cpp \
