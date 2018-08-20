@@ -455,7 +455,8 @@ external_unity_libunity_a_SOURCES = external/unity/unity.c \
 	external/unity/unity_internals.h
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
-tests_test_ancillaries_LDADD = src/libzmq.la
+tests_test_ancillaries_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_ancillaries_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
