@@ -166,8 +166,9 @@ void zmq::pgm_receiver_t::in_event ()
     // If active_tsi is not null, there is a pending restart_input.
     // Keep the internal state as is so that restart_input would process the right data
     if (active_tsi) {
-	return;
+        return;
     }
+
     // Read data from the underlying pgm_socket.
     const pgm_tsi_t *tsi = NULL;
 
@@ -182,7 +183,7 @@ void zmq::pgm_receiver_t::in_event ()
         //  Get new batch of data.
         //  Note the workaround made not to break strict-aliasing rules.
 	
-	insize = 0;
+        insize = 0;
         void *tmp = NULL;
         ssize_t received = pgm_socket.receive (&tmp, &tsi);
 
