@@ -18,28 +18,31 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    int ipv6 = is_ipv6_available ();
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_address_wildcard_ipv4 ()
+{
     /* Address wildcard, IPv6 disabled */
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
+    void *sb = test_context_socket (ZMQ_REP);
+    void *sc = test_context_socket (ZMQ_REQ);
 
-    int rc = zmq_bind (sb, "tcp://*:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://*:*"));
 
     char bind_endpoint[256];
     char connect_endpoint[256];
     size_t endpoint_len = sizeof (bind_endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len));
 
     //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
 #ifdef ZMQ_HAVE_WINDOWS
@@ -49,39 +52,38 @@ int main (void)
     strcpy (connect_endpoint, bind_endpoint);
 #endif
 
-    rc = zmq_connect (sc, connect_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, connect_endpoint);
-    assert (rc == 0);
-    rc = zmq_unbind (sb, bind_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, connect_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, bind_endpoint));
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-    rc = zmq_close (sb);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
+void test_address_wildcard_ipv6 ()
+{
+    int ipv6 = is_ipv6_available ();
 
     /* Address wildcard, IPv6 enabled */
-    sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
+    void *sb = test_context_socket (ZMQ_REP);
+    void *sc = test_context_socket (ZMQ_REQ);
 
-    rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int)));
 
-    rc = zmq_bind (sb, "tcp://*:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://*:*"));
 
-    endpoint_len = sizeof (bind_endpoint);
+    char bind_endpoint[256];
+    char connect_endpoint[256];
+    size_t endpoint_len = sizeof (bind_endpoint);
     memset (bind_endpoint, 0, endpoint_len);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_endpoint, &endpoint_len));
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (ipv6)
@@ -94,123 +96,116 @@ int main (void)
     strcpy (connect_endpoint, bind_endpoint);
 #endif
 
-    rc = zmq_connect (sc, connect_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, connect_endpoint);
-    assert (rc == 0);
-    rc = zmq_unbind (sb, bind_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, connect_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, bind_endpoint));
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-    rc = zmq_close (sb);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
+void test_port_wildcard_ipv4_address ()
+{
     /* Port wildcard, IPv4 address, IPv6 disabled */
-    sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
+    void *sb = test_context_socket (ZMQ_REP);
+    void *sc = test_context_socket (ZMQ_REQ);
 
-    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://127.0.0.1:*"));
 
     char endpoint[256];
-    endpoint_len = sizeof (endpoint);
+    size_t endpoint_len = sizeof (endpoint);
     memset (endpoint, 0, endpoint_len);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len));
 
-    rc = zmq_connect (sc, endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, endpoint);
-    assert (rc == 0);
-    rc = zmq_unbind (sb, endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, endpoint));
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-    rc = zmq_close (sb);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
+void test_port_wildcard_ipv4_address_ipv6 ()
+{
     /* Port wildcard, IPv4 address, IPv6 enabled */
-    sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
+    void *sb = test_context_socket (ZMQ_REP);
+    void *sc = test_context_socket (ZMQ_REQ);
 
-    rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
-    assert (rc == 0);
+    const int ipv6 = is_ipv6_available ();
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int)));
 
-    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://127.0.0.1:*"));
 
-    endpoint_len = sizeof (endpoint);
+    char endpoint[256];
+    size_t endpoint_len = sizeof (endpoint);
     memset (endpoint, 0, endpoint_len);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len));
 
-    rc = zmq_connect (sc, endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, endpoint);
-    assert (rc == 0);
-    rc = zmq_unbind (sb, endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, endpoint));
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-    rc = zmq_close (sb);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    if (ipv6) {
-        /* Port wildcard, IPv6 address, IPv6 enabled */
-        sb = zmq_socket (ctx, ZMQ_REP);
-        assert (sb);
-        sc = zmq_socket (ctx, ZMQ_REQ);
-        assert (sc);
+void test_port_wildcard_ipv6_address ()
+{
+    const int ipv6 = is_ipv6_available ();
+    if (!ipv6)
+        TEST_IGNORE_MESSAGE ("ipv6 is not available");
 
-        rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
-        assert (rc == 0);
-        rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
-        assert (rc == 0);
+    /* Port wildcard, IPv6 address, IPv6 enabled */
+    void *sb = test_context_socket (ZMQ_REP);
+    void *sc = test_context_socket (ZMQ_REQ);
 
-        rc = zmq_bind (sb, "tcp://[::1]:*");
-        assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int)));
 
-        endpoint_len = sizeof (endpoint);
-        memset (endpoint, 0, endpoint_len);
-        rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
-        assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://[::1]:*"));
 
-        rc = zmq_connect (sc, endpoint);
-        assert (rc == 0);
+    char endpoint[256];
+    size_t endpoint_len = sizeof (endpoint);
+    memset (endpoint, 0, endpoint_len);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len));
 
-        bounce (sb, sc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));
 
-        rc = zmq_disconnect (sc, endpoint);
-        assert (rc == 0);
-        rc = zmq_unbind (sb, endpoint);
-        assert (rc == 0);
+    bounce (sb, sc);
 
-        rc = zmq_close (sc);
-        assert (rc == 0);
-        rc = zmq_close (sb);
-        assert (rc == 0);
-    }
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sc, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (sb, endpoint));
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_address_wildcard_ipv4);
+    RUN_TEST (test_address_wildcard_ipv6);
+    RUN_TEST (test_port_wildcard_ipv4_address);
+    RUN_TEST (test_port_wildcard_ipv4_address_ipv6);
+    RUN_TEST (test_port_wildcard_ipv6_address);
+    return UNITY_END ();
 }
