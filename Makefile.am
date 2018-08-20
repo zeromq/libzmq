@@ -600,7 +600,8 @@ tests_test_spec_pushpull_SOURCES = tests/test_spec_pushpull.cpp
 tests_test_spec_pushpull_LDADD = src/libzmq.la
 
 tests_test_req_correlate_SOURCES = tests/test_req_correlate.cpp
-tests_test_req_correlate_LDADD = src/libzmq.la
+tests_test_req_correlate_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_req_correlate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_req_relaxed_SOURCES = tests/test_req_relaxed.cpp
 tests_test_req_relaxed_LDADD = src/libzmq.la
