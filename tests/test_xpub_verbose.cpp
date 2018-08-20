@@ -122,6 +122,50 @@ void test_xpub_verbose_one_sub ()
     TEST_ASSERT_EQUAL_INT (0, rc);
 }
 
+void create_xpub_with_2_subs (void *ctx_,
+                              void **pub_,
+                              void **sub0_,
+                              void **sub1_)
+{
+    *pub_ = zmq_socket (ctx_, ZMQ_XPUB);
+    TEST_ASSERT_NOT_NULL (*pub_);
+    int rc = zmq_bind (*pub_, "inproc://soname");
+    TEST_ASSERT_EQUAL_INT (0, rc);
+
+    *sub0_ = zmq_socket (ctx_, ZMQ_SUB);
+    TEST_ASSERT_NOT_NULL (*sub0_);
+    rc = zmq_connect (*sub0_, "inproc://soname");
+    TEST_ASSERT_EQUAL_INT (0, rc);
+
+    *sub1_ = zmq_socket (ctx_, ZMQ_SUB);
+    TEST_ASSERT_NOT_NULL (*sub1_);
+    rc = zmq_connect (*sub1_, "inproc://soname");
+    TEST_ASSERT_EQUAL_INT (0, rc);
+}
+
+void create_duplicate_subscription (void *pub_, void *sub0_, void *sub1_)
+{
+    //  Subscribe for A
+    int rc = zmq_setsockopt (sub0_, ZMQ_SUBSCRIBE, "A", 1);
+    TEST_ASSERT_EQUAL_INT (0, rc);
+
+    // Receive subscriptions from subscriber
+    char buffer[2];
+    rc = zmq_recv (pub_, buffer, 2, 0);
+    TEST_ASSERT_EQUAL_INT (2, rc);
+    assert (buffer[0] == 1);
+    assert (buffer[1] == 'A');
+
+    //  Subscribe again for A on the other socket
+    rc = zmq_setsockopt (sub1_, ZMQ_SUBSCRIBE, "A", 1);
+    TEST_ASSERT_EQUAL_INT (0, rc);
+
+    //  This time it is duplicated, so it will be filtered out by XPUB
+    rc = zmq_recv (pub_, buffer, 1, ZMQ_DONTWAIT);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+}
+
 void test_xpub_verbose_two_subs ()
 {
     int rc;
@@ -129,39 +173,9 @@ void test_xpub_verbose_two_subs ()
     void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
 
-    void *pub = zmq_socket (ctx, ZMQ_XPUB);
-    TEST_ASSERT_NOT_NULL (pub);
-    rc = zmq_bind (pub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    void *sub0 = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub0);
-    rc = zmq_connect (sub0, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    void *sub1 = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub1);
-    rc = zmq_connect (sub1, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    //  Subscribe for A on the first socket
-    rc = zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
-
-    //  Subscribe for A on the second socket
-    rc = zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    //  This time it is duplicated, so it will be filtered out
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    void *pub, *sub0, *sub1;
+    create_xpub_with_2_subs (ctx, &pub, &sub0, &sub1);
+    create_duplicate_subscription (pub, sub0, sub1);
 
     // Subscribe socket for B instead
     rc = zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, "B", 1);
@@ -351,39 +365,9 @@ void test_xpub_verboser_two_subs ()
     void *ctx = zmq_ctx_new ();
     TEST_ASSERT_NOT_NULL (ctx);
 
-    void *pub = zmq_socket (ctx, ZMQ_XPUB);
-    TEST_ASSERT_NOT_NULL (pub);
-    rc = zmq_bind (pub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    void *sub0 = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub0);
-    rc = zmq_connect (sub0, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    void *sub1 = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub1);
-    rc = zmq_connect (sub1, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    //  Subscribe for A
-    rc = zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
-
-    //  Subscribe again for A on the other socket
-    rc = zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    //  This time it is duplicated, so it will be filtered out by XPUB
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    void *pub, *sub0, *sub1;
+    create_xpub_with_2_subs (ctx, &pub, &sub0, &sub1);
+    create_duplicate_subscription (pub, sub0, sub1);
 
     //  Unsubscribe for A, this time it exists in XPUB
     rc = zmq_setsockopt (sub0, ZMQ_UNSUBSCRIBE, "A", 1);
