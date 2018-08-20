@@ -547,7 +547,8 @@ tests_test_stream_SOURCES = tests/test_stream.cpp
 tests_test_stream_LDADD = src/libzmq.la
 
 tests_test_stream_empty_SOURCES = tests/test_stream_empty.cpp
-tests_test_stream_empty_LDADD = src/libzmq.la
+tests_test_stream_empty_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_stream_empty_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_stream_timeout_SOURCES = tests/test_stream_timeout.cpp
 tests_test_stream_timeout_LDADD = src/libzmq.la
