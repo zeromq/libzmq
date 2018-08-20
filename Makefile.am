@@ -598,7 +598,8 @@ tests_test_spec_router_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_spec_router_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_pushpull_SOURCES = tests/test_spec_pushpull.cpp
-tests_test_spec_pushpull_LDADD = src/libzmq.la
+tests_test_spec_pushpull_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_spec_pushpull_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_req_correlate_SOURCES = tests/test_req_correlate.cpp
 tests_test_req_correlate_LDADD = src/libzmq.la ${UNITY_LIBS}
