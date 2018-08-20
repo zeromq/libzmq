@@ -689,7 +689,8 @@ tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_bind_after_connect_tcp_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_base85_SOURCES = tests/test_base85.cpp
-tests_test_base85_LDADD = src/libzmq.la
+tests_test_base85_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_base85_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la

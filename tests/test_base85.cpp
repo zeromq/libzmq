@@ -28,6 +28,15 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 // Test vector: rfc.zeromq.org/spec:32/Z85
 void test__zmq_z85_encode__valid__success ()
@@ -40,17 +49,17 @@ void test__zmq_z85_encode__valid__success ()
     char out_encoded[length + 1] = {0};
 
     errno = 0;
-    assert (zmq_z85_encode (out_encoded, decoded, size) != NULL);
-    assert (streq (out_encoded, expected));
-    assert (zmq_errno () == 0);
+    TEST_ASSERT_NOT_NULL (zmq_z85_encode (out_encoded, decoded, size));
+    TEST_ASSERT_EQUAL_STRING (expected, out_encoded);
+    TEST_ASSERT_EQUAL_INT (0, zmq_errno ());
 }
 
 // Buffer length must be evenly divisible by 4 or must fail with EINVAL.
 void test__zmq_z85_encode__invalid__failure (size_t size_)
 {
     errno = 0;
-    assert (zmq_z85_encode (NULL, NULL, size_) == NULL);
-    assert (zmq_errno () == EINVAL);
+    TEST_ASSERT_NULL (zmq_z85_encode (NULL, NULL, size_));
+    TEST_ASSERT_EQUAL_INT (EINVAL, zmq_errno ());
 }
 
 // Test vector: rfc.zeromq.org/spec:32/Z85
@@ -63,9 +72,9 @@ void test__zmq_z85_decode__valid__success ()
     uint8_t out_decoded[size] = {0};
 
     errno = 0;
-    assert (zmq_z85_decode (out_decoded, encoded) != NULL);
-    assert (zmq_errno () == 0);
-    assert (memcmp (out_decoded, expected, size) == 0);
+    TEST_ASSERT_NOT_NULL (zmq_z85_decode (out_decoded, encoded));
+    TEST_ASSERT_EQUAL_INT (0, zmq_errno ());
+    TEST_ASSERT_EQUAL_UINT8_ARRAY (expected, out_decoded, size);
 }
 
 // Invalid input data must fail with EINVAL.
@@ -74,8 +83,8 @@ void test__zmq_z85_decode__invalid__failure (const char (&encoded_)[SIZE])
 {
     uint8_t decoded[SIZE * 4 / 5 + 1];
     errno = 0;
-    assert (zmq_z85_decode (decoded, encoded_) == NULL);
-    assert (zmq_errno () == EINVAL);
+    TEST_ASSERT_NULL (zmq_z85_decode (decoded, encoded_));
+    TEST_ASSERT_EQUAL_INT (EINVAL, zmq_errno ());
 }
 
 
@@ -86,14 +95,13 @@ void test__zmq_z85_encode__zmq_z85_decode__roundtrip (
 {
     char test_data_z85[SIZE * 5 / 4 + 1];
     char *res1 = zmq_z85_encode (test_data_z85, test_data_, SIZE);
-    assert (res1 != NULL);
+    TEST_ASSERT_NOT_NULL (res1);
 
     uint8_t test_data_decoded[SIZE];
     uint8_t *res2 = zmq_z85_decode (test_data_decoded, test_data_z85);
-    assert (res2 != NULL);
+    TEST_ASSERT_NOT_NULL (res2);
 
-    int res3 = memcmp (test_data_, test_data_decoded, SIZE);
-    assert (res3 == 0);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY (test_data_, test_data_decoded, SIZE);
 }
 
 // call zmq_z85_encode, then zmq_z85_decode, and compare the results with the original
@@ -104,61 +112,92 @@ void test__zmq_z85_decode__zmq_z85_encode__roundtrip (
     const size_t decoded_size = (SIZE - 1) * 4 / 5;
     uint8_t test_data_decoded[decoded_size];
     uint8_t *res1 = zmq_z85_decode (test_data_decoded, test_data_);
-    assert (res1 != NULL);
+    TEST_ASSERT_NOT_NULL (res1);
 
     char test_data_z85[SIZE];
     char *res2 =
       zmq_z85_encode (test_data_z85, test_data_decoded, decoded_size);
-    assert (res2 != NULL);
+    TEST_ASSERT_NOT_NULL (res2);
 
-    int res3 = memcmp (test_data_, test_data_z85, SIZE);
-    assert (res3 == 0);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY (test_data_, test_data_z85, SIZE);
 }
 
+#define def_test__zmq_z85_basename(basename, name, param)                      \
+    void test__zmq_z85_##basename##_##name ()                                  \
+    {                                                                          \
+        test__zmq_z85_##basename (param);                                      \
+    }
 
-int main (void)
+#define def_test__zmq_z85_encode__invalid__failure(name, param)                \
+    def_test__zmq_z85_basename (encode__invalid__failure, name, param)
+
+def_test__zmq_z85_encode__invalid__failure (1, 1)
+  def_test__zmq_z85_encode__invalid__failure (42, 42)
+
+#define def_test__zmq_z85_decode__invalid__failure(name, param)                \
+    def_test__zmq_z85_basename (decode__invalid__failure, name, param)
+
+  // String length must be evenly divisible by 5 or must fail with EINVAL.
+  def_test__zmq_z85_decode__invalid__failure (indivisble_by_5_multiple_chars,
+                                              "01234567")
+    def_test__zmq_z85_decode__invalid__failure (indivisble_by_5_one_char, "0")
+
+  // decode invalid data with the maximum representable value
+  def_test__zmq_z85_decode__invalid__failure (max, "#####")
+
+  // decode invalid data with the minimum value beyond the limit
+  // "%nSc0" is 0xffffffff
+  def_test__zmq_z85_decode__invalid__failure (above_limit, "%nSc1")
+
+  // decode invalid data with an invalid character in the range of valid
+  // characters
+  def_test__zmq_z85_decode__invalid__failure (char_within, "####\0047")
+
+  // decode invalid data with an invalid character just below the range of valid
+  // characters
+  def_test__zmq_z85_decode__invalid__failure (char_adjacent_below, "####\0200")
+
+  // decode invalid data with an invalid character just above the range of valid
+  // characters
+  def_test__zmq_z85_decode__invalid__failure (char_adjacent_above, "####\0037")
+
+#define def_test__encode__zmq_z85_decode__roundtrip(name, param)               \
+    def_test__zmq_z85_basename (encode__zmq_z85_decode__roundtrip, name, param)
+
+    const uint8_t test_data_min[] = {0x00, 0x00, 0x00, 0x00};
+const uint8_t test_data_max[] = {0xff, 0xff, 0xff, 0xff};
+
+def_test__encode__zmq_z85_decode__roundtrip (min, test_data_min)
+  def_test__encode__zmq_z85_decode__roundtrip (max, test_data_max)
+
+#define def_test__decode__zmq_z85_encode__roundtrip(name, param)               \
+    def_test__zmq_z85_basename (decode__zmq_z85_encode__roundtrip, name, param)
+
+    const char test_data_regular[] = "r^/rM9M=rMToK)63O8dCvd9D<PY<7iGlC+{BiSnG";
+
+def_test__decode__zmq_z85_encode__roundtrip (regular, test_data_regular)
+
+  int main ()
 {
-    test__zmq_z85_encode__valid__success ();
-    test__zmq_z85_encode__invalid__failure (1);
-    test__zmq_z85_encode__invalid__failure (42);
+    UNITY_BEGIN ();
+    RUN_TEST (test__zmq_z85_encode__valid__success);
+    RUN_TEST (test__zmq_z85_encode__invalid__failure_1);
+    RUN_TEST (test__zmq_z85_encode__invalid__failure_42);
 
-    test__zmq_z85_decode__valid__success ();
-    // String length must be evenly divisible by 5 or must fail with EINVAL.
-    test__zmq_z85_decode__invalid__failure ("01234567");
-    test__zmq_z85_decode__invalid__failure ("0");
+    RUN_TEST (test__zmq_z85_decode__valid__success);
+    RUN_TEST (
+      test__zmq_z85_decode__invalid__failure_indivisble_by_5_multiple_chars);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_indivisble_by_5_one_char);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_max);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_above_limit);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_char_within);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_char_adjacent_below);
+    RUN_TEST (test__zmq_z85_decode__invalid__failure_char_adjacent_above);
 
-    // decode invalid data with the maximum representable value
-    test__zmq_z85_decode__invalid__failure ("#####");
+    RUN_TEST (test__zmq_z85_encode__zmq_z85_decode__roundtrip_min);
+    RUN_TEST (test__zmq_z85_encode__zmq_z85_decode__roundtrip_max);
 
-    // decode invalid data with the minimum value beyond the limit
-    // "%nSc0" is 0xffffffff
-    test__zmq_z85_decode__invalid__failure ("%nSc1");
+    RUN_TEST (test__zmq_z85_decode__zmq_z85_encode__roundtrip_regular);
 
-    // decode invalid data with an invalid character in the range of valid
-    // characters
-    test__zmq_z85_decode__invalid__failure ("####\0047");
-
-    // decode invalid data with an invalid character just below the range of valid
-    // characters
-    test__zmq_z85_decode__invalid__failure ("####\0200");
-
-    // decode invalid data with an invalid character just above the range of valid
-    // characters
-    test__zmq_z85_decode__invalid__failure ("####\0037");
-
-    // round-trip encoding and decoding with minimum value
-    {
-        const uint8_t test_data[] = {0x00, 0x00, 0x00, 0x00};
-        test__zmq_z85_encode__zmq_z85_decode__roundtrip (test_data);
-    }
-    // round-trip encoding and decoding with maximum value
-    {
-        const uint8_t test_data[] = {0xff, 0xff, 0xff, 0xff};
-        test__zmq_z85_encode__zmq_z85_decode__roundtrip (test_data);
-    }
-
-    test__zmq_z85_decode__zmq_z85_encode__roundtrip (
-      "r^/rM9M=rMToK)63O8dCvd9D<PY<7iGlC+{BiSnG");
-
-    return 0;
+    return UNITY_END ();
 }
