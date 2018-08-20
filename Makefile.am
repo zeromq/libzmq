@@ -647,7 +647,8 @@ tests_test_metadata_SOURCES = tests/test_metadata.cpp
 tests_test_metadata_LDADD = src/libzmq.la
 
 tests_test_capabilities_SOURCES = tests/test_capabilities.cpp
-tests_test_capabilities_LDADD = src/libzmq.la
+tests_test_capabilities_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_capabilities_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_xpub_nodrop_SOURCES = tests/test_xpub_nodrop.cpp
 tests_test_xpub_nodrop_LDADD = src/libzmq.la ${UNITY_LIBS}
