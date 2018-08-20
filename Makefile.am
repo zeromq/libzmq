@@ -657,7 +657,8 @@ tests_test_xpub_nodrop_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_xpub_nodrop_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_xpub_manual_SOURCES = tests/test_xpub_manual.cpp
-tests_test_xpub_manual_LDADD = src/libzmq.la
+tests_test_xpub_manual_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_xpub_manual_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
 tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
