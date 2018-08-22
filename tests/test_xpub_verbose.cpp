@@ -28,448 +28,303 @@
 */
 
 #include "testutil.hpp"
-
-#include <unity.h>
+#include "testutil_unity.hpp"
 
 void setUp ()
 {
+    setup_test_context ();
 }
+
 void tearDown ()
 {
+    teardown_test_context ();
 }
+
+const uint8_t unsubscribe_a_msg[] = {0, 'A'};
+const uint8_t subscribe_a_msg[] = {1, 'A'};
+const uint8_t subscribe_b_msg[] = {1, 'B'};
+
+const char test_endpoint[] = "inproc://soname";
+const char topic_a[] = "A";
+const char topic_b[] = "B";
 
 void test_xpub_verbose_one_sub ()
 {
-    int rc;
-    char buffer[2];
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, test_endpoint));
 
-    void *pub = zmq_socket (ctx, ZMQ_XPUB);
-    TEST_ASSERT_NOT_NULL (pub);
-    rc = zmq_bind (pub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub);
-    rc = zmq_connect (sub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, test_endpoint));
 
     //  Subscribe for A
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     // Subscribe socket for B instead
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "B", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_b, 1));
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'B');
+    recv_array_expect_success (pub, subscribe_b_msg, 0);
 
     //  Subscribe again for A again
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     //  This time it is duplicated, so it will be filtered out
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     int verbose = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_VERBOSE, &verbose, sizeof (int));
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_XPUB_VERBOSE, &verbose, sizeof (int)));
 
     // Subscribe socket for A again
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // This time with VERBOSE the duplicated sub will be received
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     // Sending A message and B Message
-    rc = zmq_send_const (pub, "A", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
+    send_string_expect_success (pub, topic_a, 0);
+    send_string_expect_success (pub, topic_b, 0);
 
-    rc = zmq_send_const (pub, "B", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-
-    rc = zmq_recv (sub, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
-
-    rc = zmq_recv (sub, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'B');
+    recv_string_expect_success (sub, topic_a, 0);
+    recv_string_expect_success (sub, topic_b, 0);
 
     //  Clean up.
-    rc = zmq_close (pub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_ctx_term (ctx);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
 }
 
-void create_xpub_with_2_subs (void *ctx_,
-                              void **pub_,
-                              void **sub0_,
-                              void **sub1_)
+void create_xpub_with_2_subs (void **pub_, void **sub0_, void **sub1_)
 {
-    *pub_ = zmq_socket (ctx_, ZMQ_XPUB);
-    TEST_ASSERT_NOT_NULL (*pub_);
-    int rc = zmq_bind (*pub_, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    *pub_ = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (*pub_, test_endpoint));
 
-    *sub0_ = zmq_socket (ctx_, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (*sub0_);
-    rc = zmq_connect (*sub0_, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    *sub0_ = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (*sub0_, test_endpoint));
 
-    *sub1_ = zmq_socket (ctx_, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (*sub1_);
-    rc = zmq_connect (*sub1_, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    *sub1_ = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (*sub1_, test_endpoint));
 }
 
 void create_duplicate_subscription (void *pub_, void *sub0_, void *sub1_)
 {
     //  Subscribe for A
-    int rc = zmq_setsockopt (sub0_, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub0_, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Receive subscriptions from subscriber
-    char buffer[2];
-    rc = zmq_recv (pub_, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub_, subscribe_a_msg, 0);
 
     //  Subscribe again for A on the other socket
-    rc = zmq_setsockopt (sub1_, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1_, ZMQ_SUBSCRIBE, topic_a, 1));
 
     //  This time it is duplicated, so it will be filtered out by XPUB
-    rc = zmq_recv (pub_, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub_, NULL, 0, ZMQ_DONTWAIT));
 }
 
 void test_xpub_verbose_two_subs ()
 {
-    int rc;
-    char buffer[2];
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     void *pub, *sub0, *sub1;
-    create_xpub_with_2_subs (ctx, &pub, &sub0, &sub1);
+    create_xpub_with_2_subs (&pub, &sub0, &sub1);
     create_duplicate_subscription (pub, sub0, sub1);
 
     // Subscribe socket for B instead
-    rc = zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, "B", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, topic_b, 1));
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'B');
+    recv_array_expect_success (pub, subscribe_b_msg, 0);
 
     int verbose = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_VERBOSE, &verbose, sizeof (int));
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_XPUB_VERBOSE, &verbose, sizeof (int)));
 
     // Subscribe socket for A again
-    rc = zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // This time with VERBOSE the duplicated sub will be received
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     // Sending A message and B Message
-    rc = zmq_send_const (pub, "A", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
+    send_string_expect_success (pub, topic_a, 0);
 
-    rc = zmq_send_const (pub, "B", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
+    send_string_expect_success (pub, topic_b, 0);
 
-    rc = zmq_recv (sub0, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
-
-    rc = zmq_recv (sub1, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
-
-    rc = zmq_recv (sub0, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'B');
+    recv_string_expect_success (sub0, topic_a, 0);
+    recv_string_expect_success (sub1, topic_a, 0);
+    recv_string_expect_success (sub0, topic_b, 0);
 
     //  Clean up.
-    rc = zmq_close (pub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub0);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_ctx_term (ctx);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub0);
+    test_context_socket_close (sub1);
 }
 
 void test_xpub_verboser_one_sub ()
 {
-    int rc;
-    char buffer[3];
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     //  Create a publisher
-    void *pub = zmq_socket (ctx, ZMQ_XPUB);
-    TEST_ASSERT_NOT_NULL (pub);
-    rc = zmq_bind (pub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, test_endpoint));
 
     //  Create a subscriber
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_NOT_NULL (sub);
-    rc = zmq_connect (sub, "inproc://soname");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, test_endpoint));
 
     //  Unsubscribe for A, does not exist yet
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  Does not exist, so it will be filtered out by XSUB
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Subscribe for A
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Receive subscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     //  Subscribe again for A again, XSUB will increase refcount
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     //  This time it is duplicated, so it will be filtered out by XPUB
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Unsubscribe for A, this time it exists in XPUB
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  XSUB refcounts and will not actually send unsub to PUB until the number
     //  of unsubs match the earlier subs
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     // Receive unsubscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 0);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, unsubscribe_a_msg, 0);
 
     //  XSUB only sends the last and final unsub, so XPUB will only receive 1
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Unsubscribe for A, does not exist anymore
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  Does not exist, so it will be filtered out by XSUB
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     int verbose = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_VERBOSER, &verbose, sizeof (int));
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_XPUB_VERBOSER, &verbose, sizeof (int)));
 
     // Subscribe socket for A again
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Receive subscriptions from subscriber, did not exist anymore
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     // Sending A message to make sure everything still works
-    rc = zmq_send_const (pub, "A", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
+    send_string_expect_success (pub, topic_a, 0);
 
-    rc = zmq_recv (sub, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
+    recv_string_expect_success (sub, topic_a, 0);
 
     //  Unsubscribe for A, this time it exists
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     // Receive unsubscriptions from subscriber
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 0);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, unsubscribe_a_msg, 0);
 
     //  Unsubscribe for A again, it does not exist anymore so XSUB will filter
-    rc = zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  XSUB only sends unsub if it matched it in its trie, IOW: it will only
     //  send it if it existed in the first place even with XPUB_VERBBOSER
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Clean up.
-    rc = zmq_close (pub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_ctx_term (ctx);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
 }
 
 void test_xpub_verboser_two_subs ()
 {
-    int rc;
-    char buffer[3];
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     void *pub, *sub0, *sub1;
-    create_xpub_with_2_subs (ctx, &pub, &sub0, &sub1);
+    create_xpub_with_2_subs (&pub, &sub0, &sub1);
     create_duplicate_subscription (pub, sub0, sub1);
 
     //  Unsubscribe for A, this time it exists in XPUB
-    rc = zmq_setsockopt (sub0, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub0, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  sub1 is still subscribed, so no notification
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Unsubscribe the second socket to trigger the notification
-    rc = zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     // Receive unsubscriptions since all sockets are gone
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 0);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, unsubscribe_a_msg, 0);
 
     //  Make really sure there is only one notification
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     int verbose = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_VERBOSER, &verbose, sizeof (int));
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_XPUB_VERBOSER, &verbose, sizeof (int)));
 
     // Subscribe socket for A again
-    rc = zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub0, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Subscribe socket for A again
-    rc = zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic_a, 1));
 
     // Receive subscriptions from subscriber, did not exist anymore
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     //  VERBOSER is set, so subs from both sockets are received
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, subscribe_a_msg, 0);
 
     // Sending A message to make sure everything still works
-    rc = zmq_send_const (pub, "A", 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
+    send_string_expect_success (pub, topic_a, 0);
 
-    rc = zmq_recv (sub0, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
-
-    rc = zmq_recv (sub1, buffer, 1, 0);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    assert (buffer[0] == 'A');
+    recv_string_expect_success (sub0, topic_a, 0);
+    recv_string_expect_success (sub1, topic_a, 0);
 
     //  Unsubscribe for A
-    rc = zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     // Receive unsubscriptions from first subscriber due to VERBOSER
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 0);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, unsubscribe_a_msg, 0);
 
     //  Unsubscribe for A again from the other socket
-    rc = zmq_setsockopt (sub0, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub0, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     // Receive unsubscriptions from first subscriber due to VERBOSER
-    rc = zmq_recv (pub, buffer, 2, 0);
-    TEST_ASSERT_EQUAL_INT (2, rc);
-    assert (buffer[0] == 0);
-    assert (buffer[1] == 'A');
+    recv_array_expect_success (pub, unsubscribe_a_msg, 0);
 
     //  Unsubscribe again to make sure it gets filtered now
-    rc = zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, "A", 1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub1, ZMQ_UNSUBSCRIBE, topic_a, 1));
 
     //  Unmatched, so XSUB filters even with VERBOSER
-    rc = zmq_recv (pub, buffer, 1, ZMQ_DONTWAIT);
-    TEST_ASSERT_EQUAL_INT (-1, rc);
-    TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (pub, NULL, 0, ZMQ_DONTWAIT));
 
     //  Clean up.
-    rc = zmq_close (pub);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub0);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_close (sub1);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-    rc = zmq_ctx_term (ctx);
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub0);
+    test_context_socket_close (sub1);
 }
 
-int main (void)
+int main ()
 {
     setup_test_environment ();
 
@@ -479,5 +334,5 @@ int main (void)
     RUN_TEST (test_xpub_verboser_one_sub);
     RUN_TEST (test_xpub_verboser_two_subs);
 
-    return 0;
+    return UNITY_END ();
 }
