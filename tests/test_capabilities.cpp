@@ -28,55 +28,72 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
+
+void test_capabilities ()
 {
 #if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
-    assert (zmq_has ("ipc"));
+    TEST_ASSERT_TRUE (zmq_has ("ipc"));
 #else
-    assert (!zmq_has ("ipc"));
+    TEST_ASSERT_TRUE (!zmq_has ("ipc"));
 #endif
 
 #if defined(ZMQ_HAVE_OPENPGM)
-    assert (zmq_has ("pgm"));
+    TEST_ASSERT_TRUE (zmq_has ("pgm"));
 #else
-    assert (!zmq_has ("pgm"));
+    TEST_ASSERT_TRUE (!zmq_has ("pgm"));
 #endif
 
 #if defined(ZMQ_HAVE_TIPC)
-    assert (zmq_has ("tipc"));
+    TEST_ASSERT_TRUE (zmq_has ("tipc"));
 #else
-    assert (!zmq_has ("tipc"));
+    TEST_ASSERT_TRUE (!zmq_has ("tipc"));
 #endif
 
 #if defined(ZMQ_HAVE_NORM)
-    assert (zmq_has ("norm"));
+    TEST_ASSERT_TRUE (zmq_has ("norm"));
 #else
-    assert (!zmq_has ("norm"));
+    TEST_ASSERT_TRUE (!zmq_has ("norm"));
 #endif
 
 #if defined(ZMQ_HAVE_CURVE)
-    assert (zmq_has ("curve"));
+    TEST_ASSERT_TRUE (zmq_has ("curve"));
 #else
-    assert (!zmq_has ("curve"));
+    TEST_ASSERT_TRUE (!zmq_has ("curve"));
 #endif
 
 #if defined(HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi"));
+    TEST_ASSERT_TRUE (zmq_has ("gssapi"));
 #else
-    assert (!zmq_has ("gssapi"));
+    TEST_ASSERT_TRUE (!zmq_has ("gssapi"));
 #endif
 
 #if defined(ZMQ_HAVE_VMCI)
-    assert (zmq_has ("vmci"));
+    TEST_ASSERT_TRUE (zmq_has ("vmci"));
 #else
-    assert (!zmq_has ("vmci"));
+    TEST_ASSERT_TRUE (!zmq_has ("vmci"));
 #endif
 
 #if defined(ZMQ_BUILD_DRAFT_API)
-    assert (zmq_has ("draft"));
+    TEST_ASSERT_TRUE (zmq_has ("draft"));
 #else
-    assert (!zmq_has ("draft"));
+    TEST_ASSERT_TRUE (!zmq_has ("draft"));
 #endif
-    return 0;
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_capabilities);
+    return UNITY_END ();
 }

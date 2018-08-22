@@ -28,48 +28,52 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_stream_empty ()
+{
     char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *stream = zmq_socket (ctx, ZMQ_STREAM);
-    assert (stream);
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer);
+    void *stream = test_context_socket (ZMQ_STREAM);
+    void *dealer = test_context_socket (ZMQ_DEALER);
 
-    int rc = zmq_bind (stream, "tcp://127.0.0.1:*");
-    assert (rc >= 0);
-    rc = zmq_getsockopt (stream, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (dealer, my_endpoint);
-    assert (rc >= 0);
-    zmq_send (dealer, "", 0, 0);
+    bind_loopback_ipv4 (stream, my_endpoint, sizeof my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, my_endpoint));
+    send_string_expect_success (dealer, "", 0);
 
     zmq_msg_t ident, empty;
     zmq_msg_init (&ident);
-    rc = zmq_msg_recv (&ident, stream, 0);
-    assert (rc >= 0);
-    rc = zmq_msg_init_data (&empty, (void *) "", 0, NULL, NULL);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&ident, stream, 0));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_msg_init_data (&empty, (void *) "", 0, NULL, NULL));
 
-    rc = zmq_msg_send (&ident, stream, ZMQ_SNDMORE);
-    assert (rc >= 0);
-    rc = zmq_msg_close (&ident);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&ident, stream, ZMQ_SNDMORE));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&ident));
 
-    rc = zmq_msg_send (&empty, stream, 0);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&empty, stream, 0));
 
     //  This close used to fail with Bad Address
-    rc = zmq_msg_close (&empty);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&empty));
 
-    close_zero_linger (dealer);
-    close_zero_linger (stream);
-    zmq_ctx_term (ctx);
+    test_context_socket_close_zero_linger (dealer);
+    test_context_socket_close_zero_linger (stream);
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_stream_empty);
+    return UNITY_END ();
 }
