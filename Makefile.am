@@ -920,7 +920,8 @@ tests_test_thread_safe_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_thread_safe_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
-tests_test_timers_LDADD = src/libzmq.la
+tests_test_timers_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_timers_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
 tests_test_radio_dish_LDADD = src/libzmq.la ${UNITY_LIBS}

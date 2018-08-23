@@ -29,6 +29,15 @@
 
 #define __STDC_LIMIT_MACROS // to define SIZE_MAX with older compilers
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 void handler (int timer_id_, void *arg_)
 {
@@ -53,193 +62,167 @@ void test_null_timer_pointers ()
 {
     void *timers = NULL;
 
-    int rc = zmq_timers_destroy (&timers);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_timers_destroy (&timers));
 
 //  TODO this currently triggers an access violation
 #if 0
-  rc = zmq_timers_destroy (NULL);
-  assert (rc == -1 && errno == EFAULT);
+  TEST_ASSERT_FAILURE_ERRNO(EFAULT, zmq_timers_destroy (NULL));
 #endif
 
     const size_t dummy_interval = 100;
     const int dummy_timer_id = 1;
 
-    rc = zmq_timers_add (timers, dummy_interval, &handler, NULL);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EFAULT, zmq_timers_add (timers, dummy_interval, &handler, NULL));
+    TEST_ASSERT_FAILURE_ERRNO (
+      EFAULT, zmq_timers_add (&timers, dummy_interval, &handler, NULL));
 
-    rc = zmq_timers_add (&timers, dummy_interval, &handler, NULL);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT,
+                               zmq_timers_cancel (timers, dummy_timer_id));
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT,
+                               zmq_timers_cancel (&timers, dummy_timer_id));
 
-    rc = zmq_timers_cancel (timers, dummy_timer_id);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EFAULT, zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval));
+    TEST_ASSERT_FAILURE_ERRNO (
+      EFAULT,
+      zmq_timers_set_interval (&timers, dummy_timer_id, dummy_interval));
 
-    rc = zmq_timers_cancel (&timers, dummy_timer_id);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT,
+                               zmq_timers_reset (timers, dummy_timer_id));
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT,
+                               zmq_timers_reset (&timers, dummy_timer_id));
 
-    rc = zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_timers_timeout (timers));
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_timers_timeout (&timers));
 
-    rc = zmq_timers_set_interval (&timers, dummy_timer_id, dummy_interval);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_reset (timers, dummy_timer_id);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_reset (&timers, dummy_timer_id);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_timeout (timers);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_timeout (&timers);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_execute (timers);
-    assert (rc == -1 && errno == EFAULT);
-
-    rc = zmq_timers_execute (&timers);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_timers_execute (timers));
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_timers_execute (&timers));
 }
 
 void test_corner_cases ()
 {
     void *timers = zmq_timers_new ();
-    assert (timers);
+    TEST_ASSERT_NOT_NULL (timers);
 
     const size_t dummy_interval = SIZE_MAX;
     const int dummy_timer_id = 1;
 
     //  attempt to cancel non-existent timer
-    int rc = zmq_timers_cancel (timers, dummy_timer_id);
-    assert (rc == -1 && errno == EINVAL);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
+                               zmq_timers_cancel (timers, dummy_timer_id));
 
     //  attempt to set interval of non-existent timer
-    rc = zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval);
-    assert (rc == -1 && errno == EINVAL);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EINVAL, zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval));
 
     //  attempt to reset non-existent timer
-    rc = zmq_timers_reset (timers, dummy_timer_id);
-    assert (rc == -1 && errno == EINVAL);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
+                               zmq_timers_reset (timers, dummy_timer_id));
 
     //  attempt to add NULL handler
-    rc = zmq_timers_add (timers, dummy_interval, NULL, NULL);
-    assert (rc == -1 && errno == EFAULT);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EFAULT, zmq_timers_add (timers, dummy_interval, NULL, NULL));
 
-    int timer_id = zmq_timers_add (timers, dummy_interval, handler, NULL);
-    assert (timer_id != -1);
+    const int timer_id = TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_timers_add (timers, dummy_interval, handler, NULL));
 
     //  attempt to cancel timer twice
     //  TODO should this case really be an error? canceling twice could be allowed
-    rc = zmq_timers_cancel (timers, timer_id);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_cancel (timers, timer_id));
 
-    rc = zmq_timers_cancel (timers, timer_id);
-    assert (rc == -1 && errno == EINVAL);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_timers_cancel (timers, timer_id));
 
     //  timeout without any timers active
-    rc = zmq_timers_timeout (timers);
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_timers_timeout (timers));
 
-    rc = zmq_timers_destroy (&timers);
-    assert (rc == 0);
+    //  cleanup
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_destroy (&timers));
 }
 
-int main (void)
+void test_timers ()
 {
-    setup_test_environment ();
-
     void *timers = zmq_timers_new ();
-    assert (timers);
+    TEST_ASSERT_NOT_NULL (timers);
 
     bool timer_invoked = false;
 
     const unsigned long full_timeout = 100;
     void *const stopwatch = zmq_stopwatch_start ();
 
-    int timer_id =
-      zmq_timers_add (timers, full_timeout, handler, &timer_invoked);
-    assert (timer_id);
+    const int timer_id = TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_timers_add (timers, full_timeout, handler, &timer_invoked));
 
     //  Timer should not have been invoked yet
-    int rc = zmq_timers_execute (timers);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
 
 #ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
-        assert (!timer_invoked);
+        TEST_ASSERT_FALSE (timer_invoked);
     }
 #endif
 
     //  Wait half the time and check again
-    long timeout = zmq_timers_timeout (timers);
-    assert (rc != -1);
+    long timeout = TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_timeout (timers));
     msleep (timeout / 2);
-    rc = zmq_timers_execute (timers);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
 #ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
-        assert (!timer_invoked);
+        TEST_ASSERT_FALSE (timer_invoked);
     }
 #endif
 
     // Wait until the end
-    rc = sleep_and_execute (timers);
-    assert (rc == 0);
-    assert (timer_invoked);
+    TEST_ASSERT_SUCCESS_ERRNO (sleep_and_execute (timers));
+    TEST_ASSERT_TRUE (timer_invoked);
     timer_invoked = false;
 
     //  Wait half the time and check again
-    timeout = zmq_timers_timeout (timers);
-    assert (rc != -1);
+    timeout = TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_timeout (timers));
     msleep (timeout / 2);
-    rc = zmq_timers_execute (timers);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
 #ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < 2 * full_timeout) {
-        assert (!timer_invoked);
+        TEST_ASSERT_FALSE (timer_invoked);
     }
 #endif
 
     // Reset timer and wait half of the time left
-    rc = zmq_timers_reset (timers, timer_id);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_reset (timers, timer_id));
     msleep (timeout / 2);
-    rc = zmq_timers_execute (timers);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
     if (zmq_stopwatch_stop (stopwatch) < 2 * full_timeout) {
-        assert (!timer_invoked);
+        TEST_ASSERT_FALSE (timer_invoked);
     }
 
     // Wait until the end
-    rc = sleep_and_execute (timers);
-    assert (rc == 0);
-    assert (timer_invoked);
+    TEST_ASSERT_SUCCESS_ERRNO (sleep_and_execute (timers));
+    TEST_ASSERT_TRUE (timer_invoked);
     timer_invoked = false;
 
     // reschedule
-    rc = zmq_timers_set_interval (timers, timer_id, 50);
-    assert (rc == 0);
-    rc = sleep_and_execute (timers);
-    assert (rc == 0);
-    assert (timer_invoked);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_set_interval (timers, timer_id, 50));
+    TEST_ASSERT_SUCCESS_ERRNO (sleep_and_execute (timers));
+    TEST_ASSERT_TRUE (timer_invoked);
     timer_invoked = false;
 
     // cancel timer
-    timeout = zmq_timers_timeout (timers);
-    assert (rc != -1);
-    rc = zmq_timers_cancel (timers, timer_id);
-    assert (rc == 0);
+    timeout = TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_timeout (timers));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_cancel (timers, timer_id));
     msleep (timeout * 2);
-    rc = zmq_timers_execute (timers);
-    assert (rc == 0);
-    assert (!timer_invoked);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
+    TEST_ASSERT_FALSE (timer_invoked);
 
-    rc = zmq_timers_destroy (&timers);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_destroy (&timers));
+}
 
-    test_null_timer_pointers ();
-    test_corner_cases ();
+int main ()
+{
+    setup_test_environment ();
 
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_timers);
+    RUN_TEST (test_null_timer_pointers);
+    RUN_TEST (test_corner_cases);
+    return UNITY_END ();
 }
