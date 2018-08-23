@@ -553,11 +553,12 @@ tests_test_stream_empty_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_stream_empty_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_stream_timeout_SOURCES = tests/test_stream_timeout.cpp
-tests_test_stream_timeout_LDADD = src/libzmq.la
+tests_test_stream_timeout_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_stream_timeout_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_stream_disconnect_SOURCES = tests/test_stream_disconnect.cpp
 tests_test_stream_disconnect_LDADD = src/libzmq.la ${UNITY_LIBS}
-tests_test_stream_empty_CPPFLAGS = ${UNITY_CPPFLAGS}
+tests_test_stream_disconnect_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_disconnect_inproc_SOURCES = tests/test_disconnect_inproc.cpp
 tests_test_disconnect_inproc_LDADD = src/libzmq.la
