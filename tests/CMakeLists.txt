@@ -90,8 +90,7 @@ if(NOT WIN32)
           test_filter_ipc
           test_stream_exceeds_buffer
           test_router_mandatory_hwm
-          test_use_fd_ipc
-          test_use_fd_tcp
+          test_use_fd
           test_zmq_poll_fd
   )
   if(HAVE_FORK)
