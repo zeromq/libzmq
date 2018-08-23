@@ -798,7 +798,8 @@ tests_test_filter_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 tests_test_use_fd_SOURCES = \
 	tests/test_use_fd.cpp \
 	tests/testutil.hpp
-tests_test_use_fd_LDADD = src/libzmq.la
+tests_test_use_fd_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_use_fd_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_zmq_poll_fd_SOURCES = tests/test_zmq_poll_fd.cpp
 tests_test_zmq_poll_fd_LDADD = src/libzmq.la

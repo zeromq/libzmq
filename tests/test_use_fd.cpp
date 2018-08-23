@@ -28,6 +28,20 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
 
 #if !defined(ZMQ_HAVE_WINDOWS)
 #include <sys/socket.h>
@@ -40,73 +54,55 @@ int setup_socket_and_set_fd (void *zmq_socket_,
                              const sockaddr *addr_,
                              size_t addr_len_)
 {
-    int s_pre = socket (af_, SOCK_STREAM, protocol_);
-    assert (s_pre != -1);
+    const int s_pre =
+      TEST_ASSERT_SUCCESS_ERRNO (socket (af_, SOCK_STREAM, protocol_));
 
     if (af_ == AF_INET) {
         int flag = 1;
-        int rc =
-          setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
     }
 
-    int rc = bind (s_pre, addr_, addr_len_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (bind (s_pre, addr_, addr_len_));
+    TEST_ASSERT_SUCCESS_ERRNO (listen (s_pre, SOMAXCONN));
 
-    rc = listen (s_pre, SOMAXCONN);
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (zmq_socket_, ZMQ_USE_FD, &s_pre, sizeof (s_pre));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (zmq_socket_, ZMQ_USE_FD, &s_pre, sizeof (s_pre)));
 
     return s_pre;
 }
 
 typedef void (*pre_allocate_sock_fun_t) (void *, char *);
 
-void setup_socket_pair (void *ctx_,
-                        pre_allocate_sock_fun_t pre_allocate_sock_fun_,
+void setup_socket_pair (pre_allocate_sock_fun_t pre_allocate_sock_fun_,
                         int bind_socket_type_,
                         int connect_socket_type_,
                         void **out_sb_,
                         void **out_sc_)
 {
-    *out_sb_ = zmq_socket (ctx_, bind_socket_type_);
-    assert (out_sb_);
+    *out_sb_ = test_context_socket (bind_socket_type_);
 
     char my_endpoint[MAX_SOCKET_STRING];
-    pre_allocate_sock_fun_ (out_sb_, my_endpoint);
+    pre_allocate_sock_fun_ (*out_sb_, my_endpoint);
 
-    int rc = zmq_bind (out_sb_, my_endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (*out_sb_, my_endpoint));
 
-    *out_sc_ = zmq_socket (ctx_, connect_socket_type_);
-    assert (out_sc_);
-    rc = zmq_connect (out_sc_, my_endpoint);
-    assert (rc == 0);
+    *out_sc_ = test_context_socket (connect_socket_type_);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (*out_sc_, my_endpoint));
 }
 
 void test_socket_pair (pre_allocate_sock_fun_t pre_allocate_sock_fun_,
                        int bind_socket_type_,
                        int connect_socket_type_)
 {
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
     void *sb, *sc;
-    setup_socket_pair (ctx, pre_allocate_sock_fun_, bind_socket_type_,
+    setup_socket_pair (pre_allocate_sock_fun_, bind_socket_type_,
                        connect_socket_type_, &sb, &sc);
 
     bounce (sb, sc);
 
-    int rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
 }
 
 void test_req_rep (pre_allocate_sock_fun_t pre_allocate_sock_fun_)
@@ -122,70 +118,57 @@ void test_pair (pre_allocate_sock_fun_t pre_allocate_sock_fun_)
 void test_client_server (pre_allocate_sock_fun_t pre_allocate_sock_fun_)
 {
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
     void *sb, *sc;
-    setup_socket_pair (ctx, pre_allocate_sock_fun_, ZMQ_SERVER, ZMQ_CLIENT, &sb,
+    setup_socket_pair (pre_allocate_sock_fun_, ZMQ_SERVER, ZMQ_CLIENT, &sb,
                        &sc);
 
     zmq_msg_t msg;
-    int rc = zmq_msg_init_size (&msg, 1);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
     char *data = (char *) zmq_msg_data (&msg);
     data[0] = 1;
 
-    rc = zmq_msg_send (&msg, sc, ZMQ_SNDMORE);
-    assert (rc == -1);
+    int rc = zmq_msg_send (&msg, sc, ZMQ_SNDMORE);
+    // TODO which error code is expected?
+    TEST_ASSERT_EQUAL_INT (-1, rc);
 
     rc = zmq_msg_send (&msg, sc, 0);
-    assert (rc == 1);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
     rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 1);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
     uint32_t routing_id = zmq_msg_routing_id (&msg);
-    assert (routing_id != 0);
+    TEST_ASSERT_NOT_EQUAL (0, routing_id);
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    rc = zmq_msg_init_size (&msg, 1);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
     data = (char *) zmq_msg_data (&msg);
     data[0] = 2;
 
-    rc = zmq_msg_set_routing_id (&msg, routing_id);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_routing_id (&msg, routing_id));
 
     rc = zmq_msg_send (&msg, sb, ZMQ_SNDMORE);
-    assert (rc == -1);
+    // TODO which error code is expected?
+    TEST_ASSERT_EQUAL_INT (-1, rc);
 
     rc = zmq_msg_send (&msg, sb, 0);
-    assert (rc == 1);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
     rc = zmq_msg_recv (&msg, sc, 0);
-    assert (rc == 1);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
     routing_id = zmq_msg_routing_id (&msg);
-    assert (routing_id == 0);
+    TEST_ASSERT_EQUAL_INT (0, routing_id);
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
 #endif
 }
 
@@ -203,16 +186,15 @@ uint16_t pre_allocate_sock_tcp_int (void *zmq_socket_,
     hint.ai_addr = NULL;
     hint.ai_next = NULL;
 
-    int rc = getaddrinfo (address_, port_, &hint, &addr);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (getaddrinfo (address_, port_, &hint, &addr));
 
     const int s_pre = setup_socket_and_set_fd (
       zmq_socket_, AF_INET, IPPROTO_TCP, addr->ai_addr, addr->ai_addrlen);
 
     struct sockaddr_in sin;
     socklen_t len = sizeof (sin);
-    rc = getsockname (s_pre, (struct sockaddr *) &sin, &len);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      getsockname (s_pre, (struct sockaddr *) &sin, &len));
 
     freeaddrinfo (addr);
 
@@ -265,16 +247,14 @@ void test_req_rep_ipc ()
 {
     test_req_rep (pre_allocate_sock_ipc);
 
-    int rc = unlink ("/tmp/test_use_fd_ipc");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
 }
 
 void test_pair_ipc ()
 {
     test_pair (pre_allocate_sock_ipc);
 
-    int rc = unlink ("/tmp/test_use_fd_ipc");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
 }
 
 void test_client_server_ipc ()
@@ -282,8 +262,7 @@ void test_client_server_ipc ()
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     test_client_server (pre_allocate_sock_ipc);
 
-    int rc = unlink ("/tmp/test_use_fd_ipc");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
 #endif
 }
 
@@ -291,15 +270,16 @@ int main ()
 {
     setup_test_environment ();
 
-    test_req_rep_tcp ();
-    test_pair_tcp ();
-    test_client_server_tcp ();
+    UNITY_BEGIN ();
+    RUN_TEST (test_req_rep_tcp);
+    RUN_TEST (test_pair_tcp);
+    RUN_TEST (test_client_server_tcp);
 
-    test_req_rep_ipc ();
-    test_pair_ipc ();
-    test_client_server_ipc ();
+    RUN_TEST (test_req_rep_ipc);
+    RUN_TEST (test_pair_ipc);
+    RUN_TEST (test_client_server_ipc);
 
-    return 0;
+    return UNITY_END ();
 }
 #else
 int main ()
