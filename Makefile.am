@@ -533,7 +533,8 @@ tests_test_router_mandatory_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_router_mandatory_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_router_mandatory_hwm_SOURCES = tests/test_router_mandatory_hwm.cpp
-tests_test_router_mandatory_hwm_LDADD = src/libzmq.la
+tests_test_router_mandatory_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_router_mandatory_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_router_handover_SOURCES = tests/test_router_handover.cpp
 tests_test_router_handover_LDADD = src/libzmq.la ${UNITY_LIBS}
