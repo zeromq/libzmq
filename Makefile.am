@@ -626,8 +626,7 @@ tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
 tests_test_issue_566_LDADD = src/libzmq.la
 
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
-tests_test_proxy_LDADD = src/libzmq.la ${UNITY_LIBS}
-tests_test_proxy_CPPFLAGS = ${UNITY_CPPFLAGS}
+tests_test_proxy_LDADD = src/libzmq.la
 
 tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
 tests_test_proxy_single_socket_LDADD = src/libzmq.la
