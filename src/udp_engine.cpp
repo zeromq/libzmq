@@ -202,7 +202,11 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 #ifdef SO_REUSEPORT
         rc = setsockopt (_fd, SOL_SOCKET, SO_REUSEPORT,
                          reinterpret_cast<char *> (&on), sizeof (on));
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
         errno_assert (rc == 0);
+#endif
 #endif
 
         const ip_addr_t *bind_addr = udp_addr->bind_addr ();
