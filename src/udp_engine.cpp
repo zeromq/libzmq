@@ -199,6 +199,12 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
+#ifdef SO_REUSEPORT
+        rc = setsockopt (_fd, SOL_SOCKET, SO_REUSEPORT,
+                         reinterpret_cast<char *> (&on), sizeof (on));
+        errno_assert (rc == 0);
+#endif
+
         const ip_addr_t *bind_addr = udp_addr->bind_addr ();
         ip_addr_t any = ip_addr_t::any (bind_addr->family ());
         const ip_addr_t *real_bind_addr;
