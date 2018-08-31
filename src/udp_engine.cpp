@@ -199,6 +199,19 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
+<<<<<<< HEAD
+=======
+#ifdef SO_REUSEPORT
+        rc = setsockopt (_fd, SOL_SOCKET, SO_REUSEPORT,
+                         reinterpret_cast<char *> (&on), sizeof (on));
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        errno_assert (rc == 0);
+#endif
+#endif
+
+>>>>>>> 68d00a34aae3ce33bd37fdc4059a316e1237fbd6
         const ip_addr_t *bind_addr = udp_addr->bind_addr ();
         ip_addr_t any = ip_addr_t::any (bind_addr->family ());
         const ip_addr_t *real_bind_addr;
@@ -211,7 +224,11 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 #ifdef SO_REUSEPORT
             rc = setsockopt (_fd, SOL_SOCKET, SO_REUSEPORT,
                              reinterpret_cast<char *> (&on), sizeof (on));
+#ifdef ZMQ_HAVE_WINDOWS
+            wsa_assert (rc != SOCKET_ERROR);
+#else
             errno_assert (rc == 0);
+#endif
 #endif
 
             //  In multicast we should bind ANY and use the mreq struct to
