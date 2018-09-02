@@ -37,7 +37,7 @@
 
 #define HWM					50
 #define NUM_MSGS			10000
-#define NUM_BYTES_PER_MSG	10
+#define NUM_BYTES_PER_MSG	50000
 #define UNIT_TEST_LOG(...)			do { printf(__VA_ARGS__); printf("\n"); } while(0)
 
 typedef struct
@@ -50,10 +50,47 @@ typedef struct
 	bool subscriber_received_all;
 } proxy_hwm_cfg_t;
 
+#if 0
+static
+void lower_tcp_buff(void* sock_)
+{
+	int iSockFd;
+	size_t fdsz = sizeof iSockFd;
+	int rc = zmq_getsockopt (sock_, ZMQ_FD, &iSockFd, &fdsz);
+	assert (rc == 0);
 
+	int n = 0; socklen_t sl = sizeof(n);
+	if ( 0 != getsockopt(iSockFd,SOL_SOCKET,SO_RCVBUF, &n, &sl))
+	{
+		printf("Get socket option failed, errno: %d\n",errno);
+	}
+	else
+	{
+		printf("Current socket buff len = %d\n", n);
+	}
+	n = 1024;
+	if(0 != setsockopt(iSockFd, SOL_SOCKET, SO_RCVBUF, (const void *)&n, sizeof(n)))
+	{
+		printf("setsock err errno %d\n", errno);
+	}
+	else
+	{
+		printf("setsock opt success\n");
+	}
+	n = 0;
+	if ( 0 != getsockopt(iSockFd,SOL_SOCKET,SO_RCVBUF, &n, &sl))
+	{
+		printf("Get socket option failed, errno: %d\n",errno);
+	}
+	else
+	{
+		printf("After setting socket buff len = %d\n", n);
+	}
+}
+#endif
 
-
-static void lower_hwm(void* skt)
+static
+void lower_hwm(void* skt)
 {
 	int send_hwm_ = HWM;
 	TEST_ASSERT_SUCCESS_ERRNO (
@@ -146,6 +183,7 @@ void subscriber_thread_main(void* pvoid)
 	UNIT_TEST_LOG("subscriber_thread_main connecting to endpoint %s", cfg->backend_endpoint);
 	TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subsocket, cfg->backend_endpoint));
 
+	//lower_tcp_buff(subsocket);
 
 	//UNIT_TEST_LOG("subscriber_thread_main waiting for the barrier");
 	//pthread_barrier_wait(&cfg->unit_test_barrier);
@@ -172,7 +210,7 @@ void subscriber_thread_main(void* pvoid)
 			rxfailed++;
 		}
 
-		sleep(1);
+		msleep(100);
 	}
 
 
@@ -233,7 +271,7 @@ typedef struct
     zmq_socket_stats_t backend;
 } zmq_proxy_stats_t;
 
-void check_proxy_stats (void *control_proxy_)
+void check_proxy_stats (void *control_proxy_, bool is_verbose)
 {
     zmq_proxy_stats_t total_stats;
     int rc;
@@ -255,7 +293,7 @@ void check_proxy_stats (void *control_proxy_)
 
     // check stats
 
-    if (true) {//is_verbose) {
+    if (is_verbose) {
         printf (
           "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
           (unsigned long int) total_stats.frontend.msg_in,
@@ -297,15 +335,15 @@ void proxy_stats_asker_thread_main(void* pvoid)
 	unsigned int nupdates = 0;
 	while (!cfg->subscriber_received_all)
 	{
-		//usleep(1000);
-		sleep(3);
+		usleep(10);
+		//sleep(3);
 
-		check_proxy_stats(control_req);
+		check_proxy_stats(control_req, nupdates%10000);
 		nupdates++;
-		if ((nupdates%10000) == 0)
+		/*if ((nupdates%10000) == 0)
 		{
 			UNIT_TEST_LOG("proxy_stats_asker_thread_main completed update %d from proxy", nupdates);
-		}
+		}*/
 	}
 
 	UNIT_TEST_LOG("proxy_stats_asker_thread_main exiting");
@@ -390,7 +428,8 @@ int main (void)
 	proxy_hwm_cfg_t cfg;
 	cfg.context = context;
 	cfg.frontend_endpoint = "inproc://frontend";
-	cfg.backend_endpoint = ENDPOINT_0;//cfg.backend_endpoint = "tcp://127.0.0.1:8000";
+	cfg.backend_endpoint = ENDPOINT_0;
+	//cfg.backend_endpoint = "inproc://backend";
 	cfg.control_endpoint = "inproc://ctrl";
 	cfg.subscriber_received_all = false;
 
