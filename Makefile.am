@@ -422,6 +422,7 @@ test_apps = \
 	tests/test_inproc_connect \
 	tests/test_issue_566 \
 	tests/test_proxy \
+	tests/test_proxy_hwm \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
 	tests/test_getsockopt_memset \
@@ -627,6 +628,10 @@ tests_test_issue_566_LDADD = src/libzmq.la
 
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
 tests_test_proxy_LDADD = src/libzmq.la
+
+tests_test_proxy_hwm_SOURCES = tests/test_proxy_hwm.cpp
+tests_test_proxy_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_proxy_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
 tests_test_proxy_single_socket_LDADD = src/libzmq.la
