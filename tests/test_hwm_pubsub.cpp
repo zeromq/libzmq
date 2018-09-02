@@ -46,11 +46,11 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char* endpoint)
 {
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
 
     // Set up connect socket
     void *sub_socket = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, endpoint));
 
     //set a hwm on publisher
     TEST_ASSERT_SUCCESS_ERRNO (
