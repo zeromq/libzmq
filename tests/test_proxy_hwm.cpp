@@ -50,44 +50,23 @@ typedef struct
 	bool subscriber_received_all;
 } proxy_hwm_cfg_t;
 
-#if 0
 static
 void lower_tcp_buff(void* sock_)
 {
-	int iSockFd;
-	size_t fdsz = sizeof iSockFd;
-	int rc = zmq_getsockopt (sock_, ZMQ_FD, &iSockFd, &fdsz);
+	int sndBuff;
+	size_t sndBuffSz = sizeof sndBuff;
+	int rc = zmq_getsockopt (sock_, ZMQ_SNDBUF, &sndBuff, &sndBuffSz);
 	assert (rc == 0);
+	UNIT_TEST_LOG("lower_tcp_buff current TCP buffer size = %d", sndBuff);
 
-	int n = 0; socklen_t sl = sizeof(n);
-	if ( 0 != getsockopt(iSockFd,SOL_SOCKET,SO_RCVBUF, &n, &sl))
-	{
-		printf("Get socket option failed, errno: %d\n",errno);
-	}
-	else
-	{
-		printf("Current socket buff len = %d\n", n);
-	}
-	n = 1024;
-	if(0 != setsockopt(iSockFd, SOL_SOCKET, SO_RCVBUF, (const void *)&n, sizeof(n)))
-	{
-		printf("setsock err errno %d\n", errno);
-	}
-	else
-	{
-		printf("setsock opt success\n");
-	}
-	n = 0;
-	if ( 0 != getsockopt(iSockFd,SOL_SOCKET,SO_RCVBUF, &n, &sl))
-	{
-		printf("Get socket option failed, errno: %d\n",errno);
-	}
-	else
-	{
-		printf("After setting socket buff len = %d\n", n);
-	}
+	int newBuff = 1000;
+	TEST_ASSERT_SUCCESS_ERRNO (
+	  zmq_setsockopt (sock_, ZMQ_SNDBUF, &newBuff, sizeof (newBuff)));
+
+	rc = zmq_getsockopt (sock_, ZMQ_SNDBUF, &sndBuff, &sndBuffSz);
+	assert (rc == 0);
+	UNIT_TEST_LOG("lower_tcp_buff new TCP buffer size = %d", sndBuff);
 }
-#endif
 
 static
 void lower_hwm(void* skt)
@@ -183,7 +162,7 @@ void subscriber_thread_main(void* pvoid)
 	UNIT_TEST_LOG("subscriber_thread_main connecting to endpoint %s", cfg->backend_endpoint);
 	TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subsocket, cfg->backend_endpoint));
 
-	//lower_tcp_buff(subsocket);
+	lower_tcp_buff(subsocket);
 
 	//UNIT_TEST_LOG("subscriber_thread_main waiting for the barrier");
 	//pthread_barrier_wait(&cfg->unit_test_barrier);
@@ -210,7 +189,8 @@ void subscriber_thread_main(void* pvoid)
 			rxfailed++;
 		}
 
-		msleep(100);
+		//msleep(100);
+		sleep(1);
 	}
 
 
@@ -233,26 +213,34 @@ void subscriber_thread_main(void* pvoid)
 	UNIT_TEST_LOG("subscriber_thread_main exiting");
 }
 
-uint64_t recv_stat (void *sock_, bool last_)
+bool recv_stat (void *sock_, bool last_, uint64_t* res)
 {
-    uint64_t res;
-    zmq_msg_t stats_msg;
+	zmq_msg_t stats_msg;
 
-    int rc = zmq_msg_init (&stats_msg);
-    assert (rc == 0);
-    rc = zmq_recvmsg (sock_, &stats_msg, 0);
-    assert (rc == sizeof (uint64_t));
-    memcpy (&res, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
-    rc = zmq_msg_close (&stats_msg);
-    assert (rc == 0);
+	int rc = zmq_msg_init (&stats_msg);
+	assert (rc == 0);
 
-    int more;
-    size_t moresz = sizeof more;
-    rc = zmq_getsockopt (sock_, ZMQ_RCVMORE, &more, &moresz);
-    assert (rc == 0);
-    assert ((last_ && !more) || (!last_ && more));
+	rc = zmq_msg_recv (&stats_msg, sock_, 0); //ZMQ_DONTWAIT);
+	if (rc == -1 && errno == EAGAIN)
+	{
+		rc = zmq_msg_close (&stats_msg);
+		assert (rc == 0);
+		return false;				// cannot retrieve the stat
+	}
 
-    return res;
+	assert (rc == sizeof (uint64_t));
+	memcpy (res, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
+
+	rc = zmq_msg_close (&stats_msg);
+	assert (rc == 0);
+
+	int more;
+	size_t moresz = sizeof more;
+	rc = zmq_getsockopt (sock_, ZMQ_RCVMORE, &more, &moresz);
+	assert (rc == 0);
+	assert ((last_ && !more) || (!last_ && more));
+
+	return true;
 }
 
 // Utility function to interrogate the proxy:
@@ -271,42 +259,64 @@ typedef struct
     zmq_socket_stats_t backend;
 } zmq_proxy_stats_t;
 
-void check_proxy_stats (void *control_proxy_, bool is_verbose)
+bool check_proxy_stats (void *control_proxy_)
 {
-    zmq_proxy_stats_t total_stats;
-    int rc;
+	zmq_proxy_stats_t total_stats;
+	int rc;
 
-    rc = zmq_send (control_proxy_, "STATISTICS", 10, 0);
-    assert (rc == 10);
+	static unsigned int nupdates = 0, nsuccess = 0, nfailed = 0;
+	bool is_verbose = (((nupdates++)%1000) == 0);
 
-    // first frame of the reply contains FRONTEND stats:
-    total_stats.frontend.msg_in = recv_stat (control_proxy_, false);
-    total_stats.frontend.bytes_in = recv_stat (control_proxy_, false);
-    total_stats.frontend.msg_out = recv_stat (control_proxy_, false);
-    total_stats.frontend.bytes_out = recv_stat (control_proxy_, false);
+	if (is_verbose)
+		UNIT_TEST_LOG("asking update #%d from proxy (so far %d successful, %d failed):", nupdates, nsuccess, nfailed);
 
-    // second frame of the reply contains BACKEND stats:
-    total_stats.backend.msg_in = recv_stat (control_proxy_, false);
-    total_stats.backend.bytes_in = recv_stat (control_proxy_, false);
-    total_stats.backend.msg_out = recv_stat (control_proxy_, false);
-    total_stats.backend.bytes_out = recv_stat (control_proxy_, true);
+	rc = zmq_send (control_proxy_, "STATISTICS", 10, ZMQ_DONTWAIT);
+	assert (rc == 10 ||
+			(rc == -1 && errno == EAGAIN));
+	if (rc == -1 && errno == EAGAIN)
+	{
+		nfailed++;
+		if (is_verbose) UNIT_TEST_LOG("    ...failed (TX)");
+		return false;
+	}
 
-    // check stats
+	// first frame of the reply contains FRONTEND stats:
+	if (!recv_stat( control_proxy_, false, &total_stats.frontend.msg_in ))
+	{
+		nfailed++;
+		if (is_verbose) UNIT_TEST_LOG("    ...failed (timedout)");
+		return false;
+	}
 
-    if (is_verbose) {
-        printf (
-          "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.frontend.msg_in,
-          (unsigned long int) total_stats.frontend.bytes_in,
-          (unsigned long int) total_stats.frontend.msg_out,
-          (unsigned long int) total_stats.frontend.bytes_out);
-        printf (
-          "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.backend.msg_in,
-          (unsigned long int) total_stats.backend.bytes_in,
-          (unsigned long int) total_stats.backend.msg_out,
-          (unsigned long int) total_stats.backend.bytes_out);
-    }
+	recv_stat( control_proxy_, false, &total_stats.frontend.bytes_in );
+	recv_stat( control_proxy_, false, &total_stats.frontend.msg_out );
+	recv_stat( control_proxy_, false, &total_stats.frontend.bytes_out );
+
+	// second frame of the reply contains BACKEND stats:
+	recv_stat( control_proxy_, false, &total_stats.backend.msg_in );
+	recv_stat( control_proxy_, false, &total_stats.backend.bytes_in );
+	recv_stat( control_proxy_, false, &total_stats.backend.msg_out );
+	recv_stat( control_proxy_, true,  &total_stats.backend.bytes_out );
+
+	// check stats
+
+	if (is_verbose) {
+		printf (
+		  "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+		  (unsigned long int) total_stats.frontend.msg_in,
+		  (unsigned long int) total_stats.frontend.bytes_in,
+		  (unsigned long int) total_stats.frontend.msg_out,
+		  (unsigned long int) total_stats.frontend.bytes_out);
+		printf (
+		  "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+		  (unsigned long int) total_stats.backend.msg_in,
+		  (unsigned long int) total_stats.backend.bytes_in,
+		  (unsigned long int) total_stats.backend.msg_out,
+		  (unsigned long int) total_stats.backend.bytes_out);
+	}
+
+	nsuccess++;
+	return true;
 }
 
 static
@@ -326,24 +336,33 @@ void proxy_stats_asker_thread_main(void* pvoid)
 	int rc = zmq_connect(control_req, cfg->control_endpoint);
 	assert( rc == 0 );
 
+
+	// IMPORTANT: by setting the tx/rx timeouts, we avoid getting blocked when interrogating a proxy which is
+	//            itself blocked in a zmq_msg_send() on its XPUB socket having ZMQ_XPUB_NODROP=1!
+
+	int optval = 10;
+	rc = zmq_setsockopt(control_req, ZMQ_SNDTIMEO, &optval, sizeof(optval));
+	assert( rc == 0 );
+	rc = zmq_setsockopt(control_req, ZMQ_RCVTIMEO, &optval, sizeof(optval));
+	assert( rc == 0 );
+
+	optval = 10;
+	rc = zmq_setsockopt(control_req, ZMQ_REQ_CORRELATE, &optval, sizeof(optval));
+	assert( rc == 0 );
+
+	rc = zmq_setsockopt(control_req, ZMQ_REQ_RELAXED, &optval, sizeof(optval));
+	assert( rc == 0 );
+
 	//UNIT_TEST_LOG("proxy_stats_asker_thread_main waiting for the barrier");
 	//pthread_barrier_wait(&cfg->unit_test_barrier);
 	//UNIT_TEST_LOG("proxy_stats_asker_thread_main completed waiting for the barrier");
 
 	// Start!
 
-	unsigned int nupdates = 0;
 	while (!cfg->subscriber_received_all)
 	{
-		usleep(10);
-		//sleep(3);
-
-		check_proxy_stats(control_req, nupdates%10000);
-		nupdates++;
-		/*if ((nupdates%10000) == 0)
-		{
-			UNIT_TEST_LOG("proxy_stats_asker_thread_main completed update %d from proxy", nupdates);
-		}*/
+		check_proxy_stats(control_req);
+		usleep(1000);			// 1ms -> in best case we will get 1000updates/second
 	}
 
 	UNIT_TEST_LOG("proxy_stats_asker_thread_main exiting");
