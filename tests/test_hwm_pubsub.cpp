@@ -133,7 +133,7 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char* endpoint)
         if (rc == 0) {
             ++send_count;
         } else if (-1 == rc) {
-            msleep (SETTLE_TIME);		// required for TCP transport
+            msleep (SETTLE_TIME/10);		// required for TCP transport
             TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
             recv_count += receive (sub_socket);
             TEST_ASSERT_EQUAL_INT (send_count, recv_count);
@@ -214,50 +214,49 @@ void test_reset_hwm ()
     test_context_socket_close (pub_socket);
 }
 
-void test_defaults_1000 ()
+void test_tcp ()
 {
     // send 1000 msg on hwm 1000, receive 1000, on TCP transport
-    // repeat the test for both TCP, INPROC and IPC transports:
-
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "inproc://a"));
-#ifndef ZMQ_HAVE_WINDOWS
-    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://@tmp-tester"));
-#endif
-}
 
-void test_defaults_100 ()
-{
     // send 100 msg on hwm 100, receive 100
-    // repeat the test for both TCP, INPROC and IPC transports:
-
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "inproc://a"));
-#ifndef ZMQ_HAVE_WINDOWS
-    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://@tmp-tester"));
-#endif
-}
 
-void test_blocking_2000 ()
-{
     // send 6000 msg on hwm 2000, drops above hwm, only receive hwm:
-    // repeat the test for both TCP, INPROC and IPC transports:
-
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "inproc://a"));
-#ifndef ZMQ_HAVE_WINDOWS
-    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://@tmp-tester"));
-#endif
 }
+
+void test_inproc ()
+{
+    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "inproc://a"));
+    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "inproc://b"));
+    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "inproc://c"));
+}
+
+#ifndef ZMQ_HAVE_WINDOWS
+
+void test_ipc ()
+{
+    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://@tmp-tester1"));
+    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://@tmp-tester2"));
+    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://@tmp-tester3"));
+}
+
+#endif
 
 int main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_defaults_1000);
-    RUN_TEST (test_defaults_100);
-    RUN_TEST (test_blocking_2000);
+
+    // repeat the test for both TCP, INPROC and IPC transports:
+
+    RUN_TEST (test_tcp);
+    RUN_TEST (test_inproc);
+#ifndef ZMQ_HAVE_WINDOWS
+    RUN_TEST (test_ipc);
+#endif
     RUN_TEST (test_reset_hwm);
     return UNITY_END ();
 }
