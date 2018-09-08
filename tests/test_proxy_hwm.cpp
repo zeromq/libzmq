@@ -29,16 +29,39 @@
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
-
 #include <unity.h>
 
+//
+// Asynchronous proxy test using ZMQ_XPUB_NODROP and HWM:
+//
+// Topology:
+//
+//   PUB                       SUB
+//    |                         |
+//    \-----> XSUB -> XPUB -----/
+//           ^^^^^^^^^^^^^^
+//             ZMQ proxy
+//
+// All connections use "inproc" transport and have artificially-low HWMs set.
+// Then the PUB socket starts flooding the Proxy. The SUB is artificially slow
+// at receiving messages.
+// This scenario simulates what happens when a SUB is slower than
+// its PUB: since ZMQ_XPUB_NODROP=1, the XPUB will block and then
+// also the PUB socket will block.
+// The result is that 2*HWM messages will be sent before the PUB blocks.
+//
+// In the meanwhile asking statistics to the Proxy must NOT be blocking.
+//
 
-// Asynchronous proxy test using ZMQ_XPUB_NODROP and HWM
 
-#define HWM					50
-#define NUM_MSGS			10000
-#define NUM_BYTES_PER_MSG	50000
+#define HWM							10
+#define NUM_BYTES_PER_MSG			50000
+
+#if 0	// enable for debugging this test
 #define UNIT_TEST_LOG(...)			do { printf(__VA_ARGS__); printf("\n"); } while(0)
+#else
+#define UNIT_TEST_LOG(...)			/* empty */
+#endif
 
 typedef struct
 {
@@ -79,7 +102,6 @@ void lower_hwm(void* skt)
 	  zmq_setsockopt (skt, ZMQ_RCVHWM, &send_hwm_, sizeof (send_hwm_)));
 }
 
-
 static
 void publisher_thread_main(void* pvoid)
 {
@@ -92,24 +114,17 @@ void publisher_thread_main(void* pvoid)
 	lower_hwm(pubsocket);
 
 	UNIT_TEST_LOG("publisher_thread_main connecting to endpoint %s", cfg->frontend_endpoint);
-	int rc = zmq_connect(pubsocket, cfg->frontend_endpoint);
-	assert (rc==0);
+	TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pubsocket, cfg->frontend_endpoint));
 
 	int optval = 1;
-	rc = zmq_setsockopt(pubsocket, ZMQ_XPUB_NODROP, &optval, sizeof(optval));
-	assert( rc == 0 );
-
-
-	//UNIT_TEST_LOG("publisher_thread_main waiting for the barrier");
-	//pthread_barrier_wait(&cfg->unit_test_barrier);
-	//UNIT_TEST_LOG("publisher_thread_main completed waiting for the barrier");
+	TEST_ASSERT_SUCCESS_ERRNO (
+	  zmq_setsockopt (pubsocket, ZMQ_XPUB_NODROP, &optval, sizeof (optval)));
 
 	UNIT_TEST_LOG("publisher_thread_main waiting %dmsec to allow subscribers to REALLY connect", SETTLE_TIME);
 	msleep (SETTLE_TIME);
-	msleep (10*SETTLE_TIME);
 
-	uint64_t txfailed = 0;
-	for (uint64_t i = 0 ; i < NUM_MSGS ; ++i)
+	uint64_t send_count = 0;
+	while (true)
 	{
 		zmq_msg_t msg;
 		int rc = zmq_msg_init_size (&msg, NUM_BYTES_PER_MSG);
@@ -119,24 +134,23 @@ void publisher_thread_main(void* pvoid)
 		memset (zmq_msg_data (&msg), 'A', NUM_BYTES_PER_MSG);
 
 		/* Send the message to the socket */
-		rc = zmq_msg_send(&msg, pubsocket, 0);
-		//assert (rc == 0);
+		rc = zmq_msg_send(&msg, pubsocket, ZMQ_DONTWAIT);
 		if (rc != -1)
 		{
-			UNIT_TEST_LOG(" ** publisher_thread_main sent successfully pkt #%zu, %d bytes sent, total failed %lu", i, rc, txfailed);
+			UNIT_TEST_LOG(" ** publisher_thread_main sent successfully %d bytes sent, total sent %lu", rc, send_count);
+			send_count++;
 		}
 		else
 		{
-			UNIT_TEST_LOG(" ** publisher_thread_main failed sending pkt #%zu with errno=%d", i, zmq_errno());
-			txfailed++;
+			UNIT_TEST_LOG(" ** publisher_thread_main failed sending pkt with errno=%d", zmq_errno());
+			break;
 		}
 	}
 
 	// VERIFY EXPECTED RESULTS
 
-	UNIT_TEST_LOG("publisher_thread_main sent %lu packets successfully; %lu packets TX failed.",
-			NUM_MSGS-txfailed, txfailed );
-	assert( txfailed == 0 );
+	UNIT_TEST_LOG("publisher_thread_main sent %lu packets successfully.", send_count);
+	TEST_ASSERT_EQUAL_INT( 2*HWM, send_count );
 
 
 	// CLEANUP
@@ -160,16 +174,13 @@ void subscriber_thread_main(void* pvoid)
 	  zmq_setsockopt (subsocket, ZMQ_SUBSCRIBE, 0, 0));
 
 	UNIT_TEST_LOG("subscriber_thread_main connecting to endpoint %s", cfg->backend_endpoint);
-	TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subsocket, cfg->backend_endpoint));
+	TEST_ASSERT_SUCCESS_ERRNO (
+	  zmq_connect (subsocket, cfg->backend_endpoint));
 
 	lower_tcp_buff(subsocket);
 
-	//UNIT_TEST_LOG("subscriber_thread_main waiting for the barrier");
-	//pthread_barrier_wait(&cfg->unit_test_barrier);
-	//UNIT_TEST_LOG("subscriber_thread_main completed waiting for the barrier");
-
 	// receive all sent messages
-	uint64_t rxfailed = 0, rxsuccess = 0;
+	uint64_t rxsuccess = 0;
 	bool success = true;
 	while (success)
 	{
@@ -177,28 +188,33 @@ void subscriber_thread_main(void* pvoid)
 		int rc = zmq_msg_init(&msg);
 		assert (rc == 0);
 
-		rc = zmq_msg_recv(&msg, subsocket, 0);//ZMQ_DONTWAIT);
+		rc = zmq_msg_recv(&msg, subsocket, 0);
 		if (rc != -1)
 		{
-			UNIT_TEST_LOG(" ** received %lu pkts, total failed %lu", rxsuccess, rxfailed);
+			UNIT_TEST_LOG(" ** received %lu pkts", rxsuccess);
 			rxsuccess++;
+
+			// after receiving 1st message, set a finite timeout (default is infinite)
+			int timeout_ms = 100;
+			TEST_ASSERT_SUCCESS_ERRNO (
+			  zmq_setsockopt (subsocket, ZMQ_RCVTIMEO, &timeout_ms, sizeof(timeout_ms)));
 		}
 		else
 		{
-			UNIT_TEST_LOG(" ** failed receiving... total failed %lu", rxfailed);
-			rxfailed++;
+			UNIT_TEST_LOG(" ** failed receiving...  exiting");
+			break;
 		}
 
-		//msleep(100);
-		sleep(1);
+		msleep(100);
 	}
 
 
 	// VERIFY EXPECTED RESULTS
 
-	UNIT_TEST_LOG("subscriber_thread_main received %lu packets successfully; %lu packets RX failed.",
-			rxsuccess, rxfailed );
-	assert( rxfailed == 1 );
+	//UNIT_TEST_LOG("subscriber_thread_main received %lu packets successfully; %lu packets RX failed.",
+	//		rxsuccess, rxfailed );
+	//assert( rxsuccess == 1 );
+	TEST_ASSERT_EQUAL_INT( 2*HWM, rxsuccess );
 
 
 	// INFORM THAT WE COMPLETED:
@@ -301,13 +317,13 @@ bool check_proxy_stats (void *control_proxy_)
 	// check stats
 
 	if (is_verbose) {
-		printf (
+		UNIT_TEST_LOG (
 		  "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
 		  (unsigned long int) total_stats.frontend.msg_in,
 		  (unsigned long int) total_stats.frontend.bytes_in,
 		  (unsigned long int) total_stats.frontend.msg_out,
 		  (unsigned long int) total_stats.frontend.bytes_out);
-		printf (
+		UNIT_TEST_LOG (
 		  "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
 		  (unsigned long int) total_stats.backend.msg_in,
 		  (unsigned long int) total_stats.backend.bytes_in,
@@ -353,17 +369,24 @@ void proxy_stats_asker_thread_main(void* pvoid)
 	rc = zmq_setsockopt(control_req, ZMQ_REQ_RELAXED, &optval, sizeof(optval));
 	assert( rc == 0 );
 
-	//UNIT_TEST_LOG("proxy_stats_asker_thread_main waiting for the barrier");
-	//pthread_barrier_wait(&cfg->unit_test_barrier);
-	//UNIT_TEST_LOG("proxy_stats_asker_thread_main completed waiting for the barrier");
 
 	// Start!
 
 	while (!cfg->subscriber_received_all)
 	{
+#ifdef ZMQ_BUILD_DRAFT_API
 		check_proxy_stats(control_req);
+#endif
 		usleep(1000);			// 1ms -> in best case we will get 1000updates/second
 	}
+
+
+	// Ask the proxy to exit: the subscriber has received all messages
+
+	rc = zmq_send (control_req, "TERMINATE", 9, 0);
+	assert (rc == 9);
+
+	zmq_close( control_req );
 
 	UNIT_TEST_LOG("proxy_stats_asker_thread_main exiting");
 }
@@ -426,6 +449,10 @@ void proxy_thread_main(void* pvoid)
 						NULL,
 						control_rep);
 
+	zmq_close( frontend_xsub );
+	zmq_close( backend_xpub );
+	zmq_close( control_rep );
+
 	UNIT_TEST_LOG("proxy_thread_main exiting");
 }
 
@@ -447,17 +474,16 @@ int main (void)
 	proxy_hwm_cfg_t cfg;
 	cfg.context = context;
 	cfg.frontend_endpoint = "inproc://frontend";
-	cfg.backend_endpoint = ENDPOINT_0;
-	//cfg.backend_endpoint = "inproc://backend";
+	cfg.backend_endpoint = "inproc://backend";
 	cfg.control_endpoint = "inproc://ctrl";
 	cfg.subscriber_received_all = false;
 
 	void* proxy = zmq_threadstart(&proxy_thread_main, (void*) &cfg);
 	assert(proxy != 0);
-	void* server = zmq_threadstart(&publisher_thread_main, (void*) &cfg);
-	assert(server != 0);
-	void* client = zmq_threadstart(&subscriber_thread_main, (void*) &cfg);
-	assert(client != 0);
+	void* publisher = zmq_threadstart(&publisher_thread_main, (void*) &cfg);
+	assert(publisher != 0);
+	void* subscriber = zmq_threadstart(&subscriber_thread_main, (void*) &cfg);
+	assert(subscriber != 0);
 	void* asker = zmq_threadstart(&proxy_stats_asker_thread_main, (void*) &cfg);
 	assert(asker != 0);
 
@@ -466,8 +492,8 @@ int main (void)
 
 	UNIT_TEST_LOG("main waiting for all threads to join");
 
-	zmq_threadclose (server);
-	zmq_threadclose (client);
+	zmq_threadclose (publisher);
+	zmq_threadclose (subscriber);
 	zmq_threadclose (asker);
 	zmq_threadclose (proxy);
 
