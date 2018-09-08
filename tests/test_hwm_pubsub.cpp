@@ -66,7 +66,7 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char* endpoint)
     // Send until we reach "mute" state
     int send_count = 0;
     while (send_count < msg_cnt_
-           && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+           && zmq_send (pub_socket, "test message", 13, ZMQ_DONTWAIT) == 13)
         ++send_count;
 
     TEST_ASSERT_EQUAL_INT (send_hwm_, send_count);
@@ -74,7 +74,8 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char* endpoint)
 
     // Now receive all sent messages
     int recv_count = 0;
-    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT)) {
+    char dummybuff[64];
+    while (13 == zmq_recv (sub_socket, &dummybuff, 64, ZMQ_DONTWAIT)) {
         ++recv_count;
     }
 
