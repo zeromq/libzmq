@@ -221,7 +221,9 @@ void test_defaults_1000 ()
 
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "inproc://a"));
+#ifndef ZMQ_HAVE_WINDOWS
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://@tmp-tester"));
+#endif
 }
 
 void test_defaults_100 ()
@@ -231,7 +233,9 @@ void test_defaults_100 ()
 
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "inproc://a"));
+#ifndef ZMQ_HAVE_WINDOWS
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://@tmp-tester"));
+#endif
 }
 
 void test_blocking_2000 ()
@@ -241,7 +245,9 @@ void test_blocking_2000 ()
 
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "inproc://a"));
+#ifndef ZMQ_HAVE_WINDOWS
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://@tmp-tester"));
+#endif
 }
 
 int main ()
