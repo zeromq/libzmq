@@ -858,7 +858,7 @@ If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
-type. 
+type.
 
 NOTE: 0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM
 messages, and the actual limit may be as much as 90% lower depending on the
