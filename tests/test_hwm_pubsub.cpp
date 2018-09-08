@@ -40,17 +40,20 @@ void tearDown ()
     teardown_test_context ();
 }
 
-// const int MAX_SENDS = 10000;
-
 int test_defaults (int send_hwm_, int msg_cnt_, const char* endpoint)
 {
-    // Set up bind socket
+    size_t len = MAX_SOCKET_STRING;
+    char pub_endpoint[MAX_SOCKET_STRING];
+
+    // Set up and bind PUB socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
 
-    // Set up connect socket
+    // Set up and connect SUB socket
     void *sub_socket = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, pub_endpoint));
 
     //set a hwm on publisher
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -58,7 +61,7 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char* endpoint)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0));
 
-    msleep (SETTLE_TIME);
+    msleep (SETTLE_TIME);    // give some time to background threads to perform PUB-SUB connection
 
     // Send until we reach "mute" state
     int send_count = 0;
@@ -95,16 +98,20 @@ int receive (void *socket_)
     return recv_count;
 }
 
-
 int test_blocking (int send_hwm_, int msg_cnt_, const char* endpoint)
 {
+    size_t len = MAX_SOCKET_STRING;
+    char pub_endpoint[MAX_SOCKET_STRING];
+
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
 
     // Set up connect socket
     void *sub_socket = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, pub_endpoint));
 
     //set a hwm on publisher
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -209,36 +216,30 @@ void test_reset_hwm ()
 void test_defaults_1000 ()
 {
     // send 1000 msg on hwm 1000, receive 1000, on TCP transport
-    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, ENDPOINT_0));
+    // repeat the test for both TCP, INPROC and IPC transports:
 
-    // send 1000 msg on hwm 1000, receive 1000, on INPROC transport
+    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "inproc://a"));
-
-    // send 1000 msg on hwm 1000, receive 1000, on IPC transport
     TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://@tmp-tester"));
 }
 
 void test_defaults_100 ()
 {
-    // send 100 msg on hwm 100, receive 100, on TCP transport
-    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, ENDPOINT_0));
+    // send 100 msg on hwm 100, receive 100
+    // repeat the test for both TCP, INPROC and IPC transports:
 
-    // send 1000 msg on hwm 100, receive 100, on INPROC transport
+    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "inproc://a"));
-
-    // send 1000 msg on hwm 100, receive 100, on IPC transport
     TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://@tmp-tester"));
 }
 
 void test_blocking_2000 ()
 {
-    // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
-    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, ENDPOINT_0));
+    // send 6000 msg on hwm 2000, drops above hwm, only receive hwm:
+    // repeat the test for both TCP, INPROC and IPC transports:
 
-    // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
+    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "tcp://127.0.0.1:*"));
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "inproc://a"));
-
-    // send 6000 msg on hwm 2000, drops above hwm, only receive hwm
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://@tmp-tester"));
 }
 
