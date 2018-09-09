@@ -992,7 +992,7 @@ endif()
 if (MSVC)
   # Suppress linker warnings caused by #ifdef omission
   # of file content.
-  set( CMAKE_STATIC_LINKER_FLAGS /ignore:4221 )
+  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
   set (PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
   set (PDB_NAME "libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
   function(enable_vs_guideline_checker target)
