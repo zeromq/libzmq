@@ -133,15 +133,15 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char* endpoint)
         if (rc == 0) {
             ++send_count;
         } else if (-1 == rc) {
-            msleep (SETTLE_TIME/10);		// required for TCP transport
+            // if the PUB socket blocks due to HWM, errno should be EAGAIN:
             TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
             recv_count += receive (sub_socket);
-            TEST_ASSERT_EQUAL_INT (send_count, recv_count);
         }
     }
 
     msleep (SETTLE_TIME);		// required for TCP transport
     recv_count += receive (sub_socket);
+    TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     // Clean up
     test_context_socket_close (sub_socket);
