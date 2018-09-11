@@ -92,7 +92,7 @@ int receive (void *socket_)
 {
     int recv_count = 0;
     // Now receive all sent messages
-    while (0 == zmq_recv (socket_, NULL, 0, ZMQ_DONTWAIT)) {
+    while (0 == zmq_recv (socket_, NULL, 0, 0)) {
         ++recv_count;
     }
 
@@ -120,6 +120,9 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char* endpoint)
     int wait = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (pub_socket, ZMQ_XPUB_NODROP, &wait, sizeof (wait)));
+    int timeout_ms = 10;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub_socket, ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0));
 
@@ -139,7 +142,7 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char* endpoint)
         }
     }
 
-    msleep (SETTLE_TIME);		// required for TCP transport
+    msleep (2*SETTLE_TIME);		// required for TCP transport
     recv_count += receive (sub_socket);
     TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
@@ -237,9 +240,9 @@ void test_inproc ()
 
 void test_ipc ()
 {
-    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://@tmp-tester1"));
-    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://@tmp-tester2"));
-    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://@tmp-tester3"));
+    TEST_ASSERT_EQUAL_INT (1000, test_defaults (1000, 1000, "ipc://*"));
+    TEST_ASSERT_EQUAL_INT (100, test_defaults (100, 100, "ipc://*"));
+    TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "ipc://*"));
 }
 
 #endif
