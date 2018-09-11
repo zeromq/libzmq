@@ -201,6 +201,7 @@ static void subscriber_thread_main (void *pvoid)
               subsocket, ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));
         } else {
             UNIT_TEST_LOG (" ** failed receiving...  exiting");
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
             break;
         }
 
