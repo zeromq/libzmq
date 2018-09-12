@@ -42,8 +42,8 @@ void tearDown ()
 
 int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
-    size_t len = MAX_SOCKET_STRING;
-    char pub_endpoint[MAX_SOCKET_STRING];
+    size_t len = MAX_SOCKET_STRING*4;
+    char pub_endpoint[MAX_SOCKET_STRING*4];
 
     // Set up and bind PUB socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -102,8 +102,8 @@ int receive (void *socket_)
 
 int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
-    size_t len = MAX_SOCKET_STRING;
-    char pub_endpoint[MAX_SOCKET_STRING];
+    size_t len = MAX_SOCKET_STRING*4;
+    char pub_endpoint[MAX_SOCKET_STRING*4];
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -161,7 +161,7 @@ void test_reset_hwm ()
     const int first_count = 9999;
     const int second_count = 1100;
     int hwm = 11024;
-    char my_endpoint[MAX_SOCKET_STRING];
+    char my_endpoint[MAX_SOCKET_STRING*4];
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
