@@ -126,13 +126,12 @@ static void publisher_thread_main (void *pvoid)
         rc = zmq_msg_send (&msg, pubsocket, ZMQ_DONTWAIT);
         if (rc != -1) {
             //printf (" ** publisher_thread_main sent successfully %d bytes sent, total sent %lu",
-                           //rc, send_count);
+            //rc, send_count);
             send_count++;
         } else {
-            if (errno == EAGAIN)
-                TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
             //printf (" ** publisher_thread_main failed sending pkt with errno=%d",
-              	  	  //zmq_errno ());
+            //zmq_errno ());
             break;
         }
     }
@@ -140,8 +139,7 @@ static void publisher_thread_main (void *pvoid)
     // VERIFY EXPECTED RESULTS
 
     //printf ("publisher_thread_main sent %lu packets successfully; HWM = %d.", send_count, HWM);
-    TEST_ASSERT (4 * HWM == send_count ||
-    				2 * HWM == send_count);
+    TEST_ASSERT (4 * HWM == send_count || 2 * HWM == send_count);
 
 
     // CLEANUP
@@ -195,8 +193,7 @@ static void subscriber_thread_main (void *pvoid)
 
     // VERIFY EXPECTED RESULTS
 
-    TEST_ASSERT (4 * HWM == rxsuccess ||
-    				2 * HWM == rxsuccess);
+    TEST_ASSERT (4 * HWM == rxsuccess || 2 * HWM == rxsuccess);
 
     // INFORM THAT WE COMPLETED:
 
@@ -265,15 +262,15 @@ bool check_proxy_stats (void *control_proxy_)
     //bool is_verbose = (((nupdates++) % 1000) == 0);
 
     //if (is_verbose)
-        //printf ("asking update #%d from proxy (so far %d successful, %d failed):",
-          //nupdates, nsuccess, nfailed);
+    //printf ("asking update #%d from proxy (so far %d successful, %d failed):",
+    //nupdates, nsuccess, nfailed);
 
     rc = zmq_send (control_proxy_, "STATISTICS", 10, ZMQ_DONTWAIT);
     assert (rc == 10 || (rc == -1 && errno == EAGAIN));
     if (rc == -1 && errno == EAGAIN) {
         nfailed++;
         //if (is_verbose)
-            //printf ("    ...failed (TX)");
+        //printf ("    ...failed (TX)");
         return false;
     }
 
@@ -281,7 +278,7 @@ bool check_proxy_stats (void *control_proxy_)
     if (!recv_stat (control_proxy_, false, &total_stats.frontend.msg_in)) {
         nfailed++;
         //if (is_verbose)
-            //printf ("    ...failed (timedout)");
+        //printf ("    ...failed (timedout)");
         return false;
     }
 
@@ -296,7 +293,7 @@ bool check_proxy_stats (void *control_proxy_)
     recv_stat (control_proxy_, true, &total_stats.backend.bytes_out);
 
     // check stats
-/*
+    /*
     if (is_verbose) {
         //printf (
           "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
@@ -429,7 +426,7 @@ static void proxy_thread_main (void *pvoid)
     // start proxying!
 
     //printf ( "proxy_thread_main starting proxy on frontend=%s, backend=%s, ctrl=%s",
-      //cfg->frontend_endpoint, cfg->backend_endpoint, cfg->control_endpoint);
+    //cfg->frontend_endpoint, cfg->backend_endpoint, cfg->control_endpoint);
 
     zmq_proxy_steerable (frontend_xsub, backend_xpub, NULL, control_rep);
 

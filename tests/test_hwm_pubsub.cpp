@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#define SOCKET_STRING_LEN (MAX_SOCKET_STRING * 4)
+
 void setUp ()
 {
     setup_test_context ();
@@ -42,8 +44,8 @@ void tearDown ()
 
 int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
-    size_t len = MAX_SOCKET_STRING*4;
-    char pub_endpoint[MAX_SOCKET_STRING*4];
+    size_t len = SOCKET_STRING_LEN;
+    char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up and bind PUB socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -102,8 +104,8 @@ int receive (void *socket_)
 
 int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
-    size_t len = MAX_SOCKET_STRING*4;
-    char pub_endpoint[MAX_SOCKET_STRING*4];
+    size_t len = SOCKET_STRING_LEN;
+    char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
@@ -161,7 +163,7 @@ void test_reset_hwm ()
     const int first_count = 9999;
     const int second_count = 1100;
     int hwm = 11024;
-    char my_endpoint[MAX_SOCKET_STRING*4];
+    char my_endpoint[SOCKET_STRING_LEN];
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_PUB);
