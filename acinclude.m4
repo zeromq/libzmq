@@ -680,8 +680,8 @@ int main (int, char **)
     [AC_MSG_RESULT(yes) ; GCC_ATOMIC_BUILTINS_SUPPORTED=1 libzmq_cv_has_atomic_instrisics="yes" ; $1])
 
     if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
-        save_LDFLAGS=$LDFLAGS
-        LDFLAGS="$LDFLAGS -latomic"
+        save_LIBS=$LIBS
+        LIBS="$LIBS -latomic"
         AC_LINK_IFELSE([AC_LANG_SOURCE([
         /* atomic intrinsics test */
         int v = 0;
@@ -691,9 +691,8 @@ int main (int, char **)
             return t;
         }
         ])],
-        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" LIBS="-latomic" ; $1],
-        [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no"; $2])
-        LDFLAGS=$save_LDFLAGS
+        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
+        [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no" LIBS=$save_LIBS ; $2])
     fi
 }])
 
