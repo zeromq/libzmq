@@ -163,6 +163,7 @@ static void subscriber_thread_main (void *pvoid)
 
         rc = zmq_msg_recv (&msg, subsocket, 0);
         if (rc != -1) {
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
             rxsuccess++;
 
             // after receiving 1st message, set a finite timeout (default is infinite)
@@ -170,7 +171,6 @@ static void subscriber_thread_main (void *pvoid)
             TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
               subsocket, ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));
         } else {
-            TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
             break;
         }
 
