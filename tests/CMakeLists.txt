@@ -86,6 +86,7 @@ if(NOT WIN32)
     test_rebind_ipc
     test_reqrep_ipc
     test_proxy
+    test_proxy_hwm
     test_proxy_single_socket
     test_proxy_terminate
     test_getsockopt_memset

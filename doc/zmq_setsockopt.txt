@@ -640,6 +640,10 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
+NOTE: 0MQ does not guarantee that the socket will be able to queue as many as ZMQ_RCVHWM
+messages, and the actual limit may be lower or higher, depending on socket transport.
+A notable example is for sockets using TCP transport; see linkzmq:zmq_tcp[7].
+
 [horizontal]
 Option value type:: int
 Option value unit:: messages
@@ -858,7 +862,9 @@ type.
 
 NOTE: 0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM
 messages, and the actual limit may be as much as 90% lower depending on the
-flow of messages on the socket.
+flow of messages on the socket. The socket may even be able to accept more messages
+than the ZMQ_SNDHWM threshold; a notable example is for sockets using TCP transport;
+see linkzmq:zmq_tcp[7].
 
 [horizontal]
 Option value type:: int
