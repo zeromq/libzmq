@@ -183,7 +183,7 @@ static void subscriber_thread_main (void *pvoid)
             TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
               subsocket, ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));
         } else {
-            //printf (" ** subscriber_thread_main failed receiving...  exiting");
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
             break;
         }
 
