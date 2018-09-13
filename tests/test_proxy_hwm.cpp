@@ -73,7 +73,6 @@ static void lower_tcp_buff (void *sock_)
     size_t sndBuffSz = sizeof sndBuff;
     int rc = zmq_getsockopt (sock_, ZMQ_SNDBUF, &sndBuff, &sndBuffSz);
     assert (rc == 0);
-    //printf ("lower_tcp_buff current TCP buffer size = %d", sndBuff);
 
     int newBuff = 1000;
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -81,7 +80,6 @@ static void lower_tcp_buff (void *sock_)
 
     rc = zmq_getsockopt (sock_, ZMQ_SNDBUF, &sndBuff, &sndBuffSz);
     assert (rc == 0);
-    //printf ("lower_tcp_buff new TCP buffer size = %d", sndBuff);
 }
 
 static void lower_hwm (void *skt)
@@ -96,7 +94,6 @@ static void lower_hwm (void *skt)
 
 static void publisher_thread_main (void *pvoid)
 {
-    //printf ("publisher_thread_main started");
     proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
 
     void *pubsocket = zmq_socket (cfg->context, ZMQ_PUB);
@@ -104,7 +101,6 @@ static void publisher_thread_main (void *pvoid)
 
     lower_hwm (pubsocket);
 
-    //printf ("publisher_thread_main connecting to endpoint %s", cfg->frontend_endpoint);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pubsocket, cfg->frontend_endpoint));
 
     int optval = 1;
@@ -125,32 +121,25 @@ static void publisher_thread_main (void *pvoid)
         /* Send the message to the socket */
         rc = zmq_msg_send (&msg, pubsocket, ZMQ_DONTWAIT);
         if (rc != -1) {
-            //printf (" ** publisher_thread_main sent successfully %d bytes sent, total sent %lu",
-            //rc, send_count);
             send_count++;
         } else {
             TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
-            //printf (" ** publisher_thread_main failed sending pkt with errno=%d",
-            //zmq_errno ());
             break;
         }
     }
 
     // VERIFY EXPECTED RESULTS
 
-    //printf ("publisher_thread_main sent %lu packets successfully; HWM = %d.", send_count, HWM);
     TEST_ASSERT (4 * HWM == send_count || 2 * HWM == send_count);
 
 
     // CLEANUP
 
     zmq_close (pubsocket);
-    //printf ("publisher_thread_main exiting");
 }
 
 static void subscriber_thread_main (void *pvoid)
 {
-    //printf ("subscriber_thread_main started");
     proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
 
     void *subsocket = zmq_socket (cfg->context, ZMQ_SUB);
@@ -160,7 +149,6 @@ static void subscriber_thread_main (void *pvoid)
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (subsocket, ZMQ_SUBSCRIBE, 0, 0));
 
-    //printf ("subscriber_thread_main connecting to endpoint %s", cfg->backend_endpoint);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subsocket, cfg->backend_endpoint));
 
     lower_tcp_buff (subsocket);
@@ -175,7 +163,6 @@ static void subscriber_thread_main (void *pvoid)
 
         rc = zmq_msg_recv (&msg, subsocket, 0);
         if (rc != -1) {
-            //printf (" ** subscriber_thread_main received %lu pkts", rxsuccess);
             rxsuccess++;
 
             // after receiving 1st message, set a finite timeout (default is infinite)
@@ -203,8 +190,6 @@ static void subscriber_thread_main (void *pvoid)
     // CLEANUP
 
     zmq_close (subsocket);
-
-    //printf ("subscriber_thread_main exiting");
 }
 
 bool recv_stat (void *sock_, bool last_, uint64_t *res)
@@ -257,28 +242,14 @@ bool check_proxy_stats (void *control_proxy_)
     zmq_proxy_stats_t total_stats;
     int rc;
 
-    static unsigned int nsuccess = 0, nfailed = 0;
-    //static unsigned int nupdates = 0;
-    //bool is_verbose = (((nupdates++) % 1000) == 0);
-
-    //if (is_verbose)
-    //printf ("asking update #%d from proxy (so far %d successful, %d failed):",
-    //nupdates, nsuccess, nfailed);
-
     rc = zmq_send (control_proxy_, "STATISTICS", 10, ZMQ_DONTWAIT);
     assert (rc == 10 || (rc == -1 && errno == EAGAIN));
     if (rc == -1 && errno == EAGAIN) {
-        nfailed++;
-        //if (is_verbose)
-        //printf ("    ...failed (TX)");
         return false;
     }
 
     // first frame of the reply contains FRONTEND stats:
     if (!recv_stat (control_proxy_, false, &total_stats.frontend.msg_in)) {
-        nfailed++;
-        //if (is_verbose)
-        //printf ("    ...failed (timedout)");
         return false;
     }
 
@@ -292,30 +263,11 @@ bool check_proxy_stats (void *control_proxy_)
     recv_stat (control_proxy_, false, &total_stats.backend.msg_out);
     recv_stat (control_proxy_, true, &total_stats.backend.bytes_out);
 
-    // check stats
-    /*
-    if (is_verbose) {
-        //printf (
-          "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.frontend.msg_in,
-          (unsigned long int) total_stats.frontend.bytes_in,
-          (unsigned long int) total_stats.frontend.msg_out,
-          (unsigned long int) total_stats.frontend.bytes_out);
-        //printf (
-          "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.backend.msg_in,
-          (unsigned long int) total_stats.backend.bytes_in,
-          (unsigned long int) total_stats.backend.msg_out,
-          (unsigned long int) total_stats.backend.bytes_out);
-    }
-*/
-    nsuccess++;
     return true;
 }
 
 static void proxy_stats_asker_thread_main (void *pvoid)
 {
-    //printf ("proxy_stats_asker_thread_main started");
     proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
 
 
@@ -327,7 +279,6 @@ static void proxy_stats_asker_thread_main (void *pvoid)
     assert (control_req);
 
     // connect CONTROL-REQ: a socket to which send commands
-    //printf ("proxy_stats_asker_thread_main connecting to endpoint %s", cfg->control_endpoint);
     int rc = zmq_connect (control_req, cfg->control_endpoint);
     assert (rc == 0);
 
@@ -367,13 +318,10 @@ static void proxy_stats_asker_thread_main (void *pvoid)
     assert (rc == 9);
 
     zmq_close (control_req);
-
-    //printf ("proxy_stats_asker_thread_main exiting");
 }
 
 static void proxy_thread_main (void *pvoid)
 {
-    //printf ("proxy_thread_main started");
     proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
     int rc;
 
@@ -425,16 +373,11 @@ static void proxy_thread_main (void *pvoid)
 
     // start proxying!
 
-    //printf ( "proxy_thread_main starting proxy on frontend=%s, backend=%s, ctrl=%s",
-    //cfg->frontend_endpoint, cfg->backend_endpoint, cfg->control_endpoint);
-
     zmq_proxy_steerable (frontend_xsub, backend_xpub, NULL, control_rep);
 
     zmq_close (frontend_xsub);
     zmq_close (backend_xpub);
     zmq_close (control_rep);
-
-    //printf ("proxy_thread_main exiting");
 }
 
 
@@ -470,8 +413,6 @@ int main (void)
 
 
     // CLEANUP
-
-    //printf ("main waiting for all threads to join");
 
     zmq_threadclose (publisher);
     zmq_threadclose (subscriber);
