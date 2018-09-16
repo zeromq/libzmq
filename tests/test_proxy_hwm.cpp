@@ -126,9 +126,7 @@ static void publisher_thread_main (void *pvoid)
     // So depending on the scheduling of the second thread, the publisher might get one,
     // two or three more batches in. The ceiling is 40 as there's 2 queues.
     //
-    assert (4 * HWM == send_count || 3 * HWM == send_count
-            || 2 * HWM == send_count);
-
+    assert (4 * HWM >= send_count && 2 * HWM <= send_count);
 
     // CLEANUP
 
@@ -178,9 +176,7 @@ static void subscriber_thread_main (void *pvoid)
     // EXPLANATION FOR RX TO BE CONSIDERED SUCCESSFUL:
     // see publisher thread why we have 3 possible outcomes as number of RX messages
 
-    assert (4 * HWM == rxsuccess || 3 * HWM == rxsuccess
-            || 2 * HWM == rxsuccess);
-
+    assert (4 * HWM >= rxsuccess && 2 * HWM <= rxsuccess);
 
     // INFORM THAT WE COMPLETED:
 
