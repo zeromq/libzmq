@@ -65,7 +65,7 @@ typedef struct
     const char *backend_endpoint;
     const char *control_endpoint;
 
-    bool subscriber_received_all;
+    void *subscriber_received_all;
 } proxy_hwm_cfg_t;
 
 static void lower_hwm (void *skt)
@@ -184,8 +184,7 @@ static void subscriber_thread_main (void *pvoid)
 
     // INFORM THAT WE COMPLETED:
 
-    cfg->subscriber_received_all = true;
-
+    zmq_atomic_counter_inc (cfg->subscriber_received_all);
 
     // CLEANUP
 
@@ -304,7 +303,7 @@ static void proxy_stats_asker_thread_main (void *pvoid)
 
     // Start!
 
-    while (!cfg->subscriber_received_all) {
+    while (!zmq_atomic_counter_value (cfg->subscriber_received_all)) {
 #ifdef ZMQ_BUILD_DRAFT_API
         check_proxy_stats (control_req);
 #endif
@@ -399,7 +398,7 @@ int main (void)
     cfg.frontend_endpoint = "inproc://frontend";
     cfg.backend_endpoint = "inproc://backend";
     cfg.control_endpoint = "inproc://ctrl";
-    cfg.subscriber_received_all = false;
+    cfg.subscriber_received_all = zmq_atomic_counter_new ();
 
     void *proxy = zmq_threadstart (&proxy_thread_main, (void *) &cfg);
     assert (proxy != 0);
@@ -421,6 +420,8 @@ int main (void)
 
     int rc = zmq_ctx_term (context);
     assert (rc == 0);
+
+    zmq_atomic_counter_destroy (&cfg.subscriber_received_all);
 
     return 0;
 }
