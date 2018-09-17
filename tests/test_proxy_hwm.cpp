@@ -65,7 +65,7 @@ typedef struct
     const char *backend_endpoint;
     const char *control_endpoint;
 
-    bool subscriber_received_all;
+    void *subscriber_received_all;
 } proxy_hwm_cfg_t;
 
 static void lower_hwm (void *skt)
@@ -126,9 +126,7 @@ static void publisher_thread_main (void *pvoid)
     // So depending on the scheduling of the second thread, the publisher might get one,
     // two or three more batches in. The ceiling is 40 as there's 2 queues.
     //
-    assert (4 * HWM == send_count || 3 * HWM == send_count
-            || 2 * HWM == send_count);
-
+    assert (4 * HWM >= send_count && 2 * HWM <= send_count);
 
     // CLEANUP
 
@@ -178,14 +176,11 @@ static void subscriber_thread_main (void *pvoid)
     // EXPLANATION FOR RX TO BE CONSIDERED SUCCESSFUL:
     // see publisher thread why we have 3 possible outcomes as number of RX messages
 
-    assert (4 * HWM == rxsuccess || 3 * HWM == rxsuccess
-            || 2 * HWM == rxsuccess);
-
+    assert (4 * HWM >= rxsuccess && 2 * HWM <= rxsuccess);
 
     // INFORM THAT WE COMPLETED:
 
-    cfg->subscriber_received_all = true;
-
+    zmq_atomic_counter_inc (cfg->subscriber_received_all);
 
     // CLEANUP
 
@@ -304,7 +299,7 @@ static void proxy_stats_asker_thread_main (void *pvoid)
 
     // Start!
 
-    while (!cfg->subscriber_received_all) {
+    while (!zmq_atomic_counter_value (cfg->subscriber_received_all)) {
 #ifdef ZMQ_BUILD_DRAFT_API
         check_proxy_stats (control_req);
 #endif
@@ -399,7 +394,7 @@ int main (void)
     cfg.frontend_endpoint = "inproc://frontend";
     cfg.backend_endpoint = "inproc://backend";
     cfg.control_endpoint = "inproc://ctrl";
-    cfg.subscriber_received_all = false;
+    cfg.subscriber_received_all = zmq_atomic_counter_new ();
 
     void *proxy = zmq_threadstart (&proxy_thread_main, (void *) &cfg);
     assert (proxy != 0);
@@ -421,6 +416,8 @@ int main (void)
 
     int rc = zmq_ctx_term (context);
     assert (rc == 0);
+
+    zmq_atomic_counter_destroy (&cfg.subscriber_received_all);
 
     return 0;
 }
