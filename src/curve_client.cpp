@@ -240,6 +240,7 @@ int zmq::curve_client_t::process_ready (const uint8_t *msg_data_,
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
+        free(ready_plaintext);
         return -1;
     }
 

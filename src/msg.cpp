@@ -169,6 +169,7 @@ int zmq::msg_t::init_data (void *data_,
         _u.lmsg.content =
           static_cast<content_t *> (malloc (sizeof (content_t)));
         if (!_u.lmsg.content) {
+            ffn_(data_,hint_);
             errno = ENOMEM;
             return -1;
         }

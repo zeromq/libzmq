@@ -189,8 +189,10 @@ struct curve_client_tools_t
                          initiate_nonce, cn_server_, cn_secret_);
         free (initiate_plaintext);
 
-        if (rc == -1)
+        if (rc == -1) {
+            free(initiate_box);
             return -1;
+        }
 
         uint8_t *initiate = static_cast<uint8_t *> (data_);
 
