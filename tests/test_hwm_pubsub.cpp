@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+// NOTE: on OSX the endpoint returned by ZMQ_LAST_ENDPOINT may be quite long,
+//       ensure we have extra space for that:
 #define SOCKET_STRING_LEN (MAX_SOCKET_STRING * 4)
 
 void setUp ()
@@ -47,8 +49,8 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
     size_t len = SOCKET_STRING_LEN;
     char pub_endpoint[SOCKET_STRING_LEN];
 
-    // Set up and bind PUB socket
-    void *pub_socket = test_context_socket (ZMQ_PUB);
+    // Set up and bind XPUB socket
+    void *pub_socket = test_context_socket (ZMQ_XPUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
@@ -63,8 +65,10 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0));
 
-    msleep (
-      SETTLE_TIME); // give some time to background threads to perform PUB-SUB connection
+    // Wait before starting TX operations till 1 subscriber has subscribed
+    // (in this test there's 1 subscriber only)
+    const char subscription_to_all_topics[] = {1, 0};
+    recv_string_expect_success (pub_socket, subscription_to_all_topics, 0);
 
     // Send until we reach "mute" state
     int send_count = 0;
@@ -108,7 +112,7 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
     char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up bind socket
-    void *pub_socket = test_context_socket (ZMQ_PUB);
+    void *pub_socket = test_context_socket (ZMQ_XPUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
@@ -129,7 +133,10 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (sub_socket, ZMQ_SUBSCRIBE, 0, 0));
 
-    msleep (SETTLE_TIME);
+    // Wait before starting TX operations till 1 subscriber has subscribed
+    // (in this test there's 1 subscriber only)
+    const char subscription_to_all_topics[] = {1, 0};
+    recv_string_expect_success (pub_socket, subscription_to_all_topics, 0);
 
     // Send until we block
     int send_count = 0;
