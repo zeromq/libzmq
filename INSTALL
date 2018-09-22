@@ -39,7 +39,7 @@ cmake -G "NMake Makefiles" -D WITH_PERF_TOOL=OFF -D ZMQ_BUILD_TESTS=OFF
 Windows Builds
 ==============
 
-For Windows building, see the libzmq\builds\msvc\readme.txt file.
+On Windows, use CMake for building, or for generating a Visual Studio solution file.
 
 The library can also be built for the Windows 10 UWP platform through CMake :
 cmake -H. -B<build dir> -G"Visual Studio 14 2015 Win64" \
