@@ -1006,11 +1006,6 @@ XFAIL_TESTS += tests/test_ipc_wildcard \
 		tests/test_term_endpoint
 endif
 
-# TODO remove this again when resolving https://github.com/zeromq/libzmq/issues/3124
-if BUILD_TIPC
-XFAIL_TESTS += tests/test_connect_delay_tipc
-endif
-
 EXTRA_DIST = \
 	external/unity/license.txt \
 	external/unity/version.txt \
