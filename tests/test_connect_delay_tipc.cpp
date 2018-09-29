@@ -29,6 +29,7 @@
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
+#include "testutil_security.hpp"
 
 #include <unity.h>
 
@@ -53,6 +54,9 @@ void test_send_one_connected_one_unconnected ()
     // pipe immediately.
 
     void *to = test_context_socket (ZMQ_PULL);
+    int timeout = 5000;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_LINGER, &timeout, sizeof (timeout)));
 
     // Bind the one valid receiver
     val = 0;
@@ -66,6 +70,8 @@ void test_send_one_connected_one_unconnected ()
     val = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (from, ZMQ_LINGER, &timeout, sizeof (timeout)));
     // This pipe will not connect
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tipc://{5556,0}@0.0.0"));
     // This pipe will
@@ -80,7 +86,7 @@ void test_send_one_connected_one_unconnected ()
 
     // We now consume from the connected pipe
     // - we should see just 5
-    int timeout = SETTLE_TIME;
+    timeout = SETTLE_TIME;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
@@ -115,6 +121,9 @@ void test_send_one_connected_one_unconnected_with_delay ()
     // Bind the valid socket
     void *to = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (to, "tipc://{5560,0,0}"));
+    int timeout = 5000;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (to, ZMQ_LINGER, &timeout, sizeof (timeout)));
 
     val = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -126,6 +135,8 @@ void test_send_one_connected_one_unconnected_with_delay ()
     val = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (from, ZMQ_LINGER, &timeout, sizeof (timeout)));
 
     // Set the key flag
     val = 1;
@@ -142,7 +153,7 @@ void test_send_one_connected_one_unconnected_with_delay ()
     for (int i = 0; i < send_count; ++i) {
         send_string_expect_success (from, "Hello", 0);
     }
-    int timeout = SETTLE_TIME;
+    timeout = SETTLE_TIME;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
@@ -171,17 +182,27 @@ void test_send_disconnected_with_delay ()
     // block. Then we reconnect and verify messages flow again.
     void *backend = test_context_socket (ZMQ_DEALER);
     void *frontend = test_context_socket (ZMQ_DEALER);
+    void *monitor = test_context_socket (ZMQ_PAIR);
+    int rc;
     int zero = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero)));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (frontend, ZMQ_LINGER, &zero, sizeof (zero)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (frontend, "inproc://monitor",
+                                                   ZMQ_EVENT_DISCONNECTED));
+    int timeout = 5000;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (backend, ZMQ_LINGER, &timeout, sizeof (timeout)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (frontend, ZMQ_LINGER, &timeout, sizeof (timeout)));
 
     //  Frontend connects to backend using DELAY_ATTACH_ON_CONNECT
     int on = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (backend, "tipc://{5560,0,0}"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (monitor, "inproc://monitor"));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (frontend, "tipc://{5560,0}@0.0.0"));
 
     //  Ping backend to frontend so we know when the connection is up
@@ -193,12 +214,14 @@ void test_send_disconnected_with_delay ()
 
     test_context_socket_close (backend);
 
-    //  Give time to process disconnect
-    msleep (SETTLE_TIME);
+    // Wait for disconnect to happen
+    expect_monitor_event (monitor, ZMQ_EVENT_DISCONNECTED);
 
-    // Send a message, should fail
-    TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
-                               zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT));
+    // Send a message, might succeed depending on scheduling of the I/O thread
+    do {
+        rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
+        TEST_ASSERT_TRUE (rc == 5 || (rc == -1 && zmq_errno () == EAGAIN));
+    } while (rc == 5);
 
     //  Recreate backend socket
     backend = test_context_socket (ZMQ_DEALER);
@@ -213,6 +236,7 @@ void test_send_disconnected_with_delay ()
     // After the reconnect, should succeed
     send_string_expect_success (frontend, "Hello", ZMQ_DONTWAIT);
 
+    test_context_socket_close (monitor);
     test_context_socket_close (backend);
     test_context_socket_close (frontend);
 }
