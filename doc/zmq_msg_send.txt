@@ -57,7 +57,8 @@ when sending each message part except the final one.
 RETURN VALUE
 ------------
 The _zmq_msg_send()_ function shall return number of bytes in the message
-if successful. Otherwise it shall return `-1` and set 'errno' to one of the
+if successful (if number of bytes is higher than 'MAX_INT', the function will 
+return 'MAX_INT'). Otherwise it shall return `-1` and set 'errno' to one of the 
 values defined below.
 
 
