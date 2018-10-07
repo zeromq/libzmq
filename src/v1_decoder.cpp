@@ -111,11 +111,13 @@ int zmq::v1_decoder_t::eight_byte_size_ready (unsigned char const *)
         return -1;
     }
 
+#ifndef __aarch64__
     //  Message size must fit within range of size_t data type.
     if (payload_length - 1 > std::numeric_limits<size_t>::max ()) {
         errno = EMSGSIZE;
         return -1;
     }
+#endif
 
     const size_t msg_size = static_cast<size_t> (payload_length - 1);
 
