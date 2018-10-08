@@ -125,7 +125,7 @@ int zmq::dgram_t::xsend (msg_t *msg_)
 
     // flip the more flag
     _more_out = !_more_out;
- 
+
     //  Detach the message from the data buffer.
     int rc = msg_->init ();
     errno_assert (rc == 0);
