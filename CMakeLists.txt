@@ -661,6 +661,7 @@ set(cxx-sources
   tcp_listener.cpp
   thread.cpp
   trie.cpp
+  radix_tree.cpp
   v1_decoder.cpp
   v1_encoder.cpp
   v2_decoder.cpp

@@ -34,7 +34,7 @@
 #include "session_base.hpp"
 #include "dist.hpp"
 #include "fq.hpp"
-#include "trie.hpp"
+#include "radix_tree.hpp"
 
 namespace zmq
 {
@@ -78,7 +78,7 @@ class xsub_t : public socket_base_t
     dist_t _dist;
 
     //  The repository of subscriptions.
-    trie_t _subscriptions;
+    radix_tree _subscriptions;
 
     //  If true, 'message' contains a matching message to return on the
     //  next recv call.
