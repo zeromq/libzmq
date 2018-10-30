@@ -149,6 +149,21 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 errno_assert (rc == 0);
 #endif
 
+                int hops = _options.multicast_hops;
+
+                if (hops > 0) {
+                    rc = setsockopt (_fd, level, IP_MULTICAST_TTL,
+                                     reinterpret_cast<char *> (&hops),
+                                     sizeof (hops));
+                } else {
+                    rc = 0;
+                }
+
+#ifdef ZMQ_HAVE_WINDOWS
+                wsa_assert (rc != SOCKET_ERROR);
+#else
+                errno_assert (rc == 0);
+#endif
                 if (out->family () == AF_INET6) {
                     int bind_if = udp_addr->bind_if ();
 
