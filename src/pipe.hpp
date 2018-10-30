@@ -141,6 +141,9 @@ class pipe_t : public object_t,
     //  Returns true if HWM is not reached
     bool check_hwm () const;
 
+    void set_endpoint_uri (const char *name_);
+    std::string &get_endpoint_uri ();
+
   private:
     //  Type of the underlying lock-free pipe.
     typedef ypipe_base_t<msg_t> upipe_t;
@@ -243,6 +246,10 @@ class pipe_t : public object_t,
     static int compute_lwm (int hwm_);
 
     const bool _conflate;
+
+    // If the pipe belongs to socket's endpoint the endpoint's name is stored here.
+    // Otherwise this is empty.
+    std::string _endpoint_uri;
 
     //  Disable copying.
     pipe_t (const pipe_t &);

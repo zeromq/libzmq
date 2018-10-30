@@ -1009,6 +1009,9 @@ void zmq::socket_base_t::add_endpoint (const char *endpoint_uri_,
     launch_child (endpoint_);
     _endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (endpoint_uri_),
                                           endpoint_pipe_t (endpoint_, pipe_));
+
+    if (pipe_ != NULL)
+        pipe_->set_endpoint_uri (endpoint_uri_);
 }
 
 int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
@@ -1543,6 +1546,20 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
     //  Remove the pipe from the list of attached pipes and confirm its
     //  termination if we are already shutting down.
     _pipes.erase (pipe_);
+
+    // Remove the pipe from _endpoints (set it to NULL).
+    if (!pipe_->get_endpoint_uri ().empty ()) {
+        std::pair<endpoints_t::iterator, endpoints_t::iterator> range;
+        range = _endpoints.equal_range (pipe_->get_endpoint_uri ());
+
+        for (endpoints_t::iterator it = range.first; it != range.second; ++it) {
+            if (it->second.second == pipe_) {
+                it->second.second = NULL;
+                break;
+            }
+        }
+    }
+
     if (is_terminating ())
         unregister_term_ack ();
 }
