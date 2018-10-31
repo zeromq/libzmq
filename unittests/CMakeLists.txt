@@ -7,6 +7,7 @@ set(unittests
   unittest_mtrie
   unittest_ip_resolver
   unittest_udp_address
+  unittest_radix_tree
 )
 
 #if(ENABLE_DRAFTS)
