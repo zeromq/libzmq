@@ -913,7 +913,8 @@ test_apps += tests/test_poller \
 	tests/test_scatter_gather \
 	tests/test_dgram \
 	tests/test_app_meta \
-	tests/test_router_notify
+	tests/test_router_notify \
+	tests/test_benchmark_radix_tree
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -948,6 +949,10 @@ tests_test_app_meta_CPPFLAGS = ${UNITY_CPPFLAGS}
 tests_test_router_notify_SOURCES = tests/test_router_notify.cpp
 tests_test_router_notify_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_router_notify_CPPFLAGS = ${UNITY_CPPFLAGS}
+
+tests_test_benchmark_radix_tree_SOURCES = tests/test_benchmark_radix_tree.cpp
+tests_test_benchmark_radix_tree_LDADD = $(top_builddir)/src/.libs/libzmq.a
+tests_test_benchmark_radix_tree_CPPFLAGS = -I$(top_srcdir)/src
 endif
 
 if ENABLE_STATIC

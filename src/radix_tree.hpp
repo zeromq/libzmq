@@ -133,11 +133,10 @@ class radix_tree
     void apply (void (*func) (unsigned char *data_, size_t size_, void *arg_),
                 void *arg);
 
-    void print ();
     size_t size () const;
 
   private:
-    match_result
+    inline match_result
     match (const unsigned char *key, size_t size, bool check) const;
 
     node root_;

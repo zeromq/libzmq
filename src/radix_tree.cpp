@@ -210,9 +210,9 @@ match_result::match_result (size_t i,
 {
 }
 
-inline match_result zmq::radix_tree::match (const unsigned char *key,
-                                            size_t size,
-                                            bool check = false) const
+match_result zmq::radix_tree::match (const unsigned char *key,
+                                     size_t size,
+                                     bool check = false) const
 {
     zmq_assert (key);
 
@@ -552,27 +552,4 @@ void zmq::radix_tree::apply (
 size_t zmq::radix_tree::size () const
 {
     return size_;
-}
-
-static void visit_child (node child_node, size_t level)
-{
-    zmq_assert (level > 0);
-
-    for (size_t i = 0; i < 4 * (level - 1) + level; ++i)
-        putchar (' ');
-    printf ("`-> ");
-    for (uint32_t i = 0; i < child_node.prefix_length (); ++i)
-        printf ("%c", child_node.prefix ()[i]);
-    if (child_node.refcount () > 0)
-        printf (" [*]");
-    printf ("\n");
-    for (uint32_t i = 0; i < child_node.edgecount (); ++i)
-        visit_child (child_node.node_at (i), level + 1);
-}
-
-void zmq::radix_tree::print ()
-{
-    puts ("[root]");
-    for (uint32_t i = 0; i < root_.edgecount (); ++i)
-        visit_child (root_.node_at (i), 1);
 }
