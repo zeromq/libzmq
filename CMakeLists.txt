@@ -1,18 +1,37 @@
 # CMake build script for ZeroMQ
-cmake_minimum_required(VERSION 2.8.12)
-
 project(ZeroMQ)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+  cmake_minimum_required(VERSION 3.0.2)
+else()
+  cmake_minimum_required(VERSION 2.8.12)
+endif()
+
+option(ENABLE_ASAN "Build with address sanitizer)" OFF)
+if(ENABLE_ASAN)
+  message(STATUS "Instrumenting with Address Sanitizer")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
+endif()
+
+option (ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
+if (ENABLE_INTRINSICS)
+   message(STATUS "Using compiler intrinsics for atomic ops")
+   add_definitions(-DZMQ_HAVE_ATOMIC_INTRINSICS)
+endif()
 
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
 set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
-# Apply CMP0042: MACOSX_RPATH is enabled by default
-cmake_policy(SET CMP0042 NEW)
-
 include(GNUInstallDirs)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   # Find more information: https://cmake.org/Wiki/CMake_RPATH_handling
+
+  # Apply CMP0042: MACOSX_RPATH is enabled by default
+  cmake_policy(SET CMP0042 NEW)
 
   # Add an install rpath if it is not a system directory
   list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
@@ -916,29 +935,32 @@ if(MSVC)
     DEPENDS ${nsis-template})
 endif()
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
-file(GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
-set(html-docs)
-foreach(txt ${docs})
-  string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
-  set(src ${txt})
-  set(dst doc/${html})
-  if(WITH_DOC)
-    add_custom_command(
-      OUTPUT  ${dst}
-      COMMAND ${ASCIIDOC_EXECUTABLE}
-      -d manpage
-      -b xhtml11
-      -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
-      -azmq_version=${ZMQ_VERSION}
-      -o ${dst}
-      ${src}
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT "Generating ${html}")
-    list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
-  endif()
-endforeach()
+option (WITH_DOCS "Build html docs" ON)
+if (WITH_DOCS)
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
+  file(GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
+  set(html-docs)
+  foreach(txt ${docs})
+    string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
+    set(src ${txt})
+    set(dst doc/${html})
+    if(WITH_DOC)
+      add_custom_command(
+        OUTPUT  ${dst}
+        COMMAND ${ASCIIDOC_EXECUTABLE}
+        -d manpage
+        -b xhtml11
+        -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
+        -azmq_version=${ZMQ_VERSION}
+        -o ${dst}
+        ${src}
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating ${html}")
+      list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
+    endif()
+  endforeach()
+endif()
 
 if(ZMQ_BUILD_FRAMEWORK)
   add_custom_command(
