@@ -1,4 +1,4 @@
-0MQ version 4.3.1 stable, released on 20xx/xx/xx
+0MQ version 4.3.0 stable, released on 20xx/xx/xx
 ================================================
 
 * The following DRAFT APIs have been marked as STABLE and will not change
@@ -15,6 +15,70 @@
     socket(s) to the specified interface. Allows to use Linux VRF, see:
     https://www.kernel.org/doc/Documentation/networking/vrf.txt
     NOTE: requires the program to be ran as root OR with CAP_NET_RAW
+  - zmq_timers_* APIs. These functions can be used for cross-platforms timed
+    callbacks. See doc/zmq_timers.txt for details.
+
+* New epoll implementation for Windows, using the following implementation:
+  https://github.com/piscisaureus/wepoll/tree/v1.5.2
+  To use this, select "epoll" as the polling method in the build system.
+  Note for distributors: the wepoll source code is embedded and distributed.
+  It is licensed under the BSD-2-Clause and thus it is compatible with LGPL-3.0.
+  Note that, if selected at build time, the license text must be distributed
+  with the binary in accordance to the license terms. A copy can be found in
+  the repository: external/wepoll/license.txt
+
+* New DRAFT (see NEWS for 4.2.0) socket options:
+  - ZMQ_ROUTER_NOTIFY to deliver a notification when a peer connects and/or
+    disconnects in the form of a routing id plus a zero-length frame.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* Many, many coding style and static analysis improvements.
+
+* Many, many improvements to the CMake build system.
+
+* Many, many improvements to unit tests.
+
+* Fixed #3083 - link with -latomic when needed.
+
+* Fixed #3162 - build failure with MUSL libc.
+
+* Fixed #3158 - -1 value of ZMQ_RECONNECT_IVL was not correctly handled on some
+                platforms.
+
+* Fixed #3170 - improved documentation for ZMQ_PAIR.
+
+* Fixed #3168 - correctly use symbols map on Debian/kFreeBSD and Debian/HURD
+                to avoid exporting standard library symbols.
+
+* Fixed #3168 - correctly process ZMTP 3.1 cancel/subscribe commands.
+
+* Fixed #3171 - improve documentation for ZMQ_CONFLATE.
+
+* Fixed #2876 - stack overflow on Windows 64.
+
+* Fixed #3191 - race condition with received message causes
+                ZMQ_CONNECT_ROUTING_ID to be assigned to wrong socket.
+
+* Fixed #3005 - added documentation for new zmq_timers_* API.
+
+* Fixed #3222 - use /Z7 debug on Release builds too on Windows (CMake).
+
+* Fixed #3226 - possible PGM receiver crash.
+
+* Fixed #3236 - UDP dish socket can't bind to a multicast port already in use.
+
+* Fixed #3242 - improve HWM documentation.
+
+* Fixed #2488 - improve zmq_msg_send doc return value documentation.
+
+* Fixed #3268 - HWM in ZMQ_DGRAM socket does not respect multipart message.
+
+* Fixed #3284 - added support for ZMQ_MULTICAST_HOPS with UDP sockets.
+
+* Fixed #3245 - use-after-free reported in zmq::pipe_t::terminate.
+
+* Fixed #1400 - use patricia trie for subscription to improve performances and
+                memory usage. Note: only active in DRAFT builds for now.
 
 
 0MQ version 4.2.5 stable, released on 2018/03/23
