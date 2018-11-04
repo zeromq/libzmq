@@ -801,9 +801,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 //  TODO: the function implementation can just call zmq_pollfd_poll with
 //  pollfd as NULL, however pollfd is not yet stable.
 #if defined ZMQ_HAVE_POLLER
-    // if poller is present, use that.
-    return zmq_poller_poll (items_, nitems_, timeout_);
-#else
+    // if poller is present, use that if there is at least 1 thread-safe socket,
+    // otherwise fall back to the previous implementation as it's faster.
+    for (int i = 0; i != nitems_; i++) {
+        if (items_[i].socket
+            && as_socket_base_t (items_[i].socket)->is_thread_safe ()) {
+            return zmq_poller_poll (items_, nitems_, timeout_);
+        }
+    }
+#endif // ZMQ_HAVE_POLLER
 #if defined ZMQ_POLL_BASED_ON_POLL || defined ZMQ_POLL_BASED_ON_SELECT
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
@@ -1086,7 +1092,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     errno = ENOTSUP;
     return -1;
 #endif
-#endif // ZMQ_HAVE_POLLER
 }
 
 //  The poller functionality
