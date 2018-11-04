@@ -209,7 +209,7 @@ int main (void)
     RUN_TEST (test_filter_with_current_process_pid);
     RUN_TEST (test_filter_with_possibly_nonexistent_pid);
 #else
-    RUN_TEST (test_filter_with_pid_fails ());
+    RUN_TEST (test_filter_with_pid_fails);
 #endif
 #else
     RUN_TEST (test_filter_with_zero_uid_fails);
