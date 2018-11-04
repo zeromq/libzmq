@@ -155,6 +155,7 @@ libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
 libzmq_on_gnu="no"
+libzmq_on_debian_kfreebsd="no"
 
 # Set some default features required by ZeroMQ code
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -Wno-long-long $CPPFLAGS"
@@ -210,7 +211,7 @@ case "${host_os}" in
         case "${host_os}" in
             # On Debian/kFreeBSD with gnu set the --version-script flag
             kfreebsd*-gnu*)
-                libzmq_on_gnu="yes"
+                libzmq_on_debian_kfreebsd="yes"
             ;;
         esac
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
@@ -617,6 +618,7 @@ AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
+AM_CONDITIONAL(ON_DEBIAN_KFREEBSD, test "x$libzmq_on_debian_kfreebsd" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
