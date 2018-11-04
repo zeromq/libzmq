@@ -322,10 +322,11 @@ case "${host_os}" in
         ;;
 esac
 
-# Sun Studio does not like anonymous structures in unions
+# Sun Studio does not like anonymous structures in unions and does not have weak attribute
 if test "x$libzmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" = "xyes"; then
     CXXFLAGS="${CXXFLAGS} -features=extensions"
     CFLAGS="${CFLAGS} -features=extensions"
+    CPPFLAGS="${CPPFLAGS} -DUNITY_WEAK_PRAGMA"
 fi
 
 # Checks for libraries
