@@ -4,9 +4,9 @@ daysUntilStale: 365
 daysUntilClose: 56
 # Issues with these labels will never be considered stale
 exemptLabels:
-  - Help%20Request
-  - Feature%20Request
-  - Problem%20reproduced
+  - "Help Request"
+  - "Feature Request"
+  - "Problem reproduced"
   - Critical
 # Label to use when marking an issue as stale
 staleLabel: stale
