@@ -274,7 +274,7 @@ void test_inproc ()
     TEST_ASSERT_EQUAL_INT (6000, test_blocking (2000, 6000, "inproc://c"));
 }
 
-#ifndef ZMQ_HAVE_WINDOWS
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
 
 void test_ipc ()
 {
@@ -295,7 +295,7 @@ int main ()
 
     RUN_TEST (test_tcp);
     RUN_TEST (test_inproc);
-#ifndef ZMQ_HAVE_WINDOWS
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
     RUN_TEST (test_ipc);
 #endif
     RUN_TEST (test_reset_hwm);

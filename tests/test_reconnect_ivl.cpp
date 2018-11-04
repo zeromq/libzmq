@@ -68,7 +68,7 @@ void test_reconnect_ivl_against_pair_socket (const char *my_endpoint_,
     test_context_socket_close (sc);
 }
 
-#ifndef ZMQ_HAVE_WINDOWS
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
 void test_reconnect_ivl_ipc (void)
 {
     const char *ipc_endpoint = "ipc:///tmp/test_reconnect_ivl";
@@ -112,7 +112,7 @@ int main (void)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-#ifndef ZMQ_HAVE_WINDOWS
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
     RUN_TEST (test_reconnect_ivl_ipc);
 #endif
     RUN_TEST (test_reconnect_ivl_tcp_ipv4);
