@@ -552,20 +552,20 @@ void zmq::session_base_t::reconnect ()
 
 zmq::session_base_t::connecter_factory_entry_t
   zmq::session_base_t::_connecter_factories[] = {
-    std::make_pair (protocol_name::tcp,
-                    &zmq::session_base_t::create_connecter_tcp),
+    connecter_factory_entry_t (protocol_name::tcp,
+                               &zmq::session_base_t::create_connecter_tcp),
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
-    std::make_pair (protocol_name::ipc,
-                    &zmq::session_base_t::create_connecter_ipc),
+    connecter_factory_entry_t (protocol_name::ipc,
+                               &zmq::session_base_t::create_connecter_ipc),
 #endif
 #if defined ZMQ_HAVE_TIPC
-    std::make_pair (protocol_name::tipc,
-                    &zmq::session_base_t::create_connecter_tipc),
+    connecter_factory_entry_t (protocol_name::tipc,
+                               &zmq::session_base_t::create_connecter_tipc),
 #endif
 #if defined ZMQ_HAVE_VMCI
-    std::make_pair (protocol_name::vmci,
-                    &zmq::session_base_t::create_connecter_vmci),
+    connecter_factory_entry_t (protocol_name::vmci,
+                               &zmq::session_base_t::create_connecter_vmci),
 #endif
 };
 
@@ -577,14 +577,17 @@ zmq::session_base_t::connecter_factory_map_t
 
 zmq::session_base_t::start_connecting_entry_t
   zmq::session_base_t::_start_connecting_entries[] = {
-    std::make_pair (protocol_name::udp,
-                    &zmq::session_base_t::start_connecting_udp),
+    start_connecting_entry_t (protocol_name::udp,
+                              &zmq::session_base_t::start_connecting_udp),
 #if defined ZMQ_HAVE_OPENPGM
-    std::make_pair ("pgm", &zmq::session_base_t::start_connecting_pgm),
-    std::make_pair ("epgm", &zmq::session_base_t::start_connecting_pgm),
+    start_connecting_entry_t ("pgm",
+                              &zmq::session_base_t::start_connecting_pgm),
+    start_connecting_entry_t ("epgm",
+                              &zmq::session_base_t::start_connecting_pgm),
 #endif
 #if defined ZMQ_HAVE_NORM
-    std::make_pair ("norm", &zmq::session_base_t::start_connecting_norm),
+    start_connecting_entry_t ("norm",
+                              &zmq::session_base_t::start_connecting_norm),
 #endif
 };
 
