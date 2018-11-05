@@ -303,10 +303,17 @@ src_libzmq_la_LDFLAGS = \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl,--version-script=$(srcdir)/src/libzmq.vers
 else
+if ON_DEBIAN_KFREEBSD
+src_libzmq_la_LDFLAGS = \
+	-version-info @LTVER@ \
+	@LIBZMQ_EXTRA_LDFLAGS@ \
+	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+else
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@ \
 	-Wl
+endif
 endif
 endif
 endif
@@ -1014,6 +1021,7 @@ endif
 
 if ON_GNU
 XFAIL_TESTS += tests/test_ipc_wildcard \
+		tests/test_reqrep_ipc \
 		tests/test_term_endpoint
 endif
 
