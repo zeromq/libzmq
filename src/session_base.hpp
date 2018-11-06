@@ -105,6 +105,33 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
   private:
     void start_connecting (bool wait_);
 
+    typedef own_t *(session_base_t::*connecter_factory_fun_t) (
+      io_thread_t *io_thread, bool wait_);
+    typedef std::pair<const std::string, connecter_factory_fun_t>
+      connecter_factory_entry_t;
+    static connecter_factory_entry_t _connecter_factories[];
+    typedef std::map<std::string, connecter_factory_fun_t>
+      connecter_factory_map_t;
+    static connecter_factory_map_t _connecter_factories_map;
+
+    own_t *create_connecter_vmci (io_thread_t *io_thread_, bool wait_);
+    own_t *create_connecter_tipc (io_thread_t *io_thread_, bool wait_);
+    own_t *create_connecter_ipc (io_thread_t *io_thread_, bool wait_);
+    own_t *create_connecter_tcp (io_thread_t *io_thread_, bool wait_);
+
+    typedef void (session_base_t::*start_connecting_fun_t) (
+      io_thread_t *io_thread);
+    typedef std::pair<const std::string, start_connecting_fun_t>
+      start_connecting_entry_t;
+    static start_connecting_entry_t _start_connecting_entries[];
+    typedef std::map<std::string, start_connecting_fun_t>
+      start_connecting_map_t;
+    static start_connecting_map_t _start_connecting_map;
+
+    void start_connecting_pgm (io_thread_t *io_thread_);
+    void start_connecting_norm (io_thread_t *io_thread_);
+    void start_connecting_udp (io_thread_t *io_thread_);
+
     void reconnect ();
 
     //  Handlers for incoming commands.
