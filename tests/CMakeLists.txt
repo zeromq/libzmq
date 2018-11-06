@@ -137,7 +137,6 @@ if(ENABLE_DRAFTS)
     test_dgram
     test_app_meta
     test_router_notify
-    test_benchmark_radix_tree
   )
 endif()
 
