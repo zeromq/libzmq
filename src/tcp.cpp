@@ -284,7 +284,7 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
               last_error == WSAENETDOWN || last_error == WSAENETRESET
               || last_error == WSAECONNABORTED || last_error == WSAETIMEDOUT
               || last_error == WSAECONNRESET || last_error == WSAECONNREFUSED
-              || last_error == WSAENOTCONN);
+              || last_error == WSAENOTCONN || last_error == WSAENOBUFS);
             errno = wsa_error_to_errno (last_error);
         }
     }
