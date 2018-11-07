@@ -266,7 +266,7 @@ int zmq::signaler_t::wait (int timeout_)
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 
-    optimized_fd_set_t fds (FD_SETSIZE);
+    optimized_fd_set_t fds (1);
     FD_ZERO (fds.get ());
     FD_SET (_r, fds.get ());
     struct timeval timeout;
