@@ -141,6 +141,8 @@
 * Fixed #1400 - use patricia trie for subscription to improve performances and
                 memory usage. Note: only active in DRAFT builds for now.
 
+* Fixed #3263 - fix abort on Windows when a large TCP read is requested and
+                fails.
 
 0MQ version 4.2.5 stable, released on 2018/03/23
 ================================================
