@@ -27,8 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <trie.hpp>
-#include <radix_tree.hpp>
+#include "radix_tree.hpp"
+#include "trie.hpp"
 
 #include <chrono>
 #include <cstddef>
