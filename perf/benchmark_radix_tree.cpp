@@ -27,6 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if __cplusplus >= 201103L
+
 #include "radix_tree.hpp"
 #include "trie.hpp"
 
@@ -111,3 +113,11 @@ int main ()
     for (auto &op : input_set)
         delete[] op;
 }
+
+#else
+
+int main ()
+{
+}
+
+#endif
