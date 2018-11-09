@@ -58,7 +58,6 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 AC_PROG_CC
 AX_CHECK_COMPILE_FLAG([-std=gnu11], [CFLAGS+=" -std=gnu11"], [AC_PROG_CC_C99])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11([ext], [optional])
 AX_CODE_COVERAGE
 AM_PROG_CC_C_O
 AC_PROG_SED
@@ -75,6 +74,17 @@ LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AX_VALGRIND_CHECK
+
+AC_ARG_ENABLE([force-CXX98-compat],
+    [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])
+if test "x$enable_force_CXX98_compat" = "xyes"; then
+    AC_LANG_PUSH([C++])
+    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS+=" -std=gnu++98"], [])
+    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS+=" -Wc++98-compat"], [])
+    AC_LANG_POP([C++])
+else
+    AX_CXX_COMPILE_STDCXX_11([ext], [optional])
+fi
 
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
