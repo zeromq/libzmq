@@ -256,26 +256,6 @@ void test_apply ()
     delete vec;
 }
 
-void test_print ()
-{
-    zmq::radix_tree tree;
-
-    // Adapted from the example on wikipedia.
-    std::vector<std::string> keys;
-    keys.push_back ("tester");
-    keys.push_back ("water");
-    keys.push_back ("slow");
-    keys.push_back ("slower");
-    keys.push_back ("test");
-    keys.push_back ("team");
-    keys.push_back ("toast");
-
-    for (size_t i = 0; i < keys.size (); ++i)
-        tree_add (tree, keys[i]);
-
-    tree.print ();
-}
-
 int main (void)
 {
     setup_test_environment ();
@@ -305,8 +285,6 @@ int main (void)
     RUN_TEST (test_size);
 
     RUN_TEST (test_apply);
-
-    RUN_TEST (test_print);
 
     return UNITY_END ();
 }

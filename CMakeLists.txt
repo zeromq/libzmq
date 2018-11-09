@@ -1209,6 +1209,15 @@ if(BUILD_SHARED)
           COMPONENT PerfTools)
       endif()
     endforeach()
+
+    if(BUILD_STATIC)
+      add_executable(benchmark_radix_tree perf/benchmark_radix_tree.cpp)
+      target_link_libraries(benchmark_radix_tree libzmq-static)
+      target_include_directories(benchmark_radix_tree
+        PUBLIC
+        "${CMAKE_SOURCE_DIR}/src")
+    endif()
+
   endif()
 elseif(WITH_PERF_TOOL)
   message(FATAL_ERROR "Shared library disabled - perf-tools unavailable.")

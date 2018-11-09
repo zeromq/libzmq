@@ -372,6 +372,17 @@ perf_inproc_lat_SOURCES = perf/inproc_lat.cpp
 
 perf_inproc_thr_LDADD = src/libzmq.la
 perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
+
+if ENABLE_STATIC
+noinst_PROGRAMS += \
+	perf/benchmark_radix_tree
+
+perf_benchmark_radix_tree_DEPENDENCIES = src/libzmq.la
+perf_benchmark_radix_tree_CPPFLAGS = -I$(top_srcdir)/src
+perf_benchmark_radix_tree_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD}
+perf_benchmark_radix_tree_SOURCES = perf/benchmark_radix_tree.cpp
+endif
 endif
 
 if ENABLE_CURVE_KEYGEN
