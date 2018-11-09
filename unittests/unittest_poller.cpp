@@ -59,6 +59,7 @@ struct test_events_t : zmq::i_poll_events
         fd (fd_),
         poller (poller_)
     {
+        (void)fd;
     }
 
     virtual void in_event ()
