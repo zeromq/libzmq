@@ -151,13 +151,15 @@ void test_router_notify_helper (int opt_notify)
     size_t opt_more_length = sizeof (opt_more);
     int opt_events;
     size_t opt_events_length = sizeof (opt_events);
+    char connect_address[MAX_SOCKET_STRING];
 
 
     // valid values
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
+    test_bind (router, "tcp://127.0.0.1:*", connect_address,
+               sizeof (connect_address));
 
     void *dealer = test_context_socket (ZMQ_DEALER);
     const char *dealer_routing_id = "X";
@@ -166,7 +168,7 @@ void test_router_notify_helper (int opt_notify)
       zmq_setsockopt (dealer, ZMQ_ROUTING_ID, dealer_routing_id, 1));
 
     // dealer connects
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, connect_address));
 
     // connection notification msg
     if (opt_notify & ZMQ_NOTIFY_CONNECT) {
@@ -188,7 +190,7 @@ void test_router_notify_helper (int opt_notify)
     TEST_ASSERT_EQUAL (0, opt_more);
 
     // dealer disconnects
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (dealer, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (dealer, connect_address));
 
     // need one more process_commands() (???)
     msleep (SETTLE_TIME);
@@ -234,6 +236,7 @@ void test_handshake_fail ()
     void *router = test_context_socket (ZMQ_ROUTER);
     int opt_timeout = 200;
     int opt_notify = ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT;
+    char connect_address[MAX_SOCKET_STRING];
 
     // valid values
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
@@ -242,15 +245,16 @@ void test_handshake_fail ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_RCVTIMEO, &opt_timeout, sizeof (opt_timeout)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
+    test_bind (router, "tcp://127.0.0.1:*", connect_address,
+               sizeof (connect_address));
 
     // send something on raw tcp
     void *stream = test_context_socket (ZMQ_STREAM);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (stream, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (stream, connect_address));
 
     send_string_expect_success (stream, "not-a-handshake", 0);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (stream, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (stream, connect_address));
     test_context_socket_close (stream);
 
     // no notification delivered
@@ -271,6 +275,7 @@ void test_error_during_multipart ()
      * message, and delivert the notification as a new message.
      */
 
+    char connect_address[MAX_SOCKET_STRING];
     char long_str[128] = {0};
     memset (long_str, '*', sizeof (long_str) - 1);
 
@@ -285,7 +290,8 @@ void test_error_during_multipart ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_MAXMSGSIZE, &opt_maxmsgsize, sizeof (opt_maxmsgsize)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
+    test_bind (router, "tcp://127.0.0.1:*", connect_address,
+               sizeof (connect_address));
 
 
     // setup dealer
@@ -295,7 +301,7 @@ void test_error_during_multipart ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (dealer, ZMQ_ROUTING_ID, dealer_routing_id, 1));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, connect_address));
 
 
     // send multipart message, the 2nd part causes a disconnect.
