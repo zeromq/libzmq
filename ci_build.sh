@@ -62,6 +62,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("--enable-drafts=yes")
     fi
 
+    if [ -n "$FORCE_98" ] && [ "$FORCE_98" == "enabled" ]; then
+        CONFIG_OPTS+=("--enable-force-CXX98-compat=yes")
+    fi
+
     # Build and check this project
     (
         ./autogen.sh &&

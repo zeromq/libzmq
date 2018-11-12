@@ -51,6 +51,15 @@
     on local listening sockets for UDP multicast sockets (ZMQ_RADIO).
   See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
 
+* New perf tool, perf/benchmark_radix_tree, to measure the performance of the
+  different internal implementations of the trie algorithm used to track
+  subscriptions. Requires a compiler that supports C++11.
+
+* New autoconf flag "--enable-force-CXX98-compat" which will force -std=gnu++98
+  and, if the compiler supports them (clang++ at the moment), it will also add
+  -Wc++98-compat -Wc++98-compat-pedantic so that compatibility with C++98 can
+  be tested.
+
 * Many, many coding style, duplication and static analysis improvements.
 
 * Many, many improvements to the CMake build system, especially on Windows.

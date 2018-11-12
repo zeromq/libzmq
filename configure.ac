@@ -58,7 +58,6 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 AC_PROG_CC
 AX_CHECK_COMPILE_FLAG([-std=gnu11], [CFLAGS+=" -std=gnu11"], [AC_PROG_CC_C99])
 AC_PROG_CXX
-AX_CXX_COMPILE_STDCXX_11([ext], [optional])
 AX_CODE_COVERAGE
 AM_PROG_CC_C_O
 AC_PROG_SED
@@ -75,6 +74,17 @@ LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AX_VALGRIND_CHECK
+
+AC_ARG_ENABLE([force-CXX98-compat],
+    [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])
+if test "x$enable_force_CXX98_compat" = "xyes"; then
+    AC_LANG_PUSH([C++])
+    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS+=" -std=gnu++98"], [])
+    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS+=" -Wc++98-compat"], [])
+    AC_LANG_POP([C++])
+else
+    AX_CXX_COMPILE_STDCXX_11([ext], [optional])
+fi
 
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
@@ -158,7 +168,8 @@ libzmq_on_gnu="no"
 libzmq_on_debian_kfreebsd="no"
 
 # Set some default features required by ZeroMQ code
-CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -Wno-long-long $CPPFLAGS"
+CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
+CXXFLAGS="-Wno-long-long $CXXFLAGS"
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 PKGCFG_LIBS_PRIVATE=""
@@ -188,7 +199,8 @@ case "${host_os}" in
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
-        CPPFLAGS="-Wno-sign-compare -D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
+        CXXFLAGS="-Wno-sign-compare $CXXFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
@@ -602,14 +614,14 @@ AM_CONDITIONAL(HAVE_VMCI, test "x$have_vmci_ext" != "xno")
 AC_LANG_PUSH([C++])
 
 # Check how to enable -Wall
-LIBZMQ_LANG_WALL([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_wall_flag $CPPFLAGS"])
+LIBZMQ_LANG_WALL([CXXFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_wall_flag $CXXFLAGS"])
 
 if test "x$libzmq_werror" = "xyes" -a "x$libzmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" != "xyes"; then
-    LIBZMQ_LANG_WERROR([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_werror_flag $CPPFLAGS"])
+    LIBZMQ_LANG_WERROR([CXXFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_werror_flag $CXXFLAGS"])
 fi
 
 if test "x$libzmq_pedantic" = "xyes"; then
-    LIBZMQ_LANG_STRICT([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_strict_flag $CPPFLAGS"])
+    LIBZMQ_LANG_STRICT([CXXFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_strict_flag $CXXFLAGS"])
 fi
 AC_LANG_POP([C++])
 

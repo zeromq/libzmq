@@ -111,6 +111,19 @@ matrix:
     os: linux
   - env: BUILD_TYPE=default POLLER=select
     os: linux
+  - env: CXX=clang++ BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled NORM=enabled FORCE_98=enabled
+    os: linux
+    compiler: clang
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        packages:
+        - libkrb5-dev
+        - libnorm-dev
+        - libpgm-dev
+        - libsodium-dev
     
 sudo: false
 
