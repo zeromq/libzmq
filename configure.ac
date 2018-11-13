@@ -819,6 +819,21 @@ if test "x$enable_libunwind" != "xno"; then
         ])
 fi
 
+AC_ARG_ENABLE([radix-tree],
+    AS_HELP_STRING([--enable-radix-tree],
+        [Use radix tree implementation to manage subscriptions [default=DRAFT]]),
+    [radix_tree=$enableval],
+    [radix_tree=$enable_drafts])
+
+AM_CONDITIONAL([ENABLE_RADIX_TREE], [test x$radix_tree != xno])
+
+if test "x$radix_tree" = "xyes"; then
+    AC_MSG_NOTICE([Using radix tree implementation to manage subscriptions])
+    AC_DEFINE(ZMQ_USE_RADIX_TREE, 1, [Use radix tree implementation to manage subscriptions])
+else
+    AC_MSG_NOTICE([Using mtree implementation to manage subscriptions])
+fi
+
 # See if clang-format is in PATH; the result unblocks the relevant recipes
 WITH_CLANG_FORMAT=""
 AS_IF([test x"$CLANG_FORMAT" = x],
