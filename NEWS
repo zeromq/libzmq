@@ -4,6 +4,12 @@
 * The following DRAFT APIs have been marked as STABLE and will not change
   anymore:
   - ZMQ_MSG_T_SIZE context option (see doc/zmq_ctx_get.txt)
+  - ZMQ_THREAD_AFFINITY_CPU_ADD and ZMQ_THREAD_AFFINITY_CPU_REMOVE (Posix only)
+    context options, to add/remove CPUs to the affinity set of the I/O threads.
+    See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
+  - ZMQ_THREAD_NAME_PREFIX (Posix only) context option, to add a specific
+    integer prefix to the background threads names, to easily identify them.
+    See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
   - ZMQ_GSSAPI_PRINCIPAL_NAMETYPE and ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE
     socket options, for the corresponding GSSAPI features. Additional
     definitions for principal name types:

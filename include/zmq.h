@@ -216,6 +216,9 @@ ZMQ_EXPORT void zmq_version (int *major_, int *minor_, int *patch_);
 #define ZMQ_THREAD_SCHED_POLICY 4
 #define ZMQ_MAX_MSGSZ 5
 #define ZMQ_MSG_T_SIZE 6
+#define ZMQ_THREAD_AFFINITY_CPU_ADD 7
+#define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
+#define ZMQ_THREAD_NAME_PREFIX 9
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT 1
@@ -653,9 +656,6 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_ROUTER_NOTIFY 97
 
 /*  DRAFT Context options                                                     */
-#define ZMQ_THREAD_AFFINITY_CPU_ADD 7
-#define ZMQ_THREAD_AFFINITY_CPU_REMOVE 8
-#define ZMQ_THREAD_NAME_PREFIX 9
 #define ZMQ_ZERO_COPY_RECV 10
 
 /*  DRAFT Socket methods.                                                     */
