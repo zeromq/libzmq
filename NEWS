@@ -31,6 +31,9 @@
     See doc/zmq_socket_monitor.txt for more details and error codes.
   - zmq_stopwatch_intermediate which returns the time elapsed without stopping
     the stopwatch.
+  - zmq_proxy_steerable command 'STATISTICS' to retrieve stats about the amount
+    of messages and bytes sent and received by the proxy.
+    See doc/zmq_proxy_steerable.txt for more information.
 
 * The build-time configuration option to select the poller has been split, and
   new API_POLLER (CMake) and --with-api-poller (autoconf) options will now

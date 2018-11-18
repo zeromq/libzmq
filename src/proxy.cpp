@@ -425,20 +425,16 @@ int zmq::proxy (class socket_base_t *frontend_,
                     && memcmp (msg.data (), "TERMINATE", 9) == 0)
                     state = terminated;
                 else {
-#ifdef ZMQ_BUILD_DRAFT_API
                     if (msg.size () == 10
                         && memcmp (msg.data (), "STATISTICS", 10) == 0) {
                         rc = reply_stats (control_, &frontend_stats,
                                           &backend_stats);
                         CHECK_RC_EXIT_ON_FAILURE ();
                     } else {
-#endif
                         //  This is an API error, we assert
                         puts ("E: invalid command sent to proxy");
                         zmq_assert (false);
-#ifdef ZMQ_BUILD_DRAFT_API
                     }
-#endif
                 }
             }
             control_in = false;
@@ -604,7 +600,6 @@ int zmq::proxy (class socket_base_t *frontend_,
                      && memcmp (msg.data (), "TERMINATE", 9) == 0)
                 state = terminated;
             else {
-#ifdef ZMQ_BUILD_DRAFT_API
                 if (msg.size () == 10
                     && memcmp (msg.data (), "STATISTICS", 10) == 0) {
                     rc =
@@ -612,13 +607,10 @@ int zmq::proxy (class socket_base_t *frontend_,
                     if (unlikely (rc < 0))
                         return close_and_return (&msg, -1);
                 } else {
-#endif
                     //  This is an API error, we assert
                     puts ("E: invalid command sent to proxy");
                     zmq_assert (false);
-#ifdef ZMQ_BUILD_DRAFT_API
                 }
-#endif
             }
         }
         //  Process a request
