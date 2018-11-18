@@ -950,9 +950,7 @@ void zmq::stream_engine_t::mechanism_ready ()
         alloc_assert (_metadata);
     }
 
-#ifdef ZMQ_BUILD_DRAFT_API
     _socket->event_handshake_succeeded (_endpoint, 0);
-#endif
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -1068,7 +1066,6 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         _session->push_msg (&disconnect_notification);
     }
 
-#ifdef ZMQ_BUILD_DRAFT_API
     // protocol errors have been signaled already at the point where they occurred
     if (reason_ != protocol_error
         && (_mechanism == NULL
@@ -1076,7 +1073,7 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         int err = errno;
         _socket->event_handshake_failed_no_detail (_endpoint, err);
     }
-#endif
+
     _socket->event_disconnected (_endpoint, _s);
     _session->flush ();
     _session->engine_error (reason_);

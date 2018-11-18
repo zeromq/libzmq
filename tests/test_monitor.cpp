@@ -86,17 +86,13 @@ int main (void)
     if (event == ZMQ_EVENT_CONNECT_DELAYED)
         event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CONNECTED);
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-#endif
     expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
 
     //  This is the flow of server events
     expect_monitor_event (server_mon, ZMQ_EVENT_LISTENING);
     expect_monitor_event (server_mon, ZMQ_EVENT_ACCEPTED);
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event (server_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-#endif
     event = get_monitor_event (server_mon, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {

@@ -92,10 +92,8 @@ int expect_new_client_bounce_fail_and_count_monitor_events (
       client_mon_, expected_client_event_, expected_client_value_);
 
     int events_received = 0;
-#ifdef ZMQ_BUILD_DRAFT_API
     events_received = expect_monitor_event_multiple (
       server_mon_, expected_server_event_, expected_server_value_);
-#endif
 
     return events_received;
 }
@@ -139,13 +137,9 @@ void test_zap_unsuccessful_no_handler (void *ctx_,
         ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
         client_mon_, server_mon_, expected_event_, expected_err_);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     //  there may be more than one ZAP request due to repeated attempts by the
     //  client
     assert (events_received > 0);
-#else
-    LIBZMQ_UNUSED (events_received);
-#endif
 }
 
 void test_zap_protocol_error (void *ctx_,
@@ -157,11 +151,7 @@ void test_zap_protocol_error (void *ctx_,
                               int expected_error_)
 {
     test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
-#ifdef ZMQ_BUILD_DRAFT_API
                            ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, expected_error_,
-#else
-                           0, 0,
-#endif
                            socket_config_, socket_config_data_);
 }
 
@@ -173,22 +163,15 @@ void test_zap_unsuccessful_status_300 (void *ctx_,
                                        void *client_socket_config_data_)
 {
     void *client_mon;
-    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
-#ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
-#else
-                           0, 0,
-#endif
-                           client_socket_config_, client_socket_config_data_,
-                           &client_mon);
+    test_zap_unsuccessful (
+      ctx_, my_endpoint_, server_, server_mon_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH,
+      300, client_socket_config_, client_socket_config_data_, &client_mon);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     // we can use a 0 timeout here, since the client socket is already closed
     assert_no_more_monitor_events_with_timeout (client_mon, 0);
 
     int rc = zmq_close (client_mon);
     assert (rc == 0);
-#endif
 }
 
 void test_zap_unsuccessful_status_500 (void *ctx_,
@@ -199,19 +182,9 @@ void test_zap_unsuccessful_status_500 (void *ctx_,
                                        void *client_socket_config_data_)
 {
     test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
-#ifdef ZMQ_BUILD_DRAFT_API
                            ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
-#else
-                           0, 0,
-#endif
                            client_socket_config_, client_socket_config_data_,
-                           NULL,
-#ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500
-#else
-                           0, 0
-#endif
-    );
+                           NULL, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500);
 }
 
 void test_zap_errors (socket_config_fn server_socket_config_,
@@ -236,12 +209,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
                              client_socket_config_, client_socket_config_data_,
-#ifdef ZMQ_BUILD_DRAFT_API
-                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION
-#else
-                             0
-#endif
-    );
+                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -253,12 +221,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
                              client_socket_config_, client_socket_config_data_,
-#ifdef ZMQ_BUILD_DRAFT_API
-                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID
-#else
-                             0
-#endif
-    );
+                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -270,12 +233,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
                              client_socket_config_, client_socket_config_data_,
-#ifdef ZMQ_BUILD_DRAFT_API
-                             ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE
-#else
-                             0
-#endif
-    );
+                             ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -287,12 +245,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
                              client_socket_config_, client_socket_config_data_,
-#ifdef ZMQ_BUILD_DRAFT_API
-                             ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY
-#else
-                             0
-#endif
-    );
+                             ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -332,14 +285,10 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint, NULL,
       server_socket_config_,
       server_socket_config_data_ ? server_socket_config_data_ : &enforce);
-    test_zap_unsuccessful_no_handler (
-      ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EFAULT,
-#else
-      0, 0,
-#endif
-      client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
+                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                      EFAULT, client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 #endif
@@ -349,14 +298,10 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
       &zap_handler_disconnect, server_socket_config_);
-    test_zap_unsuccessful_no_handler (
-      ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EPIPE,
-#else
-      0, 0,
-#endif
-      client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
+                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                      EPIPE, client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler, true);
 
@@ -366,14 +311,10 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
       &zap_handler_do_not_recv, server_socket_config_);
-    test_zap_unsuccessful_no_handler (
-      ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EPIPE,
-#else
-      0, 0,
-#endif
-      client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
+                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                      EPIPE, client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -383,14 +324,10 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
       &zap_handler_do_not_send, server_socket_config_);
-    test_zap_unsuccessful_no_handler (
-      ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EPIPE,
-#else
-      0, 0,
-#endif
-      client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
+                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                      EPIPE, client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 }

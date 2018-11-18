@@ -99,20 +99,15 @@ ZMQ_EVENT_MONITOR_STOPPED
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Monitoring on this socket ended.
 
-DRAFT events - subject to change without notice
------------------------------------------------
-
 ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Unspecified error during handshake.
 The event value is an errno.
-NOTE: in DRAFT state, not yet available in stable releases.
 
 ZMQ_EVENT_HANDSHAKE_SUCCEEDED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ZMTP security mechanism handshake succeeded.
 The event value is unspecified.
-NOTE: in DRAFT state, not yet available in stable releases.
 
 ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -141,14 +136,12 @@ ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID
 ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION
 ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE
 ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA
-NOTE: in DRAFT state, not yet available in stable releases.
 
 ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ZMTP security mechanism handshake failed due to an authentication failure.
 The event value is the status code returned by the ZAP handler (i.e. 300, 
 400 or 500).
-NOTE: in DRAFT state, not yet available in stable releases.
 
 
 

@@ -125,7 +125,6 @@ void test_null_key (void *ctx_,
     expect_new_client_curve_bounce_fail (ctx_, server_public_, client_public_,
                                          client_secret_, my_endpoint_, server_);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int handshake_failed_encryption_event_count =
       expect_monitor_event_multiple (server_mon_,
                                      ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
@@ -142,7 +141,6 @@ void test_null_key (void *ctx_,
              "ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL/"
              "ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC events: %i\n",
              handshake_failed_encryption_event_count);
-#endif
 }
 
 void test_curve_security_with_valid_credentials ()
@@ -157,7 +155,6 @@ void test_curve_security_with_valid_credentials ()
     int rc = zmq_close (client);
     TEST_ASSERT_ZMQ_ERRNO (rc == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int event = get_monitor_event_with_timeout (server_mon, NULL, NULL, -1);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 
@@ -170,7 +167,6 @@ void test_curve_security_with_valid_credentials ()
 
     rc = zmq_close (client_mon);
     TEST_ASSERT_ZMQ_ERRNO (rc == 0);
-#endif
 }
 
 void test_curve_security_with_bogus_client_credentials ()
@@ -180,22 +176,14 @@ void test_curve_security_with_bogus_client_credentials ()
     char bogus_secret[41];
     zmq_curve_keypair (bogus_public, bogus_secret);
 
-    expect_new_client_curve_bounce_fail (ctx, valid_server_public, bogus_public,
-                                         bogus_secret, my_endpoint, server,
-                                         NULL,
-#ifdef ZMQ_BUILD_DRAFT_API
-                                         ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400
-#else
-                                         0, 0
-#endif
-    );
+    expect_new_client_curve_bounce_fail (
+      ctx, valid_server_public, bogus_public, bogus_secret, my_endpoint, server,
+      NULL, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400);
 
     int server_event_count = 0;
-#ifdef ZMQ_BUILD_DRAFT_API
     server_event_count = expect_monitor_event_multiple (
       server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400);
     TEST_ASSERT_LESS_OR_EQUAL_INT (1, server_event_count);
-#endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
     TEST_ASSERT (0 == server_event_count
@@ -213,11 +201,9 @@ void expect_zmtp_mechanism_mismatch (void *client_,
     expect_bounce_fail (server_, client_);
     close_zero_linger (client_);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon_,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
-#endif
 
     TEST_ASSERT_EQUAL_INT (0, zmq_atomic_counter_value (zap_requests_handled));
 }
@@ -314,11 +300,9 @@ void test_curve_security_invalid_hello_wrong_length ()
     // send CURVE HELLO of wrong size
     send (s, "\x04\x06\x05HELLO");
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (
       server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
       ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
-#endif
 
     close (s);
 }
@@ -391,11 +375,9 @@ void test_curve_security_invalid_hello_command_name ()
 
     send_command (s, hello);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
-#endif
 
     close (s);
 }
@@ -416,11 +398,9 @@ void test_curve_security_invalid_hello_version ()
 
     send_command (s, hello);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (
       server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
       ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
-#endif
 
     close (s);
 }
@@ -480,20 +460,14 @@ void test_curve_security_invalid_initiate_wrong_length ()
     // receive but ignore WELCOME
     flush_read (s);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int res = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     TEST_ASSERT_EQUAL_INT (-1, res);
-#else
-    LIBZMQ_UNUSED (timeout);
-#endif
 
     send (s, "\x04\x09\x08INITIATE");
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (
       server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
       ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
-#endif
 
     close (s);
 }
@@ -514,10 +488,8 @@ fd_t connect_exchange_greeting_and_hello_welcome (
     int res = tools_.process_welcome (welcome + 2, welcome_length, cn_precom);
     TEST_ASSERT_ZMQ_ERRNO (res == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     res = get_monitor_event_with_timeout (server_mon_, NULL, NULL, timeout_);
     TEST_ASSERT_EQUAL_INT (-1, res);
-#endif
 
     return s;
 }
@@ -535,11 +507,9 @@ void test_curve_security_invalid_initiate_command_name ()
 
     send_command (s, initiate);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
-#endif
 
     close (s);
 }
@@ -557,11 +527,9 @@ void test_curve_security_invalid_initiate_command_encrypted_cookie ()
 
     send_command (s, initiate);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
-#endif
 
     close (s);
 }
@@ -579,11 +547,9 @@ void test_curve_security_invalid_initiate_command_encrypted_content ()
 
     send_command (s, initiate);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon,
                                    ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
                                    ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
-#endif
 
     close (s);
 }

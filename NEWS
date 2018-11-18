@@ -17,6 +17,12 @@
     NOTE: requires the program to be ran as root OR with CAP_NET_RAW
   - zmq_timers_* APIs. These functions can be used for cross-platforms timed
     callbacks. See doc/zmq_timers.txt for details.
+  - The following socket monitor events:
+    - ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL: unknown errors during handshake.
+    - ZMQ_EVENT_HANDSHAKE_SUCCEEDED: Handshake completed with authentication.
+    - ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL: Protocol errors with peers or ZAP.
+    - ZMQ_EVENT_HANDSHAKE_FAILED_AUTH: Failed authentication requests.
+    See doc/zmq_socket_monitor.txt for more details and error codes.
 
 * The build-time configuration option to select the poller has been split, and
   new API_POLLER (CMake) and --with-api-poller (autoconf) options will now
