@@ -37,10 +37,6 @@
 
 #ifndef ZMQ_BUILD_DRAFT_API
 
-/*  Returns the number of microseconds elapsed since the stopwatch was        */
-/*  started, but does not stop or deallocate the stopwatch.                   */
-unsigned long zmq_stopwatch_intermediate (void *watch_);
-
 /*  DRAFT Socket types.                                                       */
 #define ZMQ_SERVER 12
 #define ZMQ_CLIENT 13

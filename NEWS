@@ -29,6 +29,8 @@
     - ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL: Protocol errors with peers or ZAP.
     - ZMQ_EVENT_HANDSHAKE_FAILED_AUTH: Failed authentication requests.
     See doc/zmq_socket_monitor.txt for more details and error codes.
+  - zmq_stopwatch_intermediate which returns the time elapsed without stopping
+    the stopwatch.
 
 * The build-time configuration option to select the poller has been split, and
   new API_POLLER (CMake) and --with-api-poller (autoconf) options will now

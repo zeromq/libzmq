@@ -156,21 +156,17 @@ void test_timers ()
     //  Timer should not have been invoked yet
     TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
 
-#ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
         TEST_ASSERT_FALSE (timer_invoked);
     }
-#endif
 
     //  Wait half the time and check again
     long timeout = TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_timeout (timers));
     msleep (timeout / 2);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
-#ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < full_timeout) {
         TEST_ASSERT_FALSE (timer_invoked);
     }
-#endif
 
     // Wait until the end
     TEST_ASSERT_SUCCESS_ERRNO (sleep_and_execute (timers));
@@ -181,11 +177,9 @@ void test_timers ()
     timeout = TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_timeout (timers));
     msleep (timeout / 2);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_execute (timers));
-#ifdef ZMQ_BUILD_DRAFT_API
     if (zmq_stopwatch_intermediate (stopwatch) < 2 * full_timeout) {
         TEST_ASSERT_FALSE (timer_invoked);
     }
-#endif
 
     // Reset timer and wait half of the time left
     TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_reset (timers, timer_id));
