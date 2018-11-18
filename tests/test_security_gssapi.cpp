@@ -58,8 +58,6 @@ static volatile int zap_deny_all = 0;
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
-
-#ifdef ZMQ_BUILD_DRAFT_API
 static int get_monitor_event (void *monitor_, int *value_, char **address_)
 {
     //  First frame in message contains event number and value
@@ -92,7 +90,6 @@ static int get_monitor_event (void *monitor_, int *value_, char **address_)
 
     return event;
 }
-#endif
 
 //  --------------------------------------------------------------------------
 //  This methods receives and validates ZAP requestes (allowing or denying
@@ -167,10 +164,8 @@ void test_valid_creds (void *ctx_,
     rc = zmq_close (client);
     assert (rc == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int event = get_monitor_event (server_mon_, NULL, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-#endif
 }
 
 //  Check security with valid but unauthorized credentials
@@ -199,10 +194,8 @@ void test_unauth_creds (void *ctx_,
     expect_bounce_fail (server_, client);
     close_zero_linger (client);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int event = get_monitor_event (server_mon_, NULL, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
-#endif
 }
 
 //  Check GSSAPI security with NULL client credentials
@@ -219,12 +212,10 @@ void test_null_creds (void *ctx_,
     expect_bounce_fail (server_, client);
     close_zero_linger (client);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     int error;
     int event = get_monitor_event (server_mon_, &error, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
     assert (error == ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
-#endif
 }
 
 //  Check GSSAPI security with PLAIN client credentials
@@ -324,21 +315,17 @@ int main (void)
     rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (server, "inproc://monitor-server",
                              ZMQ_EVENT_HANDSHAKE_SUCCEEDED
                                | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
                                | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
     assert (rc == 0);
-#endif
 
     //  Create socket for collecting monitor events
     void *server_mon = NULL;
-#ifdef ZMQ_BUILD_DRAFT_API
     server_mon = zmq_socket (ctx, ZMQ_PAIR);
     assert (server_mon);
-#endif
 
     //  Connect it to the inproc endpoints so they'll get events
     rc = zmq_connect (server_mon, "inproc://monitor-server");
@@ -352,9 +339,7 @@ int main (void)
     test_unauth_creds (ctx, server, server_mon, my_endpoint);
 
     //  Shutdown
-#ifdef ZMQ_BUILD_DRAFT_API
     close_zero_linger (server_mon);
-#endif
     rc = zmq_close (server);
     assert (rc == 0);
     rc = zmq_ctx_term (ctx);

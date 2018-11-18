@@ -409,8 +409,6 @@ void expect_monitor_event (void *monitor_, int expected_event_)
     }
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
-
 void print_unexpected_event (int event_,
                              int err_,
                              int expected_event_,
@@ -506,14 +504,11 @@ int expect_monitor_event_multiple (void *server_mon_,
         assert (event_count == 0);                                             \
     }
 
-#endif
-
 void setup_handshake_socket_monitor (void *ctx_,
                                      void *server_,
                                      void **server_mon_,
                                      const char *monitor_endpoint_)
 {
-#ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
     int rc = zmq_socket_monitor (server_, monitor_endpoint_,
                                  ZMQ_EVENT_HANDSHAKE_SUCCEEDED
@@ -532,7 +527,6 @@ void setup_handshake_socket_monitor (void *ctx_,
     //  Connect it to the inproc endpoints so they'll get events
     rc = zmq_connect (*server_mon_, monitor_endpoint_);
     assert (rc == 0);
-#endif
 }
 
 void setup_context_and_server_side (
@@ -616,10 +610,8 @@ void shutdown_context_and_server_side (void *ctx_,
     int rc = zmq_close (zap_control_);
     assert (rc == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     rc = zmq_close (server_mon_);
     assert (rc == 0);
-#endif
     rc = zmq_close (server_);
     assert (rc == 0);
 
@@ -672,7 +664,6 @@ void expect_new_client_bounce_fail (void *ctx_,
       ctx_, my_endpoint_, socket_config_, socket_config_data_, client_mon_);
     expect_bounce_fail (server_, client);
 
-#ifdef ZMQ_BUILD_DRAFT_API
     if (expected_client_event_ != 0) {
         int events_received = 0;
         events_received = expect_monitor_event_multiple (
@@ -683,7 +674,6 @@ void expect_new_client_bounce_fail (void *ctx_,
         int rc = zmq_close (my_client_mon);
         assert (rc == 0);
     }
-#endif
 
     close_zero_linger (client);
 }

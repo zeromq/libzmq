@@ -70,6 +70,7 @@ class thread_ctx_t
     void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
 
     int set (int option_, int optval_);
+    int get (int option_);
 
   protected:
     //  Synchronisation of access to context options.

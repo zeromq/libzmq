@@ -92,6 +92,8 @@ void test_ctx_thread_opts (void *ctx_)
     // as of ZMQ 4.2.3 this has an effect only on POSIX systems (nothing happens on Windows, but still it should return success):
     rc = zmq_ctx_set (ctx_, ZMQ_THREAD_SCHED_POLICY, TEST_POLICY);
     assert (rc == 0);
+    rc = zmq_ctx_get (ctx_, ZMQ_THREAD_SCHED_POLICY);
+    assert (rc == TEST_POLICY);
 
 
     // test priority:
@@ -110,6 +112,8 @@ void test_ctx_thread_opts (void *ctx_)
           ctx_, ZMQ_THREAD_PRIORITY,
           1 /* any positive value different than the default will be ok */);
         assert (rc == 0);
+        rc = zmq_ctx_get (ctx_, ZMQ_THREAD_PRIORITY);
+        assert (rc == 1);
     }
 
 
@@ -143,6 +147,8 @@ void test_ctx_thread_opts (void *ctx_)
 
     rc = zmq_ctx_set (ctx_, ZMQ_THREAD_NAME_PREFIX, 1234);
     assert (rc == 0);
+    rc = zmq_ctx_get (ctx_, ZMQ_THREAD_NAME_PREFIX);
+    assert (rc == 1234);
 #endif
 }
 

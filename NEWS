@@ -4,6 +4,12 @@
 * The following DRAFT APIs have been marked as STABLE and will not change
   anymore:
   - ZMQ_MSG_T_SIZE context option (see doc/zmq_ctx_get.txt)
+  - ZMQ_THREAD_AFFINITY_CPU_ADD and ZMQ_THREAD_AFFINITY_CPU_REMOVE (Posix only)
+    context options, to add/remove CPUs to the affinity set of the I/O threads.
+    See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
+  - ZMQ_THREAD_NAME_PREFIX (Posix only) context option, to add a specific
+    integer prefix to the background threads names, to easily identify them.
+    See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
   - ZMQ_GSSAPI_PRINCIPAL_NAMETYPE and ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE
     socket options, for the corresponding GSSAPI features. Additional
     definitions for principal name types:
@@ -17,6 +23,17 @@
     NOTE: requires the program to be ran as root OR with CAP_NET_RAW
   - zmq_timers_* APIs. These functions can be used for cross-platforms timed
     callbacks. See doc/zmq_timers.txt for details.
+  - The following socket monitor events:
+    - ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL: unknown errors during handshake.
+    - ZMQ_EVENT_HANDSHAKE_SUCCEEDED: Handshake completed with authentication.
+    - ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL: Protocol errors with peers or ZAP.
+    - ZMQ_EVENT_HANDSHAKE_FAILED_AUTH: Failed authentication requests.
+    See doc/zmq_socket_monitor.txt for more details and error codes.
+  - zmq_stopwatch_intermediate which returns the time elapsed without stopping
+    the stopwatch.
+  - zmq_proxy_steerable command 'STATISTICS' to retrieve stats about the amount
+    of messages and bytes sent and received by the proxy.
+    See doc/zmq_proxy_steerable.txt for more information.
 
 * The build-time configuration option to select the poller has been split, and
   new API_POLLER (CMake) and --with-api-poller (autoconf) options will now

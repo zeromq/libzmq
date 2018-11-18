@@ -64,6 +64,24 @@ zero if the "block forever on context termination" gambit was disabled by
 setting ZMQ_BLOCKY to false on all new contexts.
 
 
+ZMQ_THREAD_SCHED_POLICY: Get scheduling policy for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SCHED_POLICY' argument returns the scheduling policy for
+internal context's thread pool.
+
+
+ZMQ_THREAD_PRIORITY: Get scheduling priority for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_PRIORITY' argument returns the scheduling priority for
+internal context's thread pool.
+
+
+ZMQ_THREAD_NAME_PREFIX: Get name prefix for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_NAME_PREFIX' argument gets the numeric prefix of each thread
+created for the internal context's thread pool.
+
+
 ZMQ_MSG_T_SIZE: Get the zmq_msg_t size at runtime
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MSG_T_SIZE' argument returns the size of the zmq_msg_t structure at
