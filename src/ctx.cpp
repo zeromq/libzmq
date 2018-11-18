@@ -271,8 +271,7 @@ int zmq::ctx_t::get (int option_)
     else if (option_ == ZMQ_ZERO_COPY_RECV) {
         rc = _zero_copy;
     } else {
-        errno = EINVAL;
-        rc = -1;
+        rc = thread_ctx_t::get (option_);
     }
     return rc;
 }
@@ -460,6 +459,25 @@ int zmq::thread_ctx_t::set (int option_, int optval_)
     } else if (option_ == ZMQ_THREAD_PRIORITY && optval_ >= 0) {
         scoped_lock_t locker (_opt_sync);
         _thread_priority = optval_;
+    } else {
+        errno = EINVAL;
+        rc = -1;
+    }
+    return rc;
+}
+
+int zmq::thread_ctx_t::get (int option_)
+{
+    int rc = 0;
+    if (option_ == ZMQ_THREAD_PRIORITY) {
+        scoped_lock_t locker (_opt_sync);
+        rc = _thread_priority;
+    } else if (option_ == ZMQ_THREAD_SCHED_POLICY) {
+        scoped_lock_t locker (_opt_sync);
+        rc = _thread_sched_policy;
+    } else if (option_ == ZMQ_THREAD_NAME_PREFIX) {
+        scoped_lock_t locker (_opt_sync);
+        rc = atoi (_thread_name_prefix.c_str ());
     } else {
         errno = EINVAL;
         rc = -1;
