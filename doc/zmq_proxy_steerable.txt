@@ -93,6 +93,21 @@ assert (zmq_send (control, "RESUME", 6, 0) == 0);
 
 // terminate the proxy
 assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
+
+// check statistics
+assert (zmq_send (control, "STATISTICS", 10, 0) == 0);
+zmq_msg_t stats_msg;
+
+while (1) {
+    assert (zmq_msg_init (&stats_msg) == 0);
+    assert (zmq_recvmsg (control, &stats_msg, 0) == sizeof (uint64_t));
+    assert (rc == sizeof (uint64_t));
+    printf ("Stat: %lu\n", *(unsigned long int *)zmq_msg_data (&stats_msg));
+    if (!zmq_msg_get (&stats_msg, ZMQ_MORE))
+        break;
+    assert (zmq_msg_close (&stats_msg) == 0);
+}
+assert (zmq_msg_close (&stats_msg) == 0);
 ---
 
 
