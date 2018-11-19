@@ -286,7 +286,6 @@ typedef intptr_t ssize_t;
 #define AFD_POLL_DISCONNECT        0x0008
 #define AFD_POLL_ABORT             0x0010
 #define AFD_POLL_LOCAL_CLOSE       0x0020
-#define AFD_POLL_CONNECT           0x0040
 #define AFD_POLL_ACCEPT            0x0080
 #define AFD_POLL_CONNECT_FAIL      0x0100
 /* clang-format on */
@@ -925,6 +924,18 @@ int init(void) {
   return 0;
 }
 
+/* Set up a workaround for the following problem:
+ *   FARPROC addr = GetProcAddress(...);
+ *   MY_FUNC func = (MY_FUNC) addr;          <-- GCC 8 warning/error.
+ *   MY_FUNC func = (MY_FUNC) (void*) addr;  <-- MSVC  warning/error.
+ * To compile cleanly with either compiler, do casts with this "bridge" type:
+ *   MY_FUNC func = (MY_FUNC) (nt__fn_ptr_cast_t) addr; */
+#ifdef __GNUC__
+typedef void* nt__fn_ptr_cast_t;
+#else
+typedef FARPROC nt__fn_ptr_cast_t;
+#endif
+
 #define X(return_type, attributes, name, parameters) \
   WEPOLL_INTERNAL return_type(attributes* name) parameters = NULL;
 NT_NTDLL_IMPORT_LIST(X)
@@ -932,15 +943,17 @@ NT_NTDLL_IMPORT_LIST(X)
 
 int nt_global_init(void) {
   HMODULE ntdll;
+  FARPROC fn_ptr;
 
   ntdll = GetModuleHandleW(L"ntdll.dll");
   if (ntdll == NULL)
     return -1;
 
-#define X(return_type, attributes, name, parameters)                         \
-  name = (return_type(attributes*) parameters) GetProcAddress(ntdll, #name); \
-  if (name == NULL)                                                          \
-    return -1;
+#define X(return_type, attributes, name, parameters) \
+  fn_ptr = GetProcAddress(ntdll, #name);             \
+  if (fn_ptr == NULL)                                \
+    return -1;                                       \
+  name = (return_type(attributes*) parameters)(nt__fn_ptr_cast_t) fn_ptr;
   NT_NTDLL_IMPORT_LIST(X)
 #undef X
 
@@ -1576,7 +1589,8 @@ static int sock__cancel_poll(sock_state_t* sock_state) {
 
   /* CancelIoEx() may fail with ERROR_NOT_FOUND if the overlapped operation has
    * already completed. This is not a problem and we proceed normally. */
-  if (!CancelIoEx(afd_helper_handle, &sock_state->overlapped) &&
+  if (!HasOverlappedIoCompleted(&sock_state->overlapped) &&
+      !CancelIoEx(afd_helper_handle, &sock_state->overlapped) &&
       GetLastError() != ERROR_NOT_FOUND)
     return_map_error(-1);
 
@@ -1690,7 +1704,7 @@ static inline DWORD sock__epoll_events_to_afd_events(uint32_t epoll_events) {
   if (epoll_events & (EPOLLPRI | EPOLLRDBAND))
     afd_events |= AFD_POLL_RECEIVE_EXPEDITED;
   if (epoll_events & (EPOLLOUT | EPOLLWRNORM | EPOLLWRBAND))
-    afd_events |= AFD_POLL_SEND | AFD_POLL_CONNECT;
+    afd_events |= AFD_POLL_SEND;
   if (epoll_events & (EPOLLIN | EPOLLRDNORM | EPOLLRDHUP))
     afd_events |= AFD_POLL_DISCONNECT;
   if (epoll_events & EPOLLHUP)
@@ -1708,14 +1722,16 @@ static inline uint32_t sock__afd_events_to_epoll_events(DWORD afd_events) {
     epoll_events |= EPOLLIN | EPOLLRDNORM;
   if (afd_events & AFD_POLL_RECEIVE_EXPEDITED)
     epoll_events |= EPOLLPRI | EPOLLRDBAND;
-  if (afd_events & (AFD_POLL_SEND | AFD_POLL_CONNECT))
+  if (afd_events & AFD_POLL_SEND)
     epoll_events |= EPOLLOUT | EPOLLWRNORM | EPOLLWRBAND;
   if (afd_events & AFD_POLL_DISCONNECT)
     epoll_events |= EPOLLIN | EPOLLRDNORM | EPOLLRDHUP;
   if (afd_events & AFD_POLL_ABORT)
     epoll_events |= EPOLLHUP;
   if (afd_events & AFD_POLL_CONNECT_FAIL)
-    epoll_events |= EPOLLERR;
+    /* Linux reports all these events after connect() has failed. */
+    epoll_events |=
+        EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLRDNORM | EPOLLWRNORM | EPOLLRDHUP;
 
   return epoll_events;
 }
