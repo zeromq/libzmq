@@ -89,6 +89,8 @@ fi
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
 
+AC_CHECK_LIB([atomic],[__atomic_load_4],[LIBS="${LIBS} -latomic"]) 
+
 # Check whether to enable code coverage
 LIBZMQ_WITH_GCOV
 
