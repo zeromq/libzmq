@@ -89,7 +89,6 @@ fi
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
 
-AC_CHECK_LIB([atomic],[__atomic_load_4],[LIBS="${LIBS} -latomic"]) 
 
 # Check whether to enable code coverage
 LIBZMQ_WITH_GCOV
@@ -196,7 +195,8 @@ case "${host_os}" in
         case "${host_os}" in
             *android*)
                 AC_DEFINE(ZMQ_HAVE_ANDROID, 1, [Have Android OS])
-                libzmq_on_android="yes"
+                AC_CHECK_LIB([atomic],[__atomic_load_4],[LIBS="${LIBS} -latomic"]) 
+		libzmq_on_android="yes"
             ;;
         esac
         ;;
