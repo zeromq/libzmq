@@ -110,6 +110,7 @@ AC_RUN_IFELSE(
             memset(&topsrv, 0, sizeof(topsrv));
             topsrv.family = AF_TIPC;
             topsrv.addrtype = TIPC_ADDR_NAME;
+            topsrv.addr.name.domain = tipc_addr (10, 10, 10); 
             topsrv.addr.name.name.type = TIPC_TOP_SRV;
             topsrv.addr.name.name.instance = TIPC_TOP_SRV;
             fcntl(sd, F_SETFL, O_NONBLOCK);
