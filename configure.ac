@@ -89,6 +89,7 @@ fi
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
 
+
 # Check whether to enable code coverage
 LIBZMQ_WITH_GCOV
 
@@ -108,6 +109,7 @@ AC_RUN_IFELSE(
             memset(&topsrv, 0, sizeof(topsrv));
             topsrv.family = AF_TIPC;
             topsrv.addrtype = TIPC_ADDR_NAME;
+            topsrv.addr.name.domain = tipc_addr (10, 10, 10); 
             topsrv.addr.name.name.type = TIPC_TOP_SRV;
             topsrv.addr.name.name.instance = TIPC_TOP_SRV;
             fcntl(sd, F_SETFL, O_NONBLOCK);
@@ -193,7 +195,8 @@ case "${host_os}" in
         case "${host_os}" in
             *android*)
                 AC_DEFINE(ZMQ_HAVE_ANDROID, 1, [Have Android OS])
-                libzmq_on_android="yes"
+                AC_CHECK_LIB([atomic],[__atomic_load_4],[LIBS="${LIBS} -latomic"]) 
+		libzmq_on_android="yes"
             ;;
         esac
         ;;
