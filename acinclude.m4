@@ -681,8 +681,8 @@ int main (int, char **)
 
     if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
         save_CFLAGS=$CFLAGS
-	save_LIBS=$LIBS
-	CFLAGS="$CFLAGS -Wno-atomic-alignment"
+        save_LIBS=$LIBS
+        CFLAGS="$CFLAGS -Wno-atomic-alignment"
         LIBS="$LIBS -latomic"
         AC_LINK_IFELSE([AC_LANG_SOURCE([
         /* atomic intrinsics test */
@@ -695,7 +695,7 @@ int main (int, char **)
         ])],
         [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
         [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no" LIBS=$save_LIBS ; $2])
-	CFLAGS=$save_CFLAGS
+        CFLAGS=$save_CFLAGS
     fi
 }])
 
