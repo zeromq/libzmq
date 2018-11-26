@@ -680,7 +680,6 @@ int main (int, char **)
     [AC_MSG_RESULT(yes) ; GCC_ATOMIC_BUILTINS_SUPPORTED=1 libzmq_cv_has_atomic_instrisics="yes" ; $1])
 
     if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
-        save_CXXFLAGS=$CXXFLAGS
         save_LIBS=$LIBS
         CXXFLAGS="$CXXFLAGS -Wno-atomic-alignment"
         LIBS="$LIBS -latomic"
@@ -695,7 +694,6 @@ int main (int, char **)
         ])],
         [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
         [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no" LIBS=$save_LIBS ; $2])
-        CXXFLAGS=$save_CXXFLAGS
     fi
 }])
 
