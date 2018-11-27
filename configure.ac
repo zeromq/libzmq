@@ -637,6 +637,10 @@ AM_CONDITIONAL(ON_DEBIAN_KFREEBSD, test "x$libzmq_on_debian_kfreebsd" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
+AX_CHECK_COMPILE_FLAG([-Wno-atomic-alignment],
+    [CXXFLAGS+=" -Wno-atomic-alignment"],
+    [],
+    [-Werror])
 LIBZMQ_CHECK_ATOMIC_INTRINSICS([
     AC_DEFINE([ZMQ_HAVE_ATOMIC_INTRINSICS],
               [1],

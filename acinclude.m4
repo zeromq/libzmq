@@ -681,7 +681,6 @@ int main (int, char **)
 
     if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
         save_LIBS=$LIBS
-        CXXFLAGS="$CXXFLAGS -Wno-atomic-alignment"
         LIBS="$LIBS -latomic"
         AC_LINK_IFELSE([AC_LANG_SOURCE([
         /* atomic intrinsics test */
