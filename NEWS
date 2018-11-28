@@ -50,7 +50,7 @@
   - https://bugs.python.org/issue16507
 
 * New epoll implementation for Windows, using the following implementation:
-  https://github.com/piscisaureus/wepoll/tree/v1.5.2
+  https://github.com/piscisaureus/wepoll/tree/v1.5.4
   To use this, select "epoll" as the poller option in the build system.
   Note for distributors: the wepoll source code is embedded and distributed.
   It is licensed under the BSD-2-Clause and thus it is compatible with LGPL-3.0.
@@ -169,6 +169,9 @@
 
 * Fixed #3263 - fix abort on Windows when a large TCP read is requested and
                 fails.
+
+* Fixed #3312 - fix build on Android Things 1.06 with Termux.
+
 
 0MQ version 4.2.5 stable, released on 2018/03/23
 ================================================
