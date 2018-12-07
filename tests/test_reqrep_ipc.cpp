@@ -28,85 +28,73 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-void test_leak (void)
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_leak ()
 {
     char my_endpoint[256];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc://*");
-    assert (rc == 0);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
     size_t len = sizeof (my_endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
-    rc = s_send (sc, "leakymsg");
-    assert (rc == strlen ("leakymsg"));
+    static const char leakymsg[] = "leakymsg";
+    send_string_expect_success (sc, leakymsg, 0);
 
     char *buf = s_recv (sb);
     free (buf);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
 
     msleep (SETTLE_TIME);
 
-    rc = s_send (sb, "leakymsg");
-    assert (rc == strlen ("leakymsg"));
+    send_string_expect_success (sb, leakymsg, 0);
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sb);
 }
 
 void test_simple (void)
 {
     char my_endpoint[256];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc://*");
-    assert (rc == 0);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
     size_t len = sizeof (my_endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
     bounce (sb, sc);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
 }
 
 int main (void)
 {
     setup_test_environment ();
 
-    test_simple ();
-
-    test_leak ();
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_simple);
+    RUN_TEST (test_leak);
+    return UNITY_END ();
 }

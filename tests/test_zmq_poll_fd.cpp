@@ -28,10 +28,22 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
 #include <netdb.h>
+#include <unity.h>
 
+void setUp ()
+{
+    setup_test_context ();
+}
 
-int main (void)
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_poll_fd ()
 {
     struct addrinfo *addr, hint;
     hint.ai_flags = AI_NUMERICHOST;
@@ -43,28 +55,21 @@ int main (void)
     hint.ai_addr = NULL;
     hint.ai_next = NULL;
 
-    int rc = getaddrinfo ("127.0.0.1", "6650", &hint, &addr);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (getaddrinfo ("127.0.0.1", "6650", &hint, &addr));
 
     int recv_socket = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    assert (recv_socket != -1);
+    TEST_ASSERT_NOT_EQUAL (-1, recv_socket);
 
     int flag = 1;
-    rc =
-      setsockopt (recv_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      setsockopt (recv_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
 
-    rc = bind (recv_socket, addr->ai_addr, addr->ai_addrlen);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      bind (recv_socket, addr->ai_addr, addr->ai_addrlen));
 
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    void *sb = test_context_socket (ZMQ_REP);
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-
-    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tcp://127.0.0.1:*"));
 
     zmq_pollitem_t pollitems[] = {
       {sb, 0, ZMQ_POLLIN, 0},
@@ -72,28 +77,29 @@ int main (void)
     };
 
     int send_socket = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    assert (send_socket != -1);
+    TEST_ASSERT_NOT_EQUAL (-1, send_socket);
 
     char buf[10];
     memset (buf, 1, 10);
 
-    rc = sendto (send_socket, buf, 10, 0, addr->ai_addr, addr->ai_addrlen);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      sendto (send_socket, buf, 10, 0, addr->ai_addr, addr->ai_addrlen));
 
-    assert (zmq_poll (pollitems, 2, 1) == 1);
-    assert ((pollitems[0].revents & ZMQ_POLLIN) == 0);
-    assert (pollitems[1].revents & ZMQ_POLLIN);
+    TEST_ASSERT_EQUAL (1, zmq_poll (pollitems, 2, 1));
+    TEST_ASSERT_BITS_LOW (ZMQ_POLLIN, pollitems[0].revents);
+    TEST_ASSERT_BITS_HIGH (ZMQ_POLLIN, pollitems[1].revents);
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (sb);
 
     close (send_socket);
     close (recv_socket);
 
     freeaddrinfo (addr);
+}
 
-    return 0;
+int main ()
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test_poll_fd);
+    return UNITY_END ();
 }

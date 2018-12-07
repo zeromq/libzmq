@@ -28,72 +28,87 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 void str_send_to (void *s_, const char *content_, const char *address_)
 {
-    //  Send the address part
-    int rc = s_sendmore (s_, address_);
-    assert (rc > 0);
-
-    rc = s_send (s_, content_);
-    assert (rc > 0);
+    send_string_expect_success (s_, address_, ZMQ_SNDMORE);
+    send_string_expect_success (s_, content_, 0);
 }
 
 void str_recv_from (void *s_, char **ptr_content_, char **ptr_address_)
 {
     *ptr_address_ = s_recv (s_);
-    assert (ptr_address_);
+    TEST_ASSERT_NOT_NULL (ptr_address_);
 
     *ptr_content_ = s_recv (s_);
-    assert (ptr_content_);
+    TEST_ASSERT_NOT_NULL (ptr_content_);
+}
+
+static const char test_question[] = "Is someone there ?";
+static const char test_answer[] = "Yes, there is !";
+
+void test_connect_fails ()
+{
+    void *socket = test_context_socket (ZMQ_DGRAM);
+
+    //  Connecting dgram should fail
+    TEST_ASSERT_FAILURE_ERRNO (ENOCOMPATPROTO,
+                               zmq_connect (socket, ENDPOINT_4));
+
+    test_context_socket_close (socket);
+}
+
+void test_roundtrip ()
+{
+    char *message_string;
+    char *address;
+
+    void *sender = test_context_socket (ZMQ_DGRAM);
+    void *listener = test_context_socket (ZMQ_DGRAM);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (listener, ENDPOINT_4));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sender, ENDPOINT_5));
+
+    str_send_to (sender, test_question, strrchr (ENDPOINT_4, '/') + 1);
+
+    str_recv_from (listener, &message_string, &address);
+    TEST_ASSERT_EQUAL_STRING (test_question, message_string);
+    TEST_ASSERT_EQUAL_STRING (strrchr (ENDPOINT_5, '/') + 1, address);
+    free (message_string);
+
+    str_send_to (listener, test_answer, address);
+    free (address);
+
+    str_recv_from (sender, &message_string, &address);
+    TEST_ASSERT_EQUAL_STRING (test_answer, message_string);
+    TEST_ASSERT_EQUAL_STRING (strrchr (ENDPOINT_4, '/') + 1, address);
+    free (message_string);
+    free (address);
+
+    test_context_socket_close (sender);
+    test_context_socket_close (listener);
 }
 
 int main (void)
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    char *message_string;
-    char *address;
-
-    void *sender = zmq_socket (ctx, ZMQ_DGRAM);
-    void *listener = zmq_socket (ctx, ZMQ_DGRAM);
-
-    //  Connecting dgram shoudl fail
-    int rc = zmq_connect (listener, ENDPOINT_4);
-    assert (rc == -1);
-
-    rc = zmq_bind (listener, ENDPOINT_4);
-    assert (rc == 0);
-
-    rc = zmq_bind (sender, ENDPOINT_5);
-    assert (rc == 0);
-
-    str_send_to (sender, "Is someone there ?", strrchr (ENDPOINT_4, '/') + 1);
-
-    str_recv_from (listener, &message_string, &address);
-    assert (strcmp (message_string, "Is someone there ?") == 0);
-    assert (strcmp (address, strrchr (ENDPOINT_5, '/') + 1) == 0);
-    free (message_string);
-
-    str_send_to (listener, "Yes, there is !", address);
-    free (address);
-
-    str_recv_from (sender, &message_string, &address);
-    assert (strcmp (message_string, "Yes, there is !") == 0);
-    assert (strcmp (address, strrchr (ENDPOINT_4, '/') + 1) == 0);
-    free (message_string);
-    free (address);
-
-    rc = zmq_close (sender);
-    assert (rc == 0);
-
-    rc = zmq_close (listener);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_connect_fails);
+    RUN_TEST (test_roundtrip);
+    return UNITY_END ();
 }

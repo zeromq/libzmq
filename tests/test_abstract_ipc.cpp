@@ -28,40 +28,47 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+static const char test_endpoint[] = "ipc://@tmp-tester";
+
+void test_roundtrip ()
+{
+    void *sb = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, test_endpoint));
+
+    char endpoint[MAX_SOCKET_STRING];
+    size_t size = sizeof (endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size));
+    TEST_ASSERT_EQUAL_INT (0, strncmp (endpoint, test_endpoint, size));
+
+    void *sc = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, test_endpoint));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
 int main (void)
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc://@tmp-tester");
-    assert (rc == 0);
-
-    char endpoint[200];
-    size_t size = sizeof (endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size);
-    assert (rc == 0);
-    rc = strncmp (endpoint, "ipc://@tmp-tester", size);
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sc);
-    rc = zmq_connect (sc, "ipc://@tmp-tester");
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_roundtrip);
+    return UNITY_END ();
 }
