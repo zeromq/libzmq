@@ -294,20 +294,17 @@ else
 if ON_LINUX
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@ \
-	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+	@LIBZMQ_EXTRA_LDFLAGS@
 else
 if ON_GNU
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@ \
-	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+	@LIBZMQ_EXTRA_LDFLAGS@
 else
 if ON_DEBIAN_KFREEBSD
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@ \
-	-Wl,--version-script=$(srcdir)/src/libzmq.vers
+	@LIBZMQ_EXTRA_LDFLAGS@
 else
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
@@ -318,6 +315,8 @@ endif
 endif
 endif
 endif
+
+src_libzmq_la_LDFLAGS += -export-symbols-regex '^zmq_.*'
 
 src_libzmq_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS) $(LIBUNWIND_CFLAGS)
 src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS) $(LIBUNWIND_CFLAGS)
@@ -1046,7 +1045,6 @@ EXTRA_DIST = \
 	version.sh	\
 	src/libzmq.pc.cmake.in \
 	ci_build.sh \
-	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \
 	unittests/CMakeLists.txt \
