@@ -311,8 +311,7 @@ src_libzmq_la_LDFLAGS = \
 else
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@ \
-	-Wl
+	@LIBZMQ_EXTRA_LDFLAGS@
 endif
 endif
 endif
