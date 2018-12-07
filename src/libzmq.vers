@@ -1,4 +1,0 @@
-{
-  global: zmq_*;
-  local: *;
-};
