@@ -291,27 +291,9 @@ src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@
 else
-if ON_LINUX
 src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@
-else
-if ON_GNU
-src_libzmq_la_LDFLAGS = \
-	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@
-else
-if ON_DEBIAN_KFREEBSD
-src_libzmq_la_LDFLAGS = \
-	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@
-else
-src_libzmq_la_LDFLAGS = \
-	-version-info @LTVER@ \
-	@LIBZMQ_EXTRA_LDFLAGS@
-endif
-endif
-endif
 endif
 endif
 endif
