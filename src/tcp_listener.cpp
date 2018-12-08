@@ -299,10 +299,15 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #endif
 
     if (sock == retired_fd) {
-#ifdef ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
         const int last_error = WSAGetLastError ();
         wsa_assert (last_error == WSAEWOULDBLOCK || last_error == WSAECONNRESET
                     || last_error == WSAEMFILE || last_error == WSAENOBUFS);
+#elif defined ZMQ_HAVE_ANDROID
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
+                      || errno == ECONNABORTED || errno == EPROTO
+                      || errno == ENOBUFS || errno == ENOMEM || errno == EMFILE
+                      || errno == ENFILE || errno == EINVAL);
 #else
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
                       || errno == ECONNABORTED || errno == EPROTO
