@@ -28,54 +28,56 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void setUp ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test ()
+{
     //  Create a publisher
-    void *pub = zmq_socket (ctx, ZMQ_XPUB);
-    assert (pub);
-    int rc = zmq_bind (pub, "inproc://soname");
-    assert (rc == 0);
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
 
     //  set pub socket options
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_WELCOME_MSG, "W", 1);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub, ZMQ_XPUB_WELCOME_MSG, "W", 1));
 
     //  Create a subscriber
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
+    void *sub = test_context_socket (ZMQ_SUB);
 
     // Subscribe to the welcome message
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "W", 1);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "W", 1));
 
-    assert (sub);
-    rc = zmq_connect (sub, "inproc://soname");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
 
-    char buffer[2];
+    const uint8_t buffer[2] = {1, 'W'};
 
     // Receive the welcome subscription
-    rc = zmq_recv (pub, buffer, 2, 0);
-    assert (rc == 2);
-    assert (buffer[0] == 1);
-    assert (buffer[1] == 'W');
+    recv_array_expect_success (pub, buffer, 0);
 
     // Receive the welcome message
-    rc = zmq_recv (sub, buffer, 1, 0);
-    assert (rc == 1);
-    assert (buffer[0] == 'W');
+    recv_string_expect_success (sub, "W", 0);
 
     //  Clean up.
-    rc = zmq_close (pub);
-    assert (rc == 0);
-    rc = zmq_close (sub);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test);
+    return UNITY_END ();
 }

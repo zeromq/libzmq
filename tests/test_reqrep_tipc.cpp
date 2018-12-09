@@ -28,6 +28,33 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_roundtrip ()
+{
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "tipc://{5560,0,0}"));
+
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "tipc://{5560,0}@0.0.0"));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
 int main (void)
 {
@@ -36,31 +63,8 @@ int main (void)
         return 77;
     }
 
-    fprintf (stderr, "test_reqrep_tipc running...\n");
+    UNITY_BEGIN ();
+    RUN_TEST (test_roundtrip);
 
-    void *ctx = zmq_init (1);
-    assert (ctx);
-
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "tipc://{5560,0,0}");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, "tipc://{5560,0}@0.0.0");
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    return UNITY_END ();
 }
