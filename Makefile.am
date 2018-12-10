@@ -465,7 +465,8 @@ tests_test_system_LDADD = src/libzmq.la
 tests_test_pair_inproc_SOURCES = \
 	tests/test_pair_inproc.cpp \
 	tests/testutil.hpp
-tests_test_pair_inproc_LDADD = src/libzmq.la
+tests_test_pair_inproc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_pair_inproc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_pair_tcp_SOURCES = \
 	tests/test_pair_tcp.cpp \
@@ -594,7 +595,8 @@ tests_test_security_zap_SOURCES = \
 tests_test_security_zap_LDADD = src/libzmq.la
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
-tests_test_spec_req_LDADD = src/libzmq.la
+tests_test_spec_req_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_spec_req_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_rep_SOURCES = tests/test_spec_rep.cpp
 tests_test_spec_rep_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -617,7 +619,8 @@ tests_test_req_correlate_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_req_correlate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_req_relaxed_SOURCES = tests/test_req_relaxed.cpp
-tests_test_req_relaxed_LDADD = src/libzmq.la
+tests_test_req_relaxed_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_req_relaxed_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_conflate_SOURCES = tests/test_conflate.cpp
 tests_test_conflate_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -788,10 +791,12 @@ tests_test_ipc_wildcard_LDADD = src/libzmq.la
 tests_test_pair_ipc_SOURCES = \
 	tests/test_pair_ipc.cpp \
 	tests/testutil.hpp
-tests_test_pair_ipc_LDADD = src/libzmq.la
+tests_test_pair_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_pair_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_rebind_ipc_SOURCES = tests/test_rebind_ipc.cpp
-tests_test_rebind_ipc_LDADD = src/libzmq.la
+tests_test_rebind_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_rebind_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reqrep_ipc_SOURCES = \
 	tests/test_reqrep_ipc.cpp \
@@ -845,7 +850,8 @@ tests_test_connect_delay_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_connect_delay_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_pair_tipc_SOURCES = tests/test_pair_tipc.cpp
-tests_test_pair_tipc_LDADD = src/libzmq.la
+tests_test_pair_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_pair_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_reqrep_device_tipc_SOURCES = tests/test_reqrep_device_tipc.cpp
 tests_test_reqrep_device_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
