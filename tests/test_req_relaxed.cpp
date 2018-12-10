@@ -29,26 +29,74 @@
 
 #include "testutil.hpp"
 
+#include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+const size_t services = 5;
+
+void *req;
+void *rep[services];
+
+void setUp ()
+{
+    setup_test_context ();
+
+    char my_endpoint[MAX_SOCKET_STRING];
+    req = test_context_socket (ZMQ_REQ);
+
+    int enabled = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_REQ_RELAXED, &enabled, sizeof (int)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int)));
+
+    bind_loopback_ipv4 (req, my_endpoint, sizeof (my_endpoint));
+
+    for (size_t peer = 0; peer < services; peer++) {
+        rep[peer] = test_context_socket (ZMQ_REP);
+
+        int timeout = 500;
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
+
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (rep[peer], my_endpoint));
+    }
+    //  We have to give the connects time to finish otherwise the requests
+    //  will not properly round-robin. We could alternatively connect the
+    //  REQ sockets to the REP sockets.
+    msleep (SETTLE_TIME);
+}
+
+void tearDown ()
+{
+    test_context_socket_close_zero_linger (req);
+    for (size_t peer = 0; peer < services; peer++)
+        test_context_socket_close_zero_linger (rep[peer]);
+
+    teardown_test_context ();
+}
+
 static void bounce (void *socket_)
 {
     int more;
     size_t more_size = sizeof (more);
     do {
         zmq_msg_t recv_part, sent_part;
-        int rc = zmq_msg_init (&recv_part);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&recv_part));
 
-        rc = zmq_msg_recv (&recv_part, socket_, 0);
-        assert (rc != -1);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&recv_part, socket_, 0));
 
-        rc = zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size));
 
         zmq_msg_init (&sent_part);
         zmq_msg_copy (&sent_part, &recv_part);
 
-        rc = zmq_msg_send (&sent_part, socket_, more ? ZMQ_SNDMORE : 0);
-        assert (rc != -1);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_msg_send (&sent_part, socket_, more ? ZMQ_SNDMORE : 0));
 
         zmq_msg_close (&recv_part);
     } while (more);
@@ -56,73 +104,33 @@ static void bounce (void *socket_)
 
 static int get_events (void *socket_)
 {
-    int rc;
     int events;
     size_t events_size = sizeof (events);
-    rc = zmq_getsockopt (socket_, ZMQ_EVENTS, &events, &events_size);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket_, ZMQ_EVENTS, &events, &events_size));
     return events;
 }
 
-int main (void)
+void test_case_1 ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
-
-    int enabled = 1;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_RELAXED, &enabled, sizeof (int));
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
-    assert (rc == 0);
-
-    rc = zmq_bind (req, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-
-    const size_t services = 5;
-    void *rep[services];
-    for (size_t peer = 0; peer < services; peer++) {
-        rep[peer] = zmq_socket (ctx, ZMQ_REP);
-        assert (rep[peer]);
-
-        int timeout = 500;
-        rc = zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
-        assert (rc == 0);
-
-        rc = zmq_connect (rep[peer], my_endpoint);
-        assert (rc == 0);
-    }
-    //  We have to give the connects time to finish otherwise the requests
-    //  will not properly round-robin. We could alternatively connect the
-    //  REQ sockets to the REP sockets.
-    msleep (SETTLE_TIME);
-
     //  Case 1: Second send() before a reply arrives in a pipe.
 
     int events = get_events (req);
-    assert (events == ZMQ_POLLOUT);
+    TEST_ASSERT_EQUAL_INT (ZMQ_POLLOUT, events);
 
     //  Send a request, ensure it arrives, don't send a reply
     s_send_seq (req, "A", "B", SEQ_END);
     s_recv_seq (rep[0], "A", "B", SEQ_END);
 
     events = get_events (req);
-    assert (events == ZMQ_POLLOUT);
+    TEST_ASSERT_EQUAL_INT (ZMQ_POLLOUT, events);
 
     //  Send another request on the REQ socket
     s_send_seq (req, "C", "D", SEQ_END);
     s_recv_seq (rep[1], "C", "D", SEQ_END);
 
     events = get_events (req);
-    assert (events == ZMQ_POLLOUT);
+    TEST_ASSERT_EQUAL_INT (ZMQ_POLLOUT, events);
 
     //  Send a reply to the first request - that should be discarded by the REQ
     s_send_seq (rep[0], "WRONG", SEQ_END);
@@ -136,9 +144,14 @@ int main (void)
     s_recv_seq (rep[2], "E", SEQ_END);
     s_send_seq (rep[2], "F", "G", SEQ_END);
     s_recv_seq (req, "F", "G", SEQ_END);
+}
 
-
+void test_case_2 ()
+{
     //  Case 2: Second send() after a reply is already in a pipe on the REQ.
+
+    // TODO instead of rerunning the previous test cases, only do the relevant parts (or change the peer)
+    test_case_1 ();
 
     //  Send a request, ensure it arrives, send a reply
     s_send_seq (req, "H", SEQ_END);
@@ -155,49 +168,50 @@ int main (void)
     //  Send the expected reply
     s_send_seq (rep[4], "GOOD", SEQ_END);
     s_recv_seq (req, "GOOD", SEQ_END);
+}
 
+void test_case_3 ()
+{
     //  Case 3: Check issue #1690. Two send() in a row should not close the
     //  communication pipes. For example pipe from req to rep[0] should not be
     //  closed after executing Case 1. So rep[0] should be the next to receive,
     //  not rep[1].
+
+    // TODO instead of rerunning the previous test cases, only do the relevant parts (or change the peer)
+    test_case_2 ();
+
     s_send_seq (req, "J", SEQ_END);
     s_recv_seq (rep[0], "J", SEQ_END);
+}
 
-    close_zero_linger (req);
-    for (size_t peer = 0; peer < services; peer++)
-        close_zero_linger (rep[peer]);
-
-    //  Wait for disconnects.
-    msleep (SETTLE_TIME);
+void test_case_4 ()
+{
+    // TODO this test case does not use the sockets from setUp
 
     //  Case 4: Check issue #1695. As messages may pile up before a responder
     //  is available, we check that responses to messages other than the last
     //  sent one are correctly discarded by the REQ pipe
 
     //  Setup REQ socket as client
-    req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
+    void *req = test_context_socket (ZMQ_REQ);
 
-    rc = zmq_setsockopt (req, ZMQ_REQ_RELAXED, &enabled, sizeof (int));
-    assert (rc == 0);
+    int enabled = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_REQ_RELAXED, &enabled, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int)));
 
-    rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
-    assert (rc == 0);
-
-    rc = zmq_connect (req, ENDPOINT_0);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (req, ENDPOINT_0));
 
     //  Setup ROUTER socket as server but do not bind it just yet
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (router);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     //  Send two requests
     s_send_seq (req, "TO_BE_DISCARDED", SEQ_END);
     s_send_seq (req, "TO_BE_ANSWERED", SEQ_END);
 
     //  Bind server allowing it to receive messages
-    rc = zmq_bind (router, ENDPOINT_0);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
 
     //  Read the two messages and send them back as is
     bounce (router);
@@ -207,14 +221,18 @@ int main (void)
     //  the expected answer is "TO_BE_ANSWERED", not "TO_BE_DISCARDED".
     s_recv_seq (req, "TO_BE_ANSWERED", SEQ_END);
 
-    close_zero_linger (req);
-    close_zero_linger (router);
+    test_context_socket_close_zero_linger (req);
+    test_context_socket_close_zero_linger (router);
+}
 
-    //  Wait for disconnects.
-    msleep (SETTLE_TIME);
+int main ()
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_case_1);
+    RUN_TEST (test_case_2);
+    RUN_TEST (test_case_3);
+    RUN_TEST (test_case_4);
+    return UNITY_END ();
 }

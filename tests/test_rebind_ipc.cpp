@@ -28,57 +28,51 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 static const char *SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
 
+void test_rebind_ipc ()
+{
+    void *sb0 = test_context_socket (ZMQ_PUSH);
+    void *sb1 = test_context_socket (ZMQ_PUSH);
 
-int main (void)
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, SOCKET_ADDR));
+
+    void *sc = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, SOCKET_ADDR));
+
+    send_string_expect_success (sb0, "42", 0);
+    recv_string_expect_success (sc, "42", 0);
+
+    test_context_socket_close (sb0);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb1, SOCKET_ADDR));
+
+    send_string_expect_success (sb1, "42", 0);
+    recv_string_expect_success (sc, "42", 0);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb1);
+}
+
+int main ()
 {
     setup_test_environment ();
 
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *sb0 = zmq_socket (ctx, ZMQ_PUSH);
-    assert (sb0);
-    void *sb1 = zmq_socket (ctx, ZMQ_PUSH);
-    assert (sb1);
-
-    int rc = zmq_bind (sb0, SOCKET_ADDR);
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_PULL);
-    assert (sc);
-    rc = zmq_connect (sc, SOCKET_ADDR);
-    assert (rc == 0);
-
-    rc = zmq_send (sb0, "42", 2, 0);
-    assert (rc == 2);
-
-    char buffer[2];
-    rc = zmq_recv (sc, buffer, 2, 0);
-    assert (rc == 2);
-
-    rc = zmq_close (sb0);
-    assert (rc == 0);
-
-    rc = zmq_bind (sb1, SOCKET_ADDR);
-    assert (rc == 0);
-
-    rc = zmq_send (sb1, "42", 2, 0);
-    assert (rc == 2);
-
-    rc = zmq_recv (sc, buffer, 2, 0);
-    assert (rc == 2);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb1);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_rebind_ipc);
+    return UNITY_END ();
 }

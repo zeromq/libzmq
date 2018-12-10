@@ -28,54 +28,55 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void *sb;
+void *sc;
+
+void setUp ()
+{
+    setup_test_context ();
+
+    sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "inproc://a"));
+
+    sc = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "inproc://a"));
+}
+
+void tearDown ()
+{
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+
+    teardown_test_context ();
+}
+
+void test_roundtrip ()
+{
+    bounce (sb, sc);
+}
+
+// TODO it appears that this has nothing to do with pair or inproc, and belongs somewhere else
+void test_zmq_send_const ()
+{
+    TEST_ASSERT_EQUAL_INT (3, TEST_ASSERT_SUCCESS_ERRNO (
+                                zmq_send_const (sb, "foo", 3, ZMQ_SNDMORE)));
+    TEST_ASSERT_EQUAL_INT (
+      6, TEST_ASSERT_SUCCESS_ERRNO (zmq_send_const (sb, "foobar", 6, 0)));
+
+    recv_string_expect_success (sc, "foo", 0);
+    recv_string_expect_success (sc, "foobar", 0);
+}
+
+int main ()
 {
     setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
-    int rc = zmq_bind (sb, "inproc://a");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
-    rc = zmq_connect (sc, "inproc://a");
-    assert (rc == 0);
-
-    bounce (sb, sc);
-
-    // Test zmq_send_const
-    rc = zmq_send_const (sb, "foo", 3, ZMQ_SNDMORE);
-    assert (rc == 3);
-    rc = zmq_send_const (sb, "foobar", 6, 0);
-    assert (rc == 6);
-
-    zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&msg, sc, 0);
-    assert (rc == 3);
-    assert (zmq_msg_size (&msg) == 3);
-    void *data = zmq_msg_data (&msg);
-    assert (memcmp ("foo", data, 3) == 0);
-    rc = zmq_msg_recv (&msg, sc, 0);
-    assert (rc == 6);
-    data = zmq_msg_data (&msg);
-    assert (memcmp ("foobar", data, 6) == 0);
-
-    // Cleanup
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_roundtrip);
+    RUN_TEST (test_zmq_send_const);
+    return UNITY_END ();
 }
