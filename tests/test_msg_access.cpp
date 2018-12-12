@@ -46,7 +46,7 @@ int main (void)
 
     // Test that accessing a closed message doesn't crash
     size_t size = zmq_msg_size (&msg);
-    assert (size == 0);
+    assert (size == size_t (0));
     assert (zmq_errno () == EFAULT);
 
     size_t bytes = -1;
