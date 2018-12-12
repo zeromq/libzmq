@@ -79,6 +79,40 @@ int test_assert_success_message_raw_errno_helper (int rc_,
     return rc_;
 }
 
+int test_assert_failure_message_raw_errno_helper (int rc_,
+                                                  int expected_errno_,
+                                                  const char *msg_,
+                                                  const char *expr_)
+{
+    char buffer[512];
+    buffer[sizeof (buffer) - 1] =
+      0; // to ensure defined behavior with VC++ <= 2013
+    if (rc_ != -1) {
+        snprintf (buffer, sizeof (buffer) - 1,
+                  "%s was unexpectedly successful%s%s%s, expected "
+                  "errno = %i, actual return value = %i",
+                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
+                  msg_ ? ")" : "", expected_errno_, rc_);
+        TEST_FAIL_MESSAGE (buffer);
+    } else {
+#if defined ZMQ_HAVE_WINDOWS
+        int current_errno = WSAGetLastError ();
+#else
+        int current_errno = errno;
+#endif
+        if (current_errno != expected_errno_) {
+            snprintf (buffer, sizeof (buffer) - 1,
+                      "%s failed with an unexpected error%s%s%s, expected "
+                      "errno = %i, actual errno = %i",
+                      expr_, msg_ ? " (additional info: " : "",
+                      msg_ ? msg_ : "", msg_ ? ")" : "", expected_errno_,
+                      current_errno);
+            TEST_FAIL_MESSAGE (buffer);
+        }
+    }
+    return rc_;
+}
+
 #define TEST_ASSERT_SUCCESS_MESSAGE_ERRNO(expr, msg)                           \
     test_assert_success_message_errno_helper (expr, msg, #expr)
 
@@ -87,6 +121,9 @@ int test_assert_success_message_raw_errno_helper (int rc_,
 
 #define TEST_ASSERT_SUCCESS_RAW_ERRNO(expr)                                    \
     test_assert_success_message_raw_errno_helper (expr, NULL, #expr)
+
+#define TEST_ASSERT_FAILURE_RAW_ERRNO(error_code, expr)                        \
+    test_assert_failure_message_raw_errno_helper (expr, error_code, NULL, #expr)
 
 #define TEST_ASSERT_FAILURE_ERRNO(error_code, expr)                            \
     {                                                                          \
