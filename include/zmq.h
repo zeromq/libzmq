@@ -274,6 +274,7 @@ ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest_, zmq_msg_t *src_);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_);
 ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg_);
 ZMQ_EXPORT size_t zmq_msg_size (const zmq_msg_t *msg_);
+ZMQ_EXPORT size_t zmq_msg_bytes (const zmq_msg_t *msg_, size_t *bytes_);
 ZMQ_EXPORT int zmq_msg_more (const zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_get (const zmq_msg_t *msg_, int property_);
 ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg_, int property_, int optval_);

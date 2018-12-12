@@ -113,6 +113,7 @@ class msg_t
     int copy (msg_t &src_);
     void *data ();
     size_t size () const;
+    int size (size_t *bytes_) const;
     unsigned char flags () const;
     void set_flags (unsigned char flags_);
     void reset_flags (unsigned char flags_);

@@ -621,6 +621,11 @@ size_t zmq_msg_size (const zmq_msg_t *msg_)
     return ((zmq::msg_t *) msg_)->size ();
 }
 
+size_t zmq_msg_bytes (const zmq_msg_t *msg_, size_t *bytes_)
+{
+    return ((zmq::msg_t *) msg_)->size (bytes_);
+}
+
 int zmq_msg_more (const zmq_msg_t *msg_)
 {
     return zmq_msg_get (msg_, ZMQ_MORE);

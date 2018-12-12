@@ -324,7 +324,10 @@ int zmq::msg_t::copy (msg_t &src_)
 void *zmq::msg_t::data ()
 {
     //  Check the validity of the message.
-    zmq_assert (check ());
+    if (unlikely (!check ())) {
+        errno = EFAULT;
+        return NULL;
+    }
 
     switch (_u.base.type) {
         case type_vsm:
@@ -343,18 +346,38 @@ void *zmq::msg_t::data ()
 
 size_t zmq::msg_t::size () const
 {
+    size_t local_size;
+    int status = size (&local_size);
+
     //  Check the validity of the message.
-    zmq_assert (check ());
+    if (unlikely (status != 0)) {
+        return 0;
+    }
+
+    return local_size;
+}
+
+int zmq::msg_t::size (size_t *size_) const
+{
+    //  Check the validity of the message.
+    if (unlikely (!check ())) {
+        errno = EFAULT;
+        return -1;
+    }
 
     switch (_u.base.type) {
         case type_vsm:
-            return _u.vsm.size;
+            *size_ = _u.vsm.size;
+            return 0;
         case type_lmsg:
-            return _u.lmsg.content->size;
+            *size_ = _u.lmsg.content->size;
+            return 0;
         case type_zclmsg:
-            return _u.zclmsg.content->size;
+            *size_ = _u.zclmsg.content->size;
+            return 0;
         case type_cmsg:
-            return _u.cmsg.size;
+            *size_ = _u.cmsg.size;
+            return 0;
         default:
             zmq_assert (false);
             return 0;

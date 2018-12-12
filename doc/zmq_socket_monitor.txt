@@ -195,10 +195,11 @@ get_monitor_event (void *monitor, int *value, char **address)
 
     if (address) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        size_t size = zmq_msg_size (&msg);
-        *address = (char *) malloc (size + 1);
-        memcpy (*address, data, size);
-        (*address)[size] = 0;
+        size_t bytes;
+        assert (zmq_msg_bytes (&msg, &bytes));
+        *address = (char *) malloc (bytes + 1);
+        memcpy (*address, data, bytes);
+        (*address)[bytes] = 0;
     }
     return event;
 }

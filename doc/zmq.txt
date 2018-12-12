@@ -93,7 +93,7 @@ Release a message::
 
 Access message content::
     linkzmq:zmq_msg_data[3]
-    linkzmq:zmq_msg_size[3]
+    linkzmq:zmq_msg_bytes[3]
     linkzmq:zmq_msg_more[3]
 
 Work with message properties::

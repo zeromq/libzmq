@@ -16,6 +16,7 @@ set(tests
   test_reqrep_device
   test_sub_forward
   test_invalid_rep
+  test_msg_access
   test_msg_flags
   test_msg_ffn
   test_connect_resolve
