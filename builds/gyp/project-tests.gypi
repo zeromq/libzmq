@@ -111,6 +111,16 @@
       ],
     },
     {
+      'target_name': 'test_msg_access',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_msg_access.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    {
       'target_name': 'test_msg_flags',
       'type': 'executable',
       'sources': [

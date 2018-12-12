@@ -387,6 +387,7 @@ test_apps = \
 	tests/test_reqrep_device \
 	tests/test_sub_forward \
 	tests/test_invalid_rep \
+	tests/test_msg_access \
 	tests/test_msg_flags \
 	tests/test_msg_ffn \
 	tests/test_connect_resolve \
@@ -504,6 +505,9 @@ tests_test_sub_forward_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_invalid_rep_SOURCES = tests/test_invalid_rep.cpp
 tests_test_invalid_rep_LDADD = src/libzmq.la
+
+tests_test_msg_access_SOURCES = tests/test_msg_access.cpp
+tests_test_msg_access_LDADD = src/libzmq.la
 
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
 tests_test_msg_flags_LDADD = src/libzmq.la

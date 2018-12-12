@@ -9,6 +9,7 @@
     <test name = "test_reqrep_device" />
     <test name = "test_sub_forward" />
     <test name = "test_invalid_rep" />
+    <test name = "test_msg_access" />
     <test name = "test_msg_flags" />
     <test name = "test_msg_ffn" />
     <test name = "test_connect_resolve" />
