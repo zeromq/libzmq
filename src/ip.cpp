@@ -436,9 +436,6 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
     wsa_assert (*w_ != INVALID_SOCKET);
 
-    //  Set TCP_NODELAY on writer socket.
-    tune_socket (*w_);
-
     if (sync != NULL) {
         //  Enter the critical section.
         DWORD dwrc = WaitForSingleObject (sync, INFINITE);
@@ -464,6 +461,9 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     if (rc != SOCKET_ERROR)
         rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
                       sizeof addr);
+
+    //  Set TCP_NODELAY on writer socket.
+    tune_socket (*w_);
 
     //  Accept connection from writer.
     if (rc != SOCKET_ERROR)
