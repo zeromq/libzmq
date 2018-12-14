@@ -18,6 +18,7 @@ m4_include([m4/ax_check_compile_flag.m4])
 m4_include([m4/ax_cxx_compile_stdcxx_11.m4])
 m4_include([m4/ax_code_coverage.m4])
 m4_include([m4/ax_valgrind_check.m4])
+m4_include([m4/ax_check_vscript.m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -75,6 +76,7 @@ LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AX_VALGRIND_CHECK
+AX_CHECK_VSCRIPT
 
 AC_ARG_ENABLE([force-CXX98-compat],
     [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])

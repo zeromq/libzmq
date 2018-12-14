@@ -298,7 +298,9 @@ endif
 endif
 endif
 
-src_libzmq_la_LDFLAGS += -export-symbols-regex '^zmq_.*'
+if HAVE_VSCRIPT_COMPLEX
+src_libzmq_la_LDFLAGS += $(VSCRIPT_LDFLAGS),$(srcdir)/src/libzmq.vers
+endif
 
 src_libzmq_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS) $(LIBUNWIND_CFLAGS)
 src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS) $(LIBUNWIND_CFLAGS)
@@ -1046,6 +1048,7 @@ EXTRA_DIST = \
 	version.sh	\
 	src/libzmq.pc.cmake.in \
 	ci_build.sh \
+	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \
 	unittests/CMakeLists.txt \
