@@ -1096,7 +1096,7 @@ Subscriber must subscribe to the Welcome message before connecting.
 Welcome message will also be sent on reconnecting.
 For welcome message to work well user must poll on incoming subscription messages on the XPUB socket and handle them.
 
-Use NULL and lenght of zero to disable welcome message.
+Use NULL and length of zero to disable welcome message.
 
 [horizontal]
 Option value type:: binary data
