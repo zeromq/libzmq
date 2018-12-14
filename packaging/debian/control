@@ -32,7 +32,12 @@ Description: lightweight messaging kernel (shared library)
 Package: libzmq3-dev
 Architecture: any
 Section: libdevel
-Depends: libzmq5 (= ${binary:Version}), ${misc:Depends}
+Depends: libzmq5 (= ${binary:Version}), ${misc:Depends},
+ libkrb5-dev,
+ libnorm-dev,
+ libpgm-dev,
+ libsodium-dev,
+ libunwind-dev | libunwind8-dev | libunwind7-dev,
 Conflicts: libzmq-dev, libzmq5-dev
 Replaces: libzmq5-dev
 Provides: libzmq5-dev
