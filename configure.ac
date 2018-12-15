@@ -176,6 +176,7 @@ CXXFLAGS="-Wno-long-long $CXXFLAGS"
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 PKGCFG_LIBS_PRIVATE=""
+PKGCFG_NAMES_PRIVATE=""
 
 # For host type checks
 AC_CANONICAL_HOST
@@ -340,7 +341,13 @@ fi
 
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
+if test "x$ac_cv_lib_pthread_pthread_create" = "xyes"; then
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lpthread"
+fi
 AC_CHECK_LIB([rt], [clock_gettime])
+if test "x$ac_cv_lib_rt_clock_gettime" = "xyes"; then
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lrt"
+fi
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW uses __declspec
@@ -464,11 +471,14 @@ AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
 
 # conditionally require libgssapi_krb5
 if test "x$require_libgssapi_krb5_ext" != "xno"; then
-    PKG_CHECK_MODULES([gssapi_krb5], [krb5-gssapi], [], [
+    PKG_CHECK_MODULES([gssapi_krb5], [krb5-gssapi], [
+        PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE krb5-gssapi"
+    ], [
         AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
         AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],
             AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security]),
             AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lgssapi_krb5"
     ])
 fi
 AM_CONDITIONAL(BUILD_GSSAPI, test "x$require_libgssapi_krb5_ext" != "xno")
@@ -509,7 +519,7 @@ elif test "x$with_libsodium" = "xyes"; then
         ;;
     esac
 
-    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $sodium_LIBS"
+    PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libsodium"
 else
     AC_MSG_NOTICE([Using tweetnacl for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
@@ -536,14 +546,19 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 
 # conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
-    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [ have_pgm_library="yes" ],
-        [PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1],
-            [ have_pgm_library="yes" ])])
+    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [
+        have_pgm_library="yes"
+        PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.2 >= 5.2"
+    ], [
+        PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1], [
+            have_pgm_library="yes"
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.1 >= 5.1"
+        ])
+    ])
 fi
 
 if test "x$have_pgm_library" = "xyes"; then
     AC_DEFINE(ZMQ_HAVE_OPENPGM, [1], [Have OpenPGM extension])
-    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $pgm_LIBS"
 fi
 
 AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
@@ -561,7 +576,10 @@ AC_ARG_WITH([norm],
 AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 
 if test "x$with_norm_ext" != "xno"; then
-    PKG_CHECK_MODULES([norm], [norm], [ have_norm_library="yes" ], [
+    PKG_CHECK_MODULES([norm], [norm], [
+        have_norm_library="yes"
+        PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE norm"
+    ], [
         AC_MSG_RESULT([yes])
 
         norm_LIBS=""
@@ -573,6 +591,7 @@ if test "x$with_norm_ext" != "xno"; then
         fi
         norm_LIBS="${norm_LIBS} -lnorm"
         have_norm_library="yes"
+        PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $norm_LIBS"
         AC_SUBST(norm_LIBS)
         AC_SUBST(norm_CFLAGS)
     ])
@@ -581,7 +600,6 @@ else
 fi
 if test "x$have_norm_library" = "xyes"; then
     AC_DEFINE(ZMQ_HAVE_NORM, [1], [Have NORM protocol extension])
-    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $norm_LIBS"
 fi
 AM_CONDITIONAL(HAVE_NORM, test "x$have_norm_library" = "xyes")
 
@@ -808,7 +826,16 @@ if test "x$enable_libunwind" != "xno"; then
             AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
             AC_SUBST([LIBUNWIND_CFLAGS])
             AC_SUBST([LIBUNWIND_LIBS])
-            AC_SEARCH_LIBS([dladdr], [dl dld])
+            AC_CHECK_LIB([dl], [dladdr], [
+                PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -ldl"
+                LIBS="-ldl $LIBS"
+            ], [
+                AC_CHECK_LIB([dld], [dladdr], [
+                    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -ldld"
+                    LIBS="-ldld $LIBS"
+                ])
+            ])
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libunwind"
         ],
         [
             if test "x$enable_libunwind" = "xyes"; then
@@ -871,6 +898,7 @@ AC_SUBST(LIBZMQ_VMCI_CXXFLAGS)
 AC_SUBST(LIBZMQ_VMCI_LDFLAGS)
 
 AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
+AC_SUBST(pkg_config_names_private, $PKGCFG_NAMES_PRIVATE)
 
 # set pkgconfigdir, allow override
 AC_ARG_WITH([pkgconfigdir],

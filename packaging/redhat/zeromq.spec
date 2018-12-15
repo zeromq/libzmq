@@ -110,6 +110,19 @@ This package contains the ZeroMQ shared library.
 Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
 Requires: %{lib_name} = %{version}-%{release}, pkgconfig
+Requires: libsodium-devel
+%bcond_with pgm
+%if %{with pgm}
+Requires:  openpgm-devel
+%endif
+%bcond_with libgssapi_krb5
+%if %{with libgssapi_krb5}
+Requires:  krb5-devel
+%endif
+%bcond_with libsodium
+%if %{with libsodium}
+Requires:  libsodium-devel
+%endif
 
 %description devel
 The 0MQ lightweight messaging kernel is a library which extends the

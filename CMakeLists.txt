@@ -70,6 +70,7 @@ endif()
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
+set(pkg_config_names_private "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
@@ -94,7 +95,6 @@ elseif(WITH_LIBSODIUM)
     include_directories(${SODIUM_INCLUDE_DIRS})
     set(ZMQ_USE_LIBSODIUM 1)
     set(ZMQ_HAVE_CURVE 1)
-    set(pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
   else()
     message(FATAL_ERROR
       "libsodium is not installed. Install it, then run CMake again")
@@ -289,6 +289,9 @@ else()
 endif()
 
 find_library(RT_LIBRARY rt)
+if(RT_LIBRARY)
+  set(pkg_config_libs_private "${pkg_config_libs_private} -lrt")
+endif()
 
 find_package(Threads)
 
@@ -529,6 +532,7 @@ else()
 
     if(OPENPGM_FOUND)
       message(STATUS ${OPENPGM_PKGCONFIG_NAME}" found")
+      set(pkg_config_names_private "${pkg_config_names_private} ${OPENPGM_PKGCONFIG_NAME}")
     else()
       message(FATAL_ERROR
         ${OPENPGM_PKGCONFIG_NAME}"  not found. openpgm is searchd via `pkg-config ${OPENPGM_PKGCONFIG_NAME}`. Consider providing a valid OPENPGM_PKGCONFIG_NAME")
@@ -918,7 +922,12 @@ file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/src/platform.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc @ONLY)
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix ${prefix})
+set(libdir ${prefix}/lib)
+set(includedir ${prefix}/include)
+set(VERSION ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc @ONLY)
 set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 
 if(NOT ZMQ_BUILD_FRAMEWORK)
