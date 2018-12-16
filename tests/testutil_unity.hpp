@@ -238,7 +238,9 @@ void internal_manage_test_sockets (void *socket_, bool add_)
                         test_sockets[i] = test_sockets[i + 1];
                 }
             }
-            TEST_ASSERT_TRUE (found);
+            TEST_ASSERT_TRUE_MESSAGE (found,
+                                      "Attempted to close a socket that was "
+                                      "not created by test_context_socket");
             --test_socket_count;
         }
     }
