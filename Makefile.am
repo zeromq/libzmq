@@ -580,7 +580,8 @@ tests_test_ctx_options_SOURCES = tests/test_ctx_options.cpp
 tests_test_ctx_options_LDADD = src/libzmq.la
 
 tests_test_iov_SOURCES = tests/test_iov.cpp
-tests_test_iov_LDADD = src/libzmq.la
+tests_test_iov_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_iov_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_ctx_destroy_SOURCES = tests/test_ctx_destroy.cpp
 tests_test_ctx_destroy_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -635,7 +636,8 @@ tests_test_inproc_connect_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_inproc_connect_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
-tests_test_issue_566_LDADD = src/libzmq.la
+tests_test_issue_566_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_issue_566_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
 tests_test_proxy_LDADD = src/libzmq.la
@@ -657,7 +659,8 @@ tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
 
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
-tests_test_diffserv_LDADD = src/libzmq.la
+tests_test_diffserv_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_diffserv_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_connect_rid_SOURCES = tests/test_connect_rid.cpp
 tests_test_connect_rid_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -794,7 +797,8 @@ tests_test_shutdown_stress_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_shutdown_stress_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_ipc_wildcard_SOURCES = tests/test_ipc_wildcard.cpp
-tests_test_ipc_wildcard_LDADD = src/libzmq.la
+tests_test_ipc_wildcard_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_ipc_wildcard_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_pair_ipc_SOURCES = \
 	tests/test_pair_ipc.cpp \
@@ -813,7 +817,8 @@ tests_test_reqrep_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_reqrep_ipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_timeo_SOURCES = tests/test_timeo.cpp
-tests_test_timeo_LDADD = src/libzmq.la
+tests_test_timeo_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_timeo_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
 tests_test_filter_ipc_LDADD = src/libzmq.la ${UNITY_LIBS}
