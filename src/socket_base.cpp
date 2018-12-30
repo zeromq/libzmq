@@ -1113,6 +1113,18 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     if (rc == 0) {
         return 0;
     }
+    //  Special case for ZMQ_PUSH: -2 means pipe is dead while a
+    //  multi-part send is in progress and can't be recovered, so drop
+    //  silently when in blocking mode to keep backward compatibility.
+    if (unlikely (rc == -2)) {
+        if (!((flags_ & ZMQ_DONTWAIT) || options.sndtimeo == 0)) {
+            rc = msg_->close ();
+            errno_assert (rc == 0);
+            rc = msg_->init ();
+            errno_assert (rc == 0);
+            return 0;
+        }
+    }
     if (unlikely (errno != EAGAIN)) {
         return -1;
     }
