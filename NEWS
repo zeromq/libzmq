@@ -1,6 +1,35 @@
 0MQ version 4.3.1 stable, released on 20xx/xx/xx
 ================================================
 
+* A vulnerability has been found that would allow attackers to direct a peer to
+  jump to and execute from an address indicated by the attacker.
+  This issue has been present since v4.2.0. Older releases are not affected.
+  NOTE: The attacker needs to know in advance valid addresses in the peer's
+  memory to jump to, so measures like ASLR are effective mitigations.
+  NOTE: this attack can only take place after authentication, so peers behind
+  CURVE/GSSAPI are not vulnerable to unauthenticated attackers.
+  See https://github.com/zeromq/libzmq/issues/3351 for more details.
+  Thanks to Guido Vranken for uncovering the issue and providing the fix!
+
+* Note for packagers: as pkg-config's Requires.private is now used to properly
+  propagate dependencies for static builds, the libzmq*-dev or zeromq-devel or
+  equivalent package should now depend on the libfoo-dev or foo-devel packages
+  of all the libraries that zmq is linked against, or pkg-config --libs libzmq
+  will fail due to missing dependencies on end users machines.
+
+* Fixed #3351 - remote code execution vulnerability.
+
+* Fixed #3343 - race condition in ZMQ_PUSH when quickly disconnecting and
+                reconnecting causes last part of multi-part message to get
+                "stuck" and resent by mistake to the new socket.
+
+* Fixed #3336 - set Requires.private in generate pkg-config file.
+
+* Fixed #3334 - set TCP_NODELAY after connect() on Windows for the I/O socket.
+
+* Fixed #3326 - assert on Android when opening a socket and disabling WiFi.
+
+* Fixed #3320 - build failure on OpenBSD with GCC.
 
 0MQ version 4.3.0 stable, released on 2018/11/28
 ================================================
