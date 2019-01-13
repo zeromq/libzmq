@@ -345,7 +345,7 @@ static int get_monitor_event_internal (void *monitor_,
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
     uint16_t event = *(uint16_t *) (data);
     if (value_)
-        *value_ = *(uint32_t *) (data + 2);
+        memcpy (value_, data + 2, sizeof (uint32_t));
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
