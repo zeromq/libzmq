@@ -237,24 +237,38 @@ void pre_allocate_sock_ipc_int (void *zmq_socket_, const char *path_)
                              sizeof (struct sockaddr_un));
 }
 
+char ipc_endpoint[16];
+
 void pre_allocate_sock_ipc (void *sb_, char *my_endpoint_)
 {
-    pre_allocate_sock_ipc_int (sb_, "/tmp/test_use_fd_ipc");
-    strcpy (my_endpoint_, "ipc:///tmp/test_use_fd_ipc");
+    strcpy (ipc_endpoint, "tmpXXXXXX");
+
+#ifdef HAVE_MKDTEMP
+    TEST_ASSERT_TRUE (mkdtemp (ipc_endpoint));
+    strcat (ipc_endpoint, "/ipc");
+#else
+    int fd = mkstemp (ipc_endpoint);
+    TEST_ASSERT_TRUE (fd != -1);
+    close (fd);
+#endif
+
+    pre_allocate_sock_ipc_int (sb_, ipc_endpoint);
+    strcpy (my_endpoint_, "ipc://");
+    strcat (my_endpoint_, ipc_endpoint);
 }
 
 void test_req_rep_ipc ()
 {
     test_req_rep (pre_allocate_sock_ipc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
+    TEST_ASSERT_SUCCESS_ERRNO (unlink (ipc_endpoint));
 }
 
 void test_pair_ipc ()
 {
     test_pair (pre_allocate_sock_ipc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
+    TEST_ASSERT_SUCCESS_ERRNO (unlink (ipc_endpoint));
 }
 
 void test_client_server_ipc ()
@@ -262,7 +276,7 @@ void test_client_server_ipc ()
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     test_client_server (pre_allocate_sock_ipc);
 
-    TEST_ASSERT_SUCCESS_ERRNO (unlink ("/tmp/test_use_fd_ipc"));
+    TEST_ASSERT_SUCCESS_ERRNO (unlink (ipc_endpoint));
 #endif
 }
 
