@@ -71,11 +71,15 @@ void test_reconnect_ivl_against_pair_socket (const char *my_endpoint_,
 #if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
 void test_reconnect_ivl_ipc (void)
 {
-    const char *ipc_endpoint = "ipc:///tmp/test_reconnect_ivl";
-    void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, ipc_endpoint));
+    char my_endpoint[256];
+    size_t len = sizeof (my_endpoint);
 
-    test_reconnect_ivl_against_pair_socket (ipc_endpoint, sb);
+    void *sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+
+    test_reconnect_ivl_against_pair_socket (my_endpoint, sb);
     test_context_socket_close (sb);
 }
 #endif
