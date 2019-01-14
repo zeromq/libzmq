@@ -66,7 +66,8 @@ void test_issue_566 ()
         //  Create dealer with unique explicit routing id
         //  We assume the router learns this out-of-band
         void *dealer = zmq_socket (ctx2, ZMQ_DEALER);
-        char routing_id[10];
+        //  Leave space for NULL char from sprintf, gcc warning
+        char routing_id[11];
         sprintf (routing_id, "%09d", cycle);
         TEST_ASSERT_SUCCESS_ERRNO (
           zmq_setsockopt (dealer, ZMQ_ROUTING_ID, routing_id, 10));
