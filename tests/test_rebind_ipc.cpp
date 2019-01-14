@@ -44,15 +44,25 @@ void tearDown ()
 
 void test_rebind_ipc ()
 {
-    char my_endpoint[256];
-    size_t len = sizeof (my_endpoint);
+    char my_endpoint[32], random_file[16];
+    strcpy (random_file, "tmpXXXXXX");
+
+#ifdef HAVE_MKDTEMP
+    TEST_ASSERT_TRUE (mkdtemp (random_file));
+    strcat (random_file, "/ipc");
+#else
+    int fd = mkstemp (random_file);
+    TEST_ASSERT_TRUE (fd != -1);
+    close (fd);
+#endif
+
+    strcpy (my_endpoint, "ipc://");
+    strcat (my_endpoint, random_file);
 
     void *sb0 = test_context_socket (ZMQ_PUSH);
     void *sb1 = test_context_socket (ZMQ_PUSH);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, "ipc://*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb0, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, my_endpoint));
 
     void *sc = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
