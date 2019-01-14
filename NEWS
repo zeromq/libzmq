@@ -4,8 +4,9 @@
 0MQ version 4.3.1 stable, released on 2019/01/12
 ================================================
 
-* A vulnerability has been found that would allow attackers to direct a peer to
-  jump to and execute from an address indicated by the attacker.
+* CVE-2019-6250: A vulnerability has been found that would allow attackers to
+  direct a peer to jump to and execute from an address indicated by the
+  attacker.
   This issue has been present since v4.2.0. Older releases are not affected.
   NOTE: The attacker needs to know in advance valid addresses in the peer's
   memory to jump to, so measures like ASLR are effective mitigations.
