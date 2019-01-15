@@ -469,10 +469,7 @@ int zmq::thread_ctx_t::set (int option_, int optval_)
 int zmq::thread_ctx_t::get (int option_)
 {
     int rc = 0;
-    if (option_ == ZMQ_THREAD_PRIORITY) {
-        scoped_lock_t locker (_opt_sync);
-        rc = _thread_priority;
-    } else if (option_ == ZMQ_THREAD_SCHED_POLICY) {
+    if (option_ == ZMQ_THREAD_SCHED_POLICY) {
         scoped_lock_t locker (_opt_sync);
         rc = _thread_sched_policy;
     } else if (option_ == ZMQ_THREAD_NAME_PREFIX) {
