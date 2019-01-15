@@ -112,8 +112,6 @@ void test_ctx_thread_opts (void *ctx_)
           ctx_, ZMQ_THREAD_PRIORITY,
           1 /* any positive value different than the default will be ok */);
         assert (rc == 0);
-        rc = zmq_ctx_get (ctx_, ZMQ_THREAD_PRIORITY);
-        assert (rc == 1);
     }
 
 
