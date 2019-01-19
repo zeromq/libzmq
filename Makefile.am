@@ -1047,6 +1047,7 @@ endif
 if ON_GNU
 XFAIL_TESTS += tests/test_ipc_wildcard \
 		tests/test_reqrep_ipc \
+		tests/test_pair_ipc \
 		tests/test_term_endpoint
 endif
 
