@@ -376,6 +376,9 @@ LIBZMQ_CHECK_DOC_BUILD
 # Check polling system, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_POLLER
 
+# Check cacheline size, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_CACHELINE
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(\

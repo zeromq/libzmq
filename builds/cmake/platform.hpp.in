@@ -11,6 +11,8 @@
 #cmakedefine ZMQ_POLL_BASED_ON_SELECT
 #cmakedefine ZMQ_POLL_BASED_ON_POLL
 
+#cmakedefine ZMQ_CACHELINE_SIZE @ZMQ_CACHELINE_SIZE@
+
 #cmakedefine ZMQ_FORCE_MUTEXES
 
 #cmakedefine HAVE_FORK

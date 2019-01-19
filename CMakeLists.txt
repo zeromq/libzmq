@@ -251,6 +251,14 @@ include(CMakeDependentOption)
 include(CheckCXXSymbolExists)
 include(CheckSymbolExists)
 
+execute_process(COMMAND getconf LEVEL1_DCACHE_LINESIZE OUTPUT_VARIABLE CACHELINE_SIZE ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(CACHELINE_SIZE STREQUAL "" OR CACHELINE_SIZE EQUAL 0 OR CACHELINE_SIZE EQUAL -1)
+  set(ZMQ_CACHELINE_SIZE 64)
+else()
+  set(ZMQ_CACHELINE_SIZE ${CACHELINE_SIZE})
+endif()
+message(STATUS "Using ${ZMQ_CACHELINE_SIZE} bytes alignment for lock-free data structures")
+
 if(NOT CYGWIN)
   # TODO cannot we simply do 'if(WIN32) set(ZMQ_HAVE_WINDOWS ON)' or similar?
   check_include_files(windows.h ZMQ_HAVE_WINDOWS)
