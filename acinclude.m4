@@ -1169,3 +1169,23 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
         AC_MSG_ERROR([Invalid API poller '$api_poller' specified])
 	fi
 }])
+
+dnl ##############################################################################
+dnl # LIBZMQ_CHECK_CACHELINE                                                     #
+dnl # Check cacheline size for alignment purposes                                #
+dnl ##############################################################################
+AC_DEFUN([LIBZMQ_CHECK_CACHELINE], [{
+
+    zmq_cacheline_size=64
+    AC_CHECK_TOOL(libzmq_getconf, getconf)
+    if ! test "x$libzmq_getconf" = "x"; then
+        zmq_cacheline_size=$($libzmq_getconf LEVEL1_DCACHE_LINESIZE 2>/dev/null || echo 64)
+        if test "x$zmq_cacheline_size" = "x0" -o  "x$zmq_cacheline_size" = "x-1"; then
+            # getconf on some architectures does not know the size, try to fallback to
+            # the value the kernel knows on Linux
+            zmq_cacheline_size=$(cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size 2>/dev/null || echo 64)
+        fi
+    fi
+	AC_MSG_NOTICE([Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
+	AC_DEFINE_UNQUOTED(ZMQ_CACHELINE_SIZE, $zmq_cacheline_size, [Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
+}])
