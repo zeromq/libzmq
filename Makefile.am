@@ -1044,10 +1044,13 @@ if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
 endif
 
+#  GNU/Hurd does not support getsockname on IPC, so ZMQ_LAST_ENDPOINT cannot be
+#  used with IPC, so the following tests will fail
 if ON_GNU
 XFAIL_TESTS += tests/test_ipc_wildcard \
 		tests/test_reqrep_ipc \
 		tests/test_pair_ipc \
+		tests/test_rebind_ipc \
 		tests/test_term_endpoint
 endif
 
