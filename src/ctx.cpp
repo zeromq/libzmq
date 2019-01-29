@@ -419,13 +419,18 @@ zmq::thread_ctx_t::thread_ctx_t () :
 
 void zmq::thread_ctx_t::start_thread (thread_t &thread_,
                                       thread_fn *tfn_,
-                                      void *arg_) const
+                                      void *arg_,
+                                      const char *name_) const
 {
     static unsigned int nthreads_started = 0;
 
     thread_.setSchedulingParameters (_thread_priority, _thread_sched_policy,
                                      _thread_affinity_cpus);
-    thread_.start (tfn_, arg_);
+
+    char namebuf[16];
+    snprintf(namebuf, sizeof(namebuf), "0MQ%s%s",
+             name_ ? ":" : "", name_ ? name_ : "");
+    thread_.start(tfn_, arg_, namebuf);
 #ifndef ZMQ_HAVE_ANDROID
     std::ostringstream s;
     if (!_thread_name_prefix.empty ())

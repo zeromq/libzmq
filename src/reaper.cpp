@@ -71,7 +71,7 @@ void zmq::reaper_t::start ()
     zmq_assert (_mailbox.valid ());
 
     //  Start the thread.
-    _poller->start ();
+    _poller->start ("Reaper");
 }
 
 void zmq::reaper_t::stop ()
