@@ -52,7 +52,7 @@ static unsigned int __stdcall thread_routine (void *arg_)
 }
 }
 
-void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
+void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 {
     _tfn = tfn_;
     _arg = arg_;
@@ -109,7 +109,7 @@ static void *thread_routine (void *arg_)
 }
 }
 
-void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
+void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 {
     _tfn = tfn_;
     _arg = arg_;
@@ -179,15 +179,17 @@ static void *thread_routine (void *arg_)
 #endif
     zmq::thread_t *self = (zmq::thread_t *) arg_;
     self->applySchedulingParameters ();
+    pthread_setname_np(pthread_self(), self->_name.c_str());
     self->_tfn (self->_arg);
     return NULL;
 }
 }
 
-void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
+void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 {
     _tfn = tfn_;
     _arg = arg_;
+    _name = name_;
     int rc = pthread_create (&_descriptor, NULL, thread_routine, this);
     posix_assert (rc);
     _started = true;
