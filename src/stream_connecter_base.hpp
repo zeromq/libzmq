@@ -53,21 +53,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
     ~stream_connecter_base_t ();
 
-  private:
-    //  ID of the timer used to delay the reconnection.
-    enum
-    {
-        reconnect_timer_id = 1
-    };
-
-    //  Internal function to return a reconnect backoff delay.
-    //  Will modify the current_reconnect_ivl used for next call
-    //  Returns the currently used interval
-    int get_new_reconnect_ivl ();
-
-    virtual void start_connecting () = 0;
-
-    // TODO check if some members can be made private
   protected:
     //  Handlers for incoming commands.
     void process_plug ();
@@ -100,6 +85,26 @@ class stream_connecter_base_t : public own_t, public io_object_t
     //  registered with the poller, or NULL.
     handle_t _handle;
 
+    // String representation of endpoint to connect to
+    std::string _endpoint;
+
+    // Socket
+    zmq::socket_base_t *const _socket;
+
+  private:
+    //  ID of the timer used to delay the reconnection.
+    enum
+    {
+        reconnect_timer_id = 1
+    };
+
+    //  Internal function to return a reconnect backoff delay.
+    //  Will modify the current_reconnect_ivl used for next call
+    //  Returns the currently used interval
+    int get_new_reconnect_ivl ();
+
+    virtual void start_connecting () = 0;
+
     //  If true, connecter is waiting a while before trying to connect.
     const bool _delayed_start;
 
@@ -112,13 +117,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
     //  Current reconnect ivl, updated for backoff strategy
     int _current_reconnect_ivl;
 
-    // String representation of endpoint to connect to
-    std::string _endpoint;
-
-    // Socket
-    zmq::socket_base_t *const _socket;
-
-  private:
     stream_connecter_base_t (const stream_connecter_base_t &);
     const stream_connecter_base_t &operator= (const stream_connecter_base_t &);
 };

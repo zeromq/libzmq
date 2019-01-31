@@ -44,11 +44,11 @@ zmq::stream_connecter_base_t::stream_connecter_base_t (
     _addr (addr_),
     _s (retired_fd),
     _handle (static_cast<handle_t> (NULL)),
+    _socket (session_->get_socket ()),
     _delayed_start (delayed_start_),
     _reconnect_timer_started (false),
     _session (session_),
-    _current_reconnect_ivl (options.reconnect_ivl),
-    _socket (_session->get_socket ())
+    _current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (_addr);
     _addr->to_string (_endpoint);
