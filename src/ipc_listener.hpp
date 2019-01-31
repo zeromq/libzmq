@@ -85,26 +85,26 @@ class ipc_listener_t : public own_t, public io_object_t
     fd_t accept ();
 
     //  True, if the underlying file for UNIX domain socket exists.
-    bool has_file;
+    bool _has_file;
 
     //  Name of the temporary directory (if any) that has the
     //  the UNIX domain socket
-    std::string tmp_socket_dirname;
+    std::string _tmp_socket_dirname;
 
     //  Name of the file associated with the UNIX domain address.
-    std::string filename;
+    std::string _filename;
 
     //  Underlying socket.
-    fd_t s;
+    fd_t _s;
 
     //  Handle corresponding to the listening socket.
-    handle_t handle;
+    handle_t _handle;
 
     //  Socket the listener belongs to.
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *_socket;
 
     // String representation of endpoint to bind to
-    std::string endpoint;
+    std::string _endpoint;
 
     // Acceptable temporary directory environment variables
     static const char *tmp_env_vars[];
