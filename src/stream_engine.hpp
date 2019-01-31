@@ -191,7 +191,7 @@ class stream_engine_t : public io_object_t, public i_engine
     const options_t _options;
 
     // String representation of endpoint
-    std::string _endpoint;
+    const std::string _endpoint;
 
     bool _plugged;
 
