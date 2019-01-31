@@ -54,7 +54,7 @@ zmq::stream_listener_base_t::~stream_listener_base_t ()
 zmq::zmq_socklen_t
 zmq::stream_listener_base_t::get_socket_address (sockaddr_storage *ss_) const
 {
-    zmq_socklen_t sl = sizeof (*ss_);
+    zmq_socklen_t sl = static_cast<zmq_socklen_t> (sizeof (*ss_));
 
     const int rc =
       getsockname (_s, reinterpret_cast<struct sockaddr *> (ss_), &sl);
