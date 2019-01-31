@@ -54,9 +54,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
     ~stream_connecter_base_t ();
 
   private:
-    //  Handlers for incoming commands.
-    void process_plug ();
-
     //  Internal function to return a reconnect backoff delay.
     //  Will modify the current_reconnect_ivl used for next call
     //  Returns the currently used interval
@@ -72,11 +69,18 @@ class stream_connecter_base_t : public own_t, public io_object_t
         reconnect_timer_id = 1
     };
 
+    //  Handlers for incoming commands.
+    void process_plug ();
+    void process_term (int linger_);
+
     //  Internal function to add a reconnect timer
     void add_reconnect_timer ();
 
     //  Removes the handle from the poller.
     void rm_handle ();
+
+    //  Close the connecting socket.
+    void close ();
 
     //  Address to connect to. Owned by session_base_t.
     //  It is non-const since some parts may change during opening.

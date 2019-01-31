@@ -64,23 +64,6 @@ zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (_addr->protocol == "tipc");
 }
 
-void zmq::tipc_connecter_t::process_term (int linger_)
-{
-    if (_reconnect_timer_started) {
-        cancel_timer (reconnect_timer_id);
-        _reconnect_timer_started = false;
-    }
-
-    if (_handle) {
-        rm_handle ();
-    }
-
-    if (_s != retired_fd)
-        close ();
-
-    own_t::process_term (linger_);
-}
-
 void zmq::tipc_connecter_t::in_event ()
 {
     //  We are not polling for incoming data, so we are actually called
@@ -183,15 +166,6 @@ int zmq::tipc_connecter_t::open ()
     }
     //  Forward the error.
     return -1;
-}
-
-void zmq::tipc_connecter_t::close ()
-{
-    zmq_assert (_s != retired_fd);
-    int rc = ::close (_s);
-    errno_assert (rc == 0);
-    _socket->event_closed (_endpoint, _s);
-    _s = retired_fd;
 }
 
 zmq::fd_t zmq::tipc_connecter_t::connect ()

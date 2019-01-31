@@ -74,9 +74,6 @@ class tcp_connecter_t : public stream_connecter_base_t
     //  EAGAIN errno if async connect was launched.
     int open ();
 
-    //  Close the connecting socket.
-    void close ();
-
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.
     fd_t connect ();

@@ -87,19 +87,7 @@ void zmq::tcp_connecter_t::process_term (int linger_)
         _connect_timer_started = false;
     }
 
-    if (_reconnect_timer_started) {
-        cancel_timer (reconnect_timer_id);
-        _reconnect_timer_started = false;
-    }
-
-    if (_handle) {
-        rm_handle ();
-    }
-
-    if (_s != retired_fd)
-        close ();
-
-    own_t::process_term (linger_);
+    stream_connecter_base_t::process_term (linger_);
 }
 
 void zmq::tcp_connecter_t::in_event ()
@@ -372,18 +360,4 @@ bool zmq::tcp_connecter_t::tune_socket (const fd_t fd_)
                        options.tcp_keepalive_idle, options.tcp_keepalive_intvl)
                    | tune_tcp_maxrt (fd_, options.tcp_maxrt);
     return rc == 0;
-}
-
-void zmq::tcp_connecter_t::close ()
-{
-    zmq_assert (_s != retired_fd);
-#ifdef ZMQ_HAVE_WINDOWS
-    const int rc = closesocket (_s);
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    const int rc = ::close (_s);
-    errno_assert (rc == 0);
-#endif
-    _socket->event_closed (_endpoint, _s);
-    _s = retired_fd;
 }

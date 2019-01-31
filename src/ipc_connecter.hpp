@@ -56,9 +56,6 @@ class ipc_connecter_t : public stream_connecter_base_t
         reconnect_timer_id = 1
     };
 
-    //  Handlers for incoming commands.
-    void process_term (int linger_);
-
     //  Handlers for I/O events.
     void in_event ();
     void out_event ();
@@ -71,9 +68,6 @@ class ipc_connecter_t : public stream_connecter_base_t
     //  0 if connect was successful immediately. Returns -1 with
     //  EAGAIN errno if async connect was launched.
     int open ();
-
-    //  Close the connecting socket.
-    int close ();
 
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.

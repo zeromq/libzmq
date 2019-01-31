@@ -57,9 +57,6 @@ class tipc_connecter_t : public stream_connecter_base_t
         reconnect_timer_id = 1
     };
 
-    //  Handlers for incoming commands.
-    void process_term (int linger_);
-
     //  Handlers for I/O events.
     void in_event ();
     void out_event ();
@@ -67,9 +64,6 @@ class tipc_connecter_t : public stream_connecter_base_t
 
     //  Internal function to start the actual connection establishment.
     void start_connecting ();
-
-    //  Close the connecting socket.
-    void close ();
 
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.

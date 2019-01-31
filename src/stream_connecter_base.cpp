@@ -72,6 +72,23 @@ void zmq::stream_connecter_base_t::process_plug ()
         start_connecting ();
 }
 
+void zmq::stream_connecter_base_t::process_term (int linger_)
+{
+    if (_reconnect_timer_started) {
+        cancel_timer (reconnect_timer_id);
+        _reconnect_timer_started = false;
+    }
+
+    if (_handle) {
+        rm_handle ();
+    }
+
+    if (_s != retired_fd)
+        close ();
+
+    own_t::process_term (linger_);
+}
+
 void zmq::stream_connecter_base_t::add_reconnect_timer ()
 {
     if (options.reconnect_ivl != -1) {
@@ -102,4 +119,18 @@ void zmq::stream_connecter_base_t::rm_handle ()
 {
     rm_fd (_handle);
     _handle = static_cast<handle_t> (NULL);
+}
+
+void zmq::stream_connecter_base_t::close ()
+{
+    zmq_assert (_s != retired_fd);
+#ifdef ZMQ_HAVE_WINDOWS
+    const int rc = closesocket (_s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    const int rc = ::close (_s);
+    errno_assert (rc == 0);
+#endif
+    _socket->event_closed (_endpoint, _s);
+    _s = retired_fd;
 }
