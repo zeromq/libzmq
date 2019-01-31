@@ -29,7 +29,9 @@
 
 #include "precompiled.hpp"
 #include "stream_listener_base.hpp"
+#include "session_base.hpp"
 #include "socket_base.hpp"
+#include "stream_engine.hpp"
 
 zmq::stream_listener_base_t::stream_listener_base_t (
   zmq::io_thread_t *io_thread_,
@@ -91,4 +93,25 @@ int zmq::stream_listener_base_t::close ()
     _s = retired_fd;
 
     return 0;
+}
+
+void zmq::stream_listener_base_t::create_engine (fd_t fd)
+{
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
+    alloc_assert (engine);
+
+    //  Choose I/O thread to run connecter in. Given that we are already
+    //  running in an I/O thread, there must be at least one available.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    zmq_assert (io_thread);
+
+    //  Create and launch a session object.
+    session_base_t *session =
+      session_base_t::create (io_thread, false, _socket, options, NULL);
+    errno_assert (session);
+    session->inc_seqnum ();
+    launch_child (session);
+    send_attach (session, engine, false);
+    _socket->event_accepted (_endpoint, fd);
 }

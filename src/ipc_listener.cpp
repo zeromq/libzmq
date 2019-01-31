@@ -37,10 +37,8 @@
 
 #include <string.h>
 
-#include "stream_engine.hpp"
 #include "ipc_address.hpp"
 #include "io_thread.hpp"
-#include "session_base.hpp"
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -149,23 +147,7 @@ void zmq::ipc_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
-    alloc_assert (engine);
-
-    //  Choose I/O thread to run connecter in. Given that we are already
-    //  running in an I/O thread, there must be at least one available.
-    io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_assert (io_thread);
-
-    //  Create and launch a session object.
-    session_base_t *session =
-      session_base_t::create (io_thread, false, _socket, options, NULL);
-    errno_assert (session);
-    session->inc_seqnum ();
-    launch_child (session);
-    send_attach (session, engine, false);
-    _socket->event_accepted (_endpoint, fd);
+    create_engine (fd);
 }
 
 int zmq::ipc_listener_t::get_address (std::string &addr_)
