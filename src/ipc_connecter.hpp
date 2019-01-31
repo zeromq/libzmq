@@ -104,10 +104,6 @@ class ipc_connecter_t : public own_t, public io_object_t
     //  Handle corresponding to the listening socket.
     handle_t _handle;
 
-    //  If true file descriptor is registered with the poller and 'handle'
-    //  contains valid value.
-    bool _handle_valid;
-
     //  If true, connecter is waiting a while before trying to connect.
     const bool _delayed_start;
 
