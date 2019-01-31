@@ -238,7 +238,7 @@ class stream_engine_t : public io_object_t, public i_engine
     // Socket
     zmq::socket_base_t *_socket;
 
-    std::string _peer_address;
+    const std::string _peer_address;
 
     stream_engine_t (const stream_engine_t &);
     const stream_engine_t &operator= (const stream_engine_t &);
