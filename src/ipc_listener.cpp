@@ -132,32 +132,9 @@ int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
                                      const options_t &options_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    _has_file (false),
-    _s (retired_fd),
-    _handle (static_cast<handle_t> (NULL)),
-    _socket (socket_)
+    stream_listener_base_t (io_thread_, socket_, options_),
+    _has_file (false)
 {
-}
-
-zmq::ipc_listener_t::~ipc_listener_t ()
-{
-    zmq_assert (_s == retired_fd);
-}
-
-void zmq::ipc_listener_t::process_plug ()
-{
-    //  Start polling for incoming connections.
-    _handle = add_fd (_s);
-    set_pollin (_handle);
-}
-
-void zmq::ipc_listener_t::process_term (int linger_)
-{
-    rm_fd (_handle);
-    close ();
-    own_t::process_term (linger_);
 }
 
 void zmq::ipc_listener_t::in_event ()

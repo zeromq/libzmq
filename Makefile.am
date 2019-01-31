@@ -196,6 +196,8 @@ src_libzmq_la_SOURCES = \
 	src/stream.hpp \
 	src/stream_connecter_base.cpp \
 	src/stream_connecter_base.hpp \
+	src/stream_listener_base.cpp \
+	src/stream_listener_base.hpp \
 	src/stream_engine.cpp \
 	src/stream_engine.hpp \
 	src/sub.cpp \

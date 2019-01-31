@@ -59,30 +59,8 @@
 zmq::tipc_listener_t::tipc_listener_t (io_thread_t *io_thread_,
                                        socket_base_t *socket_,
                                        const options_t &options_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    _s (retired_fd),
-    _socket (socket_)
+    stream_listener_base_t (io_thread_, socket_, options_)
 {
-}
-
-zmq::tipc_listener_t::~tipc_listener_t ()
-{
-    zmq_assert (_s == retired_fd);
-}
-
-void zmq::tipc_listener_t::process_plug ()
-{
-    //  Start polling for incoming connections.
-    _handle = add_fd (_s);
-    set_pollin (_handle);
-}
-
-void zmq::tipc_listener_t::process_term (int linger_)
-{
-    rm_fd (_handle);
-    close ();
-    own_t::process_term (linger_);
 }
 
 void zmq::tipc_listener_t::in_event ()
@@ -119,16 +97,10 @@ void zmq::tipc_listener_t::in_event ()
 int zmq::tipc_listener_t::get_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
-    socklen_t sl = sizeof (ss);
-
-#ifdef ZMQ_HAVE_VXWORKS
-    int rc = getsockname (_s, (sockaddr *) &ss, (int *) &sl);
-#else
-    int rc = getsockname (_s, (sockaddr *) &ss, &sl);
-#endif
-    if (rc != 0) {
+    const zmq_socklen_t sl = get_socket_address (&ss);
+    if (!sl) {
         addr_.clear ();
-        return rc;
+        return -1;
     }
 
     tipc_address_t addr ((struct sockaddr *) &ss, sl);
@@ -196,15 +168,6 @@ error:
     close ();
     errno = err;
     return -1;
-}
-
-void zmq::tipc_listener_t::close ()
-{
-    zmq_assert (_s != retired_fd);
-    int rc = ::close (_s);
-    errno_assert (rc == 0);
-    _s = retired_fd;
-    _socket->event_closed (_endpoint, _s);
 }
 
 zmq::fd_t zmq::tipc_listener_t::accept ()

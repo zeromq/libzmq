@@ -36,22 +36,16 @@
 #include <string>
 
 #include "fd.hpp"
-#include "own.hpp"
-#include "stdint.hpp"
-#include "io_object.hpp"
+#include "stream_listener_base.hpp"
 
 namespace zmq
 {
-class io_thread_t;
-class socket_base_t;
-
-class ipc_listener_t : public own_t, public io_object_t
+class ipc_listener_t : public stream_listener_base_t
 {
   public:
     ipc_listener_t (zmq::io_thread_t *io_thread_,
                     zmq::socket_base_t *socket_,
                     const options_t &options_);
-    ~ipc_listener_t ();
 
     //  Set address to listen on.
     int set_address (const char *addr_);
@@ -60,15 +54,8 @@ class ipc_listener_t : public own_t, public io_object_t
     int get_address (std::string &addr_);
 
   private:
-    //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
-
     //  Handlers for I/O events.
     void in_event ();
-
-    //  Close the listening socket.
-    int close ();
 
     // Create wildcard path address
     static int create_wildcard_address (std::string &path_, std::string &file_);
@@ -78,6 +65,8 @@ class ipc_listener_t : public own_t, public io_object_t
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
     bool filter (fd_t sock_);
 #endif
+
+    int close ();
 
     //  Accept the new connection. Returns the file descriptor of the
     //  newly created connection. The function may return retired_fd
@@ -93,18 +82,6 @@ class ipc_listener_t : public own_t, public io_object_t
 
     //  Name of the file associated with the UNIX domain address.
     std::string _filename;
-
-    //  Underlying socket.
-    fd_t _s;
-
-    //  Handle corresponding to the listening socket.
-    handle_t _handle;
-
-    //  Socket the listener belongs to.
-    zmq::socket_base_t *_socket;
-
-    // String representation of endpoint to bind to
-    std::string _endpoint;
 
     // Acceptable temporary directory environment variables
     static const char *tmp_env_vars[];

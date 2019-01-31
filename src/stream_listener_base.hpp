@@ -27,51 +27,64 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TIPC_LISTENER_HPP_INCLUDED__
-#define __ZMQ_TIPC_LISTENER_HPP_INCLUDED__
-
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_TIPC
+#ifndef __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
+#define __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
 
 #include <string>
 
 #include "fd.hpp"
-#include "stream_listener_base.hpp"
+#include "own.hpp"
+#include "stdint.hpp"
+#include "io_object.hpp"
 #include "tipc_address.hpp"
 
 namespace zmq
 {
-class tipc_listener_t : public stream_listener_base_t
+class io_thread_t;
+class socket_base_t;
+
+#if defined(ZMQ_HAVE_HPUX) || defined(ZMQ_HAVE_VXWORKS)
+typedef int zmq_socklen_t;
+#else
+typedef socklen_t zmq_socklen_t;
+#endif
+
+class stream_listener_base_t : public own_t, public io_object_t
 {
   public:
-    tipc_listener_t (zmq::io_thread_t *io_thread_,
-                     zmq::socket_base_t *socket_,
-                     const options_t &options_);
+    stream_listener_base_t (zmq::io_thread_t *io_thread_,
+                            zmq::socket_base_t *socket_,
+                            const options_t &options_);
+    ~stream_listener_base_t ();
 
-    //  Set address to listen on.
-    int set_address (const char *addr_);
-
-    // Get the bound address for use with wildcards
-    int get_address (std::string &addr_);
+  protected:
+    zmq_socklen_t get_socket_address (sockaddr_storage *ss_) const;
 
   private:
-    //  Handlers for I/O events.
-    void in_event ();
+    //  Handlers for incoming commands.
+    void process_plug ();
+    void process_term (int linger_);
 
-    //  Accept the new connection. Returns the file descriptor of the
-    //  newly created connection. The function may return retired_fd
-    //  if the connection was dropped while waiting in the listen backlog.
-    fd_t accept ();
+  protected:
+    //  Close the listening socket.
+    virtual int close ();
 
-    // Address to listen on
-    tipc_address_t _address;
+    //  Underlying socket.
+    fd_t _s;
 
-    tipc_listener_t (const tipc_listener_t &);
-    const tipc_listener_t &operator= (const tipc_listener_t &);
+    //  Handle corresponding to the listening socket.
+    handle_t _handle;
+
+    //  Socket the listener belongs to.
+    zmq::socket_base_t *_socket;
+
+    // String representation of endpoint to bind to
+    std::string _endpoint;
+
+  private:
+    stream_listener_base_t (const stream_listener_base_t &);
+    const stream_listener_base_t &operator= (const stream_listener_base_t &);
 };
 }
-
-#endif
 
 #endif

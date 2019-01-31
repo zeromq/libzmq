@@ -63,33 +63,8 @@
 zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
                                      const options_t &options_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    _s (retired_fd),
-    _handle (static_cast<handle_t> (NULL)),
-    _socket (socket_)
+    stream_listener_base_t (io_thread_, socket_, options_)
 {
-}
-
-zmq::tcp_listener_t::~tcp_listener_t ()
-{
-    zmq_assert (_s == retired_fd);
-    zmq_assert (!_handle);
-}
-
-void zmq::tcp_listener_t::process_plug ()
-{
-    //  Start polling for incoming connections.
-    _handle = add_fd (_s);
-    set_pollin (_handle);
-}
-
-void zmq::tcp_listener_t::process_term (int linger_)
-{
-    rm_fd (_handle);
-    _handle = static_cast<handle_t> (NULL);
-    close ();
-    own_t::process_term (linger_);
 }
 
 void zmq::tcp_listener_t::in_event ()
@@ -134,34 +109,14 @@ void zmq::tcp_listener_t::in_event ()
     _socket->event_accepted (_endpoint, fd);
 }
 
-void zmq::tcp_listener_t::close ()
-{
-    zmq_assert (_s != retired_fd);
-#ifdef ZMQ_HAVE_WINDOWS
-    int rc = closesocket (_s);
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    int rc = ::close (_s);
-    errno_assert (rc == 0);
-#endif
-    _socket->event_closed (_endpoint, _s);
-    _s = retired_fd;
-}
-
 int zmq::tcp_listener_t::get_address (std::string &addr_)
 {
     // Get the details of the TCP socket
     struct sockaddr_storage ss;
-#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
-    int sl = sizeof (ss);
-#else
-    socklen_t sl = sizeof (ss);
-#endif
-    int rc = getsockname (_s, reinterpret_cast<struct sockaddr *> (&ss), &sl);
-
-    if (rc != 0) {
+    const zmq_socklen_t sl = get_socket_address (&ss);
+    if (!sl) {
         addr_.clear ();
-        return rc;
+        return -1;
     }
 
     tcp_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);

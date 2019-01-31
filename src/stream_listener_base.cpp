@@ -27,44 +27,68 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TCP_LISTENER_HPP_INCLUDED__
-#define __ZMQ_TCP_LISTENER_HPP_INCLUDED__
-
-#include "fd.hpp"
-#include "tcp_address.hpp"
+#include "precompiled.hpp"
 #include "stream_listener_base.hpp"
+#include "socket_base.hpp"
 
-namespace zmq
+zmq::stream_listener_base_t::stream_listener_base_t (
+  zmq::io_thread_t *io_thread_,
+  zmq::socket_base_t *socket_,
+  const zmq::options_t &options_) :
+    own_t (io_thread_, options_),
+    io_object_t (io_thread_),
+    _s (retired_fd),
+    _handle (static_cast<handle_t> (NULL)),
+    _socket (socket_)
 {
-class tcp_listener_t : public stream_listener_base_t
-{
-  public:
-    tcp_listener_t (zmq::io_thread_t *io_thread_,
-                    zmq::socket_base_t *socket_,
-                    const options_t &options_);
-
-    //  Set address to listen on.
-    int set_address (const char *addr_);
-
-    // Get the bound address for use with wildcard
-    int get_address (std::string &addr_);
-
-  private:
-    //  Handlers for I/O events.
-    void in_event ();
-
-    //  Accept the new connection. Returns the file descriptor of the
-    //  newly created connection. The function may return retired_fd
-    //  if the connection was dropped while waiting in the listen backlog
-    //  or was denied because of accept filters.
-    fd_t accept ();
-
-    //  Address to listen on.
-    tcp_address_t _address;
-
-    tcp_listener_t (const tcp_listener_t &);
-    const tcp_listener_t &operator= (const tcp_listener_t &);
-};
 }
 
+zmq::stream_listener_base_t::~stream_listener_base_t ()
+{
+    zmq_assert (_s == retired_fd);
+    zmq_assert (!_handle);
+}
+
+zmq::zmq_socklen_t
+zmq::stream_listener_base_t::get_socket_address (sockaddr_storage *ss_) const
+{
+    zmq_socklen_t sl = sizeof (*ss_);
+
+    const int rc =
+      getsockname (_s, reinterpret_cast<struct sockaddr *> (ss_), &sl);
+
+    return rc != 0 ? 0 : sl;
+}
+
+void zmq::stream_listener_base_t::process_plug ()
+{
+    //  Start polling for incoming connections.
+    _handle = add_fd (_s);
+    set_pollin (_handle);
+}
+
+void zmq::stream_listener_base_t::process_term (int linger_)
+{
+    rm_fd (_handle);
+    _handle = static_cast<handle_t> (NULL);
+    close ();
+    own_t::process_term (linger_);
+}
+
+int zmq::stream_listener_base_t::close ()
+{
+    // TODO this is identical to stream_connector_base_t::close
+
+    zmq_assert (_s != retired_fd);
+#ifdef ZMQ_HAVE_WINDOWS
+    const int rc = closesocket (_s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    const int rc = ::close (_s);
+    errno_assert (rc == 0);
 #endif
+    _socket->event_closed (_endpoint, _s);
+    _s = retired_fd;
+
+    return 0;
+}
