@@ -79,9 +79,6 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
 zmq::tcp_connecter_t::~tcp_connecter_t ()
 {
     zmq_assert (!_connect_timer_started);
-    zmq_assert (!_reconnect_timer_started);
-    zmq_assert (!_handle);
-    zmq_assert (_s == retired_fd);
 }
 
 void zmq::tcp_connecter_t::process_plug ()

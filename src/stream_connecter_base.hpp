@@ -51,6 +51,9 @@ class stream_connecter_base_t : public own_t, public io_object_t
                              address_t *addr_,
                              bool delayed_start_);
 
+    ~stream_connecter_base_t ();
+
+
   protected:
     //  Address to connect to. Owned by session_base_t.
     //  It is non-const since some parts may change during opening.

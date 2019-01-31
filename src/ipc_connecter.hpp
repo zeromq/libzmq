@@ -48,7 +48,6 @@ class ipc_connecter_t : public stream_connecter_base_t
                      const options_t &options_,
                      address_t *addr_,
                      bool delayed_start_);
-    ~ipc_connecter_t ();
 
   private:
     //  ID of the timer used to delay the reconnection.

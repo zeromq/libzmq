@@ -62,13 +62,6 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (_addr->protocol == protocol_name::ipc);
 }
 
-zmq::ipc_connecter_t::~ipc_connecter_t ()
-{
-    zmq_assert (!_reconnect_timer_started);
-    zmq_assert (_handle == static_cast<handle_t> (NULL));
-    zmq_assert (_s == retired_fd);
-}
-
 void zmq::ipc_connecter_t::process_plug ()
 {
     if (_delayed_start)

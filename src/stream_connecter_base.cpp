@@ -55,3 +55,10 @@ zmq::stream_connecter_base_t::stream_connecter_base_t (
     // or does not matter, change such that endpoint in initialized using an
     // initializer, and make endpoint const
 }
+
+zmq::stream_connecter_base_t::~stream_connecter_base_t ()
+{
+    zmq_assert (!_reconnect_timer_started);
+    zmq_assert (!_handle);
+    zmq_assert (_s == retired_fd);
+}
