@@ -87,35 +87,35 @@ class tipc_connecter_t : public own_t, public io_object_t
     fd_t connect ();
 
     //  Address to connect to. Owned by session_base_t.
-    const address_t *addr;
+    const address_t *_addr;
 
     //  Underlying socket.
-    fd_t s;
+    fd_t _s;
 
     //  Handle corresponding to the listening socket.
-    handle_t handle;
+    handle_t _handle;
 
     //  If true file descriptor is registered with the poller and 'handle'
     //  contains valid value.
-    bool handle_valid;
+    bool _handle_valid;
 
     //  If true, connecter is waiting a while before trying to connect.
-    const bool delayed_start;
+    const bool _delayed_start;
 
     //  True iff a timer has been started.
-    bool timer_started;
+    bool _timer_started;
 
     //  Reference to the session we belong to.
-    zmq::session_base_t *session;
+    zmq::session_base_t *_session;
 
     //  Current reconnect ivl, updated for backoff strategy
-    int current_reconnect_ivl;
+    int _current_reconnect_ivl;
 
     // String representation of endpoint to connect to
-    std::string endpoint;
+    std::string _endpoint;
 
     // Socket
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *_socket;
 
     //  Internal function to return a reconnect backoff delay.
     //  Will modify the current_reconnect_ivl used for next call
