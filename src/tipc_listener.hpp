@@ -78,20 +78,19 @@ class tipc_listener_t : public own_t, public io_object_t
     fd_t accept ();
 
     // Address to listen on
-    tipc_address_t address;
+    tipc_address_t _address;
 
     //  Underlying socket.
-    fd_t s;
-
+    fd_t _s;
 
     //  Handle corresponding to the listening socket.
-    handle_t handle;
+    handle_t _handle;
 
     //  Socket the listener belongs to.
-    zmq::socket_base_t *socket;
+    zmq::socket_base_t *_socket;
 
     // String representation of endpoint to bind to
-    std::string endpoint;
+    std::string _endpoint;
 
     tipc_listener_t (const tipc_listener_t &);
     const tipc_listener_t &operator= (const tipc_listener_t &);

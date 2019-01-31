@@ -61,26 +61,26 @@ zmq::tipc_listener_t::tipc_listener_t (io_thread_t *io_thread_,
                                        const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
-    s (retired_fd),
-    socket (socket_)
+    _s (retired_fd),
+    _socket (socket_)
 {
 }
 
 zmq::tipc_listener_t::~tipc_listener_t ()
 {
-    zmq_assert (s == retired_fd);
+    zmq_assert (_s == retired_fd);
 }
 
 void zmq::tipc_listener_t::process_plug ()
 {
     //  Start polling for incoming connections.
-    handle = add_fd (s);
-    set_pollin (handle);
+    _handle = add_fd (_s);
+    set_pollin (_handle);
 }
 
 void zmq::tipc_listener_t::process_term (int linger_)
 {
-    rm_fd (handle);
+    rm_fd (_handle);
     close ();
     own_t::process_term (linger_);
 }
@@ -92,13 +92,13 @@ void zmq::tipc_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint, zmq_errno ());
+        _socket->event_accept_failed (_endpoint, zmq_errno ());
         return;
     }
 
     //  Create the engine object for this connection.
     stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, endpoint);
+      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -108,12 +108,12 @@ void zmq::tipc_listener_t::in_event ()
 
     //  Create and launch a session object.
     session_base_t *session =
-      session_base_t::create (io_thread, false, socket, options, NULL);
+      session_base_t::create (io_thread, false, _socket, options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    socket->event_accepted (endpoint, fd);
+    _socket->event_accepted (_endpoint, fd);
 }
 
 int zmq::tipc_listener_t::get_address (std::string &addr_)
@@ -122,9 +122,9 @@ int zmq::tipc_listener_t::get_address (std::string &addr_)
     socklen_t sl = sizeof (ss);
 
 #ifdef ZMQ_HAVE_VXWORKS
-    int rc = getsockname (s, (sockaddr *) &ss, (int *) &sl);
+    int rc = getsockname (_s, (sockaddr *) &ss, (int *) &sl);
 #else
-    int rc = getsockname (s, (sockaddr *) &ss, &sl);
+    int rc = getsockname (_s, (sockaddr *) &ss, &sl);
 #endif
     if (rc != 0) {
         addr_.clear ();
@@ -138,57 +138,57 @@ int zmq::tipc_listener_t::get_address (std::string &addr_)
 int zmq::tipc_listener_t::set_address (const char *addr_)
 {
     // Convert str to address struct
-    int rc = address.resolve (addr_);
+    int rc = _address.resolve (addr_);
     if (rc != 0)
         return -1;
 
     // Cannot bind non-random Port Identity
-    struct sockaddr_tipc *a = (sockaddr_tipc *) address.addr ();
-    if (!address.is_random () && a->addrtype == TIPC_ADDR_ID) {
+    struct sockaddr_tipc *a = (sockaddr_tipc *) _address.addr ();
+    if (!_address.is_random () && a->addrtype == TIPC_ADDR_ID) {
         errno = EINVAL;
         return -1;
     }
 
     //  Create a listening socket.
-    s = open_socket (AF_TIPC, SOCK_STREAM, 0);
-    if (s == -1)
+    _s = open_socket (AF_TIPC, SOCK_STREAM, 0);
+    if (_s == -1)
         return -1;
 
     // If random Port Identity, update address object to reflect the assigned address
-    if (address.is_random ()) {
+    if (_address.is_random ()) {
         struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_VXWORKS
         int sl = sizeof (ss);
 #else
         socklen_t sl = sizeof (ss);
 #endif
-        int rc = getsockname (s, (sockaddr *) &ss, &sl);
+        int rc = getsockname (_s, (sockaddr *) &ss, &sl);
         if (rc != 0)
             goto error;
 
-        address = tipc_address_t ((struct sockaddr *) &ss, sl);
+        _address = tipc_address_t ((struct sockaddr *) &ss, sl);
     }
 
 
-    address.to_string (endpoint);
+    _address.to_string (_endpoint);
 
     //  Bind the socket to tipc name
-    if (address.is_service ()) {
+    if (_address.is_service ()) {
 #ifdef ZMQ_HAVE_VXWORKS
-        rc = bind (s, (sockaddr *) address.addr (), address.addrlen ());
+        rc = bind (_s, (sockaddr *) address.addr (), address.addrlen ());
 #else
-        rc = bind (s, address.addr (), address.addrlen ());
+        rc = bind (_s, _address.addr (), _address.addrlen ());
 #endif
         if (rc != 0)
             goto error;
     }
 
     //  Listen for incoming connections.
-    rc = listen (s, options.backlog);
+    rc = listen (_s, options.backlog);
     if (rc != 0)
         goto error;
 
-    socket->event_listening (endpoint, s);
+    _socket->event_listening (_endpoint, _s);
     return 0;
 
 error:
@@ -200,11 +200,11 @@ error:
 
 void zmq::tipc_listener_t::close ()
 {
-    zmq_assert (s != retired_fd);
-    int rc = ::close (s);
+    zmq_assert (_s != retired_fd);
+    int rc = ::close (_s);
     errno_assert (rc == 0);
-    s = retired_fd;
-    socket->event_closed (endpoint, s);
+    _s = retired_fd;
+    _socket->event_closed (_endpoint, _s);
 }
 
 zmq::fd_t zmq::tipc_listener_t::accept ()
@@ -215,11 +215,11 @@ zmq::fd_t zmq::tipc_listener_t::accept ()
     struct sockaddr_storage ss = {};
     socklen_t ss_len = sizeof (ss);
 
-    zmq_assert (s != retired_fd);
+    zmq_assert (_s != retired_fd);
 #ifdef ZMQ_HAVE_VXWORKS
-    fd_t sock = ::accept (s, (struct sockaddr *) &ss, (int *) &ss_len);
+    fd_t sock = ::accept (_s, (struct sockaddr *) &ss, (int *) &ss_len);
 #else
-    fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+    fd_t sock = ::accept (_s, (struct sockaddr *) &ss, &ss_len);
 #endif
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK
