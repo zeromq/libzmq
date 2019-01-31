@@ -409,6 +409,11 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         zmq_assert (!_pipe);
         _pipe = pipes[0];
 
+        //  The endpoints strings are not set on bind, set them here so that
+        //  events can use them.
+        pipes[0]->set_endpoint_pair (engine_->get_endpoint ());
+        pipes[1]->set_endpoint_pair (engine_->get_endpoint ());
+
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (_socket, pipes[1]);
     }

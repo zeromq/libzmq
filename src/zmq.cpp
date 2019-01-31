@@ -1452,3 +1452,11 @@ int zmq_has (const char *capability_)
     //  Whatever the application asked for, we don't have
     return false;
 }
+
+int zmq_socket_monitor_pipes_stats (void *s_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+    return s->query_pipes_stats ();
+}

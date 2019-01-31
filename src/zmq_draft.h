@@ -123,10 +123,20 @@ int zmq_socket_get_peer_state (void *socket_,
                                const void *routing_id_,
                                size_t routing_id_size_);
 
+/*  DRAFT Socket monitoring events                                            */
+#define ZMQ_EVENT_PIPES_STATS 0x10000
+
+#define ZMQ_CURRENT_EVENT_VERSION 1
+#define ZMQ_CURRENT_EVENT_VERSION_DRAFT 2
+
+#define ZMQ_EVENT_ALL_V1 ZMQ_EVENT_ALL
+#define ZMQ_EVENT_ALL_V2 ZMQ_EVENT_ALL_V1 | ZMQ_EVENT_PIPES_STATS
+
 int zmq_socket_monitor_versioned (void *s_,
                                   const char *addr_,
                                   uint64_t events_,
                                   int event_version_);
+int zmq_socket_monitor_pipes_stats (void *s_);
 
 #endif // ZMQ_BUILD_DRAFT_API
 

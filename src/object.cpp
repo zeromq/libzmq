@@ -107,6 +107,19 @@ void zmq::object_t::process_command (command_t &cmd_)
             process_hiccup (cmd_.args.hiccup.pipe);
             break;
 
+        case command_t::pipe_peer_stats:
+            process_pipe_peer_stats (cmd_.args.pipe_peer_stats.queue_count,
+                                     cmd_.args.pipe_peer_stats.socket_base,
+                                     cmd_.args.pipe_peer_stats.endpoint_pair);
+            break;
+
+        case command_t::pipe_stats_publish:
+            process_pipe_stats_publish (
+              cmd_.args.pipe_stats_publish.outbound_queue_count,
+              cmd_.args.pipe_stats_publish.inbound_queue_count,
+              cmd_.args.pipe_stats_publish.endpoint_pair);
+            break;
+
         case command_t::pipe_term:
             process_pipe_term ();
             break;
@@ -285,6 +298,35 @@ void zmq::object_t::send_hiccup (pipe_t *destination_, void *pipe_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_pipe_peer_stats (pipe_t *destination_,
+                                          uint64_t queue_count_,
+                                          own_t *socket_base_,
+                                          endpoint_uri_pair_t *endpoint_pair_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::pipe_peer_stats;
+    cmd.args.pipe_peer_stats.queue_count = queue_count_;
+    cmd.args.pipe_peer_stats.socket_base = socket_base_;
+    cmd.args.pipe_peer_stats.endpoint_pair = endpoint_pair_;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_pipe_stats_publish (
+  own_t *destination_,
+  uint64_t outbound_queue_count_,
+  uint64_t inbound_queue_count_,
+  endpoint_uri_pair_t *endpoint_pair_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::pipe_stats_publish;
+    cmd.args.pipe_stats_publish.outbound_queue_count = outbound_queue_count_;
+    cmd.args.pipe_stats_publish.inbound_queue_count = inbound_queue_count_;
+    cmd.args.pipe_stats_publish.endpoint_pair = endpoint_pair_;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_pipe_term (pipe_t *destination_)
 {
     command_t cmd;
@@ -418,6 +460,20 @@ void zmq::object_t::process_activate_write (uint64_t)
 }
 
 void zmq::object_t::process_hiccup (void *)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_pipe_peer_stats (uint64_t,
+                                             own_t *,
+                                             endpoint_uri_pair_t *)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_pipe_stats_publish (uint64_t,
+                                                uint64_t,
+                                                endpoint_uri_pair_t *)
 {
     zmq_assert (false);
 }

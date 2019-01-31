@@ -241,7 +241,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         zmq_msg_close (&msg);
     }
 
-    //  Third frame in message contains local address
+    //  Second-to-last frame in message contains local address
     zmq_msg_init (&msg);
     int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
     assert (res != -1);
@@ -256,7 +256,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     }
     zmq_msg_close (&msg);
 
-    //  Fourth and last frame in message contains remote address
+    //  Last frame in message contains remote address
     zmq_msg_init (&msg);
     res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
     assert (res != -1);

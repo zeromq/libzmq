@@ -1421,6 +1421,45 @@ void zmq::socket_base_t::process_term_endpoint (std::string *endpoint_)
     delete endpoint_;
 }
 
+void zmq::socket_base_t::process_pipe_stats_publish (
+  uint64_t outbound_queue_count_,
+  uint64_t inbound_queue_count_,
+  endpoint_uri_pair_t *endpoint_pair_)
+{
+    uint64_t values[2] = {outbound_queue_count_, inbound_queue_count_};
+    event (*endpoint_pair_, values, 2, ZMQ_EVENT_PIPES_STATS);
+    delete endpoint_pair_;
+}
+
+/*
+ * There are 2 pipes per connection, and the inbound one _must_ be queried from
+ * the I/O thread. So ask the outbound pipe, in the application thread, to send
+ * a message (pipe_peer_stats) to its peer. The message will carry the outbound
+ * pipe stats and endpoint, and the reference to the socket object.
+ * The inbound pipe on the I/O thread will then add its own stats and endpoint,
+ * and write back a message to the socket object (pipe_stats_publish) which
+ * will raise an event with the data.
+ */
+int zmq::socket_base_t::query_pipes_stats ()
+{
+    {
+        scoped_lock_t lock (_monitor_sync);
+        if (!(_monitor_events & ZMQ_EVENT_PIPES_STATS)) {
+            errno = EINVAL;
+            return -1;
+        }
+    }
+    if (_pipes.size () == 0) {
+        errno = EAGAIN;
+        return -1;
+    }
+    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+        _pipes[i]->send_stats_to_peer (this);
+    }
+
+    return 0;
+}
+
 void zmq::socket_base_t::update_pipe_options (int option_)
 {
     if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) {
