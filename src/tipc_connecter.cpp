@@ -62,7 +62,7 @@ zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     _addr (addr_),
     _s (retired_fd),
-    _handle_valid (false),
+    _handle (static_cast<handle_t> (NULL)),
     _delayed_start (delayed_start_),
     _reconnect_timer_started (false),
     _session (session_),
@@ -77,7 +77,7 @@ zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
 zmq::tipc_connecter_t::~tipc_connecter_t ()
 {
     zmq_assert (!_reconnect_timer_started);
-    zmq_assert (!_handle_valid);
+    zmq_assert (_handle == static_cast<handle_t> (NULL));
     zmq_assert (_s == retired_fd);
 }
 
@@ -96,9 +96,9 @@ void zmq::tipc_connecter_t::process_term (int linger_)
         _reconnect_timer_started = false;
     }
 
-    if (_handle_valid) {
+    if (_handle) {
         rm_fd (_handle);
-        _handle_valid = false;
+        _handle = static_cast<handle_t> (NULL);
     }
 
     if (_s != retired_fd)
@@ -119,7 +119,7 @@ void zmq::tipc_connecter_t::out_event ()
 {
     fd_t fd = connect ();
     rm_fd (_handle);
-    _handle_valid = false;
+    _handle = static_cast<handle_t> (NULL);
 
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {
@@ -156,14 +156,12 @@ void zmq::tipc_connecter_t::start_connecting ()
     //  Connect may succeed in synchronous manner.
     if (rc == 0) {
         _handle = add_fd (_s);
-        _handle_valid = true;
         out_event ();
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
     else if (rc == -1 && errno == EINPROGRESS) {
         _handle = add_fd (_s);
-        _handle_valid = true;
         set_pollout (_handle);
         _socket->event_connect_delayed (_endpoint, zmq_errno ());
     }
