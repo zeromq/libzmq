@@ -62,14 +62,6 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (_addr->protocol == protocol_name::ipc);
 }
 
-void zmq::ipc_connecter_t::in_event ()
-{
-    //  We are not polling for incoming data, so we are actually called
-    //  because of error here. However, we can get error on out event as well
-    //  on some platforms, so we'll simply handle both events in the same way.
-    out_event ();
-}
-
 void zmq::ipc_connecter_t::out_event ()
 {
     fd_t fd = connect ();
@@ -81,25 +73,8 @@ void zmq::ipc_connecter_t::out_event ()
         add_reconnect_timer ();
         return;
     }
-    //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
-    alloc_assert (engine);
 
-    //  Attach the engine to the corresponding session object.
-    send_attach (_session, engine);
-
-    //  Shut the connecter down.
-    terminate ();
-
-    _socket->event_connected (_endpoint, fd);
-}
-
-void zmq::ipc_connecter_t::timer_event (int id_)
-{
-    zmq_assert (id_ == reconnect_timer_id);
-    _reconnect_timer_started = false;
-    start_connecting ();
+    create_engine (fd);
 }
 
 void zmq::ipc_connecter_t::start_connecting ()

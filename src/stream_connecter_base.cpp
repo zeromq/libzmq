@@ -134,3 +134,34 @@ void zmq::stream_connecter_base_t::close ()
     _socket->event_closed (_endpoint, _s);
     _s = retired_fd;
 }
+
+void zmq::stream_connecter_base_t::in_event ()
+{
+    //  We are not polling for incoming data, so we are actually called
+    //  because of error here. However, we can get error on out event as well
+    //  on some platforms, so we'll simply handle both events in the same way.
+    out_event ();
+}
+
+void zmq::stream_connecter_base_t::create_engine (fd_t fd)
+{
+    //  Create the engine object for this connection.
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
+    alloc_assert (engine);
+
+    //  Attach the engine to the corresponding session object.
+    send_attach (_session, engine);
+
+    //  Shut the connecter down.
+    terminate ();
+
+    _socket->event_connected (_endpoint, fd);
+}
+
+void zmq::stream_connecter_base_t::timer_event (int id_)
+{
+    zmq_assert (id_ == reconnect_timer_id);
+    _reconnect_timer_started = false;
+    start_connecting ();
+}

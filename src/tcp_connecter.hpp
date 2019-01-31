@@ -59,7 +59,6 @@ class tcp_connecter_t : public stream_connecter_base_t
     void process_term (int linger_);
 
     //  Handlers for I/O events.
-    void in_event ();
     void out_event ();
     void timer_event (int id_);
 

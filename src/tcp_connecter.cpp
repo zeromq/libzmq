@@ -90,20 +90,15 @@ void zmq::tcp_connecter_t::process_term (int linger_)
     stream_connecter_base_t::process_term (linger_);
 }
 
-void zmq::tcp_connecter_t::in_event ()
-{
-    //  We are not polling for incoming data, so we are actually called
-    //  because of error here. However, we can get error on out event as well
-    //  on some platforms, so we'll simply handle both events in the same way.
-    out_event ();
-}
-
 void zmq::tcp_connecter_t::out_event ()
 {
     if (_connect_timer_started) {
         cancel_timer (connect_timer_id);
         _connect_timer_started = false;
     }
+
+    //  TODO this is still very similar to (t)ipc_connecter_t, maybe the
+    //  differences can be factored out
 
     rm_handle ();
 
@@ -116,18 +111,7 @@ void zmq::tcp_connecter_t::out_event ()
         return;
     }
 
-    //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
-    alloc_assert (engine);
-
-    //  Attach the engine to the corresponding session object.
-    send_attach (_session, engine);
-
-    //  Shut the connecter down.
-    terminate ();
-
-    _socket->event_connected (_endpoint, fd);
+    create_engine (fd);
 }
 
 void zmq::tcp_connecter_t::timer_event (int id_)
@@ -138,10 +122,8 @@ void zmq::tcp_connecter_t::timer_event (int id_)
         rm_handle ();
         close ();
         add_reconnect_timer ();
-    } else if (id_ == reconnect_timer_id) {
-        _reconnect_timer_started = false;
-        start_connecting ();
-    }
+    } else
+        stream_connecter_base_t::timer_event (id_);
 }
 
 void zmq::tcp_connecter_t::start_connecting ()
