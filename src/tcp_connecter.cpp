@@ -116,7 +116,6 @@ void zmq::tcp_connecter_t::out_event ()
 
 void zmq::tcp_connecter_t::timer_event (int id_)
 {
-    zmq_assert (id_ == reconnect_timer_id || id_ == connect_timer_id);
     if (id_ == connect_timer_id) {
         _connect_timer_started = false;
         rm_handle ();

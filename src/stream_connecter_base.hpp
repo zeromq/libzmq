@@ -54,6 +54,12 @@ class stream_connecter_base_t : public own_t, public io_object_t
     ~stream_connecter_base_t ();
 
   private:
+    //  ID of the timer used to delay the reconnection.
+    enum
+    {
+        reconnect_timer_id = 1
+    };
+
     //  Internal function to return a reconnect backoff delay.
     //  Will modify the current_reconnect_ivl used for next call
     //  Returns the currently used interval
@@ -63,12 +69,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
     // TODO check if some members can be made private
   protected:
-    //  ID of the timer used to delay the reconnection.
-    enum
-    {
-        reconnect_timer_id = 1
-    };
-
     //  Handlers for incoming commands.
     void process_plug ();
     void process_term (int linger_);

@@ -50,12 +50,6 @@ class ipc_connecter_t : public stream_connecter_base_t
                      bool delayed_start_);
 
   private:
-    //  ID of the timer used to delay the reconnection.
-    enum
-    {
-        reconnect_timer_id = 1
-    };
-
     //  Handlers for I/O events.
     void out_event ();
 
