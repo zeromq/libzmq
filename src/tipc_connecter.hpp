@@ -103,7 +103,7 @@ class tipc_connecter_t : public own_t, public io_object_t
     const bool _delayed_start;
 
     //  True iff a timer has been started.
-    bool _timer_started;
+    bool _reconnect_timer_started;
 
     //  Reference to the session we belong to.
     zmq::session_base_t *_session;
