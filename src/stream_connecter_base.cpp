@@ -31,6 +31,7 @@
 #include "stream_connecter_base.hpp"
 #include "session_base.hpp"
 #include "address.hpp"
+#include "random.hpp"
 
 zmq::stream_connecter_base_t::stream_connecter_base_t (
   zmq::io_thread_t *io_thread_,
@@ -61,4 +62,38 @@ zmq::stream_connecter_base_t::~stream_connecter_base_t ()
     zmq_assert (!_reconnect_timer_started);
     zmq_assert (!_handle);
     zmq_assert (_s == retired_fd);
+}
+
+void zmq::stream_connecter_base_t::process_plug ()
+{
+    if (_delayed_start)
+        add_reconnect_timer ();
+    else
+        start_connecting ();
+}
+
+void zmq::stream_connecter_base_t::add_reconnect_timer ()
+{
+    if (options.reconnect_ivl != -1) {
+        const int interval = get_new_reconnect_ivl ();
+        add_timer (interval, reconnect_timer_id);
+        _socket->event_connect_retried (_endpoint, interval);
+        _reconnect_timer_started = true;
+    }
+}
+
+int zmq::stream_connecter_base_t::get_new_reconnect_ivl ()
+{
+    //  The new interval is the current interval + random value.
+    const int interval =
+      _current_reconnect_ivl + generate_random () % options.reconnect_ivl;
+
+    //  Only change the current reconnect interval  if the maximum reconnect
+    //  interval was set and if it's larger than the reconnect interval.
+    if (options.reconnect_ivl_max > 0
+        && options.reconnect_ivl_max > options.reconnect_ivl)
+        //  Calculate the next interval
+        _current_reconnect_ivl =
+          std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max);
+    return interval;
 }

@@ -49,15 +49,13 @@ class tcp_connecter_t : public stream_connecter_base_t
     ~tcp_connecter_t ();
 
   private:
-    //  ID of the timer used to delay the reconnection.
+    //  ID of the timer used to check the connect timeout, must be different from stream_connecter_base_t::reconnect_timer_id.
     enum
     {
-        reconnect_timer_id = 1,
-        connect_timer_id
+        connect_timer_id = 2
     };
 
     //  Handlers for incoming commands.
-    void process_plug ();
     void process_term (int linger_);
 
     //  Handlers for I/O events.
@@ -73,14 +71,6 @@ class tcp_connecter_t : public stream_connecter_base_t
 
     //  Internal function to add a connect timer
     void add_connect_timer ();
-
-    //  Internal function to add a reconnect timer
-    void add_reconnect_timer ();
-
-    //  Internal function to return a reconnect backoff delay.
-    //  Will modify the current_reconnect_ivl used for next call
-    //  Returns the currently used interval
-    int get_new_reconnect_ivl ();
 
     //  Open TCP connecting socket. Returns -1 in case of error,
     //  0 if connect was successful immediately. Returns -1 with

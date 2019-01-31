@@ -57,7 +57,6 @@ class ipc_connecter_t : public stream_connecter_base_t
     };
 
     //  Handlers for incoming commands.
-    void process_plug ();
     void process_term (int linger_);
 
     //  Handlers for I/O events.
@@ -67,14 +66,6 @@ class ipc_connecter_t : public stream_connecter_base_t
 
     //  Internal function to start the actual connection establishment.
     void start_connecting ();
-
-    //  Internal function to add a reconnect timer
-    void add_reconnect_timer ();
-
-    //  Internal function to return a reconnect backoff delay.
-    //  Will modify the current_reconnect_ivl used for next call
-    //  Returns the currently used interval
-    int get_new_reconnect_ivl ();
 
     //  Open IPC connecting socket. Returns -1 in case of error,
     //  0 if connect was successful immediately. Returns -1 with

@@ -62,14 +62,6 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (_addr->protocol == protocol_name::ipc);
 }
 
-void zmq::ipc_connecter_t::process_plug ()
-{
-    if (_delayed_start)
-        add_reconnect_timer ();
-    else
-        start_connecting ();
-}
-
 void zmq::ipc_connecter_t::process_term (int linger_)
 {
     if (_reconnect_timer_started) {
@@ -145,6 +137,10 @@ void zmq::ipc_connecter_t::start_connecting ()
         _handle = add_fd (_s);
         set_pollout (_handle);
         _socket->event_connect_delayed (_endpoint, zmq_errno ());
+
+        // TODO, tcp_connecter_t adds a connect timer in this case; maybe this
+        // should be done here as well (and then this could be pulled up to
+        // stream_connecter_base_t).
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -153,35 +149,6 @@ void zmq::ipc_connecter_t::start_connecting ()
             close ();
         add_reconnect_timer ();
     }
-}
-
-void zmq::ipc_connecter_t::add_reconnect_timer ()
-{
-    if (options.reconnect_ivl != -1) {
-        int rc_ivl = get_new_reconnect_ivl ();
-        add_timer (rc_ivl, reconnect_timer_id);
-        _socket->event_connect_retried (_endpoint, rc_ivl);
-        _reconnect_timer_started = true;
-    }
-}
-
-int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
-{
-    //  The new interval is the current interval + random value.
-    int this_interval =
-      _current_reconnect_ivl + (generate_random () % options.reconnect_ivl);
-
-    //  Only change the current reconnect interval  if the maximum reconnect
-    //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0
-        && options.reconnect_ivl_max > options.reconnect_ivl) {
-        //  Calculate the next interval
-        _current_reconnect_ivl = _current_reconnect_ivl * 2;
-        if (_current_reconnect_ivl >= options.reconnect_ivl_max) {
-            _current_reconnect_ivl = options.reconnect_ivl_max;
-        }
-    }
-    return this_interval;
 }
 
 int zmq::ipc_connecter_t::open ()
