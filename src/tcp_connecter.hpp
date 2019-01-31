@@ -63,9 +63,6 @@ class tcp_connecter_t : public stream_connecter_base_t
     void out_event ();
     void timer_event (int id_);
 
-    //  Removes the handle from the poller.
-    void rm_handle ();
-
     //  Internal function to start the actual connection establishment.
     void start_connecting ();
 

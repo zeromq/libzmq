@@ -75,6 +75,9 @@ class stream_connecter_base_t : public own_t, public io_object_t
     //  Internal function to add a reconnect timer
     void add_reconnect_timer ();
 
+    //  Removes the handle from the poller.
+    void rm_handle ();
+
     //  Address to connect to. Owned by session_base_t.
     //  It is non-const since some parts may change during opening.
     address_t *const _addr;

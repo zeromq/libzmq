@@ -97,3 +97,9 @@ int zmq::stream_connecter_base_t::get_new_reconnect_ivl ()
           std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max);
     return interval;
 }
+
+void zmq::stream_connecter_base_t::rm_handle ()
+{
+    rm_fd (_handle);
+    _handle = static_cast<handle_t> (NULL);
+}

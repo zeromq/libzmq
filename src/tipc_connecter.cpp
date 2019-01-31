@@ -72,8 +72,7 @@ void zmq::tipc_connecter_t::process_term (int linger_)
     }
 
     if (_handle) {
-        rm_fd (_handle);
-        _handle = static_cast<handle_t> (NULL);
+        rm_handle ();
     }
 
     if (_s != retired_fd)
@@ -93,8 +92,7 @@ void zmq::tipc_connecter_t::in_event ()
 void zmq::tipc_connecter_t::out_event ()
 {
     fd_t fd = connect ();
-    rm_fd (_handle);
-    _handle = static_cast<handle_t> (NULL);
+    rm_handle ();
 
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {

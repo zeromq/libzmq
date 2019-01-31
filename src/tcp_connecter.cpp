@@ -142,12 +142,6 @@ void zmq::tcp_connecter_t::out_event ()
     _socket->event_connected (_endpoint, fd);
 }
 
-void zmq::tcp_connecter_t::rm_handle ()
-{
-    rm_fd (_handle);
-    _handle = static_cast<handle_t> (NULL);
-}
-
 void zmq::tcp_connecter_t::timer_event (int id_)
 {
     zmq_assert (id_ == reconnect_timer_id || id_ == connect_timer_id);
