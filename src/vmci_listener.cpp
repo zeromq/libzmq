@@ -125,7 +125,7 @@ void zmq::vmci_listener_t::in_event ()
     socket->event_accepted (endpoint, fd);
 }
 
-int zmq::vmci_listener_t::get_address (std::string &addr_)
+int zmq::vmci_listener_t::get_local_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_HPUX
@@ -143,7 +143,7 @@ int zmq::vmci_listener_t::get_address (std::string &addr_)
     return addr.to_string (addr_);
 }
 
-int zmq::vmci_listener_t::set_address (const char *addr_)
+int zmq::vmci_listener_t::set_local_address (const char *addr_)
 {
     //  Create addr on stack for auto-cleanup
     std::string addr (addr_);

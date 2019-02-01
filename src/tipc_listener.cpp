@@ -43,6 +43,7 @@
 #include "err.hpp"
 #include "ip.hpp"
 #include "socket_base.hpp"
+#include "address.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -77,12 +78,12 @@ void zmq::tipc_listener_t::in_event ()
     create_engine (fd);
 }
 
-std::string zmq::tipc_listener_t::get_socket_name (zmq::fd_t fd_) const
+std::string zmq::tipc_listener_t::get_local_socket_name (zmq::fd_t fd_) const
 {
-    return stream_listener_base_t::get_socket_name<tipc_address_t> (fd_);
+    return zmq::get_socket_name<tipc_address_t> (fd_, socket_end_local);
 }
 
-int zmq::tipc_listener_t::set_address (const char *addr_)
+int zmq::tipc_listener_t::set_local_address (const char *addr_)
 {
     // Convert str to address struct
     int rc = _address.resolve (addr_);
@@ -104,7 +105,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If random Port Identity, update address object to reflect the assigned address
     if (_address.is_random ()) {
         struct sockaddr_storage ss;
-        const zmq_socklen_t sl = get_socket_address (_s, &ss);
+        const zmq_socklen_t sl = get_socket_address (_s, socket_end_local, &ss);
         if (sl == 0)
             goto error;
 

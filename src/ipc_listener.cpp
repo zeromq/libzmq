@@ -43,6 +43,7 @@
 #include "err.hpp"
 #include "ip.hpp"
 #include "socket_base.hpp"
+#include "address.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -151,12 +152,12 @@ void zmq::ipc_listener_t::in_event ()
     create_engine (fd);
 }
 
-std::string zmq::ipc_listener_t::get_socket_name (zmq::fd_t fd_) const
+std::string zmq::ipc_listener_t::get_local_socket_name (zmq::fd_t fd_) const
 {
-    return stream_listener_base_t::get_socket_name<ipc_address_t> (fd_);
+    return zmq::get_socket_name<ipc_address_t> (fd_, socket_end_local);
 }
 
-int zmq::ipc_listener_t::set_address (const char *addr_)
+int zmq::ipc_listener_t::set_local_address (const char *addr_)
 {
     //  Create addr on stack for auto-cleanup
     std::string addr (addr_);

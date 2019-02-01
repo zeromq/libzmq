@@ -43,12 +43,6 @@ namespace zmq
 class io_thread_t;
 class socket_base_t;
 
-#if defined(ZMQ_HAVE_HPUX) || defined(ZMQ_HAVE_VXWORKS)
-typedef int zmq_socklen_t;
-#else
-typedef socklen_t zmq_socklen_t;
-#endif
-
 class stream_listener_base_t : public own_t, public io_object_t
 {
   public:
@@ -58,25 +52,10 @@ class stream_listener_base_t : public own_t, public io_object_t
     ~stream_listener_base_t ();
 
     // Get the bound address for use with wildcards
-    int get_address (std::string &addr_) const;
+    int get_local_address (std::string &addr_) const;
 
   protected:
-    static zmq_socklen_t get_socket_address (fd_t fd_, sockaddr_storage *ss_);
-    virtual std::string get_socket_name (fd_t fd_) const = 0;
-
-    template <typename T> static std::string get_socket_name (fd_t fd_)
-    {
-        struct sockaddr_storage ss;
-        const zmq_socklen_t sl = get_socket_address (fd_, &ss);
-        if (sl == 0) {
-            return std::string ();
-        }
-
-        const T addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
-        std::string address_string;
-        addr.to_string (address_string);
-        return address_string;
-    }
+    virtual std::string get_local_socket_name (fd_t fd_) const = 0;
 
   private:
     //  Handlers for incoming commands.

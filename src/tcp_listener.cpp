@@ -40,6 +40,7 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "socket_base.hpp"
+#include "address.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -93,12 +94,12 @@ void zmq::tcp_listener_t::in_event ()
     create_engine (fd);
 }
 
-std::string zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_) const
+std::string zmq::tcp_listener_t::get_local_socket_name (zmq::fd_t fd_) const
 {
-    return stream_listener_base_t::get_socket_name<tcp_address_t> (fd_);
+    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_local);
 }
 
-int zmq::tcp_listener_t::set_address (const char *addr_)
+int zmq::tcp_listener_t::set_local_address (const char *addr_)
 {
     //  Convert the textual address into address structure.
     int rc = _address.resolve (addr_, true, options.ipv6);
