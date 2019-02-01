@@ -91,6 +91,9 @@ void test_tipc_port_identity ()
     rc = sscanf (&endpoint[0], "tipc://<%u.%u.%u:%u>", &z, &c, &n, &ref);
     TEST_ASSERT_EQUAL_INT (4, rc);
 
+    TEST_ASSERT_NOT_EQUAL_MESSAGE (
+      0, ref, "tipc port number must not be 0 after random assignment");
+
     rc = zmq_connect (sc, endpoint);
     TEST_ASSERT_EQUAL_INT (0, rc);
 
