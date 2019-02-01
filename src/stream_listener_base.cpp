@@ -96,7 +96,7 @@ int zmq::stream_listener_base_t::close ()
     const int rc = ::close (_s);
     errno_assert (rc == 0);
 #endif
-    _socket->event_closed (_endpoint, _s);
+    _socket->event_closed (make_unconnected_bind_endpoint_pair (_endpoint), _s);
     _s = retired_fd;
 
     return 0;
@@ -104,8 +104,11 @@ int zmq::stream_listener_base_t::close ()
 
 void zmq::stream_listener_base_t::create_engine (fd_t fd)
 {
+    const endpoint_uri_pair_t endpoint_pair (_endpoint, get_socket_name (fd),
+                                             endpoint_type_bind);
+
     stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
+      new (std::nothrow) stream_engine_t (fd, options, endpoint_pair);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -120,5 +123,6 @@ void zmq::stream_listener_base_t::create_engine (fd_t fd)
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    _socket->event_accepted (_endpoint, fd);
+
+    _socket->event_accepted (endpoint_pair, fd);
 }

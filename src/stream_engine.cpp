@@ -100,9 +100,10 @@ static std::string get_peer_address (zmq::fd_t s_)
 }
 
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_,
-                                       const options_t &options_,
-                                       const std::string &endpoint_) :
+zmq::stream_engine_t::stream_engine_t (
+  fd_t fd_,
+  const options_t &options_,
+  const endpoint_uri_pair_t &endpoint_uri_pair_) :
     _s (fd_),
     _handle (static_cast<handle_t> (NULL)),
     _inpos (NULL),
@@ -117,7 +118,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
     _greeting_bytes_read (0),
     _session (NULL),
     _options (options_),
-    _endpoint (endpoint_),
+    _endpoint_uri_pair (endpoint_uri_pair_),
     _plugged (false),
     _next_msg (&stream_engine_t::routing_id_msg),
     _process_msg (&stream_engine_t::process_routing_id_msg),
@@ -894,9 +895,9 @@ void zmq::stream_engine_t::zap_msg_available ()
         restart_output ();
 }
 
-const char *zmq::stream_engine_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::stream_engine_t::get_endpoint () const
 {
-    return _endpoint.c_str ();
+    return _endpoint_uri_pair;
 }
 
 void zmq::stream_engine_t::mechanism_ready ()
@@ -960,7 +961,7 @@ void zmq::stream_engine_t::mechanism_ready ()
         alloc_assert (_metadata);
     }
 
-    _socket->event_handshake_succeeded (_endpoint, 0);
+    _socket->event_handshake_succeeded (_endpoint_uri_pair, 0);
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -1081,10 +1082,10 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         && (_mechanism == NULL
             || _mechanism->status () == mechanism_t::handshaking)) {
         int err = errno;
-        _socket->event_handshake_failed_no_detail (_endpoint, err);
+        _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
     }
 
-    _socket->event_disconnected (_endpoint, _s);
+    _socket->event_disconnected (_endpoint_uri_pair, _s);
     _session->flush ();
     _session->engine_error (reason_);
     unplug ();

@@ -267,12 +267,20 @@ int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
     return s->getsockopt (option_, optval_, optvallen_);
 }
 
-int zmq_socket_monitor (void *s_, const char *addr_, int events_)
+int zmq_socket_monitor_versioned (void *s_,
+                                  const char *addr_,
+                                  uint64_t events_,
+                                  int event_version_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
         return -1;
-    return s->monitor (addr_, events_);
+    return s->monitor (addr_, events_, event_version_);
+}
+
+int zmq_socket_monitor (void *s_, const char *addr_, int events_)
+{
+    return zmq_socket_monitor_versioned (s_, addr_, events_, 1);
 }
 
 int zmq_join (void *s_, const char *group_)

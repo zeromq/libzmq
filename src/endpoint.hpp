@@ -27,44 +27,46 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
-#define __ZMQ_I_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_ENDPOINT_HPP_INCLUDED__
+#define __ZMQ_ENDPOINT_HPP_INCLUDED__
 
-#include "endpoint.hpp"
+#include <string>
 
 namespace zmq
 {
-class io_thread_t;
-
-//  Abstract interface to be implemented by various engines.
-
-struct i_engine
+enum endpoint_type_t
 {
-    virtual ~i_engine () {}
-
-    //  Plug the engine to the session.
-    virtual void plug (zmq::io_thread_t *io_thread_,
-                       class session_base_t *session_) = 0;
-
-    //  Terminate and deallocate the engine. Note that 'detached'
-    //  events are not fired on termination.
-    virtual void terminate () = 0;
-
-    //  This method is called by the session to signalise that more
-    //  messages can be written to the pipe.
-    //  Returns false if the engine was deleted due to an error.
-    //  TODO it is probably better to change the design such that the engine
-    //  does not delete itself
-    virtual bool restart_input () = 0;
-
-    //  This method is called by the session to signalise that there
-    //  are messages to send available.
-    virtual void restart_output () = 0;
-
-    virtual void zap_msg_available () = 0;
-
-    virtual const endpoint_uri_pair_t &get_endpoint () const = 0;
+    endpoint_type_none,   // a connection-less endpoint
+    endpoint_type_bind,   // a connection-oriented bind endpoint
+    endpoint_type_connect // a connection-oriented connect endpoint
 };
+
+struct endpoint_uri_pair_t
+{
+    endpoint_uri_pair_t () : local_type (endpoint_type_none) {}
+    endpoint_uri_pair_t (const std::string &local,
+                         const std::string &remote,
+                         endpoint_type_t local_type) :
+        local (local),
+        remote (remote),
+        local_type (local_type)
+    {
+    }
+
+    const std::string &identifier () const
+    {
+        return local_type == endpoint_type_bind ? local : remote;
+    }
+
+    std::string local, remote;
+    endpoint_type_t local_type;
+};
+
+endpoint_uri_pair_t
+make_unconnected_connect_endpoint_pair (const std::string &endpoint_);
+
+endpoint_uri_pair_t
+make_unconnected_bind_endpoint_pair (const std::string &endpoint_);
 }
 
 #endif

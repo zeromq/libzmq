@@ -123,6 +123,11 @@ int zmq_socket_get_peer_state (void *socket_,
                                const void *routing_id_,
                                size_t routing_id_size_);
 
+int zmq_socket_monitor_versioned (void *s_,
+                                  const char *addr_,
+                                  uint64_t events_,
+                                  int event_version_);
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_DRAFT_H_INCLUDED__

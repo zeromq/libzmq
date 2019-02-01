@@ -142,7 +142,8 @@ void zmq::ipc_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -224,7 +225,8 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     _filename = ZMQ_MOVE (addr);
     _has_file = true;
 
-    _socket->event_listening (_endpoint, _s);
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
     return 0;
 
 error:
@@ -252,12 +254,14 @@ int zmq::ipc_listener_t::close ()
         }
 
         if (rc != 0) {
-            _socket->event_close_failed (_endpoint, zmq_errno ());
+            _socket->event_close_failed (
+              make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
             return -1;
         }
     }
 
-    _socket->event_closed (_endpoint, fd_for_event);
+    _socket->event_closed (make_unconnected_bind_endpoint_pair (_endpoint),
+                           fd_for_event);
     return 0;
 }
 

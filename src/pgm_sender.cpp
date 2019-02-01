@@ -143,9 +143,9 @@ bool zmq::pgm_sender_t::restart_input ()
     return true;
 }
 
-const char *zmq::pgm_sender_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::pgm_sender_t::get_endpoint () const
 {
-    return "";
+    return _empty_endpoint;
 }
 
 zmq::pgm_sender_t::~pgm_sender_t ()

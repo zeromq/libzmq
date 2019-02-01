@@ -70,7 +70,7 @@ class stream_engine_t : public io_object_t, public i_engine
 
     stream_engine_t (fd_t fd_,
                      const options_t &options_,
-                     const std::string &endpoint_);
+                     const endpoint_uri_pair_t &endpoint_uri_pair_);
     ~stream_engine_t ();
 
     //  i_engine interface implementation.
@@ -79,7 +79,7 @@ class stream_engine_t : public io_object_t, public i_engine
     bool restart_input ();
     void restart_output ();
     void zap_msg_available ();
-    const char *get_endpoint () const;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
     //  i_poll_events interface implementation.
     void in_event ();
@@ -190,8 +190,8 @@ class stream_engine_t : public io_object_t, public i_engine
 
     const options_t _options;
 
-    // String representation of endpoint
-    const std::string _endpoint;
+    //  Representation of the connected endpoints.
+    const endpoint_uri_pair_t _endpoint_uri_pair;
 
     bool _plugged;
 

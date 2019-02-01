@@ -55,6 +55,8 @@ src_libzmq_la_SOURCES = \
 	src/dist.cpp \
 	src/dist.hpp \
 	src/encoder.hpp \
+	src/endpoint.hpp \
+	src/endpoint.cpp \
 	src/epoll.cpp \
 	src/epoll.hpp \
 	src/err.cpp \

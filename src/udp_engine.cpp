@@ -444,9 +444,9 @@ void zmq::udp_engine_t::out_event ()
         reset_pollout (_handle);
 }
 
-const char *zmq::udp_engine_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::udp_engine_t::get_endpoint () const
 {
-    return "";
+    return _empty_endpoint;
 }
 
 void zmq::udp_engine_t::restart_output ()

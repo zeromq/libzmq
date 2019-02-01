@@ -140,7 +140,8 @@ void zmq::tcp_connecter_t::start_connecting ()
     else if (rc == -1 && errno == EINPROGRESS) {
         _handle = add_fd (_s);
         set_pollout (_handle);
-        _socket->event_connect_delayed (_endpoint, zmq_errno ());
+        _socket->event_connect_delayed (
+          make_unconnected_connect_endpoint_pair (_endpoint), zmq_errno ());
 
         //  add userspace connect timeout
         add_connect_timer ();

@@ -639,6 +639,7 @@ set(cxx-sources
   devpoll.cpp
   dgram.cpp
   dist.cpp
+  endpoint.cpp
   epoll.cpp
   err.cpp
   fq.cpp
@@ -746,6 +747,7 @@ set(cxx-sources
   dish.hpp
   dist.hpp
   encoder.hpp
+  endpoint.hpp
   epoll.hpp
   err.hpp
   fd.hpp

@@ -554,12 +554,12 @@ void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
     send_pipe_hwm (_peer, inhwm_, outhwm_);
 }
 
-void zmq::pipe_t::set_endpoint_uri (const char *name_)
+void zmq::pipe_t::set_endpoint_pair (zmq::endpoint_uri_pair_t endpoint_pair_)
 {
-    _endpoint_uri = name_;
+    _endpoint_pair = endpoint_pair_;
 }
 
-std::string &zmq::pipe_t::get_endpoint_uri ()
+const zmq::endpoint_uri_pair_t &zmq::pipe_t::get_endpoint_pair () const
 {
-    return _endpoint_uri;
+    return _endpoint_pair;
 }

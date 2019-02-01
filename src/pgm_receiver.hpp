@@ -60,7 +60,7 @@ class pgm_receiver_t : public io_object_t, public i_engine
     bool restart_input ();
     void restart_output ();
     void zap_msg_available () {}
-    const char *get_endpoint () const;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
     //  i_poll_events interface implementation.
     void in_event ();
@@ -83,6 +83,8 @@ class pgm_receiver_t : public io_object_t, public i_engine
     {
         rx_timer_id = 0xa1
     };
+
+    const endpoint_uri_pair_t _empty_endpoint;
 
     //  RX timer is running.
     bool has_rx_timer;

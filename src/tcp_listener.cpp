@@ -72,7 +72,8 @@ void zmq::tcp_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -83,7 +84,8 @@ void zmq::tcp_listener_t::in_event ()
              options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -107,7 +109,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     if (options.use_fd != -1) {
         _s = options.use_fd;
-        _socket->event_listening (_endpoint, _s);
+        _socket->event_listening (
+          make_unconnected_bind_endpoint_pair (_endpoint), _s);
         return 0;
     }
 
@@ -194,7 +197,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    _socket->event_listening (_endpoint, _s);
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
     return 0;
 
 error:

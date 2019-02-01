@@ -723,6 +723,11 @@ ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
                                           const void *routing_id,
                                           size_t routing_id_size);
 
+ZMQ_EXPORT int zmq_socket_monitor_versioned (void *s_,
+                                             const char *addr_,
+                                             uint64_t events_,
+                                             int event_version_);
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 
