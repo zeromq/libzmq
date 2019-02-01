@@ -63,7 +63,7 @@ class stream_connecter_base_t : public own_t, public io_object_t
     void timer_event (int id_);
 
     //  Internal function to create the engine after connection was established.
-    void create_engine (fd_t fd);
+    void create_engine (fd_t fd, const std::string &local_address_);
 
     //  Internal function to add a reconnect timer
     void add_reconnect_timer ();

@@ -111,7 +111,7 @@ void zmq::tcp_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd);
+    create_engine (fd, get_socket_name<tcp_address_t> (fd, socket_end_local));
 }
 
 void zmq::tcp_connecter_t::timer_event (int id_)

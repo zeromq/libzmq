@@ -74,7 +74,7 @@ void zmq::ipc_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd);
+    create_engine (fd, get_socket_name<ipc_address_t> (fd, socket_end_local));
 }
 
 void zmq::ipc_connecter_t::start_connecting ()

@@ -145,10 +145,11 @@ void zmq::stream_connecter_base_t::in_event ()
     out_event ();
 }
 
-void zmq::stream_connecter_base_t::create_engine (fd_t fd)
+void zmq::stream_connecter_base_t::create_engine (
+  fd_t fd, const std::string &local_address_)
 {
-    const endpoint_uri_pair_t endpoint_pair ("TODO query local endpoint",
-                                             _endpoint, endpoint_type_connect);
+    const endpoint_uri_pair_t endpoint_pair (local_address_, _endpoint,
+                                             endpoint_type_connect);
 
     //  Create the engine object for this connection.
     stream_engine_t *engine =
