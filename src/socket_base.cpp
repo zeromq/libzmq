@@ -1018,7 +1018,7 @@ int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -1081,7 +1081,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -1169,7 +1169,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
