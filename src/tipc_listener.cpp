@@ -111,13 +111,8 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If random Port Identity, update address object to reflect the assigned address
     if (_address.is_random ()) {
         struct sockaddr_storage ss;
-#ifdef ZMQ_HAVE_VXWORKS
-        int sl = sizeof (ss);
-#else
-        socklen_t sl = sizeof (ss);
-#endif
-        int rc = getsockname (_s, (sockaddr *) &ss, &sl);
-        if (rc != 0)
+        const zmq_socklen_t sl = get_socket_address (&ss);
+        if (sl == 0)
             goto error;
 
         _address = tipc_address_t ((struct sockaddr *) &ss, sl);
