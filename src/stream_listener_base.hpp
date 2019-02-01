@@ -27,49 +27,66 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __IPC_CONNECTER_HPP_INCLUDED__
-#define __IPC_CONNECTER_HPP_INCLUDED__
+#ifndef __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
+#define __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#include <string>
 
 #include "fd.hpp"
-#include "stream_connecter_base.hpp"
+#include "own.hpp"
+#include "stdint.hpp"
+#include "io_object.hpp"
+#include "tipc_address.hpp"
 
 namespace zmq
 {
-class ipc_connecter_t : public stream_connecter_base_t
+class io_thread_t;
+class socket_base_t;
+
+#if defined(ZMQ_HAVE_HPUX) || defined(ZMQ_HAVE_VXWORKS)
+typedef int zmq_socklen_t;
+#else
+typedef socklen_t zmq_socklen_t;
+#endif
+
+class stream_listener_base_t : public own_t, public io_object_t
 {
   public:
-    //  If 'delayed_start' is true connecter first waits for a while,
-    //  then starts connection process.
-    ipc_connecter_t (zmq::io_thread_t *io_thread_,
-                     zmq::session_base_t *session_,
-                     const options_t &options_,
-                     address_t *addr_,
-                     bool delayed_start_);
+    stream_listener_base_t (zmq::io_thread_t *io_thread_,
+                            zmq::socket_base_t *socket_,
+                            const options_t &options_);
+    ~stream_listener_base_t ();
+
+  protected:
+    zmq_socklen_t get_socket_address (sockaddr_storage *ss_) const;
 
   private:
-    //  Handlers for I/O events.
-    void out_event ();
+    //  Handlers for incoming commands.
+    void process_plug ();
+    void process_term (int linger_);
 
-    //  Internal function to start the actual connection establishment.
-    void start_connecting ();
+  protected:
+    //  Close the listening socket.
+    virtual int close ();
 
-    //  Open IPC connecting socket. Returns -1 in case of error,
-    //  0 if connect was successful immediately. Returns -1 with
-    //  EAGAIN errno if async connect was launched.
-    int open ();
+    void create_engine (fd_t fd);
 
-    //  Get the file descriptor of newly created connection. Returns
-    //  retired_fd if the connection was unsuccessful.
-    fd_t connect ();
+    //  Underlying socket.
+    fd_t _s;
 
-    ipc_connecter_t (const ipc_connecter_t &);
-    const ipc_connecter_t &operator= (const ipc_connecter_t &);
+    //  Handle corresponding to the listening socket.
+    handle_t _handle;
+
+    //  Socket the listener belongs to.
+    zmq::socket_base_t *_socket;
+
+    // String representation of endpoint to bind to
+    std::string _endpoint;
+
+  private:
+    stream_listener_base_t (const stream_listener_base_t &);
+    const stream_listener_base_t &operator= (const stream_listener_base_t &);
 };
 }
-
-#endif
 
 #endif

@@ -63,6 +63,43 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
+static std::string get_peer_address (zmq::fd_t s_)
+{
+    std::string peer_address;
+
+    const int family = zmq::get_peer_ip_address (s_, peer_address);
+    if (family == 0)
+        peer_address.clear ();
+#if defined ZMQ_HAVE_SO_PEERCRED
+    else if (family == PF_UNIX) {
+        struct ucred cred;
+        socklen_t size = sizeof (cred);
+        if (!getsockopt (s_, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
+            std::ostringstream buf;
+            buf << ":" << cred.uid << ":" << cred.gid << ":" << cred.pid;
+            peer_address += buf.str ();
+        }
+    }
+#elif defined ZMQ_HAVE_LOCAL_PEERCRED
+    else if (family == PF_UNIX) {
+        struct xucred cred;
+        socklen_t size = sizeof (cred);
+        if (!getsockopt (_s, 0, LOCAL_PEERCRED, &cred, &size)
+            && cred.cr_version == XUCRED_VERSION) {
+            std::ostringstream buf;
+            buf << ":" << cred.cr_uid << ":";
+            if (cred.cr_ngroups > 0)
+                buf << cred.cr_groups[0];
+            buf << ":";
+            _peer_address += buf.str ();
+        }
+    }
+#endif
+
+    return peer_address;
+}
+
+
 zmq::stream_engine_t::stream_engine_t (fd_t fd_,
                                        const options_t &options_,
                                        const std::string &endpoint_) :
@@ -94,7 +131,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
     _has_timeout_timer (false),
     _has_heartbeat_timer (false),
     _heartbeat_timeout (0),
-    _socket (NULL)
+    _socket (NULL),
+    _peer_address (get_peer_address (_s))
 {
     int rc = _tx_msg.init ();
     errno_assert (rc == 0);
@@ -104,34 +142,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
     //  Put the socket into non-blocking mode.
     unblock_socket (_s);
 
-    const int family = get_peer_ip_address (_s, _peer_address);
-    if (family == 0)
-        _peer_address.clear ();
-#if defined ZMQ_HAVE_SO_PEERCRED
-    else if (family == PF_UNIX) {
-        struct ucred cred;
-        socklen_t size = sizeof (cred);
-        if (!getsockopt (_s, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
-            std::ostringstream buf;
-            buf << ":" << cred.uid << ":" << cred.gid << ":" << cred.pid;
-            _peer_address += buf.str ();
-        }
-    }
-#elif defined ZMQ_HAVE_LOCAL_PEERCRED
-    else if (family == PF_UNIX) {
-        struct xucred cred;
-        socklen_t size = sizeof (cred);
-        if (!getsockopt (_s, 0, LOCAL_PEERCRED, &cred, &size)
-            && cred.cr_version == XUCRED_VERSION) {
-            std::ostringstream buf;
-            buf << ":" << cred.cr_uid << ":";
-            if (cred.cr_ngroups > 0)
-                buf << cred.cr_groups[0];
-            buf << ":";
-            _peer_address += buf.str ();
-        }
-    }
-#endif
 
     if (_options.heartbeat_interval > 0) {
         _heartbeat_timeout = _options.heartbeat_timeout;

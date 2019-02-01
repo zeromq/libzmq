@@ -56,70 +56,18 @@
 zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
                                          class session_base_t *session_,
                                          const options_t &options_,
-                                         const address_t *addr_,
+                                         address_t *addr_,
                                          bool delayed_start_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    addr (addr_),
-    s (retired_fd),
-    handle_valid (false),
-    delayed_start (delayed_start_),
-    timer_started (false),
-    session (session_),
-    current_reconnect_ivl (options.reconnect_ivl)
+    stream_connecter_base_t (
+      io_thread_, session_, options_, addr_, delayed_start_)
 {
-    zmq_assert (addr);
-    zmq_assert (addr->protocol == "tipc");
-    addr->to_string (endpoint);
-    socket = session->get_socket ();
-}
-
-zmq::tipc_connecter_t::~tipc_connecter_t ()
-{
-    zmq_assert (!timer_started);
-    zmq_assert (!handle_valid);
-    zmq_assert (s == retired_fd);
-}
-
-void zmq::tipc_connecter_t::process_plug ()
-{
-    if (delayed_start)
-        add_reconnect_timer ();
-    else
-        start_connecting ();
-}
-
-void zmq::tipc_connecter_t::process_term (int linger_)
-{
-    if (timer_started) {
-        cancel_timer (reconnect_timer_id);
-        timer_started = false;
-    }
-
-    if (handle_valid) {
-        rm_fd (handle);
-        handle_valid = false;
-    }
-
-    if (s != retired_fd)
-        close ();
-
-    own_t::process_term (linger_);
-}
-
-void zmq::tipc_connecter_t::in_event ()
-{
-    //  We are not polling for incoming data, so we are actually called
-    //  because of error here. However, we can get error on out event as well
-    //  on some platforms, so we'll simply handle both events in the same way.
-    out_event ();
+    zmq_assert (_addr->protocol == "tipc");
 }
 
 void zmq::tipc_connecter_t::out_event ()
 {
     fd_t fd = connect ();
-    rm_fd (handle);
-    handle_valid = false;
+    rm_handle ();
 
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {
@@ -127,25 +75,8 @@ void zmq::tipc_connecter_t::out_event ()
         add_reconnect_timer ();
         return;
     }
-    //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, endpoint);
-    alloc_assert (engine);
 
-    //  Attach the engine to the corresponding session object.
-    send_attach (session, engine);
-
-    //  Shut the connecter down.
-    terminate ();
-
-    socket->event_connected (endpoint, fd);
-}
-
-void zmq::tipc_connecter_t::timer_event (int id_)
-{
-    zmq_assert (id_ == reconnect_timer_id);
-    timer_started = false;
-    start_connecting ();
+    create_engine (fd);
 }
 
 void zmq::tipc_connecter_t::start_connecting ()
@@ -155,79 +86,48 @@ void zmq::tipc_connecter_t::start_connecting ()
 
     //  Connect may succeed in synchronous manner.
     if (rc == 0) {
-        handle = add_fd (s);
-        handle_valid = true;
+        _handle = add_fd (_s);
         out_event ();
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
     else if (rc == -1 && errno == EINPROGRESS) {
-        handle = add_fd (s);
-        handle_valid = true;
-        set_pollout (handle);
-        socket->event_connect_delayed (endpoint, zmq_errno ());
+        _handle = add_fd (_s);
+        set_pollout (_handle);
+        _socket->event_connect_delayed (_endpoint, zmq_errno ());
     }
 
     //  Handle any other error condition by eventual reconnect.
     else {
-        if (s != retired_fd)
+        if (_s != retired_fd)
             close ();
         add_reconnect_timer ();
     }
 }
 
-void zmq::tipc_connecter_t::add_reconnect_timer ()
-{
-    if (options.reconnect_ivl != -1) {
-        int rc_ivl = get_new_reconnect_ivl ();
-        add_timer (rc_ivl, reconnect_timer_id);
-        socket->event_connect_retried (endpoint, rc_ivl);
-        timer_started = true;
-    }
-}
-
-int zmq::tipc_connecter_t::get_new_reconnect_ivl ()
-{
-    //  The new interval is the current interval + random value.
-    int this_interval =
-      current_reconnect_ivl + (generate_random () % options.reconnect_ivl);
-
-    //  Only change the current reconnect interval  if the maximum reconnect
-    //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0
-        && options.reconnect_ivl_max > options.reconnect_ivl) {
-        //  Calculate the next interval
-        current_reconnect_ivl = current_reconnect_ivl * 2;
-        if (current_reconnect_ivl >= options.reconnect_ivl_max) {
-            current_reconnect_ivl = options.reconnect_ivl_max;
-        }
-    }
-    return this_interval;
-}
-
 int zmq::tipc_connecter_t::open ()
 {
-    zmq_assert (s == retired_fd);
+    zmq_assert (_s == retired_fd);
 
     // Cannot connect to random tipc addresses
-    if (addr->resolved.tipc_addr->is_random ()) {
+    if (_addr->resolved.tipc_addr->is_random ()) {
         errno = EINVAL;
         return -1;
     }
     //  Create the socket.
-    s = open_socket (AF_TIPC, SOCK_STREAM, 0);
-    if (s == -1)
+    _s = open_socket (AF_TIPC, SOCK_STREAM, 0);
+    if (_s == -1)
         return -1;
 
     //  Set the non-blocking flag.
-    unblock_socket (s);
+    unblock_socket (_s);
     //  Connect to the remote peer.
 #ifdef ZMQ_HAVE_VXWORKS
     int rc = ::connect (s, (sockaddr *) addr->resolved.tipc_addr->addr (),
                         addr->resolved.tipc_addr->addrlen ());
 #else
-    int rc = ::connect (s, addr->resolved.tipc_addr->addr (),
-                        addr->resolved.tipc_addr->addrlen ());
+    int rc = ::connect (_s, _addr->resolved.tipc_addr->addr (),
+                        _addr->resolved.tipc_addr->addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0)
@@ -243,15 +143,6 @@ int zmq::tipc_connecter_t::open ()
     return -1;
 }
 
-void zmq::tipc_connecter_t::close ()
-{
-    zmq_assert (s != retired_fd);
-    int rc = ::close (s);
-    errno_assert (rc == 0);
-    socket->event_closed (endpoint, s);
-    s = retired_fd;
-}
-
 zmq::fd_t zmq::tipc_connecter_t::connect ()
 {
     //  Following code should handle both Berkeley-derived socket
@@ -262,7 +153,7 @@ zmq::fd_t zmq::tipc_connecter_t::connect ()
 #else
     socklen_t len = sizeof (err);
 #endif
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    int rc = getsockopt (_s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
     if (rc == -1)
         err = errno;
     if (err != 0) {
@@ -275,8 +166,8 @@ zmq::fd_t zmq::tipc_connecter_t::connect ()
 
         return retired_fd;
     }
-    fd_t result = s;
-    s = retired_fd;
+    fd_t result = _s;
+    _s = retired_fd;
     return result;
 }
 
