@@ -166,7 +166,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
         if (rc != 0)
             goto error;
 
-        tipc_address_t addr ((struct sockaddr *) &ss, sl);
+        address = tipc_address_t ((struct sockaddr *) &ss, sl);
     }
 
 

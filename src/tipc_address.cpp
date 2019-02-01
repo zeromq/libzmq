@@ -55,10 +55,6 @@ zmq::tipc_address_t::tipc_address_t (const sockaddr *sa, socklen_t sa_len)
     _random = false;
 }
 
-zmq::tipc_address_t::~tipc_address_t ()
-{
-}
-
 void zmq::tipc_address_t::set_random ()
 {
     _random = true;
