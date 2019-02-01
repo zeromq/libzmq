@@ -153,6 +153,7 @@ test_proxy_hwm
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller
+unittest_radix_tree
 unittest_udp_address
 unittest_ypipe
 tests/test*.log
