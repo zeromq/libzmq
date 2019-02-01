@@ -46,6 +46,7 @@ namespace zmq
 class io_thread_t;
 class socket_base_t;
 
+//  TODO consider refactoring this to derive from stream_listener_base_t
 class vmci_listener_t : public own_t, public io_object_t
 {
   public:
