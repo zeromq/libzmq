@@ -150,17 +150,9 @@ void zmq::ipc_listener_t::in_event ()
     create_engine (fd);
 }
 
-int zmq::ipc_listener_t::get_address (std::string &addr_)
+std::string zmq::ipc_listener_t::get_socket_name (zmq::fd_t fd_) const
 {
-    struct sockaddr_storage ss;
-    const zmq_socklen_t sl = get_socket_address (&ss);
-    if (sl == 0) {
-        addr_.clear ();
-        return -1;
-    }
-
-    ipc_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
-    return addr.to_string (addr_);
+    return stream_listener_base_t::get_socket_name<ipc_address_t> (fd_);
 }
 
 int zmq::ipc_listener_t::set_address (const char *addr_)

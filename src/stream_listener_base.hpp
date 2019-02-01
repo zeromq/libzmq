@@ -57,8 +57,26 @@ class stream_listener_base_t : public own_t, public io_object_t
                             const options_t &options_);
     ~stream_listener_base_t ();
 
+    // Get the bound address for use with wildcards
+    int get_address (std::string &addr_) const;
+
   protected:
-    zmq_socklen_t get_socket_address (sockaddr_storage *ss_) const;
+    static zmq_socklen_t get_socket_address (fd_t fd_, sockaddr_storage *ss_);
+    virtual std::string get_socket_name (fd_t fd_) const = 0;
+
+    template <typename T> static std::string get_socket_name (fd_t fd_)
+    {
+        struct sockaddr_storage ss;
+        const zmq_socklen_t sl = get_socket_address (fd_, &ss);
+        if (sl == 0) {
+            return std::string ();
+        }
+
+        const T addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
+        std::string address_string;
+        addr.to_string (address_string);
+        return address_string;
+    }
 
   private:
     //  Handlers for incoming commands.

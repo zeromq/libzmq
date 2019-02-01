@@ -51,13 +51,20 @@ zmq::stream_listener_base_t::~stream_listener_base_t ()
     zmq_assert (!_handle);
 }
 
+int zmq::stream_listener_base_t::get_address (std::string &addr_) const
+{
+    addr_ = get_socket_name (_s);
+    return addr_.empty () ? -1 : 0;
+}
+
 zmq::zmq_socklen_t
-zmq::stream_listener_base_t::get_socket_address (sockaddr_storage *ss_) const
+zmq::stream_listener_base_t::get_socket_address (fd_t fd_,
+                                                 sockaddr_storage *ss_)
 {
     zmq_socklen_t sl = static_cast<zmq_socklen_t> (sizeof (*ss_));
 
     const int rc =
-      getsockname (_s, reinterpret_cast<struct sockaddr *> (ss_), &sl);
+      getsockname (fd_, reinterpret_cast<struct sockaddr *> (ss_), &sl);
 
     return rc != 0 ? 0 : sl;
 }

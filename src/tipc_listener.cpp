@@ -76,17 +76,9 @@ void zmq::tipc_listener_t::in_event ()
     create_engine (fd);
 }
 
-int zmq::tipc_listener_t::get_address (std::string &addr_)
+std::string zmq::tipc_listener_t::get_socket_name (zmq::fd_t fd_) const
 {
-    struct sockaddr_storage ss;
-    const zmq_socklen_t sl = get_socket_address (&ss);
-    if (!sl) {
-        addr_.clear ();
-        return -1;
-    }
-
-    tipc_address_t addr ((struct sockaddr *) &ss, sl);
-    return addr.to_string (addr_);
+    return stream_listener_base_t::get_socket_name<tipc_address_t> (fd_);
 }
 
 int zmq::tipc_listener_t::set_address (const char *addr_)
@@ -111,7 +103,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If random Port Identity, update address object to reflect the assigned address
     if (_address.is_random ()) {
         struct sockaddr_storage ss;
-        const zmq_socklen_t sl = get_socket_address (&ss);
+        const zmq_socklen_t sl = get_socket_address (_s, &ss);
         if (sl == 0)
             goto error;
 

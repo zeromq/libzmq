@@ -91,18 +91,9 @@ void zmq::tcp_listener_t::in_event ()
     create_engine (fd);
 }
 
-int zmq::tcp_listener_t::get_address (std::string &addr_)
+std::string zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_) const
 {
-    // Get the details of the TCP socket
-    struct sockaddr_storage ss;
-    const zmq_socklen_t sl = get_socket_address (&ss);
-    if (!sl) {
-        addr_.clear ();
-        return -1;
-    }
-
-    tcp_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
-    return addr.to_string (addr_);
+    return stream_listener_base_t::get_socket_name<tcp_address_t> (fd_);
 }
 
 int zmq::tcp_listener_t::set_address (const char *addr_)
