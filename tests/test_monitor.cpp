@@ -30,56 +30,61 @@
 #include "testutil.hpp"
 #include "testutil_security.hpp"
 
-int main (void)
+#include "testutil_unity.hpp"
+
+void setUp ()
 {
-    setup_test_environment ();
+    setup_test_context ();
+}
 
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
-    //  We'll monitor these two sockets
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
+void test_monitor_invalid_protocol_fails ()
+{
+    void *client = test_context_socket (ZMQ_DEALER);
 
     //  Socket monitoring only works over inproc://
-    int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0);
-    assert (rc == -1);
-    assert (zmq_errno () == EPROTONOSUPPORT);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EPROTONOSUPPORT, zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0));
+}
+
+void test_monitor_basic ()
+{
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    //  We'll monitor these two sockets
+    void *client = test_context_socket (ZMQ_DEALER);
+    void *server = test_context_socket (ZMQ_DEALER);
 
     //  Monitor all events on client and server sockets
-    rc = zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL);
-    assert (rc == 0);
-    rc = zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL));
 
     //  Create two sockets for collecting monitor events
-    void *client_mon = zmq_socket (ctx, ZMQ_PAIR);
-    assert (client_mon);
-    void *server_mon = zmq_socket (ctx, ZMQ_PAIR);
-    assert (server_mon);
+    void *client_mon = test_context_socket (ZMQ_PAIR);
+    void *server_mon = test_context_socket (ZMQ_PAIR);
 
     //  Connect these to the inproc endpoints so they'll get events
-    rc = zmq_connect (client_mon, "inproc://monitor-client");
-    assert (rc == 0);
-    rc = zmq_connect (server_mon, "inproc://monitor-server");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (client_mon, "inproc://monitor-client"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (server_mon, "inproc://monitor-server"));
 
     //  Now do a basic ping test
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     bounce (server, client);
 
     //  Close client and server
-    close_zero_linger (client);
-    close_zero_linger (server);
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
 
     //  Now collect and check events from both sockets
     int event = get_monitor_event (client_mon, NULL, NULL);
@@ -96,17 +101,25 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        assert (event == ZMQ_EVENT_CLOSED);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
         event = get_monitor_event (server_mon, NULL, NULL);
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
 
     //  Close down the sockets
-    close_zero_linger (client_mon);
-    close_zero_linger (server_mon);
-    zmq_ctx_term (ctx);
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client_mon);
+    test_context_socket_close_zero_linger (server_mon);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_monitor_invalid_protocol_fails);
+    RUN_TEST (test_monitor_basic);
+    return UNITY_END ();
 }
