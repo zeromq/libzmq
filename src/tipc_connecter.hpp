@@ -35,17 +35,11 @@
 #if defined ZMQ_HAVE_TIPC
 
 #include "fd.hpp"
-#include "own.hpp"
-#include "stdint.hpp"
-#include "io_object.hpp"
+#include "stream_connecter_base.hpp"
 
 namespace zmq
 {
-class io_thread_t;
-class session_base_t;
-struct address_t;
-
-class tipc_connecter_t : public own_t, public io_object_t
+class tipc_connecter_t : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -53,7 +47,7 @@ class tipc_connecter_t : public own_t, public io_object_t
     tipc_connecter_t (zmq::io_thread_t *io_thread_,
                       zmq::session_base_t *session_,
                       const options_t &options_,
-                      const address_t *addr_,
+                      address_t *addr_,
                       bool delayed_start_);
     ~tipc_connecter_t ();
 
@@ -85,33 +79,6 @@ class tipc_connecter_t : public own_t, public io_object_t
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.
     fd_t connect ();
-
-    //  Address to connect to. Owned by session_base_t.
-    const address_t *_addr;
-
-    //  Underlying socket.
-    fd_t _s;
-
-    //  Handle corresponding to the listening socket.
-    handle_t _handle;
-
-    //  If true, connecter is waiting a while before trying to connect.
-    const bool _delayed_start;
-
-    //  True iff a timer has been started.
-    bool _reconnect_timer_started;
-
-    //  Reference to the session we belong to.
-    zmq::session_base_t *_session;
-
-    //  Current reconnect ivl, updated for backoff strategy
-    int _current_reconnect_ivl;
-
-    // String representation of endpoint to connect to
-    std::string _endpoint;
-
-    // Socket
-    zmq::socket_base_t *_socket;
 
     //  Internal function to return a reconnect backoff delay.
     //  Will modify the current_reconnect_ivl used for next call

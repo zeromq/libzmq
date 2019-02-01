@@ -31,17 +31,12 @@
 #define __TCP_CONNECTER_HPP_INCLUDED__
 
 #include "fd.hpp"
-#include "own.hpp"
 #include "stdint.hpp"
-#include "io_object.hpp"
+#include "stream_connecter_base.hpp"
 
 namespace zmq
 {
-class io_thread_t;
-class session_base_t;
-struct address_t;
-
-class tcp_connecter_t : public own_t, public io_object_t
+class tcp_connecter_t : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -102,34 +97,8 @@ class tcp_connecter_t : public own_t, public io_object_t
     //  Tunes a connected socket.
     bool tune_socket (fd_t fd_);
 
-    //  Address to connect to. Owned by session_base_t.
-    address_t *const _addr;
-
-    //  Underlying socket.
-    fd_t _s;
-
-    //  Handle corresponding to the listening socket, if file descriptor is
-    //  registered with the poller, or NULL.
-    handle_t _handle;
-
-    //  If true, connecter is waiting a while before trying to connect.
-    const bool _delayed_start;
-
     //  True iff a timer has been started.
     bool _connect_timer_started;
-    bool _reconnect_timer_started;
-
-    //  Reference to the session we belong to.
-    zmq::session_base_t *const _session;
-
-    //  Current reconnect ivl, updated for backoff strategy
-    int _current_reconnect_ivl;
-
-    // String representation of endpoint to connect to
-    std::string _endpoint;
-
-    // Socket
-    zmq::socket_base_t *const _socket;
 
     tcp_connecter_t (const tcp_connecter_t &);
     const tcp_connecter_t &operator= (const tcp_connecter_t &);

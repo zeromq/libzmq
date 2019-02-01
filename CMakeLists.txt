@@ -821,6 +821,8 @@ set(cxx-sources
   stdint.hpp
   stream.hpp
   stream_engine.hpp
+  stream_connecter_base.hpp
+  stream_connecter_base.cpp
   sub.hpp
   tcp.hpp
   tcp_address.hpp

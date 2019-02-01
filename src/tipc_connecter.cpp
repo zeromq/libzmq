@@ -56,22 +56,12 @@
 zmq::tipc_connecter_t::tipc_connecter_t (class io_thread_t *io_thread_,
                                          class session_base_t *session_,
                                          const options_t &options_,
-                                         const address_t *addr_,
+                                         address_t *addr_,
                                          bool delayed_start_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    _addr (addr_),
-    _s (retired_fd),
-    _handle (static_cast<handle_t> (NULL)),
-    _delayed_start (delayed_start_),
-    _reconnect_timer_started (false),
-    _session (session_),
-    _current_reconnect_ivl (options.reconnect_ivl)
+    stream_connecter_base_t (
+      io_thread_, session_, options_, addr_, delayed_start_)
 {
-    zmq_assert (_addr);
     zmq_assert (_addr->protocol == "tipc");
-    _addr->to_string (_endpoint);
-    _socket = _session->get_socket ();
 }
 
 zmq::tipc_connecter_t::~tipc_connecter_t ()

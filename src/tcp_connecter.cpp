@@ -69,24 +69,11 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
                                        const options_t &options_,
                                        address_t *addr_,
                                        bool delayed_start_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    _addr (addr_),
-    _s (retired_fd),
-    _handle (static_cast<handle_t> (NULL)),
-    _delayed_start (delayed_start_),
-    _connect_timer_started (false),
-    _reconnect_timer_started (false),
-    _session (session_),
-    _current_reconnect_ivl (options.reconnect_ivl),
-    _socket (_session->get_socket ())
+    stream_connecter_base_t (
+      io_thread_, session_, options_, addr_, delayed_start_),
+    _connect_timer_started (false)
 {
-    zmq_assert (_addr);
     zmq_assert (_addr->protocol == protocol_name::tcp);
-    _addr->to_string (_endpoint);
-    // TODO the return value is unused! what if it fails? if this is impossible
-    // or does not matter, change such that endpoint in initialized using an
-    // initializer, and make endpoint const
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
