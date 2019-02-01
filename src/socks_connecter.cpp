@@ -150,9 +150,9 @@ void zmq::socks_connecter_t::in_event ()
             if (rc == -1)
                 error ();
             else {
-                //  TODO query the remote endpoint and pass it here
-                endpoint_uri_pair_t endpoint_pair =
-                  make_unconnected_connect_endpoint_pair (_endpoint);
+                const endpoint_uri_pair_t endpoint_pair = endpoint_uri_pair_t (
+                  get_socket_name<tcp_address_t> (_s, socket_end_local),
+                  _endpoint, endpoint_type_connect);
 
                 //  Create the engine object for this connection.
                 stream_engine_t *engine = new (std::nothrow)
