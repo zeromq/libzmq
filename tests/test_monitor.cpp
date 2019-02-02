@@ -174,10 +174,11 @@ void test_monitor_versioned_basic ()
 
     expect_monitor_event_v2 (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
                              client_local_address, client_remote_address);
-    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
 
     //  This is the flow of server events
-    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING);
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING,
+                             client_remote_address, "");
     expect_monitor_event_v2 (server_mon, ZMQ_EVENT_ACCEPTED,
                              client_remote_address, client_local_address);
     expect_monitor_event_v2 (server_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
