@@ -602,6 +602,7 @@ tests_test_security_plain_LDADD = src/libzmq.la
 
 tests_test_security_zap_SOURCES = \
 	tests/test_security_zap.cpp \
+	tests/testutil_monitoring.hpp \
 	tests/testutil_security.hpp \
 	tests/testutil.hpp
 tests_test_security_zap_LDADD = src/libzmq.la
