@@ -94,9 +94,11 @@ void zmq::tcp_listener_t::in_event ()
     create_engine (fd);
 }
 
-std::string zmq::tcp_listener_t::get_local_socket_name (zmq::fd_t fd_) const
+std::string
+zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_,
+                                      socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_local);
+    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
 }
 
 int zmq::tcp_listener_t::set_local_address (const char *addr_)

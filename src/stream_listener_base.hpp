@@ -36,7 +36,7 @@
 #include "own.hpp"
 #include "stdint.hpp"
 #include "io_object.hpp"
-#include "tipc_address.hpp"
+#include "address.hpp"
 
 namespace zmq
 {
@@ -55,7 +55,8 @@ class stream_listener_base_t : public own_t, public io_object_t
     int get_local_address (std::string &addr_) const;
 
   protected:
-    virtual std::string get_local_socket_name (fd_t fd_) const = 0;
+    virtual std::string get_socket_name (fd_t fd_,
+                                         socket_end_t socket_end_) const = 0;
 
   private:
     //  Handlers for incoming commands.

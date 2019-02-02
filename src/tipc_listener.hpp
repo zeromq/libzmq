@@ -53,7 +53,7 @@ class tipc_listener_t : public stream_listener_base_t
     int set_local_address (const char *addr_);
 
   protected:
-    std::string get_local_socket_name (fd_t fd_) const;
+    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
 
   private:
     //  Handlers for I/O events.
