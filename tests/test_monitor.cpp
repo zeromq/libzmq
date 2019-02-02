@@ -49,6 +49,8 @@ void test_monitor_invalid_protocol_fails ()
     //  Socket monitoring only works over inproc://
     TEST_ASSERT_FAILURE_ERRNO (
       EPROTONOSUPPORT, zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0));
+
+    test_context_socket_close_zero_linger (client);
 }
 
 void test_monitor_basic ()
