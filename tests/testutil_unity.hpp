@@ -313,7 +313,16 @@ void bind_loopback (void *socket_, int ipv6_, char *my_endpoint_, size_t len_)
                my_endpoint_, len_);
 }
 
+typedef void (*bind_function_t) (void *socket_,
+                                 char *my_endpoint_,
+                                 size_t len_);
+
 void bind_loopback_ipv4 (void *socket_, char *my_endpoint_, size_t len_)
 {
     bind_loopback (socket_, false, my_endpoint_, len_);
+}
+
+void bind_loopback_ipv6 (void *socket_, char *my_endpoint_, size_t len_)
+{
+    bind_loopback (socket_, true, my_endpoint_, len_);
 }

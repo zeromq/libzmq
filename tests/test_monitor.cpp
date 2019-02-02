@@ -117,7 +117,8 @@ void test_monitor_basic ()
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-void test_monitor_versioned_basic ()
+void test_monitor_versioned_basic (bind_function_t bind_function_,
+                                   const char *expected_prefix_)
 {
     char server_endpoint[MAX_SOCKET_STRING];
 
@@ -142,7 +143,7 @@ void test_monitor_versioned_basic ()
       zmq_connect (server_mon, "inproc://monitor-server"));
 
     //  Now do a basic ping test
-    bind_loopback_ipv4 (server, server_endpoint, sizeof server_endpoint);
+    bind_function_ (server, server_endpoint, sizeof server_endpoint);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, server_endpoint));
     bounce (server, client);
@@ -166,9 +167,8 @@ void test_monitor_versioned_basic ()
     }
     TEST_ASSERT_EQUAL (ZMQ_EVENT_CONNECTED, event);
     TEST_ASSERT_EQUAL_STRING (server_endpoint, client_remote_address);
-    static const char prefix[] = "tcp://127.0.0.1:";
-    TEST_ASSERT_EQUAL_STRING_LEN (prefix, client_local_address,
-                                  strlen (prefix));
+    TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, client_local_address,
+                                  strlen (expected_prefix_));
     TEST_ASSERT_NOT_EQUAL (
       0, strcmp (client_local_address, client_remote_address));
 
@@ -200,6 +200,18 @@ void test_monitor_versioned_basic ()
     test_context_socket_close_zero_linger (client_mon);
     test_context_socket_close_zero_linger (server_mon);
 }
+
+void test_monitor_versioned_basic_tcp_ipv4 ()
+{
+    static const char prefix[] = "tcp://127.0.0.1:";
+    test_monitor_versioned_basic (bind_loopback_ipv4, prefix);
+}
+
+void test_monitor_versioned_basic_tcp_ipv6 ()
+{
+    static const char prefix[] = "tcp://[::1]:";
+    test_monitor_versioned_basic (bind_loopback_ipv6, prefix);
+}
 #endif
 
 int main ()
@@ -211,7 +223,8 @@ int main ()
     RUN_TEST (test_monitor_basic);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    RUN_TEST (test_monitor_versioned_basic);
+    RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
+    RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
 #endif
 
     return UNITY_END ();
