@@ -59,6 +59,8 @@ class tcp_listener_t : public stream_listener_base_t
     //  or was denied because of accept filters.
     fd_t accept ();
 
+    int create_socket (const char *addr_);
+
     //  Address to listen on.
     tcp_address_t _address;
 

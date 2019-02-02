@@ -101,21 +101,12 @@ zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_,
     return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
 }
 
-int zmq::tcp_listener_t::set_local_address (const char *addr_)
+int zmq::tcp_listener_t::create_socket (const char *addr_)
 {
     //  Convert the textual address into address structure.
     int rc = _address.resolve (addr_, true, options.ipv6);
     if (rc != 0)
         return -1;
-
-    _address.to_string (_endpoint);
-
-    if (options.use_fd != -1) {
-        _s = options.use_fd;
-        _socket->event_listening (
-          make_unconnected_bind_endpoint_pair (_endpoint), _s);
-        return 0;
-    }
 
     //  Create a listening socket.
     _s = open_socket (_address.family (), SOCK_STREAM, IPPROTO_TCP);
@@ -200,8 +191,6 @@ int zmq::tcp_listener_t::set_local_address (const char *addr_)
         goto error;
 #endif
 
-    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
-                              _s);
     return 0;
 
 error:
@@ -209,6 +198,24 @@ error:
     close ();
     errno = err;
     return -1;
+}
+
+int zmq::tcp_listener_t::set_local_address (const char *addr_)
+{
+    if (options.use_fd != -1) {
+        //  in this case, the addr_ passed is not used and ignored, since the
+        //  socket was already created by the application
+        _s = options.use_fd;
+    } else {
+        if (create_socket (addr_) == -1)
+            return -1;
+    }
+
+    _endpoint = get_socket_name (_s, socket_end_local);
+
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
+    return 0;
 }
 
 zmq::fd_t zmq::tcp_listener_t::accept ()
