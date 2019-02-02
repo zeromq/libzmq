@@ -32,6 +32,9 @@
 
 #include "testutil.hpp"
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 //  General, i.e. non-security specific, monitor utilities
 
 //  Read one event off the monitor socket; return value and address
@@ -189,5 +192,122 @@ int expect_monitor_event_multiple (void *server_mon_,
 
     return count_of_expected_events;
 }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+static int64_t get_monitor_event_internal_v2 (void *monitor_,
+                                              uint64_t *value_,
+                                              char **local_address_,
+                                              char **remote_address_,
+                                              int recv_flag_)
+{
+    //  First frame in message contains event number
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
+        assert (errno == EAGAIN);
+        return -1; //  timed out or no message available
+    }
+    assert (zmq_msg_more (&msg));
+    assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+
+    uint64_t event;
+    memcpy (&event, zmq_msg_data (&msg), sizeof event);
+
+    //  Second frame in message contains event value
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
+        assert (errno == EAGAIN);
+        return -1; //  timed out or no message available
+    }
+    assert (zmq_msg_more (&msg));
+    assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+
+    if (value_)
+        memcpy (value_, zmq_msg_data (&msg), sizeof *value_);
+
+    //  Third frame in message contains local address
+    zmq_msg_init (&msg);
+    int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
+    assert (res != -1);
+    assert (zmq_msg_more (&msg));
+
+    if (local_address_) {
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        size_t size = zmq_msg_size (&msg);
+        *local_address_ = (char *) malloc (size + 1);
+        memcpy (*local_address_, data, size);
+        *local_address_[size] = 0;
+    }
+
+    //  Fourth and last frame in message contains remote address
+    zmq_msg_init (&msg);
+    res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
+    assert (res != -1);
+    assert (!zmq_msg_more (&msg));
+
+    if (remote_address_) {
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        size_t size = zmq_msg_size (&msg);
+        *remote_address_ = (char *) malloc (size + 1);
+        memcpy (*remote_address_, data, size);
+        *remote_address_[size] = 0;
+    }
+    return event;
+}
+
+int64_t get_monitor_event_with_timeout_v2 (void *monitor_,
+                                           uint64_t *value_,
+                                           char **local_address_,
+                                           char **remote_address_,
+                                           int timeout_)
+{
+    int res;
+    if (timeout_ == -1) {
+        // process infinite timeout in small steps to allow the user
+        // to see some information on the console
+
+        int timeout_step = 250;
+        int wait_time = 0;
+        zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_step,
+                        sizeof (timeout_step));
+        while ((res = get_monitor_event_internal_v2 (
+                  monitor_, value_, local_address_, remote_address_, 0))
+               == -1) {
+            wait_time += timeout_step;
+            fprintf (stderr, "Still waiting for monitor event after %i ms\n",
+                     wait_time);
+        }
+    } else {
+        zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_, sizeof (timeout_));
+        res = get_monitor_event_internal_v2 (monitor_, value_, local_address_,
+                                             remote_address_, 0);
+    }
+    int timeout_infinite = -1;
+    zmq_setsockopt (monitor_, ZMQ_RCVTIMEO, &timeout_infinite,
+                    sizeof (timeout_infinite));
+    return res;
+}
+
+int64_t get_monitor_event_v2 (void *monitor_,
+                              uint64_t *value_,
+                              char **local_address_,
+                              char **remote_address_)
+{
+    return get_monitor_event_with_timeout_v2 (monitor_, value_, local_address_,
+                                              remote_address_, -1);
+}
+
+void expect_monitor_event_v2 (void *monitor_, int64_t expected_event_)
+{
+    int64_t event = get_monitor_event_v2 (monitor_, NULL, NULL, NULL);
+    if (event != expected_event_) {
+        fprintf (stderr,
+                 "Expected monitor event %" PRIx64 " but received %" PRIx64
+                 "\n",
+                 expected_event_, event);
+        assert (event == expected_event_);
+    }
+}
+#endif
 
 #endif

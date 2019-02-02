@@ -114,6 +114,71 @@ void test_monitor_basic ()
     test_context_socket_close_zero_linger (server_mon);
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+void test_monitor_versioned_basic ()
+{
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    //  We'll monitor these two sockets
+    void *client = test_context_socket (ZMQ_DEALER);
+    void *server = test_context_socket (ZMQ_DEALER);
+
+    //  Monitor all events on client and server sockets
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
+      client, "inproc://monitor-client", ZMQ_EVENT_ALL_V2, 2));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
+      server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2));
+
+    //  Create two sockets for collecting monitor events
+    void *client_mon = test_context_socket (ZMQ_PAIR);
+    void *server_mon = test_context_socket (ZMQ_PAIR);
+
+    //  Connect these to the inproc endpoints so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (client_mon, "inproc://monitor-client"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (server_mon, "inproc://monitor-server"));
+
+    //  Now do a basic ping test
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
+    bounce (server, client);
+
+    //  Close client and server
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
+
+    //  Now collect and check events from both sockets
+    int64_t event = get_monitor_event_v2 (client_mon, NULL, NULL, NULL);
+    if (event == ZMQ_EVENT_CONNECT_DELAYED)
+        event = get_monitor_event_v2 (client_mon, NULL, NULL, NULL);
+    assert (event == ZMQ_EVENT_CONNECTED);
+    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+
+    //  This is the flow of server events
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING);
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_ACCEPTED);
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
+    //  Sometimes the server sees the client closing before it gets closed.
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
+        event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
+    }
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
+    }
+
+    //  Close down the sockets
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client_mon);
+    test_context_socket_close_zero_linger (server_mon);
+}
+#endif
+
 int main ()
 {
     setup_test_environment ();
@@ -121,5 +186,10 @@ int main ()
     UNITY_BEGIN ();
     RUN_TEST (test_monitor_invalid_protocol_fails);
     RUN_TEST (test_monitor_basic);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    RUN_TEST (test_monitor_versioned_basic);
+#endif
+
     return UNITY_END ();
 }
