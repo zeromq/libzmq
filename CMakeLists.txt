@@ -657,6 +657,7 @@ set(cxx-sources
   metadata.cpp
   msg.cpp
   mtrie.cpp
+  norm_engine.cpp
   object.cpp
   options.cpp
   own.cpp
