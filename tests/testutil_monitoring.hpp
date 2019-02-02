@@ -297,16 +297,37 @@ int64_t get_monitor_event_v2 (void *monitor_,
                                               remote_address_, -1);
 }
 
-void expect_monitor_event_v2 (void *monitor_, int64_t expected_event_)
+void expect_monitor_event_v2 (void *monitor_,
+                              int64_t expected_event_,
+                              const char *expected_local_address_ = NULL,
+                              const char *expected_remote_address_ = NULL)
 {
-    int64_t event = get_monitor_event_v2 (monitor_, NULL, NULL, NULL);
+    char *local_address = NULL;
+    char *remote_address = NULL;
+    int64_t event = get_monitor_event_v2 (
+      monitor_, NULL, expected_local_address_ ? &local_address : NULL,
+      expected_remote_address_ ? &remote_address : NULL);
+    bool failed = false;
     if (event != expected_event_) {
         fprintf (stderr,
-                 "Expected monitor event %" PRIx64 " but received %" PRIx64
+                 "Expected monitor event %" PRIx64 ", but received %" PRIx64
                  "\n",
                  expected_event_, event);
-        assert (event == expected_event_);
+        failed = true;
     }
+    if (expected_local_address_
+        && 0 != strcmp (local_address, expected_local_address_)) {
+        fprintf (stderr, "Expected local address %s, but received %s\n",
+                 expected_local_address_, local_address);
+    }
+    if (expected_remote_address_
+        && 0 != strcmp (remote_address, expected_remote_address_)) {
+        fprintf (stderr, "Expected remote address %s, but received %s\n",
+                 expected_remote_address_, remote_address);
+    }
+    free (local_address);
+    free (remote_address);
+    assert (!failed);
 }
 #endif
 
