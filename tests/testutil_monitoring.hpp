@@ -71,7 +71,7 @@ static int get_monitor_event_internal (void *monitor_,
         size_t size = zmq_msg_size (&msg);
         *address_ = (char *) malloc (size + 1);
         memcpy (*address_, data, size);
-        *address_[size] = 0;
+        (*address_)[size] = 0;
     }
     return event;
 }
@@ -236,7 +236,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         size_t size = zmq_msg_size (&msg);
         *local_address_ = (char *) malloc (size + 1);
         memcpy (*local_address_, data, size);
-        *local_address_[size] = 0;
+        (*local_address_)[size] = 0;
     }
 
     //  Fourth and last frame in message contains remote address
@@ -250,7 +250,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         size_t size = zmq_msg_size (&msg);
         *remote_address_ = (char *) malloc (size + 1);
         memcpy (*remote_address_, data, size);
-        *remote_address_[size] = 0;
+        (*remote_address_)[size] = 0;
     }
     return event;
 }
