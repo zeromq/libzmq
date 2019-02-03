@@ -218,6 +218,18 @@ void test_monitor_versioned_basic_tcp_ipv6 ()
     static const char prefix[] = "tcp://[::1]:";
     test_monitor_versioned_basic (bind_loopback_ipv6, prefix);
 }
+
+void test_monitor_versioned_basic_ipc ()
+{
+    static const char prefix[] = "ipc://";
+    test_monitor_versioned_basic (bind_loopback_ipc, prefix);
+}
+
+void test_monitor_versioned_basic_tipc ()
+{
+    static const char prefix[] = "tipc://";
+    test_monitor_versioned_basic (bind_loopback_tipc, prefix);
+}
 #endif
 
 int main ()
@@ -231,6 +243,8 @@ int main ()
 #ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
+    RUN_TEST (test_monitor_versioned_basic_ipc);
+    RUN_TEST (test_monitor_versioned_basic_tipc);
 #endif
 
     return UNITY_END ();

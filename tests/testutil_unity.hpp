@@ -31,6 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/zmq.h"
 
+#include "testutil.hpp"
+
 #include <unity.h>
 
 #include <string.h>
@@ -325,6 +327,24 @@ void bind_loopback_ipv4 (void *socket_, char *my_endpoint_, size_t len_)
 void bind_loopback_ipv6 (void *socket_, char *my_endpoint_, size_t len_)
 {
     bind_loopback (socket_, true, my_endpoint_, len_);
+}
+
+void bind_loopback_ipc (void *socket_, char *my_endpoint_, size_t len_)
+{
+    if (!zmq_has ("ipc")) {
+        TEST_IGNORE_MESSAGE ("ipc is not available");
+    }
+
+    test_bind (socket_, "ipc://*", my_endpoint_, len_);
+}
+
+void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
+{
+    if (!is_tipc_available ()) {
+        TEST_IGNORE_MESSAGE ("tipc is not available");
+    }
+
+    test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
 }
 
 // utility function to create a random IPC endpoint, similar to what a ipc://*
