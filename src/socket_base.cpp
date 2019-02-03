@@ -979,7 +979,7 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
     //  Save last endpoint URI
     paddr->to_string (_last_endpoint);
 
-    add_endpoint (make_unconnected_connect_endpoint_pair (_last_endpoint),
+    add_endpoint (make_unconnected_connect_endpoint_pair (endpoint_uri_),
                   static_cast<own_t *> (session), newpipe);
     return 0;
 }
