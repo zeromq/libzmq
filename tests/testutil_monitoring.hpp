@@ -32,9 +32,6 @@
 
 #include "testutil.hpp"
 
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-
 //  General, i.e. non-security specific, monitor utilities
 
 //  Read one event off the monitor socket; return value and address
@@ -261,7 +258,7 @@ int64_t get_monitor_event_with_timeout_v2 (void *monitor_,
                                            char **remote_address_,
                                            int timeout_)
 {
-    int res;
+    int64_t res;
     if (timeout_ == -1) {
         // process infinite timeout in small steps to allow the user
         // to see some information on the console
@@ -309,10 +306,8 @@ void expect_monitor_event_v2 (void *monitor_,
       expected_remote_address_ ? &remote_address : NULL);
     bool failed = false;
     if (event != expected_event_) {
-        fprintf (stderr,
-                 "Expected monitor event %" PRIx64 ", but received %" PRIx64
-                 "\n",
-                 expected_event_, event);
+        fprintf (stderr, "Expected monitor event %lld, but received %lld\n",
+                 (long long) expected_event_, (long long) event);
         failed = true;
     }
     if (expected_local_address_
