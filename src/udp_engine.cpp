@@ -465,37 +465,23 @@ void zmq::udp_engine_t::restart_output ()
 void zmq::udp_engine_t::in_event ()
 {
     sockaddr_storage in_address;
-    socklen_t in_addrlen = sizeof (sockaddr_storage);
-#ifdef ZMQ_HAVE_WINDOWS
-    int nbytes =
+    zmq_socklen_t in_addrlen =
+      static_cast<zmq_socklen_t> (sizeof (sockaddr_storage));
+
+    const int nbytes =
       recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
                 reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
-    const int last_error = WSAGetLastError ();
+#ifdef ZMQ_HAVE_WINDOWS
     if (nbytes == SOCKET_ERROR) {
+        const int last_error = WSAGetLastError ();
         wsa_assert (last_error == WSAENETDOWN || last_error == WSAENETRESET
                     || last_error == WSAEWOULDBLOCK);
         return;
     }
-#elif defined ZMQ_HAVE_VXWORKS
-    int nbytes = recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                           (sockaddr *) &in_address, (int *) &in_addrlen);
+#else
     if (nbytes == -1) {
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
                       && errno != ENOTSOCK);
-        return;
-    }
-#else
-    int nbytes =
-      recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
-    if (nbytes == -1) {
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
-                      && errno != ENOTSOCK);
-#else
-        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
-                      && errno != ENOTSOCK);
-#endif
         return;
     }
 #endif
