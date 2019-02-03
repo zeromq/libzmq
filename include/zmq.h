@@ -98,6 +98,9 @@ extern "C" {
 #if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
 #include <inttypes.h>
 #elif defined _MSC_VER && _MSC_VER < 1600
+#ifndef uint64_t
+typedef unsigned __int64 uint64_t;
+#endif
 #ifndef int32_t
 typedef __int32 int32_t;
 #endif

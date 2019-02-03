@@ -145,6 +145,12 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     //  Now do a basic ping test
     bind_function_ (server, server_endpoint, sizeof server_endpoint);
 
+    int ipv6_;
+    size_t ipv6_size_ = sizeof (ipv6_);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (server, ZMQ_IPV6, &ipv6_, &ipv6_size_));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_IPV6, &ipv6_, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, server_endpoint));
     bounce (server, client);
 
