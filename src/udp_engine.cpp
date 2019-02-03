@@ -319,19 +319,26 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_)
     const char *const name = inet_ntoa (addr_->sin_addr);
 
     char port[6];
-    sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
+    const int port_len =
+      sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
+    zmq_assert (port_len > 0);
 
-    const int size = static_cast<int> (strlen (name))
-                     + static_cast<int> (strlen (port)) + 1
-                     + 1; //  Colon + NULL
+    const size_t name_len = strlen (name);
+    const int size = static_cast<int> (name_len) + 1 /* colon */
+                     + port_len + 1;                 //  terminating NUL
     const int rc = msg_->init_size (size);
     errno_assert (rc == 0);
     msg_->set_flags (msg_t::more);
-    char *address = static_cast<char *> (msg_->data ());
 
-    strcpy (address, name);
-    strcat (address, ":");
-    strcat (address, port);
+    //  use memcpy instead of strcpy/strcat, since this is more efficient when
+    //  we already know the lengths, which we calculated above
+    char *address = static_cast<char *> (msg_->data ());
+    memcpy (address, name, name_len);
+    address += name_len;
+    *address++ = ':';
+    memcpy (address, port, static_cast<size_t> (port_len));
+    address += port_len;
+    *address = 0;
 }
 
 int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
