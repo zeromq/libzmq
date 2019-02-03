@@ -108,3 +108,17 @@ int zmq::address_t::to_string (std::string &addr_) const
     addr_.clear ();
     return -1;
 }
+
+zmq::zmq_socklen_t zmq::get_socket_address (fd_t fd_,
+                                            socket_end_t socket_end_,
+                                            sockaddr_storage *ss_)
+{
+    zmq_socklen_t sl = static_cast<zmq_socklen_t> (sizeof (*ss_));
+
+    const int rc =
+      socket_end_ == socket_end_local
+        ? getsockname (fd_, reinterpret_cast<struct sockaddr *> (ss_), &sl)
+        : getpeername (fd_, reinterpret_cast<struct sockaddr *> (ss_), &sl);
+
+    return rc != 0 ? 0 : sl;
+}

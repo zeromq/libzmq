@@ -150,15 +150,19 @@ void zmq::socks_connecter_t::in_event ()
             if (rc == -1)
                 error ();
             else {
+                const endpoint_uri_pair_t endpoint_pair = endpoint_uri_pair_t (
+                  get_socket_name<tcp_address_t> (_s, socket_end_local),
+                  _endpoint, endpoint_type_connect);
+
                 //  Create the engine object for this connection.
-                stream_engine_t *engine =
-                  new (std::nothrow) stream_engine_t (_s, options, _endpoint);
+                stream_engine_t *engine = new (std::nothrow)
+                  stream_engine_t (_s, options, endpoint_pair);
                 alloc_assert (engine);
 
                 //  Attach the engine to the corresponding session object.
                 send_attach (_session, engine);
 
-                _socket->event_connected (_endpoint, _s);
+                _socket->event_connected (endpoint_pair, _s);
 
                 rm_fd (_handle);
                 _s = -1;
@@ -225,7 +229,8 @@ void zmq::socks_connecter_t::initiate_connect ()
         _handle = add_fd (_s);
         set_pollout (_handle);
         _status = waiting_for_proxy_connection;
-        _socket->event_connect_delayed (_endpoint, zmq_errno ());
+        _socket->event_connect_delayed (
+          make_unconnected_connect_endpoint_pair (_endpoint), zmq_errno ());
     }
     //  Handle any other error condition by eventual reconnect.
     else {
@@ -272,7 +277,8 @@ void zmq::socks_connecter_t::start_timer ()
         const int interval = get_new_reconnect_ivl ();
         add_timer (interval, reconnect_timer_id);
         _status = waiting_for_reconnect_time;
-        _socket->event_connect_retried (_endpoint, interval);
+        _socket->event_connect_retried (
+          make_unconnected_connect_endpoint_pair (_endpoint), interval);
     }
 }
 
@@ -443,7 +449,8 @@ void zmq::socks_connecter_t::close ()
     const int rc = ::close (_s);
     errno_assert (rc == 0);
 #endif
-    _socket->event_closed (_endpoint, _s);
+    _socket->event_closed (make_unconnected_connect_endpoint_pair (_endpoint),
+                           _s);
     _s = retired_fd;
 }
 

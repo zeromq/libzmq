@@ -28,58 +28,65 @@
 */
 
 #include "testutil.hpp"
-#include "testutil_security.hpp"
+#include "testutil_monitoring.hpp"
 
-int main (void)
+#include "testutil_unity.hpp"
+
+void setUp ()
 {
-    setup_test_environment ();
+    setup_test_context ();
+}
 
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
-    //  We'll monitor these two sockets
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
+void test_monitor_invalid_protocol_fails ()
+{
+    void *client = test_context_socket (ZMQ_DEALER);
 
     //  Socket monitoring only works over inproc://
-    int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0);
-    assert (rc == -1);
-    assert (zmq_errno () == EPROTONOSUPPORT);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EPROTONOSUPPORT, zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0));
+
+    test_context_socket_close_zero_linger (client);
+}
+
+void test_monitor_basic ()
+{
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    //  We'll monitor these two sockets
+    void *client = test_context_socket (ZMQ_DEALER);
+    void *server = test_context_socket (ZMQ_DEALER);
 
     //  Monitor all events on client and server sockets
-    rc = zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL);
-    assert (rc == 0);
-    rc = zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL));
 
     //  Create two sockets for collecting monitor events
-    void *client_mon = zmq_socket (ctx, ZMQ_PAIR);
-    assert (client_mon);
-    void *server_mon = zmq_socket (ctx, ZMQ_PAIR);
-    assert (server_mon);
+    void *client_mon = test_context_socket (ZMQ_PAIR);
+    void *server_mon = test_context_socket (ZMQ_PAIR);
 
     //  Connect these to the inproc endpoints so they'll get events
-    rc = zmq_connect (client_mon, "inproc://monitor-client");
-    assert (rc == 0);
-    rc = zmq_connect (server_mon, "inproc://monitor-server");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (client_mon, "inproc://monitor-client"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (server_mon, "inproc://monitor-server"));
 
     //  Now do a basic ping test
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     bounce (server, client);
 
     //  Close client and server
-    close_zero_linger (client);
-    close_zero_linger (server);
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
 
     //  Now collect and check events from both sockets
     int event = get_monitor_event (client_mon, NULL, NULL);
@@ -96,17 +103,129 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        assert (event == ZMQ_EVENT_CLOSED);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
         event = get_monitor_event (server_mon, NULL, NULL);
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
 
     //  Close down the sockets
-    close_zero_linger (client_mon);
-    close_zero_linger (server_mon);
-    zmq_ctx_term (ctx);
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client_mon);
+    test_context_socket_close_zero_linger (server_mon);
+}
 
-    return 0;
+#ifdef ZMQ_BUILD_DRAFT_API
+void test_monitor_versioned_basic (bind_function_t bind_function_,
+                                   const char *expected_prefix_)
+{
+    char server_endpoint[MAX_SOCKET_STRING];
+
+    //  We'll monitor these two sockets
+    void *client = test_context_socket (ZMQ_DEALER);
+    void *server = test_context_socket (ZMQ_DEALER);
+
+    //  Monitor all events on client and server sockets
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
+      client, "inproc://monitor-client", ZMQ_EVENT_ALL_V2, 2));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
+      server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2));
+
+    //  Create two sockets for collecting monitor events
+    void *client_mon = test_context_socket (ZMQ_PAIR);
+    void *server_mon = test_context_socket (ZMQ_PAIR);
+
+    //  Connect these to the inproc endpoints so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (client_mon, "inproc://monitor-client"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (server_mon, "inproc://monitor-server"));
+
+    //  Now do a basic ping test
+    bind_function_ (server, server_endpoint, sizeof server_endpoint);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, server_endpoint));
+    bounce (server, client);
+
+    //  Close client and server
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
+
+    char *client_local_address = NULL;
+    char *client_remote_address = NULL;
+
+    //  Now collect and check events from both sockets
+    int64_t event = get_monitor_event_v2 (
+      client_mon, NULL, &client_local_address, &client_remote_address);
+    if (event == ZMQ_EVENT_CONNECT_DELAYED) {
+        free (client_local_address);
+        free (client_remote_address);
+        event = get_monitor_event_v2 (client_mon, NULL, &client_local_address,
+                                      &client_remote_address);
+    }
+    TEST_ASSERT_EQUAL (ZMQ_EVENT_CONNECTED, event);
+    TEST_ASSERT_EQUAL_STRING (server_endpoint, client_remote_address);
+    TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, client_local_address,
+                                  strlen (expected_prefix_));
+    TEST_ASSERT_NOT_EQUAL (
+      0, strcmp (client_local_address, client_remote_address));
+
+    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
+                             client_local_address, client_remote_address);
+    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
+
+    //  This is the flow of server events
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING,
+                             client_remote_address, "");
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_ACCEPTED,
+                             client_remote_address, client_local_address);
+    expect_monitor_event_v2 (server_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
+                             client_remote_address, client_local_address);
+    event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
+    //  Sometimes the server sees the client closing before it gets closed.
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
+        event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
+    }
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
+    }
+    free (client_local_address);
+    free (client_remote_address);
+
+    //  Close down the sockets
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (client_mon);
+    test_context_socket_close_zero_linger (server_mon);
+}
+
+void test_monitor_versioned_basic_tcp_ipv4 ()
+{
+    static const char prefix[] = "tcp://127.0.0.1:";
+    test_monitor_versioned_basic (bind_loopback_ipv4, prefix);
+}
+
+void test_monitor_versioned_basic_tcp_ipv6 ()
+{
+    static const char prefix[] = "tcp://[::1]:";
+    test_monitor_versioned_basic (bind_loopback_ipv6, prefix);
+}
+#endif
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_monitor_invalid_protocol_fails);
+    RUN_TEST (test_monitor_basic);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
+    RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
+#endif
+
+    return UNITY_END ();
 }

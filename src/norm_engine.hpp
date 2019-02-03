@@ -47,7 +47,7 @@ class norm_engine_t : public io_object_t, public i_engine
 
     virtual void zap_msg_available (){};
 
-    virtual const char *get_endpoint () const;
+    virtual const endpoint_uri_pair_t &get_endpoint () const;
 
     // i_poll_events interface implementation.
     // (we only need in_event() for NormEvent notification)
@@ -149,6 +149,8 @@ class norm_engine_t : public io_object_t, public i_engine
         NormRxStreamState::List *list;
 
     }; // end class zmq::norm_engine_t::NormRxStreamState
+
+    const endpoint_uri_pair_t _empty_endpoint;
 
     session_base_t *zmq_session;
     options_t options;

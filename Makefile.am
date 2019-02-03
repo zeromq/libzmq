@@ -55,6 +55,8 @@ src_libzmq_la_SOURCES = \
 	src/dist.cpp \
 	src/dist.hpp \
 	src/encoder.hpp \
+	src/endpoint.hpp \
+	src/endpoint.cpp \
 	src/epoll.cpp \
 	src/epoll.hpp \
 	src/err.cpp \
@@ -539,7 +541,8 @@ tests_test_srcfd_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_srcfd_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_monitor_SOURCES = tests/test_monitor.cpp
-tests_test_monitor_LDADD = src/libzmq.la
+tests_test_monitor_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_monitor_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp tests/testutil_unity.hpp
 tests_test_router_mandatory_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -599,6 +602,7 @@ tests_test_security_plain_LDADD = src/libzmq.la
 
 tests_test_security_zap_SOURCES = \
 	tests/test_security_zap.cpp \
+	tests/testutil_monitoring.hpp \
 	tests/testutil_security.hpp \
 	tests/testutil.hpp
 tests_test_security_zap_LDADD = src/libzmq.la

@@ -43,6 +43,7 @@
 #include "err.hpp"
 #include "ip.hpp"
 #include "socket_base.hpp"
+#include "address.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -68,7 +69,8 @@ void zmq::tipc_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -76,20 +78,14 @@ void zmq::tipc_listener_t::in_event ()
     create_engine (fd);
 }
 
-int zmq::tipc_listener_t::get_address (std::string &addr_)
+std::string
+zmq::tipc_listener_t::get_socket_name (zmq::fd_t fd_,
+                                       socket_end_t socket_end_) const
 {
-    struct sockaddr_storage ss;
-    const zmq_socklen_t sl = get_socket_address (&ss);
-    if (!sl) {
-        addr_.clear ();
-        return -1;
-    }
-
-    tipc_address_t addr ((struct sockaddr *) &ss, sl);
-    return addr.to_string (addr_);
+    return zmq::get_socket_name<tipc_address_t> (fd_, socket_end_);
 }
 
-int zmq::tipc_listener_t::set_address (const char *addr_)
+int zmq::tipc_listener_t::set_local_address (const char *addr_)
 {
     // Convert str to address struct
     int rc = _address.resolve (addr_);
@@ -111,7 +107,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     // If random Port Identity, update address object to reflect the assigned address
     if (_address.is_random ()) {
         struct sockaddr_storage ss;
-        const zmq_socklen_t sl = get_socket_address (&ss);
+        const zmq_socklen_t sl = get_socket_address (_s, socket_end_local, &ss);
         if (sl == 0)
             goto error;
 
@@ -137,7 +133,8 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         goto error;
 
-    _socket->event_listening (_endpoint, _s);
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
     return 0;
 
 error:

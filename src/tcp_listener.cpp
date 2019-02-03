@@ -40,6 +40,7 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "socket_base.hpp"
+#include "address.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -72,7 +73,8 @@ void zmq::tcp_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -83,7 +85,8 @@ void zmq::tcp_listener_t::in_event ()
              options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
-        _socket->event_accept_failed (_endpoint, zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -91,34 +94,19 @@ void zmq::tcp_listener_t::in_event ()
     create_engine (fd);
 }
 
-int zmq::tcp_listener_t::get_address (std::string &addr_)
+std::string
+zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_,
+                                      socket_end_t socket_end_) const
 {
-    // Get the details of the TCP socket
-    struct sockaddr_storage ss;
-    const zmq_socklen_t sl = get_socket_address (&ss);
-    if (!sl) {
-        addr_.clear ();
-        return -1;
-    }
-
-    tcp_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
-    return addr.to_string (addr_);
+    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
 }
 
-int zmq::tcp_listener_t::set_address (const char *addr_)
+int zmq::tcp_listener_t::create_socket (const char *addr_)
 {
     //  Convert the textual address into address structure.
     int rc = _address.resolve (addr_, true, options.ipv6);
     if (rc != 0)
         return -1;
-
-    _address.to_string (_endpoint);
-
-    if (options.use_fd != -1) {
-        _s = options.use_fd;
-        _socket->event_listening (_endpoint, _s);
-        return 0;
-    }
 
     //  Create a listening socket.
     _s = open_socket (_address.family (), SOCK_STREAM, IPPROTO_TCP);
@@ -203,7 +191,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    _socket->event_listening (_endpoint, _s);
     return 0;
 
 error:
@@ -211,6 +198,24 @@ error:
     close ();
     errno = err;
     return -1;
+}
+
+int zmq::tcp_listener_t::set_local_address (const char *addr_)
+{
+    if (options.use_fd != -1) {
+        //  in this case, the addr_ passed is not used and ignored, since the
+        //  socket was already created by the application
+        _s = options.use_fd;
+    } else {
+        if (create_socket (addr_) == -1)
+            return -1;
+    }
+
+    _endpoint = get_socket_name (_s, socket_end_local);
+
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
+    return 0;
 }
 
 zmq::fd_t zmq::tcp_listener_t::accept ()

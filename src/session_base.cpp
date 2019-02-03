@@ -117,7 +117,7 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
 {
 }
 
-const char *zmq::session_base_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::session_base_t::get_endpoint () const
 {
     return _engine->get_endpoint ();
 }

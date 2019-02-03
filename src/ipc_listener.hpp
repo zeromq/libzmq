@@ -48,10 +48,10 @@ class ipc_listener_t : public stream_listener_base_t
                     const options_t &options_);
 
     //  Set address to listen on.
-    int set_address (const char *addr_);
+    int set_local_address (const char *addr_);
 
-    // Get the bound address for use with wildcards
-    int get_address (std::string &addr_);
+  protected:
+    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
 
   private:
     //  Handlers for I/O events.

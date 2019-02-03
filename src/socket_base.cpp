@@ -31,6 +31,7 @@
 #include <new>
 #include <string>
 #include <algorithm>
+#include <limits>
 
 #include "macros.hpp"
 
@@ -591,7 +592,10 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         //  Save last endpoint URI
         paddr->to_string (_last_endpoint);
 
-        add_endpoint (endpoint_uri_, static_cast<own_t *> (session), newpipe);
+        //  TODO shouldn't this use _last_endpoint instead of endpoint_uri_? as in the other cases
+        add_endpoint (endpoint_uri_pair_t (endpoint_uri_, std::string (),
+                                           endpoint_type_none),
+                      static_cast<own_t *> (session), newpipe);
 
         return 0;
     }
@@ -608,18 +612,19 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         tcp_listener_t *listener =
           new (std::nothrow) tcp_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        rc = listener->set_address (address.c_str ());
+        rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
-            event_bind_failed (address, zmq_errno ());
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
             return -1;
         }
 
         // Save last endpoint URI
-        listener->get_address (_last_endpoint);
+        listener->get_local_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
-                      NULL);
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
         options.connected = true;
         return 0;
     }
@@ -630,18 +635,19 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
+        int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
-            event_bind_failed (address, zmq_errno ());
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
             return -1;
         }
 
         // Save last endpoint URI
-        listener->get_address (_last_endpoint);
+        listener->get_local_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
-                      NULL);
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
         options.connected = true;
         return 0;
     }
@@ -651,17 +657,20 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         tipc_listener_t *listener =
           new (std::nothrow) tipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
+        int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
-            event_bind_failed (address, zmq_errno ());
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
             return -1;
         }
 
         // Save last endpoint URI
-        listener->get_address (_last_endpoint);
+        listener->get_local_address (_last_endpoint);
 
-        add_endpoint (endpoint_uri_, static_cast<own_t *> (listener), NULL);
+        // TODO shouldn't this use _last_endpoint as in the other cases?
+        add_endpoint (make_unconnected_bind_endpoint_pair (endpoint_uri_),
+                      static_cast<own_t *> (listener), NULL);
         options.connected = true;
         return 0;
     }
@@ -671,14 +680,14 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
+        int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
             event_bind_failed (address, zmq_errno ());
             return -1;
         }
 
-        listener->get_address (_last_endpoint);
+        listener->get_local_address (_last_endpoint);
 
         add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
                       NULL);
@@ -970,55 +979,56 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
     //  Save last endpoint URI
     paddr->to_string (_last_endpoint);
 
-    add_endpoint (endpoint_uri_, static_cast<own_t *> (session), newpipe);
+    add_endpoint (make_unconnected_connect_endpoint_pair (_last_endpoint),
+                  static_cast<own_t *> (session), newpipe);
     return 0;
 }
 
-std::string zmq::socket_base_t::resolve_tcp_addr (std::string endpoint_uri_,
-                                                  const char *tcp_address_)
+std::string
+zmq::socket_base_t::resolve_tcp_addr (std::string endpoint_uri_pair_,
+                                      const char *tcp_address_)
 {
     // The resolved last_endpoint is used as a key in the endpoints map.
     // The address passed by the user might not match in the TCP case due to
     // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
     // resolve before giving up. Given at this stage we don't know whether a
     // socket is connected or bound, try with both.
-    if (_endpoints.find (endpoint_uri_) == _endpoints.end ()) {
+    if (_endpoints.find (endpoint_uri_pair_) == _endpoints.end ()) {
         tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
         alloc_assert (tcp_addr);
         int rc = tcp_addr->resolve (tcp_address_, false, options.ipv6);
 
         if (rc == 0) {
-            tcp_addr->to_string (endpoint_uri_);
-            if (_endpoints.find (endpoint_uri_) == _endpoints.end ()) {
+            tcp_addr->to_string (endpoint_uri_pair_);
+            if (_endpoints.find (endpoint_uri_pair_) == _endpoints.end ()) {
                 rc = tcp_addr->resolve (tcp_address_, true, options.ipv6);
                 if (rc == 0) {
-                    tcp_addr->to_string (endpoint_uri_);
+                    tcp_addr->to_string (endpoint_uri_pair_);
                 }
             }
         }
         LIBZMQ_DELETE (tcp_addr);
     }
-    return endpoint_uri_;
+    return endpoint_uri_pair_;
 }
 
-void zmq::socket_base_t::add_endpoint (const char *endpoint_uri_,
-                                       own_t *endpoint_,
-                                       pipe_t *pipe_)
+void zmq::socket_base_t::add_endpoint (
+  const endpoint_uri_pair_t &endpoint_pair_, own_t *endpoint_, pipe_t *pipe_)
 {
     //  Activate the session. Make it a child of this socket.
     launch_child (endpoint_);
-    _endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (std::string (endpoint_uri_),
+    _endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (endpoint_pair_.identifier (),
                                           endpoint_pipe_t (endpoint_, pipe_));
 
     if (pipe_ != NULL)
-        pipe_->set_endpoint_uri (endpoint_uri_);
+        pipe_->set_endpoint_pair (endpoint_pair_);
 }
 
 int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -1059,7 +1069,7 @@ int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
         ? resolve_tcp_addr (endpoint_uri_str, uri_path.c_str ())
         : endpoint_uri_str;
 
-    //  Find the endpoints range (if any) corresponding to the endpoint_uri_ string.
+    //  Find the endpoints range (if any) corresponding to the endpoint_uri_pair_ string.
     const std::pair<endpoints_t::iterator, endpoints_t::iterator> range =
       _endpoints.equal_range (resolved_endpoint_uri);
     if (range.first == range.second) {
@@ -1081,7 +1091,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -1169,7 +1179,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
-    //  Check whether the library haven't been shut down yet.
+    //  Check whether the context hasn't been shut down yet.
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -1560,9 +1570,10 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
     _pipes.erase (pipe_);
 
     // Remove the pipe from _endpoints (set it to NULL).
-    if (!pipe_->get_endpoint_uri ().empty ()) {
+    const std::string &identifier = pipe_->get_endpoint_pair ().identifier ();
+    if (!identifier.empty ()) {
         std::pair<endpoints_t::iterator, endpoints_t::iterator> range;
-        range = _endpoints.equal_range (pipe_->get_endpoint_uri ());
+        range = _endpoints.equal_range (identifier);
 
         for (endpoints_t::iterator it = range.first; it != range.second; ++it) {
             if (it->second.second == pipe_) {
@@ -1586,12 +1597,20 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
     _rcvmore = (msg_->flags () & msg_t::more) != 0;
 }
 
-int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
+int zmq::socket_base_t::monitor (const char *endpoint_,
+                                 uint64_t events_,
+                                 int event_version_)
 {
     scoped_lock_t lock (_monitor_sync);
 
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
+        return -1;
+    }
+
+    //  Event version 1 supports only first 16 events.
+    if (unlikely (event_version_ == 1 && events_ >> 16 != 0)) {
+        errno = EINVAL;
         return -1;
     }
 
@@ -1617,6 +1636,7 @@ int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
     }
     //  Register events to monitor
     _monitor_events = events_;
+    options.monitor_event_version = event_version_;
     _monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
     if (_monitor_socket == NULL)
         return -1;
@@ -1635,137 +1655,174 @@ int zmq::socket_base_t::monitor (const char *endpoint_, int events_)
     return rc;
 }
 
-void zmq::socket_base_t::event_connected (const std::string &endpoint_uri_,
-                                          zmq::fd_t fd_)
+void zmq::socket_base_t::event_connected (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_, fd_, ZMQ_EVENT_CONNECTED);
+    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_CONNECTED);
 }
 
 void zmq::socket_base_t::event_connect_delayed (
-  const std::string &endpoint_uri_, int err_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_CONNECT_DELAYED);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_CONNECT_DELAYED);
 }
 
 void zmq::socket_base_t::event_connect_retried (
-  const std::string &endpoint_uri_, int interval_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int interval_)
 {
-    event (endpoint_uri_, interval_, ZMQ_EVENT_CONNECT_RETRIED);
+    event (endpoint_uri_pair_, interval_, ZMQ_EVENT_CONNECT_RETRIED);
 }
 
-void zmq::socket_base_t::event_listening (const std::string &endpoint_uri_,
-                                          zmq::fd_t fd_)
+void zmq::socket_base_t::event_listening (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_, fd_, ZMQ_EVENT_LISTENING);
+    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_LISTENING);
 }
 
-void zmq::socket_base_t::event_bind_failed (const std::string &endpoint_uri_,
-                                            int err_)
+void zmq::socket_base_t::event_bind_failed (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_BIND_FAILED);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_BIND_FAILED);
 }
 
-void zmq::socket_base_t::event_accepted (const std::string &endpoint_uri_,
-                                         zmq::fd_t fd_)
+void zmq::socket_base_t::event_accepted (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_, fd_, ZMQ_EVENT_ACCEPTED);
+    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_ACCEPTED);
 }
 
-void zmq::socket_base_t::event_accept_failed (const std::string &endpoint_uri_,
-                                              int err_)
+void zmq::socket_base_t::event_accept_failed (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_ACCEPT_FAILED);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_ACCEPT_FAILED);
 }
 
-void zmq::socket_base_t::event_closed (const std::string &endpoint_uri_,
-                                       zmq::fd_t fd_)
+void zmq::socket_base_t::event_closed (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_, fd_, ZMQ_EVENT_CLOSED);
+    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_CLOSED);
 }
 
-void zmq::socket_base_t::event_close_failed (const std::string &endpoint_uri_,
-                                             int err_)
+void zmq::socket_base_t::event_close_failed (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_CLOSE_FAILED);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_CLOSE_FAILED);
 }
 
-void zmq::socket_base_t::event_disconnected (const std::string &endpoint_uri_,
-                                             zmq::fd_t fd_)
+void zmq::socket_base_t::event_disconnected (
+  const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_, fd_, ZMQ_EVENT_DISCONNECTED);
+    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_DISCONNECTED);
 }
 
 void zmq::socket_base_t::event_handshake_failed_no_detail (
-  const std::string &endpoint_uri_, int err_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_protocol (
-  const std::string &endpoint_uri_, int err_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_auth (
-  const std::string &endpoint_uri_, int err_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
 }
 
 void zmq::socket_base_t::event_handshake_succeeded (
-  const std::string &endpoint_uri_, int err_)
+  const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 
-void zmq::socket_base_t::event (const std::string &endpoint_uri_,
-                                intptr_t value_,
-                                int type_)
+void zmq::socket_base_t::event (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                                uint64_t value_,
+                                uint64_t type_)
 {
     scoped_lock_t lock (_monitor_sync);
     if (_monitor_events & type_) {
-        monitor_event (type_, value_, endpoint_uri_);
+        monitor_event (type_, value_, endpoint_uri_pair_);
     }
 }
 
 //  Send a monitor event
-void zmq::socket_base_t::monitor_event (int event_,
-                                        intptr_t value_,
-                                        const std::string &endpoint_uri_) const
+void zmq::socket_base_t::monitor_event (
+  uint64_t event_,
+  uint64_t value_,
+  const endpoint_uri_pair_t &endpoint_uri_pair_) const
 {
     // this is a private method which is only called from
-    // contexts where the mutex has been locked before
+    // contexts where the _monitor_sync mutex has been locked before
 
     if (_monitor_socket) {
-        //  Send event in first frame
-        const uint16_t event = static_cast<uint16_t> (event_);
-        const uint32_t value = static_cast<uint32_t> (value_);
         zmq_msg_t msg;
-        zmq_msg_init_size (&msg, sizeof (event) + sizeof (value));
-        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
-        //  Avoid dereferencing uint32_t on unaligned address
-        memcpy (data + 0, &event, sizeof (event));
-        memcpy (data + sizeof (event), &value, sizeof (value));
-        zmq_sendmsg (_monitor_socket, &msg, ZMQ_SNDMORE);
 
-        //  Send address in second frame
-        zmq_msg_init_size (&msg, endpoint_uri_.size ());
-        memcpy (zmq_msg_data (&msg), endpoint_uri_.c_str (),
-                endpoint_uri_.size ());
-        zmq_sendmsg (_monitor_socket, &msg, 0);
+        switch (options.monitor_event_version) {
+            case 1: {
+                //  The API should not allow to activate unsupported events
+                zmq_assert (event_ <= std::numeric_limits<uint16_t>::max ());
+                zmq_assert (value_ <= std::numeric_limits<uint32_t>::max ());
+
+                //  Send event and value in first frame
+                const uint16_t event = static_cast<uint16_t> (event_);
+                const uint32_t value = static_cast<uint32_t> (value_);
+                zmq_msg_init_size (&msg, sizeof (event) + sizeof (value));
+                uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
+                //  Avoid dereferencing uint32_t on unaligned address
+                memcpy (data + 0, &event, sizeof (event));
+                memcpy (data + sizeof (event), &value, sizeof (value));
+                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+
+                const std::string &endpoint_uri =
+                  endpoint_uri_pair_.identifier ();
+
+                //  Send address in second frame
+                zmq_msg_init_size (&msg, endpoint_uri.size ());
+                memcpy (zmq_msg_data (&msg), endpoint_uri.c_str (),
+                        endpoint_uri.size ());
+                zmq_msg_send (&msg, _monitor_socket, 0);
+            } break;
+            case 2: {
+                //  Send event in first frame (64bit unsigned)
+                zmq_msg_init_size (&msg, sizeof event_);
+                memcpy (zmq_msg_data (&msg), &event_, sizeof event_);
+                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+
+                //  Send value in second frame (64bit unsigned)
+                zmq_msg_init_size (&msg, sizeof value_);
+                memcpy (zmq_msg_data (&msg), &value_, sizeof value_);
+                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+
+                //  Send local endpoint URI in third frame (string)
+                zmq_msg_init_size (&msg, endpoint_uri_pair_.local.size ());
+                memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.local.c_str (),
+                        endpoint_uri_pair_.local.size ());
+                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+
+                //  Send remote endpoint URI in fourth frame (string)
+                zmq_msg_init_size (&msg, endpoint_uri_pair_.remote.size ());
+                memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.remote.c_str (),
+                        endpoint_uri_pair_.remote.size ());
+                zmq_msg_send (&msg, _monitor_socket, 0);
+            } break;
+        }
     }
 }
 
 void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
 {
     // this is a private method which is only called from
-    // contexts where the mutex has been locked before
+    // contexts where the _monitor_sync mutex has been locked before
 
     if (_monitor_socket) {
         if ((_monitor_events & ZMQ_EVENT_MONITOR_STOPPED)
             && send_monitor_stopped_event_)
-            monitor_event (ZMQ_EVENT_MONITOR_STOPPED, 0, "");
+            monitor_event (ZMQ_EVENT_MONITOR_STOPPED, 0,
+                           endpoint_uri_pair_t ());
         zmq_close (_monitor_socket);
         _monitor_socket = NULL;
         _monitor_events = 0;

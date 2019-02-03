@@ -130,7 +130,7 @@ int zmq::tipc_address_t::resolve (const char *name)
     return EINVAL;
 }
 
-int zmq::tipc_address_t::to_string (std::string &addr_)
+int zmq::tipc_address_t::to_string (std::string &addr_) const
 {
     if (address.family != AF_TIPC) {
         addr_.clear ();

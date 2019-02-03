@@ -36,18 +36,12 @@
 #include "own.hpp"
 #include "stdint.hpp"
 #include "io_object.hpp"
-#include "tipc_address.hpp"
+#include "address.hpp"
 
 namespace zmq
 {
 class io_thread_t;
 class socket_base_t;
-
-#if defined(ZMQ_HAVE_HPUX) || defined(ZMQ_HAVE_VXWORKS)
-typedef int zmq_socklen_t;
-#else
-typedef socklen_t zmq_socklen_t;
-#endif
 
 class stream_listener_base_t : public own_t, public io_object_t
 {
@@ -57,8 +51,12 @@ class stream_listener_base_t : public own_t, public io_object_t
                             const options_t &options_);
     ~stream_listener_base_t ();
 
+    // Get the bound address for use with wildcards
+    int get_local_address (std::string &addr_) const;
+
   protected:
-    zmq_socklen_t get_socket_address (sockaddr_storage *ss_) const;
+    virtual std::string get_socket_name (fd_t fd_,
+                                         socket_end_t socket_end_) const = 0;
 
   private:
     //  Handlers for incoming commands.

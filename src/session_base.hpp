@@ -92,7 +92,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     int write_zap_msg (msg_t *msg_);
 
     socket_base_t *get_socket ();
-    const char *get_endpoint () const;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
   protected:
     session_base_t (zmq::io_thread_t *io_thread_,

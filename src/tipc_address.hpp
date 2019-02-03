@@ -55,7 +55,7 @@ class tipc_address_t
     int resolve (const char *name);
 
     //  The opposite to resolve()
-    int to_string (std::string &addr_);
+    int to_string (std::string &addr_) const;
 
     // Handling different TIPC address types
     bool is_service () const;

@@ -639,6 +639,7 @@ set(cxx-sources
   devpoll.cpp
   dgram.cpp
   dist.cpp
+  endpoint.cpp
   epoll.cpp
   err.cpp
   fq.cpp
@@ -657,6 +658,7 @@ set(cxx-sources
   metadata.cpp
   msg.cpp
   mtrie.cpp
+  norm_engine.cpp
   object.cpp
   options.cpp
   own.cpp
@@ -745,6 +747,7 @@ set(cxx-sources
   dish.hpp
   dist.hpp
   encoder.hpp
+  endpoint.hpp
   epoll.hpp
   err.hpp
   fd.hpp

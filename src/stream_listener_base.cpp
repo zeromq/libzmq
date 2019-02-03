@@ -51,15 +51,10 @@ zmq::stream_listener_base_t::~stream_listener_base_t ()
     zmq_assert (!_handle);
 }
 
-zmq::zmq_socklen_t
-zmq::stream_listener_base_t::get_socket_address (sockaddr_storage *ss_) const
+int zmq::stream_listener_base_t::get_local_address (std::string &addr_) const
 {
-    zmq_socklen_t sl = static_cast<zmq_socklen_t> (sizeof (*ss_));
-
-    const int rc =
-      getsockname (_s, reinterpret_cast<struct sockaddr *> (ss_), &sl);
-
-    return rc != 0 ? 0 : sl;
+    addr_ = get_socket_name (_s, socket_end_local);
+    return addr_.empty () ? -1 : 0;
 }
 
 void zmq::stream_listener_base_t::process_plug ()
@@ -89,7 +84,7 @@ int zmq::stream_listener_base_t::close ()
     const int rc = ::close (_s);
     errno_assert (rc == 0);
 #endif
-    _socket->event_closed (_endpoint, _s);
+    _socket->event_closed (make_unconnected_bind_endpoint_pair (_endpoint), _s);
     _s = retired_fd;
 
     return 0;
@@ -97,8 +92,12 @@ int zmq::stream_listener_base_t::close ()
 
 void zmq::stream_listener_base_t::create_engine (fd_t fd)
 {
+    const endpoint_uri_pair_t endpoint_pair (
+      get_socket_name (fd, socket_end_local),
+      get_socket_name (fd, socket_end_remote), endpoint_type_bind);
+
     stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, _endpoint);
+      new (std::nothrow) stream_engine_t (fd, options, endpoint_pair);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -113,5 +112,6 @@ void zmq::stream_listener_base_t::create_engine (fd_t fd)
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    _socket->event_accepted (_endpoint, fd);
+
+    _socket->event_accepted (endpoint_pair, fd);
 }
