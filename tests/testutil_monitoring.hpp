@@ -190,7 +190,9 @@ int expect_monitor_event_multiple (void *server_mon_,
     return count_of_expected_events;
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
+  || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
+      && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
 static int64_t get_monitor_event_internal_v2 (void *monitor_,
                                               uint64_t *value_,
                                               char **local_address_,

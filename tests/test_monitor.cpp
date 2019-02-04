@@ -116,7 +116,8 @@ void test_monitor_basic ()
     test_context_socket_close_zero_linger (server_mon);
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2) || \
+    (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
 void test_monitor_versioned_basic (bind_function_t bind_function_,
                                    const char *expected_prefix_)
 {
@@ -240,7 +241,8 @@ int main ()
     RUN_TEST (test_monitor_invalid_protocol_fails);
     RUN_TEST (test_monitor_basic);
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2) || \
+    (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
     RUN_TEST (test_monitor_versioned_basic_ipc);
