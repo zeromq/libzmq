@@ -174,7 +174,7 @@ int zmq::tcp_connecter_t::open ()
 
     _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (_addr->resolved.tcp_addr);
-    _s = tcp_open_socket (_addr->address.c_str (), options,
+    _s = tcp_open_socket (_addr->address.c_str (), options, true,
                           _addr->resolved.tcp_addr);
     if (_s == retired_fd) {
         LIBZMQ_DELETE (_addr->resolved.tcp_addr);

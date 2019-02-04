@@ -215,49 +215,26 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (_s == retired_fd);
 
     //  Resolve the address
-    LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
-    _proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-    alloc_assert (_proxy_addr->resolved.tcp_addr);
+    if (_addr->resolved.tcp_addr != NULL) {
+        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+    }
 
-    int rc = _proxy_addr->resolved.tcp_addr->resolve (
-      _proxy_addr->address.c_str (), false, options.ipv6);
-    if (rc != 0) {
-        LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
+    _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+    alloc_assert (_addr->resolved.tcp_addr);
+    //  Automatic fallback to ipv4 is disabled here since this was the existing
+    //  behaviour, however I don't see a real reason for this. Maybe this can
+    //  be changed to true (and then the parameter can be removed entirely).
+    _s = tcp_open_socket (_addr->address.c_str (), options, false,
+                          _addr->resolved.tcp_addr);
+    if (_s == retired_fd) {
+        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
         return -1;
     }
-    zmq_assert (_proxy_addr->resolved.tcp_addr != NULL);
-    const tcp_address_t *tcp_addr = _proxy_addr->resolved.tcp_addr;
+    zmq_assert (_addr->resolved.tcp_addr != NULL);
 
-    //  Create the socket.
-    _s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
-    if (_s == retired_fd)
-        return -1;
+    const tcp_address_t *const tcp_addr = _addr->resolved.tcp_addr;
 
-    //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
-    //  Switch it on in such cases.
-    if (tcp_addr->family () == AF_INET6)
-        enable_ipv4_mapping (_s);
-
-    // Set the IP Type-Of-Service priority for this socket
-    if (options.tos != 0)
-        set_ip_type_of_service (_s, options.tos);
-
-    // Bind the socket to a device if applicable
-    if (!options.bound_device.empty ())
-        bind_to_device (_s, options.bound_device);
-
-    // Set the socket to non-blocking mode so that we get async connect().
-    unblock_socket (_s);
-
-    //  Set the socket buffer limits for the underlying socket.
-    if (options.sndbuf >= 0)
-        set_tcp_send_buffer (_s, options.sndbuf);
-    if (options.rcvbuf >= 0)
-        set_tcp_receive_buffer (_s, options.rcvbuf);
-
-    // Set the IP Type-Of-Service for the underlying socket
-    if (options.tos != 0)
-        set_ip_type_of_service (_s, options.tos);
+    int rc;
 
     // Set a source address for conversations
     if (tcp_addr->has_src_addr ()) {

@@ -385,6 +385,7 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 
 zmq::fd_t zmq::tcp_open_socket (const char *address_,
                                 const zmq::options_t &options_,
+                                bool fallback_to_ipv4_,
                                 zmq::tcp_address_t *out_tcp_addr_)
 {
     //  Convert the textual address into address structure.
@@ -396,8 +397,9 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     fd_t s = open_socket (out_tcp_addr_->family (), SOCK_STREAM, IPPROTO_TCP);
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (s == retired_fd && out_tcp_addr_->family () == AF_INET6
-        && errno == EAFNOSUPPORT && options_.ipv6) {
+    if (s == retired_fd && fallback_to_ipv4_
+        && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
+        && options_.ipv6) {
         rc = out_tcp_addr_->resolve (address_, false, false);
         if (rc != 0) {
             return retired_fd;
