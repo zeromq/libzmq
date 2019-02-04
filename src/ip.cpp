@@ -237,7 +237,7 @@ int zmq::set_nosigpipe (fd_t s_)
     return 0;
 }
 
-void zmq::bind_to_device (fd_t s_, std::string &bound_device_)
+void zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 {
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
