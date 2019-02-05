@@ -41,8 +41,9 @@ Each event is sent in multiple frames. The first frame contains an event
 number (64 bits). The number and content of further frames depend on this
 event number.
 
-For all currently defined event types, the second frame contains an event
+Unless it is specified differently, the second frame contains an event
 value (64 bits) that provides additional data according to the event number.
+Some events might define additional value frames following the second one.
 The third and fourth frames contain strings that specifies the affected
 connection or endpoint. The third frame contains a string denoting the local
 endpoint, while the fourth frame contains a string denoting the remote endpoint.
@@ -62,7 +63,7 @@ to multiple endpoints using different transports.
 
 ----
 
-Supported events
+Supported events (v1)
 ----------------
 
 ZMQ_EVENT_CONNECTED
@@ -196,34 +197,61 @@ EXAMPLE
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
 
-static int
-get_monitor_event (void *monitor, int *value, char **address)
+static uint64_t
+get_monitor_event (void *monitor, uint64_t *value, char **local_address, char **remote_address)
 {
-    //  First frame in message contains event number and value
+    //  First frame in message contains event number
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
         return -1;              //  Interrupted, presumably
     assert (zmq_msg_more (&msg));
 
-    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-    uint16_t event = *(uint16_t *) (data);
-    if (value)
-        *value = *(uint32_t *) (data + 2);
+    uint64_t event;
+    memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+    zmq_msg_close (&msg);
 
-    //  Second frame in message contains event address
+    //  Second frame to Nth frame (depends on the event) in message
+    //  contains event value
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+        return -1;              //  Interrupted, presumably
+    assert (zmq_msg_more (&msg));
+
+    if (value_)
+        memcpy (value_, zmq_msg_data (&msg), sizeof *value_);
+    zmq_msg_close (&msg);
+
+    //  Third frame in message contains local address
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+        return -1;              //  Interrupted, presumably
+    assert (zmq_msg_more (&msg));
+
+    if (local_address_) {
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        size_t size = zmq_msg_size (&msg);
+        *local_address_ = (char *) malloc (size + 1);
+        memcpy (*local_address_, data, size);
+        (*local_address_)[size] = 0;
+    }
+    zmq_msg_close (&msg);
+
+    //  Fourth frame in message contains remote address
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
         return -1;              //  Interrupted, presumably
     assert (!zmq_msg_more (&msg));
 
-    if (address) {
+    if (remote_address_) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
         size_t size = zmq_msg_size (&msg);
-        *address = (char *) malloc (size + 1);
-        memcpy (*address, data, size);
-        (*address)[size] = 0;
+        *remote_address_ = (char *) malloc (size + 1);
+        memcpy (*remote_address_, data, size);
+        (*remote_address_)[size] = 0;
     }
+    zmq_msg_close (&msg);
+
     return event;
 }
 
@@ -239,14 +267,14 @@ int main (void)
     assert (server);
 
     //  Socket monitoring only works over inproc://
-    int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:9999", 0);
+    int rc = zmq_socket_monitor_versioned (client, "tcp://127.0.0.1:9999", 0, 2);
     assert (rc == -1);
     assert (zmq_errno () == EPROTONOSUPPORT);
 
     //  Monitor all events on client and server sockets
-    rc = zmq_socket_monitor (client, "inproc://monitor-client", ZMQ_EVENT_ALL);
+    rc = zmq_socket_monitor_versioned (client, "inproc://monitor-client", ZMQ_EVENT_ALL, 2);
     assert (rc == 0);
-    rc = zmq_socket_monitor (server, "inproc://monitor-server", ZMQ_EVENT_ALL);
+    rc = zmq_socket_monitor_versioned (server, "inproc://monitor-server", ZMQ_EVENT_ALL, 2);
     assert (rc == 0);
 
     //  Create two sockets for collecting monitor events
