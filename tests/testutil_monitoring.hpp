@@ -306,7 +306,7 @@ void expect_monitor_event_v2 (void *monitor_,
       expected_remote_address_ ? &remote_address : NULL);
     bool failed = false;
     if (event != expected_event_) {
-        fprintf (stderr, "Expected monitor event %lld, but received %lld\n",
+        fprintf (stderr, "Expected monitor event %llx, but received %llx\n",
                  (long long) expected_event_, (long long) event);
         failed = true;
     }
