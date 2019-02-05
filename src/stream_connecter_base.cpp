@@ -33,6 +33,12 @@
 #include "address.hpp"
 #include "random.hpp"
 
+#ifndef ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#else
+#include <winsock2.h>
+#endif
+
 zmq::stream_connecter_base_t::stream_connecter_base_t (
   zmq::io_thread_t *io_thread_,
   zmq::session_base_t *session_,
