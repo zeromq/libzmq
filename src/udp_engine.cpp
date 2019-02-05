@@ -198,7 +198,8 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         } else {
             /// XXX fixme ?
             _out_address = reinterpret_cast<sockaddr *> (&_raw_address);
-            _out_address_len = sizeof (sockaddr_in);
+            _out_address_len =
+              static_cast<zmq_socklen_t> (sizeof (sockaddr_in));
         }
 
         set_pollout (_handle);
@@ -437,11 +438,11 @@ void zmq::udp_engine_t::out_event ()
 
 #ifdef ZMQ_HAVE_WINDOWS
         rc = sendto (_fd, _out_buffer, static_cast<int> (size), 0, _out_address,
-                     static_cast<int> (_out_address_len));
+                     _out_address_len);
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
         rc = sendto (_fd, reinterpret_cast<caddr_t> (_out_buffer), size, 0,
-                     (sockaddr *) _out_address, (int) _out_address_len);
+                     (sockaddr *) _out_address, _out_address_len);
         errno_assert (rc != -1);
 #else
         rc = sendto (_fd, _out_buffer, size, 0, _out_address, _out_address_len);
