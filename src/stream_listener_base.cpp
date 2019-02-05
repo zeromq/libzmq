@@ -33,6 +33,12 @@
 #include "socket_base.hpp"
 #include "stream_engine.hpp"
 
+#ifndef ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#else
+#include <winsock2.h>
+#endif
+
 zmq::stream_listener_base_t::stream_listener_base_t (
   zmq::io_thread_t *io_thread_,
   zmq::socket_base_t *socket_,
