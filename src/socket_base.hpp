@@ -200,12 +200,14 @@ class socket_base_t : public own_t,
   private:
     // test if event should be sent and then dispatch it
     void event (const endpoint_uri_pair_t &endpoint_uri_pair_,
-                uint64_t value_,
+                uint64_t values_[],
+                uint64_t values_count_,
                 uint64_t type_);
 
     // Socket event data dispatch
     void monitor_event (uint64_t event_,
-                        uint64_t value_,
+                        uint64_t values_[],
+                        uint64_t values_count_,
                         const endpoint_uri_pair_t &endpoint_uri_pair_) const;
 
     // Monitor socket cleanup

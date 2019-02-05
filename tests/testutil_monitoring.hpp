@@ -210,10 +210,10 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     assert (sizeof (uint64_t) == zmq_msg_size (&msg));
 
     uint64_t event;
-    memcpy (&event, zmq_msg_data (&msg), sizeof event);
+    memcpy (&event, zmq_msg_data (&msg), sizeof (event));
     zmq_msg_close (&msg);
 
-    //  Second frame in message contains event value
+    //  Second frame in message contains the number of values
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
         assert (errno == EAGAIN);
@@ -222,9 +222,24 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     assert (zmq_msg_more (&msg));
     assert (sizeof (uint64_t) == zmq_msg_size (&msg));
 
-    if (value_)
-        memcpy (value_, zmq_msg_data (&msg), sizeof *value_);
+    uint64_t value_count;
+    memcpy (&value_count, zmq_msg_data (&msg), sizeof (value_count));
     zmq_msg_close (&msg);
+
+    for (uint64_t i = 0; i < value_count; ++i) {
+        //  Subsequent frames in message contain event values
+        zmq_msg_init (&msg);
+        if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
+            assert (errno == EAGAIN);
+            return -1; //  timed out or no message available
+        }
+        assert (zmq_msg_more (&msg));
+        assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+
+        if (value_ && value_ + i)
+            memcpy (value_ + i, zmq_msg_data (&msg), sizeof (*value_));
+        zmq_msg_close (&msg);
+    }
 
     //  Third frame in message contains local address
     zmq_msg_init (&msg);
