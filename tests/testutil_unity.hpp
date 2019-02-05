@@ -326,3 +326,23 @@ void bind_loopback_ipv6 (void *socket_, char *my_endpoint_, size_t len_)
 {
     bind_loopback (socket_, true, my_endpoint_, len_);
 }
+
+// utility function to create a random IPC endpoint, similar to what a ipc://*
+// wildcard binding does, but in a way it can be reused for multiple binds
+void make_random_ipc_endpoint (char *out_endpoint_)
+{
+    char random_file[16];
+    strcpy (random_file, "tmpXXXXXX");
+
+#ifdef HAVE_MKDTEMP
+    TEST_ASSERT_TRUE (mkdtemp (random_file));
+    strcat (random_file, "/ipc");
+#else
+    int fd = mkstemp (random_file);
+    TEST_ASSERT_TRUE (fd != -1);
+    close (fd);
+#endif
+
+    strcpy (out_endpoint_, "ipc://");
+    strcat (out_endpoint_, random_file);
+}

@@ -72,12 +72,10 @@ void test_reconnect_ivl_against_pair_socket (const char *my_endpoint_,
 void test_reconnect_ivl_ipc (void)
 {
     char my_endpoint[256];
-    size_t len = sizeof (my_endpoint);
+    make_random_ipc_endpoint (my_endpoint);
 
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, my_endpoint));
 
     test_reconnect_ivl_against_pair_socket (my_endpoint, sb);
     test_context_socket_close (sb);

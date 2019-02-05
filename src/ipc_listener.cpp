@@ -249,11 +249,17 @@ int zmq::ipc_listener_t::close ()
     _s = retired_fd;
 
     if (_has_file && options.use_fd == -1) {
-        rc = 0;
+        if (!_tmp_socket_dirname.empty ()) {
+            //  TODO review this behaviour, it is inconsistent with the use of
+            //  unlink in open since 656cdb959a7482c45db979c1d08ede585d12e315;
+            //  however, we must at least remove the file before removing the
+            //  directory, otherwise it will always fail
+            rc = ::unlink (_filename.c_str ());
 
-        if (rc == 0 && !_tmp_socket_dirname.empty ()) {
-            rc = ::rmdir (_tmp_socket_dirname.c_str ());
-            _tmp_socket_dirname.clear ();
+            if (rc == 0) {
+                rc = ::rmdir (_tmp_socket_dirname.c_str ());
+                _tmp_socket_dirname.clear ();
+            }
         }
 
         if (rc != 0) {
