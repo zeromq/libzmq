@@ -34,6 +34,9 @@
 
 namespace zmq
 {
+class tcp_address_t;
+struct options_t;
+
 //  Tunes the supplied TCP socket for the best latency.
 int tune_tcp_socket (fd_t s_);
 
@@ -68,6 +71,16 @@ int tcp_read (fd_t s_, void *data_, size_t size_);
 void tcp_assert_tuning_error (fd_t s_, int rc_);
 
 void tcp_tune_loopback_fast_path (const fd_t socket_);
+
+//  Resolves the given address_ string, opens a socket and sets socket options
+//  according to the passed options_. On success, returns the socket
+//  descriptor and assigns the resolved address to out_tcp_addr_. In case of
+//  an error, retired_fd is returned, and the value of out_tcp_addr_ is undefined.
+//  errno is set to an error code describing the cause of the error.
+fd_t tcp_open_socket (const char *address_,
+                      const options_t &options_,
+                      bool fallback_to_ipv4_,
+                      tcp_address_t *out_tcp_addr_);
 }
 
 #endif

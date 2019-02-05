@@ -32,6 +32,7 @@
 #include "err.hpp"
 #include "macros.hpp"
 #include "config.hpp"
+#include "address.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
@@ -145,39 +146,28 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 
 int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 {
-    int rc;
     struct sockaddr_storage ss;
 
-#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS                          \
-  || defined ZMQ_HAVE_VXWORKS
-    int addrlen = static_cast<int> (sizeof ss);
-#else
-    socklen_t addrlen = sizeof ss;
-#endif
-    rc = getpeername (sockfd_, reinterpret_cast<struct sockaddr *> (&ss),
-                      &addrlen);
+    zmq_socklen_t addrlen =
+      get_socket_address (sockfd_, socket_end_remote, &ss);
+
+    if (addrlen == 0) {
 #ifdef ZMQ_HAVE_WINDOWS
-    if (rc == SOCKET_ERROR) {
         const int last_error = WSAGetLastError ();
         wsa_assert (last_error != WSANOTINITIALISED && last_error != WSAEFAULT
                     && last_error != WSAEINPROGRESS
                     && last_error != WSAENOTSOCK);
-        return 0;
-    }
-#else
-    if (rc == -1) {
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
+#elif !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOTSOCK);
 #else
         errno_assert (errno != EFAULT && errno != ENOTSOCK);
 #endif
         return 0;
     }
-#endif
 
     char host[NI_MAXHOST];
-    rc = getnameinfo (reinterpret_cast<struct sockaddr *> (&ss), addrlen, host,
-                      sizeof host, NULL, 0, NI_NUMERICHOST);
+    int rc = getnameinfo (reinterpret_cast<struct sockaddr *> (&ss), addrlen,
+                          host, sizeof host, NULL, 0, NI_NUMERICHOST);
     if (rc != 0)
         return 0;
 
@@ -237,7 +227,7 @@ int zmq::set_nosigpipe (fd_t s_)
     return 0;
 }
 
-void zmq::bind_to_device (fd_t s_, std::string &bound_device_)
+void zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 {
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,

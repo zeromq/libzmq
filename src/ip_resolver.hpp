@@ -35,6 +35,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "address.hpp"
+
 namespace zmq
 {
 union ip_addr_t
@@ -48,7 +50,7 @@ union ip_addr_t
     uint16_t port () const;
 
     const struct sockaddr *as_sockaddr () const;
-    socklen_t sockaddr_len () const;
+    zmq_socklen_t sockaddr_len () const;
 
     void set_port (uint16_t);
 

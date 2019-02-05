@@ -32,6 +32,7 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "err.hpp"
+#include "options.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
@@ -380,4 +381,61 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 #else
     LIBZMQ_UNUSED (socket_);
 #endif
+}
+
+zmq::fd_t zmq::tcp_open_socket (const char *address_,
+                                const zmq::options_t &options_,
+                                bool fallback_to_ipv4_,
+                                zmq::tcp_address_t *out_tcp_addr_)
+{
+    //  Convert the textual address into address structure.
+    int rc = out_tcp_addr_->resolve (address_, true, options_.ipv6);
+    if (rc != 0)
+        return retired_fd;
+
+    //  Create the socket.
+    fd_t s = open_socket (out_tcp_addr_->family (), SOCK_STREAM, IPPROTO_TCP);
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (s == retired_fd && fallback_to_ipv4_
+        && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
+        && options_.ipv6) {
+        rc = out_tcp_addr_->resolve (address_, false, false);
+        if (rc != 0) {
+            return retired_fd;
+        }
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+
+    if (s == retired_fd) {
+        return retired_fd;
+    }
+
+    //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
+    //  Switch it on in such cases.
+    if (out_tcp_addr_->family () == AF_INET6)
+        enable_ipv4_mapping (s);
+
+    // Set the IP Type-Of-Service priority for this socket
+    if (options_.tos != 0)
+        set_ip_type_of_service (s, options_.tos);
+
+    // Set the socket to loopback fastpath if configured.
+    if (options_.loopback_fastpath)
+        tcp_tune_loopback_fast_path (s);
+
+    // Bind the socket to a device if applicable
+    if (!options_.bound_device.empty ())
+        bind_to_device (s, options_.bound_device);
+
+    // Set the socket to non-blocking mode so that we get async connect().
+    unblock_socket (s);
+
+    //  Set the socket buffer limits for the underlying socket.
+    if (options_.sndbuf >= 0)
+        set_tcp_send_buffer (s, options_.sndbuf);
+    if (options_.rcvbuf >= 0)
+        set_tcp_receive_buffer (s, options_.rcvbuf);
+
+    return s;
 }

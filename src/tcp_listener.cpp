@@ -103,54 +103,23 @@ zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_,
 
 int zmq::tcp_listener_t::create_socket (const char *addr_)
 {
-    //  Convert the textual address into address structure.
-    int rc = _address.resolve (addr_, true, options.ipv6);
-    if (rc != 0)
-        return -1;
-
-    //  Create a listening socket.
-    _s = open_socket (_address.family (), SOCK_STREAM, IPPROTO_TCP);
-
-    //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (_s == zmq::retired_fd && _address.family () == AF_INET6
-        && errno == EAFNOSUPPORT && options.ipv6) {
-        rc = _address.resolve (addr_, true, false);
-        if (rc != 0)
-            return rc;
-        _s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    }
-
+    _s = tcp_open_socket (addr_, options, true, &_address);
     if (_s == retired_fd) {
         return -1;
     }
+
+    //  TODO why is this only done for the listener?
     make_socket_noninheritable (_s);
-
-    //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
-    //  Switch it on in such cases.
-    if (_address.family () == AF_INET6)
-        enable_ipv4_mapping (_s);
-
-    // Set the IP Type-Of-Service for the underlying socket
-    if (options.tos != 0)
-        set_ip_type_of_service (_s, options.tos);
-
-    // Set the socket to loopback fastpath if configured.
-    if (options.loopback_fastpath)
-        tcp_tune_loopback_fast_path (_s);
-
-    // Bind the socket to a device if applicable
-    if (!options.bound_device.empty ())
-        bind_to_device (_s, options.bound_device);
-
-    //  Set the socket buffer limits for the underlying socket.
-    if (options.sndbuf >= 0)
-        set_tcp_send_buffer (_s, options.sndbuf);
-    if (options.rcvbuf >= 0)
-        set_tcp_receive_buffer (_s, options.rcvbuf);
 
     //  Allow reusing of the address.
     int flag = 1;
+    int rc;
 #ifdef ZMQ_HAVE_WINDOWS
+    //  TODO this was changed for Windows from SO_REUSEADDRE to
+    //  SE_EXCLUSIVEADDRUSE by 0ab65324195ad70205514d465b03d851a6de051c,
+    //  so the comment above is no longer correct; also, now the settings are
+    //  different between listener and connecter with a src address.
+    //  is this intentional?
     rc = setsockopt (_s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
                      reinterpret_cast<const char *> (&flag), sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
