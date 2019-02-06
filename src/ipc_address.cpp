@@ -36,7 +36,6 @@
 #include "err.hpp"
 
 #include <string>
-#include <sstream>
 
 zmq::ipc_address_t::ipc_address_t ()
 {
@@ -58,7 +57,8 @@ zmq::ipc_address_t::~ipc_address_t ()
 
 int zmq::ipc_address_t::resolve (const char *path_)
 {
-    if (strlen (path_) >= sizeof address.sun_path) {
+    const size_t path_len = strlen (path_);
+    if (path_len >= sizeof address.sun_path) {
         errno = ENAMETOOLONG;
         return -1;
     }
@@ -68,7 +68,7 @@ int zmq::ipc_address_t::resolve (const char *path_)
     }
 
     address.sun_family = AF_UNIX;
-    strcpy (address.sun_path, path_);
+    memcpy (address.sun_path, path_, path_len + 1);
     /* Abstract sockets start with '\0' */
     if (path_[0] == '@')
         *address.sun_path = '\0';
@@ -82,13 +82,24 @@ int zmq::ipc_address_t::to_string (std::string &addr_) const
         return -1;
     }
 
-    std::stringstream s;
-    s << "ipc://";
-    if (!address.sun_path[0] && address.sun_path[1])
-        s << "@" << address.sun_path + 1;
-    else
-        s << address.sun_path;
-    addr_ = s.str ();
+    const char prefix[] = "ipc://";
+    char buf[sizeof prefix + sizeof address.sun_path];
+    char *pos = buf;
+    memcpy (pos, prefix, sizeof prefix - 1);
+    pos += sizeof prefix - 1;
+    const char *src_pos = address.sun_path;
+    if (!address.sun_path[0] && address.sun_path[1]) {
+        *pos++ = '@';
+        src_pos++;
+    }
+    // TODO
+    // according to http://man7.org/linux/man-pages/man7/unix.7.html, NOTES
+    // section, address.sun_path might not always be null-terminated; instead,
+    // we must store the sa_len_ passed in the ctor to calculate the actual
+    // length
+    const size_t src_len = strlen (src_pos);
+    memcpy (pos, src_pos, src_len + 1);
+    addr_.assign (pos, buf, pos - buf + src_len);
     return 0;
 }
 
