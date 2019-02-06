@@ -94,7 +94,12 @@ void test_monitor_basic ()
         event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CONNECTED);
     expect_monitor_event (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-    expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+    event = get_monitor_event (client_mon, NULL, NULL);
+    if (event == ZMQ_EVENT_DISCONNECTED) {
+        expect_monitor_event (client_mon, ZMQ_EVENT_CONNECT_RETRIED);
+        expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+    } else
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
 
     //  This is the flow of server events
     expect_monitor_event (server_mon, ZMQ_EVENT_LISTENING);
@@ -181,7 +186,13 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
 
     expect_monitor_event_v2 (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
                              client_local_address, client_remote_address);
-    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
+    event = get_monitor_event_v2 (client_mon, NULL, NULL, NULL);
+    if (event == ZMQ_EVENT_DISCONNECTED) {
+        expect_monitor_event_v2 (client_mon, ZMQ_EVENT_CONNECT_RETRIED,
+                                 client_local_address, client_remote_address);
+        expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
+    } else
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
 
     //  This is the flow of server events
     expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING,
