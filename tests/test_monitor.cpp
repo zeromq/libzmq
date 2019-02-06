@@ -171,7 +171,7 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
         event = get_monitor_event_v2 (client_mon, NULL, &client_local_address,
                                       &client_remote_address);
     }
-    TEST_ASSERT_EQUAL (ZMQ_EVENT_CONNECTED, event);
+    TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_CONNECTED, event);
     TEST_ASSERT_EQUAL_STRING (server_endpoint, client_remote_address);
     TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, client_local_address,
                                   strlen (expected_prefix_));
@@ -192,11 +192,11 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
+        TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_CLOSED, event);
         event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
+        TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
     free (client_local_address);
     free (client_remote_address);
@@ -218,6 +218,18 @@ void test_monitor_versioned_basic_tcp_ipv6 ()
     static const char prefix[] = "tcp://[::1]:";
     test_monitor_versioned_basic (bind_loopback_ipv6, prefix);
 }
+
+void test_monitor_versioned_basic_ipc ()
+{
+    static const char prefix[] = "ipc://";
+    test_monitor_versioned_basic (bind_loopback_ipc, prefix);
+}
+
+void test_monitor_versioned_basic_tipc ()
+{
+    static const char prefix[] = "tipc://";
+    test_monitor_versioned_basic (bind_loopback_tipc, prefix);
+}
 #endif
 
 int main ()
@@ -231,6 +243,8 @@ int main ()
 #ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
+    RUN_TEST (test_monitor_versioned_basic_ipc);
+    RUN_TEST (test_monitor_versioned_basic_tipc);
 #endif
 
     return UNITY_END ();
