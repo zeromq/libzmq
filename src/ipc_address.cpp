@@ -42,7 +42,8 @@ zmq::ipc_address_t::ipc_address_t ()
     memset (&_address, 0, sizeof _address);
 }
 
-zmq::ipc_address_t::ipc_address_t (const sockaddr *sa_, socklen_t sa_len_)
+zmq::ipc_address_t::ipc_address_t (const sockaddr *sa_, socklen_t sa_len_) :
+    _addrlen (sa_len_)
 {
     zmq_assert (sa_ && sa_len_ > 0);
 
@@ -72,6 +73,8 @@ int zmq::ipc_address_t::resolve (const char *path_)
     /* Abstract sockets start with '\0' */
     if (path_[0] == '@')
         *_address.sun_path = '\0';
+
+    _addrlen = offsetof (sockaddr_un, sun_path) + path_len;
     return 0;
 }
 
@@ -92,14 +95,14 @@ int zmq::ipc_address_t::to_string (std::string &addr_) const
         *pos++ = '@';
         src_pos++;
     }
-    // TODO
     // according to http://man7.org/linux/man-pages/man7/unix.7.html, NOTES
-    // section, address.sun_path might not always be null-terminated; instead,
-    // we must store the sa_len_ passed in the ctor to calculate the actual
-    // length
-    const size_t src_len = strlen (src_pos);
-    memcpy (pos, src_pos, src_len + 1);
-    addr_.assign (pos, buf, pos - buf + src_len);
+    // section, address.sun_path might not always be null-terminated; therefore,
+    // we calculate the length based of addrlen
+    const size_t src_len =
+      strnlen (src_pos, _addrlen - offsetof (sockaddr_un, sun_path)
+                          - (src_pos - _address.sun_path));
+    memcpy (pos, src_pos, src_len);
+    addr_.assign (buf, pos - buf + src_len);
     return 0;
 }
 
@@ -110,10 +113,7 @@ const sockaddr *zmq::ipc_address_t::addr () const
 
 socklen_t zmq::ipc_address_t::addrlen () const
 {
-    if (!_address.sun_path[0] && _address.sun_path[1])
-        return static_cast<socklen_t> (strlen (_address.sun_path + 1))
-               + sizeof (sa_family_t) + 1;
-    return static_cast<socklen_t> (sizeof _address);
+    return _addrlen;
 }
 
 #endif
