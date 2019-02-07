@@ -227,6 +227,8 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     _s = tcp_open_socket (_addr->address.c_str (), options, false, false,
                           _addr->resolved.tcp_addr);
     if (_s == retired_fd) {
+        //  TODO we should emit some event in this case!
+
         LIBZMQ_DELETE (_addr->resolved.tcp_addr);
         return -1;
     }

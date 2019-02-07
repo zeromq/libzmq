@@ -177,6 +177,8 @@ int zmq::tcp_connecter_t::open ()
     _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
                           _addr->resolved.tcp_addr);
     if (_s == retired_fd) {
+        //  TODO we should emit some event in this case!
+
         LIBZMQ_DELETE (_addr->resolved.tcp_addr);
         return -1;
     }
