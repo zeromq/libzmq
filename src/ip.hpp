@@ -56,7 +56,7 @@ void set_ip_type_of_service (fd_t s_, int iptos_);
 int set_nosigpipe (fd_t s_);
 
 // Binds the underlying socket to the given device, eg. VRF or interface
-void bind_to_device (fd_t s_, const std::string &bound_device_);
+int bind_to_device (fd_t s_, const std::string &bound_device_);
 
 // Initialize network subsystem. May be called multiple times. Each call must be matched by a call to shutdown_network.
 bool initialize_network ();

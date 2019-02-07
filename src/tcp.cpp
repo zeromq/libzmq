@@ -40,6 +40,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <unistd.h>
 #ifdef ZMQ_HAVE_VXWORKS
 #include <sockLib.h>
 #endif
@@ -427,7 +428,8 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
 
     // Bind the socket to a device if applicable
     if (!options_.bound_device.empty ())
-        bind_to_device (s, options_.bound_device);
+        if (bind_to_device (s, options_.bound_device) == -1)
+            goto setsockopt_error;
 
     //  Set the socket buffer limits for the underlying socket.
     if (options_.sndbuf >= 0)
@@ -436,4 +438,14 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
         set_tcp_receive_buffer (s, options_.rcvbuf);
 
     return s;
+
+setsockopt_error:
+#ifdef ZMQ_HAVE_WINDOWS
+    rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    rc = ::close (s);
+    errno_assert (rc == 0);
+#endif
+    return retired_fd;
 }
