@@ -227,20 +227,31 @@ int zmq::set_nosigpipe (fd_t s_)
     return 0;
 }
 
-void zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
+int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 {
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
                          bound_device_.c_str (), bound_device_.length ());
 
 #ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
+    if (rc != SOCKET_ERROR)
+        return 0;
+    const int lastError = WSAGetLastError ();
+    errno = wsa_error_to_errno (lastError);
+    wsa_assert (lastError != WSAENOTSOCK);
+    return -1;
 #else
-    errno_assert (rc == 0);
+    if (rc == 0)
+        return 0;
+    errno_assert (errno != ENOTSOCK);
+    return -1;
 #endif
 #else
     LIBZMQ_UNUSED (s_);
     LIBZMQ_UNUSED (bound_device_);
+
+    errno = ENOTSUP;
+    return -1;
 #endif
 }
 
