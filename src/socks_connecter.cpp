@@ -232,6 +232,9 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     }
     zmq_assert (_addr->resolved.tcp_addr != NULL);
 
+    // Set the socket to non-blocking mode so that we get async connect().
+    unblock_socket (_s);
+
     const tcp_address_t *const tcp_addr = _addr->resolved.tcp_addr;
 
     int rc;

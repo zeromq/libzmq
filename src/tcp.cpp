@@ -429,9 +429,6 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     if (!options_.bound_device.empty ())
         bind_to_device (s, options_.bound_device);
 
-    // Set the socket to non-blocking mode so that we get async connect().
-    unblock_socket (s);
-
     //  Set the socket buffer limits for the underlying socket.
     if (options_.sndbuf >= 0)
         set_tcp_send_buffer (s, options_.sndbuf);
