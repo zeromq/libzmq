@@ -171,7 +171,7 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
         event = get_monitor_event_v2 (client_mon, NULL, &client_local_address,
                                       &client_remote_address);
     }
-    TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_CONNECTED, event);
+    TEST_ASSERT_EQUAL (ZMQ_EVENT_CONNECTED, event);
     TEST_ASSERT_EQUAL_STRING (server_endpoint, client_remote_address);
     TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, client_local_address,
                                   strlen (expected_prefix_));
@@ -192,11 +192,11 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_CLOSED, event);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CLOSED, event);
         event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
-        TEST_ASSERT_EQUAL_HEX64 (ZMQ_EVENT_MONITOR_STOPPED, event);
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
     free (client_local_address);
     free (client_remote_address);
