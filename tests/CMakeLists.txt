@@ -154,7 +154,7 @@ add_library(unity STATIC
   "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity_internals.h")
 set_target_properties(unity PROPERTIES
   PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.h")
-target_compile_definitions(unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EXCLUDE_FLOAT")
+target_compile_definitions(unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EXCLUDE_FLOAT" "UNITY_SUPPORT_64")
 target_include_directories(unity PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
 
 if(MSVC_VERSION LESS 1700)
