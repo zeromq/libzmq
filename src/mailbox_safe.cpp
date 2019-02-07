@@ -104,8 +104,7 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
     if (timeout_ == 0) {
         _sync->unlock ();
         _sync->lock ();
-    } 
-    else {
+    } else {
         //  Wait for signal from the command sender.
         int rc = _cond_var.wait (_sync, timeout_);
         if (rc == -1) {
