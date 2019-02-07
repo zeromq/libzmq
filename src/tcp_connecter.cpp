@@ -174,13 +174,18 @@ int zmq::tcp_connecter_t::open ()
 
     _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (_addr->resolved.tcp_addr);
-    _s = tcp_open_socket (_addr->address.c_str (), options, true,
+    _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
                           _addr->resolved.tcp_addr);
     if (_s == retired_fd) {
+        //  TODO we should emit some event in this case!
+
         LIBZMQ_DELETE (_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (_addr->resolved.tcp_addr != NULL);
+
+    // Set the socket to non-blocking mode so that we get async connect().
+    unblock_socket (_s);
 
     const tcp_address_t *const tcp_addr = _addr->resolved.tcp_addr;
 

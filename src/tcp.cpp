@@ -385,11 +385,12 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 
 zmq::fd_t zmq::tcp_open_socket (const char *address_,
                                 const zmq::options_t &options_,
+                                bool local_,
                                 bool fallback_to_ipv4_,
                                 zmq::tcp_address_t *out_tcp_addr_)
 {
     //  Convert the textual address into address structure.
-    int rc = out_tcp_addr_->resolve (address_, true, options_.ipv6);
+    int rc = out_tcp_addr_->resolve (address_, local_, options_.ipv6);
     if (rc != 0)
         return retired_fd;
 
@@ -400,7 +401,7 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     if (s == retired_fd && fallback_to_ipv4_
         && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
         && options_.ipv6) {
-        rc = out_tcp_addr_->resolve (address_, false, false);
+        rc = out_tcp_addr_->resolve (address_, local_, false);
         if (rc != 0) {
             return retired_fd;
         }
@@ -427,9 +428,6 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     // Bind the socket to a device if applicable
     if (!options_.bound_device.empty ())
         bind_to_device (s, options_.bound_device);
-
-    // Set the socket to non-blocking mode so that we get async connect().
-    unblock_socket (s);
 
     //  Set the socket buffer limits for the underlying socket.
     if (options_.sndbuf >= 0)

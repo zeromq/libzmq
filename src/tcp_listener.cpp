@@ -103,7 +103,7 @@ zmq::tcp_listener_t::get_socket_name (zmq::fd_t fd_,
 
 int zmq::tcp_listener_t::create_socket (const char *addr_)
 {
-    _s = tcp_open_socket (addr_, options, true, &_address);
+    _s = tcp_open_socket (addr_, options, true, true, &_address);
     if (_s == retired_fd) {
         return -1;
     }

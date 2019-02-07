@@ -347,6 +347,7 @@ void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
     test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
 }
 
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
 // utility function to create a random IPC endpoint, similar to what a ipc://*
 // wildcard binding does, but in a way it can be reused for multiple binds
 void make_random_ipc_endpoint (char *out_endpoint_)
@@ -366,3 +367,4 @@ void make_random_ipc_endpoint (char *out_endpoint_)
     strcpy (out_endpoint_, "ipc://");
     strcat (out_endpoint_, random_file);
 }
+#endif
