@@ -79,6 +79,7 @@ void tcp_tune_loopback_fast_path (const fd_t socket_);
 //  errno is set to an error code describing the cause of the error.
 fd_t tcp_open_socket (const char *address_,
                       const options_t &options_,
+                      bool local_,
                       bool fallback_to_ipv4_,
                       tcp_address_t *out_tcp_addr_);
 }

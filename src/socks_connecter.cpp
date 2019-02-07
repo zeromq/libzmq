@@ -224,7 +224,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     //  Automatic fallback to ipv4 is disabled here since this was the existing
     //  behaviour, however I don't see a real reason for this. Maybe this can
     //  be changed to true (and then the parameter can be removed entirely).
-    _s = tcp_open_socket (_addr->address.c_str (), options, false,
+    _s = tcp_open_socket (_addr->address.c_str (), options, false, false,
                           _addr->resolved.tcp_addr);
     if (_s == retired_fd) {
         LIBZMQ_DELETE (_addr->resolved.tcp_addr);
