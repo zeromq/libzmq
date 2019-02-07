@@ -79,6 +79,16 @@ if(ZMQ_HAVE_CURVE)
     test_security_curve)
 endif()
 
+find_program(CAPSH_PROGRAM NAMES capsh)
+
+if (CAPSH_PROGRAM)
+    list(APPEND tests
+        test_pair_tcp_cap_net_admin
+        )
+else()
+    message(STATUS "capsh not found, skipping tests that require CAP_NET_ADMIN")
+endif()
+
 if(NOT WIN32)
   list(APPEND tests
     test_ipc_wildcard
@@ -208,7 +218,11 @@ foreach(test ${tests})
   if(WIN32)
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
-    add_test(NAME ${test} COMMAND ${test})
+    if (${test} MATCHES "_cap_net_admin")
+      add_test(NAME ${test} COMMAND sh -c "sudo ${CAPSH_PROGRAM} --caps=cap_net_admin+eip -- -c $<TARGET_FILE:${test}>")
+    else()
+      add_test(NAME ${test} COMMAND ${test})
+    endif()
   endif()
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
   set_tests_properties(${test} PROPERTIES SKIP_RETURN_CODE 77)

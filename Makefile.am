@@ -1075,8 +1075,9 @@ EXTRA_DIST = \
 	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \
+        tests/test_pair_tcp_cap_net_admin.cpp \
 	unittests/CMakeLists.txt \
-	tools/curve_keygen.cpp
+        tools/curve_keygen.cpp
 
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4 \
