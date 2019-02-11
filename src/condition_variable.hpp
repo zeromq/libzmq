@@ -83,7 +83,6 @@ class condition_variable_t
 
 #if _SUPPORT_CONDITION_VARIABLE || defined(ZMQ_HAVE_WINDOWS_TARGET_XP)
 #include <condition_variable>
-#include <mutex>
 #endif
 
 namespace zmq
@@ -132,32 +131,28 @@ class condition_variable_t
 
     inline int wait (mutex_t *mutex_, int timeout_)
     {
-        std::unique_lock<std::mutex> lck (_mtx); // lock mtx
-        mutex_->unlock ();                       // unlock mutex_
+        // this assumes that the mutex mutex_ has been locked by the caller
         int res = 0;
         if (timeout_ == -1) {
             _cv.wait (
-              lck); // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
-        } else if (_cv.wait_for (lck, std::chrono::milliseconds (timeout_))
+              *mutex_); // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
+        } else if (_cv.wait_for (*mutex_, std::chrono::milliseconds (timeout_))
                    == std::cv_status::timeout) {
             // time expired
             errno = EAGAIN;
             res = -1;
         }
-        lck.unlock ();   // unlock mtx
-        mutex_->lock (); // lock mutex_
         return res;
     }
 
     inline void broadcast ()
     {
-        std::unique_lock<std::mutex> lck (_mtx); // lock mtx
+        // this assumes that the mutex associated with _cv has been locked by the caller
         _cv.notify_all ();
     }
 
   private:
-    std::condition_variable _cv;
-    std::mutex _mtx;
+    std::condition_variable_any _cv;
 
     //  Disable copy construction and assignment.
     condition_variable_t (const condition_variable_t &);
