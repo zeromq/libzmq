@@ -157,6 +157,11 @@ class socket_base_t : public own_t,
     virtual int get_peer_state (const void *routing_id_,
                                 size_t routing_id_size_) const;
 
+    //  Request for pipes statistics - will generate a ZMQ_EVENT_PIPES_STATS
+    //  after gathering the data asynchronously. Requires event monitoring to
+    //  be enabled.
+    int query_pipes_stats ();
+
   protected:
     socket_base_t (zmq::ctx_t *parent_,
                    uint32_t tid_,
@@ -200,12 +205,14 @@ class socket_base_t : public own_t,
   private:
     // test if event should be sent and then dispatch it
     void event (const endpoint_uri_pair_t &endpoint_uri_pair_,
-                uint64_t value_,
+                uint64_t values_[],
+                uint64_t values_count_,
                 uint64_t type_);
 
     // Socket event data dispatch
     void monitor_event (uint64_t event_,
-                        uint64_t value_,
+                        uint64_t values_[],
+                        uint64_t values_count_,
                         const endpoint_uri_pair_t &endpoint_uri_pair_) const;
 
     // Monitor socket cleanup
@@ -276,6 +283,9 @@ class socket_base_t : public own_t,
     //  Handlers for incoming commands.
     void process_stop ();
     void process_bind (zmq::pipe_t *pipe_);
+    void process_pipe_stats_publish (uint64_t outbound_queue_count_,
+                                     uint64_t inbound_queue_count_,
+                                     endpoint_uri_pair_t *endpoint_pair_);
     void process_term (int linger_);
     void process_term_endpoint (std::string *endpoint_);
 

@@ -190,7 +190,9 @@ int expect_monitor_event_multiple (void *server_mon_,
     return count_of_expected_events;
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
+  || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
+      && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
 static int64_t get_monitor_event_internal_v2 (void *monitor_,
                                               uint64_t *value_,
                                               char **local_address_,
@@ -208,9 +210,10 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     assert (sizeof (uint64_t) == zmq_msg_size (&msg));
 
     uint64_t event;
-    memcpy (&event, zmq_msg_data (&msg), sizeof event);
+    memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+    zmq_msg_close (&msg);
 
-    //  Second frame in message contains event value
+    //  Second frame in message contains the number of values
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
         assert (errno == EAGAIN);
@@ -219,10 +222,26 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     assert (zmq_msg_more (&msg));
     assert (sizeof (uint64_t) == zmq_msg_size (&msg));
 
-    if (value_)
-        memcpy (value_, zmq_msg_data (&msg), sizeof *value_);
+    uint64_t value_count;
+    memcpy (&value_count, zmq_msg_data (&msg), sizeof (value_count));
+    zmq_msg_close (&msg);
 
-    //  Third frame in message contains local address
+    for (uint64_t i = 0; i < value_count; ++i) {
+        //  Subsequent frames in message contain event values
+        zmq_msg_init (&msg);
+        if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
+            assert (errno == EAGAIN);
+            return -1; //  timed out or no message available
+        }
+        assert (zmq_msg_more (&msg));
+        assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+
+        if (value_ && value_ + i)
+            memcpy (value_ + i, zmq_msg_data (&msg), sizeof (*value_));
+        zmq_msg_close (&msg);
+    }
+
+    //  Second-to-last frame in message contains local address
     zmq_msg_init (&msg);
     int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
     assert (res != -1);
@@ -235,8 +254,9 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         memcpy (*local_address_, data, size);
         (*local_address_)[size] = 0;
     }
+    zmq_msg_close (&msg);
 
-    //  Fourth and last frame in message contains remote address
+    //  Last frame in message contains remote address
     zmq_msg_init (&msg);
     res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
     assert (res != -1);
@@ -249,6 +269,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         memcpy (*remote_address_, data, size);
         (*remote_address_)[size] = 0;
     }
+    zmq_msg_close (&msg);
     return event;
 }
 

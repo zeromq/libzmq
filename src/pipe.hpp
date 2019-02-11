@@ -145,6 +145,8 @@ class pipe_t : public object_t,
     void set_endpoint_pair (endpoint_uri_pair_t endpoint_pair_);
     const endpoint_uri_pair_t &get_endpoint_pair () const;
 
+    void send_stats_to_peer (own_t *socket_base_);
+
   private:
     //  Type of the underlying lock-free pipe.
     typedef ypipe_base_t<msg_t> upipe_t;
@@ -153,6 +155,9 @@ class pipe_t : public object_t,
     void process_activate_read ();
     void process_activate_write (uint64_t msgs_read_);
     void process_hiccup (void *pipe_);
+    void process_pipe_peer_stats (uint64_t queue_count_,
+                                  own_t *socket_base_,
+                                  endpoint_uri_pair_t *endpoint_pair_);
     void process_pipe_term ();
     void process_pipe_term_ack ();
     void process_pipe_hwm (int inhwm_, int outhwm_);

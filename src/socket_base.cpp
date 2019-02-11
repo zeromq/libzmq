@@ -1421,6 +1421,45 @@ void zmq::socket_base_t::process_term_endpoint (std::string *endpoint_)
     delete endpoint_;
 }
 
+void zmq::socket_base_t::process_pipe_stats_publish (
+  uint64_t outbound_queue_count_,
+  uint64_t inbound_queue_count_,
+  endpoint_uri_pair_t *endpoint_pair_)
+{
+    uint64_t values[2] = {outbound_queue_count_, inbound_queue_count_};
+    event (*endpoint_pair_, values, 2, ZMQ_EVENT_PIPES_STATS);
+    delete endpoint_pair_;
+}
+
+/*
+ * There are 2 pipes per connection, and the inbound one _must_ be queried from
+ * the I/O thread. So ask the outbound pipe, in the application thread, to send
+ * a message (pipe_peer_stats) to its peer. The message will carry the outbound
+ * pipe stats and endpoint, and the reference to the socket object.
+ * The inbound pipe on the I/O thread will then add its own stats and endpoint,
+ * and write back a message to the socket object (pipe_stats_publish) which
+ * will raise an event with the data.
+ */
+int zmq::socket_base_t::query_pipes_stats ()
+{
+    {
+        scoped_lock_t lock (_monitor_sync);
+        if (!(_monitor_events & ZMQ_EVENT_PIPES_STATS)) {
+            errno = EINVAL;
+            return -1;
+        }
+    }
+    if (_pipes.size () == 0) {
+        errno = EAGAIN;
+        return -1;
+    }
+    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+        _pipes[i]->send_stats_to_peer (this);
+    }
+
+    return 0;
+}
+
 void zmq::socket_base_t::update_pipe_options (int option_)
 {
     if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) {
@@ -1658,101 +1697,117 @@ int zmq::socket_base_t::monitor (const char *endpoint_,
 void zmq::socket_base_t::event_connected (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_CONNECTED);
+    uint64_t values[1] = {(uint64_t) fd_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECTED);
 }
 
 void zmq::socket_base_t::event_connect_delayed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_CONNECT_DELAYED);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECT_DELAYED);
 }
 
 void zmq::socket_base_t::event_connect_retried (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int interval_)
 {
-    event (endpoint_uri_pair_, interval_, ZMQ_EVENT_CONNECT_RETRIED);
+    uint64_t values[1] = {(uint64_t) interval_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECT_RETRIED);
 }
 
 void zmq::socket_base_t::event_listening (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_LISTENING);
+    uint64_t values[1] = {(uint64_t) fd_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_LISTENING);
 }
 
 void zmq::socket_base_t::event_bind_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_BIND_FAILED);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_BIND_FAILED);
 }
 
 void zmq::socket_base_t::event_accepted (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_ACCEPTED);
+    uint64_t values[1] = {(uint64_t) fd_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_ACCEPTED);
 }
 
 void zmq::socket_base_t::event_accept_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_ACCEPT_FAILED);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_ACCEPT_FAILED);
 }
 
 void zmq::socket_base_t::event_closed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_CLOSED);
+    uint64_t values[1] = {(uint64_t) fd_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CLOSED);
 }
 
 void zmq::socket_base_t::event_close_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_CLOSE_FAILED);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CLOSE_FAILED);
 }
 
 void zmq::socket_base_t::event_disconnected (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    event (endpoint_uri_pair_, fd_, ZMQ_EVENT_DISCONNECTED);
+    uint64_t values[1] = {(uint64_t) fd_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_DISCONNECTED);
 }
 
 void zmq::socket_base_t::event_handshake_failed_no_detail (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_protocol (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_auth (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
 }
 
 void zmq::socket_base_t::event_handshake_succeeded (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    event (endpoint_uri_pair_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    uint64_t values[1] = {(uint64_t) err_};
+    event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 
 void zmq::socket_base_t::event (const endpoint_uri_pair_t &endpoint_uri_pair_,
-                                uint64_t value_,
+                                uint64_t values_[],
+                                uint64_t values_count_,
                                 uint64_t type_)
 {
     scoped_lock_t lock (_monitor_sync);
     if (_monitor_events & type_) {
-        monitor_event (type_, value_, endpoint_uri_pair_);
+        monitor_event (type_, values_, values_count_, endpoint_uri_pair_);
     }
 }
 
 //  Send a monitor event
 void zmq::socket_base_t::monitor_event (
   uint64_t event_,
-  uint64_t value_,
+  uint64_t values_[],
+  uint64_t values_count_,
   const endpoint_uri_pair_t &endpoint_uri_pair_) const
 {
     // this is a private method which is only called from
@@ -1765,11 +1820,14 @@ void zmq::socket_base_t::monitor_event (
             case 1: {
                 //  The API should not allow to activate unsupported events
                 zmq_assert (event_ <= std::numeric_limits<uint16_t>::max ());
-                zmq_assert (value_ <= std::numeric_limits<uint32_t>::max ());
+                //  v1 only allows one value
+                zmq_assert (values_count_ == 1);
+                zmq_assert (values_[0]
+                            <= std::numeric_limits<uint32_t>::max ());
 
                 //  Send event and value in first frame
                 const uint16_t event = static_cast<uint16_t> (event_);
-                const uint32_t value = static_cast<uint32_t> (value_);
+                const uint32_t value = static_cast<uint32_t> (values_[0]);
                 zmq_msg_init_size (&msg, sizeof (event) + sizeof (value));
                 uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
                 //  Avoid dereferencing uint32_t on unaligned address
@@ -1788,22 +1846,31 @@ void zmq::socket_base_t::monitor_event (
             } break;
             case 2: {
                 //  Send event in first frame (64bit unsigned)
-                zmq_msg_init_size (&msg, sizeof event_);
-                memcpy (zmq_msg_data (&msg), &event_, sizeof event_);
+                zmq_msg_init_size (&msg, sizeof (event_));
+                memcpy (zmq_msg_data (&msg), &event_, sizeof (event_));
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
-                //  Send value in second frame (64bit unsigned)
-                zmq_msg_init_size (&msg, sizeof value_);
-                memcpy (zmq_msg_data (&msg), &value_, sizeof value_);
+                //  Send number of values that will follow in second frame
+                zmq_msg_init_size (&msg, sizeof (values_count_));
+                memcpy (zmq_msg_data (&msg), &values_count_,
+                        sizeof (values_count_));
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
-                //  Send local endpoint URI in third frame (string)
+                //  Send values in third-Nth frames (64bit unsigned)
+                for (uint64_t i = 0; i < values_count_; ++i) {
+                    zmq_msg_init_size (&msg, sizeof (values_[i]));
+                    memcpy (zmq_msg_data (&msg), &values_[i],
+                            sizeof (values_[i]));
+                    zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                }
+
+                //  Send local endpoint URI in second-to-last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.local.size ());
                 memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.local.c_str (),
                         endpoint_uri_pair_.local.size ());
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
-                //  Send remote endpoint URI in fourth frame (string)
+                //  Send remote endpoint URI in last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.remote.size ());
                 memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.remote.c_str (),
                         endpoint_uri_pair_.remote.size ());
@@ -1820,9 +1887,11 @@ void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
 
     if (_monitor_socket) {
         if ((_monitor_events & ZMQ_EVENT_MONITOR_STOPPED)
-            && send_monitor_stopped_event_)
-            monitor_event (ZMQ_EVENT_MONITOR_STOPPED, 0,
+            && send_monitor_stopped_event_) {
+            uint64_t values[1] = {0};
+            monitor_event (ZMQ_EVENT_MONITOR_STOPPED, values, 1,
                            endpoint_uri_pair_t ());
+        }
         zmq_close (_monitor_socket);
         _monitor_socket = NULL;
         _monitor_events = 0;

@@ -32,6 +32,7 @@
 
 #include <string>
 #include "stdint.hpp"
+#include "endpoint.hpp"
 
 namespace zmq
 {
@@ -73,6 +74,8 @@ __declspec(align (64))
         reap,
         reaped,
         inproc_connected,
+        pipe_peer_stats,
+        pipe_stats_publish,
         done
     } type;
 
@@ -185,6 +188,23 @@ __declspec(align (64))
         struct
         {
         } reaped;
+
+        //  Send application-side pipe count and ask to send monitor event
+        struct
+        {
+            uint64_t queue_count;
+            zmq::own_t *socket_base;
+            endpoint_uri_pair_t *endpoint_pair;
+        } pipe_peer_stats;
+
+        //  Collate application thread and I/O thread pipe counts and endpoints
+        //  and send as event
+        struct
+        {
+            uint64_t outbound_queue_count;
+            uint64_t inbound_queue_count;
+            endpoint_uri_pair_t *endpoint_pair;
+        } pipe_stats_publish;
 
         //  Sent by reaper thread to the term thread when all the sockets
         //  are successfully deallocated.

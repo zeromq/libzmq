@@ -50,6 +50,13 @@ void test_monitor_invalid_protocol_fails ()
     TEST_ASSERT_FAILURE_ERRNO (
       EPROTONOSUPPORT, zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0));
 
+#ifdef ZMQ_EVENT_PIPES_STATS
+    //  Stats command needs to be called on a valid socket with monitoring
+    //  enabled
+    TEST_ASSERT_FAILURE_ERRNO (ENOTSOCK, zmq_socket_monitor_pipes_stats (NULL));
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_socket_monitor_pipes_stats (client));
+#endif
+
     test_context_socket_close_zero_linger (client);
 }
 
@@ -94,7 +101,12 @@ void test_monitor_basic ()
         event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CONNECTED);
     expect_monitor_event (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-    expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+    event = get_monitor_event (client_mon, NULL, NULL);
+    if (event == ZMQ_EVENT_DISCONNECTED) {
+        expect_monitor_event (client_mon, ZMQ_EVENT_CONNECT_RETRIED);
+        expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
+    } else
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
 
     //  This is the flow of server events
     expect_monitor_event (server_mon, ZMQ_EVENT_LISTENING);
@@ -116,7 +128,9 @@ void test_monitor_basic ()
     test_context_socket_close_zero_linger (server_mon);
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
+  || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
+      && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
 void test_monitor_versioned_basic (bind_function_t bind_function_,
                                    const char *expected_prefix_)
 {
@@ -180,7 +194,13 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
 
     expect_monitor_event_v2 (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED,
                              client_local_address, client_remote_address);
-    expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
+    event = get_monitor_event_v2 (client_mon, NULL, NULL, NULL);
+    if (event == ZMQ_EVENT_DISCONNECTED) {
+        expect_monitor_event_v2 (client_mon, ZMQ_EVENT_CONNECT_RETRIED,
+                                 client_local_address, client_remote_address);
+        expect_monitor_event_v2 (client_mon, ZMQ_EVENT_MONITOR_STOPPED, "", "");
+    } else
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
 
     //  This is the flow of server events
     expect_monitor_event_v2 (server_mon, ZMQ_EVENT_LISTENING,
@@ -230,6 +250,133 @@ void test_monitor_versioned_basic_tipc ()
     static const char prefix[] = "tipc://";
     test_monitor_versioned_basic (bind_loopback_tipc, prefix);
 }
+
+#ifdef ZMQ_EVENT_PIPES_STATS
+void test_monitor_versioned_stats (bind_function_t bind_function_,
+                                   const char *expected_prefix_)
+{
+    char server_endpoint[MAX_SOCKET_STRING];
+    const int pulls_count = 4;
+    void *pulls[pulls_count];
+
+    //  We'll monitor these two sockets
+    void *push = test_context_socket (ZMQ_PUSH);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
+      push, "inproc://monitor-push", ZMQ_EVENT_PIPES_STATS, 2));
+
+    //  Should fail if there are no pipes to monitor
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_socket_monitor_pipes_stats (push));
+
+    void *push_mon = test_context_socket (ZMQ_PAIR);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (push_mon, "inproc://monitor-push"));
+
+    //  Set lower HWM - queues will be filled so we should see it in the stats
+    int send_hwm = 500;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (push, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
+    //  Set very low TCP buffers so that messages cannot be stored in-flight
+    const int tcp_buffer_size = 4096;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      push, ZMQ_SNDBUF, &tcp_buffer_size, sizeof (tcp_buffer_size)));
+    bind_function_ (push, server_endpoint, sizeof (server_endpoint));
+
+    int ipv6_;
+    size_t ipv6_size_ = sizeof (ipv6_);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (push, ZMQ_IPV6, &ipv6_, &ipv6_size_));
+    for (int i = 0; i < pulls_count; ++i) {
+        pulls[i] = test_context_socket (ZMQ_PULL);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (pulls[i], ZMQ_IPV6, &ipv6_, sizeof (int)));
+        int timeout_ms = 10;
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          pulls[i], ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (pulls[i], ZMQ_RCVHWM, &send_hwm, sizeof (send_hwm)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+          pulls[i], ZMQ_RCVBUF, &tcp_buffer_size, sizeof (tcp_buffer_size)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pulls[i], server_endpoint));
+    }
+
+    //  Send until we block
+    int send_count = 0;
+    //  Saturate the TCP buffers too
+    char data[tcp_buffer_size * 2];
+    memset (data, 0, sizeof (data));
+    //  Saturate all pipes - send + receive - on all connections
+    while (send_count < send_hwm * 2 * pulls_count) {
+        TEST_ASSERT_EQUAL_INT (sizeof (data),
+                               zmq_send (push, data, sizeof (data), 0));
+        ++send_count;
+    }
+
+    //  Drain one of the pulls - doesn't matter how many messages, at least one
+    send_count = send_count / 4;
+    do {
+        zmq_recv (pulls[0], data, sizeof (data), 0);
+        --send_count;
+    } while (send_count > 0);
+
+    //  To kick the application thread, do a dummy getsockopt - users here
+    //  should use the monitor and the other sockets in a poll.
+    unsigned long int dummy;
+    size_t dummy_size = sizeof (dummy);
+    msleep (SETTLE_TIME);
+    //  Note that the pipe stats on the sender will not get updated until the
+    //  receiver has processed at least lwm ((hwm + 1) / 2) messages AND until
+    //  the application thread has ran through the mailbox, as the update is
+    //  delivered via a message (send_activate_write)
+    zmq_getsockopt (push, ZMQ_EVENTS, &dummy, &dummy_size);
+
+    //  Ask for stats and check that they match
+    zmq_socket_monitor_pipes_stats (push);
+
+    msleep (SETTLE_TIME);
+    zmq_getsockopt (push, ZMQ_EVENTS, &dummy, &dummy_size);
+
+    for (int i = 0; i < pulls_count; ++i) {
+        char *push_local_address = NULL;
+        char *push_remote_address = NULL;
+        uint64_t queue_stat[2];
+        int64_t event = get_monitor_event_v2 (
+          push_mon, queue_stat, &push_local_address, &push_remote_address);
+        TEST_ASSERT_EQUAL_STRING (server_endpoint, push_local_address);
+        TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, push_remote_address,
+                                      strlen (expected_prefix_));
+        TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_PIPES_STATS, event);
+        TEST_ASSERT_EQUAL_INT (i == 0 ? 0 : send_hwm, queue_stat[0]);
+        TEST_ASSERT_EQUAL_INT (0, queue_stat[1]);
+        free (push_local_address);
+        free (push_remote_address);
+    }
+
+    //  Close client and server
+    test_context_socket_close_zero_linger (push_mon);
+    test_context_socket_close_zero_linger (push);
+    for (int i = 0; i < pulls_count; ++i)
+        test_context_socket_close_zero_linger (pulls[i]);
+}
+
+void test_monitor_versioned_stats_tcp_ipv4 ()
+{
+    static const char prefix[] = "tcp://127.0.0.1:";
+    test_monitor_versioned_stats (bind_loopback_ipv4, prefix);
+}
+
+void test_monitor_versioned_stats_tcp_ipv6 ()
+{
+    static const char prefix[] = "tcp://[::1]:";
+    test_monitor_versioned_stats (bind_loopback_ipv6, prefix);
+}
+
+void test_monitor_versioned_stats_ipc ()
+{
+    static const char prefix[] = "ipc://";
+    test_monitor_versioned_stats (bind_loopback_ipc, prefix);
+}
+#endif // ZMQ_EVENT_PIPES_STATS
 #endif
 
 int main ()
@@ -240,11 +387,18 @@ int main ()
     RUN_TEST (test_monitor_invalid_protocol_fails);
     RUN_TEST (test_monitor_basic);
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
+  || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
+      && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
     RUN_TEST (test_monitor_versioned_basic_ipc);
     RUN_TEST (test_monitor_versioned_basic_tipc);
+#ifdef ZMQ_EVENT_PIPES_STATS
+    RUN_TEST (test_monitor_versioned_stats_tcp_ipv4);
+    RUN_TEST (test_monitor_versioned_stats_tcp_ipv6);
+    RUN_TEST (test_monitor_versioned_stats_ipc);
+#endif
 #endif
 
     return UNITY_END ();
