@@ -250,6 +250,7 @@ include(CheckCSourceRuns)
 include(CMakeDependentOption)
 include(CheckCXXSymbolExists)
 include(CheckSymbolExists)
+include(FindThreads)
 
 execute_process(COMMAND getconf LEVEL1_DCACHE_LINESIZE OUTPUT_VARIABLE CACHELINE_SIZE ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CACHELINE_SIZE STREQUAL "" OR CACHELINE_SIZE EQUAL 0 OR CACHELINE_SIZE EQUAL -1)
@@ -306,6 +307,43 @@ if (WIN32)
 
     add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
 endif(WIN32)
+
+###################### BEGIN condition_variable_t selection
+if(NOT ZMQ_CV_IMPL)
+    # prefer C++11 STL std::condition_variable implementation, if available
+    check_include_files(condition_variable ZMQ_HAVE_STL_CONDITION_VARIABLE LANGUAGE CXX)
+
+    if (ZMQ_HAVE_STL_CONDITION_VARIABLE)
+        set(ZMQ_CV_IMPL_DEFAULT "stl11")
+    else()
+        if(WIN32 AND NOT CMAKE_SYSTEM_VERSION VERSION_LESS "6.0")
+            # Win32API CONDITION_VARIABLE is supported from Windows Vista only
+            set(ZMQ_CV_IMPL_DEFAULT "win32api")
+        elseif(CMAKE_USE_PTHREADS_INIT)
+            set(ZMQ_CV_IMPL_DEFAULT "pthreads")
+        else()
+            set(ZMQ_CV_IMPL_DEFAULT "none")
+        endif()
+    endif()
+
+    # TODO a vxworks implementation also exists, but vxworks is not currently supported with cmake at all
+    set(ZMQ_CV_IMPL "${ZMQ_CV_IMPL_DEFAULT}" CACHE STRING "Choose condition_variable_t implementation. Valid values are
+       stl11, win32api, pthreads, none [default=autodetect]")
+endif()
+
+message(STATUS "Using condition_variable_t implementation: ${ZMQ_CV_IMPL}")
+if(ZMQ_CV_IMPL STREQUAL "stl11")
+    set(ZMQ_USE_CV_IMPL_STL11 1)
+elseif(ZMQ_CV_IMPL STREQUAL "win32api")
+    set(ZMQ_USE_CV_IMPL_WIN32API 1)
+elseif(ZMQ_CV_IMPL STREQUAL "pthreads")
+    set(ZMQ_USE_CV_IMPL_PTHREADS 1)
+elseif(ZMQ_CV_IMPL STREQUAL "none")
+    set(ZMQ_USE_CV_IMPL_NONE 1)
+else()
+    message(ERROR "Unknown value for ZMQ_CV_IMPL: ${ZMQ_CV_IMPL}")
+endif()
+###################### END condition_variable_t selection
 
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION STREQUAL "10.0")
   set(ZMQ_HAVE_WINDOWS_UWP ON)

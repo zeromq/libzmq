@@ -381,6 +381,9 @@ LIBZMQ_CHECK_POLLER
 # Check cacheline size, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_CACHELINE
 
+# Check condition variable implementation, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_CV_IMPL
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(\
