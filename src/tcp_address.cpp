@@ -124,7 +124,7 @@ static std::string make_address_string (const char *hbuf,
     char *pos = buf;
     memcpy (pos, ipv6_prefix, sizeof ipv6_prefix - 1);
     pos += sizeof ipv6_prefix - 1;
-    const int hbuf_len = strlen (hbuf);
+    const size_t hbuf_len = strlen (hbuf);
     memcpy (pos, hbuf, hbuf_len);
     pos += hbuf_len;
     memcpy (pos, ipv6_suffix, sizeof ipv6_suffix - 1);
@@ -296,7 +296,7 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_) const
         memcpy (pos, ipv6_prefix, sizeof ipv6_prefix - 1);
         pos += sizeof ipv6_prefix - 1;
     }
-    const int hbuf_len = strlen (hbuf);
+    const size_t hbuf_len = strlen (hbuf);
     memcpy (pos, hbuf, hbuf_len);
     pos += hbuf_len;
     if (_network_address.family () == AF_INET6) {
