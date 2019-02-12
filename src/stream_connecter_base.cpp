@@ -130,17 +130,19 @@ void zmq::stream_connecter_base_t::rm_handle ()
 
 void zmq::stream_connecter_base_t::close ()
 {
-    zmq_assert (_s != retired_fd);
+    // TODO before, this was an assertion for _s != retired_fd, but this does not match usage of close
+    if (_s != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-    const int rc = closesocket (_s);
-    wsa_assert (rc != SOCKET_ERROR);
+        const int rc = closesocket (_s);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
-    const int rc = ::close (_s);
-    errno_assert (rc == 0);
+        const int rc = ::close (_s);
+        errno_assert (rc == 0);
 #endif
-    _socket->event_closed (make_unconnected_connect_endpoint_pair (_endpoint),
-                           _s);
-    _s = retired_fd;
+        _socket->event_closed (
+          make_unconnected_connect_endpoint_pair (_endpoint), _s);
+        _s = retired_fd;
+    }
 }
 
 void zmq::stream_connecter_base_t::in_event ()

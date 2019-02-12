@@ -1189,3 +1189,44 @@ AC_DEFUN([LIBZMQ_CHECK_CACHELINE], [{
 	AC_MSG_NOTICE([Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
 	AC_DEFINE_UNQUOTED(ZMQ_CACHELINE_SIZE, $zmq_cacheline_size, [Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
 }])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_CV_IMPL([action-if-found], [action-if-not-found])               #
+dnl # Choose condition variable implementation                                     #
+dnl ################################################################################
+
+AC_DEFUN([LIBZMQ_CHECK_CV_IMPL], [{
+    # Allow user to override condition variable autodetection
+    AC_ARG_WITH([cv-impl],
+        [AS_HELP_STRING([--with-cv-impl],
+        [choose condition variable implementation manually. Valid values are 'stl11', 'pthread', 'none', or 'auto'. [default=auto]])])
+
+    if test "x$with_cv_impl" == "x"; then
+        cv_impl=auto
+    else
+        cv_impl=$with_cv_impl
+    fi
+    case $host_os in
+      vxworks*)
+        cv_impl="vxworks"
+        AC_DEFINE(ZMQ_USE_CV_IMPL_VXWORKS, 1, [Use vxworks condition variable implementation.])
+      ;;
+    esac
+    if test "$cv_impl" == "auto" || test "$cv_impl" == "stl11"; then
+        AC_LANG_PUSH([C++])
+        AC_CHECK_HEADERS(condition_variable, [stl11="yes"
+            AC_DEFINE(ZMQ_USE_CV_IMPL_STL11, 1, [Use stl11 condition variable implementation.])],
+            [stl11="no"])
+        AC_LANG_POP([C++])
+        if test "$cv_impl" == "stl11" && test "x$stl11" == "xno"; then
+            AC_MSG_ERROR([--with-cv-impl set to stl11 but cannot find condition_variable])
+        fi
+    fi
+    if test "$cv_impl" == "pthread" || test "x$stl11" == "xno"; then
+        AC_DEFINE(ZMQ_USE_CV_IMPL_PTHREADS, 1, [Use pthread condition variable implementation.])
+    fi
+    if test "$cv_impl" == "none"; then
+        AC_DEFINE(ZMQ_USE_CV_IMPL_NONE, 1, [Use no condition variable implementation.])
+    fi
+       AC_MSG_NOTICE([Using "$cv_impl" condition variable implementation.])
+}])

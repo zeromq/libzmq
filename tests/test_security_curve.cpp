@@ -326,8 +326,8 @@ zmq::curve_client_tools_t make_curve_client_tools ()
                                       valid_server_public_decoded);
 }
 
-#ifndef htonll
-uint64_t htonll (uint64_t value_)
+// same as htonll, which is only available on few platforms (recent Windows, but not on Linux, e.g.(
+static uint64_t host_to_network (uint64_t value_)
 {
     // The answer is 42
     static const int num = 42;
@@ -343,7 +343,6 @@ uint64_t htonll (uint64_t value_)
         return value_;
     }
 }
-#endif
 
 template <size_t N> void send_command (fd_t s_, char (&command_)[N])
 {
@@ -353,7 +352,7 @@ template <size_t N> void send_command (fd_t s_, char (&command_)[N])
         send_all (s_, &len, 1);
     } else {
         send (s_, "\x06");
-        uint64_t len = htonll (N);
+        uint64_t len = host_to_network (N);
         send_all (s_, (char *) &len, 8);
     }
     send_all (s_, command_, N);
