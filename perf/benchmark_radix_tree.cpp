@@ -109,7 +109,7 @@ int main ()
     }
 
     // Create a benchmark.
-    std::printf ("keys = %ld, queries = %ld, key size = %ld\n", nkeys, nqueries,
+    std::printf ("keys = %lu, queries = %lu, key size = %lu\n", nkeys, nqueries,
                  key_length);
     std::puts ("[trie]");
     benchmark_lookup (trie, input_set, queries);
