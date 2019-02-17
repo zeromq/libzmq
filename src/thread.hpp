@@ -56,6 +56,7 @@ class thread_t
     inline thread_t () :
         _tfn (NULL),
         _arg (NULL),
+        _name (""),
         _started (false),
         _thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
         _thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
@@ -100,9 +101,7 @@ class thread_t
     void applySchedulingParameters ();
     thread_fn *_tfn;
     void *_arg;
-#ifndef ZMQ_HAVE_WINDOWS
     std::string _name;
-#endif
 
   private:
     bool _started;
