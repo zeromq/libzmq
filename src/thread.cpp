@@ -54,6 +54,7 @@ static unsigned int __stdcall thread_routine (void *arg_)
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 {
+    LIBZMQ_UNUSED (name_);
     _tfn = tfn_;
     _arg = arg_;
 #if defined _WIN32_WCE
@@ -111,6 +112,7 @@ static void *thread_routine (void *arg_)
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 {
+    LIBZMQ_UNUSED (name_);
     _tfn = tfn_;
     _arg = arg_;
     _descriptor = taskSpawn (NULL, DEFAULT_PRIORITY, DEFAULT_OPTIONS,
