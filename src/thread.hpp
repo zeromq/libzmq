@@ -74,7 +74,7 @@ class thread_t
 
     //  Creates OS thread. 'tfn' is main thread function. It'll be passed
     //  'arg' as an argument.
-    void start (thread_fn *tfn_, void *arg_, const char *name_ = "0MQ");
+    void start (thread_fn *tfn_, void *arg_, const char *name_);
 
     //  Returns whether the thread was started, i.e. start was called.
     bool get_started () const;

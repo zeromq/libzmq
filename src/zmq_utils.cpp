@@ -84,7 +84,7 @@ void *zmq_threadstart (zmq_thread_fn *func_, void *arg_)
 {
     zmq::thread_t *thread = new (std::nothrow) zmq::thread_t;
     alloc_assert (thread);
-    thread->start (func_, arg_);
+    thread->start (func_, arg_, "ZMQapp");
     return thread;
 }
 
