@@ -422,23 +422,15 @@ void zmq::thread_ctx_t::start_thread (thread_t &thread_,
                                       void *arg_,
                                       const char *name_) const
 {
-    static unsigned int nthreads_started = 0;
-
     thread_.setSchedulingParameters (_thread_priority, _thread_sched_policy,
                                      _thread_affinity_cpus);
 
     char namebuf[16];
-    snprintf(namebuf, sizeof(namebuf), "0MQ%s%s",
-             name_ ? ":" : "", name_ ? name_ : "");
-    thread_.start(tfn_, arg_, namebuf);
-#ifndef ZMQ_HAVE_ANDROID
-    std::ostringstream s;
-    if (!_thread_name_prefix.empty ())
-        s << _thread_name_prefix << "/";
-    s << "ZMQbg/" << nthreads_started;
-    thread_.setThreadName (s.str ().c_str ());
-#endif
-    nthreads_started++;
+    snprintf (namebuf, sizeof (namebuf), "%s%sZMQbg%s%s",
+              _thread_name_prefix.empty () ? "" : _thread_name_prefix.c_str (),
+              _thread_name_prefix.empty () ? "" : "/", name_ ? "/" : "",
+              name_ ? name_ : "");
+    thread_.start (tfn_, arg_, namebuf);
 }
 
 int zmq::thread_ctx_t::set (int option_, int optval_)

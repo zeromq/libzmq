@@ -179,7 +179,7 @@ static void *thread_routine (void *arg_)
 #endif
     zmq::thread_t *self = (zmq::thread_t *) arg_;
     self->applySchedulingParameters ();
-    pthread_setname_np(pthread_self(), self->_name.c_str());
+    self->setThreadName (self->_name.c_str ());
     self->_tfn (self->_arg);
     return NULL;
 }
@@ -311,20 +311,25 @@ void zmq::thread_t::setThreadName (const char *name_)
     if (!name_)
         return;
 
+        /* Fails with permission denied on Android 5/6 */
+#if defined(ZMQ_HAVE_ANDROID)
+    return;
+#endif
+
 #if defined(ZMQ_HAVE_PTHREAD_SETNAME_1)
     int rc = pthread_setname_np (name_);
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_2)
-    int rc = pthread_setname_np (_descriptor, name_);
+    int rc = pthread_setname_np (pthread_self (), name_);
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_3)
-    int rc = pthread_setname_np (_descriptor, name_, NULL);
+    int rc = pthread_setname_np (pthread_self (), name_, NULL);
     if (rc)
         return;
 #elif defined(ZMQ_HAVE_PTHREAD_SET_NAME)
-    pthread_set_name_np (_descriptor, name_);
+    pthread_set_name_np (pthread_self (), name_);
 #endif
 }
 
