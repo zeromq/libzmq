@@ -56,9 +56,11 @@ zmq::io_thread_t::~io_thread_t ()
 
 void zmq::io_thread_t::start ()
 {
-    char name[16];
+    char name[16] = "";
+#ifndef ZMQ_HAVE_WINDOWS
     snprintf (name, sizeof (name), "IO/%u",
               get_tid () - zmq::ctx_t::reaper_tid - 1);
+#endif
     //  Start the underlying I/O thread.
     _poller->start (name);
 }
