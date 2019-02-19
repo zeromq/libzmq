@@ -1,4 +1,4 @@
-Permission to Relicense under MPLv2 or any other OSI approved license chosen by the current ZeroMQ BDFL
+# Permission to Relicense under MPLv2 or any other OSI approved license chosen by the current ZeroMQ BDFL
 
 This is a statement by Léonard Michelet
 that grants permission to relicense its copyrights in the libzmq C++
