@@ -172,7 +172,7 @@ be called from the same thread. Otherwise, behaviour is undefined.
 
 RETURN VALUE
 ------------
-_zmq_poller_new_ always returns a valid pointer to a poller.
+_zmq_poller_new_ returns a valid pointer to a poller, or NULL in case of a failure.
 
 All functions that return an int, return -1 in case of a failure. In that case,
 zmq_errno() can be used to query the type of the error as described below.
