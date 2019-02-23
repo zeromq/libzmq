@@ -223,6 +223,8 @@ On _zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_:
 The _fd_ specified was the retired fd.
 
 On _zmq_poller_wait_ and _zmq_poller_wait_all_:
+*ENOMEM*::
+Necessary resources could not be allocated.
 *ETERM*::
 At least one of the registered objects is a 'socket' whose associated 0MQ 
 'context' was terminated.
