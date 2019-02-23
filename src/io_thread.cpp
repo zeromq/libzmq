@@ -27,33 +27,42 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
+
 #include <new>
 
 #include "macros.hpp"
 #include "io_thread.hpp"
-#include "platform.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
 
 zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
-    object_t (ctx_, tid_)
+    object_t (ctx_, tid_),
+    _mailbox_handle (static_cast<poller_t::handle_t> (NULL))
 {
-    poller = new (std::nothrow) poller_t (*ctx_);
-    alloc_assert (poller);
+    _poller = new (std::nothrow) poller_t (*ctx_);
+    alloc_assert (_poller);
 
-    mailbox_handle = poller->add_fd (mailbox.get_fd (), this);
-    poller->set_pollin (mailbox_handle);
+    if (_mailbox.get_fd () != retired_fd) {
+        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this);
+        _poller->set_pollin (_mailbox_handle);
+    }
 }
 
 zmq::io_thread_t::~io_thread_t ()
 {
-    LIBZMQ_DELETE(poller);
+    LIBZMQ_DELETE (_poller);
 }
 
 void zmq::io_thread_t::start ()
 {
+    char name[16] = "";
+#ifndef ZMQ_HAVE_WINDOWS
+    snprintf (name, sizeof (name), "IO/%u",
+              get_tid () - zmq::ctx_t::reaper_tid - 1);
+#endif
     //  Start the underlying I/O thread.
-    poller->start ();
+    _poller->start (name);
 }
 
 void zmq::io_thread_t::stop ()
@@ -63,12 +72,12 @@ void zmq::io_thread_t::stop ()
 
 zmq::mailbox_t *zmq::io_thread_t::get_mailbox ()
 {
-    return &mailbox;
+    return &_mailbox;
 }
 
 int zmq::io_thread_t::get_load ()
 {
-    return poller->get_load ();
+    return _poller->get_load ();
 }
 
 void zmq::io_thread_t::in_event ()
@@ -77,12 +86,12 @@ void zmq::io_thread_t::in_event ()
     //  process in a single go?
 
     command_t cmd;
-    int rc = mailbox.recv (&cmd, 0);
+    int rc = _mailbox.recv (&cmd, 0);
 
     while (rc == 0 || errno == EINTR) {
         if (rc == 0)
             cmd.destination->process_command (cmd);
-        rc = mailbox.recv (&cmd, 0);
+        rc = _mailbox.recv (&cmd, 0);
     }
 
     errno_assert (rc != 0 && errno == EAGAIN);
@@ -102,12 +111,13 @@ void zmq::io_thread_t::timer_event (int)
 
 zmq::poller_t *zmq::io_thread_t::get_poller ()
 {
-    zmq_assert (poller);
-    return poller;
+    zmq_assert (_poller);
+    return _poller;
 }
 
 void zmq::io_thread_t::process_stop ()
 {
-    poller->rm_fd (mailbox_handle);
-    poller->stop ();
+    zmq_assert (_mailbox_handle);
+    _poller->rm_fd (_mailbox_handle);
+    _poller->stop ();
 }

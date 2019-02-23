@@ -38,9 +38,8 @@ immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
 does not mean that the connection was or could actually be established.
 Because of this, for most transports and socket types the order in which
 a 'server' socket is bound and a 'client' socket is connected to it does not
-matter. The first exception is when using the inproc:// transport: you must
-call _zmq_bind()_ before calling _zmq_connect()_. The second exception are
-_ZMQ_PAIR_ sockets, which do not automatically reconnect to endpoints.
+matter. The _ZMQ_PAIR_ sockets are an exception, as they do not automatically
+reconnect to endpoints.
 
 NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,
 the socket enters its normal 'ready' state. By contrast, following a
@@ -49,6 +48,14 @@ blocks or drops messages according to the socket type, as defined in
 linkzmq:zmq_socket[3]. A ZMQ_ROUTER socket enters its normal 'ready' state
 for a specific peer only when handshaking is complete for that peer, which
 may take an arbitrary time.
+
+NOTE: for some socket types, multiple connections to the same endpoint
+don't really make sense
+(see https://github.com/zeromq/libzmq/issues/788).
+For those socket types, any attempt to connect to an already connected endpoint
+is silently ignored (i.e., returns zero).  This behavior applies to ZMQ_DEALER,
+ZMQ_SUB, ZMQ_PUB, and ZMQ_REQ socket types.
+
 
 RETURN VALUE
 ------------

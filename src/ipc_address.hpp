@@ -32,45 +32,39 @@
 
 #include <string>
 
-#include "platform.hpp"
-
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
+  && !defined ZMQ_HAVE_VXWORKS
 
 #include <sys/socket.h>
 #include <sys/un.h>
 
 namespace zmq
 {
+class ipc_address_t
+{
+  public:
+    ipc_address_t ();
+    ipc_address_t (const sockaddr *sa_, socklen_t sa_len_);
+    ~ipc_address_t ();
 
-    class ipc_address_t
-    {
-    public:
+    //  This function sets up the address for UNIX domain transport.
+    int resolve (const char *path_);
 
-        ipc_address_t ();
-        ipc_address_t (const sockaddr *sa, socklen_t sa_len);
-        ~ipc_address_t ();
+    //  The opposite to resolve()
+    int to_string (std::string &addr_) const;
 
-        //  This function sets up the address for UNIX domain transport.
-        int resolve (const char *path_);
+    const sockaddr *addr () const;
+    socklen_t addrlen () const;
 
-        //  The opposite to resolve()
-        int to_string (std::string &addr_);
+  private:
+    struct sockaddr_un _address;
+    size_t _addrlen;
 
-        const sockaddr *addr () const;
-        socklen_t addrlen () const;
-
-    private:
-
-        struct sockaddr_un address;
-
-        ipc_address_t (const ipc_address_t&);
-        const ipc_address_t &operator = (const ipc_address_t&);
-    };
-
+    ipc_address_t (const ipc_address_t &);
+    const ipc_address_t &operator= (const ipc_address_t &);
+};
 }
 
 #endif
 
 #endif
-
-

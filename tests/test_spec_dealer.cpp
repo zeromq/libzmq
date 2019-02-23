@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,35 +28,43 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-const char *bind_address = 0;
-const char *connect_address = 0;
-
-void test_round_robin_out (void *ctx)
+void setUp ()
 {
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer);
+    setup_test_context ();
+}
 
-    int rc = zmq_bind (dealer, bind_address);
-    assert (rc == 0);
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+
+// SHALL route outgoing messages to available peers using a round-robin
+// strategy.
+void test_round_robin_out (const char *bind_address_)
+{
+    void *dealer = test_context_socket (ZMQ_DEALER);
+
+    char connect_address[MAX_SOCKET_STRING];
+    test_bind (dealer, bind_address_, connect_address,
+               sizeof (connect_address));
 
     const size_t services = 5;
-    void *rep [services];
+    void *rep[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        rep [peer] = zmq_socket (ctx, ZMQ_REP);
-        assert (rep [peer]);
+        rep[peer] = test_context_socket (ZMQ_REP);
 
         int timeout = 250;
-        rc = zmq_setsockopt (rep [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
-        rc = zmq_connect (rep [peer], connect_address);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (rep[peer], connect_address));
     }
 
     // Wait for connections.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     // Send all requests
     for (size_t i = 0; i < services; ++i)
@@ -67,198 +75,161 @@ void test_round_robin_out (void *ctx)
     zmq_msg_init (&msg);
 
     for (size_t peer = 0; peer < services; ++peer)
-        s_recv_seq (rep [peer], "ABC", SEQ_END);
+        s_recv_seq (rep[peer], "ABC", SEQ_END);
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    close_zero_linger (dealer);
+    test_context_socket_close_zero_linger (dealer);
 
     for (size_t peer = 0; peer < services; ++peer)
-        close_zero_linger (rep [peer]);
-
-    // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+        test_context_socket_close_zero_linger (rep[peer]);
 }
 
-void test_fair_queue_in (void *ctx)
+// SHALL receive incoming messages from its peers using a fair-queuing
+// strategy.
+void test_fair_queue_in (const char *bind_address_)
 {
-    void *receiver = zmq_socket (ctx, ZMQ_DEALER);
-    assert (receiver);
+    void *receiver = test_context_socket (ZMQ_DEALER);
 
     int timeout = 250;
-    int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
-    rc = zmq_bind (receiver, bind_address);
-    assert (rc == 0);
+    char connect_address[MAX_SOCKET_STRING];
+    test_bind (receiver, bind_address_, connect_address,
+               sizeof (connect_address));
 
     const size_t services = 5;
-    void *senders [services];
+    void *senders[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        senders [peer] = zmq_socket (ctx, ZMQ_DEALER);
-        assert (senders [peer]);
+        senders[peer] = test_context_socket (ZMQ_DEALER);
 
-        rc = zmq_setsockopt (senders [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (senders[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
-        rc = zmq_connect (senders [peer], connect_address);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_connect (senders[peer], connect_address));
     }
 
     zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
-    s_send_seq (senders [0], "A", SEQ_END);
+    s_send_seq (senders[0], "A", SEQ_END);
     s_recv_seq (receiver, "A", SEQ_END);
 
-    s_send_seq (senders [0], "A", SEQ_END);
+    s_send_seq (senders[0], "A", SEQ_END);
     s_recv_seq (receiver, "A", SEQ_END);
 
     // send our requests
     for (size_t peer = 0; peer < services; ++peer)
-        s_send_seq (senders [peer], "B", SEQ_END);
+        s_send_seq (senders[peer], "B", SEQ_END);
 
     // Wait for data.
-    rc = zmq_poll (0, 0, 50);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     // handle the requests
     for (size_t peer = 0; peer < services; ++peer)
         s_recv_seq (receiver, "B", SEQ_END);
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    close_zero_linger (receiver);
+    test_context_socket_close_zero_linger (receiver);
 
     for (size_t peer = 0; peer < services; ++peer)
-        close_zero_linger (senders [peer]);
-
-    // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+        test_context_socket_close_zero_linger (senders[peer]);
 }
 
-void test_destroy_queue_on_disconnect (void *ctx)
+// SHALL create a double queue when a peer connects to it. If this peer
+// disconnects, the DEALER socket SHALL destroy its double queue and SHALL
+// discard any messages it contains.
+void test_destroy_queue_on_disconnect (const char *bind_address_)
 {
-    void *A = zmq_socket (ctx, ZMQ_DEALER);
-    assert (A);
+    void *a = test_context_socket (ZMQ_DEALER);
 
-    int rc = zmq_bind (A, bind_address);
-    assert (rc == 0);
+    char connect_address[MAX_SOCKET_STRING];
+    test_bind (a, bind_address_, connect_address, sizeof (connect_address));
 
-    void *B = zmq_socket (ctx, ZMQ_DEALER);
-    assert (B);
+    void *b = test_context_socket (ZMQ_DEALER);
 
-    rc = zmq_connect (B, connect_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (b, connect_address));
 
     // Send a message in both directions
-    s_send_seq (A, "ABC", SEQ_END);
-    s_send_seq (B, "DEF", SEQ_END);
+    s_send_seq (a, "ABC", SEQ_END);
+    s_send_seq (b, "DEF", SEQ_END);
 
-    rc = zmq_disconnect (B, connect_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (b, connect_address));
 
     // Disconnect may take time and need command processing.
-    zmq_pollitem_t poller [2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
-    rc = zmq_poll (poller, 2, 100);
-    assert (rc == 0);
-    rc = zmq_poll (poller, 2, 100);
-    assert (rc == 0);
+    zmq_pollitem_t poller[2] = {{a, 0, 0, 0}, {b, 0, 0, 0}};
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poll (poller, 2, 100));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poll (poller, 2, 100));
 
     // No messages should be available, sending should fail.
     zmq_msg_t msg;
     zmq_msg_init (&msg);
 
-    rc = zmq_send (A, 0, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (a, 0, 0, ZMQ_DONTWAIT));
 
-    rc = zmq_msg_recv (&msg, A, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, a, ZMQ_DONTWAIT));
 
     // After a reconnect of B, the messages should still be gone
-    rc = zmq_connect (B, connect_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (b, connect_address));
 
-    rc = zmq_msg_recv (&msg, A, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, a, ZMQ_DONTWAIT));
 
-    rc = zmq_msg_recv (&msg, B, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_msg_recv (&msg, b, ZMQ_DONTWAIT));
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
-    close_zero_linger (A);
-    close_zero_linger (B);
-
-    // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    test_context_socket_close_zero_linger (a);
+    test_context_socket_close_zero_linger (b);
 }
 
-void test_block_on_send_no_peers (void *ctx)
+// SHALL block on sending, or return a suitable error, when it has no connected peers.
+void test_block_on_send_no_peers (const char *bind_address_)
 {
-    void *sc = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sc);
+    void *sc = test_context_socket (ZMQ_DEALER);
 
     int timeout = 250;
-    int rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (timeout));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (timeout)));
 
-    rc = zmq_send (sc, 0, 0, ZMQ_DONTWAIT);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (sc, 0, 0, ZMQ_DONTWAIT));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (sc, 0, 0, 0));
 
-    rc = zmq_send (sc, 0, 0, 0);
-    assert (rc == -1);
-    assert (errno == EAGAIN);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
 }
+
+#define TEST_CASES(name, bind_address)                                         \
+    void test_round_robin_out_##name ()                                        \
+    {                                                                          \
+        test_round_robin_out (bind_address);                                   \
+    }                                                                          \
+    void test_fair_queue_in_##name () { test_fair_queue_in (bind_address); }   \
+    void test_block_on_send_no_peers_##name ()                                 \
+    {                                                                          \
+        test_block_on_send_no_peers (bind_address);                            \
+    }
+
+TEST_CASES (inproc, "inproc://a")
+TEST_CASES (tcp, "tcp://127.0.0.1:*")
 
 int main (void)
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_environment ();
 
-    const char *binds [] = { "inproc://a", "tcp://127.0.0.1:5555" };
-    const char *connects [] = { "inproc://a", "tcp://localhost:5555" };
+    UNITY_BEGIN ();
 
-    for (int transports = 0; transports < 2; ++transports) {
-        bind_address = binds [transports];
-        connect_address = connects [transports];
+    RUN_TEST (test_round_robin_out_inproc);
+    RUN_TEST (test_fair_queue_in_inproc);
+    RUN_TEST (test_block_on_send_no_peers_inproc);
 
-        // SHALL route outgoing messages to available peers using a round-robin
-        // strategy.
-        test_round_robin_out (ctx);
+    RUN_TEST (test_round_robin_out_tcp);
+    RUN_TEST (test_fair_queue_in_tcp);
+    RUN_TEST (test_block_on_send_no_peers_tcp);
 
-        // SHALL receive incoming messages from its peers using a fair-queuing
-        // strategy.
-        test_fair_queue_in (ctx);
+    // TODO *** Test disabled until libzmq does this properly ***
+    // test_destroy_queue_on_disconnect (ctx);
 
-        // SHALL block on sending, or return a suitable error, when it has no connected peers.
-        test_block_on_send_no_peers (ctx);
-
-        // SHALL create a double queue when a peer connects to it. If this peer
-        // disconnects, the DEALER socket SHALL destroy its double queue and SHALL
-        // discard any messages it contains.
-        // *** Test disabled until libzmq does this properly ***
-        // test_destroy_queue_on_disconnect (ctx);
-    }
-
-    int rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+    return UNITY_END ();
 }

@@ -27,6 +27,7 @@ defined:
 * norm - the library supports the norm:// protocol
 * curve - the library supports the CURVE security mechanism
 * gssapi - the library supports the GSSAPI security mechanism
+* draft - the library is built with the draft api
 
 When this method is provided, the zmq.h header file will define
 ZMQ_HAS_CAPABILITIES.

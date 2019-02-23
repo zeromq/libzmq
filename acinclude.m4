@@ -7,7 +7,7 @@ AC_DEFUN([LIBZMQ_CONFIG_LIBTOOL],  [{
 
     # Libtool configuration for different targets
     case "${host_os}" in
-        *mingw32*|*cygwin*)
+        *mingw*|*cygwin*|*msys*)
             # Disable static build by default
             AC_DISABLE_STATIC
         ;;
@@ -92,11 +92,16 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
     # Man pages are built/installed if asciidoc and xmlto are present
     #   --with-docs=no overrides this
     AC_ARG_WITH([docs],
-        AS_HELP_STRING([--with-docs],
-            [Build and install man pages [default=yes]]),
+        AS_HELP_STRING([--without-docs],
+            [Don't build and install man pages [default=build]]),
         [with_docs=$withval])
+    AC_ARG_WITH([documentation], [AS_HELP_STRING([--without-documentation],
+        [Don't build and install man pages [default=build] DEPRECATED: use --without-docs])])
 
-    if test "x$with_docs" = "xno"; then
+    if test "x$with_documentation" = "xno"; then
+        AC_MSG_WARN([--without-documentation is DEPRECATED and will be removed in the next release, use --without-docs])
+    fi
+    if test "x$with_docs" = "xno" || test "x$with_documentation" = "xno"; then
         libzmq_build_doc="no"
         libzmq_install_man="no"
     else
@@ -117,7 +122,7 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
         fi
 
         # Do not install man pages if on mingw
-        if test "x$libzmq_on_mingw32" = "xyes"; then
+        if test "x$libzmq_on_mingw" = "xyes"; then
             libzmq_install_man="no"
         fi
     fi
@@ -279,7 +284,7 @@ AC_DEFUN([LIBZMQ_CHECK_ENABLE_DEBUG], [{
 
     # This flag is checked also in
     AC_ARG_ENABLE([debug], [AS_HELP_STRING([--enable-debug],
-        [Enable debugging information [default=no]])])
+        [enable debugging information [default=disabled]])])
 
     AC_MSG_CHECKING(whether to enable debugging information)
 
@@ -330,7 +335,7 @@ AC_DEFUN([LIBZMQ_WITH_GCOV], [{
     AC_REQUIRE([LIBZMQ_CHECK_COMPILERS])
 
     AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
-                      [With GCC Code Coverage reporting.])],
+                      [with GCC Code Coverage reporting.])],
                       [ZMQ_GCOV="$withval"])
 
     AC_MSG_CHECKING(whether to enable code coverage)
@@ -610,12 +615,60 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_O_CLOEXEC([action-if-found], [action-if-not-found])          #
+dnl # Check if O_CLOEXEC is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_O_CLOEXEC], [{
+    AC_CACHE_CHECK([whether O_CLOEXEC is supported], [libzmq_cv_o_cloexec],
+        [AC_TRY_RUN([/* O_CLOEXEC test */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main (int argc, char *argv [])
+{
+    int s = open ("/dev/null", O_CLOEXEC | O_RDONLY);
+    return (s == -1);
+}
+        ],
+        [libzmq_cv_o_cloexec="yes"],
+        [libzmq_cv_o_cloexec="no"],
+        [libzmq_cv_o_cloexec="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_o_cloexec" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_EVENTFD_CLOEXEC([action-if-found], [action-if-not-found])          #
+dnl # Check if EFD_CLOEXEC is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_EVENTFD_CLOEXEC], [{
+    AC_CACHE_CHECK([whether EFD_CLOEXEC is supported], [libzmq_cv_efd_cloexec],
+        [AC_TRY_RUN([/* EFD_CLOEXEC test */
+#include <sys/eventfd.h>
+
+int main (int argc, char *argv [])
+{
+    int s = eventfd (0, EFD_CLOEXEC);
+    return (s == -1);
+}
+        ],
+        [libzmq_cv_efd_cloexec="yes"],
+        [libzmq_cv_efd_cloexec="no"],
+        [libzmq_cv_efd_cloexec="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_efd_cloexec" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_ATOMIC_INSTRINSICS([action-if-found], [action-if-not-found])    #
 dnl # Check if compiler supoorts __atomic_Xxx intrinsics                           #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_ATOMIC_INTRINSICS], [{
     AC_MSG_CHECKING(whether compiler supports __atomic_Xxx intrinsics)
-    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+    AC_LINK_IFELSE([AC_LANG_SOURCE([
 /* atomic intrinsics test */
 int v = 0;
 int main (int, char **)
@@ -624,9 +677,50 @@ int main (int, char **)
     return t;
 }
     ])],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_has_atomic_instrisics="no"  ; $2]
+    [AC_MSG_RESULT(yes) ; GCC_ATOMIC_BUILTINS_SUPPORTED=1 libzmq_cv_has_atomic_instrisics="yes" ; $1])
+
+    if test "x$GCC_ATOMIC_BUILTINS_SUPPORTED" != x1; then
+        save_LIBS=$LIBS
+        LIBS="$LIBS -latomic"
+        AC_LINK_IFELSE([AC_LANG_SOURCE([
+        /* atomic intrinsics test */
+        int v = 0;
+        int main (int, char **)
+        {
+            int t = __atomic_add_fetch (&v, 1, __ATOMIC_ACQ_REL);
+            return t;
+        }
+        ])],
+        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
+        [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no" LIBS=$save_LIBS ; $2])
+    fi
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_SO_BINDTODEVICE([action-if-found], [action-if-not-found])          #
+dnl # Check if SO_BINDTODEVICE is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_SO_BINDTODEVICE], [{
+    AC_CACHE_CHECK([whether SO_BINDTODEVICE is supported], [libzmq_cv_so_bindtodevice],
+        [AC_TRY_RUN([/* SO_BINDTODEVICE test */
+#include <sys/socket.h>
+
+int main (int argc, char *argv [])
+{
+/* Actually making the setsockopt() call requires CAP_NET_RAW */
+#ifndef SO_BINDTODEVICE
+    return 1;
+#else
+    return 0;
+#endif
+}
+        ],
+        [libzmq_cv_so_bindtodevice="yes"],
+        [libzmq_cv_so_bindtodevice="no"],
+        [libzmq_cv_so_bindtodevice="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_so_bindtodevice" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -777,61 +871,99 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_GETRANDOM([action-if-found], [action-if-not-found])  #
+dnl # Checks if getrandom is supported                                  #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_GETRANDOM], [{
+    AC_CACHE_CHECK([whether getrandom is supported], [libzmq_cv_getrandom],
+        [AC_TRY_RUN([/* thread-local storage test */
+#include <sys/random.h>
+
+int main (int argc, char *argv [])
+{
+    char buf[4];
+    int rc = getrandom(buf, 4, 0);
+    return rc == -1 ? 1 : 0;
+}
+        ],
+        [libzmq_cv_getrandom="yes"],
+        [libzmq_cv_getrandom="no"],
+        [libzmq_cv_getrandom="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_getrandom" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_KQUEUE([action-if-found], [action-if-not-found])         #
 dnl # Checks kqueue polling system                                                 #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_KQUEUE], [{
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM(
-        [
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
 #include <sys/types.h>
 #include <sys/event.h>
 #include <sys/time.h>
-        ],
-[[
+        ],[[
 struct kevent t_kev;
 kqueue();
-]]
-        )],
-        [libzmq_cv_have_poller_kqueue="yes" ; $1],
-        [libzmq_cv_have_poller_kqueue="no" ; $2])
+        ]])],
+        [$1], [$2]
+    )
 }])
 
 dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_EPOLL_RUN([action-if-found], [action-if-not-found])      #
+dnl # LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([action-if-found], [action-if-not-found])  #
 dnl # Checks epoll polling system can actually run #
 dnl # For cross-compile, only requires that epoll can link #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_EPOLL], [{
-    AC_RUN_IFELSE(
-        [AC_LANG_PROGRAM(
-        [
+    AC_RUN_IFELSE([
+        AC_LANG_PROGRAM([
 #include <sys/epoll.h>
-        ],
-[[
+        ],[[
 struct epoll_event t_ev;
 int r;
 r = epoll_create(10);
 return(r < 0);
-]]
-        )],
-        [libzmq_cv_have_poller_epoll="yes" ; $1],
-        [libzmq_cv_have_poller_epoll="no" ; $2],
-        [
-          AC_LINK_IFELSE(
-              [AC_LANG_PROGRAM(
-              [
+        ]])],
+        [$1],[$2],[
+            AC_LINK_IFELSE([
+                AC_LANG_PROGRAM([
 #include <sys/epoll.h>
-              ],
-      [[
-      struct epoll_event t_ev;
-      epoll_create(10);
-      ]]
-              )],
-              [libzmq_cv_have_poller_epoll="yes" ; $1],
-              [libzmq_cv_have_poller_epoll="no" ; $2])
+                ],[[
+struct epoll_event t_ev;
+epoll_create(10);
+                ]])],
+                [$1], [$2]
+            )
+        ]
+    )
+}])
 
-        ])
+AC_DEFUN([LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC], [{
+    AC_RUN_IFELSE([
+        AC_LANG_PROGRAM([
+#include <sys/epoll.h>
+        ],[[
+struct epoll_event t_ev;
+int r;
+r = epoll_create1(EPOLL_CLOEXEC);
+return(r < 0);
+        ]])],
+        [$1],[$2],[
+            AC_LINK_IFELSE([
+                AC_LANG_PROGRAM([
+#include <sys/epoll.h>
+                ],[[
+struct epoll_event t_ev;
+epoll_create1(EPOLL_CLOEXEC);
+                ]])],
+                [$1], [$2]
+            )
+        ]
+    )
 }])
 
 dnl ################################################################################
@@ -839,18 +971,31 @@ dnl # LIBZMQ_CHECK_POLLER_DEVPOLL([action-if-found], [action-if-not-found])     
 dnl # Checks devpoll polling system                                                #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_DEVPOLL], [{
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM(
-        [
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
 #include <sys/devpoll.h>
-        ],
-[[
+        ],[[
 struct pollfd t_devpoll;
 int fd = open("/dev/poll", O_RDWR);
-]]
-        )],
-        [libzmq_cv_have_poller_devpoll="yes" ; $1],
-        [libzmq_cv_have_poller_devpoll="no" ; $2])
+        ]])],
+        [$1], [$2]
+    )
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_POLLER_POLLSET([action-if-found], [action-if-not-found])        #
+dnl # Checks pollset polling system                                                #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_POLLER_POLLSET], [{
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
+#include <sys/poll.h>
+#include <sys/pollset.h>
+        ],[[
+pollset_t ps = pollset_create(-1);
+        ]])],
+        [$1], [$2]
+    )
 }])
 
 dnl ################################################################################
@@ -858,18 +1003,15 @@ dnl # LIBZMQ_CHECK_POLLER_POLL([action-if-found], [action-if-not-found])        
 dnl # Checks poll polling system                                                   #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_POLL], [{
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM(
-        [
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
 #include <poll.h>
-        ],
-[[
+        ],[[
 struct pollfd t_poll;
 poll(&t_poll, 1, 1);
-]]
-        )],
-        [libzmq_cv_have_poller_poll="yes" ; $1],
-        [libzmq_cv_have_poller_poll="no" ; $2])
+        ]])],
+        [$1], [$2]
+    )
 }])
 
 dnl ################################################################################
@@ -877,9 +1019,8 @@ dnl # LIBZMQ_CHECK_POLLER_SELECT([action-if-found], [action-if-not-found])      
 dnl # Checks select polling system                                                 #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_SELECT], [{
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM(
-        [
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
 #ifdef ZMQ_HAVE_WINDOWS
 #include "winsock2.h"
 #elif defined ZMQ_HAVE_OPENVMS
@@ -888,79 +1029,204 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER_SELECT], [{
 #else
 #include <sys/select.h>
 #endif
-        ],
-[[
+        ],[[
 fd_set t_rfds;
 struct timeval tv;
-
 FD_ZERO(&t_rfds);
 FD_SET(0, &t_rfds);
-
 tv.tv_sec = 5;
 tv.tv_usec = 0;
-
-select(1, &t_rfds, NULL, NULL, &tv);
-]]
-        )],
-        [libzmq_cv_have_poller_select="yes" ; $1],
-        [libzmq_cv_have_poller_select="no" ; $2])
+select(1, &t_rfds, 0, 0, &tv);
+        ]])],
+        [$1],[$2]
+    )
 }])
 
 dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER([action-if-found], [action-if-not-found])                #
 dnl # Choose polling system                                                        #
 dnl ################################################################################
+
 AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
+    # Allow user to override poller autodetection
+    AC_ARG_WITH([poller],
+        [AS_HELP_STRING([--with-poller],
+        [choose I/O thread polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', 'wepoll', or 'auto'. [default=auto]])])
 
     # Allow user to override poller autodetection
-    AC_ARG_WITH([poller], [AS_HELP_STRING([--with-poller],
-                [choose polling system manually. valid values are kqueue, epoll, devpoll, poll or select [default=autodetect]])])
+    AC_ARG_WITH([api_poller],
+        [AS_HELP_STRING([--with-api-poller],
+        [choose zmq_poll(er)_* API polling system manually. Valid values are 'poll', 'select', or 'auto'. [default=auto]])])
 
-    case "${with_poller}" in
-        kqueue|epoll|devpoll|poll|select)
-            # User has chosen polling system
-            AC_MSG_CHECKING([for suitable polling system skipped for preselect])
-            libzmq_cv_poller="${with_poller}"
-        ;;
+    if test "x$with_poller" == "x"; then
+        pollers=auto
+    else
+        pollers=$with_poller
+    fi
+    if test "$pollers" == "auto"; then
+        # We search for pollers in this order
+        pollers="kqueue epoll devpoll pollset poll select"
+    fi
 
-        *)
-            # try to find suitable polling system. the order of testing is:
-            # kqueue -> epoll -> devpoll -> poll -> select
-            AC_MSG_CHECKING([for suitable polling system])
-            for subsystem in kqueue epoll devpoll poll select; do
-
-                case "${subsystem}" in
-                    kqueue)
-                        LIBZMQ_CHECK_POLLER_KQUEUE([libzmq_cv_poller=$subsystem], [])
-                    ;;
-
-                    epoll)
-                        LIBZMQ_CHECK_POLLER_EPOLL([libzmq_cv_poller=$subsystem], [])
-                    ;;
-
-                    devpoll)
-                        LIBZMQ_CHECK_POLLER_DEVPOLL([libzmq_cv_poller=$subsystem], [])
-                    ;;
-
-                    poll)
-                        LIBZMQ_CHECK_POLLER_POLL([libzmq_cv_poller=$subsystem], [])
-                    ;;
-
-                    select)
-                        LIBZMQ_CHECK_POLLER_SELECT([libzmq_cv_poller=$subsystem], [])
-                    ;;
+    # try to find suitable polling system. the order of testing is:
+    AC_MSG_NOTICE([Choosing I/O thread polling system from '$pollers'...])
+    poller_found=0
+    for poller in $pollers; do
+        case "$poller" in
+            kqueue)
+                LIBZMQ_CHECK_POLLER_KQUEUE([
+                    AC_MSG_NOTICE([Using 'kqueue' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_KQUEUE, 1, [Use 'kqueue' I/O thread polling system])
+                    poller_found=1
+                ])
+            ;;
+            epoll)
+                case "$host_os" in
+                    solaris*|sunos*)
+                        # Recent illumos and Solaris systems did add epoll()
+                        # syntax, but it does not fully satisfy expectations
+                        # that ZMQ has from Linux systems. Unless you undertake
+                        # to fix the integration, do not disable this exception
+                        # and use select() or poll() on Solarish OSes for now.
+                        AC_MSG_NOTICE([NOT using 'epoll' I/O thread polling system on '$host_os']) ;;
+                    *)
+                        LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([
+                            AC_MSG_NOTICE([Using 'epoll' I/O thread polling system with CLOEXEC])
+                            AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
+                            AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' I/O thread polling system with CLOEXEC])
+                            poller_found=1
+                            ],[
+                            LIBZMQ_CHECK_POLLER_EPOLL([
+                                AC_MSG_NOTICE([Using 'epoll' I/O thread polling system with CLOEXEC])
+                                AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
+                                poller_found=1
+                            ])
+                        ])
+                        ;;
                 esac
-
-                if test "x${libzmq_cv_poller}" != "x"; then
-                    break
-                fi
-            done
-      ;;
-    esac
-
-    libzmq_cv_poller_flag=`echo "ZMQ_USE_${libzmq_cv_poller}" | tr a-z A-Z`
-
-    AS_IF([test "x${libzmq_cv_poller}" != "x"],
-          [AC_MSG_RESULT([using $libzmq_cv_poller]) ; $1], [AC_MSG_RESULT(no suitable polling system found) ; $2])
+            ;;
+            devpoll)
+                LIBZMQ_CHECK_POLLER_DEVPOLL([
+                    AC_MSG_NOTICE([Using 'devpoll' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_DEVPOLL, 1, [Use 'devpoll' I/O thread polling system])
+                    poller_found=1
+                ])
+            ;;
+            pollset)
+                LIBZMQ_CHECK_POLLER_POLLSET([
+                    AC_MSG_NOTICE([Using 'pollset' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_POLLSET, 1, [Use 'pollset' I/O thread polling system])
+                    poller_found=1
+                ])
+            ;;
+            poll)
+                LIBZMQ_CHECK_POLLER_POLL([
+                    AC_MSG_NOTICE([Using 'poll' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_POLL, 1, [Use 'poll' I/O thread polling system])
+                    poller_found=1
+                ])
+            ;;
+            select)
+                LIBZMQ_CHECK_POLLER_SELECT([
+                    AC_MSG_NOTICE([Using 'select' I/O thread polling system])
+                    AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_SELECT, 1, [Use 'select' I/O thread polling system])
+                    poller_found=1
+                ])
+            ;;
+            wepoll)
+                # wepoll can only be manually selected
+                AC_MSG_NOTICE([Using 'wepoll' I/O thread polling system])
+                AC_DEFINE(ZMQ_IOTHREAD_POLLER_USE_EPOLL, 1, [Use 'epoll' I/O thread polling system])
+                poller_found=1
+            ;;
+        esac
+        test $poller_found -eq 1 && break
+    done
+    if test $poller_found -eq 0; then
+        AC_MSG_ERROR([None of '$pollers' are valid pollers on this platform])
+    fi
+    if test "x$with_api_poller" == "x"; then
+        with_api_poller=auto
+    fi
+	if test "x$with_api_poller" == "xauto"; then
+		if test $poller == "select"; then
+			api_poller=select
+		elif test $poller == "wepoll"; then
+			api_poller=select
+		else		
+			api_poller=poll
+		fi
+	else
+		api_poller=$with_api_poller
+	fi
+	if test "$api_poller" == "select"; then
+		AC_MSG_NOTICE([Using 'select' zmq_poll(er)_* API polling system])
+		AC_DEFINE(ZMQ_POLL_BASED_ON_SELECT, 1, [Use 'select' zmq_poll(er)_* API polling system])
+	elif test "$api_poller" == "poll"; then
+		AC_MSG_NOTICE([Using 'poll' zmq_poll(er)_* API polling system])
+		AC_DEFINE(ZMQ_POLL_BASED_ON_POLL, 1, [Use 'poll' zmq_poll(er)_* API polling system])
+	else
+        AC_MSG_ERROR([Invalid API poller '$api_poller' specified])
+	fi
 }])
 
+dnl ##############################################################################
+dnl # LIBZMQ_CHECK_CACHELINE                                                     #
+dnl # Check cacheline size for alignment purposes                                #
+dnl ##############################################################################
+AC_DEFUN([LIBZMQ_CHECK_CACHELINE], [{
+
+    zmq_cacheline_size=64
+    AC_CHECK_TOOL(libzmq_getconf, getconf)
+    if ! test "x$libzmq_getconf" = "x"; then
+        zmq_cacheline_size=$($libzmq_getconf LEVEL1_DCACHE_LINESIZE 2>/dev/null || echo 64)
+        if test "x$zmq_cacheline_size" = "x0" -o  "x$zmq_cacheline_size" = "x-1"; then
+            # getconf on some architectures does not know the size, try to fallback to
+            # the value the kernel knows on Linux
+            zmq_cacheline_size=$(cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size 2>/dev/null || echo 64)
+        fi
+    fi
+	AC_MSG_NOTICE([Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
+	AC_DEFINE_UNQUOTED(ZMQ_CACHELINE_SIZE, $zmq_cacheline_size, [Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_CV_IMPL([action-if-found], [action-if-not-found])               #
+dnl # Choose condition variable implementation                                     #
+dnl ################################################################################
+
+AC_DEFUN([LIBZMQ_CHECK_CV_IMPL], [{
+    # Allow user to override condition variable autodetection
+    AC_ARG_WITH([cv-impl],
+        [AS_HELP_STRING([--with-cv-impl],
+        [choose condition variable implementation manually. Valid values are 'stl11', 'pthread', 'none', or 'auto'. [default=auto]])])
+
+    if test "x$with_cv_impl" == "x"; then
+        cv_impl=auto
+    else
+        cv_impl=$with_cv_impl
+    fi
+    case $host_os in
+      vxworks*)
+        cv_impl="vxworks"
+        AC_DEFINE(ZMQ_USE_CV_IMPL_VXWORKS, 1, [Use vxworks condition variable implementation.])
+      ;;
+    esac
+    if test "$cv_impl" == "auto" || test "$cv_impl" == "stl11"; then
+        AC_LANG_PUSH([C++])
+        AC_CHECK_HEADERS(condition_variable, [stl11="yes"
+            AC_DEFINE(ZMQ_USE_CV_IMPL_STL11, 1, [Use stl11 condition variable implementation.])],
+            [stl11="no"])
+        AC_LANG_POP([C++])
+        if test "$cv_impl" == "stl11" && test "x$stl11" == "xno"; then
+            AC_MSG_ERROR([--with-cv-impl set to stl11 but cannot find condition_variable])
+        fi
+    fi
+    if test "$cv_impl" == "pthread" || test "x$stl11" == "xno"; then
+        AC_DEFINE(ZMQ_USE_CV_IMPL_PTHREADS, 1, [Use pthread condition variable implementation.])
+    fi
+    if test "$cv_impl" == "none"; then
+        AC_DEFINE(ZMQ_USE_CV_IMPL_NONE, 1, [Use no condition variable implementation.])
+    fi
+       AC_MSG_NOTICE([Using "$cv_impl" condition variable implementation.])
+}])

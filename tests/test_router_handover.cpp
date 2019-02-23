@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,83 +29,143 @@
 
 #include "testutil.hpp"
 
-int main (void)
-{
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (router);
+#include "testutil_unity.hpp"
 
-    int rc = zmq_bind (router, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test_with_handover ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    void *router = test_context_socket (ZMQ_ROUTER);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
 
     // Enable the handover flag
     int handover = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER, &handover, sizeof (handover));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER,
+                                               &handover, sizeof (handover)));
 
     //  Create dealer called "X" and connect it to our router
-    void *dealer_one = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer_one);
-    rc = zmq_setsockopt (dealer_one, ZMQ_IDENTITY, "X", 1);
-    assert (rc == 0);
-    rc = zmq_connect (dealer_one, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
-    
-    //  Get message from dealer to know when connection is ready
-    char buffer [255];
-    rc = zmq_send (dealer_one, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer [0] ==  'X');
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 5);
-
-    // Now create a second dealer that uses the same identity
-    void *dealer_two = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer_two);
-    rc = zmq_setsockopt (dealer_two, ZMQ_IDENTITY, "X", 1);
-    assert (rc == 0);
-    rc = zmq_connect (dealer_two, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    void *dealer_one = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_one, my_endpoint));
 
     //  Get message from dealer to know when connection is ready
-    rc = zmq_send (dealer_two, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer [0] ==  'X');
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 5);
+    char buffer[255];
+    send_string_expect_success (dealer_one, "Hello", 0);
 
-    //  Send a message to 'X' identity. This should be delivered 
-    //  to the second dealer, instead of the first beccause of the handover.
-    rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
-    assert (rc == 1);
-    rc = zmq_send (router, "Hello", 5, 0);
-    assert (rc == 5);
+    recv_string_expect_success (router, "X", 0);
+    recv_string_expect_success (router, "Hello", 0);
+
+    // Now create a second dealer that uses the same routing id
+    void *dealer_two = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_two, my_endpoint));
+
+    //  Get message from dealer to know when connection is ready
+    send_string_expect_success (dealer_two, "Hello", 0);
+
+    recv_string_expect_success (router, "X", 0);
+    recv_string_expect_success (router, "Hello", 0);
+
+    //  Send a message to 'X' routing id. This should be delivered
+    //  to the second dealer, instead of the first because of the handover.
+    send_string_expect_success (router, "X", ZMQ_SNDMORE);
+    send_string_expect_success (router, "Hello", 0);
 
     //  Ensure that the first dealer doesn't receive the message
-    //  but the second one does 
-    rc = zmq_recv (dealer_one, buffer, 255, ZMQ_NOBLOCK);
-    assert (rc == -1);
+    //  but the second one does
+    const int timeout = SETTLE_TIME;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_one, ZMQ_RCVTIMEO, &timeout, sizeof timeout));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (dealer_one, buffer, 255, 0));
 
-    rc = zmq_recv (dealer_two, buffer, 255, 0);
-    assert (rc == 5);
- 
-    rc = zmq_close (router);
-    assert (rc == 0);
+    recv_string_expect_success (dealer_two, "Hello", 0);
 
-    rc = zmq_close (dealer_one);
-    assert (rc == 0);
+    test_context_socket_close (router);
+    test_context_socket_close (dealer_one);
+    test_context_socket_close (dealer_two);
+}
 
-    rc = zmq_close (dealer_two);
-    assert (rc == 0);
+void test_without_handover ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    void *router = test_context_socket (ZMQ_ROUTER);
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
 
-    return 0 ;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+
+    //  Create dealer called "X" and connect it to our router
+    void *dealer_one = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_one, my_endpoint));
+
+    //  Get message from dealer to know when connection is ready
+    char buffer[255];
+    send_string_expect_success (dealer_one, "Hello", 0);
+
+    recv_string_expect_success (router, "X", 0);
+    recv_string_expect_success (router, "Hello", 0);
+
+    // Now create a second dealer that uses the same routing id
+    void *dealer_two = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer_two, my_endpoint));
+
+    //  Send message from second dealer
+    send_string_expect_success (dealer_two, "Hello", 0);
+
+    //  This should be ignored by the router
+    const int timeout = SETTLE_TIME;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (router, ZMQ_RCVTIMEO, &timeout, sizeof timeout));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (router, buffer, 255, 0));
+
+    //  Send a message to 'X' routing id. This should be delivered
+    //  to the second dealer, instead of the first because of the handover.
+    send_string_expect_success (router, "X", ZMQ_SNDMORE);
+    send_string_expect_success (router, "Hello", 0);
+
+    //  Ensure that the second dealer doesn't receive the message
+    //  but the first one does
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer_two, ZMQ_RCVTIMEO, &timeout, sizeof timeout));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (dealer_two, buffer, 255, 0));
+
+    recv_string_expect_success (dealer_one, "Hello", 0);
+
+    test_context_socket_close (router);
+    test_context_socket_close (dealer_one);
+    test_context_socket_close (dealer_two);
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_with_handover);
+    RUN_TEST (test_without_handover);
+    return UNITY_END ();
 }

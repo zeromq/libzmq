@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="Visual C++" Version="9,00" Name="libzmq" ProjectGUID="{641C5F36-32EE-4323-B740-992B651CF9D6}" RootNamespace="libzmq" TargetFrameworkVersion="196613">
+  <Platforms>
+    <Platform Name="Win32" />
+  </Platforms>
+  <ToolFiles />
+  <Configurations>
+    <Configuration Name="Debug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="2" CharacterSet="2">
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" TargetMachine="1" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCManifestTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCAppVerifierTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+    <Configuration Name="Release|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="2" CharacterSet="2" WholeProgramOptimization="1">
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCManifestTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCAppVerifierTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+    <Configuration Name="StaticDebug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="4" CharacterSet="2">
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq_d.lib" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+    <Configuration Name="StaticRelease|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="4" CharacterSet="2" WholeProgramOptimization="1">
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.lib" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+    <Configuration Name="WithOpenPGM|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="2" CharacterSet="2" WholeProgramOptimization="1">
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" AdditionalIncludeDirectories="../../../../OpenPGM/include" PreprocessorDefinitions="ZMQ_HAVE_OPENPGM" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib libpgm.lib" OutputFile="../../../../lib/libzmq.dll" AdditionalLibraryDirectories="../../../../../OpenPGM/lib" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCManifestTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCAppVerifierTool" />
+      <Tool Name="VCPostBuildEventTool" />
+    </Configuration>
+  </Configurations>
+  <References />
+  <Files>
+    <Filter Name="Source Files" Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+      <File RelativePath="..\..\errno.cpp" />
+      <File RelativePath="..\..\..\..\src\address.cpp" />
+      <File RelativePath="..\..\..\..\src\client.cpp" />
+      <File RelativePath="..\..\..\..\src\clock.cpp" />
+      <File RelativePath="..\..\..\..\src\ctx.cpp" />
+      <File RelativePath="..\..\..\..\src\curve_client.cpp" />
+      <File RelativePath="..\..\..\..\src\curve_mechanism_base.cpp" />
+      <File RelativePath="..\..\..\..\src\curve_server.cpp" />
+      <File RelativePath="..\..\..\..\src\dealer.cpp" />
+      <File RelativePath="..\..\..\..\src\decoder_allocators.cpp" />
+      <File RelativePath="..\..\..\..\src\devpoll.cpp" />
+      <File RelativePath="..\..\..\..\src\dgram.cpp" />
+      <File RelativePath="..\..\..\..\src\dish.cpp" />
+      <File RelativePath="..\..\..\..\src\dist.cpp" />
+      <File RelativePath="..\..\..\..\src\epoll.cpp" />
+      <File RelativePath="..\..\..\..\src\err.cpp" />
+      <File RelativePath="..\..\..\..\src\fq.cpp" />
+      <File RelativePath="..\..\..\..\src\gather.cpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_client.cpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_mechanism_base.cpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_server.cpp" />
+      <File RelativePath="..\..\..\..\src\io_object.cpp" />
+      <File RelativePath="..\..\..\..\src\io_thread.cpp" />
+      <File RelativePath="..\..\..\..\src\ipc_address.cpp" />
+      <File RelativePath="..\..\..\..\src\ipc_connecter.cpp" />
+      <File RelativePath="..\..\..\..\src\ipc_listener.cpp" />
+      <File RelativePath="..\..\..\..\src\ip.cpp" />
+      <File RelativePath="..\..\..\..\src\kqueue.cpp" />
+      <File RelativePath="..\..\..\..\src\lb.cpp" />
+      <File RelativePath="..\..\..\..\src\mailbox.cpp" />
+      <File RelativePath="..\..\..\..\src\mailbox_safe.cpp" />
+      <File RelativePath="..\..\..\..\src\mechanism_base.cpp" />
+      <File RelativePath="..\..\..\..\src\mechanism.cpp" />
+      <File RelativePath="..\..\..\..\src\metadata.cpp" />
+      <File RelativePath="..\..\..\..\src\msg.cpp" />
+      <File RelativePath="..\..\..\..\src\mtrie.cpp" />
+      <File RelativePath="..\..\..\..\src\norm_engine.cpp" />
+      <File RelativePath="..\..\..\..\src\null_mechanism.cpp" />
+      <File RelativePath="..\..\..\..\src\object.cpp" />
+      <File RelativePath="..\..\..\..\src\options.cpp" />
+      <File RelativePath="..\..\..\..\src\own.cpp" />
+      <File RelativePath="..\..\..\..\src\pair.cpp" />
+      <File RelativePath="..\..\..\..\src\pgm_receiver.cpp" />
+      <File RelativePath="..\..\..\..\src\pgm_sender.cpp" />
+      <File RelativePath="..\..\..\..\src\pgm_socket.cpp" />
+      <File RelativePath="..\..\..\..\src\pipe.cpp" />
+      <File RelativePath="..\..\..\..\src\plain_client.cpp" />
+      <File RelativePath="..\..\..\..\src\plain_server.cpp" />
+      <File RelativePath="..\..\..\..\src\poll.cpp" />
+      <File RelativePath="..\..\..\..\src\poller_base.cpp" />
+      <File RelativePath="..\..\..\..\src\pollset.cpp" />
+      <File RelativePath="..\..\..\..\src\precompiled.cpp" />
+      <File RelativePath="..\..\..\..\src\proxy.cpp" />
+      <File RelativePath="..\..\..\..\src\pub.cpp" />
+      <File RelativePath="..\..\..\..\src\pull.cpp" />
+      <File RelativePath="..\..\..\..\src\push.cpp" />
+      <File RelativePath="..\..\..\..\src\radio.cpp" />
+      <File RelativePath="..\..\..\..\src\random.cpp" />
+      <File RelativePath="..\..\..\..\src\raw_decoder.cpp" />
+      <File RelativePath="..\..\..\..\src\raw_encoder.cpp" />
+      <File RelativePath="..\..\..\..\src\reaper.cpp" />
+      <File RelativePath="..\..\..\..\src\rep.cpp" />
+      <File RelativePath="..\..\..\..\src\req.cpp" />
+      <File RelativePath="..\..\..\..\src\router.cpp" />
+      <File RelativePath="..\..\..\..\src\scatter.cpp" />
+      <File RelativePath="..\..\..\..\src\select.cpp" />
+      <File RelativePath="..\..\..\..\src\server.cpp" />
+      <File RelativePath="..\..\..\..\src\session_base.cpp" />
+      <File RelativePath="..\..\..\..\src\signaler.cpp" />
+      <File RelativePath="..\..\..\..\src\socket_base.cpp" />
+      <File RelativePath="..\..\..\..\src\socket_poller.cpp" />
+      <File RelativePath="..\..\..\..\src\socks_connecter.cpp" />
+      <File RelativePath="..\..\..\..\src\socks.cpp" />
+      <File RelativePath="..\..\..\..\src\stream.cpp" />
+      <File RelativePath="..\..\..\..\src\stream_engine.cpp" />
+      <File RelativePath="..\..\..\..\src\sub.cpp" />
+      <File RelativePath="..\..\..\..\src\tcp_address.cpp" />
+      <File RelativePath="..\..\..\..\src\tcp_connecter.cpp" />
+      <File RelativePath="..\..\..\..\src\tcp.cpp" />
+      <File RelativePath="..\..\..\..\src\tcp_listener.cpp" />
+      <File RelativePath="..\..\..\..\src\thread.cpp" />
+      <File RelativePath="..\..\..\..\src\timers.cpp" />
+      <File RelativePath="..\..\..\..\src\tipc_address.cpp" />
+      <File RelativePath="..\..\..\..\src\tipc_connecter.cpp" />
+      <File RelativePath="..\..\..\..\src\tipc_listener.cpp" />
+      <File RelativePath="..\..\..\..\src\trie.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.cpp" />
+      <File RelativePath="..\..\..\..\src\v1_decoder.cpp" />
+      <File RelativePath="..\..\..\..\src\v1_encoder.cpp" />
+      <File RelativePath="..\..\..\..\src\v2_decoder.cpp" />
+      <File RelativePath="..\..\..\..\src\v2_encoder.cpp" />
+      <File RelativePath="..\..\..\..\src\vmci_address.cpp" />
+      <File RelativePath="..\..\..\..\src\vmci_connecter.cpp" />
+      <File RelativePath="..\..\..\..\src\vmci.cpp" />
+      <File RelativePath="..\..\..\..\src\vmci_listener.cpp" />
+      <File RelativePath="..\..\..\..\src\xpub.cpp" />
+      <File RelativePath="..\..\..\..\src\xsub.cpp" />
+      <File RelativePath="..\..\..\..\src\zap_client.cpp" />
+      <File RelativePath="..\..\..\..\src\zmq.cpp" />
+      <File RelativePath="..\..\..\..\src\zmq_utils.cpp" />
+    </Filter>
+    <Filter Name="Header Files" Filter="h;hpp;hxx;hm;inl;inc;xsd" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+      <File RelativePath="..\..\errno.hpp" />
+      <File RelativePath="..\..\..\..\src\address.hpp" />
+      <File RelativePath="..\..\..\..\src\array.hpp" />
+      <File RelativePath="..\..\..\..\src\atomic_counter.hpp" />
+      <File RelativePath="..\..\..\..\src\atomic_ptr.hpp" />
+      <File RelativePath="..\..\..\..\src\blob.hpp" />
+      <File RelativePath="..\..\..\..\src\client.hpp" />
+      <File RelativePath="..\..\..\..\src\clock.hpp" />
+      <File RelativePath="..\..\..\..\src\command.hpp" />
+      <File RelativePath="..\..\..\..\src\condition_variable.hpp" />
+      <File RelativePath="..\..\..\..\src\config.hpp" />
+      <File RelativePath="..\..\..\..\src\ctx.hpp" />
+      <File RelativePath="..\..\..\..\src\curve_client.hpp" />
+      <File RelativePath="..\..\..\..\src\curve_client_tools.hpp" />
+      <File RelativePath="..\..\..\..\src\curve_mechanism_base.hpp" />
+      <File RelativePath="..\..\..\..\src\curve_server.hpp" />
+      <File RelativePath="..\..\..\..\src\dbuffer.hpp" />
+      <File RelativePath="..\..\..\..\src\dealer.hpp" />
+      <File RelativePath="..\..\..\..\src\decoder_allocators.hpp" />
+      <File RelativePath="..\..\..\..\src\decoder.hpp" />
+      <File RelativePath="..\..\..\..\src\devpoll.hpp" />
+      <File RelativePath="..\..\..\..\src\dgram.hpp" />
+      <File RelativePath="..\..\..\..\src\dish.hpp" />
+      <File RelativePath="..\..\..\..\src\dist.hpp" />
+      <File RelativePath="..\..\..\..\src\encoder.hpp" />
+      <File RelativePath="..\..\..\..\src\epoll.hpp" />
+      <File RelativePath="..\..\..\..\src\err.hpp" />
+      <File RelativePath="..\..\..\..\src\fd.hpp" />
+      <File RelativePath="..\..\..\..\src\fq.hpp" />
+      <File RelativePath="..\..\..\..\src\gather.hpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_client.hpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_mechanism_base.hpp" />
+      <File RelativePath="..\..\..\..\src\gssapi_server.hpp" />
+      <File RelativePath="..\..\..\..\src\i_decoder.hpp" />
+      <File RelativePath="..\..\..\..\src\i_encoder.hpp" />
+      <File RelativePath="..\..\..\..\src\i_engine.hpp" />
+      <File RelativePath="..\..\..\..\src\i_mailbox.hpp" />
+      <File RelativePath="..\..\..\..\src\io_object.hpp" />
+      <File RelativePath="..\..\..\..\src\io_thread.hpp" />
+      <File RelativePath="..\..\..\..\src\ipc_address.hpp" />
+      <File RelativePath="..\..\..\..\src\ipc_connecter.hpp" />
+      <File RelativePath="..\..\..\..\src\ipc_listener.hpp" />
+      <File RelativePath="..\..\..\..\src\ip.hpp" />
+      <File RelativePath="..\..\..\..\src\i_poll_events.hpp" />
+      <File RelativePath="..\..\..\..\src\kqueue.hpp" />
+      <File RelativePath="..\..\..\..\src\lb.hpp" />
+      <File RelativePath="..\..\..\..\src\likely.hpp" />
+      <File RelativePath="..\..\..\..\src\macros.hpp" />
+      <File RelativePath="..\..\..\..\src\mailbox.hpp" />
+      <File RelativePath="..\..\..\..\src\mailbox_safe.hpp" />
+      <File RelativePath="..\..\..\..\src\mechanism_base.hpp" />
+      <File RelativePath="..\..\..\..\src\mechanism.hpp" />
+      <File RelativePath="..\..\..\..\src\metadata.hpp" />
+      <File RelativePath="..\..\..\..\src\msg.hpp" />
+      <File RelativePath="..\..\..\..\src\mtrie.hpp" />
+      <File RelativePath="..\..\..\..\src\mutex.hpp" />
+      <File RelativePath="..\..\..\..\src\norm_engine.hpp" />
+      <File RelativePath="..\..\..\..\src\null_mechanism.hpp" />
+      <File RelativePath="..\..\..\..\src\object.hpp" />
+      <File RelativePath="..\..\..\..\src\options.hpp" />
+      <File RelativePath="..\..\..\..\src\own.hpp" />
+      <File RelativePath="..\..\..\..\src\pair.hpp" />
+      <File RelativePath="..\..\..\..\src\pgm_receiver.hpp" />
+      <File RelativePath="..\..\..\..\src\pgm_sender.hpp" />
+      <File RelativePath="..\..\..\..\src\pgm_socket.hpp" />
+      <File RelativePath="..\..\..\..\src\pipe.hpp" />
+      <File RelativePath="..\..\..\..\src\plain_client.hpp" />
+      <File RelativePath="..\..\..\..\src\plain_server.hpp" />
+      <File RelativePath="..\..\..\..\src\platform.hpp" />
+      <File RelativePath="..\..\..\..\src\poller_base.hpp" />
+      <File RelativePath="..\..\..\..\src\poller.hpp" />
+      <File RelativePath="..\..\..\..\src\poll.hpp" />
+      <File RelativePath="..\..\..\..\src\pollset.hpp" />
+      <File RelativePath="..\..\..\..\src\precompiled.hpp" />
+      <File RelativePath="..\..\..\..\src\proxy.hpp" />
+      <File RelativePath="..\..\..\..\src\pub.hpp" />
+      <File RelativePath="..\..\..\..\src\pull.hpp" />
+      <File RelativePath="..\..\..\..\src\push.hpp" />
+      <File RelativePath="..\..\..\..\src\radio.hpp" />
+      <File RelativePath="..\..\..\..\src\random.hpp" />
+      <File RelativePath="..\..\..\..\src\raw_decoder.hpp" />
+      <File RelativePath="..\..\..\..\src\raw_encoder.hpp" />
+      <File RelativePath="..\..\..\..\src\reaper.hpp" />
+      <File RelativePath="..\..\..\..\src\rep.hpp" />
+      <File RelativePath="..\..\..\..\src\req.hpp" />
+      <File RelativePath="..\..\..\..\src\router.hpp" />
+      <File RelativePath="..\..\..\..\src\scatter.hpp" />
+      <File RelativePath="..\..\..\..\src\select.hpp" />
+      <File RelativePath="..\..\..\..\src\server.hpp" />
+      <File RelativePath="..\..\..\..\src\session_base.hpp" />
+      <File RelativePath="..\..\..\..\src\signaler.hpp" />
+      <File RelativePath="..\..\..\..\src\socket_base.hpp" />
+      <File RelativePath="..\..\..\..\src\socket_poller.hpp" />
+      <File RelativePath="..\..\..\..\src\socks_connecter.hpp" />
+      <File RelativePath="..\..\..\..\src\socks.hpp" />
+      <File RelativePath="..\..\..\..\src\stdint.hpp" />
+      <File RelativePath="..\..\..\..\src\stream_engine.hpp" />
+      <File RelativePath="..\..\..\..\src\stream.hpp" />
+      <File RelativePath="..\..\..\..\src\sub.hpp" />
+      <File RelativePath="..\..\..\..\src\tcp_address.hpp" />
+      <File RelativePath="..\..\..\..\src\tcp_connecter.hpp" />
+      <File RelativePath="..\..\..\..\src\tcp.hpp" />
+      <File RelativePath="..\..\..\..\src\tcp_listener.hpp" />
+      <File RelativePath="..\..\..\..\src\thread.hpp" />
+      <File RelativePath="..\..\..\..\src\timers.hpp" />
+      <File RelativePath="..\..\..\..\src\tipc_address.hpp" />
+      <File RelativePath="..\..\..\..\src\tipc_connecter.hpp" />
+      <File RelativePath="..\..\..\..\src\tipc_listener.hpp" />
+      <File RelativePath="..\..\..\..\src\trie.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.hpp" />
+      <File RelativePath="..\..\..\..\src\v1_decoder.hpp" />
+      <File RelativePath="..\..\..\..\src\v1_encoder.hpp" />
+      <File RelativePath="..\..\..\..\src\v2_decoder.hpp" />
+      <File RelativePath="..\..\..\..\src\v2_encoder.hpp" />
+      <File RelativePath="..\..\..\..\src\v2_protocol.hpp" />
+      <File RelativePath="..\..\..\..\src\vmci_address.hpp" />
+      <File RelativePath="..\..\..\..\src\vmci_connecter.hpp" />
+      <File RelativePath="..\..\..\..\src\vmci.hpp" />
+      <File RelativePath="..\..\..\..\src\vmci_listener.hpp" />
+      <File RelativePath="..\..\..\..\src\windows.hpp" />
+      <File RelativePath="..\..\..\..\src\wire.hpp" />
+      <File RelativePath="..\..\..\..\src\xpub.hpp" />
+      <File RelativePath="..\..\..\..\src\xsub.hpp" />
+      <File RelativePath="..\..\..\..\src\ypipe_base.hpp" />
+      <File RelativePath="..\..\..\..\src\ypipe_conflate.hpp" />
+      <File RelativePath="..\..\..\..\src\ypipe.hpp" />
+      <File RelativePath="..\..\..\..\src\yqueue.hpp" />
+      <File RelativePath="..\..\..\..\src\zap_client.hpp" />
+    </Filter>
+  </Files>
+  <Globals />
+</VisualStudioProject>

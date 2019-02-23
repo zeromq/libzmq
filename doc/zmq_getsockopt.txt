@@ -63,6 +63,21 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
+ZMQ_BINDTODEVICE: Retrieve name of device the socket is bound to
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_BINDTODEVICE' option retrieves the name of the device this socket is
+bound to, eg. an interface or VRF. If a socket is bound to an interface, only
+packets received from that interface are processed by the socket. If device
+is a VRF device, then subsequent binds/connects to that socket use addresses
+in the VRF routing table.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP or UDP transports.
+
+
 ZMQ_CONNECT_TIMEOUT: Retrieve connect() timeout
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieves how long to wait before timing-out a connect() system call.
@@ -232,12 +247,43 @@ Option value unit:: N/A
 Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
 
+ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE: Retrieve nametype for service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE' option, if any, previously
+set on the socket.  A value of 'ZMQ_GSSAPI_NT_HOSTBASED' (0) means the name
+specified with 'ZMQ_GSSAPI_SERVICE_PRINCIPAL' is interpreted as a host based
+name.  A value of 'ZMQ_GSSAPI_NT_USER_NAME' (1) means it is interpreted as
+a local user name.  A value of 'ZMQ_GSSAPI_NT_KRB5_PRINCIPAL' (2) means it
+is interpreted as an unparsed principal name string (valid only with the
+krb5 GSSAPI mechanism).
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1, 2
+Default value:: 0 (ZMQ_GSSAPI_NT_HOSTBASED)
+Applicable socket types:: all, when using TCP or IPC transports
+
+ZMQ_GSSAPI_PRINCIPAL_NAMETYPE: Retrieve nametype for service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_PRINCIPAL_NAMETYPE' option, if any, previously
+set on the socket.  A value of 'ZMQ_GSSAPI_NT_HOSTBASED' (0) means the name
+specified with 'ZMQ_GSSAPI_PRINCIPAL' is interpreted as a host based
+name.  A value of 'ZMQ_GSSAPI_NT_USER_NAME' (1) means it is interpreted as
+a local user name.  A value of 'ZMQ_GSSAPI_NT_KRB5_PRINCIPAL' (2) means it
+is interpreted as an unparsed principal name string (valid only with the
+krb5 GSSAPI mechanism).
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1, 2
+Default value:: 0 (ZMQ_GSSAPI_NT_HOSTBASED)
+Applicable socket types:: all, when using TCP or IPC transports
 
 ZMQ_HANDSHAKE_IVL: Retrieve maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HANDSHAKE_IVL' option shall retrieve the maximum handshake interval
 for the specified 'socket'. Handshaking is the exchange of socket configuration
-information (socket type, identity, security) that occurs when a connection
+information (socket type, routing id, security) that occurs when a connection
 is first opened, only for connection-oriented transports. If handshaking does
 not complete within the configured time, the connection shall be closed.
 The value 0 means no handshake time limit.
@@ -251,19 +297,8 @@ Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented trans
 
 ZMQ_IDENTITY: Retrieve socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
-Socket identity is used only by request/reply pattern. Namely, it can be used
-in tandem with ROUTER socket to route messages to the peer with specific
-identity.
-
-Identity should be at least one byte and at most 255 bytes long. Identities
-starting with binary zero are reserved for use by 0MQ infrastructure.
-
-[horizontal]
-Option value type:: binary data
-Option value unit:: N/A
-Default value:: NULL
-Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
+This option name is now deprecated. Use ZMQ_ROUTING_ID instead. 
+ZMQ_IDENTITY remains as an alias for now. 
 
 
 ZMQ_IMMEDIATE: Retrieve attach-on-connect value
@@ -335,6 +370,7 @@ The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for
 TCP and IPC transports. The returned value will be a string in the form of
 a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
 the returned address will be 0.0.0.0 (for IPv4).
+Note: not supported on GNU/Hurd with IPC due to non-working getsockname().
 
 [horizontal]
 Option value type:: NULL-terminated character string
@@ -464,6 +500,19 @@ Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
 
 
+ZMQ_USE_FD: Retrieve the pre-allocated socket file descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_USE_FD' option shall retrieve the pre-allocated file
+descriptor that has been assigned to a ZMQ socket, if any. -1 shall be
+returned if a pre-allocated file descriptor was not set for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: file descriptor
+Default value:: -1
+Applicable socket types:: all bound sockets, when using IPC or TCP transport
+
+
 ZMQ_RATE: Retrieve multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
@@ -485,6 +534,7 @@ documentation for the 'SO_RCVBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -590,6 +640,23 @@ Default value:: 10000
 Applicable socket types:: all, when using multicast transports
 
 
+ZMQ_ROUTING_ID: Retrieve socket routing id
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ROUTING_ID' option shall retrieve the routing id of the specified 'socket'.
+Routing ids are used only by the request/reply pattern. Specifically, it can be used
+in tandem with ROUTER socket to route messages to the peer with a specific
+routing id.
+
+A routing id must be at least one byte and at most 255 bytes long. Identities
+starting with a zero byte are reserved for use by the 0MQ infrastructure.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
+
+
 ZMQ_SNDBUF: Retrieve kernel transmit buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDBUF' option shall retrieve the underlying kernel transmit buffer
@@ -599,6 +666,7 @@ documentation for the 'SO_SNDBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -636,6 +704,19 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: -1 (infinite)
 Applicable socket types:: all
+
+
+ZMQ_SOCKS_PROXY: Retrieve SOCKS5 proxy address
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SOCKS_PROXY' option shall retrieve the SOCKS5 proxy address in string
+format. The returned value shall be a NULL-terminated string and MAY be empty.
+The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP transports
 
 
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
@@ -687,14 +768,13 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_RETRANSMIT_TIMEOUT: Retrieve TCP Retransmit Timeout
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_TCP_MAXRT: Retrieve Max TCP Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, retrieves how long before an unacknowledged TCP
-retransmit times out.
-The system normally attempts many TCP retransmits following an exponential
-backoff strategy. This means that after a network outage, it may take a long
-time before the session can be re-established. Setting this option allows
-the timeout to happen at a shorter interval.
+retransmit times out. The system normally attempts many TCP retransmits
+following an exponential backoff strategy. This means that after a network
+outage, it may take a long time before the session can be re-established.
+Setting this option allows the timeout to happen at a shorter interval.
 
 [horizontal]
 Option value type:: int
@@ -703,9 +783,9 @@ Default value:: 0 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_THREADSAFE: Retrieve socket thread safety
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_THREADSAFE' option shall retrieve a boolean value indicating whether
+ZMQ_THREAD_SAFE: Retrieve socket thread safety
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SAFE' option shall retrieve a boolean value indicating whether
 or not the socket is threadsafe. Currently 'ZMQ_CLIENT' and 'ZMQ_SERVER' sockets
 are threadsafe.
 
@@ -743,7 +823,8 @@ ZMQ_ZAP_DOMAIN: Retrieve RFC 27 authentication domain
 
 The 'ZMQ_ZAP_DOMAIN' option shall retrieve the last ZAP domain set for
 the socket. The returned value shall be a NULL-terminated string and MAY
-be empty. The returned size SHALL include the terminating null byte.
+be empty. An empty string means that ZAP authentication is disabled. 
+The returned size SHALL include the terminating null byte.
 
 [horizontal]
 Option value type:: character string
@@ -751,31 +832,18 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP socket.
-The default value is 8192.
 
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
-
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP socket.
-The default value is 8192.
-
+ZMQ_ZAP_ENFORCE_DOMAIN: Retrieve ZAP domain handling mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ZAP_ENFORCE_DOMAIN' option shall retrieve the flag that determines
+whether a ZAP domain is strictly required or not.
 
 [horizontal]
 Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: all, when using ZAP
+
 
 ZMQ_VMCI_BUFFER_SIZE: Retrieve buffer size of the VMCI socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -823,6 +891,35 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: -1
 Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_MULTICAST_LOOP: Retrieve multicast local loopback configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the current multicast loopback configuration. A value of `1`
+means that the multicast packets sent on this socket will be looped
+back to local listening interface.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 1
+Applicable socket types:: ZMQ_RADIO, when using UDP multicast transport
+
+
+ZMQ_ROUTER_NOTIFY: Retrieve router socket notification settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the current notification settings of a router socket. The returned
+value is a bitmask composed of ZMQ_NOTIFY_CONNECT and ZMQ_NOTIFY_DISCONNECT
+flags, meaning connect and disconnect notifications are enabled, respectively.
+A value of '0' means the notifications are off.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT|ZMQ_NOTIFY_DISCONNECT
+Default value:: 0
+Applicable socket types:: ZMQ_ROUTER
 
 
 RETURN VALUE

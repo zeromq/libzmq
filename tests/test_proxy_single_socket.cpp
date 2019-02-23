@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,25 +30,27 @@
 #include "testutil.hpp"
 
 
-
 // This is our server task.
 // It runs a proxy with a single REP socket as both frontend and backend.
 
-void
-server_task (void *ctx)
+void server_task (void *ctx_)
 {
-    void *rep = zmq_socket (ctx, ZMQ_REP);
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    void *rep = zmq_socket (ctx_, ZMQ_REP);
     assert (rep);
-    int rc = zmq_bind (rep, "tcp://127.0.0.1:5563");
+    int rc = zmq_bind (rep, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (rep, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_SUB);
+    void *control = zmq_socket (ctx_, ZMQ_REQ);
     assert (control);
-    rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
+    rc = s_send (control, my_endpoint);
+    assert (rc > 0);
 
     // Use rep as both frontend and backend
     rc = zmq_proxy_steerable (rep, rep, NULL, control);
@@ -70,30 +72,33 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+
+    void *server_thread = zmq_threadstart (&server_task, ctx);
+
+    // Control socket receives terminate command from main over inproc
+    void *control = zmq_socket (ctx, ZMQ_REP);
+    assert (control);
+    int rc = zmq_bind (control, "inproc://control");
+    assert (rc == 0);
+    char *my_endpoint = s_recv (control);
+    assert (my_endpoint);
+
     // client socket pings proxy over tcp
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
-    int rc = zmq_connect (req, "tcp://127.0.0.1:5563");
+    rc = zmq_connect (req, my_endpoint);
     assert (rc == 0);
-
-    // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_PUB);
-    assert (control);
-    rc = zmq_bind (control, "inproc://control");
-    assert (rc == 0);
-
-    void *server_thread = zmq_threadstart(&server_task, ctx);
 
     char buf[255];
-    rc = zmq_send(req, "msg1", 4, 0);
+    rc = zmq_send (req, "msg1", 4, 0);
     assert (rc == 4);
-    rc = zmq_recv(req, buf, 255, 0);
+    rc = zmq_recv (req, buf, 255, 0);
     assert (rc == 4);
     assert (memcmp (buf, "msg1", 4) == 0);
 
-    rc = zmq_send(req, "msg22", 5, 0);
+    rc = zmq_send (req, "msg22", 5, 0);
     assert (rc == 5);
-    rc = zmq_recv(req, buf, 255, 0);
+    rc = zmq_recv (req, buf, 255, 0);
     assert (rc == 5);
     assert (memcmp (buf, "msg22", 5) == 0);
 
@@ -104,6 +109,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (req);
     assert (rc == 0);
+    free (my_endpoint);
 
     zmq_threadclose (server_thread);
 

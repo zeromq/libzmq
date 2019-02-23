@@ -20,7 +20,7 @@
 
 # Script to generate all required files from fresh git checkout.
 
-# Debian and Ubuntu do not shipt libtool anymore, but OSX does not ship libtoolize.
+# Debian and Ubuntu do not ship libtool anymore, but OSX does not ship libtoolize.
 command -v libtoolize >/dev/null 2>&1
 if  [ $? -ne 0 ]; then
     command -v libtool >/dev/null 2>&1

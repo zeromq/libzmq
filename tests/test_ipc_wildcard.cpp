@@ -28,38 +28,44 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void setUp ()
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc://*");
-    assert (rc == 0);
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
-    char endpoint [200];
+void test_ipc_wildcard ()
+{
+    void *sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
+
+    char endpoint[200];
     size_t size = sizeof (endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size));
 
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
-    rc = zmq_connect (sc, endpoint);
-    assert (rc == 0);
-    
+    void *sc = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));
+
     bounce (sb, sc);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
+int main ()
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+    UNITY_BEGIN ();
+    RUN_TEST (test_ipc_wildcard);
+    return UNITY_END ();
 }

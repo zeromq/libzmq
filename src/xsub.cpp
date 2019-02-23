@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <string.h>
 
 #include "macros.hpp"
@@ -35,84 +36,99 @@
 
 zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    has_message (false),
-    more (false)
+    _has_message (false),
+    _more (false)
 {
     options.type = ZMQ_XSUB;
 
     //  When socket is being closed down we don't want to wait till pending
     //  subscription commands are sent to the wire.
-    options.linger = 0;
+    options.linger.store (0);
 
-    int rc = message.init ();
+    int rc = _message.init ();
     errno_assert (rc == 0);
 }
 
 zmq::xsub_t::~xsub_t ()
 {
-    int rc = message.close ();
+    int rc = _message.close ();
     errno_assert (rc == 0);
 }
 
-void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::xsub_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     zmq_assert (pipe_);
-    fq.attach (pipe_);
-    dist.attach (pipe_);
+    _fq.attach (pipe_);
+    _dist.attach (pipe_);
 
     //  Send all the cached subscriptions to the new upstream peer.
-    subscriptions.apply (send_subscription, pipe_);
+    _subscriptions.apply (send_subscription, pipe_);
     pipe_->flush ();
 }
 
 void zmq::xsub_t::xread_activated (pipe_t *pipe_)
 {
-    fq.activated (pipe_);
+    _fq.activated (pipe_);
 }
 
 void zmq::xsub_t::xwrite_activated (pipe_t *pipe_)
 {
-    dist.activated (pipe_);
+    _dist.activated (pipe_);
 }
 
 void zmq::xsub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.pipe_terminated (pipe_);
-    dist.pipe_terminated (pipe_);
+    _fq.pipe_terminated (pipe_);
+    _dist.pipe_terminated (pipe_);
 }
 
 void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
 {
     //  Send all the cached subscriptions to the hiccuped pipe.
-    subscriptions.apply (send_subscription, pipe_);
+    _subscriptions.apply (send_subscription, pipe_);
     pipe_->flush ();
 }
 
 int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();
-    unsigned char *data = (unsigned char *) msg_->data ();
+    unsigned char *data = static_cast<unsigned char *> (msg_->data ());
 
-    if (size > 0 && *data == 1) {
+    if (msg_->is_subscribe () || (size > 0 && *data == 1)) {
         //  Process subscribe message
         //  This used to filter out duplicate subscriptions,
         //  however this is alread done on the XPUB side and
         //  doing it here as well breaks ZMQ_XPUB_VERBOSE
         //  when there are forwarding devices involved.
-        subscriptions.add (data + 1, size - 1);
-        return dist.send_to_all (msg_);
+        if (msg_->is_subscribe ()) {
+            data = static_cast<unsigned char *> (msg_->command_body ());
+            size = msg_->command_body_size ();
+        } else {
+            data = data + 1;
+            size = size - 1;
+        }
+        _subscriptions.add (data, size);
+        return _dist.send_to_all (msg_);
     }
-    else 
-    if (size > 0 && *data == 0) {
+    if (msg_->is_cancel () || (size > 0 && *data == 0)) {
         //  Process unsubscribe message
-        if (subscriptions.rm (data + 1, size - 1))
-            return dist.send_to_all (msg_);
-    }
-    else 
+        if (msg_->is_cancel ()) {
+            data = static_cast<unsigned char *> (msg_->command_body ());
+            size = msg_->command_body_size ();
+        } else {
+            data = data + 1;
+            size = size - 1;
+        }
+        if (_subscriptions.rm (data, size))
+            return _dist.send_to_all (msg_);
+    } else
         //  User message sent upstream to XPUB socket
-        return dist.send_to_all (msg_);
+        return _dist.send_to_all (msg_);
 
     int rc = msg_->close ();
     errno_assert (rc == 0);
@@ -132,11 +148,11 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
 {
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
-    if (has_message) {
-        int rc = msg_->move (message);
+    if (_has_message) {
+        int rc = msg_->move (_message);
         errno_assert (rc == 0);
-        has_message = false;
-        more = msg_->flags () & msg_t::more ? true : false;
+        _has_message = false;
+        _more = (msg_->flags () & msg_t::more) != 0;
         return 0;
     }
 
@@ -144,9 +160,8 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
     //  stream of non-matching messages which breaks the non-blocking recv
     //  semantics.
     while (true) {
-
         //  Get a message using fair queueing algorithm.
-        int rc = fq.recv (msg_);
+        int rc = _fq.recv (msg_);
 
         //  If there's no message available, return immediately.
         //  The same when error occurs.
@@ -154,16 +169,16 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
             return -1;
 
         //  Check whether the message matches at least one subscription.
-        //  Non-initial parts of the message are passed 
-        if (more || !options.filter || match (msg_)) {
-            more = msg_->flags () & msg_t::more ? true : false;
+        //  Non-initial parts of the message are passed
+        if (_more || !options.filter || match (msg_)) {
+            _more = (msg_->flags () & msg_t::more) != 0;
             return 0;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
         while (msg_->flags () & msg_t::more) {
-            rc = fq.recv (msg_);
+            rc = _fq.recv (msg_);
             errno_assert (rc == 0);
         }
     }
@@ -172,20 +187,19 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
 bool zmq::xsub_t::xhas_in ()
 {
     //  There are subsequent parts of the partly-read message available.
-    if (more)
+    if (_more)
         return true;
 
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return straight ahead.
-    if (has_message)
+    if (_has_message)
         return true;
 
     //  TODO: This can result in infinite loop in the case of continuous
     //  stream of non-matching messages.
     while (true) {
-
         //  Get a message using fair queueing algorithm.
-        int rc = fq.recv (&message);
+        int rc = _fq.recv (&_message);
 
         //  If there's no message available, return immediately.
         //  The same when error occurs.
@@ -195,44 +209,46 @@ bool zmq::xsub_t::xhas_in ()
         }
 
         //  Check whether the message matches at least one subscription.
-        if (!options.filter || match (&message)) {
-            has_message = true;
+        if (!options.filter || match (&_message)) {
+            _has_message = true;
             return true;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (message.flags () & msg_t::more) {
-            rc = fq.recv (&message);
+        while (_message.flags () & msg_t::more) {
+            rc = _fq.recv (&_message);
             errno_assert (rc == 0);
         }
     }
 }
 
-zmq::blob_t zmq::xsub_t::get_credential () const
-{
-    return fq.get_credential ();
-}
-
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    bool matching = subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+    bool matching = _subscriptions.check (
+      static_cast<unsigned char *> (msg_->data ()), msg_->size ());
 
     return matching ^ options.invert_matching;
 }
 
-void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
-    void *arg_)
+void zmq::xsub_t::send_subscription (unsigned char *data_,
+                                     size_t size_,
+                                     void *arg_)
 {
-    pipe_t *pipe = (pipe_t*) arg_;
+    pipe_t *pipe = static_cast<pipe_t *> (arg_);
 
-    //  Create the subsctription message.
+    //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
     errno_assert (rc == 0);
-    unsigned char *data = (unsigned char*) msg.data ();
-    data [0] = 1;
-    memcpy (data + 1, data_, size_);
+    unsigned char *data = static_cast<unsigned char *> (msg.data ());
+    data[0] = 1;
+
+    //  We explicitly allow a NULL subscription with size zero
+    if (size_) {
+        assert (data_);
+        memcpy (data + 1, data_, size_);
+    }
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);

@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "pub.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
@@ -42,7 +43,9 @@ zmq::pub_t::~pub_t ()
 {
 }
 
-void zmq::pub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::pub_t::xattach_pipe (pipe_t *pipe_,
+                               bool subscribe_to_all_,
+                               bool locally_initiated_)
 {
     zmq_assert (pipe_);
 
@@ -50,7 +53,7 @@ void zmq::pub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     //  to receive the delimiter.
     pipe_->set_nodelay ();
 
-    xpub_t::xattach_pipe (pipe_, subscribe_to_all_);
+    xpub_t::xattach_pipe (pipe_, subscribe_to_all_, locally_initiated_);
 }
 
 int zmq::pub_t::xrecv (class msg_t *)

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,74 +28,74 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void setUp ()
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+void test ()
+{
+    char endpoint1[MAX_SOCKET_STRING];
+    char endpoint2[MAX_SOCKET_STRING];
 
     //  First, create an intermediate device
-    void *xpub = zmq_socket (ctx, ZMQ_XPUB);
-    assert (xpub);
-    int rc = zmq_bind (xpub, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
-    void *xsub = zmq_socket (ctx, ZMQ_XSUB);
-    assert (xsub);
-    rc = zmq_bind (xsub, "tcp://127.0.0.1:5561");
-    assert (rc == 0);
+    void *xpub = test_context_socket (ZMQ_XPUB);
+    bind_loopback_ipv4 (xpub, endpoint1, sizeof (endpoint1));
+
+    void *xsub = test_context_socket (ZMQ_XSUB);
+    bind_loopback_ipv4 (xsub, endpoint2, sizeof (endpoint2));
 
     //  Create a publisher
-    void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (pub);
-    rc = zmq_connect (pub, "tcp://127.0.0.1:5561");
-    assert (rc == 0);
+    void *pub = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pub, endpoint2));
 
     //  Create a subscriber
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
-    assert (sub);
-    rc = zmq_connect (sub, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, endpoint1));
 
     //  Subscribe for all messages.
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
 
     //  Pass the subscription upstream through the device
-    char buff [32];
-    rc = zmq_recv (xpub, buff, sizeof (buff), 0);
-    assert (rc >= 0);
-    rc = zmq_send (xsub, buff, rc, 0);
-    assert (rc >= 0);
+    char buff[32];
+    int size;
+    TEST_ASSERT_SUCCESS_ERRNO (size = zmq_recv (xpub, buff, sizeof (buff), 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_send (xsub, buff, size, 0));
 
     //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
 
     //  Send an empty message
-    rc = zmq_send (pub, NULL, 0, 0);
-    assert (rc == 0);
+    send_string_expect_success (pub, "", 0);
 
     //  Pass the message downstream through the device
-    rc = zmq_recv (xsub, buff, sizeof (buff), 0);
-    assert (rc >= 0);
-    rc = zmq_send (xpub, buff, rc, 0);
-    assert (rc >= 0);
+    TEST_ASSERT_SUCCESS_ERRNO (size = zmq_recv (xsub, buff, sizeof (buff), 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_send (xpub, buff, size, 0));
 
     //  Receive the message in the subscriber
-    rc = zmq_recv (sub, buff, sizeof (buff), 0);
-    assert (rc == 0);
+    recv_string_expect_success (sub, "", 0);
 
     //  Clean up.
-    rc = zmq_close (xpub);
-    assert (rc == 0);
-    rc = zmq_close (xsub);
-    assert (rc == 0);
-    rc = zmq_close (pub);
-    assert (rc == 0);
-    rc = zmq_close (sub);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (xpub);
+    test_context_socket_close (xsub);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
 
-    return 0 ;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test);
+    return UNITY_END ();
 }

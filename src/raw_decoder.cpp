@@ -27,49 +27,45 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <stdlib.h>
 #include <string.h>
-
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "raw_decoder.hpp"
 #include "err.hpp"
 
-zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) :
-    allocator( bufsize_, 1 )
+zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) : _allocator (bufsize_, 1)
 {
-    int rc = in_progress.init ();
+    const int rc = _in_progress.init ();
     errno_assert (rc == 0);
 }
 
 zmq::raw_decoder_t::~raw_decoder_t ()
 {
-    int rc = in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 
 void zmq::raw_decoder_t::get_buffer (unsigned char **data_, size_t *size_)
 {
-    *data_ = allocator.allocate();
-    *size_ = allocator.size();
+    *data_ = _allocator.allocate ();
+    *size_ = _allocator.size ();
 }
 
-int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
+int zmq::raw_decoder_t::decode (const uint8_t *data_,
+                                size_t size_,
                                 size_t &bytes_used_)
 {
-    int rc = in_progress.init ((unsigned char*)data_, size_,
-                               shared_message_memory_allocator::call_dec_ref,
-                               allocator.buffer (),
-                               allocator.provide_content ());
+    const int rc =
+      _in_progress.init (const_cast<unsigned char *> (data_), size_,
+                         shared_message_memory_allocator::call_dec_ref,
+                         _allocator.buffer (), _allocator.provide_content ());
 
     // if the buffer serves as memory for a zero-copy message, release it
     // and allocate a new buffer in get_buffer for the next decode
-    if (in_progress.is_zcmsg ()) {
-        allocator.advance_content();
-        allocator.release();
+    if (_in_progress.is_zcmsg ()) {
+        _allocator.advance_content ();
+        _allocator.release ();
     }
 
     errno_assert (rc != -1);

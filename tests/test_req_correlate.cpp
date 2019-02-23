@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,32 +28,35 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
+}
 
-    void *req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (router);
+void test_req_correlate ()
+{
+    void *req = test_context_socket (ZMQ_REQ);
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     int enabled = 1;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int)));
 
     int rcvtimeo = 100;
-    rc = zmq_setsockopt (req, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (req, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int)));
 
-    rc = zmq_connect (req, "tcp://localhost:5555");
-    assert (rc == 0);
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (router, my_endpoint, sizeof my_endpoint);
 
-    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (req, my_endpoint));
 
     // Send a multi-part request.
     s_send_seq (req, "ABC", "DEF", SEQ_END);
@@ -61,127 +64,69 @@ int main (void)
     zmq_msg_t msg;
     zmq_msg_init (&msg);
 
-    // Receive peer identity
-    rc = zmq_msg_recv (&msg, router, 0);
-    assert (rc != -1);
-    assert (zmq_msg_size (&msg) > 0);
+    // Receive peer routing id
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
+    TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&msg));
     zmq_msg_t peer_id_msg;
     zmq_msg_init (&peer_id_msg);
     zmq_msg_copy (&peer_id_msg, &msg);
 
     int more = 0;
     size_t more_size = sizeof (more);
-    rc = zmq_getsockopt (router, ZMQ_RCVMORE, &more, &more_size);
-    assert (rc == 0);
-    assert (more);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (router, ZMQ_RCVMORE, &more, &more_size));
+    TEST_ASSERT_TRUE (more);
 
     // Receive request id 1
-    rc = zmq_msg_recv (&msg, router, 0);
-    assert (rc != -1);
-    assert (zmq_msg_size (&msg) == sizeof(uint32_t));
-    uint32_t req_id = *static_cast<uint32_t *> (zmq_msg_data (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
+    assert (zmq_msg_size (&msg) == sizeof (uint32_t));
+    const uint32_t req_id = *static_cast<uint32_t *> (zmq_msg_data (&msg));
     zmq_msg_t req_id_msg;
     zmq_msg_init (&req_id_msg);
     zmq_msg_copy (&req_id_msg, &msg);
 
     more = 0;
     more_size = sizeof (more);
-    rc = zmq_getsockopt (router, ZMQ_RCVMORE, &more, &more_size);
-    assert (rc == 0);
-    assert (more);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (router, ZMQ_RCVMORE, &more, &more_size));
+    TEST_ASSERT_TRUE (more);
 
     // Receive the rest.
     s_recv_seq (router, 0, "ABC", "DEF", SEQ_END);
 
-    // Send back a bad reply: correct req id
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, 0);
-    assert (rc != -1);
-
-    // Send back a bad reply: wrong req id
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
     uint32_t bad_req_id = req_id + 1;
-    zmq_msg_init_data (&msg, &bad_req_id, sizeof (uint32_t), NULL, NULL);
-    rc = zmq_msg_send (&msg, router, 0);
-    assert (rc != -1);
-
-    // Send back a bad reply: correct req id, 0
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, 0, SEQ_END);
-
-    // Send back a bad reply: correct req id, garbage
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, "FOO", SEQ_END);
-
-    // Send back a bad reply: wrong req id, 0
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_init_data (&msg, &bad_req_id, sizeof (uint32_t), NULL, NULL);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, 0, SEQ_END);
-
-    // Send back a bad reply: correct req id, garbage, data
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, "FOO", "DATA", SEQ_END);
 
     // Send back a bad reply: wrong req id, 0, data
     zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&msg, router, ZMQ_SNDMORE));
     zmq_msg_init_data (&msg, &bad_req_id, sizeof (uint32_t), NULL, NULL);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&msg, router, ZMQ_SNDMORE));
     s_send_seq (router, 0, "DATA", SEQ_END);
 
-    // Send back a good reply.
+    // Send back a good reply: good req id, 0, data
     zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&msg, router, ZMQ_SNDMORE));
     zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_send (&msg, router, ZMQ_SNDMORE));
     s_send_seq (router, 0, "GHI", SEQ_END);
 
-    // Receive reply. If any of the other messages got through, we wouldn't see
+    // Receive reply. If bad reply got through, we wouldn't see
     // this particular data.
     s_recv_seq (req, "GHI", SEQ_END);
 
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&peer_id_msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&req_id_msg));
 
-    rc = zmq_msg_close (&peer_id_msg);
-    assert (rc == 0);
+    test_context_socket_close_zero_linger (req);
+    test_context_socket_close_zero_linger (router);
+}
 
-    rc = zmq_msg_close (&req_id_msg);
-    assert (rc == 0);
+int main ()
+{
+    setup_test_environment ();
 
-    close_zero_linger (req);
-    close_zero_linger (router);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_req_correlate);
+    return UNITY_END ();
 }

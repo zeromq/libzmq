@@ -19,7 +19,8 @@ by the 'socket' argument and store it in the buffer referenced by the 'buf'
 argument. Any bytes exceeding the length specified by the 'len' argument shall
 be truncated. If there are no messages available on the specified 'socket'
 the _zmq_recv()_ function shall block until the request can be satisfied.
-The 'flags' argument is a combination of the flags defined below:
+The 'flags' argument is a combination of the flags defined below: The 'buf'
+argument may be null if len is zero.
 
 *ZMQ_DONTWAIT*::
 Specifies that the operation should be performed in non-blocking mode. If there

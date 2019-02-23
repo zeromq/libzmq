@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "reaper.hpp"
 #include "socket_base.hpp"
@@ -34,49 +35,57 @@
 
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
-    sockets (0),
-    terminating (false)
+    _mailbox_handle (static_cast<poller_t::handle_t> (NULL)),
+    _poller (NULL),
+    _sockets (0),
+    _terminating (false)
 {
-    poller = new (std::nothrow) poller_t (*ctx_);
-    alloc_assert (poller);
+    if (!_mailbox.valid ())
+        return;
 
-    if (mailbox.get_fd () != retired_fd) {
-        mailbox_handle = poller->add_fd (mailbox.get_fd (), this);
-        poller->set_pollin (mailbox_handle);
+    _poller = new (std::nothrow) poller_t (*ctx_);
+    alloc_assert (_poller);
+
+    if (_mailbox.get_fd () != retired_fd) {
+        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this);
+        _poller->set_pollin (_mailbox_handle);
     }
 
 #ifdef HAVE_FORK
-    pid = getpid();
+    _pid = getpid ();
 #endif
 }
 
 zmq::reaper_t::~reaper_t ()
 {
-    LIBZMQ_DELETE(poller);
+    LIBZMQ_DELETE (_poller);
 }
 
 zmq::mailbox_t *zmq::reaper_t::get_mailbox ()
 {
-    return &mailbox;
+    return &_mailbox;
 }
 
 void zmq::reaper_t::start ()
 {
+    zmq_assert (_mailbox.valid ());
+
     //  Start the thread.
-    poller->start ();
+    _poller->start ("Reaper");
 }
 
 void zmq::reaper_t::stop ()
 {
-    send_stop ();
+    if (get_mailbox ()->valid ()) {
+        send_stop ();
+    }
 }
 
 void zmq::reaper_t::in_event ()
 {
     while (true) {
 #ifdef HAVE_FORK
-        if (unlikely(pid != getpid()))
-        {
+        if (unlikely (_pid != getpid ())) {
             //printf("zmq::reaper_t::in_event return in child process %d\n", (int)getpid());
             return;
         }
@@ -84,7 +93,7 @@ void zmq::reaper_t::in_event ()
 
         //  Get the next command. If there is none, exit.
         command_t cmd;
-        int rc = mailbox.recv (&cmd, 0);
+        int rc = _mailbox.recv (&cmd, 0);
         if (rc != 0 && errno == EINTR)
             continue;
         if (rc != 0 && errno == EAGAIN)
@@ -108,33 +117,33 @@ void zmq::reaper_t::timer_event (int)
 
 void zmq::reaper_t::process_stop ()
 {
-    terminating = true;
+    _terminating = true;
 
     //  If there are no sockets being reaped finish immediately.
-    if (!sockets) {
+    if (!_sockets) {
         send_done ();
-        poller->rm_fd (mailbox_handle);
-        poller->stop ();
+        _poller->rm_fd (_mailbox_handle);
+        _poller->stop ();
     }
 }
 
 void zmq::reaper_t::process_reap (socket_base_t *socket_)
 {
     //  Add the socket to the poller.
-    socket_->start_reaping (poller);
+    socket_->start_reaping (_poller);
 
-    ++sockets;
+    ++_sockets;
 }
 
 void zmq::reaper_t::process_reaped ()
 {
-    --sockets;
+    --_sockets;
 
     //  If reaped was already asked to terminate and there are no more sockets,
     //  finish immediately.
-    if (!sockets && terminating) {
+    if (!_sockets && _terminating) {
         send_done ();
-        poller->rm_fd (mailbox_handle);
-        poller->stop ();
+        _poller->rm_fd (_mailbox_handle);
+        _poller->stop ();
     }
 }

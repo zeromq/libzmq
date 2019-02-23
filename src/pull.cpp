@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "pull.hpp"
 #include "err.hpp"
@@ -43,35 +44,33 @@ zmq::pull_t::~pull_t ()
 {
 }
 
-void zmq::pull_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
+void zmq::pull_t::xattach_pipe (pipe_t *pipe_,
+                                bool subscribe_to_all_,
+                                bool locally_initiated_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
+    LIBZMQ_UNUSED (locally_initiated_);
 
     zmq_assert (pipe_);
-    fq.attach (pipe_);
+    _fq.attach (pipe_);
 }
 
 void zmq::pull_t::xread_activated (pipe_t *pipe_)
 {
-    fq.activated (pipe_);
+    _fq.activated (pipe_);
 }
 
 void zmq::pull_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.pipe_terminated (pipe_);
+    _fq.pipe_terminated (pipe_);
 }
 
 int zmq::pull_t::xrecv (msg_t *msg_)
 {
-    return fq.recv (msg_);
+    return _fq.recv (msg_);
 }
 
 bool zmq::pull_t::xhas_in ()
 {
-    return fq.has_in ();
-}
-
-zmq::blob_t zmq::pull_t::get_credential () const
-{
-    return fq.get_credential ();
+    return _fq.has_in ();
 }

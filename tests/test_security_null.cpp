@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,92 +28,137 @@
 */
 
 #include "testutil.hpp"
-#if defined (ZMQ_HAVE_WINDOWS)
-#   include <winsock2.h>
-#   include <ws2tcpip.h>
-#   include <stdexcept>
-#   define close closesocket
+#if defined(ZMQ_HAVE_WINDOWS)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdexcept>
+#define close closesocket
 #else
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#   include <arpa/inet.h>
-#   include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #endif
 
-static void
-zap_handler (void *handler)
+static void zap_handler (void *handler_)
 {
     //  Process ZAP requests forever
     while (true) {
-        char *version = s_recv (handler);
+        char *version = s_recv (handler_);
         if (!version)
-            break;          //  Terminating
+            break; //  Terminating
 
-        char *sequence = s_recv (handler);
-        char *domain = s_recv (handler);
-        char *address = s_recv (handler);
-        char *identity = s_recv (handler);
-        char *mechanism = s_recv (handler);
+        char *sequence = s_recv (handler_);
+        char *domain = s_recv (handler_);
+        char *address = s_recv (handler_);
+        char *routing_id = s_recv (handler_);
+        char *mechanism = s_recv (handler_);
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
-        
-        s_sendmore (handler, version);
-        s_sendmore (handler, sequence);
+
+        s_sendmore (handler_, version);
+        s_sendmore (handler_, sequence);
         if (streq (domain, "TEST")) {
-            s_sendmore (handler, "200");
-            s_sendmore (handler, "OK");
-            s_sendmore (handler, "anonymous");
-            s_send     (handler, "");
-        }
-        else {
-            s_sendmore (handler, "400");
-            s_sendmore (handler, "BAD DOMAIN");
-            s_sendmore (handler, "");
-            s_send     (handler, "");
+            s_sendmore (handler_, "200");
+            s_sendmore (handler_, "OK");
+            s_sendmore (handler_, "anonymous");
+            s_send (handler_, "");
+        } else {
+            s_sendmore (handler_, "400");
+            s_sendmore (handler_, "BAD DOMAIN");
+            s_sendmore (handler_, "");
+            s_send (handler_, "");
         }
         free (version);
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
     }
-    close_zero_linger (handler);
+    close_zero_linger (handler_);
 }
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+
+    //  We first test client/server with a ZAP domain but with no handler
+    //  If there is no handler, libzmq should ignore the ZAP option unless
+    //  ZMQ_ZAP_ENFORCE_DOMAIN is set
+    void *server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
+    assert (rc == 0);
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    bounce (server, client);
+    close_zero_linger (client);
+    close_zero_linger (server);
+
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
+    //  Now set ZMQ_ZAP_ENFORCE_DOMAIN which strictly enforces the ZAP
+    //  RFC but is backward-incompatible, now it should fail
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int required = 1;
+    rc =
+      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
+    assert (rc == 0);
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+    close_zero_linger (server);
+#endif
 
     //  Spawn ZAP handler
     //  We create and bind ZAP socket in main thread to avoid case
     //  where child thread does not start up fast enough.
     void *handler = zmq_socket (ctx, ZMQ_REP);
     assert (handler);
-    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
+    rc = zmq_bind (handler, "inproc://zeromq.zap.01");
     assert (rc == 0);
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
     //  We bounce between a binding server and a connecting client
-    
+
     //  We first test client/server with no ZAP domain
     //  Libzmq does not call our ZAP handler, the connect must succeed
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
+    server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9000");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9000");
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
     close_zero_linger (client);
     close_zero_linger (server);
 
-    //  Now define a ZAP domain for the server; this enables 
+    //  Now define a ZAP domain for the server; this enables
     //  authentication. We're using the wrong domain so this test
     //  must fail.
     server = zmq_socket (ctx, ZMQ_DEALER);
@@ -122,9 +167,12 @@ int main (void)
     assert (client);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9001");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9001");
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -137,9 +185,12 @@ int main (void)
     assert (client);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9002");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9002");
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
     close_zero_linger (client);
@@ -150,22 +201,30 @@ int main (void)
     assert (server);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9003");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     struct sockaddr_in ip4addr;
-    int s;
+    fd_t s;
+
+    unsigned short int port;
+    rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    assert (rc == 1);
 
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons(9003);
-#if (_WIN32_WINNT < 0x0600)
+    ip4addr.sin_port = htons (port);
+#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else
-    inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);
+    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr*) &ip4addr, sizeof ip4addr);
+    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof ip4addr);
     assert (rc > -1);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);

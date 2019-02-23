@@ -27,6 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
+#include "macros.hpp"
 #include "req.hpp"
 #include "err.hpp"
 #include "msg.hpp"
@@ -34,14 +36,22 @@
 #include "random.hpp"
 #include "likely.hpp"
 
+extern "C" {
+static void free_id (void *data_, void *hint_)
+{
+    LIBZMQ_UNUSED (hint_);
+    free (data_);
+}
+}
+
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     dealer_t (parent_, tid_, sid_),
-    receiving_reply (false),
-    message_begins (true),
-    reply_pipe (NULL),
-    request_id_frames_enabled (false),
-    request_id (generate_random()),
-    strict (true)
+    _receiving_reply (false),
+    _message_begins (true),
+    _reply_pipe (NULL),
+    _request_id_frames_enabled (false),
+    _request_id (generate_random ()),
+    _strict (true)
 {
     options.type = ZMQ_REQ;
 }
@@ -54,29 +64,37 @@ int zmq::req_t::xsend (msg_t *msg_)
 {
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request unless the strict option is disabled.
-    if (receiving_reply) {
-        if (strict) {
+    if (_receiving_reply) {
+        if (_strict) {
             errno = EFSM;
             return -1;
         }
 
-        receiving_reply = false;
-        message_begins = true;
+        _receiving_reply = false;
+        _message_begins = true;
     }
 
-    //  First part of the request is the request identity.
-    if (message_begins) {
-        reply_pipe = NULL;
+    //  First part of the request is the request routing id.
+    if (_message_begins) {
+        _reply_pipe = NULL;
 
-        if (request_id_frames_enabled) {
-            request_id++;
+        if (_request_id_frames_enabled) {
+            _request_id++;
+
+            //  Copy request id before sending (see issue #1695 for details).
+            uint32_t *request_id_copy =
+              static_cast<uint32_t *> (malloc (sizeof (uint32_t)));
+            zmq_assert (request_id_copy);
+
+            *request_id_copy = _request_id;
 
             msg_t id;
-            int rc = id.init_data (&request_id, sizeof (request_id), NULL, NULL);
+            int rc =
+              id.init_data (request_id_copy, sizeof (uint32_t), free_id, NULL);
             errno_assert (rc == 0);
             id.set_flags (msg_t::more);
 
-            rc = dealer_t::sendpipe (&id, &reply_pipe);
+            rc = dealer_t::sendpipe (&id, &_reply_pipe);
             if (rc != 0)
                 return -1;
         }
@@ -86,12 +104,12 @@ int zmq::req_t::xsend (msg_t *msg_)
         errno_assert (rc == 0);
         bottom.set_flags (msg_t::more);
 
-        rc = dealer_t::sendpipe (&bottom, &reply_pipe);
+        rc = dealer_t::sendpipe (&bottom, &_reply_pipe);
         if (rc != 0)
             return -1;
-        zmq_assert (reply_pipe);
+        zmq_assert (_reply_pipe);
 
-        message_begins = false;
+        _message_begins = false;
 
         // Eat all currently available messages before the request is fully
         // sent. This is done to avoid:
@@ -109,7 +127,7 @@ int zmq::req_t::xsend (msg_t *msg_)
         }
     }
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    bool more = (msg_->flags () & msg_t::more) != 0;
 
     int rc = dealer_t::xsend (msg_);
     if (rc != 0)
@@ -117,8 +135,8 @@ int zmq::req_t::xsend (msg_t *msg_)
 
     //  If the request was fully sent, flip the FSM into reply-receiving state.
     if (!more) {
-        receiving_reply = true;
-        message_begins = true;
+        _receiving_reply = true;
+        _message_begins = true;
     }
 
     return 0;
@@ -127,22 +145,23 @@ int zmq::req_t::xsend (msg_t *msg_)
 int zmq::req_t::xrecv (msg_t *msg_)
 {
     //  If request wasn't send, we can't wait for reply.
-    if (!receiving_reply) {
+    if (!_receiving_reply) {
         errno = EFSM;
         return -1;
     }
 
     //  Skip messages until one with the right first frames is found.
-    while (message_begins) {
+    while (_message_begins) {
         //  If enabled, the first frame must have the correct request_id.
-        if (request_id_frames_enabled) {
+        if (_request_id_frames_enabled) {
             int rc = recv_reply_pipe (msg_);
             if (rc != 0)
                 return rc;
 
-            if (unlikely (!(msg_->flags () & msg_t::more) ||
-                          msg_->size () != sizeof (request_id) ||
-                          *static_cast<uint32_t *> (msg_->data ()) != request_id)) {
+            if (unlikely (!(msg_->flags () & msg_t::more)
+                          || msg_->size () != sizeof (_request_id)
+                          || *static_cast<uint32_t *> (msg_->data ())
+                               != _request_id)) {
                 //  Skip the remaining frames and try the next message
                 while (msg_->flags () & msg_t::more) {
                     rc = recv_reply_pipe (msg_);
@@ -167,7 +186,7 @@ int zmq::req_t::xrecv (msg_t *msg_)
             continue;
         }
 
-        message_begins = false;
+        _message_begins = false;
     }
 
     int rc = recv_reply_pipe (msg_);
@@ -176,8 +195,8 @@ int zmq::req_t::xrecv (msg_t *msg_)
 
     //  If the reply is fully received, flip the FSM into request-sending state.
     if (!(msg_->flags () & msg_t::more)) {
-        receiving_reply = false;
-        message_begins = true;
+        _receiving_reply = false;
+        _message_begins = true;
     }
 
     return 0;
@@ -187,7 +206,7 @@ bool zmq::req_t::xhas_in ()
 {
     //  TODO: Duplicates should be removed here.
 
-    if (!receiving_reply)
+    if (!_receiving_reply)
         return false;
 
     return dealer_t::xhas_in ();
@@ -195,27 +214,32 @@ bool zmq::req_t::xhas_in ()
 
 bool zmq::req_t::xhas_out ()
 {
-    if (receiving_reply)
+    if (_receiving_reply && _strict)
         return false;
 
     return dealer_t::xhas_out ();
 }
 
-int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_)
+int zmq::req_t::xsetsockopt (int option_,
+                             const void *optval_,
+                             size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
+    int value = 0;
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
+
     switch (option_) {
         case ZMQ_REQ_CORRELATE:
             if (is_int && value >= 0) {
-                request_id_frames_enabled = (value != 0);
+                _request_id_frames_enabled = (value != 0);
                 return 0;
             }
             break;
 
         case ZMQ_REQ_RELAXED:
             if (is_int && value >= 0) {
-                strict = (value == 0);
+                _strict = (value == 0);
                 return 0;
             }
             break;
@@ -229,8 +253,8 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_
 
 void zmq::req_t::xpipe_terminated (pipe_t *pipe_)
 {
-    if (reply_pipe == pipe_)
-        reply_pipe = NULL;
+    if (_reply_pipe == pipe_)
+        _reply_pipe = NULL;
     dealer_t::xpipe_terminated (pipe_);
 }
 
@@ -241,16 +265,18 @@ int zmq::req_t::recv_reply_pipe (msg_t *msg_)
         int rc = dealer_t::recvpipe (msg_, &pipe);
         if (rc != 0)
             return rc;
-        if (!reply_pipe || pipe == reply_pipe)
+        if (!_reply_pipe || pipe == _reply_pipe)
             return 0;
     }
 }
 
-zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      address_t *addr_) :
+zmq::req_session_t::req_session_t (io_thread_t *io_thread_,
+                                   bool connect_,
+                                   socket_base_t *socket_,
+                                   const options_t &options_,
+                                   address_t *addr_) :
     session_base_t (io_thread_, connect_, socket_, options_, addr_),
-    state (bottom)
+    _state (bottom)
 {
 }
 
@@ -260,21 +286,41 @@ zmq::req_session_t::~req_session_t ()
 
 int zmq::req_session_t::push_msg (msg_t *msg_)
 {
-    switch (state) {
-    case bottom:
-        if (msg_->flags () == msg_t::more && msg_->size () == 0) {
-            state = body;
-            return session_base_t::push_msg (msg_);
-        }
-        break;
-    case body:
-        if (msg_->flags () == msg_t::more)
-            return session_base_t::push_msg (msg_);
-        if (msg_->flags () == 0) {
-            state = bottom;
-            return session_base_t::push_msg (msg_);
-        }
-        break;
+    //  Ignore commands, they are processed by the engine and should not
+    //  affect the state machine.
+    if (unlikely (msg_->flags () & msg_t::command))
+        return 0;
+
+    switch (_state) {
+        case bottom:
+            if (msg_->flags () == msg_t::more) {
+                //  In case option ZMQ_CORRELATE is on, allow request_id to be
+                //  transfered as first frame (would be too cumbersome to check
+                //  whether the option is actually on or not).
+                if (msg_->size () == sizeof (uint32_t)) {
+                    _state = request_id;
+                    return session_base_t::push_msg (msg_);
+                }
+                if (msg_->size () == 0) {
+                    _state = body;
+                    return session_base_t::push_msg (msg_);
+                }
+            }
+            break;
+        case request_id:
+            if (msg_->flags () == msg_t::more && msg_->size () == 0) {
+                _state = body;
+                return session_base_t::push_msg (msg_);
+            }
+            break;
+        case body:
+            if (msg_->flags () == msg_t::more)
+                return session_base_t::push_msg (msg_);
+            if (msg_->flags () == 0) {
+                _state = bottom;
+                return session_base_t::push_msg (msg_);
+            }
+            break;
     }
     errno = EFAULT;
     return -1;
@@ -283,5 +329,5 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
 void zmq::req_session_t::reset ()
 {
     session_base_t::reset ();
-    state = bottom;
+    _state = bottom;
 }

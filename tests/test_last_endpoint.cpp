@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,39 +28,48 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-static void do_bind_and_verify (void *s, const char *endpoint)
+#include <unity.h>
+
+void setUp ()
 {
-    int rc = zmq_bind (s, endpoint);
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+static void do_bind_and_verify (void *s_, const char *endpoint_)
+{
+    int rc = zmq_bind (s_, endpoint_);
     assert (rc == 0);
-    char reported [255];
+    char reported[255];
     size_t size = 255;
-    rc = zmq_getsockopt (s, ZMQ_LAST_ENDPOINT, reported, &size);
-    assert (rc == 0 && strcmp (reported, endpoint) == 0);
+    rc = zmq_getsockopt (s_, ZMQ_LAST_ENDPOINT, reported, &size);
+    assert (rc == 0 && strcmp (reported, endpoint_) == 0);
+}
+
+void test_last_endpoint ()
+{
+    void *sb = test_context_socket (ZMQ_ROUTER);
+    int val = 0;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val)));
+
+    do_bind_and_verify (sb, ENDPOINT_1);
+    do_bind_and_verify (sb, ENDPOINT_2);
+
+    test_context_socket_close (sb);
 }
 
 int main (void)
 {
-    setup_test_environment();
-    //  Create the infrastructure
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_environment ();
 
-    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (sb);
-    int val = 0;
-    int rc = zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val));
-    assert (rc == 0);
-
-    do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
-    do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-    
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+    UNITY_BEGIN ();
+    RUN_TEST (test_last_endpoint);
+    return UNITY_END ();
 }
-

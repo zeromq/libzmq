@@ -28,89 +28,96 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-const char *bind_address = 0;
-const char *connect_address = 0;
+#include <unity.h>
 
-void test_fair_queue_in (void *ctx)
+void setUp ()
 {
-    void *rep = zmq_socket (ctx, ZMQ_REP);
-    assert (rep);
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+char connect_address[MAX_SOCKET_STRING];
+
+void test_fair_queue_in (const char *bind_address)
+{
+    void *rep = test_context_socket (ZMQ_REP);
 
     int timeout = 250;
-    int rc = zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
-    rc = zmq_bind (rep, bind_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (rep, bind_address));
+    size_t len = MAX_SOCKET_STRING;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (rep, ZMQ_LAST_ENDPOINT, connect_address, &len));
 
     const size_t services = 5;
-    void *reqs [services];
+    void *reqs[services];
     for (size_t peer = 0; peer < services; ++peer) {
-        reqs [peer] = zmq_socket (ctx, ZMQ_REQ);
-        assert (reqs [peer]);
+        reqs[peer] = test_context_socket (ZMQ_REQ);
 
-        rc = zmq_setsockopt (reqs [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
-        assert (rc == 0);
-
-        rc = zmq_connect (reqs [peer], connect_address);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (reqs[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (reqs[peer], connect_address));
     }
 
-    s_send_seq (reqs [0], "A", SEQ_END);
-    s_recv_seq (rep, "A", SEQ_END);
-    s_send_seq (rep, "A", SEQ_END);
-    s_recv_seq (reqs [0], "A", SEQ_END);
+    msleep (SETTLE_TIME);
 
-    s_send_seq (reqs [0], "A", SEQ_END);
+    s_send_seq (reqs[0], "A", SEQ_END);
     s_recv_seq (rep, "A", SEQ_END);
     s_send_seq (rep, "A", SEQ_END);
-    s_recv_seq (reqs [0], "A", SEQ_END);
+    s_recv_seq (reqs[0], "A", SEQ_END);
+
+    s_send_seq (reqs[0], "A", SEQ_END);
+    s_recv_seq (rep, "A", SEQ_END);
+    s_send_seq (rep, "A", SEQ_END);
+    s_recv_seq (reqs[0], "A", SEQ_END);
 
     // TODO: following test fails randomly on some boxes
 #ifdef SOMEONE_FIXES_THIS
     // send N requests
     for (size_t peer = 0; peer < services; ++peer) {
-        char * str = strdup("A");
-        str [0] += peer;
-        s_send_seq (reqs [peer], str, SEQ_END);
+        char *str = strdup ("A");
+        str[0] += peer;
+        s_send_seq (reqs[peer], str, SEQ_END);
         free (str);
     }
 
     // handle N requests
     for (size_t peer = 0; peer < services; ++peer) {
-        char * str = strdup("A");
-        str [0] += peer;
+        char *str = strdup ("A");
+        str[0] += peer;
         //  Test fails here
         s_recv_seq (rep, str, SEQ_END);
         s_send_seq (rep, str, SEQ_END);
-        s_recv_seq (reqs [peer], str, SEQ_END);
+        s_recv_seq (reqs[peer], str, SEQ_END);
         free (str);
     }
 #endif
-    close_zero_linger (rep);
+    test_context_socket_close_zero_linger (rep);
 
     for (size_t peer = 0; peer < services; ++peer)
-        close_zero_linger (reqs [peer]);
-
-    // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+        test_context_socket_close_zero_linger (reqs[peer]);
 }
 
-void test_envelope (void *ctx)
+void test_envelope (const char *bind_address)
 {
-    void *rep = zmq_socket (ctx, ZMQ_REP);
-    assert (rep);
+    void *rep = test_context_socket (ZMQ_REP);
 
-    int rc = zmq_bind (rep, bind_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (rep, bind_address));
+    size_t len = MAX_SOCKET_STRING;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (rep, ZMQ_LAST_ENDPOINT, connect_address, &len));
 
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer);
+    void *dealer = test_context_socket (ZMQ_DEALER);
 
-    rc = zmq_connect (dealer, connect_address);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, connect_address));
 
     // minimal envelope
     s_send_seq (dealer, 0, "A", SEQ_END);
@@ -124,42 +131,52 @@ void test_envelope (void *ctx)
     s_send_seq (rep, "A", SEQ_END);
     s_recv_seq (dealer, "X", "Y", 0, "A", SEQ_END);
 
-    close_zero_linger (rep);
-    close_zero_linger (dealer);
-
-    // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    test_context_socket_close_zero_linger (rep);
+    test_context_socket_close_zero_linger (dealer);
 }
 
-int main (void)
+const char bind_inproc[] = "inproc://a";
+const char bind_tcp[] = "tcp://127.0.0.1:*";
+
+void test_fair_queue_in_inproc ()
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    test_fair_queue_in (bind_inproc);
+}
 
-    const char *binds [] = { "inproc://a", "tcp://127.0.0.1:5555" };
-    const char *connects [] = { "inproc://a", "tcp://localhost:5555" };
+void test_fair_queue_in_tcp ()
+{
+    test_fair_queue_in (bind_tcp);
+}
 
-    for (int transport = 0; transport < 2; ++transport) {
-        bind_address = binds [transport];
-        connect_address = connects [transport];
+void test_envelope_inproc ()
+{
+    test_envelope (bind_inproc);
+}
 
-        // SHALL receive incoming messages from its peers using a fair-queuing
-        // strategy.
-        test_fair_queue_in (ctx);
+void test_envelope_tcp ()
+{
+    test_envelope (bind_tcp);
+}
 
-        // For an incoming message:
-        // SHALL remove and store the address envelope, including the delimiter.
-        // SHALL pass the remaining data frames to its calling application.
-        // SHALL wait for a single reply message from its calling application.
-        // SHALL prepend the address envelope and delimiter.
-        // SHALL deliver this message back to the originating peer.
-        test_envelope (ctx);
-    }
+int main ()
+{
+    setup_test_environment ();
 
-    int rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    UNITY_BEGIN ();
 
-    return 0 ;
+    // SHALL receive incoming messages from its peers using a fair-queuing
+    // strategy.
+    RUN_TEST (test_fair_queue_in_inproc);
+    RUN_TEST (test_fair_queue_in_tcp);
+
+    // For an incoming message:
+    // SHALL remove and store the address envelope, including the delimiter.
+    // SHALL pass the remaining data frames to its calling application.
+    // SHALL wait for a single reply message from its calling application.
+    // SHALL prepend the address envelope and delimiter.
+    // SHALL deliver this message back to the originating peer.
+    RUN_TEST (test_envelope_inproc);
+    RUN_TEST (test_envelope_tcp);
+
+    return UNITY_END ();
 }

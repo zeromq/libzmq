@@ -28,165 +28,164 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-    setup_test_environment();
-    int rc;
-    const size_t buf_size = 32;
-    char buf[buf_size];
-    const char *ep = "tcp://127.0.0.1:5560";
-    const char *ep_wc_tcp = "tcp://127.0.0.1:*";
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
+
+/* Use the worst case filename size for the buffer (+1 for trailing NUL), this
+ * is larger than MAX_SOCKET_STRING, which is not large enough for IPC */
+#define BUF_SIZE (FILENAME_MAX + 1)
+
+const char *ep_wc_tcp = "tcp://127.0.0.1:*";
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    const char *ep_wc_ipc = "ipc://*";
+const char *ep_wc_ipc = "ipc://*";
 #endif
 #if defined ZMQ_HAVE_VMCI
-    const char *ep_wc_vmci = "vmci://*:*";
+const char *ep_wc_vmci = "vmci://*:*";
 #endif
 
+void test_send_after_unbind_fails ()
+{
+    char my_endpoint[BUF_SIZE];
+
     //  Create infrastructure.
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    void *push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_bind (push, ep);
-    assert (rc == 0);
-    void *pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_connect (pull, ep);
-    assert (rc == 0);
+    void *push = test_context_socket (ZMQ_PUSH);
+    bind_loopback_ipv4 (push, my_endpoint, BUF_SIZE);
+
+    void *pull = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pull, my_endpoint));
 
     //  Pass one message through to ensure the connection is established
-    rc = zmq_send (push, "ABC", 3, 0);
-    assert (rc == 3);
-    rc = zmq_recv (pull, buf, sizeof (buf), 0);
-    assert (rc == 3);
+    send_string_expect_success (push, "ABC", 0);
+    recv_string_expect_success (pull, "ABC", 0);
 
     //  Unbind the listening endpoint
-    rc = zmq_unbind (push, ep);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (push, my_endpoint));
 
     //  Allow unbind to settle
     msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no outbound connection)
-    rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
-    assert (rc == -1 && zmq_errno () == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (push, "ABC", 3, ZMQ_DONTWAIT));
 
     //  Clean up
-    rc = zmq_close (pull);
-    assert (rc == 0);
-    rc = zmq_close (push);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
 
+void test_send_after_disconnect_fails ()
+{
     //  Create infrastructure
-    ctx = zmq_ctx_new ();
-    assert (ctx);
-    push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_connect (push, ep);
-    assert (rc == 0);
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_bind (pull, ep);
-    assert (rc == 0);
+    void *pull = test_context_socket (ZMQ_PULL);
+    char my_endpoint[BUF_SIZE];
+    bind_loopback_ipv4 (pull, my_endpoint, BUF_SIZE);
+
+    void *push = test_context_socket (ZMQ_PUSH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (push, my_endpoint));
 
     //  Pass one message through to ensure the connection is established.
-    rc = zmq_send (push, "ABC", 3, 0);
-    assert (rc == 3);
-    rc = zmq_recv (pull, buf, sizeof (buf), 0);
-    assert (rc == 3);
+    send_string_expect_success (push, "ABC", 0);
+    recv_string_expect_success (pull, "ABC", 0);
 
     //  Disconnect the bound endpoint
-    rc = zmq_disconnect (push, ep);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (push, my_endpoint));
 
     //  Allow disconnect to settle
     msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no inbound connections).
-    rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
-    assert (rc == -1 && zmq_errno () == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (push, "ABC", 3, ZMQ_DONTWAIT));
 
-    //  Clean up.
-    rc = zmq_close (pull);
-    assert (rc == 0);
-    rc = zmq_close (push);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    //  Clean up
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
 
+void test_unbind_via_last_endpoint ()
+{
     //  Create infrastructure (wild-card binding)
-    ctx = zmq_ctx_new ();
-    assert (ctx);
-    push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_bind (push, ep_wc_tcp);
-    assert (rc == 0);
+    void *push = test_context_socket (ZMQ_PUSH);
+    char my_endpoint[BUF_SIZE];
+    bind_loopback_ipv4 (push, my_endpoint, BUF_SIZE);
+
+    void *pull = test_context_socket (ZMQ_PULL);
+
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_bind (pull, ep_wc_ipc);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pull, ep_wc_ipc));
 #endif
 #if defined ZMQ_HAVE_VMCI
-    void *req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
-    rc = zmq_bind (req, ep_wc_vmci);
-    assert (rc == 0);
+    void *req = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (req, ep_wc_vmci));
 #endif
 
     // Unbind sockets binded by wild-card address
-    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
-    assert (rc == 0);
-    rc = zmq_unbind (push, buf);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (push, my_endpoint));
+
+    size_t buf_size = 0;
+    (void) buf_size;
+
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
-    assert (rc == 0);
-    rc = zmq_unbind (pull, buf);
-    assert (rc == 0);
+    buf_size = sizeof (my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, my_endpoint, &buf_size));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (pull, my_endpoint));
 #endif
 #if defined ZMQ_HAVE_VMCI
-    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
-    assert (rc == 0);
-    rc = zmq_unbind(req, buf);
-    assert (rc == 0);
+    buf_size = sizeof (my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, my_endpoint, &buf_size));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (req, my_endpoint));
 #endif
 
+    //  Clean up
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
+
+void test_wildcard_unbind_fails ()
+{
     //  Create infrastructure (wild-card binding)
-    ctx = zmq_ctx_new ();
-    assert (ctx);
-    push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_bind (push, ep_wc_tcp);
-    assert (rc == 0);
+    void *push = test_context_socket (ZMQ_PUSH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (push, ep_wc_tcp));
+    void *pull = test_context_socket (ZMQ_PULL);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_bind (pull, ep_wc_ipc);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pull, ep_wc_ipc));
 #endif
 #if defined ZMQ_HAVE_VMCI
-    req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
-    rc = zmq_bind (req, ep_wc_vmci);
-    assert (rc == 0);
+    void *req = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (req, ep_wc_vmci));
 #endif
 
     // Sockets binded by wild-card address can't be unbinded by wild-card address
-    rc = zmq_unbind (push, ep_wc_tcp);
-    assert (rc == -1 && zmq_errno () == ENOENT);
+    TEST_ASSERT_FAILURE_ERRNO (ENOENT, zmq_unbind (push, ep_wc_tcp));
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    rc = zmq_unbind (pull, ep_wc_ipc);
-    assert (rc == -1 && zmq_errno () == ENOENT);
+    TEST_ASSERT_FAILURE_ERRNO (ENOENT, zmq_unbind (pull, ep_wc_ipc));
 #endif
 #if defined ZMQ_HAVE_VMCI
-    rc = zmq_unbind (req, ep_wc_vmci);
-    assert (rc == -1 && zmq_errno () == ENOENT);
+    TEST_ASSERT_FAILURE_ERRNO (ENOENT, zmq_unbind (req, ep_wc_vmci));
 #endif
 
-    return 0;
+    //  Clean up
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_send_after_unbind_fails);
+    RUN_TEST (test_send_after_disconnect_fails);
+    RUN_TEST (test_unbind_via_last_endpoint);
+    RUN_TEST (test_wildcard_unbind_fails);
+    return UNITY_END ();
 }

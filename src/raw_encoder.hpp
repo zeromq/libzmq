@@ -30,41 +30,28 @@
 #ifndef __ZMQ_RAW_ENCODER_HPP_INCLUDED__
 #define __ZMQ_RAW_ENCODER_HPP_INCLUDED__
 
-#if defined(_MSC_VER)
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#endif
-
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
-#include <algorithm>
 
-#include "err.hpp"
-#include "msg.hpp"
-#include "i_encoder.hpp"
+#include "encoder.hpp"
 
 namespace zmq
 {
+//  Encoder for 0MQ framing protocol. Converts messages into data batches.
 
-    //  Encoder for 0MQ framing protocol. Converts messages into data batches.
+class raw_encoder_t : public encoder_base_t<raw_encoder_t>
+{
+  public:
+    raw_encoder_t (size_t bufsize_);
+    ~raw_encoder_t ();
 
-    class raw_encoder_t : public encoder_base_t <raw_encoder_t>
-    {
-    public:
+  private:
+    void raw_message_ready ();
 
-        raw_encoder_t (size_t bufsize_);
-        ~raw_encoder_t ();
-
-    private:
-
-        void raw_message_ready ();
-
-        raw_encoder_t (const raw_encoder_t&);
-        const raw_encoder_t &operator = (const raw_encoder_t&);
-    };
+    raw_encoder_t (const raw_encoder_t &);
+    const raw_encoder_t &operator= (const raw_encoder_t &);
+};
 }
 
 #endif
-

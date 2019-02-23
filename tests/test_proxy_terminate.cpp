@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -34,30 +34,33 @@
 // but there is no pull on the other side, previously the proxy blocks
 // in writing to the backend, preventing the proxy from terminating
 
-void
-server_task (void *ctx)
+void server_task (void *ctx_)
 {
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     // Frontend socket talks to main process
-    void *frontend = zmq_socket (ctx, ZMQ_SUB);
+    void *frontend = zmq_socket (ctx_, ZMQ_SUB);
     assert (frontend);
     int rc = zmq_setsockopt (frontend, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
-    rc = zmq_bind (frontend, "tcp://127.0.0.1:15564");
+    rc = zmq_bind (frontend, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (frontend, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Nice socket which is never read
-    void *backend = zmq_socket (ctx, ZMQ_PUSH);
+    void *backend = zmq_socket (ctx_, ZMQ_PUSH);
     assert (backend);
-    rc = zmq_bind (backend, "tcp://127.0.0.1:15563");
+    rc = zmq_bind (backend, "tcp://127.0.0.1:*");
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_SUB);
+    void *control = zmq_socket (ctx_, ZMQ_REQ);
     assert (control);
-    rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
+    rc = s_send (control, my_endpoint);
+    assert (rc > 0);
 
     // Connect backend to frontend via a proxy
     rc = zmq_proxy_steerable (frontend, backend, NULL, control);
@@ -81,22 +84,26 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+
+    void *thread = zmq_threadstart (&server_task, ctx);
+
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_PUB);
+    void *control = zmq_socket (ctx, ZMQ_REP);
     assert (control);
     int rc = zmq_bind (control, "inproc://control");
     assert (rc == 0);
+    char *my_endpoint = s_recv (control);
+    assert (my_endpoint);
 
-    void *thread = zmq_threadstart(&server_task, ctx);
     msleep (500); // Run for 500 ms
 
     // Start a secondary publisher which writes data to the SUB-PUSH server socket
     void *publisher = zmq_socket (ctx, ZMQ_PUB);
     assert (publisher);
-    rc = zmq_connect (publisher, "tcp://127.0.0.1:15564");
+    rc = zmq_connect (publisher, my_endpoint);
     assert (rc == 0);
 
-    msleep (50);
+    msleep (SETTLE_TIME);
     rc = zmq_send (publisher, "This is a test", 14, 0);
     assert (rc == 14);
 
@@ -114,6 +121,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (control);
     assert (rc == 0);
+    free (my_endpoint);
 
     zmq_threadclose (thread);
 

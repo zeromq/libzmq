@@ -15,13 +15,15 @@ SYNOPSIS
 DESCRIPTION
 -----------
 The _zmq_atomic_counter_value_ function returns the value of an atomic
-counter. This function uses platform specific atomic operations.
+counter created by _zmq_atomic_counter_new()_. This function uses platform 
+specific atomic operations.
 
 
 RETURN VALUE
 ------------
-The _zmq_atomic_counter_value()_ function returns the new atomic counter
-if successful. Otherwise it returns NULL.
+The _zmq_atomic_counter_value()_ function returns the value of the 
+atomic counter. If _counter_ does not point to an atomic counter created by
+_zmq_atomic_counter_new()_, the behaviour is undefined.
 
 
 EXAMPLE

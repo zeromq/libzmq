@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,23 +28,22 @@
 */
 
 #include "testutil.hpp"
-#if defined (ZMQ_HAVE_WINDOWS)
-#   include <winsock2.h>
-#   include <ws2tcpip.h>
-#   include <stdexcept>
-#   define close closesocket
+#if defined(ZMQ_HAVE_WINDOWS)
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdexcept>
+#define close closesocket
 #else
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#   include <arpa/inet.h>
-#   include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #endif
 
-static void
-zap_handler (void *ctx)
+static void zap_handler (void *ctx_)
 {
     //  Create and bind ZAP socket
-    void *zap = zmq_socket (ctx, ZMQ_REP);
+    void *zap = zmq_socket (ctx_, ZMQ_REP);
     assert (zap);
     int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
     assert (rc == 0);
@@ -53,29 +52,27 @@ zap_handler (void *ctx)
     while (true) {
         char *version = s_recv (zap);
         if (!version)
-            break;          //  Terminating
+            break; //  Terminating
         char *sequence = s_recv (zap);
         char *domain = s_recv (zap);
         char *address = s_recv (zap);
-        char *identity = s_recv (zap);
+        char *routing_id = s_recv (zap);
         char *mechanism = s_recv (zap);
         char *username = s_recv (zap);
         char *password = s_recv (zap);
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "PLAIN"));
-        assert (streq (identity, "IDENT"));
+        assert (streq (routing_id, "IDENT"));
 
         s_sendmore (zap, version);
         s_sendmore (zap, sequence);
-        if (streq (username, "admin")
-        &&  streq (password, "password")) {
+        if (streq (username, "admin") && streq (password, "password")) {
             s_sendmore (zap, "200");
             s_sendmore (zap, "OK");
             s_sendmore (zap, "anonymous");
             s_send (zap, "");
-        }
-        else {
+        } else {
             s_sendmore (zap, "400");
             s_sendmore (zap, "Invalid username or password");
             s_sendmore (zap, "");
@@ -85,7 +82,7 @@ zap_handler (void *ctx)
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
         free (username);
         free (password);
@@ -96,7 +93,9 @@ zap_handler (void *ctx)
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -106,27 +105,34 @@ int main (void)
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
+    int rc = zmq_setsockopt (server, ZMQ_ROUTING_ID, "IDENT", 6);
+    const char domain[] = "test";
+    assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
     assert (rc == 0);
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
-    char username [256];
-    char password [256];
+    char username[256];
+    char password[256];
 
     //  Check PLAIN security with correct username/password
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     strcpy (username, "admin");
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
+    rc =
+      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
     assert (rc == 0);
     strcpy (password, "password");
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
+    rc =
+      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
     rc = zmq_close (client);
@@ -137,9 +143,11 @@ int main (void)
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     as_server = 1;
+    rc = zmq_setsockopt (client, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
+    assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -149,29 +157,35 @@ int main (void)
     assert (client);
     strcpy (username, "wronguser");
     strcpy (password, "wrongpass");
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
+    rc =
+      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
+    rc =
+      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
     // Unauthenticated messages from a vanilla socket shouldn't be received
     struct sockaddr_in ip4addr;
-    int s;
+    fd_t s;
+
+    unsigned short int port;
+    rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    assert (rc == 1);
 
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (9998);
-#if (_WIN32_WINNT < 0x0600)
+    ip4addr.sin_port = htons (port);
+#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else
-    inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);
+    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr*) &ip4addr, sizeof (ip4addr));
+    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
     assert (rc > -1);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);

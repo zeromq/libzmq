@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "poller_base.hpp"
 #include "i_poll_events.hpp"
 #include "err.hpp"
@@ -41,33 +42,33 @@ zmq::poller_base_t::~poller_base_t ()
     zmq_assert (get_load () == 0);
 }
 
-int zmq::poller_base_t::get_load ()
+int zmq::poller_base_t::get_load () const
 {
-    return load.get ();
+    return _load.get ();
 }
 
 void zmq::poller_base_t::adjust_load (int amount_)
 {
     if (amount_ > 0)
-        load.add (amount_);
-    else
-    if (amount_ < 0)
-        load.sub (-amount_);
+        _load.add (amount_);
+    else if (amount_ < 0)
+        _load.sub (-amount_);
 }
 
 void zmq::poller_base_t::add_timer (int timeout_, i_poll_events *sink_, int id_)
 {
-    uint64_t expiration = clock.now_ms () + timeout_;
+    uint64_t expiration = _clock.now_ms () + timeout_;
     timer_info_t info = {sink_, id_};
-    timers.insert (timers_t::value_type (expiration, info));
+    _timers.insert (timers_t::value_type (expiration, info));
 }
 
 void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 {
     //  Complexity of this operation is O(n). We assume it is rarely used.
-    for (timers_t::iterator it = timers.begin (); it != timers.end (); ++it)
+    for (timers_t::iterator it = _timers.begin (), end = _timers.end ();
+         it != end; ++it)
         if (it->second.sink == sink_ && it->second.id == id_) {
-            timers.erase (it);
+            _timers.erase (it);
             return;
         }
 
@@ -78,32 +79,62 @@ void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 uint64_t zmq::poller_base_t::execute_timers ()
 {
     //  Fast track.
-    if (timers.empty ())
+    if (_timers.empty ())
         return 0;
 
     //  Get the current time.
-    uint64_t current = clock.now_ms ();
+    const uint64_t current = _clock.now_ms ();
 
     //   Execute the timers that are already due.
-    timers_t::iterator it = timers.begin ();
-    while (it != timers.end ()) {
-
+    const timers_t::iterator begin = _timers.begin ();
+    const timers_t::iterator end = _timers.end ();
+    uint64_t res = 0;
+    timers_t::iterator it = begin;
+    for (; it != end; ++it) {
         //  If we have to wait to execute the item, same will be true about
         //  all the following items (multimap is sorted). Thus we can stop
-        //  checking the subsequent timers and return the time to wait for
-        //  the next timer (at least 1ms).
-        if (it->first > current)
-            return it->first - current;
+        //  checking the subsequent timers.
+        if (it->first > current) {
+            res = it->first - current;
+            break;
+        }
 
         //  Trigger the timer.
         it->second.sink->timer_event (it->second.id);
-
-        //  Remove it from the list of active timers.
-        timers_t::iterator o = it;
-        ++it;
-        timers.erase (o);
     }
 
-    //  There are no more timers.
-    return 0;
+    //  Remove them from the list of active timers.
+    _timers.erase (begin, it);
+
+    //  Return the time to wait for the next timer (at least 1ms), or 0, if
+    //  there are no more timers.
+    return res;
+}
+
+zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :
+    _ctx (ctx_)
+{
+}
+
+void zmq::worker_poller_base_t::stop_worker ()
+{
+    _worker.stop ();
+}
+
+void zmq::worker_poller_base_t::start (const char *name_)
+{
+    zmq_assert (get_load () > 0);
+    _ctx.start_thread (_worker, worker_routine, this, name_);
+}
+
+void zmq::worker_poller_base_t::check_thread ()
+{
+#ifdef _DEBUG
+    zmq_assert (!_worker.get_started () || _worker.is_current_thread ());
+#endif
+}
+
+void zmq::worker_poller_base_t::worker_routine (void *arg_)
+{
+    (static_cast<worker_poller_base_t *> (arg_))->loop ();
 }

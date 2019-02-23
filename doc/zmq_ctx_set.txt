@@ -47,6 +47,7 @@ context.
 [horizontal]
 Default value:: 1
 
+
 ZMQ_THREAD_SCHED_POLICY: Set scheduling policy for I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_SCHED_POLICY' argument sets the scheduling policy for
@@ -58,16 +59,86 @@ This option only applies before creating any sockets on the context.
 [horizontal]
 Default value:: -1
 
+
 ZMQ_THREAD_PRIORITY: Set scheduling priority for I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_PRIORITY' argument sets scheduling priority for
 internal context's thread pool. This option is not available on windows.
 Supported values for this option depend on chosen scheduling policy.
+On Linux, when the scheduler policy is SCHED_OTHER, SCHED_IDLE or SCHED_BATCH, the OS scheduler
+will not use the thread priority but rather the thread "nice value"; in such cases
+the system call "nice" will be used to set the nice value to -20 (max priority) instead of
+adjusting the thread priority (which must be zero for those scheduling policies).
 Details can be found in sched.h file, or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
 This option only applies before creating any sockets on the context.
 
 [horizontal]
 Default value:: -1
+
+
+ZMQ_THREAD_AFFINITY_CPU_ADD: Add a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_ADD' argument adds a specific CPU to the affinity list for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_AFFINITY_CPU_REMOVE: Remove a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_REMOVE' argument removes a specific CPU to the affinity list for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_NAME_PREFIX: Set name prefix for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_NAME_PREFIX' argument sets a numeric prefix to each thread
+created for the internal context's thread pool. This option is only supported on Linux.
+This option is useful to help  debugging done via "top -H" or "gdb"; in case
+multiple processes on the system are using ZeroMQ it is useful to provide through
+this context option an application-specific prefix to distinguish ZeroMQ background
+threads that belong to different processes.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
+
+ZMQ_MAX_MSGSZ: Set maximum message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_MSGSZ' argument sets the maximum allowed size
+of a message sent in the context. You can query the maximal
+allowed value with linkzmq:zmq_ctx_get[3] using the
+'ZMQ_MAX_MSGSZ' option.
+
+[horizontal]
+Default value:: INT_MAX
+Maximum value:: INT_MAX
+
+
+ZMQ_ZERO_COPY_RCV: Specify message decoding strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ZERO_COPY_RCV' argument specifies whether the message decoder should
+use a zero copy strategy when receiving messages. The zero copy strategy can
+lead to increased memory usage in some cases. This option allows you to use the
+older copying strategy. You can query the value of this option with
+linkzmq:zmq_ctx_get[3] using the 'ZMQ_ZERO_COPY_RECV' option.
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Default value:: 1
+
 
 ZMQ_MAX_SOCKETS: Set maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,6 +148,7 @@ linkzmq:zmq_ctx_get[3] using the 'ZMQ_SOCKET_LIMIT' option.
 
 [horizontal]
 Default value:: 1024
+
 
 ZMQ_IPV6: Set IPv6 option
 ~~~~~~~~~~~~~~~~~~~~~~~~~

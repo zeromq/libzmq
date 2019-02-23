@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,82 +27,76 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <stdio.h>
-
-#undef NDEBUG
-#include <assert.h>
-
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <unity.h>
+
+void setUp ()
 {
-    fprintf (stderr, "test_sub_forward running...\n");
+    setup_test_context ();
+}
 
-    void *ctx = zmq_init (1);
-    assert (ctx);
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
+void test ()
+{
     //  First, create an intermediate device.
-    void *xpub = zmq_socket (ctx, ZMQ_XPUB);
-    assert (xpub);
-    int rc = zmq_bind (xpub, "tipc://{5560,0,0}");
-    assert (rc == 0);
-    void *xsub = zmq_socket (ctx, ZMQ_XSUB);
-    assert (xsub);
-    rc = zmq_bind (xsub, "tipc://{5561,0,0}");
-    assert (rc == 0);
+    void *xpub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (xpub, "tipc://{5560,0,0}"));
+    void *xsub = test_context_socket (ZMQ_XSUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (xsub, "tipc://{5561,0,0}"));
 
     //  Create a publisher.
-    void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (pub);
-    rc = zmq_connect (pub, "tipc://{5561,0}");
-    assert (rc == 0);
+    void *pub = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pub, "tipc://{5561,0}@0.0.0"));
 
     //  Create a subscriber.
-    void *sub = zmq_socket (ctx, ZMQ_SUB);
-    assert (sub);
-    rc = zmq_connect (sub, "tipc://{5560,0}");
-    assert (rc == 0);
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "tipc://{5560,0}@0.0.0"));
+
+    // TODO the remainder of this method is duplicated with test_sub_forward
 
     //  Subscribe for all messages.
-    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
 
-    //  Pass the subscription upstream through the device.
-    char buff [32];
-    rc = zmq_recv (xpub, buff, sizeof (buff), 0);
-    assert (rc >= 0);
-    rc = zmq_send (xsub, buff, rc, 0);
-    assert (rc >= 0);
+    //  Pass the subscription upstream through the device
+    char buff[32];
+    int size;
+    TEST_ASSERT_SUCCESS_ERRNO (size = zmq_recv (xpub, buff, sizeof (buff), 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_send (xsub, buff, size, 0));
 
-    //  Wait a bit till the subscription gets to the publisher.
+    //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
 
-    //  Send an empty message.
-    rc = zmq_send (pub, NULL, 0, 0);
-    assert (rc == 0);
+    //  Send an empty message
+    send_string_expect_success (pub, "", 0);
 
-    //  Pass the message downstream through the device.
-    rc = zmq_recv (xsub, buff, sizeof (buff), 0);
-    assert (rc >= 0);
-    rc = zmq_send (xpub, buff, rc, 0);
-    assert (rc >= 0);
+    //  Pass the message downstream through the device
+    TEST_ASSERT_SUCCESS_ERRNO (size = zmq_recv (xsub, buff, sizeof (buff), 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_send (xpub, buff, size, 0));
 
-    //  Receive the message in the subscriber.
-    rc = zmq_recv (sub, buff, sizeof (buff), 0);
-    assert (rc == 0);
+    //  Receive the message in the subscriber
+    recv_string_expect_success (sub, "", 0);
 
     //  Clean up.
-    rc = zmq_close (xpub);
-    assert (rc == 0);
-    rc = zmq_close (xsub);
-    assert (rc == 0);
-    rc = zmq_close (pub);
-    assert (rc == 0);
-    rc = zmq_close (sub);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (xpub);
+    test_context_socket_close (xsub);
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
 
-    return 0 ;
+int main ()
+{
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
+    UNITY_BEGIN ();
+    RUN_TEST (test);
+    return UNITY_END ();
 }

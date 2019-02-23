@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,55 +28,59 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <unity.h>
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 #define MSG_SIZE 20
 
 #ifdef _WIN32
-#include <Winsock2.h>
-#include <Ws2tcpip.h>
-#define usleep(a) Sleep((a) / 1000)
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #endif
 
-int main (void)
+void test_srcfd ()
 {
-    int rc;
+    char my_endpoint[MAX_SOCKET_STRING];
 
-    setup_test_environment();
     //  Create the infrastructure
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
 
-    void *rep = zmq_socket (ctx, ZMQ_REP);
-    assert (rep);
-    void *req = zmq_socket (ctx, ZMQ_REQ);
-    assert (req);
+    void *rep = test_context_socket (ZMQ_REP);
+    void *req = test_context_socket (ZMQ_REQ);
 
-    rc = zmq_bind(rep, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    bind_loopback_ipv4 (rep, my_endpoint, sizeof (my_endpoint));
 
-    rc = zmq_connect(req, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (req, my_endpoint));
 
     char tmp[MSG_SIZE];
-    zmq_send(req, tmp, MSG_SIZE, 0);
+    memset (tmp, 0, MSG_SIZE);
+    zmq_send (req, tmp, MSG_SIZE, 0);
 
     zmq_msg_t msg;
-    rc = zmq_msg_init(&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
-    zmq_recvmsg(rep, &msg, 0);
-    assert(zmq_msg_size(&msg) == MSG_SIZE);
+    zmq_recvmsg (rep, &msg, 0);
+    TEST_ASSERT_EQUAL_UINT (MSG_SIZE, zmq_msg_size (&msg));
 
     // get the messages source file descriptor
-    int srcFd = zmq_msg_get(&msg, ZMQ_SRCFD);
-    assert(srcFd >= 0);
+    int src_fd = zmq_msg_get (&msg, ZMQ_SRCFD);
+    TEST_ASSERT_GREATER_OR_EQUAL (0, src_fd);
 
-    rc = zmq_msg_close(&msg);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
     // get the remote endpoint
     struct sockaddr_storage ss;
@@ -85,32 +89,38 @@ int main (void)
 #else
     socklen_t addrlen = sizeof ss;
 #endif
-    rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      getpeername (src_fd, (struct sockaddr *) &ss, &addrlen));
 
-    char host [NI_MAXHOST];
-    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host, NULL, 0, NI_NUMERICHOST);
-    assert (rc == 0);
+    char host[NI_MAXHOST];
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (getnameinfo ((struct sockaddr *) &ss,
+                                                addrlen, host, sizeof host,
+                                                NULL, 0, NI_NUMERICHOST));
 
     // assert it is localhost which connected
-    assert (strcmp(host, "127.0.0.1") == 0);
+    TEST_ASSERT_EQUAL_STRING ("127.0.0.1", host);
 
-    rc = zmq_close (rep);
-    assert (rc == 0);
-    rc = zmq_close (req);
-    assert (rc == 0);
+    test_context_socket_close (rep);
+    test_context_socket_close (req);
 
     // sleep a bit for the socket to be freed
-    usleep(30000);
+    msleep (SETTLE_TIME);
 
     // getting name from closed socket will fail
-    rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
-    assert (rc == -1);
-    assert (errno == EBADF);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+#ifdef ZMQ_HAVE_WINDOWS
+    const int expected_errno = WSAENOTSOCK;
+#else
+    const int expected_errno = EBADF;
+#endif
+    TEST_ASSERT_FAILURE_RAW_ERRNO (
+      expected_errno, getpeername (src_fd, (struct sockaddr *) &ss, &addrlen));
 }
 
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_srcfd);
+    return UNITY_END ();
+}

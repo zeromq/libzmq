@@ -30,55 +30,44 @@
 #ifndef __ZMQ_UDP_ADDRESS_HPP_INCLUDED__
 #define __ZMQ_UDP_ADDRESS_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <sys/socket.h>
 #include <netinet/in.h>
 #endif
 
+#include <string>
+
+#include "ip_resolver.hpp"
+
 namespace zmq
 {
+class udp_address_t
+{
+  public:
+    udp_address_t ();
+    virtual ~udp_address_t ();
 
-    class udp_address_t
-    {
-    public:
+    int resolve (const char *name_, bool receiver_, bool ipv6_);
 
-        udp_address_t ();
-        virtual ~udp_address_t ();
+    //  The opposite to resolve()
+    virtual int to_string (std::string &addr_);
 
-        int resolve (const char *name_);
 
-        //  The opposite to resolve()
-        virtual int to_string (std::string &addr_);
+    int family () const;
 
-#if defined ZMQ_HAVE_WINDOWS
-        unsigned short family () const;
-#else
-        sa_family_t family () const;
-#endif
-        const sockaddr *bind_addr () const;
-        socklen_t bind_addrlen () const;
+    bool is_mcast () const;
 
-        const sockaddr *dest_addr () const;
-        socklen_t dest_addrlen () const;
+    const ip_addr_t *bind_addr () const;
+    int bind_if () const;
+    const ip_addr_t *target_addr () const;
 
-        bool is_mcast () const;
-
-        const in_addr multicast_ip () const;
-        const in_addr interface_ip () const;
-
-    private:
-
-        in_addr  multicast;
-        in_addr  iface;
-        sockaddr_in bind_address;
-        sockaddr_in dest_address;
-        bool is_mutlicast;
-        std::string address;
-    };
+  private:
+    ip_addr_t _bind_address;
+    int _bind_interface;
+    ip_addr_t _target_address;
+    bool _is_multicast;
+    std::string _address;
+};
 }
 
 #endif

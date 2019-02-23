@@ -28,50 +28,72 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+void setUp ()
 {
-#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
-    assert (zmq_has ("ipc"));
+}
+
+void tearDown ()
+{
+}
+
+void test_capabilities ()
+{
+#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
+    TEST_ASSERT_TRUE (zmq_has ("ipc"));
 #else
-    assert (!zmq_has ("ipc"));
+    TEST_ASSERT_TRUE (!zmq_has ("ipc"));
 #endif
 
-#if defined (ZMQ_HAVE_OPENPGM)
-    assert (zmq_has ("pgm"));
+#if defined(ZMQ_HAVE_OPENPGM)
+    TEST_ASSERT_TRUE (zmq_has ("pgm"));
 #else
-    assert (!zmq_has ("pgm"));
-#endif
-    
-#if defined (ZMQ_HAVE_TIPC)
-    assert (zmq_has ("tipc"));
-#else
-    assert (!zmq_has ("tipc"));
-#endif
-    
-#if defined (ZMQ_HAVE_NORM)
-    assert (zmq_has ("norm"));
-#else
-    assert (!zmq_has ("norm"));
-#endif
-    
-#if defined (HAVE_LIBSODIUM)
-    assert (zmq_has ("curve"));
-#else
-    assert (!zmq_has ("curve"));
-#endif
-    
-#if defined (HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi"));
-#else
-    assert (!zmq_has ("gssapi"));
+    TEST_ASSERT_TRUE (!zmq_has ("pgm"));
 #endif
 
-#if defined (ZMQ_HAVE_VMCI)
-    assert (zmq_has("vmci"));
+#if defined(ZMQ_HAVE_TIPC)
+    TEST_ASSERT_TRUE (zmq_has ("tipc"));
 #else
-    assert (!zmq_has("vmci"));
+    TEST_ASSERT_TRUE (!zmq_has ("tipc"));
 #endif
 
-    return 0;
+#if defined(ZMQ_HAVE_NORM)
+    TEST_ASSERT_TRUE (zmq_has ("norm"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("norm"));
+#endif
+
+#if defined(ZMQ_HAVE_CURVE)
+    TEST_ASSERT_TRUE (zmq_has ("curve"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("curve"));
+#endif
+
+#if defined(HAVE_LIBGSSAPI_KRB5)
+    TEST_ASSERT_TRUE (zmq_has ("gssapi"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("gssapi"));
+#endif
+
+#if defined(ZMQ_HAVE_VMCI)
+    TEST_ASSERT_TRUE (zmq_has ("vmci"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("vmci"));
+#endif
+
+#if defined(ZMQ_BUILD_DRAFT_API)
+    TEST_ASSERT_TRUE (zmq_has ("draft"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("draft"));
+#endif
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_capabilities);
+    return UNITY_END ();
 }

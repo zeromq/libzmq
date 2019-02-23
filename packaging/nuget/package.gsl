@@ -1,7 +1,7 @@
 .#  Generate NuGet nuspec file (for subsequent packing).
 .#
 .#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
+.#  language. See https://github.com/zeromq/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
 .echo "Generating package.nuspec from template."
@@ -25,7 +25,7 @@
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <developmentDependency>false</developmentDependency>
         <description>The 0MQ lightweight messaging kernel is a library which extends the standard socket interfaces with features traditionally provided by specialised messaging middleware products. 0MQ sockets provide an abstraction of asynchronous message queues, multiple messaging patterns, message filtering (subscriptions), seamless access to multiple transport protocols and more.</description>
-        <summary>The 0MQ lightweight messaging kernel, with libsodium integrated, packaged for Visual Studio 2013 (v120) and CTP_Nov2013 compilers.</summary>
+        <summary>The 0MQ lightweight messaging kernel, with tweetnacl integrated, packaged for specific Visual Studio compiler.</summary>
         <releaseNotes>https://raw.github.com/zeromq/libzmq/master/NEWS</releaseNotes>
         <copyright>GNU Lesser GPL v3</copyright>
         <tags>native, libzmq, zmq, 0MQ, messaging, sockets, C++</tags>
@@ -125,9 +125,8 @@
   <!-- general -->
   <ItemDefinitionGroup>
     <ClCompile>
-      <!-- HAVE_LIBSODIUM defined in packaged builds and must be defined for package consumer. -->
-      <!-- ZMQ_HAVE_OPENPGM not defined in packaged builds and should not be defined by package consumer. -->
-      <PreprocessorDefinitions>HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- ZMQ_USE_TWEETNACL defined in packaged builds and must be defined for package consumer. -->
+      <PreprocessorDefinitions>ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$\(MSBuildThisFileDirectory)include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

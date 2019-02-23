@@ -22,9 +22,21 @@ control flow provided by the socket passed as the fourth argument "control".
 If the control socket is not NULL, the proxy supports control flow. If 
 'PAUSE' is received on this socket, the proxy suspends its activities. If 
 'RESUME' is received, it goes on. If 'TERMINATE' is received, it terminates
-smoothly. At start, the proxy runs normally as if zmq_proxy was used.
+smoothly. If 'STATISTICS' is received, the proxy will reply on the control socket
+sending a multipart message with 8 frames, each with an unsigned integer 64-bit
+wide that provide in the following order:
+ - number of messages received by the frontend socket
+ - number of bytes received by the frontend socket
+ - number of messages sent out the frontend socket
+ - number of bytes sent out the frontend socket
+ - number of messages received by the backend socket
+ - number of bytes received by the backend socket
+ - number of messages sent out the backend socket
+ - number of bytes sent out the backend socket
 
-If the control socket is NULL, the function behave exactly as if zmq_proxy
+At start, the proxy runs normally as if zmq_proxy was used.
+
+If the control socket is NULL, the function behave exactly as if linkzmq:zmq_proxy[3]
 had been called.
 
 
@@ -38,8 +50,9 @@ cf zmq_proxy
 RETURN VALUE
 ------------
 The _zmq_proxy_steerable()_ function returns 0 if TERMINATE is sent to its
-control socket. Otherwise, it returns `-1` and 'errno' set to *ETERM* (the
-0MQ 'context' associated with either of the specified sockets was terminated).
+control socket. Otherwise, it returns `-1` and 'errno' set to *ETERM* or
+*EINTR* (the 0MQ 'context' associated with either of the specified sockets was
+terminated).
 
 
 EXAMPLE
@@ -80,6 +93,21 @@ assert (zmq_send (control, "RESUME", 6, 0) == 0);
 
 // terminate the proxy
 assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
+
+// check statistics
+assert (zmq_send (control, "STATISTICS", 10, 0) == 0);
+zmq_msg_t stats_msg;
+
+while (1) {
+    assert (zmq_msg_init (&stats_msg) == 0);
+    assert (zmq_recvmsg (control, &stats_msg, 0) == sizeof (uint64_t));
+    assert (rc == sizeof (uint64_t));
+    printf ("Stat: %lu\n", *(unsigned long int *)zmq_msg_data (&stats_msg));
+    if (!zmq_msg_get (&stats_msg, ZMQ_MORE))
+        break;
+    assert (zmq_msg_close (&stats_msg) == 0);
+}
+assert (zmq_msg_close (&stats_msg) == 0);
 ---
 
 

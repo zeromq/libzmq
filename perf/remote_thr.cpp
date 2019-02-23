@@ -32,7 +32,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main (int argc, char *argv [])
+// keys are arbitrary but must match local_lat.cpp
+const char server_pubkey[] = "DX4nh=yUn{-9ugra0X3Src4SU-4xTgqxcYY.+<SH";
+const char client_pubkey[] = "<n^oA}I:66W+*ds3tAmi1+KJzv-}k&fC2aA5Bj0K";
+const char client_prvkey[] = "9R9bV}[6z6DC-%$!jTVTKvWc=LEL{4i4gzUe$@Zx";
+
+int main (int argc, char *argv[])
 {
     const char *connect_to;
     int message_count;
@@ -42,15 +47,19 @@ int main (int argc, char *argv [])
     int rc;
     int i;
     zmq_msg_t msg;
+    int curve = 0;
 
-    if (argc != 4) {
+    if (argc != 4 && argc != 5) {
         printf ("usage: remote_thr <connect-to> <message-size> "
-            "<message-count>\n");
+                "<message-count> [<enable_curve>]\n");
         return 1;
     }
-    connect_to = argv [1];
-    message_size = atoi (argv [2]);
-    message_count = atoi (argv [3]);
+    connect_to = argv[1];
+    message_size = atoi (argv[2]);
+    message_count = atoi (argv[3]);
+    if (argc >= 5 && atoi (argv[4])) {
+        curve = 1;
+    }
 
     ctx = zmq_init (1);
     if (!ctx) {
@@ -66,6 +75,28 @@ int main (int argc, char *argv [])
 
     //  Add your socket options here.
     //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+    if (curve) {
+        rc = zmq_setsockopt (s, ZMQ_CURVE_SECRETKEY, client_prvkey,
+                             sizeof (client_prvkey));
+        if (rc != 0) {
+            printf ("error in zmq_setsockoopt: %s\n", zmq_strerror (errno));
+            return -1;
+        }
+
+        rc = zmq_setsockopt (s, ZMQ_CURVE_PUBLICKEY, client_pubkey,
+                             sizeof (client_pubkey));
+        if (rc != 0) {
+            printf ("error in zmq_setsockoopt: %s\n", zmq_strerror (errno));
+            return -1;
+        }
+
+        rc = zmq_setsockopt (s, ZMQ_CURVE_SERVERKEY, server_pubkey,
+                             sizeof (server_pubkey));
+        if (rc != 0) {
+            printf ("error in zmq_setsockoopt: %s\n", zmq_strerror (errno));
+            return -1;
+        }
+    }
 
     rc = zmq_connect (s, connect_to);
     if (rc != 0) {

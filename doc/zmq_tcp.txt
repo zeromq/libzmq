@@ -69,6 +69,30 @@ A 'peer address' may be specified by either of the following:
 Note: A description of the ZeroMQ Message Transport Protocol (ZMTP) which is 
 used by the TCP transport can be found at <http://rfc.zeromq.org/spec:15>
 
+
+HWM
+---
+
+For the TCP transport, the high water mark (HWM) mechanism works in conjunction
+with the TCP socket buffers handled at OS level.
+Depending on the OS and several other factors the size of such TCP buffers will
+be different. Moreover TCP buffers provided by the OS will accomodate a varying
+number of messages depending on the size of messages (unlike ZMQ HWM settings
+the TCP socket buffers are measured in bytes and not messages).
+
+This may result in apparently inexplicable behaviors: e.g., you may expect that
+setting ZMQ_SNDHWM to 100 on a socket using TCP transport will have the effect
+of blocking the transmission of the 101-th message if the receiver is slow.
+This is very unlikely when using TCP transport since OS TCP buffers will typically
+provide enough buffering to allow you sending much more than 100 messages.
+
+Of course if the receiver is slow, transmitting on a TCP ZMQ socket will eventually trigger
+the "mute state" of the socket; simply don't rely on the exact HWM value.
+
+Obviously the same considerations apply for the receive HWM (see ZMQ_RCVHWM).
+
+
+
 EXAMPLES
 --------
 .Assigning a local address to a socket

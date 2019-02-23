@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,21 +27,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <string.h>
-#include <unistd.h>
-
-#undef NDEBUG
-#include <assert.h>
-
 #include "testutil.hpp"
 
 int main (void)
 {
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
+    }
+
     int rc;
     char buf[32];
     const char *ep = "tipc://{5560,0,0}";
-    const char *name = "tipc://{5560,0}";
+    const char *name = "tipc://{5560,0}@0.0.0";
 
     fprintf (stderr, "unbind endpoint test running...\n");
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,63 +28,70 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 #define THREAD_COUNT 100
 
-extern "C"
+struct thread_data
 {
-    static void worker (void *s)
-    {
-        int rc;
+    char endpoint[MAX_SOCKET_STRING];
+};
 
-        rc = zmq_connect (s, "tcp://127.0.0.1:5560");
-        assert (rc == 0);
+extern "C" {
+static void worker (void *data_)
+{
+    struct thread_data *tdata = (struct thread_data *) data_;
 
-        //  Start closing the socket while the connecting process is underway.
-        rc = zmq_close (s);
-        assert (rc == 0);
+    void *socket = zmq_socket (get_test_context (), ZMQ_SUB);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (socket, tdata->endpoint));
+
+    //  Start closing the socket while the connecting process is underway.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
+}
+}
+
+void test_shutdown_stress ()
+{
+    void *threads[THREAD_COUNT];
+
+    for (int j = 0; j != 10; j++) {
+        //  Check the shutdown with many parallel I/O threads.
+        struct thread_data tdata;
+        setup_test_context ();
+        zmq_ctx_set (get_test_context (), ZMQ_IO_THREADS, 7);
+
+        void *socket = test_context_socket (ZMQ_PUB);
+
+        bind_loopback_ipv4 (socket, tdata.endpoint, sizeof (tdata.endpoint));
+
+        for (int i = 0; i != THREAD_COUNT; i++) {
+            threads[i] = zmq_threadstart (&worker, &tdata);
+        }
+
+        for (int i = 0; i != THREAD_COUNT; i++) {
+            zmq_threadclose (threads[i]);
+        }
+
+        test_context_socket_close (socket);
+
+        teardown_test_context ();
     }
 }
 
-int main (void)
+int main ()
 {
-    setup_test_environment();
-    void *s1;
-    void *s2;
-    int i;
-    int j;
-    int rc;
-    void* threads [THREAD_COUNT];
+    setup_test_environment ();
 
-    for (j = 0; j != 10; j++) {
-
-        //  Check the shutdown with many parallel I/O threads.
-        void *ctx = zmq_ctx_new ();
-        assert (ctx);
-        zmq_ctx_set (ctx, ZMQ_IO_THREADS, 7);
-
-        s1 = zmq_socket (ctx, ZMQ_PUB);
-        assert (s1);
-
-        rc = zmq_bind (s1, "tcp://127.0.0.1:5560");
-        assert (rc == 0);
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            s2 = zmq_socket (ctx, ZMQ_SUB);
-            assert (s2);
-            threads [i] = zmq_threadstart(&worker, s2);
-        }
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            zmq_threadclose(threads [i]);
-        }
-
-        rc = zmq_close (s1);
-        assert (rc == 0);
-
-        rc = zmq_ctx_term (ctx);
-        assert (rc == 0);
-    }
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_shutdown_stress);
+    return UNITY_END ();
 }

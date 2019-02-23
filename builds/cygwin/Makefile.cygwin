@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -I.
+CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -I.
 LIBS=-lws2_32
 
 OBJS = ctx.o reaper.o dist.o err.o \

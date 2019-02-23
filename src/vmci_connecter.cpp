@@ -27,12 +27,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
+
 #include "vmci_connecter.hpp"
 
 #if defined ZMQ_HAVE_VMCI
 
 #include <new>
-#include <string>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -46,8 +47,10 @@
 #include "vmci.hpp"
 
 zmq::vmci_connecter_t::vmci_connecter_t (class io_thread_t *io_thread_,
-      class session_base_t *session_, const options_t &options_,
-      const address_t *addr_, bool delayed_start_) :
+                                         class session_base_t *session_,
+                                         const options_t &options_,
+                                         const address_t *addr_,
+                                         bool delayed_start_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     addr (addr_),
@@ -56,12 +59,12 @@ zmq::vmci_connecter_t::vmci_connecter_t (class io_thread_t *io_thread_,
     delayed_start (delayed_start_),
     timer_started (false),
     session (session_),
-    current_reconnect_ivl(options.reconnect_ivl)
+    current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
     zmq_assert (addr->protocol == "vmci");
     addr->to_string (endpoint);
-    socket = session-> get_socket();
+    socket = session->get_socket ();
 }
 
 zmq::vmci_connecter_t::~vmci_connecter_t ()
@@ -114,16 +117,18 @@ void zmq::vmci_connecter_t::out_event ()
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {
         close ();
-        add_reconnect_timer();
+        add_reconnect_timer ();
         return;
     }
 
-    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size, options.vmci_buffer_min_size, options.vmci_buffer_max_size);
+    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size,
+                           options.vmci_buffer_min_size,
+                           options.vmci_buffer_max_size);
 
-    if (options.vmci_connect_timeout > 0)
-    {
+    if (options.vmci_connect_timeout > 0) {
 #if defined ZMQ_HAVE_WINDOWS
-        tune_vmci_connect_timeout (this->get_ctx (), fd, options.vmci_connect_timeout);
+        tune_vmci_connect_timeout (this->get_ctx (), fd,
+                                   options.vmci_connect_timeout);
 #else
         struct timeval timeout = {0, options.vmci_connect_timeout * 1000};
         tune_vmci_connect_timeout (this->get_ctx (), fd, timeout);
@@ -131,8 +136,8 @@ void zmq::vmci_connecter_t::out_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine =
+      new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -163,15 +168,6 @@ void zmq::vmci_connecter_t::start_connecting ()
         out_event ();
     }
 
-    //  Connection establishment may be delayed. Poll for its completion.
-    else
-    if (rc == -1 && errno == EINPROGRESS) {
-        handle = add_fd (s);
-        handle_valid = true;
-        set_pollout (handle);
-        socket->event_connect_delayed (endpoint, zmq_errno());
-    }
-
     //  Handle any other error condition by eventual reconnect.
     else {
         if (s != retired_fd)
@@ -180,28 +176,29 @@ void zmq::vmci_connecter_t::start_connecting ()
     }
 }
 
-void zmq::vmci_connecter_t::add_reconnect_timer()
+void zmq::vmci_connecter_t::add_reconnect_timer ()
 {
-    int rc_ivl = get_new_reconnect_ivl();
-    add_timer (rc_ivl, reconnect_timer_id);
-    socket->event_connect_retried (endpoint, rc_ivl);
-    timer_started = true;
+    if (options.reconnect_ivl != -1) {
+        int rc_ivl = get_new_reconnect_ivl ();
+        add_timer (rc_ivl, reconnect_timer_id);
+        socket->event_connect_retried (endpoint, rc_ivl);
+        timer_started = true;
+    }
 }
 
 int zmq::vmci_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
-    int this_interval = current_reconnect_ivl +
-        (generate_random () % options.reconnect_ivl);
+    int this_interval =
+      current_reconnect_ivl + (generate_random () % options.reconnect_ivl);
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 &&
-        options.reconnect_ivl_max > options.reconnect_ivl) {
-
+    if (options.reconnect_ivl_max > 0
+        && options.reconnect_ivl_max > options.reconnect_ivl) {
         //  Calculate the next interval
         current_reconnect_ivl = current_reconnect_ivl * 2;
-        if(current_reconnect_ivl >= options.reconnect_ivl_max) {
+        if (current_reconnect_ivl >= options.reconnect_ivl_max) {
             current_reconnect_ivl = options.reconnect_ivl_max;
         }
     }
@@ -218,27 +215,23 @@ int zmq::vmci_connecter_t::open ()
 
     //  Create the socket.
     s = open_socket (family, SOCK_STREAM, 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    if (s == INVALID_SOCKET) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        return -1;
+    }
+#else
     if (s == -1)
         return -1;
-
-    //  Set the non-blocking flag.
-    unblock_socket (s);
+#endif
 
     //  Connect to the remote peer.
-    int rc = ::connect (
-        s, addr->resolved.vmci_addr->addr (),
-        addr->resolved.vmci_addr->addrlen ());
+    int rc = ::connect (s, addr->resolved.vmci_addr->addr (),
+                        addr->resolved.vmci_addr->addrlen ());
 
     //  Connect was successful immediately.
     if (rc == 0)
         return 0;
-
-    //  Translate other error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
-    if (rc == -1 && errno == EINTR) {
-        errno = EINPROGRESS;
-        return -1;
-    }
 
     //  Forward the error.
     return -1;
@@ -268,20 +261,36 @@ zmq::fd_t zmq::vmci_connecter_t::connect ()
 #else
     socklen_t len = sizeof (err);
 #endif
-    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+
+    //  Assert if the error was caused by 0MQ bug.
+    //  Networking problems are OK. No need to assert.
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (rc == 0);
+    if (err != 0) {
+        if (err != WSAECONNREFUSED && err != WSAETIMEDOUT
+            && err != WSAECONNABORTED && err != WSAEHOSTUNREACH
+            && err != WSAENETUNREACH && err != WSAENETDOWN && err != WSAEACCES
+            && err != WSAEINVAL && err != WSAEADDRINUSE
+            && err != WSAECONNRESET) {
+            wsa_assert_no (err);
+        }
+        return retired_fd;
+    }
+#else
+    //  Following code should handle both Berkeley-derived socket
+    //  implementations and Solaris.
     if (rc == -1)
         err = errno;
     if (err != 0) {
-
-        //  Assert if the error was caused by 0MQ bug.
-        //  Networking problems are OK. No need to assert.
         errno = err;
-        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
-            errno == ETIMEDOUT || errno == EHOSTUNREACH ||
-            errno == ENETUNREACH || errno == ENETDOWN);
-
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN
+                      || errno == EINVAL);
         return retired_fd;
     }
+#endif
 
     fd_t result = s;
     s = retired_fd;

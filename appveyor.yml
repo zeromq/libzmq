@@ -1,85 +1,246 @@
 version: build-{build}
 
-clone_depth: 1
+shallow_clone: true
 
 skip_tags: true
 
-os: Visual Studio 2015
+os: Visual Studio 2013
 
 environment:
-  CMAKE_GENERATOR: "Visual Studio 14 2015"
-  MSVCVERSION: "v140"
-  MSVCYEAR: "vs2015"
+  CMAKE_GENERATOR: "Visual Studio 12 2013"
+  MSVCVERSION: "v120"
+  MSVCYEAR: "vs2013"
+  ENABLE_DRAFTS: ON
   matrix:
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: OFF # unavailable build files for VS2008
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Visual Studio 9 2008"
+      MSVCVERSION: "v90"
+      MSVCYEAR: "vs2008"
+    - platform: Win32
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Visual Studio 10 2010"
+      MSVCVERSION: "v100"
+      MSVCYEAR: "vs2010"
+    - platform: Win32
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+    - platform: Win32
+      configuration: Release
+      POLLER: epoll
+      API_POLLER: poll
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Debug
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
-    - platform: x64
-      configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: x64
       configuration: Debug
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: OFF
-      WITH_TWEETNACL: OFF
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
+      ENABLE_DRAFTS: OFF
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GENERATOR: "Visual Studio 14 2015"
+      MSVCVERSION: "v140"
+      MSVCYEAR: "vs2015"
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: OFF
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      MSVCVERSION: "v141"
+      MSVCYEAR: "vs2017"
+    - platform: cygwin64
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "Unix Makefiles"
+    - platform: mingw64
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: ON
+      CMAKE_GENERATOR: "MSYS Makefiles"
 
 matrix:
   fast_finish: false
+  allow_failures:
+    - platform: cygwin64 # TODO allow failures until tests are fixed
+    - platform: mingw64  # TODO allow failures until tests are fixed
 
 init:
+  - cmd: if "%NO_PR%"=="TRUE" (
+            if "%APPVEYOR_PULL_REQUEST_NUMBER%" NEQ "" (
+                echo "Build is disabled for PRs, aborting" &&
+                appveyor exit
+            )
+         )
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - cmake --version
   - msbuild /version
   - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
 
+cache:
+    - C:\projects\libsodium
+    - C:\cygwin64\var\cache\setup
+
 install:
+  - cmd: if "%Platform%"=="cygwin64" C:\cygwin64\setup-x86_64.exe --quiet-mode --no-shortcuts --upgrade-also --packages cmake,cygwin-devel,gcc-g++,libncurses-devel,make,pkg-config
+  - cmd: if "%Platform%"=="cygwin64" set PATH=C:\cygwin64\bin;%PATH%
+  - cmd: if "%Platform%"=="mingw64" C:\msys64\usr\bin\bash -lc "pacman -Qg"
+  - cmd: if "%Platform%"=="mingw64" set PATH=C:\msys64\usr\bin;%PATH%
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
-  - cmd: set LIBSODIUMDIR=C:\projects\libsodium
-  - cmd: git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
-  - cmd: msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
-  - cmd: set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
-  - cmd: set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
-  - cmd: move "%SODIUM_LIBRARY_DIR%\libsodium.lib" "%SODIUM_LIBRARY_DIR%\sodium.lib"
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" (
+            if not exist "%LIBSODIUMDIR%" (
+                git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+            ) else (
+                cd "%LIBSODIUMDIR%" &&
+                git pull
+            )
+         )
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
+  - ps: if (${env:WITH_LIBSODIUM} -eq "ON") { Copy-Item "C:\projects\libsodium\bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "C:\projects\libsodium\bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib" }
 
 clone_folder: C:\projects\libzmq
 
 before_build:
+  - cmd: set LIBZMQ_SRCDIR=%cd%
   - cmd: set LIBZMQ_BUILDDIR=C:\projects\build_libzmq
+  # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+  # - cmd: curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-windows.zip -o sonar-scanner-cli-3.1.0.1141-windows.zip
+  # - cmd: unzip sonar-scanner-cli-3.1.0.1141-windows.zip
+  # - cmd: set BUILDLOG="%LIBZMQ_SRCDIR%\build.log"
   - cmd: md "%LIBZMQ_BUILDDIR%"
   - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_SODIUM="%WITH_SODIUM%" -D WITH_TWEETNACL="%WITH_TWEETNACL%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_SODIUM="%WITH_SODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: if "%PLATFORM%" == "Win32" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
+  - cmd: if "%PLATFORM%" == "x64"   set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
+  - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
+  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="ON" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cd "%LIBZMQ_SRCDIR%"
 
-build:
-  parallel: true
-  project: C:\projects\build_libzmq\ZeroMQ.sln
-  verbosity: minimal
+build_script:
+  - cmd: set verbosity=Minimal
+  - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
+  - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
+  - cmd: cd "%LIBZMQ_BUILDDIR%"
+  - cmd: if "%PLATFORM%" == "Win32" (
+            if "%MSVCYEAR%"=="vs2008" (
+                cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
+            ) else (
+                cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+            )
+         )
+  - cmd: if "%PLATFORM%" == "x64" (
+            cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install -- -verbosity:Minimal -maxcpucount -logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+         )
+  - cmd: if "%PLATFORM%" == "cygwin64" (
+            cmake --build . -- -j5
+         )
+  - cmd: if "%PLATFORM%" == "mingw64" (
+            cmake --build . -- -j5
+         )
+
+# TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+# build_script:
+  # - cmd: msbuild %LIBZMQ_BUILDDIR%\ZeroMQ.sln /verbosity:detailed >%BUILDLOG%
 
 after_build:
+  # TODO this does not work with sonarcloud.io, as it misses the sonar-cxx plugin
+  # - cmd: cd "%LIBZMQ_SRCDIR%"
+  # - cmd: dir
+  # - cmd: sonar-scanner-3.1.0.1141-windows\bin\sonar-scanner 
+            # -Dsonar.scm.provider=git 
+            # -Dsonar.projectKey=libzmq-msvc 
+            # -Dsonar.organization=sigiesec-github 
+            # -Dsonar.sources=include,src,tests,unittests 
+            # -Dsonar.host.url=https://sonarcloud.io 
+            # -Dsonar.login=%SONARQUBE_TOKEN% 
+            # -Dsonar.cxx.compiler.parser="Visual C++" 
+            # -Dsonar.cxx.compiler.reportPath=build.log 
+            # -Dsonar.cxx.compiler.charset=UTF-8 
+            # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
-  - cmd: copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
   - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll
   - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:Platform}-${env:Configuration}.zip"
 
 test_script:
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: ctest -C "%Configuration%" -V
+# TODO run tests in parallel only on selected platforms, since they fail on others, see https://github.com/zeromq/libzmq/issues/3123
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013 Win64" set PARALLELIZE=ON
+  - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015 Win64" set PARALLELIZE=ON
+  - cmd: if "%PARALLELIZE%"=="ON" (
+            echo "Running tests in parallel" &&
+            set TEST_OPTIONS=-j5
+         )
+  - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
 
+# the analysis build is repeated; apparently appveyor only uses the first section that matches some branch
+for:
+-
+    branches:
+        only:
+            - master
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              API_POLLER: poll
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: x64
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              NO_PR: TRUE
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
+              NO_PR: TRUE
+-
+    branches:
+        only:
+            - /.*analyze$/
+    environment:
+        matrix:
+            - platform: Win32
+              configuration: Release
+              WITH_LIBSODIUM: ON
+              ENABLE_CURVE: ON
+              ENABLE_ANALYSIS: ON
+              APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+              CMAKE_GENERATOR: "Visual Studio 15 2017"
+              MSVCVERSION: "v141"
+              MSVCYEAR: "vs2017"
+              NO_PR: TRUE

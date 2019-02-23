@@ -30,110 +30,175 @@
 #ifndef __ZMQ_BLOB_HPP_INCLUDED__
 #define __ZMQ_BLOB_HPP_INCLUDED__
 
-#include <string>
+#include "macros.hpp"
+#include "err.hpp"
+
+#include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 
-// Borrowed from id3lib_strings.h:
-// They seem to be doing something for MSC, but since I only have gcc, I'll just do that
-// Assuming this is uneccessary on GCC 4
-// #if (defined(__GNUC__) && (__GNUC__ >= 3) || (defined(_MSC_VER) && _MSC_VER > 1000))
-#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC__ <= 4))
-namespace std
+#if __cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER > 1700
+#define ZMQ_HAS_MOVE_SEMANTICS
+#define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) emplace (k, v)
+#define ZMQ_PUSH_OR_EMPLACE_BACK emplace_back
+#define ZMQ_MOVE(x) std::move (x)
+#else
+#if defined __SUNPRO_CC
+template <typename K, typename V>
+std::pair<const K, V> make_pair_fix_const (const K &k, const V &v)
 {
-  template<>
-    struct char_traits<unsigned char>
-    {
-      typedef unsigned char char_type;
-      // Unsigned as wint_t in unsigned.
-      typedef unsigned long int_type;
-      typedef streampos pos_type;
-      typedef streamoff off_type;
-      typedef mbstate_t state_type;
+    return std::pair<const K, V> (k, v);
+}
 
-      static void
-      assign(char_type& __c1, const char_type& __c2)
-      { __c1 = __c2; }
+#define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) insert (make_pair_fix_const (k, v))
+#else
+#define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) insert (std::make_pair (k, v))
+#endif
 
-      static bool
-      eq(const char_type& __c1, const char_type& __c2)
-      { return __c1 == __c2; }
-
-      static bool
-      lt(const char_type& __c1, const char_type& __c2)
-      { return __c1 < __c2; }
-
-      static int
-      compare(const char_type* __s1, const char_type* __s2, size_t __n)
-      {
-        for (size_t __i = 0; __i < __n; ++__i)
-          if (!eq(__s1[__i], __s2[__i]))
-            return lt(__s1[__i], __s2[__i]) ? -1 : 1;
-        return 0;
-      }
-
-      static size_t
-      length(const char_type* __s)
-      {
-        const char_type* __p = __s;
-          while (__p)
-            ++__p;
-        return (__p - __s);
-      }
-
-      static const char_type*
-      find(const char_type* __s, size_t __n, const char_type& __a)
-      {
-        for (const char_type* __p = __s; size_t(__p - __s) < __n; ++__p)
-          if (*__p == __a) return __p;
-        return 0;
-      }
-
-      static char_type*
-      move(char_type* __s1, const char_type* __s2, size_t __n)
-      { return (char_type*) memmove(__s1, __s2, __n * sizeof(char_type)); }
-
-      static char_type*
-      copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { return (char_type*) memcpy(__s1, __s2, __n * sizeof(char_type)); }
-
-      static char_type*
-      assign(char_type* __s, size_t __n, char_type __a)
-      {
-        for (char_type* __p = __s; __p < __s + __n; ++__p)
-          assign(*__p, __a);
-        return __s;
-      }
-
-      static char_type
-      to_char_type(const int_type& __c)
-      { return char_type(__c); }
-
-      static int_type
-      to_int_type(const char_type& __c) { return int_type(__c); }
-
-      static bool
-      eq_int_type(const int_type& __c1, const int_type& __c2)
-      { return __c1 == __c2; }
-
-      static int_type
-      eof() { return static_cast<int_type>(-1); }
-
-      static int_type
-      not_eof(const int_type& __c)
-      { return eq_int_type(__c, eof()) ? int_type(0) : __c; }
-    };
-
-} // namespace std
-#endif // GCC version 3
-
+#define ZMQ_PUSH_OR_EMPLACE_BACK push_back
+#define ZMQ_MOVE(x) (x)
+#endif
 
 namespace zmq
 {
+struct reference_tag_t
+{
+};
 
-    //  Object to hold dynamically allocated opaque binary data.
-    typedef std::basic_string <unsigned char> blob_t;
+//  Object to hold dynamically allocated opaque binary data.
+//  On modern compilers, it will be movable but not copyable. Copies
+//  must be explicitly created by set_deep_copy.
+//  On older compilers, it is copyable for syntactical reasons.
+struct blob_t
+{
+    //  Creates an empty blob_t.
+    blob_t () : _data (0), _size (0), _owned (true) {}
 
+    //  Creates a blob_t of a given size, with uninitialized content.
+    explicit blob_t (const size_t size_) :
+        _data (static_cast<unsigned char *> (malloc (size_))),
+        _size (size_),
+        _owned (true)
+    {
+        alloc_assert (_data);
+    }
+
+    //  Creates a blob_t of a given size, an initializes content by copying
+    // from another buffer.
+    blob_t (const unsigned char *const data_, const size_t size_) :
+        _data (static_cast<unsigned char *> (malloc (size_))),
+        _size (size_),
+        _owned (true)
+    {
+        alloc_assert (_data);
+        memcpy (_data, data_, size_);
+    }
+
+    //  Creates a blob_t for temporary use that only references a
+    //  pre-allocated block of data.
+    //  Use with caution and ensure that the blob_t will not outlive
+    //  the referenced data.
+    blob_t (unsigned char *const data_, const size_t size_, reference_tag_t) :
+        _data (data_),
+        _size (size_),
+        _owned (false)
+    {
+    }
+
+    //  Returns the size of the blob_t.
+    size_t size () const { return _size; }
+
+    //  Returns a pointer to the data of the blob_t.
+    const unsigned char *data () const { return _data; }
+
+    //  Returns a pointer to the data of the blob_t.
+    unsigned char *data () { return _data; }
+
+    //  Defines an order relationship on blob_t.
+    bool operator< (blob_t const &other_) const
+    {
+        const int cmpres =
+          memcmp (_data, other_._data, std::min (_size, other_._size));
+        return cmpres < 0 || (cmpres == 0 && _size < other_._size);
+    }
+
+    //  Sets a blob_t to a deep copy of another blob_t.
+    void set_deep_copy (blob_t const &other_)
+    {
+        clear ();
+        _data = static_cast<unsigned char *> (malloc (other_._size));
+        alloc_assert (_data);
+        _size = other_._size;
+        _owned = true;
+        memcpy (_data, other_._data, _size);
+    }
+
+    //  Sets a blob_t to a copy of a given buffer.
+    void set (const unsigned char *const data_, const size_t size_)
+    {
+        clear ();
+        _data = static_cast<unsigned char *> (malloc (size_));
+        alloc_assert (_data);
+        _size = size_;
+        _owned = true;
+        memcpy (_data, data_, size_);
+    }
+
+    //  Empties a blob_t.
+    void clear ()
+    {
+        if (_owned) {
+            free (_data);
+        }
+        _data = 0;
+        _size = 0;
+    }
+
+    ~blob_t ()
+    {
+        if (_owned) {
+            free (_data);
+        }
+    }
+
+#ifdef ZMQ_HAS_MOVE_SEMANTICS
+    blob_t (const blob_t &) = delete;
+    blob_t &operator= (const blob_t &) = delete;
+
+    blob_t (blob_t &&other_) ZMQ_NOEXCEPT : _data (other_._data),
+                                            _size (other_._size),
+                                            _owned (other_._owned)
+    {
+        other_._owned = false;
+    }
+    blob_t &operator= (blob_t &&other_) ZMQ_NOEXCEPT
+    {
+        if (this != &other_) {
+            clear ();
+            _data = other_._data;
+            _size = other_._size;
+            _owned = other_._owned;
+            other_._owned = false;
+        }
+        return *this;
+    }
+#else
+    blob_t (const blob_t &other) : _owned (false) { set_deep_copy (other); }
+    blob_t &operator= (const blob_t &other)
+    {
+        if (this != &other) {
+            clear ();
+            set_deep_copy (other);
+        }
+        return *this;
+    }
+#endif
+
+  private:
+    unsigned char *_data;
+    size_t _size;
+    bool _owned;
+};
 }
 
 #endif
-

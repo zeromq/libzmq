@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,75 +27,72 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <pthread.h>
-#include <stddef.h>
-#include <stdio.h>
+#include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-#undef NDEBUG
-#include <assert.h>
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 #define THREAD_COUNT 100
 
-extern "C"
+extern "C" {
+static void *worker (void *s_)
 {
-    static void *worker (void *s)
-    {
-        int rc;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s_, "tipc://{5560,0}@0.0.0"));
 
-        rc = zmq_connect (s, "tipc://{5560,0}");
-        assert (rc == 0);
+    //  Start closing the socket while the connecting process is underway.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (s_));
 
-        //  Start closing the socket while the connecting process is underway.
-        rc = zmq_close (s);
-        assert (rc == 0);
-
-        return NULL;
-    }
+    return NULL;
+}
 }
 
-int main (void)
+void test_shutdown_stress_tipc ()
 {
-    void *ctx;
     void *s1;
     void *s2;
     int i;
     int j;
-    int rc;
-    pthread_t threads [THREAD_COUNT];
-
-    fprintf (stderr, "test_shutdown_stress_tipc running...\n");
+    pthread_t threads[THREAD_COUNT];
 
     for (j = 0; j != 10; j++) {
-
         //  Check the shutdown with many parallel I/O threads.
-        ctx = zmq_init (7);
-        assert (ctx);
+        setup_test_context ();
+        zmq_ctx_set (get_test_context (), ZMQ_IO_THREADS, 7);
 
-        s1 = zmq_socket (ctx, ZMQ_PUB);
-        assert (s1);
+        s1 = test_context_socket (ZMQ_PUB);
 
-        rc = zmq_bind (s1, "tipc://{5560,0,0}");
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s1, "tipc://{5560,0,0}"));
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            s2 = zmq_socket (ctx, ZMQ_SUB);
-            assert (s2);
-            rc = pthread_create (&threads [i], NULL, worker, s2);
-            assert (rc == 0);
+            s2 = zmq_socket (get_test_context (), ZMQ_SUB);
+            TEST_ASSERT_SUCCESS_RAW_ERRNO (
+              pthread_create (&threads[i], NULL, worker, s2));
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            rc = pthread_join (threads [i], NULL);
-            assert (rc == 0);
+            TEST_ASSERT_SUCCESS_RAW_ERRNO (pthread_join (threads[i], NULL));
         }
 
-        rc = zmq_close (s1);
-        assert (rc == 0);
+        test_context_socket_close (s1);
 
-        rc = zmq_ctx_term (ctx);
-        assert (rc == 0);
+        teardown_test_context ();
+    }
+}
+
+int main ()
+{
+    if (!is_tipc_available ()) {
+        printf ("TIPC environment unavailable, skipping test\n");
+        return 77;
     }
 
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_shutdown_stress_tipc);
+    return UNITY_END ();
 }

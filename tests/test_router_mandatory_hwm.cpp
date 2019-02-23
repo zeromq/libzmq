@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,9 +27,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
 #include "testutil.hpp"
-#include <unistd.h>
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+}
 
 // DEBUG shouldn't be defined in sources as it will cause a redefined symbol
 // error when it is defined in the build configuration. It appears that the
@@ -38,89 +47,82 @@
 //#define DEBUG 0
 #define TRACE_ENABLED 0
 
-int main (void)
+void test_router_mandatory_hwm ()
 {
-    int rc;
-    if (TRACE_ENABLED) fprintf(stderr, "Staring router mandatory HWM test ...\n");
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-    void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (router);
+    if (TRACE_ENABLED)
+        fprintf (stderr, "Staring router mandatory HWM test ...\n");
+    char my_endpoint[MAX_SOCKET_STRING];
+    void *router = test_context_socket (ZMQ_ROUTER);
 
     // Configure router socket to mandatory routing and set HWM and linger
     int mandatory = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY,
+                                               &mandatory, sizeof (mandatory)));
     int sndhwm = 1;
-    rc = zmq_setsockopt (router, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (router, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm)));
     int linger = 1;
-    rc = zmq_setsockopt (router, ZMQ_LINGER, &linger, sizeof (linger));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (router, ZMQ_LINGER, &linger, sizeof (linger)));
 
-    rc = zmq_bind (router, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    bind_loopback_ipv4 (router, my_endpoint, sizeof my_endpoint);
 
     //  Create dealer called "X" and connect it to our router, configure HWM
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    assert (dealer);
-    rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, "X", 1);
-    assert (rc == 0);
+    void *dealer = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (dealer, ZMQ_ROUTING_ID, "X", 1));
     int rcvhwm = 1;
-    rc = zmq_setsockopt (dealer, ZMQ_RCVHWM, &rcvhwm, sizeof (rcvhwm));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (dealer, ZMQ_RCVHWM, &rcvhwm, sizeof (rcvhwm)));
 
-    rc = zmq_connect (dealer, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, my_endpoint));
 
     //  Get message from dealer to know when connection is ready
-    char buffer [255];
-    rc = zmq_send (dealer, "Hello", 5, 0);
-    assert (rc == 5);
-    rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    send_string_expect_success (dealer, "Hello", 0);
+    recv_string_expect_success (router, "X", 0);
 
     int i;
-    const int BUF_SIZE = 65536;
-    char buf[BUF_SIZE];
+    const int buf_size = 65536;
+    const uint8_t buf[buf_size] = {0};
     // Send first batch of messages
-    for(i = 0; i < 100000; ++i) {
-        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
-        rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EAGAIN) break;
-        assert (rc == 1);
-        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-        assert (rc == BUF_SIZE);
+    for (i = 0; i < 100000; ++i) {
+        if (TRACE_ENABLED)
+            fprintf (stderr, "Sending message %d ...\n", i);
+        const int rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
+        if (rc == -1 && zmq_errno () == EAGAIN)
+            break;
+        TEST_ASSERT_EQUAL_INT (1, rc);
+        send_array_expect_success (router, buf, ZMQ_DONTWAIT);
     }
     // This should fail after one message but kernel buffering could
     // skew results
-    assert (i < 10);
-    sleep(1);
+    TEST_ASSERT_LESS_THAN_INT (10, i);
+    msleep (1000);
     // Send second batch of messages
-    for(; i < 100000; ++i) {
-        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);
-        rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EAGAIN) break;
-        assert (rc == 1);
-        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-        assert (rc == BUF_SIZE);
+    for (; i < 100000; ++i) {
+        if (TRACE_ENABLED)
+            fprintf (stderr, "Sending message %d (part 2) ...\n", i);
+        const int rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
+        if (rc == -1 && zmq_errno () == EAGAIN)
+            break;
+        TEST_ASSERT_EQUAL_INT (1, rc);
+        send_array_expect_success (router, buf, ZMQ_DONTWAIT);
     }
     // This should fail after two messages but kernel buffering could
     // skew results
-    assert (i < 20);
+    TEST_ASSERT_LESS_THAN_INT (20, i);
 
-    if (TRACE_ENABLED) fprintf(stderr, "Done sending messages.\n");
+    if (TRACE_ENABLED)
+        fprintf (stderr, "Done sending messages.\n");
 
-    rc = zmq_close (router);
-    assert (rc == 0);
+    test_context_socket_close (router);
+    test_context_socket_close (dealer);
+}
 
-    rc = zmq_close (dealer);
-    assert (rc == 0);
+int main ()
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+    UNITY_BEGIN ();
+    RUN_TEST (test_router_mandatory_hwm);
+    return UNITY_END ();
 }
