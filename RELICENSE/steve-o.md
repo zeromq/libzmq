@@ -5,7 +5,8 @@ that grants permission to relicense its copyrights in the libzmq C++
 library (ZeroMQ) under the Mozilla Public License v2 (MPLv2).
 
 A portion of the commits made by the Github handle "steve-o", with
-commit author "Steven McCoy", are copyright of Steven McCoy.
+commit author "Steven McCoy <steven.mccoy@miru.hk>" and "Steve-o 
+<fnjordy@gmail.com>", are copyright of Steven McCoy.
 This document hereby grants the libzmq project team to relicense libzmq, 
 including all past, present and future contributions of the author listed above.
 
