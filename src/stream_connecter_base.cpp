@@ -39,6 +39,8 @@
 #include <winsock2.h>
 #endif
 
+#include <limits>
+
 zmq::stream_connecter_base_t::stream_connecter_base_t (
   zmq::io_thread_t *io_thread_,
   zmq::session_base_t *session_,
@@ -108,17 +110,28 @@ void zmq::stream_connecter_base_t::add_reconnect_timer ()
 
 int zmq::stream_connecter_base_t::get_new_reconnect_ivl ()
 {
-    //  The new interval is the current interval + random value.
-    const int interval =
-      _current_reconnect_ivl + generate_random () % options.reconnect_ivl;
+    //  TODO should the random jitter be really based on the configured initial
+    //  reconnect interval options.reconnect_ivl, or better on the
+    //  _current_reconnect_ivl?
 
-    //  Only change the current reconnect interval  if the maximum reconnect
+    //  The new interval is the current interval + random value.
+    const int random_jitter = generate_random () % options.reconnect_ivl;
+    const int interval =
+      _current_reconnect_ivl < std::numeric_limits<int>::max () - random_jitter
+        ? _current_reconnect_ivl + random_jitter
+        : std::numeric_limits<int>::max ();
+
+    //  Only change the new current reconnect interval if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
     if (options.reconnect_ivl_max > 0
-        && options.reconnect_ivl_max > options.reconnect_ivl)
+        && options.reconnect_ivl_max > options.reconnect_ivl) {
         //  Calculate the next interval
         _current_reconnect_ivl =
-          std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max);
+          _current_reconnect_ivl < std::numeric_limits<int>::max () / 2
+            ? std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max)
+            : options.reconnect_ivl_max;
+    }
+
     return interval;
 }
 
