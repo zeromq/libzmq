@@ -99,6 +99,10 @@ int count_msg (int send_hwm_, int recv_hwm_, TestType test_type_)
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           connect_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
+
+        //  we must wait for the connect to succeed here, unfortunately we don't
+        //  have monitoring events for inproc, so we just hope SETTLE_TIME suffices
+        msleep (SETTLE_TIME);
     } else {
         // Set up connect socket
         connect_socket = test_context_socket (ZMQ_PUSH);
