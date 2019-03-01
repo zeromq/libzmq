@@ -556,7 +556,7 @@ void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
 
 void zmq::pipe_t::set_endpoint_pair (zmq::endpoint_uri_pair_t endpoint_pair_)
 {
-    _endpoint_pair = endpoint_pair_;
+    _endpoint_pair = ZMQ_MOVE (endpoint_pair_);
 }
 
 const zmq::endpoint_uri_pair_t &zmq::pipe_t::get_endpoint_pair () const
