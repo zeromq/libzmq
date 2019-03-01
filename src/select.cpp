@@ -542,7 +542,7 @@ void zmq::select_t::cleanup_retired ()
 
 bool zmq::select_t::is_retired_fd (const fd_entry_t &entry_)
 {
-    return (entry_.fd == retired_fd);
+    return entry_.fd == retired_fd;
 }
 
 zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)

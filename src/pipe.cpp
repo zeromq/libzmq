@@ -546,7 +546,7 @@ bool zmq::pipe_t::check_hwm () const
 {
     const bool full =
       _hwm > 0 && _msgs_written - _peers_msgs_read >= uint64_t (_hwm);
-    return (!full);
+    return !full;
 }
 
 void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
