@@ -200,7 +200,12 @@ int main ()
     UNITY_BEGIN ();
     RUN_TEST (test_change_before_connected);
     RUN_TEST (test_change_after_connected);
+
+    // TODO FIXME this test cases does not run reliably under Windows (at
+    // least for some VC++ and OS versions), this must be analyzed and fixed
+#if !defined(_WIN32)
     RUN_TEST (test_decrease_when_full);
+#endif
 
     return UNITY_END ();
 }
