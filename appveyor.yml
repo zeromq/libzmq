@@ -36,14 +36,17 @@ environment:
       API_POLLER: poll
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
+      TEST_OPTIONS: '-E "(test_many_sockets)"'
     - platform: Win32
       configuration: Debug
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
+      TEST_OPTIONS: '-E "(test_spec_router|test_spec_pushpull|test_metadata|test_security_curve|test_dgram)"'
     - platform: x64
       configuration: Debug
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
+      TEST_OPTIONS: '-E "(test_spec_router|test_spec_pushpull|test_metadata|test_security_curve|test_dgram)"'
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: OFF
@@ -65,6 +68,7 @@ environment:
       CMAKE_GENERATOR: "Visual Studio 15 2017"
       MSVCVERSION: "v141"
       MSVCYEAR: "vs2017"
+      TEST_OPTIONS: '-E "(test_many_sockets)"'
     - platform: cygwin64
       WITH_LIBSODIUM: OFF
       ENABLE_CURVE: ON
@@ -132,7 +136,8 @@ before_build:
   - cmd: if "%PLATFORM%" == "Win32" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
   - cmd: if "%PLATFORM%" == "x64"   set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
   - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
-  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="ON" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( set LIBZMQ_WERROR="OFF" ) else ( set LIBZMQ_WERROR="ON" )
+  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: cd "%LIBZMQ_SRCDIR%"
 
 build_script:
@@ -188,9 +193,10 @@ test_script:
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015" set PARALLELIZE=ON
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 12 2013 Win64" set PARALLELIZE=ON
   - cmd: if "%CMAKE_GENERATOR%"=="Visual Studio 14 2015 Win64" set PARALLELIZE=ON
+  - cmd: if not defined TEST_OPTIONS set "TEST_OPTIONS= "
   - cmd: if "%PARALLELIZE%"=="ON" (
             echo "Running tests in parallel" &&
-            set TEST_OPTIONS=-j5
+            set TEST_OPTIONS=%TEST_OPTIONS% -j5
          )
   - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
 

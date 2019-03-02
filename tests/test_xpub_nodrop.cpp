@@ -54,13 +54,17 @@ void test ()
     int wait = 1;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_XPUB_NODROP, &wait, 4));
 
-
     //  Create a subscriber
     void *sub = test_context_socket (ZMQ_SUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
 
     //  Subscribe for all messages.
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
+
+    //  we must wait for the subscription to be processed here, so we just
+    //  hope SETTLE_TIME suffices; otherwise some or all published messages
+    //  might be lost
+    msleep (SETTLE_TIME);
 
     int hwmlimit = hwm - 1;
     int send_count = 0;
@@ -74,13 +78,19 @@ void test ()
     int recv_count = 0;
     do {
         //  Receive the message in the subscriber
-        int rc = zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT);
+        int rc = zmq_recv (sub, NULL, 0, 0);
         if (rc == -1) {
             TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
             break;
         } else {
             TEST_ASSERT_EQUAL_INT (0, rc);
             recv_count++;
+
+            if (recv_count == 1) {
+                const int sub_rcvtimeo = 250;
+                TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+                  sub, ZMQ_RCVTIMEO, &sub_rcvtimeo, sizeof (sub_rcvtimeo)));
+            }
         }
     } while (true);
 

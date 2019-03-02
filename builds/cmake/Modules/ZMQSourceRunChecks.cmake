@@ -42,7 +42,7 @@ macro(zmq_check_o_cloexec)
 int main(int argc, char *argv [])
 {
     int s = open (\"/dev/null\", O_CLOEXEC | O_RDONLY);
-    return (s == -1);
+    return s == -1;
 }
 "
     ZMQ_HAVE_O_CLOEXEC)
