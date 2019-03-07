@@ -70,6 +70,11 @@ enum
     //  Maximum number of events the I/O thread can process in one go.
     max_io_events = 256,
 
+    //  Maximal batch size of packets forwarded by a ZMQ proxy.
+    //  Increasing this value improves throughput at the expense of
+    //  latency and fairness.
+    proxy_burst_size = 1000,
+
     //  Maximal delay to process command in API thread (in CPU ticks).
     //  3,000,000 ticks equals to 1 - 2 milliseconds on current CPUs.
     //  Note that delay is only applied when there is continuous stream of

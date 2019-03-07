@@ -168,6 +168,7 @@ remote_lat
 remote_thr
 inproc_lat
 inproc_thr
+proxy_thr
 benchmark_radix_tree
 !local_lat/
 !local_thr/

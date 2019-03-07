@@ -1292,7 +1292,8 @@ if(BUILD_SHARED)
     local_thr
     remote_thr
     inproc_lat
-    inproc_thr)
+    inproc_thr
+    proxy_thr)
 
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     option(WITH_PERF_TOOL "Build with perf-tools" ON)

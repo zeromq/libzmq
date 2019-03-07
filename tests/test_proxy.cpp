@@ -103,9 +103,9 @@ static void client_task (void *db_)
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
 
-    char content[CONTENT_SIZE_MAX];
+    char content[CONTENT_SIZE_MAX] = {};
     // Set random routing id to make tracing easier
-    char routing_id[ROUTING_ID_SIZE];
+    char routing_id[ROUTING_ID_SIZE] = {};
     sprintf (routing_id, "%04X-%04X", rand () % 0xFFFF, rand () % 0xFFFF);
     rc =
       zmq_setsockopt (client, ZMQ_ROUTING_ID, routing_id,
@@ -291,8 +291,10 @@ static void server_worker (void *ctx_)
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
 
-    char content[CONTENT_SIZE_MAX]; //    bigger than what we need to check that
-    char routing_id[ROUTING_ID_SIZE_MAX]; // the size received is the size sent
+    char content[CONTENT_SIZE_MAX] =
+      {}; // bigger than what we need to check that
+    char routing_id[ROUTING_ID_SIZE_MAX] =
+      {}; // the size received is the size sent
 
     bool run = true;
     bool keep_sending = true;
