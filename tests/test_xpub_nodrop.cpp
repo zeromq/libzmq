@@ -43,7 +43,7 @@ void tearDown ()
 void test ()
 {
     //  Create a publisher
-    void *pub = test_context_socket (ZMQ_PUB);
+    void *pub = test_context_socket (ZMQ_XPUB);
 
     int hwm = 2000;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4));
@@ -61,10 +61,9 @@ void test ()
     //  Subscribe for all messages.
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
 
-    //  we must wait for the subscription to be processed here, so we just
-    //  hope SETTLE_TIME suffices; otherwise some or all published messages
-    //  might be lost
-    msleep (SETTLE_TIME);
+    //  we must wait for the subscription to be processed here, otherwise some
+    //  or all published messages might be lost
+    recv_string_expect_success (pub, "\1", 0);
 
     int hwmlimit = hwm - 1;
     int send_count = 0;
