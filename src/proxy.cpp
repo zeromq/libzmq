@@ -116,39 +116,48 @@ int forward (class zmq::socket_base_t *from_,
              class zmq::socket_base_t *capture_,
              zmq::msg_t *msg_)
 {
-    int more;
-    size_t moresz;
-    size_t complete_msg_size = 0;
-    while (true) {
-        int rc = from_->recv (msg_, 0);
-        if (unlikely (rc < 0))
-            return -1;
+    // Forward a burst of messages
+    for (unsigned int i = 0; i < zmq::proxy_burst_size; i++) {
+        int more;
+        size_t moresz;
+        size_t complete_msg_size = 0;
 
-        complete_msg_size += msg_->size ();
+        // Forward all the parts of one message
+        while (true) {
+            int rc = from_->recv (msg_, ZMQ_DONTWAIT);
+            if (rc < 0) {
+                if (likely (errno == EAGAIN && i > 0))
+                    return 0; // End of burst
+                else
+                    return -1;
+            }
 
-        moresz = sizeof more;
-        rc = from_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
-        if (unlikely (rc < 0))
-            return -1;
+            complete_msg_size += msg_->size ();
 
-        //  Copy message to capture socket if any
-        rc = capture (capture_, msg_, more);
-        if (unlikely (rc < 0))
-            return -1;
+            moresz = sizeof more;
+            rc = from_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
+            if (unlikely (rc < 0))
+                return -1;
 
-        rc = to_->send (msg_, more ? ZMQ_SNDMORE : 0);
-        if (unlikely (rc < 0))
-            return -1;
+            //  Copy message to capture socket if any
+            rc = capture (capture_, msg_, more);
+            if (unlikely (rc < 0))
+                return -1;
 
-        if (more == 0)
-            break;
+            rc = to_->send (msg_, more ? ZMQ_SNDMORE : 0);
+            if (unlikely (rc < 0))
+                return -1;
+
+            if (more == 0)
+                break;
+        }
+
+        // A multipart message counts as 1 packet:
+        from_stats_->msg_in++;
+        from_stats_->bytes_in += complete_msg_size;
+        to_stats_->msg_out++;
+        to_stats_->bytes_out += complete_msg_size;
     }
-
-    // A multipart message counts as 1 packet:
-    from_stats_->msg_in++;
-    from_stats_->bytes_in += complete_msg_size;
-    to_stats_->msg_out++;
-    to_stats_->bytes_out += complete_msg_size;
 
     return 0;
 }
