@@ -9,6 +9,5 @@ commit author "Brett Cameron <Brett.Cameron@hp.com>", are copyright of Hewlett P
 This document hereby grants the libzmq project team to relicense libzmq,
 including all past, present and future contributions of the author listed above.
 
-Aahit Gaba
-Senior Open Source Counsel
+Hewlett Packard Enterprise
 2019/03/12
