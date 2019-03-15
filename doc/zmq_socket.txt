@@ -85,14 +85,15 @@ the 'ZMQ_CLIENT'.
 If the 'ZMQ_CLIENT' socket has established a connection, linkzmq:zmq_send[3]
 will accept messages, queue them, and send them as rapidly as the network
 allows. The outgoing buffer limit is defined by the high water mark for the
-socket. If the outgoing buffer is full, or if there is no connected peer,
-linkzmq:zmq_send[3] will block, by default. The 'ZMQ_CLIENT' socket will not
-drop messages.
+socket. If the outgoing buffer is full, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there is no connected peer,
+linkzmq:zmq_send[3] will block.
+The 'ZMQ_CLIENT' socket will not drop messages.
 
 When a 'ZMQ_CLIENT' socket is connected to multiple 'ZMQ_SERVER' sockets,
 outgoing messages are distributed between connected peers on a round-robin
 basis. Likewise, the 'ZMQ_CLIENT' socket receives messages fairly from each
-connected  peer. This usage is sensible only for stateless protocols.
+connected peer. This usage is sensible only for stateless protocols.
 
 'ZMQ_CLIENT' sockets are threadsafe and can be used from multiple threads
 at the same time. Note that replies from a 'ZMQ_SERVER' socket will go to
@@ -128,7 +129,7 @@ a message to a given 'ZMQ_CLIENT' peer the application must set the peer's
 
 If the 'routing_id' is not specified, or does not refer to a connected client
 peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
-the client peer is full, the send call shall block, unless ZMQ_DONT_WAIT is
+the client peer is full, the send call shall block, unless ZMQ_DONTWAIT is
 used in the send, in which case it shall fail with EAGAIN. The 'ZMQ_SERVER'
 socket shall not drop messages in any case.
 
@@ -307,10 +308,11 @@ downstream _nodes_. The _zmq_recv()_ function is not implemented for this
 socket type.
 
 When a 'ZMQ_PUSH' socket enters the 'mute' state due to having reached the
-high water mark for all downstream _nodes_, or if there are no downstream
-_nodes_ at all, then any linkzmq:zmq_send[3] operations on the socket shall
-block until the mute state ends or at least one downstream _node_
-becomes available for sending; messages are not discarded.
+high water mark for all downstream _nodes_, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there are no downstream _nodes_ at all,
+then any linkzmq:zmq_send[3] operations on the socket shall block until the mute
+state ends or at least one downstream _node_ becomes available for sending;
+messages are not discarded.
 
 [horizontal]
 .Summary of ZMQ_PUSH characteristics
@@ -354,7 +356,8 @@ time.  No message routing or filtering is performed on messages sent over a
 'ZMQ_PAIR' socket.
 
 When a 'ZMQ_PAIR' socket enters the 'mute' state due to having reached the
-high water mark for the connected peer, or if no peer is connected, then
+high water mark for the connected peer, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there is no connected peer, then
 any linkzmq:zmq_send[3] operations on the socket shall block until the peer
 becomes available for sending; messages are not discarded.
 
@@ -437,9 +440,9 @@ sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
 request sent is round-robined among all _services_, and each reply received is
 matched with the last issued request.
 
-If no services are available, then any send operation on the socket shall
-block until at least one _service_ becomes available. The REQ socket shall
-not discard messages.
+For connection-oriented transports, If the ZMQ_IMMEDIATE option is set and there
+is no service available, then any send operation on the socket shall block until
+at least one _service_ becomes available. The REQ socket shall not discard messages.
 
 [horizontal]
 .Summary of ZMQ_REQ characteristics
@@ -476,10 +479,10 @@ request/reply sockets. Each message sent is round-robined among all connected
 peers, and each message received is fair-queued from all connected peers.
 
 When a 'ZMQ_DEALER' socket enters the 'mute' state due to having reached the
-high water mark for all peers, or if there are no peers at all, then any
-linkzmq:zmq_send[3] operations on the socket shall block until the mute
-state ends or at least one peer becomes available for sending; messages are not
-discarded.
+high water mark for all peers, or, for connection-oriented transports, if the
+ZMQ_IMMEDIATE option is set and there are no peers at all, then any
+linkzmq:zmq_send[3] operations on the socket shall block until the mute state
+ends or at least one peer becomes available for sending; messages are not discarded.
 
 When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent
 must consist of an empty message part, the _delimiter_, followed by one or more
