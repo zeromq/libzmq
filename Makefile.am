@@ -608,7 +608,8 @@ tests_test_security_null_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_security_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
-tests_test_security_plain_LDADD = src/libzmq.la
+tests_test_security_plain_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_plain_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_zap_SOURCES = \
 	tests/test_security_zap.cpp \
