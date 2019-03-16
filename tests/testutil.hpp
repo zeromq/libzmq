@@ -78,8 +78,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <grp.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>

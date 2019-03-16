@@ -122,8 +122,10 @@ void init_groups ()
     supgroup = group;
     notgroup = group + 1;
     for (int i = 0; i < ngroups; i++) {
-        if (supgroup == group && group != groups[i])
-            supgroup = groups[i];
+        if (supgroup == group && group != groups[i]) {
+            if (getgrgid (groups[i]))
+                supgroup = groups[i];
+        }
         if (notgroup <= groups[i])
             notgroup = groups[i] + 1;
     }
