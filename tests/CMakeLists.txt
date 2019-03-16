@@ -31,6 +31,7 @@ set(tests
   test_unbind_wildcard
   test_ctx_options
   test_ctx_destroy
+  test_security_no_zap_handler
   test_security_null
   test_security_plain
   test_security_zap
