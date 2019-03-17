@@ -183,7 +183,7 @@ after_build:
             # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
-  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll
+  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb
   - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:Platform}-${env:Configuration}.zip"
 
 test_script:
