@@ -47,8 +47,7 @@
 #include "i_poll_events.hpp"
 
 zmq::devpoll_t::devpoll_t (const zmq::thread_ctx_t &ctx_) :
-    ctx (ctx_),
-    stopping (false)
+    worker_poller_base_t (ctx_)
 {
     devpoll_fd = open ("/dev/poll", O_RDWR);
     errno_assert (devpoll_fd != -1);
@@ -56,7 +55,9 @@ zmq::devpoll_t::devpoll_t (const zmq::thread_ctx_t &ctx_) :
 
 zmq::devpoll_t::~devpoll_t ()
 {
-    worker.stop ();
+    //  Wait till the worker thread exits.
+    stop_worker ();
+
     close (devpoll_fd);
 }
 
@@ -70,6 +71,7 @@ void zmq::devpoll_t::devpoll_ctl (fd_t fd_, short events_)
 zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
                                                  i_poll_events *reactor_)
 {
+    check_thread ();
     //  If the file descriptor table is too small expand it.
     fd_table_t::size_type sz = fd_table.size ();
     if (sz <= (fd_table_t::size_type) fd_) {
@@ -98,6 +100,7 @@ zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
 
 void zmq::devpoll_t::rm_fd (handle_t handle_)
 {
+    check_thread ();
     zmq_assert (fd_table[handle_].valid);
 
     devpoll_ctl (handle_, POLLREMOVE);
@@ -109,6 +112,7 @@ void zmq::devpoll_t::rm_fd (handle_t handle_)
 
 void zmq::devpoll_t::set_pollin (handle_t handle_)
 {
+    check_thread ();
     devpoll_ctl (handle_, POLLREMOVE);
     fd_table[handle_].events |= POLLIN;
     devpoll_ctl (handle_, fd_table[handle_].events);
@@ -116,6 +120,7 @@ void zmq::devpoll_t::set_pollin (handle_t handle_)
 
 void zmq::devpoll_t::reset_pollin (handle_t handle_)
 {
+    check_thread ();
     devpoll_ctl (handle_, POLLREMOVE);
     fd_table[handle_].events &= ~((short) POLLIN);
     devpoll_ctl (handle_, fd_table[handle_].events);
@@ -123,6 +128,7 @@ void zmq::devpoll_t::reset_pollin (handle_t handle_)
 
 void zmq::devpoll_t::set_pollout (handle_t handle_)
 {
+    check_thread ();
     devpoll_ctl (handle_, POLLREMOVE);
     fd_table[handle_].events |= POLLOUT;
     devpoll_ctl (handle_, fd_table[handle_].events);
@@ -130,19 +136,15 @@ void zmq::devpoll_t::set_pollout (handle_t handle_)
 
 void zmq::devpoll_t::reset_pollout (handle_t handle_)
 {
+    check_thread ();
     devpoll_ctl (handle_, POLLREMOVE);
     fd_table[handle_].events &= ~((short) POLLOUT);
     devpoll_ctl (handle_, fd_table[handle_].events);
 }
 
-void zmq::devpoll_t::start ()
-{
-    ctx.start_thread (worker, worker_routine, this);
-}
-
 void zmq::devpoll_t::stop ()
 {
-    stopping = true;
+    check_thread ();
 }
 
 int zmq::devpoll_t::max_fds ()
@@ -152,7 +154,7 @@ int zmq::devpoll_t::max_fds ()
 
 void zmq::devpoll_t::loop ()
 {
-    while (!stopping) {
+    while (true) {
         struct pollfd ev_buf[max_io_events];
         struct dvpoll poll_req;
 
@@ -162,6 +164,14 @@ void zmq::devpoll_t::loop ()
 
         //  Execute any due timers.
         int timeout = (int) execute_timers ();
+
+        if (get_load () == 0) {
+            if (timeout == 0)
+                break;
+
+            // TODO sleep for timeout
+            continue;
+        }
 
         //  Wait for events.
         //  On Solaris, we can retrieve no more then (OPEN_MAX - 1) events.
@@ -193,11 +203,6 @@ void zmq::devpoll_t::loop ()
                 fd_ptr->reactor->in_event ();
         }
     }
-}
-
-void zmq::devpoll_t::worker_routine (void *arg_)
-{
-    ((devpoll_t *) arg_)->loop ();
 }
 
 #endif
