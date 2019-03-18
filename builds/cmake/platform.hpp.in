@@ -49,6 +49,7 @@
 #cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_3
 #cmakedefine ZMQ_HAVE_PTHREAD_SET_NAME
 #cmakedefine HAVE_ACCEPT4
+#cmakedefine HAVE_STRNLEN
 
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY

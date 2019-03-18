@@ -417,6 +417,10 @@ if(NOT MSVC)
   set(CMAKE_REQUIRED_INCLUDES sys/socket.h)
   check_function_exists(accept4 HAVE_ACCEPT4)
   set(CMAKE_REQUIRED_INCLUDES)
+
+  set(CMAKE_REQUIRED_INCLUDES string.h)
+  check_function_exists(strnlen HAVE_STRNLEN)
+  set(CMAKE_REQUIRED_INCLUDES)
 endif()
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
