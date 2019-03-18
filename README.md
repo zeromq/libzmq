@@ -68,6 +68,7 @@ case of a released version.
 
 OS and version | Architecture | Compiler and version | Build system | Last report | Remarks
 -------------- | ------------ | -------------------- | ------------ | ----------- | -------
+Solaris 10 | x86, amd64, sparc | GCC 8.1.0 | CMake | 2019/03/18 |
 
 
 ### Supported platforms without known active users
