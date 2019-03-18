@@ -419,7 +419,8 @@ test_apps = \
 	tests/test_unbind_wildcard \
 	tests/test_ctx_options \
 	tests/test_ctx_destroy \
-	tests/test_security_null \
+        tests/test_security_no_zap_handler \
+        tests/test_security_null \
 	tests/test_security_plain \
 	tests/test_security_zap \
 	tests/test_iov \
@@ -598,11 +599,17 @@ tests_test_ctx_destroy_SOURCES = tests/test_ctx_destroy.cpp
 tests_test_ctx_destroy_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_ctx_destroy_CPPFLAGS = ${UNITY_CPPFLAGS}
 
+tests_test_security_no_zap_handler_SOURCES = tests/test_security_no_zap_handler.cpp
+tests_test_security_no_zap_handler_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_no_zap_handler_CPPFLAGS = ${UNITY_CPPFLAGS}
+
 tests_test_security_null_SOURCES = tests/test_security_null.cpp
-tests_test_security_null_LDADD = src/libzmq.la
+tests_test_security_null_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_null_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
-tests_test_security_plain_LDADD = src/libzmq.la
+tests_test_security_plain_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_plain_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_security_zap_SOURCES = \
 	tests/test_security_zap.cpp \

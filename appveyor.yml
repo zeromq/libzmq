@@ -41,12 +41,12 @@ environment:
       configuration: Debug
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
-      TEST_OPTIONS: '-E "(test_spec_router|test_spec_pushpull|test_metadata|test_security_curve|test_dgram)"'
+      TEST_OPTIONS: '-E "(test_many_sockets)"'
     - platform: x64
       configuration: Debug
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
-      TEST_OPTIONS: '-E "(test_spec_router|test_spec_pushpull|test_metadata|test_security_curve|test_dgram)"'
+      TEST_OPTIONS: '-E "(test_many_sockets)"'
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: OFF
@@ -133,8 +133,6 @@ before_build:
   # - cmd: set BUILDLOG="%LIBZMQ_SRCDIR%\build.log"
   - cmd: md "%LIBZMQ_BUILDDIR%"
   - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" == "Win32" set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
-  - cmd: if "%PLATFORM%" == "x64"   set EXTRA_FLAGS='-D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd"'
   - cmd: if "%PLATFORM%" == "cygwin64" set APPVEYOR_BUILD_FOLDER=/cygdrive/C/projects/libzmq
   - cmd: if "%ENABLE_ANALYSIS%"=="ON" ( set LIBZMQ_WERROR="OFF" ) else ( set LIBZMQ_WERROR="ON" )
   - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
@@ -183,7 +181,7 @@ after_build:
             # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
-  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll
+  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb
   - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:Platform}-${env:Configuration}.zip"
 
 test_script:
