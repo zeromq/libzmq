@@ -61,6 +61,7 @@ set(tests
   test_capabilities
   test_metadata
   test_router_handover
+  test_router_handover_leak
   test_srcfd
   test_stream_timeout
   test_xpub_manual
