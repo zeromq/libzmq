@@ -223,6 +223,7 @@ zmq::options_t::options_t () :
     recv_routing_id (false),
     raw_socket (false),
     raw_notify (true),
+    handover (false),
     tcp_keepalive (-1),
     tcp_keepalive_cnt (-1),
     tcp_keepalive_idle (-1),

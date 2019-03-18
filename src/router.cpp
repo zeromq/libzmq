@@ -137,6 +137,7 @@ int zmq::router_t::xsetsockopt (int option_,
                 if (!options.connected) {
                     // We expect nothing is binded yet
                     _handover = (value != 0);
+                    options.handover = _handover;
                     return 0;
                 }
             }

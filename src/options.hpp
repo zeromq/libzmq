@@ -156,6 +156,10 @@ struct options_t
     bool raw_socket;
     bool raw_notify; //  Provide connect notifications
 
+    // if true, router socket handovers the connection to the new client
+    // and disconnects the existing one.
+    bool handover;
+
     //  Address of SOCKS proxy
     std::string socks_proxy_address;
 
