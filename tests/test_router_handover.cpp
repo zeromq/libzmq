@@ -49,15 +49,15 @@ void test_with_handover ()
     char my_endpoint[MAX_SOCKET_STRING];
     void *router = test_context_socket (ZMQ_ROUTER);
 
+	// Enable the handover flag
+    int handover = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER,
+                                               &handover, sizeof (handover)));
+
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
 
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
-
-    // Enable the handover flag
-    int handover = 1;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_ROUTER_HANDOVER,
-                                               &handover, sizeof (handover)));
 
     //  Create dealer called "X" and connect it to our router
     void *dealer_one = test_context_socket (ZMQ_DEALER);
