@@ -74,6 +74,7 @@ test_ctx_options
 test_iov
 test_security
 test_security_curve
+test_security_no_zap_handler
 test_probe_router
 test_stream
 test_spec_dealer

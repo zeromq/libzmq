@@ -55,6 +55,7 @@
 #define ENDPOINT_3 "tcp://127.0.0.1:5558"
 #define ENDPOINT_4 "udp://127.0.0.1:5559"
 #define ENDPOINT_5 "udp://127.0.0.1:5560"
+#define PORT_6 5561
 
 #undef NDEBUG
 #include <time.h>
@@ -94,6 +95,9 @@
 
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdexcept>
 #define close closesocket
 typedef int socket_size_t;
 const char *as_setsockopt_opt_t (const void *opt)
@@ -472,6 +476,31 @@ int test_inet_pton (int af_, const char *src_, void *dst_)
 #else
     return inet_pton (af_, src_, dst_);
 #endif
+}
+
+//  Binds an ipv4 BSD socket to an ephemeral port, returns the compiled sockaddr
+struct sockaddr_in bind_bsd_socket (int socket)
+{
+    struct sockaddr_in saddr;
+    memset (&saddr, 0, sizeof (saddr));
+    saddr.sin_family = AF_INET;
+    saddr.sin_addr.s_addr = INADDR_ANY;
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+    saddr.sin_port = 0;
+#else
+    saddr.sin_port = htons (PORT_6);
+#endif
+
+    int rc = bind (socket, (struct sockaddr *) &saddr, sizeof (saddr));
+    assert (rc == 0);
+
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+    socklen_t saddr_len = sizeof (saddr);
+    rc = getsockname (socket, (struct sockaddr *) &saddr, &saddr_len);
+    assert (rc == 0);
+#endif
+
+    return saddr;
 }
 
 #endif
