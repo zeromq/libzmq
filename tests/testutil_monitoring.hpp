@@ -30,7 +30,7 @@
 #ifndef __TESTUTIL_MONITORING_HPP_INCLUDED__
 #define __TESTUTIL_MONITORING_HPP_INCLUDED__
 
-#include "testutil.hpp"
+#include "testutil_unity.hpp"
 
 //  General, i.e. non-security specific, monitor utilities
 
@@ -47,10 +47,10 @@ static int get_monitor_event_internal (void *monitor_,
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
-        assert (errno == EAGAIN);
+        TEST_ASSERT_FAILURE_ERRNO (EAGAIN, -1);
         return -1; //  timed out or no message available
     }
-    assert (zmq_msg_more (&msg));
+    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
     uint16_t event = *(uint16_t *) (data);
@@ -59,9 +59,8 @@ static int get_monitor_event_internal (void *monitor_,
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
-    int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
-    assert (res != -1);
-    assert (!zmq_msg_more (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
+    TEST_ASSERT_FALSE (zmq_msg_more (&msg));
 
     if (address_) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -111,23 +110,33 @@ int get_monitor_event (void *monitor_, int *value_, char **address_)
 
 void expect_monitor_event (void *monitor_, int expected_event_)
 {
-    int event = get_monitor_event (monitor_, NULL, NULL);
-    if (event != expected_event_) {
-        fprintf (stderr, "Expected monitor event %x but received %x\n",
-                 expected_event_, event);
-        assert (event == expected_event_);
-    }
+    TEST_ASSERT_EQUAL_HEX (expected_event_,
+                           get_monitor_event (monitor_, NULL, NULL));
 }
 
-void print_unexpected_event (int event_,
+void print_unexpected_event (char *buf_,
+                             size_t buf_size_,
+                             int event_,
                              int err_,
                              int expected_event_,
                              int expected_err_)
 {
-    fprintf (stderr,
-             "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
-             "= %i/0x%x)\n",
-             event_, err_, err_, expected_event_, expected_err_, expected_err_);
+    snprintf (buf_, buf_size_,
+              "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
+              "= %i/0x%x)\n",
+              event_, err_, err_, expected_event_, expected_err_,
+              expected_err_);
+}
+
+void print_unexpected_event_stderr (int event_,
+                                    int err_,
+                                    int expected_event_,
+                                    int expected_err_)
+{
+    char buf[256];
+    print_unexpected_event (buf, sizeof buf, event_, err_, expected_event_,
+                            expected_err_);
+    fputs (buf, stderr);
 }
 
 //  expects that one or more occurrences of the expected event are received
@@ -179,13 +188,15 @@ int expect_monitor_event_multiple (void *server_mon_,
         }
         if (event != expected_event_
             || (-1 != expected_err_ && err != expected_err_)) {
-            print_unexpected_event (event, err, expected_event_, expected_err_);
-            assert (false);
+            char buf[256];
+            print_unexpected_event (buf, sizeof buf, event, err,
+                                    expected_event_, expected_err_);
+            TEST_FAIL_MESSAGE (buf);
         }
         ++count_of_expected_events;
     }
-    assert (optional_ || count_of_expected_events > 0
-            || client_closed_connection);
+    TEST_ASSERT_TRUE (optional_ || count_of_expected_events > 0
+                      || client_closed_connection);
 
     return count_of_expected_events;
 }
@@ -203,11 +214,11 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
-        assert (errno == EAGAIN);
+        TEST_ASSERT_FAILURE_ERRNO (EAGAIN, -1);
         return -1; //  timed out or no message available
     }
-    assert (zmq_msg_more (&msg));
-    assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
+    TEST_ASSERT_EQUAL_UINT (sizeof (uint64_t), zmq_msg_size (&msg));
 
     uint64_t event;
     memcpy (&event, zmq_msg_data (&msg), sizeof (event));
@@ -216,11 +227,11 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     //  Second frame in message contains the number of values
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
-        assert (errno == EAGAIN);
+        TEST_ASSERT_FAILURE_ERRNO (EAGAIN, -1);
         return -1; //  timed out or no message available
     }
-    assert (zmq_msg_more (&msg));
-    assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
+    TEST_ASSERT_EQUAL_UINT (sizeof (uint64_t), zmq_msg_size (&msg));
 
     uint64_t value_count;
     memcpy (&value_count, zmq_msg_data (&msg), sizeof (value_count));
@@ -230,11 +241,11 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         //  Subsequent frames in message contain event values
         zmq_msg_init (&msg);
         if (zmq_msg_recv (&msg, monitor_, recv_flag_) == -1) {
-            assert (errno == EAGAIN);
+            TEST_ASSERT_FAILURE_ERRNO (EAGAIN, -1);
             return -1; //  timed out or no message available
         }
-        assert (zmq_msg_more (&msg));
-        assert (sizeof (uint64_t) == zmq_msg_size (&msg));
+        TEST_ASSERT_TRUE (zmq_msg_more (&msg));
+        TEST_ASSERT_EQUAL_UINT (sizeof (uint64_t), zmq_msg_size (&msg));
 
         if (value_ && value_ + i)
             memcpy (value_ + i, zmq_msg_data (&msg), sizeof (*value_));
@@ -243,9 +254,8 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
 
     //  Second-to-last frame in message contains local address
     zmq_msg_init (&msg);
-    int res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
-    assert (res != -1);
-    assert (zmq_msg_more (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
+    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
     if (local_address_) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -258,9 +268,8 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
 
     //  Last frame in message contains remote address
     zmq_msg_init (&msg);
-    res = zmq_msg_recv (&msg, monitor_, recv_flag_) == -1;
-    assert (res != -1);
-    assert (!zmq_msg_more (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
+    TEST_ASSERT_TRUE (!zmq_msg_more (&msg));
 
     if (remote_address_) {
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -326,24 +335,29 @@ void expect_monitor_event_v2 (void *monitor_,
       monitor_, NULL, expected_local_address_ ? &local_address : NULL,
       expected_remote_address_ ? &remote_address : NULL);
     bool failed = false;
+    char buf[256];
+    char *pos = buf;
     if (event != expected_event_) {
-        fprintf (stderr, "Expected monitor event %llx, but received %llx\n",
-                 (long long) expected_event_, (long long) event);
+        pos += snprintf (pos, sizeof buf - (pos - buf),
+                         "Expected monitor event %llx, but received %llx\n",
+                         (long long) expected_event_, (long long) event);
         failed = true;
     }
     if (expected_local_address_
         && 0 != strcmp (local_address, expected_local_address_)) {
-        fprintf (stderr, "Expected local address %s, but received %s\n",
-                 expected_local_address_, local_address);
+        pos += snprintf (pos, sizeof buf - (pos - buf),
+                         "Expected local address %s, but received %s\n",
+                         expected_local_address_, local_address);
     }
     if (expected_remote_address_
         && 0 != strcmp (remote_address, expected_remote_address_)) {
-        fprintf (stderr, "Expected remote address %s, but received %s\n",
-                 expected_remote_address_, remote_address);
+        pos += snprintf (pos, sizeof buf - (pos - buf),
+                         "Expected remote address %s, but received %s\n",
+                         expected_remote_address_, remote_address);
     }
     free (local_address);
     free (remote_address);
-    assert (!failed);
+    TEST_ASSERT_FALSE_MESSAGE (failed, buf);
 }
 #endif
 
