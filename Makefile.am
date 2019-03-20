@@ -616,7 +616,8 @@ tests_test_security_zap_SOURCES = \
 	tests/testutil_monitoring.hpp \
 	tests/testutil_security.hpp \
 	tests/testutil.hpp
-tests_test_security_zap_LDADD = src/libzmq.la
+tests_test_security_zap_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_zap_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la ${UNITY_LIBS}
