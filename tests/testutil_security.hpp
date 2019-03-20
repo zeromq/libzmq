@@ -305,26 +305,27 @@ void zap_handler (void * /*unused_*/)
 
 // assert_* are macros rather than functions, to allow assertion failures be
 // attributed to the causing source code line
-#define assert_no_more_monitor_events_with_timeout(monitor, timeout)           \
-    {                                                                          \
-        int event_count = 0;                                                   \
-        int event, err;                                                        \
-        while ((event = get_monitor_event_with_timeout ((monitor), &err, NULL, \
-                                                        (timeout)))            \
-               != -1) {                                                        \
-            if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL                  \
-                && (err == EPIPE || err == ECONNRESET                          \
-                    || err == ECONNABORTED)) {                                 \
-                fprintf (stderr,                                               \
-                         "Ignored event (skipping any further events): %x "    \
-                         "(err = %i == %s)\n",                                 \
-                         event, err, zmq_strerror (err));                      \
-                continue;                                                      \
-            }                                                                  \
-            ++event_count;                                                     \
-            print_unexpected_event (event, err, 0, 0);                         \
-        }                                                                      \
-        TEST_ASSERT_EQUAL_INT (0, event_count);                                \
+#define assert_no_more_monitor_events_with_timeout(monitor, timeout)                  \
+    {                                                                                 \
+        int event_count = 0;                                                          \
+        int event, err;                                                               \
+        while ((event = get_monitor_event_with_timeout ((monitor), &err, NULL,        \
+                                                        (timeout)))                   \
+               != -1) {                                                               \
+            if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL                         \
+                && (err == EPIPE || err == ECONNRESET                                 \
+                    || err == ECONNABORTED)) {                                        \
+                fprintf (stderr,                                                      \
+                         "Ignored event (skipping any further events): %x "           \
+                         "(err = %i == %s)\n",                                        \
+                         event, err, zmq_strerror (err));                             \
+                continue;                                                             \
+            }                                                                         \
+            ++event_count;                                                            \
+            /* TODO write this into a buffer and attach to the assertion msg below */ \
+            print_unexpected_event_stderr (event, err, 0, 0);                         \
+        }                                                                             \
+        TEST_ASSERT_EQUAL_INT (0, event_count);                                       \
     }
 
 void setup_handshake_socket_monitor (void *server_,
