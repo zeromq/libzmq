@@ -30,7 +30,7 @@
 #ifndef __TESTUTIL_SECURITY_HPP_INCLUDED__
 #define __TESTUTIL_SECURITY_HPP_INCLUDED__
 
-#include "testutil.hpp"
+#include "testutil_unity.hpp"
 #include "testutil_monitoring.hpp"
 
 //  security test utils
@@ -48,14 +48,12 @@ void socket_config_null_client (void *server_, void *server_secret_)
 
 void socket_config_null_server (void *server_, void *server_secret_)
 {
-    int rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
-                             strlen (test_zap_domain));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
     int required = server_secret_ ? *(int *) server_secret_ : 0;
-    rc =
-      zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN,
+                                               &required, sizeof (int)));
 #else
     LIBZMQ_UNUSED (server_secret_);
 #endif
@@ -69,12 +67,10 @@ void socket_config_plain_client (void *server_, void *server_secret_)
 {
     LIBZMQ_UNUSED (server_secret_);
 
-    int rc =
-      zmq_setsockopt (server_, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (server_, ZMQ_PLAIN_USERNAME, test_plain_username, 8);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server_, ZMQ_PLAIN_PASSWORD, test_plain_password, 8));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server_, ZMQ_PLAIN_USERNAME, test_plain_username, 8));
 }
 
 void socket_config_plain_server (void *server_, void *server_secret_)
@@ -82,13 +78,10 @@ void socket_config_plain_server (void *server_, void *server_secret_)
     LIBZMQ_UNUSED (server_secret_);
 
     int as_server = 1;
-    int rc =
-      zmq_setsockopt (server_, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
-                         strlen (test_zap_domain));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server_, ZMQ_PLAIN_SERVER, &as_server, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 }
 
 //  CURVE specific functions
@@ -102,31 +95,26 @@ char valid_server_secret[41];
 void setup_testutil_security_curve ()
 {
     //  Generate new keypairs for these tests
-    int rc = zmq_curve_keypair (valid_client_public, valid_client_secret);
-    assert (rc == 0);
-    rc = zmq_curve_keypair (valid_server_public, valid_server_secret);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_curve_keypair (valid_client_public, valid_client_secret));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_curve_keypair (valid_server_public, valid_server_secret));
 }
 
 void socket_config_curve_server (void *server_, void *server_secret_)
 {
     int as_server = 1;
-    int rc =
-      zmq_setsockopt (server_, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (server_, ZMQ_CURVE_SECRETKEY, server_secret_, 41);
-    assert (rc == 0);
-
-    rc = zmq_setsockopt (server_, ZMQ_ZAP_DOMAIN, test_zap_domain,
-                         strlen (test_zap_domain));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server_, ZMQ_CURVE_SERVER, &as_server, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server_, ZMQ_CURVE_SECRETKEY, server_secret_, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
     int required = 1;
-    rc =
-      zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN,
+                                               &required, sizeof (int)));
 #endif
 }
 
@@ -142,15 +130,12 @@ void socket_config_curve_client (void *client_, void *data_)
     curve_client_data_t *curve_client_data =
       static_cast<curve_client_data_t *> (data_);
 
-    int rc = zmq_setsockopt (client_, ZMQ_CURVE_SERVERKEY,
-                             curve_client_data->server_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client_, ZMQ_CURVE_PUBLICKEY,
-                         curve_client_data->client_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client_, ZMQ_CURVE_SECRETKEY,
-                         curve_client_data->client_secret, 41);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      client_, ZMQ_CURVE_SERVERKEY, curve_client_data->server_public, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      client_, ZMQ_CURVE_PUBLICKEY, curve_client_data->client_public, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      client_, ZMQ_CURVE_SECRETKEY, curve_client_data->client_secret, 41));
 }
 
 //  --------------------------------------------------------------------------
@@ -175,23 +160,20 @@ enum zap_protocol_t
 
 void *zap_requests_handled;
 
-void zap_handler_generic (void *ctx_,
-                          zap_protocol_t zap_protocol_,
+void zap_handler_generic (zap_protocol_t zap_protocol_,
                           const char *expected_routing_id_ = "IDENT")
 {
-    void *control = zmq_socket (ctx_, ZMQ_REQ);
-    assert (control);
-    int rc = zmq_connect (control, "inproc://handler-control");
-    assert (rc == 0);
+    void *control = zmq_socket (get_test_context (), ZMQ_REQ);
+    TEST_ASSERT_NOT_NULL (control);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (control, "inproc://handler-control"));
 
-    void *handler = zmq_socket (ctx_, ZMQ_REP);
-    assert (handler);
-    rc = zmq_bind (handler, "inproc://zeromq.zap.01");
-    assert (rc == 0);
+    void *handler = zmq_socket (get_test_context (), ZMQ_REP);
+    TEST_ASSERT_NOT_NULL (handler);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (handler, "inproc://zeromq.zap.01"));
 
     //  Signal main thread that we are ready
-    rc = s_send (control, "GO");
-    assert (rc == 2);
+    send_string_expect_success (control, "GO", 0);
 
     zmq_pollitem_t items[] = {
       {control, 0, ZMQ_POLLIN, 0},
@@ -204,10 +186,7 @@ void zap_handler_generic (void *ctx_,
     //  Process ZAP requests forever
     while (zmq_poll (items, numitems, -1) >= 0) {
         if (items[0].revents & ZMQ_POLLIN) {
-            char *buf = s_recv (control);
-            assert (buf);
-            assert (streq (buf, "STOP"));
-            free (buf);
+            recv_string_expect_success (control, "STOP", 0);
             break; //  Terminating - main thread signal
         }
         if (!(items[1].revents & ZMQ_POLLIN))
@@ -229,8 +208,8 @@ void zap_handler_generic (void *ctx_,
         bool authentication_succeeded = false;
         if (streq (mechanism, "CURVE")) {
             uint8_t client_key[32];
-            int size = zmq_recv (handler, client_key, 32, 0);
-            assert (size == 32);
+            TEST_ASSERT_EQUAL_INT (32, TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (
+                                         handler, client_key, 32, 0)));
 
             char client_key_text[41];
             zmq_z85_encode (client_key_text, client_key, 32);
@@ -239,13 +218,13 @@ void zap_handler_generic (void *ctx_,
               streq (client_key_text, valid_client_public);
         } else if (streq (mechanism, "PLAIN")) {
             char client_username[32];
-            int size = zmq_recv (handler, client_username, 32, 0);
-            assert (size > 0);
+            int size = TEST_ASSERT_SUCCESS_ERRNO (
+              zmq_recv (handler, client_username, 32, 0));
             client_username[size] = 0;
 
             char client_password[32];
-            size = zmq_recv (handler, client_password, 32, 0);
-            assert (size > 0);
+            size = TEST_ASSERT_SUCCESS_ERRNO (
+              zmq_recv (handler, client_password, 32, 0));
             client_password[size] = 0;
 
             authentication_succeeded =
@@ -254,12 +233,13 @@ void zap_handler_generic (void *ctx_,
         } else if (streq (mechanism, "NULL")) {
             authentication_succeeded = true;
         } else {
-            fprintf (stderr, "Unsupported mechanism: %s\n", mechanism);
-            assert (false);
+            char msg[128];
+            printf ("Unsupported mechanism: %s\n", mechanism);
+            TEST_FAIL_MESSAGE (msg);
         }
 
-        assert (streq (version, "1.0"));
-        assert (streq (routing_id, expected_routing_id_));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING (expected_routing_id_, routing_id);
 
         s_sendmore (handler, zap_protocol_ == zap_wrong_version
                                ? "invalid_version"
@@ -307,20 +287,18 @@ void zap_handler_generic (void *ctx_,
 
         zmq_atomic_counter_inc (zap_requests_handled);
     }
-    rc = zmq_unbind (handler, "inproc://zeromq.zap.01");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (handler, "inproc://zeromq.zap.01"));
     close_zero_linger (handler);
 
     if (zap_protocol_ != zap_disconnect) {
-        rc = s_send (control, "STOPPED");
-        assert (rc == 7);
+        send_string_expect_success (control, "STOPPED", 0);
     }
     close_zero_linger (control);
 }
 
-void zap_handler (void *ctx_)
+void zap_handler (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_ok);
+    zap_handler_generic (zap_ok);
 }
 
 //  Security-specific monitor event utilities
@@ -346,36 +324,31 @@ void zap_handler (void *ctx_)
             ++event_count;                                                     \
             print_unexpected_event (event, err, 0, 0);                         \
         }                                                                      \
-        assert (event_count == 0);                                             \
+        TEST_ASSERT_EQUAL_INT (0, event_count);                                \
     }
 
-void setup_handshake_socket_monitor (void *ctx_,
-                                     void *server_,
+void setup_handshake_socket_monitor (void *server_,
                                      void **server_mon_,
                                      const char *monitor_endpoint_)
 {
     //  Monitor handshake events on the server
-    int rc = zmq_socket_monitor (server_, monitor_endpoint_,
-                                 ZMQ_EVENT_HANDSHAKE_SUCCEEDED
-                                   | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-                                   | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
-                                   | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (
+      server_, monitor_endpoint_,
+      ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+        | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
+        | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL));
 
     //  Create socket for collecting monitor events
-    *server_mon_ = zmq_socket (ctx_, ZMQ_PAIR);
-    assert (*server_mon_);
+    *server_mon_ = test_context_socket (ZMQ_PAIR);
     int linger = 0;
-    rc = zmq_setsockopt (*server_mon_, ZMQ_LINGER, &linger, sizeof (linger));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (*server_mon_, ZMQ_LINGER, &linger, sizeof (linger)));
 
     //  Connect it to the inproc endpoints so they'll get events
-    rc = zmq_connect (*server_mon_, monitor_endpoint_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (*server_mon_, monitor_endpoint_));
 }
 
 void setup_context_and_server_side (
-  void **ctx_,
   void **zap_control_,
   void **zap_thread_,
   void **server_,
@@ -386,114 +359,84 @@ void setup_context_and_server_side (
   void *socket_config_data_ = valid_server_secret,
   const char *routing_id_ = "IDENT")
 {
-    *ctx_ = zmq_ctx_new ();
-    assert (*ctx_);
-
     //  Spawn ZAP handler
     zap_requests_handled = zmq_atomic_counter_new ();
-    assert (zap_requests_handled != NULL);
+    TEST_ASSERT_NOT_NULL (zap_requests_handled);
 
-    *zap_control_ = zmq_socket (*ctx_, ZMQ_REP);
-    assert (*zap_control_);
-    int rc = zmq_bind (*zap_control_, "inproc://handler-control");
-    assert (rc == 0);
+    *zap_control_ = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_bind (*zap_control_, "inproc://handler-control"));
     int linger = 0;
-    rc = zmq_setsockopt (*zap_control_, ZMQ_LINGER, &linger, sizeof (linger));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (*zap_control_, ZMQ_LINGER, &linger, sizeof (linger)));
 
     if (zap_handler_ != NULL) {
-        *zap_thread_ = zmq_threadstart (zap_handler_, *ctx_);
+        *zap_thread_ = zmq_threadstart (zap_handler_, NULL);
 
-        char *buf = s_recv (*zap_control_);
-        assert (buf);
-        assert (streq (buf, "GO"));
-        free (buf);
+        recv_string_expect_success (*zap_control_, "GO", 0);
     } else
         *zap_thread_ = NULL;
 
     //  Server socket will accept connections
-    *server_ = zmq_socket (*ctx_, ZMQ_DEALER);
-    assert (*server_);
-    rc = zmq_setsockopt (*server_, ZMQ_LINGER, &linger, sizeof (linger));
-    assert (rc == 0);
+    *server_ = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (*server_, ZMQ_LINGER, &linger, sizeof (linger)));
 
     socket_config_ (*server_, socket_config_data_);
 
-    rc = zmq_setsockopt (*server_, ZMQ_ROUTING_ID, routing_id_,
-                         strlen (routing_id_));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      *server_, ZMQ_ROUTING_ID, routing_id_, strlen (routing_id_)));
 
-    rc = zmq_bind (*server_, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-
-    size_t len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (*server_, ZMQ_LAST_ENDPOINT, my_endpoint_, &len);
-    assert (rc == 0);
+    bind_loopback_ipv4 (*server_, my_endpoint_, MAX_SOCKET_STRING);
 
     const char server_monitor_endpoint[] = "inproc://monitor-server";
-    setup_handshake_socket_monitor (*ctx_, *server_, server_mon_,
+    setup_handshake_socket_monitor (*server_, server_mon_,
                                     server_monitor_endpoint);
 }
 
-void shutdown_context_and_server_side (void *ctx_,
-                                       void *zap_thread_,
+void shutdown_context_and_server_side (void *zap_thread_,
                                        void *server_,
                                        void *server_mon_,
                                        void *zap_control_,
                                        bool zap_handler_stopped_ = false)
 {
     if (zap_thread_ && !zap_handler_stopped_) {
-        int rc = s_send (zap_control_, "STOP");
-        assert (rc == 4);
-        char *buf = s_recv (zap_control_);
-        assert (buf);
-        assert (streq (buf, "STOPPED"));
-        free (buf);
-        rc = zmq_unbind (zap_control_, "inproc://handler-control");
-        assert (rc == 0);
+        send_string_expect_success (zap_control_, "STOP", 0);
+        recv_string_expect_success (zap_control_, "STOPPED", 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_unbind (zap_control_, "inproc://handler-control"));
     }
-    int rc = zmq_close (zap_control_);
-    assert (rc == 0);
-
-    rc = zmq_close (server_mon_);
-    assert (rc == 0);
-    rc = zmq_close (server_);
-    assert (rc == 0);
+    test_context_socket_close (zap_control_);
+    test_context_socket_close (server_mon_);
+    test_context_socket_close (server_);
 
     //  Wait until ZAP handler terminates
     if (zap_thread_)
         zmq_threadclose (zap_thread_);
 
-    rc = zmq_ctx_term (ctx_);
-    assert (rc == 0);
-
     zmq_atomic_counter_destroy (&zap_requests_handled);
 }
 
-void *create_and_connect_client (void *ctx_,
-                                 char *my_endpoint_,
+void *create_and_connect_client (char *my_endpoint_,
                                  socket_config_fn socket_config_,
                                  void *socket_config_data_,
                                  void **client_mon_ = NULL)
 {
-    void *client = zmq_socket (ctx_, ZMQ_DEALER);
-    assert (client);
+    void *client = test_context_socket (ZMQ_DEALER);
 
     socket_config_ (client, socket_config_data_);
 
-    int rc = zmq_connect (client, my_endpoint_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint_));
 
     if (client_mon_) {
-        setup_handshake_socket_monitor (ctx_, client, client_mon_,
+        setup_handshake_socket_monitor (client, client_mon_,
                                         "inproc://client-monitor");
     }
 
     return client;
 }
 
-void expect_new_client_bounce_fail (void *ctx_,
-                                    char *my_endpoint_,
+void expect_new_client_bounce_fail (char *my_endpoint_,
                                     void *server_,
                                     socket_config_fn socket_config_,
                                     void *socket_config_data_,
@@ -502,11 +445,11 @@ void expect_new_client_bounce_fail (void *ctx_,
                                     int expected_client_value_ = 0)
 {
     void *my_client_mon;
-    assert (client_mon_ == NULL || expected_client_event_ == 0);
+    TEST_ASSERT_TRUE (client_mon_ == NULL || expected_client_event_ == 0);
     if (expected_client_event_ != 0)
         client_mon_ = &my_client_mon;
-    void *client = create_and_connect_client (
-      ctx_, my_endpoint_, socket_config_, socket_config_data_, client_mon_);
+    void *client = create_and_connect_client (my_endpoint_, socket_config_,
+                                              socket_config_data_, client_mon_);
     expect_bounce_fail (server_, client);
 
     if (expected_client_event_ != 0) {
@@ -514,13 +457,12 @@ void expect_new_client_bounce_fail (void *ctx_,
         events_received = expect_monitor_event_multiple (
           my_client_mon, expected_client_event_, expected_client_value_, false);
 
-        assert (events_received == 1);
+        TEST_ASSERT_EQUAL_INT (1, events_received);
 
-        int rc = zmq_close (my_client_mon);
-        assert (rc == 0);
+        test_context_socket_close (my_client_mon);
     }
 
-    close_zero_linger (client);
+    test_context_socket_close_zero_linger (client);
 }
 
 #endif
