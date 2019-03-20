@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <unity.h>
 #include "../tests/testutil.hpp"
+#include "../tests/testutil_unity.hpp"
 #include "../unittests/unittest_resolver_common.hpp"
 
 #include <ip_resolver.hpp>
@@ -150,10 +151,11 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
     int rc = resolver.resolve (&addr, name_);
 
     if (expected_addr_ == NULL) {
+        // TODO also check the expected errno
         TEST_ASSERT_EQUAL (-1, rc);
         return;
     } else {
-        TEST_ASSERT_EQUAL (0, rc);
+        TEST_ASSERT_SUCCESS_ERRNO (rc);
     }
 
     validate_address (family, &addr, expected_addr_, expected_port_,
