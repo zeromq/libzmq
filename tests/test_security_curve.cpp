@@ -52,16 +52,6 @@ char error_message_buffer[256];
 #define snprintf _snprintf
 #endif
 
-const char *zmq_errno_message ()
-{
-    snprintf (error_message_buffer, sizeof (error_message_buffer),
-              "errno=%i (%s)", zmq_errno (), zmq_strerror (zmq_errno ()));
-    return error_message_buffer;
-}
-
-#define TEST_ASSERT_ZMQ_ERRNO(condition)                                       \
-    TEST_ASSERT_MESSAGE ((condition), zmq_errno_message ())
-
 void *handler;
 void *zap_thread;
 void *server;
@@ -190,8 +180,7 @@ void expect_zmtp_mechanism_mismatch (void *client_,
                                      void *server_mon_)
 {
     //  This must be caught by the curve_server class, not passed to ZAP
-    int rc = zmq_connect (client_, my_endpoint_);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client_, my_endpoint_));
     expect_bounce_fail (server_, client_);
     test_context_socket_close_zero_linger (client_);
 
@@ -212,10 +201,10 @@ void test_curve_security_with_null_client_credentials ()
 void test_curve_security_with_plain_client_credentials ()
 {
     void *client = test_context_socket (ZMQ_DEALER);
-    int rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8));
 
     expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
@@ -360,8 +349,7 @@ void test_curve_security_invalid_hello_command_name ()
 
     // send CURVE HELLO with a misspelled command name (but otherwise correct)
     char hello[hello_length];
-    int rc = tools.produce_hello (hello, 0);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (tools.produce_hello (hello, 0));
     hello[5] = 'X';
 
     send_command (s, hello);
@@ -383,8 +371,7 @@ void test_curve_security_invalid_hello_version ()
 
     // send CURVE HELLO with a wrong version number (but otherwise correct)
     char hello[hello_length];
-    int rc = tools.produce_hello (hello, 0);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (tools.produce_hello (hello, 0));
     hello[6] = 2;
 
     send_command (s, hello);
@@ -435,8 +422,7 @@ fd_t connect_exchange_greeting_and_send_hello (
 
     // send valid CURVE HELLO
     char hello[hello_length];
-    int rc = tools_.produce_hello (hello, 0);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (tools_.produce_hello (hello, 0));
 
     send_command (s, hello);
     return s;
@@ -476,10 +462,11 @@ fd_t connect_exchange_greeting_and_hello_welcome (
     recv_all (s, welcome, welcome_length + 2);
 
     uint8_t cn_precom[crypto_box_BEFORENMBYTES];
-    int res = tools_.process_welcome (welcome + 2, welcome_length, cn_precom);
-    TEST_ASSERT_ZMQ_ERRNO (res == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      tools_.process_welcome (welcome + 2, welcome_length, cn_precom));
 
-    res = get_monitor_event_with_timeout (server_mon_, NULL, NULL, timeout_);
+    const int res =
+      get_monitor_event_with_timeout (server_mon_, NULL, NULL, timeout_);
     TEST_ASSERT_EQUAL_INT (-1, res);
 
     return s;
@@ -560,8 +547,7 @@ void test_curve_security_invalid_keysize (void *ctx_)
     errno = 0;
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, valid_client_secret, 123);
     assert (rc == -1 && errno == EINVAL);
-    rc = zmq_close (client);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (client));
 }
 
 // TODO why isn't this const?
@@ -640,8 +626,7 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
-    int rc = zmq_ctx_term (ctx);
-    TEST_ASSERT_ZMQ_ERRNO (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
     zmq::random_close ();
 
