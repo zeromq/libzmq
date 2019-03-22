@@ -585,7 +585,8 @@ tests_test_stream_disconnect_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_stream_disconnect_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_disconnect_inproc_SOURCES = tests/test_disconnect_inproc.cpp
-tests_test_disconnect_inproc_LDADD = src/libzmq.la
+tests_test_disconnect_inproc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_disconnect_inproc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_unbind_wildcard_SOURCES = tests/test_unbind_wildcard.cpp
 tests_test_unbind_wildcard_LDADD = src/libzmq.la ${UNITY_LIBS}
