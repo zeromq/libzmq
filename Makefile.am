@@ -865,7 +865,8 @@ if !VALGRIND_ENABLED
 test_apps += tests/test_fork
 
 tests_test_fork_SOURCES = tests/test_fork.cpp
-tests_test_fork_LDADD = src/libzmq.la
+tests_test_fork_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_fork_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 endif
 endif
