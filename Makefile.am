@@ -912,7 +912,8 @@ tests_test_sub_forward_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_sub_forward_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_term_endpoint_tipc_SOURCES = tests/test_term_endpoint_tipc.cpp
-tests_test_term_endpoint_tipc_LDADD = src/libzmq.la
+tests_test_term_endpoint_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_term_endpoint_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_address_tipc_SOURCES = tests/test_address_tipc.cpp
 tests_test_address_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
