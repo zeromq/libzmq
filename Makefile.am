@@ -473,7 +473,8 @@ tests_test_ancillaries_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_ancillaries_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_system_SOURCES = tests/test_system.cpp
-tests_test_system_LDADD = src/libzmq.la
+tests_test_system_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_system_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_pair_inproc_SOURCES = \
 	tests/test_pair_inproc.cpp \
@@ -520,10 +521,12 @@ tests_test_invalid_rep_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_invalid_rep_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
-tests_test_msg_flags_LDADD = src/libzmq.la
+tests_test_msg_flags_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_msg_flags_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
-tests_test_msg_ffn_LDADD = src/libzmq.la
+tests_test_msg_ffn_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_msg_ffn_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
 tests_test_connect_resolve_LDADD = src/libzmq.la ${UNITY_LIBS}
@@ -673,7 +676,8 @@ tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = src/libzmq.la
 
 tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
-tests_test_getsockopt_memset_LDADD = src/libzmq.la
+tests_test_getsockopt_memset_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_getsockopt_memset_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
@@ -895,7 +899,8 @@ tests_test_reqrep_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_reqrep_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_router_mandatory_tipc_SOURCES = tests/test_router_mandatory_tipc.cpp
-tests_test_router_mandatory_tipc_LDADD = src/libzmq.la
+tests_test_router_mandatory_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_router_mandatory_tipc_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_shutdown_stress_tipc_SOURCES = tests/test_shutdown_stress_tipc.cpp
 tests_test_shutdown_stress_tipc_LDADD = src/libzmq.la ${UNITY_LIBS}
