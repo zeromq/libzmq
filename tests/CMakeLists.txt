@@ -75,6 +75,11 @@ set(tests
   test_mock_pub_sub
 )
 
+if(NOT WIN32)
+  list(APPEND tests
+    test_security_gssapi)
+endif()
+
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests
     test_security_curve)

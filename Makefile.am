@@ -930,7 +930,8 @@ if BUILD_GSSAPI
 test_apps += tests/test_security_gssapi
 
 tests_test_security_gssapi_SOURCES = tests/test_security_gssapi.cpp
-tests_test_security_gssapi_LDADD = src/libzmq.la
+tests_test_security_gssapi_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_security_gssapi_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 endif
 
