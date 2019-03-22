@@ -672,10 +672,12 @@ tests_test_proxy_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_proxy_hwm_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
-tests_test_proxy_single_socket_LDADD = src/libzmq.la
+tests_test_proxy_single_socket_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_proxy_single_socket_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
-tests_test_proxy_terminate_LDADD = src/libzmq.la
+tests_test_proxy_terminate_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_proxy_terminate_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
 tests_test_getsockopt_memset_LDADD = src/libzmq.la ${UNITY_LIBS}
