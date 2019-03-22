@@ -664,7 +664,8 @@ tests_test_issue_566_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_issue_566_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
-tests_test_proxy_LDADD = src/libzmq.la
+tests_test_proxy_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_proxy_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_proxy_hwm_SOURCES = tests/test_proxy_hwm.cpp
 tests_test_proxy_hwm_LDADD = src/libzmq.la ${UNITY_LIBS}
