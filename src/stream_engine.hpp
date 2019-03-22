@@ -87,6 +87,8 @@ class stream_engine_t : public io_object_t, public i_engine
     void timer_event (int id_);
 
   private:
+    bool in_event_internal ();
+
     //  Unplug the engine from the session.
     void unplug ();
 

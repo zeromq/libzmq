@@ -298,12 +298,19 @@ void zmq::stream_engine_t::terminate ()
 
 void zmq::stream_engine_t::in_event ()
 {
+    // ignore errors
+    const bool res = in_event_internal ();
+    LIBZMQ_UNUSED (res);
+}
+
+bool zmq::stream_engine_t::in_event_internal ()
+{
     zmq_assert (!_io_error);
 
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (_handshaking))
         if (!handshake ())
-            return;
+            return false;
 
     zmq_assert (_decoder);
 
@@ -311,7 +318,7 @@ void zmq::stream_engine_t::in_event ()
     if (_input_stopped) {
         rm_fd (_handle);
         _io_error = true;
-        return;
+        return true; // TODO or return false in this case too?
     }
 
     //  If there's no data to process in the buffer...
@@ -329,12 +336,14 @@ void zmq::stream_engine_t::in_event ()
             // connection closed by peer
             errno = EPIPE;
             error (connection_error);
-            return;
+            return false;
         }
         if (rc == -1) {
-            if (errno != EAGAIN)
+            if (errno != EAGAIN) {
                 error (connection_error);
-            return;
+                return false;
+            }
+            return true;
         }
 
         //  Adjust input size
@@ -363,13 +372,14 @@ void zmq::stream_engine_t::in_event ()
     if (rc == -1) {
         if (errno != EAGAIN) {
             error (protocol_error);
-            return;
+            return false;
         }
         _input_stopped = true;
         reset_pollin (_handle);
     }
 
     _session->flush ();
+    return true;
 }
 
 void zmq::stream_engine_t::out_event ()
@@ -497,7 +507,8 @@ bool zmq::stream_engine_t::restart_input ()
         _session->flush ();
 
         //  Speculative read.
-        in_event ();
+        if (!in_event_internal ())
+            return false;
     }
 
     return true;
