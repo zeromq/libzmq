@@ -681,7 +681,8 @@ tests_test_getsockopt_memset_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_getsockopt_memset_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
-tests_test_many_sockets_LDADD = src/libzmq.la
+tests_test_many_sockets_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_many_sockets_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = src/libzmq.la ${UNITY_LIBS}
