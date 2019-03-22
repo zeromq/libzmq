@@ -593,7 +593,8 @@ tests_test_unbind_wildcard_LDADD = src/libzmq.la ${UNITY_LIBS}
 tests_test_unbind_wildcard_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_ctx_options_SOURCES = tests/test_ctx_options.cpp
-tests_test_ctx_options_LDADD = src/libzmq.la
+tests_test_ctx_options_LDADD = src/libzmq.la ${UNITY_LIBS}
+tests_test_ctx_options_CPPFLAGS = ${UNITY_CPPFLAGS}
 
 tests_test_iov_SOURCES = tests/test_iov.cpp
 tests_test_iov_LDADD = src/libzmq.la ${UNITY_LIBS}
