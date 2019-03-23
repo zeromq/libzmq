@@ -124,7 +124,7 @@ void recv_string_expect_success (void *socket_, const char *str_, int flags_)
         TEST_ASSERT_EQUAL_STRING_LEN (str_, buffer, len);
 }
 
-void *internal_manage_test_context (bool init_, bool clear_)
+static void *internal_manage_test_context (bool init_, bool clear_)
 {
     static void *test_context = NULL;
     if (clear_) {
@@ -141,7 +141,7 @@ void *internal_manage_test_context (bool init_, bool clear_)
     return test_context;
 }
 
-void internal_manage_test_sockets (void *socket_, bool add_)
+static void internal_manage_test_sockets (void *socket_, bool add_)
 {
     static void *test_sockets[MAX_TEST_SOCKETS];
     static size_t test_socket_count = 0;

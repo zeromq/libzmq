@@ -101,12 +101,7 @@ void recv_array_expect_success (void *socket_,
     TEST_ASSERT_EQUAL_UINT8_ARRAY (array_, buffer, SIZE);
 }
 
-// do not call from tests directly, use setup_test_context, get_test_context and teardown_test_context only
-void *internal_manage_test_context (bool init_, bool clear_);
-
 #define MAX_TEST_SOCKETS 128
-
-void internal_manage_test_sockets (void *socket_, bool add_);
 
 void setup_test_context ();
 
