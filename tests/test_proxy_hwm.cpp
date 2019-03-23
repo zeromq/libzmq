@@ -30,6 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 #include <unity.h>
+#include <assert.h>
 
 //
 // Asynchronous proxy test using ZMQ_XPUB_NODROP and HWM:

@@ -27,97 +27,82 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
 const char *SEQ_END = (const char *) 1;
 
-void bounce (void *server_, void *client_)
+const char bounce_content[] = "12345678ABCDEFGH12345678abcdefgh";
+
+static void send_bounce_msg (void *socket_)
 {
-    const char content[] = "12345678ABCDEFGH12345678abcdefgh";
+    send_string_expect_success (socket_, bounce_content, ZMQ_SNDMORE);
+    send_string_expect_success (socket_, bounce_content, 0);
+}
 
-    //  Send message from client to server
-    int rc = zmq_send (client_, content, 32, ZMQ_SNDMORE);
-    assert (rc == 32);
-    rc = zmq_send (client_, content, 32, 0);
-    assert (rc == 32);
-
-    //  Receive message at server side
-    char buffer[32];
-    rc = zmq_recv (server_, buffer, 32, 0);
-    assert (rc == 32);
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
+static void recv_bounce_msg (void *socket_)
+{
+    recv_string_expect_success (socket_, bounce_content, 0);
     int rcvmore;
     size_t sz = sizeof (rcvmore);
-    rc = zmq_getsockopt (server_, ZMQ_RCVMORE, &rcvmore, &sz);
-    assert (rc == 0);
-    assert (rcvmore);
-    rc = zmq_recv (server_, buffer, 32, 0);
-    assert (rc == 32);
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
-    rc = zmq_getsockopt (server_, ZMQ_RCVMORE, &rcvmore, &sz);
-    assert (rc == 0);
-    assert (!rcvmore);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket_, ZMQ_RCVMORE, &rcvmore, &sz));
+    TEST_ASSERT_TRUE (rcvmore);
+    recv_string_expect_success (socket_, bounce_content, 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket_, ZMQ_RCVMORE, &rcvmore, &sz));
+    TEST_ASSERT_FALSE (rcvmore);
+}
+
+void bounce (void *server_, void *client_)
+{
+    //  Send message from client to server
+    send_bounce_msg (client_);
+
+    //  Receive message at server side and
+    //  check that message is still the same
+    recv_bounce_msg (server_);
 
     //  Send two parts back to client
-    rc = zmq_send (server_, buffer, 32, ZMQ_SNDMORE);
-    assert (rc == 32);
-    rc = zmq_send (server_, buffer, 32, 0);
-    assert (rc == 32);
+    send_bounce_msg (server_);
 
     //  Receive the two parts at the client side
-    rc = zmq_recv (client_, buffer, 32, 0);
-    assert (rc == 32);
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
-    rc = zmq_getsockopt (client_, ZMQ_RCVMORE, &rcvmore, &sz);
-    assert (rc == 0);
-    assert (rcvmore);
-    rc = zmq_recv (client_, buffer, 32, 0);
-    assert (rc == 32);
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
-    rc = zmq_getsockopt (client_, ZMQ_RCVMORE, &rcvmore, &sz);
-    assert (rc == 0);
-    assert (!rcvmore);
+    recv_bounce_msg (client_);
+}
+
+static void send_bounce_msg_may_fail (void *socket_)
+{
+    int timeout = 250;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket_, ZMQ_SNDTIMEO, &timeout, sizeof (int)));
+    int rc = zmq_send (socket_, bounce_content, 32, ZMQ_SNDMORE);
+    TEST_ASSERT_TRUE ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+    rc = zmq_send (socket_, bounce_content, 32, 0);
+    TEST_ASSERT_TRUE ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+}
+
+static void recv_bounce_msg_fail (void *socket_)
+{
+    int timeout = 250;
+    char buffer[32];
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket_, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (socket_, buffer, 32, 0));
 }
 
 void expect_bounce_fail (void *server_, void *client_)
 {
-    const char *content = "12345678ABCDEFGH12345678abcdefgh";
-    char buffer[32];
-    int timeout = 250;
-
     //  Send message from client to server
-    int rc = zmq_setsockopt (client_, ZMQ_SNDTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_send (client_, content, 32, ZMQ_SNDMORE);
-    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
-    rc = zmq_send (client_, content, 32, 0);
-    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+    send_bounce_msg_may_fail (client_);
 
     //  Receive message at server side (should not succeed)
-    rc = zmq_setsockopt (server_, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_recv (server_, buffer, 32, 0);
-    assert (rc == -1);
-    assert (zmq_errno () == EAGAIN);
+    recv_bounce_msg_fail (server_);
 
     //  Send message from server to client to test other direction
     //  If connection failed, send may block, without a timeout
-    rc = zmq_setsockopt (server_, ZMQ_SNDTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_send (server_, content, 32, ZMQ_SNDMORE);
-    assert (rc == 32 || (rc == -1 && zmq_errno () == EAGAIN));
-    rc = zmq_send (server_, content, 32, 0);
-    assert (rc == 32 || (rc == -1 && zmq_errno () == EAGAIN));
+    send_bounce_msg_may_fail (server_);
 
     //  Receive message at client side (should not succeed)
-    rc = zmq_setsockopt (client_, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_recv (client_, buffer, 32, 0);
-    assert (rc == -1);
-    assert (zmq_errno () == EAGAIN);
+    recv_bounce_msg_fail (client_);
 }
 
 char *s_recv (void *socket_)
@@ -155,12 +140,11 @@ void s_send_seq (void *socket_, ...)
         bool end = data == SEQ_END;
 
         if (!prev) {
-            int rc = zmq_send (socket_, 0, 0, end ? 0 : ZMQ_SNDMORE);
-            assert (rc != -1);
+            TEST_ASSERT_SUCCESS_ERRNO (
+              zmq_send (socket_, 0, 0, end ? 0 : ZMQ_SNDMORE));
         } else {
-            int rc = zmq_send (socket_, prev, strlen (prev) + 1,
-                               end ? 0 : ZMQ_SNDMORE);
-            assert (rc != -1);
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_send (
+              socket_, prev, strlen (prev) + 1, end ? 0 : ZMQ_SNDMORE));
         }
         if (end)
             break;
@@ -181,21 +165,20 @@ void s_recv_seq (void *socket_, ...)
     const char *data = va_arg (ap, const char *);
 
     while (true) {
-        int rc = zmq_msg_recv (&msg, socket_, 0);
-        assert (rc != -1);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, socket_, 0));
 
         if (!data)
-            assert (zmq_msg_size (&msg) == 0);
+            TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg));
         else
-            assert (strcmp (data, (const char *) zmq_msg_data (&msg)) == 0);
+            TEST_ASSERT_EQUAL_STRING (data, (const char *) zmq_msg_data (&msg));
 
         data = va_arg (ap, const char *);
         bool end = data == SEQ_END;
 
-        rc = zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size);
-        assert (rc == 0);
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_getsockopt (socket_, ZMQ_RCVMORE, &more, &more_size));
 
-        assert (!more == end);
+        TEST_ASSERT_TRUE (!more == end);
         if (end)
             break;
     }
@@ -208,9 +191,8 @@ void close_zero_linger (void *socket_)
 {
     int linger = 0;
     int rc = zmq_setsockopt (socket_, ZMQ_LINGER, &linger, sizeof (linger));
-    assert (rc == 0 || errno == ETERM);
-    rc = zmq_close (socket_);
-    assert (rc == 0);
+    TEST_ASSERT_TRUE (rc == 0 || errno == ETERM);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket_));
 }
 
 void setup_test_environment ()
@@ -302,9 +284,9 @@ int is_tipc_available ()
     int tipc = 0;
 
     void *ctx = zmq_init (1);
-    assert (ctx);
+    TEST_ASSERT_NOT_NULL (ctx);
     void *rep = zmq_socket (ctx, ZMQ_REP);
-    assert (rep);
+    TEST_ASSERT_NOT_NULL (rep);
     tipc = zmq_bind (rep, "tipc://{5560,0,0}");
 
     zmq_close (rep);
@@ -352,13 +334,13 @@ sockaddr_in bind_bsd_socket (int socket)
     saddr.sin_port = htons (PORT_6);
 #endif
 
-    int rc = bind (socket, (struct sockaddr *) &saddr, sizeof (saddr));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      bind (socket, (struct sockaddr *) &saddr, sizeof (saddr)));
 
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
     socklen_t saddr_len = sizeof (saddr);
-    rc = getsockname (socket, (struct sockaddr *) &saddr, &saddr_len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      getsockname (socket, (struct sockaddr *) &saddr, &saddr_len));
 #endif
 
     return saddr;

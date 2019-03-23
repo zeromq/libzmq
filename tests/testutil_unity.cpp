@@ -146,7 +146,7 @@ void internal_manage_test_sockets (void *socket_, bool add_)
     static void *test_sockets[MAX_TEST_SOCKETS];
     static size_t test_socket_count = 0;
     if (!socket_) {
-        assert (!add_);
+        TEST_ASSERT_FALSE (add_);
 
         // force-close all sockets
         if (test_socket_count) {

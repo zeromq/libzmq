@@ -57,7 +57,7 @@ void test_version ()
 
 void test_strerrror ()
 {
-    assert (zmq_strerror (EINVAL));
+    TEST_ASSERT_NOT_NULL (zmq_strerror (EINVAL));
 }
 
 int main ()

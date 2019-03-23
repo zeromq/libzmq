@@ -59,7 +59,6 @@
 
 #undef NDEBUG
 #include <time.h>
-#include <assert.h>
 #include <stdarg.h>
 #include <string>
 #include <string.h>

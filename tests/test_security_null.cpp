@@ -56,8 +56,8 @@ static void zap_handler (void *handler_)
         char *routing_id = s_recv (handler_);
         char *mechanism = s_recv (handler_);
 
-        assert (streq (version, "1.0"));
-        assert (streq (mechanism, "NULL"));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING ("NULL", mechanism);
 
         s_sendmore (handler_, version);
         s_sendmore (handler_, sequence);

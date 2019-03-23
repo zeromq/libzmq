@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <assert.h>
+
 void setUp ()
 {
     setup_test_context ();
@@ -53,6 +55,8 @@ void test_fork ()
 
     int pid = fork ();
     if (pid == 0) {
+        // use regular assertions in the child process
+
         //  Child process
         //  Immediately close parent sockets and context
         zmq_close (pull);
