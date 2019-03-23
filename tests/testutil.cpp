@@ -29,6 +29,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <string.h>
+
 const char *SEQ_END = (const char *) 1;
 
 const char bounce_content[] = "12345678ABCDEFGH12345678abcdefgh";
@@ -344,4 +346,14 @@ sockaddr_in bind_bsd_socket (int socket)
 #endif
 
     return saddr;
+}
+
+bool streq (const char *lhs, const char *rhs)
+{
+    return strcmp (lhs, rhs) == 0;
+}
+
+bool strneq (const char *lhs, const char *rhs)
+{
+    return strcmp (lhs, rhs) != 0;
 }

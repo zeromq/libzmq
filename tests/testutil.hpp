@@ -150,8 +150,8 @@ int s_send (void *socket_, const char *string_);
 //  Sends string as 0MQ string, as multipart non-terminal
 int s_sendmore (void *socket_, const char *string_);
 
-#define streq(s1, s2) (!strcmp ((s1), (s2)))
-#define strneq(s1, s2) (strcmp ((s1), (s2)))
+bool streq (const char *lhs, const char *rhs);
+bool strneq (const char *lhs, const char *rhs);
 
 extern const char *SEQ_END;
 
