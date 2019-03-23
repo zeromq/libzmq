@@ -46,13 +46,6 @@ int get_monitor_event (void *monitor_, int *value_, char **address_);
 
 void expect_monitor_event (void *monitor_, int expected_event_);
 
-void print_unexpected_event (char *buf_,
-                             size_t buf_size_,
-                             int event_,
-                             int err_,
-                             int expected_event_,
-                             int expected_err_);
-
 void print_unexpected_event_stderr (int event_,
                                     int err_,
                                     int expected_event_,

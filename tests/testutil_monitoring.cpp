@@ -112,12 +112,12 @@ void expect_monitor_event (void *monitor_, int expected_event_)
                            get_monitor_event (monitor_, NULL, NULL));
 }
 
-void print_unexpected_event (char *buf_,
-                             size_t buf_size_,
-                             int event_,
-                             int err_,
-                             int expected_event_,
-                             int expected_err_)
+static void print_unexpected_event (char *buf_,
+                                    size_t buf_size_,
+                                    int event_,
+                                    int err_,
+                                    int expected_event_,
+                                    int expected_err_)
 {
     snprintf (buf_, buf_size_,
               "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "

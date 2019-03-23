@@ -122,10 +122,6 @@ void zap_handler (void * /*unused_*/);
         TEST_ASSERT_EQUAL_INT (0, event_count);                                       \
     }
 
-void setup_handshake_socket_monitor (void *server_,
-                                     void **server_mon_,
-                                     const char *monitor_endpoint_);
-
 void setup_context_and_server_side (
   void **zap_control_,
   void **zap_thread_,

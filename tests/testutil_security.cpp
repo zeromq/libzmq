@@ -263,9 +263,9 @@ void zap_handler (void *)
     zap_handler_generic (zap_ok);
 }
 
-void setup_handshake_socket_monitor (void *server_,
-                                     void **server_mon_,
-                                     const char *monitor_endpoint_)
+static void setup_handshake_socket_monitor (void *server_,
+                                            void **server_mon_,
+                                            const char *monitor_endpoint_)
 {
     //  Monitor handshake events on the server
     TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (
