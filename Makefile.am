@@ -490,31 +490,23 @@ tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_system_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_pair_inproc_SOURCES = \
-	tests/test_pair_inproc.cpp \
-	tests/testutil.hpp
+tests_test_pair_inproc_SOURCES = tests/test_pair_inproc.cpp
 tests_test_pair_inproc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_pair_inproc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_pair_tcp_SOURCES = \
-	tests/test_pair_tcp.cpp \
-	tests/testutil.hpp
+tests_test_pair_tcp_SOURCES = tests/test_pair_tcp.cpp
 tests_test_pair_tcp_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_pair_tcp_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_reqrep_inproc_SOURCES = \
-	tests/test_reqrep_inproc.cpp \
-	tests/testutil.hpp
+tests_test_reqrep_inproc_SOURCES = tests/test_reqrep_inproc.cpp
 tests_test_reqrep_inproc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_reqrep_inproc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_reqrep_tcp_SOURCES = \
-	tests/test_reqrep_tcp.cpp \
-	tests/testutil.hpp
+tests_test_reqrep_tcp_SOURCES = tests/test_reqrep_tcp.cpp
 tests_test_reqrep_tcp_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_reqrep_tcp_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_hwm_SOURCES = tests/test_hwm.cpp tests/testutil_unity.hpp
+tests_test_hwm_SOURCES = tests/test_hwm.cpp
 tests_test_hwm_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
@@ -566,7 +558,7 @@ tests_test_monitor_SOURCES = tests/test_monitor.cpp
 tests_test_monitor_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_monitor_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp tests/testutil_unity.hpp
+tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp
 tests_test_router_mandatory_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_router_mandatory_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
@@ -630,11 +622,7 @@ tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_security_plain_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_security_zap_SOURCES = \
-	tests/test_security_zap.cpp \
-	tests/testutil_monitoring.hpp \
-	tests/testutil_security.hpp \
-	tests/testutil.hpp
+tests_test_security_zap_SOURCES = tests/test_security_zap.cpp
 tests_test_security_zap_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_security_zap_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
@@ -793,9 +781,7 @@ test_apps += \
 
 tests_test_security_curve_SOURCES = \
 	tests/test_security_curve.cpp \
-	tests/testutil_security.hpp \
-	tests/testutil.hpp \
-	src/curve_client_tools.hpp \
+        src/curve_client_tools.hpp \
 	src/clock.hpp \
 	src/clock.cpp \
 	src/random.hpp \
@@ -844,9 +830,7 @@ tests_test_ipc_wildcard_SOURCES = tests/test_ipc_wildcard.cpp
 tests_test_ipc_wildcard_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_ipc_wildcard_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_pair_ipc_SOURCES = \
-	tests/test_pair_ipc.cpp \
-	tests/testutil.hpp
+tests_test_pair_ipc_SOURCES = tests/test_pair_ipc.cpp
 tests_test_pair_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_pair_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
@@ -854,9 +838,7 @@ tests_test_rebind_ipc_SOURCES = tests/test_rebind_ipc.cpp
 tests_test_rebind_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_rebind_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_reqrep_ipc_SOURCES = \
-	tests/test_reqrep_ipc.cpp \
-	tests/testutil.hpp
+tests_test_reqrep_ipc_SOURCES = tests/test_reqrep_ipc.cpp
 tests_test_reqrep_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_reqrep_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
@@ -868,9 +850,7 @@ tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
 tests_test_filter_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_filter_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_use_fd_SOURCES = \
-	tests/test_use_fd.cpp \
-	tests/testutil.hpp
+tests_test_use_fd_SOURCES = tests/test_use_fd.cpp
 tests_test_use_fd_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_use_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
