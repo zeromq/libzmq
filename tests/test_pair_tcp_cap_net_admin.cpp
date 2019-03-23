@@ -45,9 +45,8 @@ typedef void (*extra_func_t) (void *socket_);
 void set_sockopt_bind_to_device (void *socket)
 {
     const char device[] = "lo";
-    int rc =
-      zmq_setsockopt (socket, ZMQ_BINDTODEVICE, &device, sizeof (device) - 1);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_BINDTODEVICE, &device, sizeof (device) - 1));
 }
 
 //  TODO this is duplicated from test_pair_tcp

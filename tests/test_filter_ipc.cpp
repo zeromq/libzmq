@@ -30,6 +30,9 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <unistd.h>
+#include <grp.h>
+
 void setUp ()
 {
     setup_test_context ();
@@ -117,7 +120,7 @@ void init_groups ()
     // Get the group and supplemental groups of the process owner
     gid_t groups[100];
     int ngroups = getgroups (100, groups);
-    assert (ngroups != -1);
+    TEST_ASSERT_NOT_EQUAL (-1, ngroups);
     group = getgid ();
     supgroup = group;
     notgroup = group + 1;

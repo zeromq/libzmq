@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
 #include <unity.h>
 
 void setUp ()

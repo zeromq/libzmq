@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <pthread.h>
+
 void setUp ()
 {
 }

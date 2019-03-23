@@ -25,6 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <ip_resolver.hpp>
 #include <ip.hpp>
 
+#ifndef _WIN32
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#endif
+
 void setUp ()
 {
 }
@@ -62,7 +68,7 @@ class test_ip_resolver_t : public zmq::ip_resolver_t
         unsigned lut_len = sizeof (dns_lut) / sizeof (dns_lut[0]);
         struct addrinfo ai;
 
-        assert (service_ == NULL);
+        TEST_ASSERT_NULL (service_);
 
         bool ipv6 = (hints_->ai_family == AF_INET6);
         bool no_dns = (hints_->ai_flags & AI_NUMERICHOST) != 0;
@@ -805,9 +811,7 @@ static void test_addr (int family_, const char *addr_, bool multicast_)
     test_ip_resolver_t resolver (resolver_opts);
     zmq::ip_addr_t addr;
 
-    int rc = resolver.resolve (&addr, addr_);
-
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (resolver.resolve (&addr, addr_));
 
     TEST_ASSERT_EQUAL (family_, addr.family ());
     TEST_ASSERT_EQUAL (multicast_, addr.is_multicast ());

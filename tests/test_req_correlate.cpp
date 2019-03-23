@@ -79,7 +79,7 @@ void test_req_correlate ()
 
     // Receive request id 1
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
-    assert (zmq_msg_size (&msg) == sizeof (uint32_t));
+    TEST_ASSERT_EQUAL_UINT (sizeof (uint32_t), zmq_msg_size (&msg));
     const uint32_t req_id = *static_cast<uint32_t *> (zmq_msg_data (&msg));
     zmq_msg_t req_id_msg;
     zmq_msg_init (&req_id_msg);

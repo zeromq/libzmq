@@ -30,7 +30,10 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
 #include <unity.h>
+#include <unistd.h>
 
 void setUp ()
 {
@@ -47,6 +50,7 @@ void tearDown ()
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netdb.h>
+#include <unistd.h>
 
 int setup_socket_and_set_fd (void *zmq_socket_,
                              int af_,

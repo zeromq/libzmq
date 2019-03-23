@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
 #include <unity.h>
 
 void setUp ()
@@ -55,7 +57,9 @@ struct iovec
 
 static void do_check (void *sb_, void *sc_, size_t msg_size_)
 {
-    assert (sb_ && sc_ && msg_size_ > 0);
+    TEST_ASSERT_NOT_NULL (sb_);
+    TEST_ASSERT_NOT_NULL (sc_);
+    TEST_ASSERT_GREATER_THAN (0, msg_size_);
 
     const char msg_val = '1';
     const int num_messages = 10;
@@ -76,8 +80,8 @@ static void do_check (void *sb_, void *sc_, size_t msg_size_)
         send_iov[i].iov_len = msg_size_;
         memcpy (send_iov[i].iov_base, ref_msg, msg_size_);
 
-        // TODO: this assertion only checks if memcpy behaves as expected... remove this?
-        assert (memcmp (ref_msg, send_iov[i].iov_base, msg_size_) == 0);
+        // TODO: this assertion only checks if memcpy behaves as expected... remove this or assert something else?
+        TEST_ASSERT_EQUAL_HEX8_ARRAY (ref_msg, send_iov[i].iov_base, msg_size_);
     }
 
     // Test errors - zmq_recviov - null socket

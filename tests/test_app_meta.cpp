@@ -31,6 +31,7 @@
 #include "testutil_unity.hpp"
 #include <unity.h>
 
+#include <string.h>
 
 void setUp ()
 {

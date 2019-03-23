@@ -35,98 +35,77 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <unity.h>
 
-#include <string.h>
-#include <stdio.h>
-
 #if defined(_MSC_VER) && _MSC_VER <= 1800
 #define snprintf _snprintf
 #endif
 
+// Internal helper functions that are not intended to be directly called from
+// tests. They must be declared in the header since they are used by macros.
+
 int test_assert_success_message_errno_helper (int rc_,
                                               const char *msg_,
-                                              const char *expr_)
-{
-    if (rc_ == -1) {
-        char buffer[512];
-        buffer[sizeof (buffer) - 1] =
-          0; // to ensure defined behavior with VC++ <= 2013
-        snprintf (buffer, sizeof (buffer) - 1,
-                  "%s failed%s%s%s, errno = %i (%s)", expr_,
-                  msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
-                  msg_ ? ")" : "", zmq_errno (), zmq_strerror (zmq_errno ()));
-        TEST_FAIL_MESSAGE (buffer);
-    }
-    return rc_;
-}
+                                              const char *expr_);
 
 int test_assert_success_message_raw_errno_helper (int rc_,
                                                   const char *msg_,
-                                                  const char *expr_)
-{
-    if (rc_ == -1) {
-#if defined ZMQ_HAVE_WINDOWS
-        int current_errno = WSAGetLastError ();
-#else
-        int current_errno = errno;
-#endif
-
-        char buffer[512];
-        buffer[sizeof (buffer) - 1] =
-          0; // to ensure defined behavior with VC++ <= 2013
-        snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
-                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
-                  msg_ ? ")" : "", current_errno);
-        TEST_FAIL_MESSAGE (buffer);
-    }
-    return rc_;
-}
+                                                  const char *expr_);
 
 int test_assert_failure_message_raw_errno_helper (int rc_,
                                                   int expected_errno_,
                                                   const char *msg_,
-                                                  const char *expr_)
-{
-    char buffer[512];
-    buffer[sizeof (buffer) - 1] =
-      0; // to ensure defined behavior with VC++ <= 2013
-    if (rc_ != -1) {
-        snprintf (buffer, sizeof (buffer) - 1,
-                  "%s was unexpectedly successful%s%s%s, expected "
-                  "errno = %i, actual return value = %i",
-                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
-                  msg_ ? ")" : "", expected_errno_, rc_);
-        TEST_FAIL_MESSAGE (buffer);
-    } else {
-#if defined ZMQ_HAVE_WINDOWS
-        int current_errno = WSAGetLastError ();
-#else
-        int current_errno = errno;
-#endif
-        if (current_errno != expected_errno_) {
-            snprintf (buffer, sizeof (buffer) - 1,
-                      "%s failed with an unexpected error%s%s%s, expected "
-                      "errno = %i, actual errno = %i",
-                      expr_, msg_ ? " (additional info: " : "",
-                      msg_ ? msg_ : "", msg_ ? ")" : "", expected_errno_,
-                      current_errno);
-            TEST_FAIL_MESSAGE (buffer);
-        }
-    }
-    return rc_;
-}
+                                                  const char *expr_);
 
+/////////////////////////////////////////////////////////////////////////////
+// Macros extending Unity's TEST_ASSERT_* macros in a similar fashion.
+/////////////////////////////////////////////////////////////////////////////
+
+// For TEST_ASSERT_SUCCESS_ERRNO, TEST_ASSERT_SUCCESS_MESSAGE_ERRNO and
+// TEST_ASSERT_FAILURE_ERRNO, 'expr' must be an expression evaluating
+// to a result in the style of a libzmq API function, i.e. an integer which
+// is non-negative in case of success, and -1 in case of a failure, and sets
+// the value returned by zmq_errno () to the error code.
+// TEST_ASSERT_SUCCESS_RAW_ERRNO and TEST_ASSERT_FAILURE_RAW_ERRNO are similar,
+// but used with the native socket API functions, and expect that the error
+// code can be retrieved in the native way (i.e. WSAGetLastError on Windows,
+// and errno otherwise).
+
+// Asserts that the libzmq API 'expr' is successful. In case of a failure, the
+// assertion message includes the literal 'expr', the error number as
+// determined by zmq_errno(), and the additional 'msg'.
+// In case of success, the result of the macro is the result of 'expr'.
 #define TEST_ASSERT_SUCCESS_MESSAGE_ERRNO(expr, msg)                           \
     test_assert_success_message_errno_helper (expr, msg, #expr)
 
+// Asserts that the libzmq API 'expr' is successful. In case of a failure, the
+// assertion message includes the literal 'expr' and the error code.
+// A typical use would be:
+//   TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (socket, endpoint));
+// In case of success, the result of the macro is the result of 'expr'.
+//
+// If an additional message should be displayed in case of a failure, use
+// TEST_ASSERT_SUCCESS_MESSAGE_ERRNO.
 #define TEST_ASSERT_SUCCESS_ERRNO(expr)                                        \
     test_assert_success_message_errno_helper (expr, NULL, #expr)
 
+// Asserts that the socket API 'expr' is successful. In case of a failure, the
+// assertion message includes the literal 'expr' and the error code.
+// A typical use would be:
+//   TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 64, 0));
+// In case of success, the result of the macro is the result of 'expr'.
 #define TEST_ASSERT_SUCCESS_RAW_ERRNO(expr)                                    \
     test_assert_success_message_raw_errno_helper (expr, NULL, #expr)
 
+// Asserts that the socket API 'expr' is not successful, and the error code is
+// 'error_code'. In case of an unexpected succces, or a failure with an
+// unexpected error code, the assertion message includes the literal 'expr'
+// and, in case of a failure, the actual error code.
 #define TEST_ASSERT_FAILURE_RAW_ERRNO(error_code, expr)                        \
     test_assert_failure_message_raw_errno_helper (expr, error_code, NULL, #expr)
 
+// Asserts that the libzmq API 'expr' is not successful, and the error code is
+// 'error_code'. In case of an unexpected succces, or a failure with an
+// unexpected error code, the assertion message includes the literal 'expr'
+// and, in case of a failure, the actual error code.
 #define TEST_ASSERT_FAILURE_ERRNO(error_code, expr)                            \
     {                                                                          \
         int _rc = (expr);                                                      \
@@ -134,29 +113,35 @@ int test_assert_failure_message_raw_errno_helper (int rc_,
         TEST_ASSERT_EQUAL_INT (error_code, errno);                             \
     }
 
-void send_string_expect_success (void *socket_, const char *str_, int flags_)
-{
-    const size_t len = str_ ? strlen (str_) : 0;
-    const int rc = zmq_send (socket_, str_, len, flags_);
-    TEST_ASSERT_EQUAL_INT ((int) len, rc);
-}
+/////////////////////////////////////////////////////////////////////////////
+// Utility functions for testing sending and receiving.
+/////////////////////////////////////////////////////////////////////////////
 
-void recv_string_expect_success (void *socket_, const char *str_, int flags_)
-{
-    const size_t len = str_ ? strlen (str_) : 0;
-    char buffer[255];
-    TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (sizeof (buffer), len,
-                                       "recv_string_expect_success cannot be "
-                                       "used for strings longer than 255 "
-                                       "characters");
+// Sends a string via a libzmq socket, and expects the operation to be
+// successful (the meaning of which depends on the socket type and configured
+// options, and might include dropping the message). Otherwise, a Unity test
+// assertion is triggered.
+// 'socket_' must be the libzmq socket to use for sending.
+// 'str_' must be a 0-terminated string.
+// 'flags_' are as documented by the zmq_send function.
+void send_string_expect_success (void *socket_, const char *str_, int flags_);
 
-    const int rc = TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_recv (socket_, buffer, sizeof (buffer), flags_));
-    TEST_ASSERT_EQUAL_INT ((int) len, rc);
-    if (str_)
-        TEST_ASSERT_EQUAL_STRING_LEN (str_, buffer, len);
-}
+// Receives a message via a libzmq socket, and expects the operation to be
+// successful, and the message to be a given string. Otherwise, a Unity test
+// assertion is triggered.
+// 'socket_' must be the libzmq socket to use for receiving.
+// 'str_' must be a 0-terminated string.
+// 'flags_' are as documented by the zmq_recv function.
+void recv_string_expect_success (void *socket_, const char *str_, int flags_);
 
+// Sends a byte array via a libzmq socket, and expects the operation to be
+// successful (the meaning of which depends on the socket type and configured
+// options, and might include dropping the message). Otherwise, a Unity test
+// assertion is triggered.
+// 'socket_' must be the libzmq socket to use for sending.
+// 'array_' must be a C uint8_t array. The array size is automatically
+// determined via template argument deduction.
+// 'flags_' are as documented by the zmq_send function.
 template <size_t SIZE>
 void send_array_expect_success (void *socket_,
                                 const uint8_t (&array_)[SIZE],
@@ -166,6 +151,13 @@ void send_array_expect_success (void *socket_,
     TEST_ASSERT_EQUAL_INT (static_cast<int> (SIZE), rc);
 }
 
+// Receives a message via a libzmq socket, and expects the operation to be
+// successful, and the message to be a given byte array. Otherwise, a Unity
+// test assertion is triggered.
+// 'socket_' must be the libzmq socket to use for receiving.
+// 'array_' must be a C uint8_t array. The array size is automatically
+// determined via template argument deduction.
+// 'flags_' are as documented by the zmq_recv function.
 template <size_t SIZE>
 void recv_array_expect_success (void *socket_,
                                 const uint8_t (&array_)[SIZE],
@@ -183,188 +175,87 @@ void recv_array_expect_success (void *socket_,
     TEST_ASSERT_EQUAL_UINT8_ARRAY (array_, buffer, SIZE);
 }
 
-// do not call from tests directly, use setup_test_context, get_test_context and teardown_test_context only
-void *internal_manage_test_context (bool init_, bool clear_)
-{
-    static void *test_context = NULL;
-    if (clear_) {
-        TEST_ASSERT_NOT_NULL (test_context);
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (test_context));
-        test_context = NULL;
-    } else {
-        if (init_) {
-            TEST_ASSERT_NULL (test_context);
-            test_context = zmq_ctx_new ();
-            TEST_ASSERT_NOT_NULL (test_context);
-        }
-    }
-    return test_context;
-}
+/////////////////////////////////////////////////////////////////////////////
+// Utility function for handling a test libzmq context, that is set up and
+// torn down for each Unity test case, such that a clean context is available
+// for each test case, and some consistency checks can be performed.
+/////////////////////////////////////////////////////////////////////////////
 
+// The maximum number of sockets that can be managed by the test context.
 #define MAX_TEST_SOCKETS 128
 
-void internal_manage_test_sockets (void *socket_, bool add_)
-{
-    static void *test_sockets[MAX_TEST_SOCKETS];
-    static size_t test_socket_count = 0;
-    if (!socket_) {
-        assert (!add_);
+// Expected to be called during Unity's setUp function.
+void setup_test_context ();
 
-        // force-close all sockets
-        if (test_socket_count) {
-            for (size_t i = 0; i < test_socket_count; ++i) {
-                close_zero_linger (test_sockets[i]);
-            }
-            fprintf (stderr,
-                     "WARNING: Forced closure of %i sockets, this is an "
-                     "implementation error unless the test case failed\n",
-                     (int) test_socket_count);
-            test_socket_count = 0;
-        }
-    } else {
-        if (add_) {
-            ++test_socket_count;
-            TEST_ASSERT_LESS_THAN_MESSAGE (MAX_TEST_SOCKETS, test_socket_count,
-                                           "MAX_TEST_SOCKETS must be "
-                                           "increased, or you cannot use the "
-                                           "test context");
-            test_sockets[test_socket_count - 1] = socket_;
-        } else {
-            bool found = false;
-            for (size_t i = 0; i < test_socket_count; ++i) {
-                if (test_sockets[i] == socket_) {
-                    found = true;
-                }
-                if (found) {
-                    if (i < test_socket_count)
-                        test_sockets[i] = test_sockets[i + 1];
-                }
-            }
-            TEST_ASSERT_TRUE_MESSAGE (found,
-                                      "Attempted to close a socket that was "
-                                      "not created by test_context_socket");
-            --test_socket_count;
-        }
-    }
-}
+// Returns the test context, e.g. to create sockets in another thread using
+// zmq_socket, or set context options.
+void *get_test_context ();
 
-void setup_test_context ()
-{
-    internal_manage_test_context (true, false);
-}
+// Expected to be called during Unity's tearDown function. Checks that all
+// sockets created via test_context_socket have been properly closed using
+// test_context_socket_close or test_context_socket_close_zero_linger, and generates a warning otherwise.
+void teardown_test_context ();
 
-void *get_test_context ()
-{
-    return internal_manage_test_context (false, false);
-}
+// Creates a libzmq socket on the test context, and tracks its lifecycle.
+// You MUST use test_context_socket_close or test_context_socket_close_zero_linger
+// to close a socket created via this function, otherwise undefined behaviour
+// will result.
+// CAUTION: this function is not thread-safe, and may only be used from the
+// main thread.
+void *test_context_socket (int type_);
 
-void teardown_test_context ()
-{
-    // this condition allows an explicit call to teardown_test_context from a
-    // test. if this is never used, it should probably be removed, to detect
-    // misuses
-    if (get_test_context ()) {
-        internal_manage_test_sockets (NULL, false);
-        internal_manage_test_context (false, true);
-    }
-}
+// Closes a socket created via test_context_socket.
+// CAUTION: this function is not thread-safe, and may only be used from the
+// main thread.
+void *test_context_socket_close (void *socket_);
 
-void *test_context_socket (int type_)
-{
-    void *const socket = zmq_socket (get_test_context (), type_);
-    TEST_ASSERT_NOT_NULL (socket);
-    internal_manage_test_sockets (socket, true);
-    return socket;
-}
+// Closes a socket created via test_context_socket after setting its linger
+// timeout to 0.
+// CAUTION: this function is not thread-safe, and may only be used from the
+// main thread.
+void *test_context_socket_close_zero_linger (void *socket_);
 
-void *test_context_socket_close (void *socket_)
-{
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket_));
-    internal_manage_test_sockets (socket_, false);
-    return socket_;
-}
+/////////////////////////////////////////////////////////////////////////////
+// Utility function for handling wildcard binds.
+/////////////////////////////////////////////////////////////////////////////
 
-void *test_context_socket_close_zero_linger (void *socket_)
-{
-    const int linger = 0;
-    int rc = zmq_setsockopt (socket_, ZMQ_LINGER, &linger, sizeof (linger));
-    TEST_ASSERT_TRUE (rc == 0 || zmq_errno () == ETERM);
-    return test_context_socket_close (socket_);
-}
+// All function binds a socket to some wildcard address, and retrieve the bound
+// endpoint via the ZMQ_LAST_ENDPOINT socket option to a given buffer.
+// Triggers a Unity test assertion in case of a failure (including the buffer
+// being too small for the resulting endpoint string).
 
+// Binds to an explicitly given (wildcard) address.
+// TODO redesign such that this function is not necessary to be exposed, but
+// the protocol to use is rather specified via an enum value
 void test_bind (void *socket_,
                 const char *bind_address_,
                 char *my_endpoint_,
-                size_t len_)
-{
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket_, bind_address_));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (socket_, ZMQ_LAST_ENDPOINT, my_endpoint_, &len_));
-}
+                size_t len_);
 
-void bind_loopback (void *socket_, int ipv6_, char *my_endpoint_, size_t len_)
-{
-    if (ipv6_ && !is_ipv6_available ()) {
-        TEST_IGNORE_MESSAGE ("ipv6 is not available");
-    }
-
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (socket_, ZMQ_IPV6, &ipv6_, sizeof (int)));
-
-    test_bind (socket_, ipv6_ ? "tcp://[::1]:*" : "tcp://127.0.0.1:*",
-               my_endpoint_, len_);
-}
+// Binds to a tcp endpoint using the ipv4 or ipv6 loopback wildcard address.
+void bind_loopback (void *socket_, int ipv6_, char *my_endpoint_, size_t len_);
 
 typedef void (*bind_function_t) (void *socket_,
                                  char *my_endpoint_,
                                  size_t len_);
 
-void bind_loopback_ipv4 (void *socket_, char *my_endpoint_, size_t len_)
-{
-    bind_loopback (socket_, false, my_endpoint_, len_);
-}
+// Binds to a tcp endpoint using the ipv4 loopback wildcard address.
+void bind_loopback_ipv4 (void *socket_, char *my_endpoint_, size_t len_);
 
-void bind_loopback_ipv6 (void *socket_, char *my_endpoint_, size_t len_)
-{
-    bind_loopback (socket_, true, my_endpoint_, len_);
-}
+// Binds to a tcp endpoint using the ipv6 loopback wildcard address.
+void bind_loopback_ipv6 (void *socket_, char *my_endpoint_, size_t len_);
 
-void bind_loopback_ipc (void *socket_, char *my_endpoint_, size_t len_)
-{
-    if (!zmq_has ("ipc")) {
-        TEST_IGNORE_MESSAGE ("ipc is not available");
-    }
+// Binds to an ipc endpoint using the ipc wildcard address.
+// Note that the returned address cannot be reused to bind a second socket.
+// If you need to do this, use make_random_ipc_endpoint instead.
+void bind_loopback_ipc (void *socket_, char *my_endpoint_, size_t len_);
 
-    test_bind (socket_, "ipc://*", my_endpoint_, len_);
-}
-
-void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
-{
-    if (!is_tipc_available ()) {
-        TEST_IGNORE_MESSAGE ("tipc is not available");
-    }
-
-    test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
-}
+// Binds to an ipc endpoint using the tipc wildcard address.
+void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_);
 
 #if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
 // utility function to create a random IPC endpoint, similar to what a ipc://*
 // wildcard binding does, but in a way it can be reused for multiple binds
-void make_random_ipc_endpoint (char *out_endpoint_)
-{
-    char random_file[16];
-    strcpy (random_file, "tmpXXXXXX");
-
-#ifdef HAVE_MKDTEMP
-    TEST_ASSERT_TRUE (mkdtemp (random_file));
-    strcat (random_file, "/ipc");
-#else
-    int fd = mkstemp (random_file);
-    TEST_ASSERT_TRUE (fd != -1);
-    close (fd);
-#endif
-
-    strcpy (out_endpoint_, "ipc://");
-    strcat (out_endpoint_, random_file);
-}
+// TODO also add a len parameter here
+void make_random_ipc_endpoint (char *out_endpoint_);
 #endif

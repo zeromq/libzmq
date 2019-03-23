@@ -42,6 +42,9 @@
 #include <unistd.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 static void zap_handler (void *zap_)
 {
     //  Process ZAP requests forever
@@ -57,9 +60,9 @@ static void zap_handler (void *zap_)
         char *username = s_recv (zap_);
         char *password = s_recv (zap_);
 
-        assert (streq (version, "1.0"));
-        assert (streq (mechanism, "PLAIN"));
-        assert (streq (routing_id, "IDENT"));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING ("PLAIN", mechanism);
+        TEST_ASSERT_EQUAL_STRING ("IDENT", routing_id);
 
         s_sendmore (zap_, version);
         s_sendmore (zap_, sequence);
@@ -83,8 +86,7 @@ static void zap_handler (void *zap_)
         free (username);
         free (password);
     }
-    int rc = zmq_close (zap_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (zap_));
 }
 
 void *zap_thread;

@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <string.h>
+
 // NOTE: on OSX the endpoint returned by ZMQ_LAST_ENDPOINT may be quite long,
 //       ensure we have extra space for that:
 #define SOCKET_STRING_LEN (MAX_SOCKET_STRING * 4)

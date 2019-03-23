@@ -44,7 +44,8 @@ static void receiver (void *socket_)
 {
     char buffer[16];
     int rc = zmq_recv (socket_, &buffer, sizeof (buffer), 0);
-    assert (rc == -1);
+    // TODO which error is expected here? use TEST_ASSERT_FAILURE_ERRNO instead
+    TEST_ASSERT_EQUAL_INT (-1, rc);
 }
 
 void test_ctx_destroy ()

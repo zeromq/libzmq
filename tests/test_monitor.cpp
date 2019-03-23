@@ -32,6 +32,9 @@
 
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
 void setUp ()
 {
     setup_test_context ();
@@ -99,7 +102,7 @@ void test_monitor_basic ()
     int event = get_monitor_event (client_mon, NULL, NULL);
     if (event == ZMQ_EVENT_CONNECT_DELAYED)
         event = get_monitor_event (client_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_CONNECTED);
+    TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_CONNECTED, event);
     expect_monitor_event (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
     event = get_monitor_event (client_mon, NULL, NULL);
     if (event == ZMQ_EVENT_DISCONNECTED) {
