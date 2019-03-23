@@ -7,6 +7,7 @@ doc/Makefile
 Makefile.in
 configure
 libtool
+libtestutil.a
 libunity.a
 config
 config.status

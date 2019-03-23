@@ -173,6 +173,32 @@ set_target_properties(unity PROPERTIES
 target_compile_definitions(unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EXCLUDE_FLOAT")
 target_include_directories(unity PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
 
+set(TESTUTIL_SOURCES
+    testutil.cpp
+    testutil.hpp
+    testutil_monitoring.cpp
+    testutil_monitoring.hpp
+    testutil_security.cpp
+    testutil_security.hpp
+    testutil_unity.cpp
+    testutil_unity.hpp
+    )
+if(BUILD_STATIC)
+    add_library(testutil-static STATIC ${TESTUTIL_SOURCES})
+    target_link_libraries(testutil-static libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
+endif()
+if(BUILD_SHARED)
+    add_library(testutil STATIC ${TESTUTIL_SOURCES})
+    target_link_libraries(testutil libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
+endif()
+if(BUILD_STATIC AND NOT BUILD_SHARED)
+    # use testutil-static for both tests and unit tests
+    set(TESTUTIL_LIB testutil-static)
+else()
+    # use testutil for tests and testutil-static for unit tests
+    set(TESTUTIL_LIB testutil)
+endif()
+
 if(MSVC_VERSION LESS 1700)
   set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.c" PROPERTIES LANGUAGE CXX)
 endif()
@@ -181,12 +207,7 @@ if(MSVC_VERSION LESS 1600)
   target_compile_definitions(unity PUBLIC "UNITY_EXCLUDE_STDINT_H")
 endif()
 
-# add library and include dirs for all targets
-if(BUILD_SHARED)
-  link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
-else()
-  link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
-endif()
+# add include dirs for all targets
 include_directories("${ZeroMQ_SOURCE_DIR}/../include" "${ZeroMQ_BINARY_DIR}")
 
 foreach(test ${tests})
@@ -196,14 +217,11 @@ foreach(test ${tests})
       "../src/tweetnacl.c"
       "../src/err.cpp"
       "../src/random.cpp"
-      "../src/clock.cpp"
-      "testutil_security.hpp")
-  elseif(${test} MATCHES test_security_zap)
-    add_executable(${test} ${test}.cpp
-      "testutil_security.hpp")
+      "../src/clock.cpp")
   else()
-    add_executable(${test} ${test}.cpp "testutil.hpp" "testutil_unity.hpp" "testutil_monitoring.hpp")
+    add_executable(${test} ${test}.cpp)
   endif()
+  target_link_libraries(${test} ${TESTUTIL_LIB})
   if(WIN32)
     # This is the output for Debug dynamic builds on Visual Studio 6.0
     # You should provide the correct directory, don't know how to do it automatically
