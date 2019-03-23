@@ -31,7 +31,12 @@
 #include "testutil_unity.hpp"
 
 #include <netdb.h>
+#include <string.h>
 #include <unity.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 void setUp ()
 {

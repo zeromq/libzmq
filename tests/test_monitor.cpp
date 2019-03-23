@@ -32,6 +32,9 @@
 
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
 void setUp ()
 {
     setup_test_context ();

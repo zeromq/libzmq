@@ -42,6 +42,9 @@
 #include <unistd.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 static void zap_handler (void *zap_)
 {
     //  Process ZAP requests forever

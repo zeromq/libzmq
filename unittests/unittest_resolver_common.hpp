@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __UNITTEST_RESOLVER_COMMON_INCLUDED__
 
 #include <ip_resolver.hpp>
+#include <string.h>
 
 //  Attempt a resolution and test the results.
 //

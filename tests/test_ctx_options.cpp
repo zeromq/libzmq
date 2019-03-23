@@ -47,6 +47,7 @@ void tearDown ()
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h> // for sleep()
+#include <sched.h>
 
 #define TEST_POLICY                                                            \
     (SCHED_OTHER) // NOTE: SCHED_OTHER is the default Linux scheduler

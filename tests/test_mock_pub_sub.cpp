@@ -27,9 +27,12 @@
 typedef SOCKET raw_socket;
 #else
 #include <arpa/inet.h>
+#include <unistd.h>
 typedef int raw_socket;
 #endif
 
+#include <stdlib.h>
+#include <string.h>
 
 void setUp ()
 {

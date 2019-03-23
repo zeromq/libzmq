@@ -41,6 +41,9 @@
 #include <unistd.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 //  This test requires a KRB5 environment with the following
 //  service principal (substitute your host.domain and REALM):
 //

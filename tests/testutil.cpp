@@ -29,7 +29,37 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdarg.h>
 #include <string.h>
+
+#if defined _WIN32
+#include "../src/windows.hpp"
+#if defined _MSC_VER
+#include <crtdbg.h>
+#pragma warning(disable : 4996)
+// iphlpapi is needed for if_nametoindex (not on Windows XP)
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#pragma comment(lib, "iphlpapi")
+#endif
+#endif
+#else
+#include <pthread.h>
+#include <unistd.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <grp.h>
+#include <sys/wait.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <netdb.h>
+#if defined(ZMQ_HAVE_AIX)
+#include <sys/types.h>
+#include <sys/socketvar.h>
+#endif
+#endif
 
 const char *SEQ_END = (const char *) 1;
 

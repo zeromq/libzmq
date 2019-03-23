@@ -30,6 +30,14 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <string.h>
+
+#ifndef _WIN32
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
+
 void setUp ()
 {
     setup_test_context ();

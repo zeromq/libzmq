@@ -29,6 +29,9 @@
 #include "testutil_monitoring.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.

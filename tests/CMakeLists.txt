@@ -209,6 +209,9 @@ endif()
 
 # add include dirs for all targets
 include_directories("${ZeroMQ_SOURCE_DIR}/../include" "${ZeroMQ_BINARY_DIR}")
+if(WIN32)
+  add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
 
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1

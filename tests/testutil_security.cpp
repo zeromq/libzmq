@@ -28,6 +28,9 @@
 */
 #include "testutil_security.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
 const char *test_zap_domain = "ZAPTEST";
 
 void socket_config_null_client (void *server_, void *server_secret_)

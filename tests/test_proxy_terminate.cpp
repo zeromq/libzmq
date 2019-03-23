@@ -30,6 +30,8 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+
 void setUp ()
 {
     setup_test_context ();

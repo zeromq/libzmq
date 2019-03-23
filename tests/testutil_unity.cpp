@@ -28,6 +28,13 @@
 */
 #include "testutil_unity.hpp"
 
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 int test_assert_success_message_errno_helper (int rc_,
                                               const char *msg_,
                                               const char *expr_)

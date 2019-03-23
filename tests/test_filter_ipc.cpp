@@ -30,6 +30,9 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#include <unistd.h>
+#include <grp.h>
+
 void setUp ()
 {
     setup_test_context ();
