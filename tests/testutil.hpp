@@ -111,12 +111,6 @@ void expect_bounce_fail (void *server_, void *client_);
 //  is being terminated.
 char *s_recv (void *socket_);
 
-//  Convert C string to 0MQ string and send to socket
-int s_send (void *socket_, const char *string_);
-
-//  Sends string as 0MQ string, as multipart non-terminal
-int s_sendmore (void *socket_, const char *string_);
-
 bool streq (const char *lhs, const char *rhs);
 bool strneq (const char *lhs, const char *rhs);
 

@@ -64,18 +64,19 @@ static void zap_handler (void *zap_)
         TEST_ASSERT_EQUAL_STRING ("PLAIN", mechanism);
         TEST_ASSERT_EQUAL_STRING ("IDENT", routing_id);
 
-        s_sendmore (zap_, version);
-        s_sendmore (zap_, sequence);
+        send_string_expect_success (zap_, version, ZMQ_SNDMORE);
+        send_string_expect_success (zap_, sequence, ZMQ_SNDMORE);
         if (streq (username, "admin") && streq (password, "password")) {
-            s_sendmore (zap_, "200");
-            s_sendmore (zap_, "OK");
-            s_sendmore (zap_, "anonymous");
-            s_send (zap_, "");
+            send_string_expect_success (zap_, "200", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "anonymous", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", 0);
         } else {
-            s_sendmore (zap_, "400");
-            s_sendmore (zap_, "Invalid username or password");
-            s_sendmore (zap_, "");
-            s_send (zap_, "");
+            send_string_expect_success (zap_, "400", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "Invalid username or password",
+                                        ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", 0);
         }
         free (version);
         free (sequence);

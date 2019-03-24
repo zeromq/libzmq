@@ -48,8 +48,7 @@ void server_task (void * /*unused_*/)
     void *control = zmq_socket (get_test_context (), ZMQ_REQ);
     TEST_ASSERT_NOT_NULL (control);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (control, "inproc://control"));
-    TEST_ASSERT_GREATER_THAN_INT (
-      0, TEST_ASSERT_SUCCESS_ERRNO (s_send (control, my_endpoint)));
+    send_string_expect_success (control, my_endpoint, 0);
 
     // Use rep as both frontend and backend
     TEST_ASSERT_SUCCESS_ERRNO (zmq_proxy_steerable (rep, rep, NULL, control));

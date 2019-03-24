@@ -234,7 +234,7 @@ void server_task (void * /*unused_*/)
     }
 
     for (int i = 0; i < QT_CLIENTS; ++i) {
-        TEST_ASSERT_SUCCESS_ERRNO (s_send (endpoint_receivers[i], my_endpoint));
+        send_string_expect_success (endpoint_receivers[i], my_endpoint, 0);
     }
 
     // Connect backend to frontend via a proxy
