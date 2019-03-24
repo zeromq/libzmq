@@ -32,7 +32,7 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
-void test_x ()
+void test_conflate ()
 {
     const char *bind_to = "tcp://127.0.0.1:*";
     size_t len = MAX_SOCKET_STRING;
@@ -75,6 +75,6 @@ int main (int, char *[])
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_x);
+    RUN_TEST (test_conflate);
     return UNITY_END ();
 }
