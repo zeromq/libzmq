@@ -35,12 +35,9 @@ SETUP_TEARDOWN_TESTCONTEXT
 void test_roundtrip ()
 {
     char my_endpoint[256];
-    size_t len = sizeof (my_endpoint);
 
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
 
     void *sc = test_context_socket (ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));

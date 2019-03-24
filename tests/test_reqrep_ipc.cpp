@@ -39,10 +39,7 @@ void test_leak ()
     char my_endpoint[256];
 
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
-    size_t len = sizeof (my_endpoint);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
@@ -67,10 +64,7 @@ void test_simple (void)
     char my_endpoint[256];
 
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
-    size_t len = sizeof (my_endpoint);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
