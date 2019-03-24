@@ -34,8 +34,6 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_conflate ()
 {
-    const char *bind_to = "tcp://127.0.0.1:*";
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     int rc;
@@ -45,9 +43,7 @@ void test_conflate ()
     int conflate = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (s_in, ZMQ_CONFLATE, &conflate, sizeof (conflate)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s_in, bind_to));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (s_in, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipv4 (s_in, my_endpoint, sizeof my_endpoint);
 
     void *s_out = test_context_socket (ZMQ_PUSH);
 

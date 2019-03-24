@@ -40,14 +40,11 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
-    size_t len = SOCKET_STRING_LEN;
     char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up and bind XPUB socket
     void *pub_socket = test_context_socket (ZMQ_XPUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
+    test_bind (pub_socket, endpoint, pub_endpoint, sizeof pub_endpoint);
 
     // Set up and connect SUB socket
     void *sub_socket = test_context_socket (ZMQ_SUB);

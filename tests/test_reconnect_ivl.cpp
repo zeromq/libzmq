@@ -72,15 +72,12 @@ void test_reconnect_ivl_ipc (void)
 }
 #endif
 
-void test_reconnect_ivl_tcp (const char *address_)
+void test_reconnect_ivl_tcp (bind_function_t bind_function_)
 {
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, address_));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_function_ (sb, my_endpoint, sizeof my_endpoint);
 
     test_reconnect_ivl_against_pair_socket (my_endpoint, sb);
     test_context_socket_close (sb);
@@ -88,14 +85,14 @@ void test_reconnect_ivl_tcp (const char *address_)
 
 void test_reconnect_ivl_tcp_ipv4 ()
 {
-    test_reconnect_ivl_tcp ("tcp://127.0.0.1:*");
+    test_reconnect_ivl_tcp (bind_loopback_ipv4);
 }
 
 void test_reconnect_ivl_tcp_ipv6 ()
 {
     if (is_ipv6_available ()) {
         zmq_ctx_set (get_test_context (), ZMQ_IPV6, 1);
-        test_reconnect_ivl_tcp ("tcp://[::1]:*");
+        test_reconnect_ivl_tcp (bind_loopback_ipv6);
     }
 }
 
