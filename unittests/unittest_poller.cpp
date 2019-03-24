@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unity.h>
 
 #ifndef _WIN32
+#include <unistd.h>
 #define closesocket close
 #endif
 
