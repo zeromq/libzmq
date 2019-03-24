@@ -28,6 +28,8 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
 #include <unity.h>
 
 
@@ -68,7 +70,6 @@ void test_tipc_port_name_and_domain ()
 void test_tipc_port_identity ()
 {
     char endpoint[256];
-    size_t size = 256;
     unsigned int z, c, n, ref;
 
     void *ctx = zmq_ctx_new ();
@@ -80,15 +81,11 @@ void test_tipc_port_identity ()
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     TEST_ASSERT_NOT_NULL (sc);
 
-    // Test binding to random Port Identity
-    int rc = zmq_bind (sb, "tipc://<*>");
-    TEST_ASSERT_EQUAL_INT (0, rc);
+    // Test binding to random Port Identity and
+    // test resolving assigned address, should return a properly formatted string
+    bind_loopback_tipc (sb, endpoint, sizeof endpoint);
 
-    // Test resolving assigned address, should return a properly formatted string
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, &endpoint[0], &size);
-    TEST_ASSERT_EQUAL_INT (0, rc);
-
-    rc = sscanf (&endpoint[0], "tipc://<%u.%u.%u:%u>", &z, &c, &n, &ref);
+    int rc = sscanf (&endpoint[0], "tipc://<%u.%u.%u:%u>", &z, &c, &n, &ref);
     TEST_ASSERT_EQUAL_INT (4, rc);
 
     TEST_ASSERT_NOT_EQUAL_MESSAGE (
