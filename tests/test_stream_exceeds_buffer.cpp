@@ -38,15 +38,7 @@
 #include <unistd.h>
 #endif
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_stream_exceeds_buffer ()
 {

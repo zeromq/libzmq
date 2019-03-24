@@ -30,7 +30,6 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
 #include <limits.h>
 
 #ifndef _WIN32
@@ -40,15 +39,7 @@
 #include <unistd.h>
 #endif
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 fd_t get_fd (void *socket_)
 {

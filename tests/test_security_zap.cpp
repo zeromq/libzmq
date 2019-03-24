@@ -30,15 +30,7 @@
 #include "testutil_security.hpp"
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 static void zap_handler_wrong_version (void * /*unused_*/)
 {

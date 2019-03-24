@@ -30,15 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 const char ep[] = "tipc://{5560,0,0}";
 const char name[] = "tipc://{5560,0}@0.0.0";

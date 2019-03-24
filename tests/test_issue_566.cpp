@@ -30,17 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 //  Issue 566 describes a problem in libzmq v4.0.0 where a dealer to router
 //  connection would fail randomly. The test works when the two sockets are

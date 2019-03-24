@@ -31,17 +31,8 @@
 #include "testutil_unity.hpp"
 
 #include <stdlib.h>
-#include <unity.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_leak ()
 {

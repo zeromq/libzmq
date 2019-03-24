@@ -30,8 +30,6 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
 #include <string.h>
 
 #ifndef _WIN32
@@ -53,15 +51,7 @@
         _test (true);                                                          \
     }
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void msg_send_expect_success (void *s_, const char *group_, const char *body_)
 {

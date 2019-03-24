@@ -31,17 +31,7 @@
 #include "testutil_unity.hpp"
 #include "testutil_security.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_send_one_connected_one_unconnected ()
 {

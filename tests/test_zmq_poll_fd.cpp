@@ -32,21 +32,12 @@
 
 #include <netdb.h>
 #include <string.h>
-#include <unity.h>
 
 #ifndef _WIN32
 #include <unistd.h>
 #endif
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_poll_fd ()
 {

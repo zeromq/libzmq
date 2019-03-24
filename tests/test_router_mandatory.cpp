@@ -31,17 +31,8 @@
 #include "testutil_unity.hpp"
 
 #include <string.h>
-#include <unity.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 #ifdef ZMQ_BUILD_DRAFT_API
 bool send_msg_to_peer_if_ready (void *router_, const char *peer_routing_id_)

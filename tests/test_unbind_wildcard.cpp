@@ -22,15 +22,7 @@
 
 #include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_address_wildcard_ipv4 ()
 {

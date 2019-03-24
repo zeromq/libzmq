@@ -32,15 +32,7 @@
 
 #include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 /// Initialize a zeromq message with a given null-terminated string
 #define ZMQ_PREPARE_STRING(msg, data, size)                                    \

@@ -34,15 +34,7 @@
 #include <stdlib.h>
 #include <vector>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_system_max ()
 {

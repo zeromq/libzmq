@@ -32,15 +32,7 @@
 
 #include <stdlib.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 // This is a test for issue #1382. The server thread creates a SUB-PUSH
 // steerable proxy. The main process then sends messages to the SUB

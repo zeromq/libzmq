@@ -42,16 +42,7 @@ typedef int raw_socket;
 
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
-
+SETUP_TEARDOWN_TESTCONTEXT
 
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1

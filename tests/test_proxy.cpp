@@ -33,15 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 #define CONTENT_SIZE 13
 #define CONTENT_SIZE_MAX 32

@@ -32,18 +32,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <unity.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
-
+SETUP_TEARDOWN_TESTCONTEXT
 
 // SHALL receive incoming messages from its peers using a fair-queuing
 // strategy.

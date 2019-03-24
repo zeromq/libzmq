@@ -181,6 +181,12 @@ void recv_array_expect_success (void *socket_,
 // for each test case, and some consistency checks can be performed.
 /////////////////////////////////////////////////////////////////////////////
 
+// Use this is an test executable to perform a default setup and teardown of
+// the test context, which is appropriate for many libzmq test cases.
+#define SETUP_TEARDOWN_TESTCONTEXT                                             \
+    void setUp () { setup_test_context (); }                                   \
+    void tearDown () { teardown_test_context (); }
+
 // The maximum number of sockets that can be managed by the test context.
 #define MAX_TEST_SOCKETS 128
 

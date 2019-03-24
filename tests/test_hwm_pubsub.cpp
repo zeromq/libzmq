@@ -36,15 +36,7 @@
 //       ensure we have extra space for that:
 #define SOCKET_STRING_LEN (MAX_SOCKET_STRING * 4)
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
 {

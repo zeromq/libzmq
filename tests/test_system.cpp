@@ -39,15 +39,7 @@
 #include <unistd.h>
 #endif
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 //  Solaris has a default of 256 max files per process
 #ifdef ZMQ_HAVE_SOLARIS
