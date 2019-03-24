@@ -159,8 +159,7 @@ void test_router_notify_helper (int opt_notify)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_ROUTER_NOTIFY, &opt_notify, sizeof (opt_notify)));
 
-    test_bind (router, "tcp://127.0.0.1:*", connect_address,
-               sizeof (connect_address));
+    bind_loopback_ipv4 (router, connect_address, sizeof connect_address);
 
     void *dealer = test_context_socket (ZMQ_DEALER);
     const char *dealer_routing_id = "X";
@@ -246,8 +245,7 @@ void test_handshake_fail ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_RCVTIMEO, &opt_timeout, sizeof (opt_timeout)));
 
-    test_bind (router, "tcp://127.0.0.1:*", connect_address,
-               sizeof (connect_address));
+    bind_loopback_ipv4 (router, connect_address, sizeof connect_address);
 
     // send something on raw tcp
     void *stream = test_context_socket (ZMQ_STREAM);
@@ -291,9 +289,7 @@ void test_error_during_multipart ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       router, ZMQ_MAXMSGSIZE, &opt_maxmsgsize, sizeof (opt_maxmsgsize)));
 
-    test_bind (router, "tcp://127.0.0.1:*", connect_address,
-               sizeof (connect_address));
-
+    bind_loopback_ipv4 (router, connect_address, sizeof connect_address);
 
     // setup dealer
     void *dealer = test_context_socket (ZMQ_DEALER);
