@@ -149,18 +149,6 @@ char *s_recv (void *socket_)
     return strdup (buffer);
 }
 
-int s_send (void *socket_, const char *string_)
-{
-    int size = zmq_send (socket_, string_, strlen (string_), 0);
-    return size;
-}
-
-int s_sendmore (void *socket_, const char *string_)
-{
-    int size = zmq_send (socket_, string_, strlen (string_), ZMQ_SNDMORE);
-    return size;
-}
-
 void s_send_seq (void *socket_, ...)
 {
     va_list ap;

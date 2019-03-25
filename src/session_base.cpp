@@ -751,19 +751,8 @@ void zmq::session_base_t::start_connecting_udp (io_thread_t * /*io_thread_*/)
     udp_engine_t *engine = new (std::nothrow) udp_engine_t (options);
     alloc_assert (engine);
 
-    bool recv = false;
-    bool send = false;
-
-    if (options.type == ZMQ_RADIO) {
-        send = true;
-        recv = false;
-    } else if (options.type == ZMQ_DISH) {
-        send = false;
-        recv = true;
-    } else if (options.type == ZMQ_DGRAM) {
-        send = true;
-        recv = true;
-    }
+    const bool recv = options.type == ZMQ_DISH || options.type == ZMQ_DGRAM;
+    const bool send = options.type == ZMQ_RADIO || options.type == ZMQ_DGRAM;
 
     const int rc = engine->init (_addr, send, recv);
     errno_assert (rc == 0);

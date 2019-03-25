@@ -33,15 +33,7 @@
 #include <unistd.h>
 #include <grp.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 static void bounce_fail (void *server_, void *client_)
 {

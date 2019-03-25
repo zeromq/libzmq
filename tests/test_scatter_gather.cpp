@@ -30,17 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_scatter_gather_multipart_fails ()
 {
@@ -54,7 +44,8 @@ void test_scatter_gather_multipart_fails ()
       zmq_connect (gather, "inproc://test-scatter-gather"));
 
     //  Should fail, multipart is not supported
-    TEST_ASSERT_FAILURE_ERRNO (EINVAL, s_sendmore (scatter, "1"));
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
+                               zmq_send_const (scatter, "1", 1, ZMQ_SNDMORE));
 
     test_context_socket_close (scatter);
     test_context_socket_close (gather);

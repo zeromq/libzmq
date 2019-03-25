@@ -30,27 +30,13 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_ipc_wildcard ()
 {
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc://*"));
-
     char endpoint[200];
-    size_t size = sizeof (endpoint);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size));
+    bind_loopback_ipc (sb, endpoint, sizeof endpoint);
 
     void *sc = test_context_socket (ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));

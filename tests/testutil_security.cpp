@@ -203,12 +203,15 @@ void zap_handler_generic (zap_protocol_t zap_protocol_,
         TEST_ASSERT_EQUAL_STRING ("1.0", version);
         TEST_ASSERT_EQUAL_STRING (expected_routing_id_, routing_id);
 
-        s_sendmore (handler, zap_protocol_ == zap_wrong_version
-                               ? "invalid_version"
-                               : version);
-        s_sendmore (handler, zap_protocol_ == zap_wrong_request_id
-                               ? "invalid_request_id"
-                               : sequence);
+        send_string_expect_success (
+          handler,
+          zap_protocol_ == zap_wrong_version ? "invalid_version" : version,
+          ZMQ_SNDMORE);
+        send_string_expect_success (handler,
+                                    zap_protocol_ == zap_wrong_request_id
+                                      ? "invalid_request_id"
+                                      : sequence,
+                                    ZMQ_SNDMORE);
 
         if (authentication_succeeded) {
             const char *status_code;
@@ -225,20 +228,21 @@ void zap_handler_generic (zap_protocol_t zap_protocol_,
                 default:
                     status_code = "200";
             }
-            s_sendmore (handler, status_code);
-            s_sendmore (handler, "OK");
-            s_sendmore (handler, "anonymous");
+            send_string_expect_success (handler, status_code, ZMQ_SNDMORE);
+            send_string_expect_success (handler, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (handler, "anonymous", ZMQ_SNDMORE);
             if (zap_protocol_ == zap_too_many_parts) {
-                s_sendmore (handler, "");
+                send_string_expect_success (handler, "", ZMQ_SNDMORE);
             }
             if (zap_protocol_ != zap_do_not_send)
-                s_send (handler, "");
+                send_string_expect_success (handler, "", 0);
         } else {
-            s_sendmore (handler, "400");
-            s_sendmore (handler, "Invalid client public key");
-            s_sendmore (handler, "");
+            send_string_expect_success (handler, "400", ZMQ_SNDMORE);
+            send_string_expect_success (handler, "Invalid client public key",
+                                        ZMQ_SNDMORE);
+            send_string_expect_success (handler, "", ZMQ_SNDMORE);
             if (zap_protocol_ != zap_do_not_send)
-                s_send (handler, "");
+                send_string_expect_success (handler, "", 0);
         }
         free (version);
         free (sequence);

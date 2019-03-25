@@ -32,17 +32,8 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <unity.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void str_send_to (void *s_, const char *content_, const char *address_)
 {

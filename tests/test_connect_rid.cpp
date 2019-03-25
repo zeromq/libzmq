@@ -32,15 +32,7 @@
 
 #include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 const char *rconn1routing_id = "conn1";
 const char *x_routing_id = "X";

@@ -61,18 +61,18 @@ static void zap_handler (void *handler_)
         TEST_ASSERT_EQUAL_STRING ("1.0", version);
         TEST_ASSERT_EQUAL_STRING ("NULL", mechanism);
 
-        s_sendmore (handler_, version);
-        s_sendmore (handler_, sequence);
+        send_string_expect_success (handler_, version, ZMQ_SNDMORE);
+        send_string_expect_success (handler_, sequence, ZMQ_SNDMORE);
         if (streq (domain, "DOMAIN")) {
-            s_sendmore (handler_, "200");
-            s_sendmore (handler_, "OK");
-            s_sendmore (handler_, "anonymous");
+            send_string_expect_success (handler_, "200", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "anonymous", ZMQ_SNDMORE);
             zmq_send (handler_, metadata, sizeof (metadata), 0);
         } else {
-            s_sendmore (handler_, "400");
-            s_sendmore (handler_, "BAD DOMAIN");
-            s_sendmore (handler_, "");
-            s_send (handler_, "");
+            send_string_expect_success (handler_, "400", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "BAD DOMAIN", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", 0);
         }
         free (version);
         free (sequence);
@@ -104,7 +104,7 @@ void test_metadata ()
     bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
-    s_send (client, "This is a message");
+    send_string_expect_success (client, "This is a message", 0);
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, server, 0));
