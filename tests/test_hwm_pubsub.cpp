@@ -110,15 +110,20 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
 {
     size_t len = SOCKET_STRING_LEN;
     char pub_endpoint[SOCKET_STRING_LEN];
+    int bufsize = 4096;
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub_socket, ZMQ_SNDBUF, &bufsize, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub_socket, endpoint));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, pub_endpoint, &len));
 
     // Set up connect socket
     void *sub_socket = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (pub_socket, ZMQ_RCVBUF, &bufsize, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_socket, pub_endpoint));
 
     //set a hwm on publisher
@@ -143,9 +148,16 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
     int recv_count = 0;
     int blocked_count = 0;
     int is_termination = 0;
+
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+
     while (send_count < msg_cnt_) {
-        const int rc = zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT);
-        if (rc == 0) {
+        zmq_msg_close (&msg);
+        zmq_msg_init_size (&msg, 100);
+
+        const int rc = zmq_msg_send (&msg, pub_socket, ZMQ_DONTWAIT);
+        if (rc >= 0) {
             ++send_count;
         } else if (-1 == rc) {
             // if the PUB socket blocks due to HWM, errno should be EAGAIN:
@@ -154,6 +166,8 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
             recv_count += receive (sub_socket, &is_termination);
         }
     }
+
+    zmq_msg_close (&msg);
 
     // if send_hwm_ < msg_cnt_, we should block at least once:
     TEST_ASSERT (blocked_count > 0);
