@@ -32,6 +32,10 @@
 
 #include <string.h>
 
+#if defined _WIN32
+#include "../src/windows.hpp"
+#endif
+
 SETUP_TEARDOWN_TESTCONTEXT
 
 typedef void (*extra_func_t) (void *socket_);
@@ -110,6 +114,35 @@ void test_pair_tcp_fastpath ()
 }
 #endif
 
+#ifdef _WIN32
+void test_io_completion_port ()
+{
+    void *const s = test_context_socket (ZMQ_PAIR);
+    SOCKET fd;
+    size_t fd_size = sizeof fd;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (s, ZMQ_FD, &fd, &fd_size));
+
+    ::WSAPROTOCOL_INFO pi;
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      ::WSADuplicateSocket (fd, ::GetCurrentProcessId (), &pi));
+    const SOCKET socket = ::WSASocket (pi.iAddressFamily /*AF_INET*/,
+                                       pi.iSocketType /*SOCK_STREAM*/,
+                                       pi.iProtocol /*IPPROTO_TCP*/, &pi, 0, 0);
+
+    const HANDLE iocp =
+      ::CreateIoCompletionPort (INVALID_HANDLE_VALUE, NULL, 0, 0);
+    TEST_ASSERT_NOT_EQUAL (NULL, iocp);
+    const HANDLE res =
+      ::CreateIoCompletionPort (reinterpret_cast<HANDLE> (socket), iocp, 0, 0);
+    TEST_ASSERT_NOT_EQUAL (NULL, res);
+
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (closesocket (socket));
+    TEST_ASSERT_TRUE (CloseHandle (iocp));
+
+    test_context_socket_close (s);
+}
+#endif
+
 int main ()
 {
     setup_test_environment ();
@@ -119,6 +152,9 @@ int main ()
     RUN_TEST (test_pair_tcp_connect_by_name);
 #ifdef ZMQ_BUILD_DRAFT
     RUN_TEST (test_pair_tcp_fastpath);
+#endif
+#ifdef _WIN32
+    RUN_TEST (test_io_completion_port);
 #endif
 
     return UNITY_END ();
