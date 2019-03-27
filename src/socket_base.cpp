@@ -1142,7 +1142,13 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     //  In case of non-blocking send we'll simply propagate
     //  the error - including EAGAIN - up the stack.
     if ((flags_ & ZMQ_DONTWAIT) || options.sndtimeo == 0) {
-        return -1;
+        if (unlikely (process_commands (0, false) != 0)) {
+            return -1;
+        }
+
+        rc = xsend (msg_);
+
+        return rc;
     }
 
     //  Compute the time when the timeout should occur.

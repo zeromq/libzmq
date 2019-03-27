@@ -152,6 +152,7 @@ test_socket_null
 test_xpub_verbose
 test_mock_pub_sub
 test_proxy_hwm
+test_sndtimeo_zero
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller
