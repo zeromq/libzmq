@@ -138,8 +138,8 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
 
     // Wait before starting TX operations till 1 subscriber has subscribed
     // (in this test there's 1 subscriber only)
-    const char subscription_to_all_topics[] = {1, 0};
-    recv_string_expect_success (pub_socket, subscription_to_all_topics, 0);
+    const uint8_t subscription_to_all_topics[] = {1};
+    recv_array_expect_success (pub_socket, subscription_to_all_topics, 0);
 
     // Send until we block
     int send_count = 0;
