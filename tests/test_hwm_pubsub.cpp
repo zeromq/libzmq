@@ -153,13 +153,16 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
         } else if (-1 == rc) {
             // if the PUB socket blocks due to HWM, errno should be EAGAIN:
             blocked_count++;
-            TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
+            TEST_ASSERT_FAILURE_ERRNO (EAGAIN, -1);
             recv_count += receive (sub_socket, &is_termination);
         }
     }
 
     // if send_hwm_ < msg_cnt_, we should block at least once:
-    TEST_ASSERT_GREATER_THAN_INT (0, blocked_count);
+    char counts_string[128];
+    snprintf (counts_string, sizeof counts_string - 1,
+              "sent = %i, received = %i", send_count, recv_count);
+    TEST_ASSERT_GREATER_THAN_INT_MESSAGE (0, blocked_count, counts_string);
 
     // dequeue SUB socket again, to make sure XPUB has space to send the termination message
     recv_count += receive (sub_socket, &is_termination);
