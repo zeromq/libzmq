@@ -159,7 +159,7 @@ int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
     }
 
     // if send_hwm_ < msg_cnt_, we should block at least once:
-    TEST_ASSERT (blocked_count > 0);
+    TEST_ASSERT_GREATER_THAN_INT (0, blocked_count);
 
     // dequeue SUB socket again, to make sure XPUB has space to send the termination message
     recv_count += receive (sub_socket, &is_termination);
