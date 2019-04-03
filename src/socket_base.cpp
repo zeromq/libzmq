@@ -683,13 +683,13 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
-            event_bind_failed (address, zmq_errno ());
+            event_bind_failed (make_unconnected_bind_endpoint_pair(address), zmq_errno ());
             return -1;
         }
 
         listener->get_local_address (_last_endpoint);
 
-        add_endpoint (_last_endpoint.c_str (), static_cast<own_t *> (listener),
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint), static_cast<own_t *> (listener),
                       NULL);
         options.connected = true;
         return 0;
