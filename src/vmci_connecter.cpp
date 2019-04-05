@@ -136,8 +136,8 @@ void zmq::vmci_connecter_t::out_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t(fd, options, make_unconnected_bind_endpoint_pair(endpoint));
+    stream_engine_t *engine = new (std::nothrow) stream_engine_t (
+      fd, options, make_unconnected_bind_endpoint_pair (endpoint));
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -146,7 +146,8 @@ void zmq::vmci_connecter_t::out_event ()
     //  Shut the connecter down.
     terminate ();
 
-    socket->event_connected (make_unconnected_bind_endpoint_pair(endpoint), fd);
+    socket->event_connected (make_unconnected_bind_endpoint_pair (endpoint),
+                             fd);
 }
 
 void zmq::vmci_connecter_t::timer_event (int id_)
@@ -181,7 +182,8 @@ void zmq::vmci_connecter_t::add_reconnect_timer ()
     if (options.reconnect_ivl != -1) {
         int rc_ivl = get_new_reconnect_ivl ();
         add_timer (rc_ivl, reconnect_timer_id);
-        socket->event_connect_retried (make_unconnected_bind_endpoint_pair(endpoint), rc_ivl);
+        socket->event_connect_retried (
+          make_unconnected_bind_endpoint_pair (endpoint), rc_ivl);
         timer_started = true;
     }
 }
@@ -247,7 +249,7 @@ void zmq::vmci_connecter_t::close ()
     const int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (make_unconnected_bind_endpoint_pair(endpoint), s);
+    socket->event_closed (make_unconnected_bind_endpoint_pair (endpoint), s);
     s = retired_fd;
 }
 

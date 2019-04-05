@@ -353,9 +353,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
         return -1;
     }
 
-        //  Check whether socket type and transport protocol match.
-        //  Specifically, multicast protocols can't be combined with
-        //  bi-directional messaging patterns (socket types).
+    //  Check whether socket type and transport protocol match.
+    //  Specifically, multicast protocols can't be combined with
+    //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
@@ -683,14 +683,15 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
-            event_bind_failed (make_unconnected_bind_endpoint_pair(address), zmq_errno ());
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
             return -1;
         }
 
         listener->get_local_address (_last_endpoint);
 
-        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint), static_cast<own_t *> (listener),
-                      NULL);
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
         options.connected = true;
         return 0;
     }
@@ -895,7 +896,7 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
         }
     }
 
-        // TBD - Should we check address for ZMQ_HAVE_NORM???
+    // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
