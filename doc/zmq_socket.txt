@@ -190,7 +190,7 @@ Action in mute state:: Drop
 
 
 ZMQ_DISH
-^^^^^^^
+^^^^^^^^
 A socket of type 'ZMQ_DISH' is used by a _subscriber_ to subscribe to groups
 distributed by a _radio_. Initially a 'ZMQ_DISH' socket is not subscribed to
 any groups, use linkzmq:zmq_join[3] to
