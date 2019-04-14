@@ -1331,7 +1331,7 @@ if(BUILD_SHARED)
       target_link_libraries(benchmark_radix_tree libzmq-static)
       target_include_directories(benchmark_radix_tree
         PUBLIC
-        "${CMAKE_SOURCE_DIR}/src")
+        "${CMAKE_CURRENT_LIST_DIR}/src")
     endif()
 
   endif()
