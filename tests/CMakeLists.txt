@@ -238,10 +238,16 @@ foreach(test ${tests})
       link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
-
+  
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
+
+  if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+    target_link_libraries(${test} socket)
+    target_link_libraries(${test} m)
+  endif()
+
   if(WIN32)
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()

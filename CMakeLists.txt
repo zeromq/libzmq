@@ -350,8 +350,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION STREQUAL "
 endif()
 if(NOT MSVC)
   check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
+  message("ZMQ_HAVE_IFADDRS: ${ZMQ_HAVE_IFADDRS}")
   check_include_files(sys/uio.h ZMQ_HAVE_UIO)
+  message("ZMQ_HAVE_UIO: ${ZMQ_HAVE_UIO}")
   check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
+  message("ZMQ_HAVE_EVENTFD: ${ZMQ_HAVE_EVENTFD}")
   if(ZMQ_HAVE_EVENTFD AND NOT CMAKE_CROSSCOMPILING)
     zmq_check_efd_cloexec()
   endif()
@@ -373,7 +376,9 @@ if(ZMQ_HAVE_WINDOWS)
   check_library_exists(ws2 fopen "" HAVE_WS2)
 else()
   check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
+  message("ZMQ_HAVE_SO_PEERCRED: ${ZMQ_HAVE_SO_PEERCRED}")
   check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
+  message("ZMQ_HAVE_LOCAL_PEERCRED: ${ZMQ_HAVE_LOCAL_PEERCRED}")
 endif()
 
 find_library(RT_LIBRARY rt)
@@ -401,26 +406,33 @@ if(NOT MSVC)
   set(CMAKE_REQUIRED_LIBRARIES rt)
   check_function_exists(clock_gettime HAVE_CLOCK_GETTIME)
   set(CMAKE_REQUIRED_LIBRARIES)
+  message("HAVE_CLOCK_GETTIME: ${HAVE_CLOCK_GETTIME}")
 
   set(CMAKE_REQUIRED_INCLUDES unistd.h)
   check_function_exists(fork HAVE_FORK)
   set(CMAKE_REQUIRED_INCLUDES)
+  message("HAVE_FORK: ${HAVE_FORK}")
 
   set(CMAKE_REQUIRED_INCLUDES sys/time.h)
   check_function_exists(gethrtime HAVE_GETHRTIME)
   set(CMAKE_REQUIRED_INCLUDES)
+  message("HAVE_GETHRTIME: ${HAVE_GETHRTIME}")
 
   set(CMAKE_REQUIRED_INCLUDES stdlib.h)
   check_function_exists(mkdtemp HAVE_MKDTEMP)
   set(CMAKE_REQUIRED_INCLUDES)
+  message("HAVE_MKDTEMP: ${HAVE_MKDTEMP}")
 
   set(CMAKE_REQUIRED_INCLUDES sys/socket.h)
   check_function_exists(accept4 HAVE_ACCEPT4)
   set(CMAKE_REQUIRED_INCLUDES)
+  message("HAVE_ACCEPT4: ${HAVE_ACCEPT4}")
 
   set(CMAKE_REQUIRED_INCLUDES string.h)
   check_function_exists(strnlen HAVE_STRNLEN)
   set(CMAKE_REQUIRED_INCLUDES)
+  message("HAVE_STRNLEN: ${HAVE_STRNLEN}")
+
 endif()
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
@@ -516,7 +528,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "SunPro")
   zmq_check_cxx_flag_prepend("-features=zla")
 endif()
 
-if(CMAKE_SYSTEM_NAME MATCHES "SunOS" OR CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS" OR CMAKE_SYSTEM_NAME MATCHES "NetBSD" OR CMAKE_SYSTEM_NAME MATCHES "QNX")
   message(STATUS "Checking whether atomic operations can be used")
   check_c_source_compiles(
   "\
@@ -530,7 +542,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "SunOS" OR CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   } \
   "
   HAVE_ATOMIC_H)
-
+  message("HAVE_ATOMIC_H: ${HAVE_ATOMIC_H}")
   if(NOT HAVE_ATOMIC_H)
     set(ZMQ_FORCE_MUTEXES 1)
   endif()
@@ -1209,6 +1221,9 @@ else()
       add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers}
         ${html-docs} ${readme-docs} ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     endif()
+    if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+      target_link_libraries(libzmq-static m)
+    endif()
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       OUTPUT_NAME "zmq"
@@ -1286,6 +1301,10 @@ if(BUILD_STATIC)
 
   if(RT_LIBRARY)
     target_link_libraries(libzmq-static -lrt)
+  endif()
+
+  if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+    add_definitions(-DUNITY_EXCLUDE_MATH_H)
   endif()
 endif()
 

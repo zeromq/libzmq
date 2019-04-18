@@ -41,6 +41,11 @@ foreach(test ${unittests})
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
 
+  if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+    target_link_libraries(${test} socket)
+    target_link_libraries(${test} m)
+  endif()
+
   if(WIN32)
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
