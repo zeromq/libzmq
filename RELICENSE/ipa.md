@@ -12,6 +12,6 @@ copyright oIwan Paoluccii.  This document hereby grants the libzmq
 project team to relicense libzmq, including all past, present and
 future contributions of the author listed above.
 
-Simon Giesecke
+Iwan Paolucci
 2019/04/18
 
