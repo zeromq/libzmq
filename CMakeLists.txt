@@ -7,6 +7,29 @@ else()
   cmake_minimum_required(VERSION 2.8.12)
 endif()
 
+include(CheckIncludeFiles)
+include(CheckCCompilerFlag)
+include(CheckCXXCompilerFlag)
+include(CheckLibraryExists)
+include(CheckCSourceCompiles)
+include(CheckCSourceRuns)
+include(CMakeDependentOption)
+include(CheckCXXSymbolExists)
+include(CheckSymbolExists)
+include(FindThreads)
+include(GNUInstallDirs)
+include(CheckFunctionExists)
+include(CheckTypeSize)
+include(CMakePackageConfigHelpers)
+
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
+
+include(TestZMQVersion)
+include(ZMQSourceRunChecks)
+include(ZMQSupportMacros)
+
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
@@ -22,11 +45,6 @@ if (ENABLE_INTRINSICS)
    add_definitions(-DZMQ_HAVE_ATOMIC_INTRINSICS)
 endif()
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
-set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
-list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
-
-include(GNUInstallDirs)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   # Find more information: https://cmake.org/Wiki/CMake_RPATH_handling
 
@@ -43,18 +61,14 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
-include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
-include(CheckCCompilerFlag)
 check_c_compiler_flag("-std=gnu11" COMPILER_SUPPORTS_C11)
 if(COMPILER_SUPPORTS_C11)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 endif()
-
-include(ZMQSupportMacros)
 
 if(NOT MSVC)
   # clang 6 has a warning that does not make sense on multi-platform code
@@ -137,9 +151,6 @@ set(API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid 
 
 set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
-
-include(CheckFunctionExists)
-include(CheckTypeSize)
 
 if(NOT MSVC)
   if(POLLER STREQUAL "")
@@ -238,19 +249,6 @@ endif()
 message(STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
 string(TOUPPER ${API_POLLER} UPPER_API_POLLER)
 set(ZMQ_POLL_BASED_ON_${UPPER_API_POLLER} 1)
-
-include(TestZMQVersion)
-include(ZMQSourceRunChecks)
-include(CheckIncludeFiles)
-include(CheckLibraryExists)
-include(CheckCCompilerFlag)
-include(CheckCXXCompilerFlag)
-include(CheckCSourceCompiles)
-include(CheckCSourceRuns)
-include(CMakeDependentOption)
-include(CheckCXXSymbolExists)
-include(CheckSymbolExists)
-include(FindThreads)
 
 execute_process(COMMAND getconf LEVEL1_DCACHE_LINESIZE OUTPUT_VARIABLE CACHELINE_SIZE ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CACHELINE_SIZE STREQUAL "" OR CACHELINE_SIZE EQUAL 0 OR CACHELINE_SIZE EQUAL -1)
@@ -1419,8 +1417,6 @@ if(WITH_DOC)
   endif()
 endif()
 
-include(CMakePackageConfigHelpers)
-
 if(WIN32)
   set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for ZeroMQConfig.cmake")
 else()
@@ -1548,4 +1544,5 @@ if(MSVC_VERSION EQUAL 1600)
   endif()
 endif()
 
+# this cannot be moved, as it does not only contain function/macro definitions
 include(ClangFormat)
