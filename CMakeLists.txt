@@ -7,7 +7,7 @@ else()
   cmake_minimum_required(VERSION 2.8.12)
 endif()
 
-option(ENABLE_ASAN "Build with address sanitizer)" OFF)
+option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
