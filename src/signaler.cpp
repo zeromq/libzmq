@@ -77,10 +77,7 @@ static int sleep_ms (unsigned int ms_)
 {
     if (ms_ == 0)
         return 0;
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (ms_ > 0 ? ms_ : INFINITE);
-    return 0;
-#elif defined ZMQ_HAVE_ANDROID
+#if defined ZMQ_HAVE_ANDROID
     usleep (ms_ * 1000);
     return 0;
 #elif defined ZMQ_HAVE_VXWORKS
