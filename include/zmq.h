@@ -709,6 +709,7 @@ ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
                                     zmq_poller_event_t *events,
                                     int n_events,
                                     long timeout);
+ZMQ_EXPORT int zmq_poller_fd (void *poller);
 
 #if defined _WIN32
 ZMQ_EXPORT int

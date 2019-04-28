@@ -1278,6 +1278,11 @@ int zmq_poller_wait_all (void *poller_,
     return rc;
 }
 
+int zmq_poller_fd (void *poller_)
+{
+    return static_cast<zmq::socket_poller_t *> (poller_)->signaler_fd ();
+}
+
 //  Peer-specific state
 
 int zmq_socket_get_peer_state (void *s_,

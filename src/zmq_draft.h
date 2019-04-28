@@ -105,6 +105,7 @@ int zmq_poller_wait_all (void *poller_,
                          zmq_poller_event_t *events_,
                          int n_events_,
                          long timeout_);
+int zmq_poller_fd (void *poller_);
 
 #if defined _WIN32
 int zmq_poller_add_fd (void *poller_,
