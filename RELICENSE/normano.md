@@ -12,4 +12,4 @@ This document hereby grants the libzmq project team to relicense libzmq,
 including all past, present and future contributions of the author listed above.
 
 This is a statement by Norman Ovenseri
-2019/05/21
+2019/05/01
