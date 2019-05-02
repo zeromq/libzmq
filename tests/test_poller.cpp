@@ -257,6 +257,36 @@ void test_with_valid_poller (extra_poller_func_t extra_func_)
     test_context_socket_close (socket);
 }
 
+void test_call_poller_fd_no_signaler ()
+{
+    void *socket = test_context_socket (ZMQ_PAIR);
+
+    void *poller = zmq_poller_new ();
+    TEST_ASSERT_NOT_NULL (poller);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
+
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_poller_fd (poller));
+
+    test_context_socket_close (socket);
+}
+
+void test_call_poller_fd ()
+{
+    void *socket = test_context_socket (ZMQ_CLIENT);
+
+    void *poller = zmq_poller_new ();
+    TEST_ASSERT_NOT_NULL (poller);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_fd (poller));
+
+    test_context_socket_close (socket);
+}
+
 void call_poller_wait_null_event_fails (void *poller_)
 {
     TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_poller_wait (poller_, NULL, 0));
@@ -651,6 +681,9 @@ int main (void)
     RUN_TEST (test_call_poller_wait_all_empty_negative_count_fails);
     RUN_TEST (test_call_poller_wait_all_empty_without_timeout_fails);
     RUN_TEST (test_call_poller_wait_all_empty_with_timeout_fails);
+
+    RUN_TEST (test_call_poller_fd_no_signaler);
+    RUN_TEST (test_call_poller_fd);
 
     RUN_TEST (test_poll_basic);
     RUN_TEST (test_poll_fd);
