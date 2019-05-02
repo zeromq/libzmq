@@ -249,6 +249,8 @@ No registered event was signalled before the timeout was reached.
 On _zmq_poller_fd:
 *EINVAL*::
 The poller has no associated file descriptor.
+*EFAULT*::
+The provided 'poller' did not point to a valid poller.
 
 EXAMPLE
 -------

@@ -195,6 +195,12 @@ void test_null_poller_pointers_wait_all_indirect ()
       EFAULT, zmq_poller_wait_all (&null_poller, &event, 1, 0));
 }
 
+void test_null_poller_pointer_poller_fd ()
+{
+    void *null_poller = NULL;
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT, zmq_poller_fd (&null_poller));
+}
+
 void test_null_socket_pointers ()
 {
     void *poller = zmq_poller_new ();
@@ -269,6 +275,8 @@ void test_call_poller_fd_no_signaler ()
 
     TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_poller_fd (poller));
 
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
+
     test_context_socket_close (socket);
 }
 
@@ -283,6 +291,8 @@ void test_call_poller_fd ()
       zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN));
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_fd (poller));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_destroy (&poller));
 
     test_context_socket_close (socket);
 }
@@ -656,6 +666,7 @@ int main (void)
     RUN_TEST (test_null_poller_pointers_wait_indirect);
     RUN_TEST (test_null_poller_pointers_wait_all_direct);
     RUN_TEST (test_null_poller_pointers_wait_all_indirect);
+    RUN_TEST (test_null_poller_pointer_poller_fd);
 
     RUN_TEST (test_null_socket_pointers);
 
