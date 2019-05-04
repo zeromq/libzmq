@@ -675,8 +675,22 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork mkdtemp accept4 strnlen)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork mkdtemp accept4)
 AC_CHECK_HEADERS([alloca.h])
+
+# string.h doesn't seem to be included by default in Fedora 30
+AC_MSG_CHECKING([whether strnlen is available])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <string.h>]],
+		[[size_t bar = strnlen ("foo", 1); (void)bar; return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(HAVE_STRNLEN, [1],
+		    [strnlen is available])
+	],[
+		AC_MSG_RESULT([no])
+])
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
