@@ -1102,7 +1102,7 @@ if(MSVC)
   # default for all sources is to use precompiled headers
   foreach(source ${sources})
     # C and C++ can not use the same precompiled header
-    if(${soruce} MATCHES ".cpp$" AND NOT ${source} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/src/precompiled.cpp")
+    if(${source} MATCHES ".cpp$" AND NOT ${source} STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/src/precompiled.cpp")
       set_source_files_properties(${source}
         PROPERTIES
         COMPILE_FLAGS "/Yuprecompiled.hpp"
