@@ -711,7 +711,7 @@ ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
                                     zmq_poller_event_t *events,
                                     int n_events,
                                     long timeout);
-ZMQ_EXPORT zmq_fd_t zmq_poller_fd (void *poller);
+ZMQ_EXPORT int zmq_poller_fd (void *poller, zmq_fd_t *fd);
 
 ZMQ_EXPORT int
 zmq_poller_add_fd (void *poller, zmq_fd_t fd, void *user_data, short events);
