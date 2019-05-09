@@ -29,7 +29,7 @@ SYNOPSIS
                           int 'n_events',
                           long 'timeout');*
 
-*int zmq_poller_fd (void *'poller');*
+*int zmq_poller_fd (void *'poller', zmq_fd_t *'fd');*
 
 DESCRIPTION
 -----------
@@ -129,7 +129,8 @@ The client does therefore not need to initialize the contents of the events
 array before a call to _zmq_poller_wait_all_. It is unspecified whether the
 the remaining elements of 'events' are written to by _zmq_poller_wait_all_.
 
-_zmq_poller_fd_ returns the file descriptor associated with the zmq_poller.
+_zmq_poller_fd_ queries the file descriptor associated with the zmq_poller,
+and stores it in the address pointer to by 'fd'.
 The zmq_poller is only guaranteed to have a file descriptor if
 at least one thread-safe socket is currently registered.
 

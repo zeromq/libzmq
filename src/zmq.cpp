@@ -1278,14 +1278,14 @@ int zmq_poller_wait_all (void *poller_,
     return rc;
 }
 
-zmq_fd_t zmq_poller_fd (void *poller_)
+int zmq_poller_fd (void *poller_, zmq_fd_t *fd_)
 {
     if (!poller_
         || !(static_cast<zmq::socket_poller_t *> (poller_)->check_tag ())) {
         errno = EFAULT;
         return -1;
     } else {
-        return static_cast<zmq::socket_poller_t *> (poller_)->signaler_fd ();
+        return static_cast<zmq::socket_poller_t *> (poller_)->signaler_fd (fd_);
     }
 }
 
