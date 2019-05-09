@@ -80,14 +80,16 @@ const char *zmq_msg_group (zmq_msg_t *msg_);
 /*  Poller polling on sockets,fd and thread-safe sockets                      */
 /******************************************************************************/
 
+#if defined _WIN32
+typedef SOCKET zmq_fd_t;
+#else
+typedef int zmq_fd_t;
+#endif
+
 typedef struct zmq_poller_event_t
 {
     void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    zmq_fd_t fd;
     void *user_data;
     short events;
 } zmq_poller_event_t;
@@ -105,20 +107,14 @@ int zmq_poller_wait_all (void *poller_,
                          zmq_poller_event_t *events_,
                          int n_events_,
                          long timeout_);
-int zmq_poller_fd (void *poller_);
+zmq_fd_t zmq_poller_fd (void *poller_);
 
-#if defined _WIN32
 int zmq_poller_add_fd (void *poller_,
-                       SOCKET fd_,
+                       zmq_fd_t fd_,
                        void *user_data_,
                        short events_);
-int zmq_poller_modify_fd (void *poller_, SOCKET fd_, short events_);
-int zmq_poller_remove_fd (void *poller_, SOCKET fd_);
-#else
-int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
-int zmq_poller_modify_fd (void *poller, int fd, short events);
-int zmq_poller_remove_fd (void *poller, int fd);
-#endif
+int zmq_poller_modify_fd (void *poller_, zmq_fd_t fd_, short events_);
+int zmq_poller_remove_fd (void *poller_, zmq_fd_t fd_);
 
 int zmq_socket_get_peer_state (void *socket_,
                                const void *routing_id_,
