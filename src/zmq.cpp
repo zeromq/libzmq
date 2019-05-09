@@ -1278,7 +1278,7 @@ int zmq_poller_wait_all (void *poller_,
     return rc;
 }
 
-int zmq_poller_fd (void *poller_)
+zmq_fd_t zmq_poller_fd (void *poller_)
 {
     if (!poller_
         || !(static_cast<zmq::socket_poller_t *> (poller_)->check_tag ())) {

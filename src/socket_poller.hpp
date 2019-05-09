@@ -76,7 +76,7 @@ class socket_poller_t
     int modify_fd (fd_t fd_, short events_);
     int remove_fd (fd_t fd_);
     // Returns the signaler's fd if there is one, otherwise errors.
-    int signaler_fd ();
+    fd_t signaler_fd ();
 
     int wait (event_t *event_, int n_events_, long timeout_);
 

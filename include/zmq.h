@@ -685,14 +685,16 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 
 #define ZMQ_HAVE_POLLER
 
+#if defined _WIN32
+typedef SOCKET zmq_fd_t;
+#else
+typedef int zmq_fd_t;
+#endif
+
 typedef struct zmq_poller_event_t
 {
     void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    zmq_fd_t fd;
     void *user_data;
     short events;
 } zmq_poller_event_t;
@@ -709,19 +711,12 @@ ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
                                     zmq_poller_event_t *events,
                                     int n_events,
                                     long timeout);
-ZMQ_EXPORT int zmq_poller_fd (void *poller);
+ZMQ_EXPORT zmq_fd_t zmq_poller_fd (void *poller);
 
-#if defined _WIN32
 ZMQ_EXPORT int
-zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, SOCKET fd);
-#else
-ZMQ_EXPORT int
-zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
-#endif
+zmq_poller_add_fd (void *poller, zmq_fd_t fd, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, zmq_fd_t fd, short events);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, zmq_fd_t fd);
 
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
                                           const void *routing_id,
