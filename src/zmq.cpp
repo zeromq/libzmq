@@ -275,12 +275,22 @@ int zmq_socket_monitor_versioned (void *s_,
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
         return -1;
-    return s->monitor (addr_, events_, event_version_);
+    return s->monitor (addr_, events_, event_version_, ZMQ_PAIR);
 }
 
 int zmq_socket_monitor (void *s_, const char *addr_, int events_)
 {
     return zmq_socket_monitor_versioned (s_, addr_, events_, 1);
+}
+
+int zmq_socket_monitor_versioned_typed (
+  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+
+    return s->monitor (addr_, events_, event_version_, type_);
 }
 
 int zmq_join (void *s_, const char *group_)

@@ -1639,7 +1639,8 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
 
 int zmq::socket_base_t::monitor (const char *endpoint_,
                                  uint64_t events_,
-                                 int event_version_)
+                                 int event_version_,
+                                 int type_)
 {
     scoped_lock_t lock (_monitor_sync);
 
@@ -1670,14 +1671,31 @@ int zmq::socket_base_t::monitor (const char *endpoint_,
         errno = EPROTONOSUPPORT;
         return -1;
     }
+
     // already monitoring. Stop previous monitor before starting new one.
     if (_monitor_socket != NULL) {
         stop_monitor (true);
     }
+
+    // Check if the specified socket type is supported. It must be a
+    // one-way socket types that support the SNDMORE flag.
+    switch (type_) {
+        case ZMQ_PAIR:
+            break;
+        case ZMQ_PUB:
+            break;
+        case ZMQ_PUSH:
+            break;
+        default:
+            errno = EINVAL;
+            return -1;
+    }
+
     //  Register events to monitor
     _monitor_events = events_;
     options.monitor_event_version = event_version_;
-    _monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
+    //  Create a monitor socket of the specified type.
+    _monitor_socket = zmq_socket (get_ctx (), type_);
     if (_monitor_socket == NULL)
         return -1;
 
