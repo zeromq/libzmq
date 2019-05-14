@@ -126,8 +126,21 @@ void test_monitor_basic ()
 #if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
   || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
       && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
-void test_monitor_versioned_basic (bind_function_t bind_function_,
-                                   const char *expected_prefix_)
+void test_monitor_versioned_typed_invalid_socket_type ()
+{
+    void *client = test_context_socket (ZMQ_DEALER);
+
+    //  Socket monitoring only works with ZMQ_PAIR, ZMQ_PUB and ZMQ_PUSH.
+    TEST_ASSERT_FAILURE_ERRNO (
+      EINVAL, zmq_socket_monitor_versioned_typed (
+                client, "inproc://invalid-socket-type", 0, 2, ZMQ_CLIENT));
+
+    test_context_socket_close_zero_linger (client);
+}
+
+void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
+                                         const char *expected_prefix_,
+                                         int type_)
 {
     char server_endpoint[MAX_SOCKET_STRING];
 
@@ -136,14 +149,36 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     void *server = test_context_socket (ZMQ_DEALER);
 
     //  Monitor all events on client and server sockets
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
-      client, "inproc://monitor-client", ZMQ_EVENT_ALL_V2, 2));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned (
-      server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned_typed (
+      client, "inproc://monitor-client", ZMQ_EVENT_ALL_V2, 2, type_));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned_typed (
+      server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2, type_));
+
+    //  Choose the appropriate consumer socket type.
+    int mon_type;
+    switch (type_) {
+        case ZMQ_PAIR:
+            mon_type = ZMQ_PAIR;
+            break;
+        case ZMQ_PUSH:
+            mon_type = ZMQ_PULL;
+            break;
+        case ZMQ_PUB:
+            mon_type = ZMQ_SUB;
+            break;
+    }
 
     //  Create two sockets for collecting monitor events
-    void *client_mon = test_context_socket (ZMQ_PAIR);
-    void *server_mon = test_context_socket (ZMQ_PAIR);
+    void *client_mon = test_context_socket (mon_type);
+    void *server_mon = test_context_socket (mon_type);
+
+    //  Additionally subscribe to all events if a PUB socket is used.
+    if (type_ == ZMQ_PUB) {
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (client_mon, ZMQ_SUBSCRIBE, "", 0));
+        TEST_ASSERT_SUCCESS_ERRNO (
+          zmq_setsockopt (server_mon, ZMQ_SUBSCRIBE, "", 0));
+    }
 
     //  Connect these to the inproc endpoints so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -220,30 +255,44 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (client_mon);
     test_context_socket_close_zero_linger (server_mon);
+
+    //  Wait for the monitor socket's endpoint to be available
+    //  for reuse.
+    msleep (SETTLE_TIME);
 }
 
 void test_monitor_versioned_basic_tcp_ipv4 ()
 {
     static const char prefix[] = "tcp://127.0.0.1:";
-    test_monitor_versioned_basic (bind_loopback_ipv4, prefix);
+    // Calling 'monitor_versioned_typed' with ZMQ_PAIR is the equivalent of
+    // calling 'monitor_versioned'.
+    test_monitor_versioned_typed_basic (bind_loopback_ipv4, prefix, ZMQ_PAIR);
+    test_monitor_versioned_typed_basic (bind_loopback_ipv4, prefix, ZMQ_PUB);
+    test_monitor_versioned_typed_basic (bind_loopback_ipv4, prefix, ZMQ_PUSH);
 }
 
 void test_monitor_versioned_basic_tcp_ipv6 ()
 {
     static const char prefix[] = "tcp://[::1]:";
-    test_monitor_versioned_basic (bind_loopback_ipv6, prefix);
+    test_monitor_versioned_typed_basic (bind_loopback_ipv6, prefix, ZMQ_PAIR);
+    test_monitor_versioned_typed_basic (bind_loopback_ipv6, prefix, ZMQ_PUB);
+    test_monitor_versioned_typed_basic (bind_loopback_ipv6, prefix, ZMQ_PUSH);
 }
 
 void test_monitor_versioned_basic_ipc ()
 {
     static const char prefix[] = "ipc://";
-    test_monitor_versioned_basic (bind_loopback_ipc, prefix);
+    test_monitor_versioned_typed_basic (bind_loopback_ipc, prefix, ZMQ_PAIR);
+    test_monitor_versioned_typed_basic (bind_loopback_ipc, prefix, ZMQ_PUB);
+    test_monitor_versioned_typed_basic (bind_loopback_ipc, prefix, ZMQ_PUSH);
 }
 
 void test_monitor_versioned_basic_tipc ()
 {
     static const char prefix[] = "tipc://";
-    test_monitor_versioned_basic (bind_loopback_tipc, prefix);
+    test_monitor_versioned_typed_basic (bind_loopback_tipc, prefix, ZMQ_PAIR);
+    test_monitor_versioned_typed_basic (bind_loopback_tipc, prefix, ZMQ_PUB);
+    test_monitor_versioned_typed_basic (bind_loopback_tipc, prefix, ZMQ_PUSH);
 }
 
 #ifdef ZMQ_EVENT_PIPES_STATS
@@ -385,6 +434,7 @@ int main ()
 #if (defined ZMQ_CURRENT_EVENT_VERSION && ZMQ_CURRENT_EVENT_VERSION >= 2)      \
   || (defined ZMQ_CURRENT_EVENT_VERSION                                        \
       && ZMQ_CURRENT_EVENT_VERSION_DRAFT >= 2)
+    RUN_TEST (test_monitor_versioned_typed_invalid_socket_type);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv4);
     RUN_TEST (test_monitor_versioned_basic_tcp_ipv6);
     RUN_TEST (test_monitor_versioned_basic_ipc);

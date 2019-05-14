@@ -11,6 +11,8 @@ zmq_socket_monitor_versioned - monitor socket events
 SYNOPSIS
 --------
 *int zmq_socket_monitor_versioned (void '*socket', char '*endpoint', uint64_t 'events', int 'event_version');*
+*int zmq_socket_monitor_versioned_typed (
+    void '*socket', char '*endpoint', uint64_t 'events', int 'event_version', int 'type');*
 
 *int zmq_socket_monitor_pipes_stats (void '*socket');*
 
@@ -55,6 +57,17 @@ connection uses a bound or connected local endpoint.
 
 Note that the format of the second and further frames, and also the number of
 frames, may be different for events added in the future.
+
+The _zmq_socket_monitor_versioned_typed()_ is a generalisation of
+_zmq_socket_monitor_versioned_ that supports more monitoring socket types.
+The 'type' argument is used to specify the type of the monitoring socket.
+Supported types are 'ZMQ_PAIR' (which is the equivalent of
+_zmq_socket_monitor_versioned_), 'ZMQ_PUB' and 'ZMQ_PUSH'. Note that consumers
+of the events will have to be compatible with the socket type, for instance a
+monitoring socket of type 'ZMQ_PUB' will require consumers of type 'ZMQ_SUB'.
+In the case that the monitoring socket type is of 'ZMQ_PUB', the multipart
+message topic is the event number, thus consumers should subscribe to the
+events they want to receive.
 
 The _zmq_socket_monitor_pipes_stats()_ method triggers an event of type
 ZMQ_EVENT_PIPES_STATS for each connected peer of the monitored socket.
@@ -213,6 +226,20 @@ sockets are required to use the inproc:// transport.
 
 *EINVAL*::
 The monitor 'endpoint' supplied does not exist.
+
+
+ERRORS - _zmq_socket_monitor_typed()_
+-------------------------------
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+
+*EPROTONOSUPPORT*::
+The transport protocol of the monitor 'endpoint' is not supported. Monitor
+sockets are required to use the inproc:// transport.
+
+*EINVAL*::
+The monitor 'endpoint' supplied does not exist or the specified socket 'type'
+is not supported.
 
 
 ERRORS - _zmq_socket_monitor_pipes_stats()_
