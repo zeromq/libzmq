@@ -143,6 +143,15 @@ void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
                                          int type_)
 {
     char server_endpoint[MAX_SOCKET_STRING];
+    char client_mon_endpoint[MAX_SOCKET_STRING];
+    char server_mon_endpoint[MAX_SOCKET_STRING];
+
+    //  Create a unique endpoint for each call so we don't have
+    //  to wait for the sockets to unbind.
+    snprintf (client_mon_endpoint, MAX_SOCKET_STRING, "inproc://client%s%d",
+              expected_prefix_, type_);
+    snprintf (server_mon_endpoint, MAX_SOCKET_STRING, "inproc://server%s%d",
+              expected_prefix_, type_);
 
     //  We'll monitor these two sockets
     void *client = test_context_socket (ZMQ_DEALER);
@@ -150,12 +159,12 @@ void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
 
     //  Monitor all events on client and server sockets
     TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned_typed (
-      client, "inproc://monitor-client", ZMQ_EVENT_ALL_V2, 2, type_));
+      client, client_mon_endpoint, ZMQ_EVENT_ALL_V2, 2, type_));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor_versioned_typed (
-      server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2, type_));
+      server, server_mon_endpoint, ZMQ_EVENT_ALL_V2, 2, type_));
 
     //  Choose the appropriate consumer socket type.
-    int mon_type;
+    int mon_type = ZMQ_PAIR;
     switch (type_) {
         case ZMQ_PAIR:
             mon_type = ZMQ_PAIR;
@@ -181,10 +190,8 @@ void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
     }
 
     //  Connect these to the inproc endpoints so they'll get events
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (client_mon, "inproc://monitor-client"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (server_mon, "inproc://monitor-server"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client_mon, client_mon_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (server_mon, server_mon_endpoint));
 
     //  Now do a basic ping test
     bind_function_ (server, server_endpoint, sizeof server_endpoint);
@@ -255,10 +262,6 @@ void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (client_mon);
     test_context_socket_close_zero_linger (server_mon);
-
-    //  Wait for the monitor socket's endpoint to be available
-    //  for reuse.
-    msleep (SETTLE_TIME);
 }
 
 void test_monitor_versioned_basic_tcp_ipv4 ()
