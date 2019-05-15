@@ -155,7 +155,7 @@ void test_monitor_versioned_typed_basic (bind_function_t bind_function_,
       server, "inproc://monitor-server", ZMQ_EVENT_ALL_V2, 2, type_));
 
     //  Choose the appropriate consumer socket type.
-    int mon_type;
+    int mon_type = ZMQ_PAIR;
     switch (type_) {
         case ZMQ_PAIR:
             mon_type = ZMQ_PAIR;
