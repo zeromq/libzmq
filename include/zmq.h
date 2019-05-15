@@ -735,6 +735,8 @@ ZMQ_EXPORT int zmq_socket_monitor_versioned (void *s_,
                                              const char *addr_,
                                              uint64_t events_,
                                              int event_version_);
+ZMQ_EXPORT int zmq_socket_monitor_versioned_typed (
+  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
 
 #endif // ZMQ_BUILD_DRAFT_API

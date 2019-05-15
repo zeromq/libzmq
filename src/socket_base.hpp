@@ -119,7 +119,10 @@ class socket_base_t : public own_t,
     void lock ();
     void unlock ();
 
-    int monitor (const char *endpoint_, uint64_t events_, int event_version_);
+    int monitor (const char *endpoint_,
+                 uint64_t events_,
+                 int event_version_,
+                 int type_);
 
     void event_connected (const endpoint_uri_pair_t &endpoint_uri_pair_,
                           zmq::fd_t fd_);
