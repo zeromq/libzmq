@@ -44,6 +44,7 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     _more (false),
     _lossy (true),
     _manual (false),
+    _send_last_pipe (false),
     _pending_pipes (),
     _welcome_msg ()
 {
@@ -190,7 +191,8 @@ int zmq::xpub_t::xsetsockopt (int option_,
                               size_t optvallen_)
 {
     if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
-        || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL) {
+        || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL
+        || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE) {
         if (optvallen_ != sizeof (int)
             || *static_cast<const int *> (optval_) < 0) {
             errno = EINVAL;
@@ -202,6 +204,9 @@ int zmq::xpub_t::xsetsockopt (int option_,
         } else if (option_ == ZMQ_XPUB_VERBOSER) {
             _verbose_subs = (*static_cast<const int *> (optval_) != 0);
             _verbose_unsubs = _verbose_subs;
+        } else if (option_ == ZMQ_XPUB_MANUAL_LAST_VALUE) {
+            _manual = (*static_cast<const int *> (optval_) != 0);
+            _send_last_pipe = _manual;
         } else if (option_ == ZMQ_XPUB_NODROP)
             _lossy = (*static_cast<const int *> (optval_) == 0);
         else if (option_ == ZMQ_XPUB_MANUAL)

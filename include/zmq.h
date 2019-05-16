@@ -379,7 +379,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 #define ZMQ_BINDTODEVICE 92
-
+#define ZMQ_XPUB_MANUAL_LAST_VALUE 93
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SHARED 3

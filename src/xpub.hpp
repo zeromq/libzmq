@@ -99,6 +99,9 @@ class xpub_t : public socket_base_t
     //  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
     bool _manual;
 
+    //  Send message to the last pipe, only used if xpub is on manual and after calling set option with ZMQ_SUBSCRIBE
+    bool _send_last_pipe;
+
     //  Last pipe that sent subscription message, only used if xpub is on manual
     pipe_t *_last_pipe;
 
