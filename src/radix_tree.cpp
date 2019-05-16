@@ -33,7 +33,6 @@
 #include "radix_tree.hpp"
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 node::node (unsigned char *data) : data_ (data)
@@ -81,7 +80,7 @@ unsigned char *node::prefix ()
     return data_ + 3 * sizeof (uint32_t);
 }
 
-void node::set_prefix (unsigned char const *bytes)
+void node::set_prefix (const unsigned char *bytes)
 {
     memcpy (prefix (), bytes, prefix_length ());
 }
@@ -91,7 +90,7 @@ unsigned char *node::first_bytes ()
     return prefix () + prefix_length ();
 }
 
-void node::set_first_bytes (unsigned char const *bytes)
+void node::set_first_bytes (const unsigned char *bytes)
 {
     memcpy (first_bytes (), bytes, edgecount ());
 }
@@ -113,7 +112,7 @@ unsigned char *node::node_ptrs ()
     return prefix () + prefix_length () + edgecount ();
 }
 
-void node::set_node_ptrs (unsigned char const *ptrs)
+void node::set_node_ptrs (const unsigned char *ptrs)
 {
     memcpy (node_ptrs (), ptrs, edgecount () * sizeof (void *));
 }

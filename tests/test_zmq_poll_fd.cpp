@@ -31,32 +31,16 @@
 #include "testutil_unity.hpp"
 
 #include <netdb.h>
-#include <unity.h>
+#include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_poll_fd ()
 {
-    struct addrinfo *addr, hint;
-    hint.ai_flags = AI_NUMERICHOST;
-    hint.ai_family = AF_INET;
-    hint.ai_socktype = SOCK_DGRAM;
-    hint.ai_protocol = IPPROTO_UDP;
-    hint.ai_addrlen = 0;
-    hint.ai_canonname = NULL;
-    hint.ai_addr = NULL;
-    hint.ai_next = NULL;
-
-    TEST_ASSERT_SUCCESS_ERRNO (getaddrinfo ("127.0.0.1", "6650", &hint, &addr));
-
     int recv_socket = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     TEST_ASSERT_NOT_EQUAL (-1, recv_socket);
 
@@ -64,8 +48,7 @@ void test_poll_fd ()
     TEST_ASSERT_SUCCESS_ERRNO (
       setsockopt (recv_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (
-      bind (recv_socket, addr->ai_addr, addr->ai_addrlen));
+    struct sockaddr_in saddr = bind_bsd_socket (recv_socket);
 
     void *sb = test_context_socket (ZMQ_REP);
 
@@ -82,8 +65,8 @@ void test_poll_fd ()
     char buf[10];
     memset (buf, 1, 10);
 
-    TEST_ASSERT_SUCCESS_ERRNO (
-      sendto (send_socket, buf, 10, 0, addr->ai_addr, addr->ai_addrlen));
+    TEST_ASSERT_SUCCESS_ERRNO (sendto (
+      send_socket, buf, 10, 0, (struct sockaddr *) &saddr, sizeof (saddr)));
 
     TEST_ASSERT_EQUAL (1, zmq_poll (pollitems, 2, 1));
     TEST_ASSERT_BITS_LOW (ZMQ_POLLIN, pollitems[0].revents);
@@ -93,8 +76,6 @@ void test_poll_fd ()
 
     close (send_socket);
     close (recv_socket);
-
-    freeaddrinfo (addr);
 }
 
 int main ()

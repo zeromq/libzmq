@@ -28,71 +28,73 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <pthread.h>
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 #define THREAD_COUNT 100
 
 extern "C" {
 static void *worker (void *s_)
 {
-    int rc;
-
-    rc = zmq_connect (s_, "tipc://{5560,0}@0.0.0");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s_, "tipc://{5560,0}@0.0.0"));
 
     //  Start closing the socket while the connecting process is underway.
-    rc = zmq_close (s_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (s_));
 
     return NULL;
 }
 }
 
-int main (void)
+void test_shutdown_stress_tipc ()
+{
+    void *s1;
+    void *s2;
+    int i;
+    int j;
+    pthread_t threads[THREAD_COUNT];
+
+    for (j = 0; j != 10; j++) {
+        //  Check the shutdown with many parallel I/O threads.
+        setup_test_context ();
+        zmq_ctx_set (get_test_context (), ZMQ_IO_THREADS, 7);
+
+        s1 = test_context_socket (ZMQ_PUB);
+
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s1, "tipc://{5560,0,0}"));
+
+        for (i = 0; i != THREAD_COUNT; i++) {
+            s2 = zmq_socket (get_test_context (), ZMQ_SUB);
+            TEST_ASSERT_SUCCESS_RAW_ERRNO (
+              pthread_create (&threads[i], NULL, worker, s2));
+        }
+
+        for (i = 0; i != THREAD_COUNT; i++) {
+            TEST_ASSERT_SUCCESS_RAW_ERRNO (pthread_join (threads[i], NULL));
+        }
+
+        test_context_socket_close (s1);
+
+        teardown_test_context ();
+    }
+}
+
+int main ()
 {
     if (!is_tipc_available ()) {
         printf ("TIPC environment unavailable, skipping test\n");
         return 77;
     }
 
-    void *ctx;
-    void *s1;
-    void *s2;
-    int i;
-    int j;
-    int rc;
-    pthread_t threads[THREAD_COUNT];
-
-    fprintf (stderr, "test_shutdown_stress_tipc running...\n");
-
-    for (j = 0; j != 10; j++) {
-        //  Check the shutdown with many parallel I/O threads.
-        ctx = zmq_init (7);
-        assert (ctx);
-
-        s1 = zmq_socket (ctx, ZMQ_PUB);
-        assert (s1);
-
-        rc = zmq_bind (s1, "tipc://{5560,0,0}");
-        assert (rc == 0);
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            s2 = zmq_socket (ctx, ZMQ_SUB);
-            assert (s2);
-            rc = pthread_create (&threads[i], NULL, worker, s2);
-            assert (rc == 0);
-        }
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            rc = pthread_join (threads[i], NULL);
-            assert (rc == 0);
-        }
-
-        rc = zmq_close (s1);
-        assert (rc == 0);
-
-        rc = zmq_ctx_term (ctx);
-        assert (rc == 0);
-    }
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_shutdown_stress_tipc);
+    return UNITY_END ();
 }

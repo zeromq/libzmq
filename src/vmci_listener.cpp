@@ -87,7 +87,8 @@ void zmq::vmci_listener_t::in_event ()
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint, zmq_errno ());
+        socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (endpoint), zmq_errno ());
         return;
     }
 
@@ -106,8 +107,8 @@ void zmq::vmci_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine = new (std::nothrow) stream_engine_t (
+      fd, options, make_unconnected_bind_endpoint_pair (endpoint));
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -122,10 +123,10 @@ void zmq::vmci_listener_t::in_event ()
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    socket->event_accepted (endpoint, fd);
+    socket->event_accepted (make_unconnected_bind_endpoint_pair (endpoint), fd);
 }
 
-int zmq::vmci_listener_t::get_address (std::string &addr_)
+int zmq::vmci_listener_t::get_local_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_HPUX
@@ -143,7 +144,7 @@ int zmq::vmci_listener_t::get_address (std::string &addr_)
     return addr.to_string (addr_);
 }
 
-int zmq::vmci_listener_t::set_address (const char *addr_)
+int zmq::vmci_listener_t::set_local_address (const char *addr_)
 {
     //  Create addr on stack for auto-cleanup
     std::string addr (addr_);
@@ -198,7 +199,7 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    socket->event_listening (endpoint, s);
+    socket->event_listening (make_unconnected_bind_endpoint_pair (endpoint), s);
     return 0;
 
 error:
@@ -218,7 +219,7 @@ void zmq::vmci_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint, s);
+    socket->event_closed (make_unconnected_bind_endpoint_pair (endpoint), s);
     s = retired_fd;
 }
 

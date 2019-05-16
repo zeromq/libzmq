@@ -30,17 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 //  Client threads loop on send/recv until told to exit
 void client_thread (void *client_)
@@ -53,13 +43,10 @@ void client_thread (void *client_)
 
 void test_thread_safe ()
 {
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     void *server = test_context_socket (ZMQ_SERVER);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
 
     void *client = test_context_socket (ZMQ_CLIENT);
 

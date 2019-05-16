@@ -546,7 +546,7 @@ bool zmq::pipe_t::check_hwm () const
 {
     const bool full =
       _hwm > 0 && _msgs_written - _peers_msgs_read >= uint64_t (_hwm);
-    return (!full);
+    return !full;
 }
 
 void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
@@ -554,12 +554,28 @@ void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
     send_pipe_hwm (_peer, inhwm_, outhwm_);
 }
 
-void zmq::pipe_t::set_endpoint_uri (const char *name_)
+void zmq::pipe_t::set_endpoint_pair (zmq::endpoint_uri_pair_t endpoint_pair_)
 {
-    _endpoint_uri = name_;
+    _endpoint_pair = ZMQ_MOVE (endpoint_pair_);
 }
 
-std::string &zmq::pipe_t::get_endpoint_uri ()
+const zmq::endpoint_uri_pair_t &zmq::pipe_t::get_endpoint_pair () const
 {
-    return _endpoint_uri;
+    return _endpoint_pair;
+}
+
+void zmq::pipe_t::send_stats_to_peer (own_t *socket_base_)
+{
+    endpoint_uri_pair_t *ep =
+      new (std::nothrow) endpoint_uri_pair_t (_endpoint_pair);
+    send_pipe_peer_stats (_peer, _msgs_written - _peers_msgs_read, socket_base_,
+                          ep);
+}
+
+void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
+                                           own_t *socket_base_,
+                                           endpoint_uri_pair_t *endpoint_pair_)
+{
+    send_pipe_stats_publish (socket_base_, queue_count_,
+                             _msgs_written - _peers_msgs_read, endpoint_pair_);
 }

@@ -124,6 +124,14 @@ matrix:
         - libnorm-dev
         - libpgm-dev
         - libsodium-dev
+  - env: BUILD_TYPE=abi-compliance-checker
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+        - abi-dumper
+        - abi-compliance-checker
     
 sudo: false
 

@@ -29,7 +29,6 @@
 
 #include "precompiled.hpp"
 #include <string>
-#include <sstream>
 
 #include "macros.hpp"
 #include "tcp_address.hpp"
@@ -113,6 +112,27 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     return resolver.resolve (&_address, name_);
 }
 
+template <size_t N1, size_t N2>
+static std::string make_address_string (const char *hbuf,
+                                        uint16_t port,
+                                        const char (&ipv6_prefix)[N1],
+                                        const char (&ipv6_suffix)[N2])
+{
+    const size_t max_port_str_length = 5;
+    char buf[NI_MAXHOST + sizeof ipv6_prefix + sizeof ipv6_suffix
+             + max_port_str_length];
+    char *pos = buf;
+    memcpy (pos, ipv6_prefix, sizeof ipv6_prefix - 1);
+    pos += sizeof ipv6_prefix - 1;
+    const size_t hbuf_len = strlen (hbuf);
+    memcpy (pos, hbuf, hbuf_len);
+    pos += hbuf_len;
+    memcpy (pos, ipv6_suffix, sizeof ipv6_suffix - 1);
+    pos += sizeof ipv6_suffix - 1;
+    pos += sprintf (pos, "%d", ntohs (port));
+    return std::string (buf, pos - buf);
+}
+
 int zmq::tcp_address_t::to_string (std::string &addr_) const
 {
     if (_address.family () != AF_INET && _address.family () != AF_INET6) {
@@ -130,14 +150,16 @@ int zmq::tcp_address_t::to_string (std::string &addr_) const
         return rc;
     }
 
+    const char ipv4_prefix[] = "tcp://";
+    const char ipv4_suffix[] = ":";
+    const char ipv6_prefix[] = "tcp://[";
+    const char ipv6_suffix[] = "]:";
     if (_address.family () == AF_INET6) {
-        std::stringstream s;
-        s << "tcp://[" << hbuf << "]:" << ntohs (_address.ipv6.sin6_port);
-        addr_ = s.str ();
+        addr_ = make_address_string (hbuf, _address.ipv6.sin6_port, ipv6_prefix,
+                                     ipv6_suffix);
     } else {
-        std::stringstream s;
-        s << "tcp://" << hbuf << ":" << ntohs (_address.ipv4.sin_port);
-        addr_ = s.str ();
+        addr_ = make_address_string (hbuf, _address.ipv4.sin_port, ipv4_prefix,
+                                     ipv4_suffix);
     }
     return 0;
 }
@@ -263,15 +285,29 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_) const
         return rc;
     }
 
+    const size_t max_mask_len = 4;
+    const char ipv6_prefix[] = "[";
+    const char ipv6_suffix[] = "]/";
+    const char ipv4_suffix[] = "/";
+    char
+      buf[NI_MAXHOST + sizeof ipv6_prefix + sizeof ipv6_suffix + max_mask_len];
+    char *pos = buf;
     if (_network_address.family () == AF_INET6) {
-        std::stringstream s;
-        s << "[" << hbuf << "]/" << _address_mask;
-        addr_ = s.str ();
-    } else {
-        std::stringstream s;
-        s << hbuf << "/" << _address_mask;
-        addr_ = s.str ();
+        memcpy (pos, ipv6_prefix, sizeof ipv6_prefix - 1);
+        pos += sizeof ipv6_prefix - 1;
     }
+    const size_t hbuf_len = strlen (hbuf);
+    memcpy (pos, hbuf, hbuf_len);
+    pos += hbuf_len;
+    if (_network_address.family () == AF_INET6) {
+        memcpy (pos, ipv6_suffix, sizeof ipv6_suffix - 1);
+        pos += sizeof ipv6_suffix - 1;
+    } else {
+        memcpy (pos, ipv4_suffix, sizeof ipv4_suffix - 1);
+        pos += sizeof ipv4_suffix - 1;
+    }
+    pos += sprintf (pos, "%d", _address_mask);
+    addr_.assign (buf, pos - buf);
     return 0;
 }
 

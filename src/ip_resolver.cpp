@@ -49,12 +49,10 @@ const struct sockaddr *zmq::ip_addr_t::as_sockaddr () const
     return &generic;
 }
 
-socklen_t zmq::ip_addr_t::sockaddr_len () const
+zmq::zmq_socklen_t zmq::ip_addr_t::sockaddr_len () const
 {
-    if (family () == AF_INET6) {
-        return sizeof (ipv6);
-    }
-    return sizeof (ipv4);
+    return static_cast<zmq_socklen_t> (family () == AF_INET6 ? sizeof (ipv6)
+                                                             : sizeof (ipv4));
 }
 
 void zmq::ip_addr_t::set_port (uint16_t port_)

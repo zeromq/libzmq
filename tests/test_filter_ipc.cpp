@@ -30,15 +30,10 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
+#include <unistd.h>
+#include <grp.h>
 
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 static void bounce_fail (void *server_, void *client_)
 {
@@ -117,13 +112,15 @@ void init_groups ()
     // Get the group and supplemental groups of the process owner
     gid_t groups[100];
     int ngroups = getgroups (100, groups);
-    assert (ngroups != -1);
+    TEST_ASSERT_NOT_EQUAL (-1, ngroups);
     group = getgid ();
     supgroup = group;
     notgroup = group + 1;
     for (int i = 0; i < ngroups; i++) {
-        if (supgroup == group && group != groups[i])
-            supgroup = groups[i];
+        if (supgroup == group && group != groups[i]) {
+            if (getgrgid (groups[i]))
+                supgroup = groups[i];
+        }
         if (notgroup <= groups[i])
             notgroup = groups[i] + 1;
     }

@@ -244,7 +244,8 @@ zmq::options_t::options_t () :
     loopback_fastpath (false),
     multicast_loop (true),
     zero_copy (true),
-    router_notify (0)
+    router_notify (0),
+    monitor_event_version (1)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);

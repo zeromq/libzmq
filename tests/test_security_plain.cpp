@@ -28,6 +28,8 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
 #if defined(ZMQ_HAVE_WINDOWS)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -40,43 +42,41 @@
 #include <unistd.h>
 #endif
 
-static void zap_handler (void *ctx_)
-{
-    //  Create and bind ZAP socket
-    void *zap = zmq_socket (ctx_, ZMQ_REP);
-    assert (zap);
-    int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
-    assert (rc == 0);
+#include <stdlib.h>
+#include <string.h>
 
+static void zap_handler (void *zap_)
+{
     //  Process ZAP requests forever
     while (true) {
-        char *version = s_recv (zap);
+        char *version = s_recv (zap_);
         if (!version)
             break; //  Terminating
-        char *sequence = s_recv (zap);
-        char *domain = s_recv (zap);
-        char *address = s_recv (zap);
-        char *routing_id = s_recv (zap);
-        char *mechanism = s_recv (zap);
-        char *username = s_recv (zap);
-        char *password = s_recv (zap);
+        char *sequence = s_recv (zap_);
+        char *domain = s_recv (zap_);
+        char *address = s_recv (zap_);
+        char *routing_id = s_recv (zap_);
+        char *mechanism = s_recv (zap_);
+        char *username = s_recv (zap_);
+        char *password = s_recv (zap_);
 
-        assert (streq (version, "1.0"));
-        assert (streq (mechanism, "PLAIN"));
-        assert (streq (routing_id, "IDENT"));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING ("PLAIN", mechanism);
+        TEST_ASSERT_EQUAL_STRING ("IDENT", routing_id);
 
-        s_sendmore (zap, version);
-        s_sendmore (zap, sequence);
+        send_string_expect_success (zap_, version, ZMQ_SNDMORE);
+        send_string_expect_success (zap_, sequence, ZMQ_SNDMORE);
         if (streq (username, "admin") && streq (password, "password")) {
-            s_sendmore (zap, "200");
-            s_sendmore (zap, "OK");
-            s_sendmore (zap, "anonymous");
-            s_send (zap, "");
+            send_string_expect_success (zap_, "200", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "anonymous", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", 0);
         } else {
-            s_sendmore (zap, "400");
-            s_sendmore (zap, "Invalid username or password");
-            s_sendmore (zap, "");
-            s_send (zap, "");
+            send_string_expect_success (zap_, "400", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "Invalid username or password",
+                                        ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", ZMQ_SNDMORE);
+            send_string_expect_success (zap_, "", 0);
         }
         free (version);
         free (sequence);
@@ -87,94 +87,120 @@ static void zap_handler (void *ctx_)
         free (username);
         free (password);
     }
-    rc = zmq_close (zap);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (zap_));
 }
 
-int main (void)
+void *zap_thread;
+
+char my_endpoint[MAX_SOCKET_STRING];
+
+static void setup_zap_handler ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
     //  Spawn ZAP handler
-    void *zap_thread = zmq_threadstart (&zap_handler, ctx);
+    //  We create and bind ZAP socket in main thread to avoid case
+    //  where child thread does not start up fast enough.
+    void *handler = zmq_socket (get_test_context (), ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (handler, "inproc://zeromq.zap.01"));
+    zap_thread = zmq_threadstart (&zap_handler, handler);
+}
 
+static void teardown_zap_handler ()
+{
+    //  Wait until ZAP handler terminates
+    zmq_threadclose (zap_thread);
+}
+
+const char domain[] = "test";
+
+void *server;
+
+static void setup_server ()
+{
     //  Server socket will accept connections
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    int rc = zmq_setsockopt (server, ZMQ_ROUTING_ID, "IDENT", 6);
-    const char domain[] = "test";
-    assert (rc == 0);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
-    assert (rc == 0);
-    int as_server = 1;
-    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    server = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ROUTING_ID, "IDENT", 6));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, domain, strlen (domain)));
+    const int as_server = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int)));
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+}
 
-    char username[256];
-    char password[256];
+static void teardown_server ()
+{
+    test_context_socket_close (server);
+}
 
+void setUp ()
+{
+    setup_test_context ();
+    setup_zap_handler ();
+    setup_server ();
+}
+
+void tearDown ()
+{
+    teardown_server ();
+    teardown_test_context ();
+    teardown_zap_handler ();
+}
+
+void test_plain_success ()
+{
     //  Check PLAIN security with correct username/password
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    strcpy (username, "admin");
-    rc =
-      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
-    assert (rc == 0);
-    strcpy (password, "password");
-    rc =
-      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *client = test_context_socket (ZMQ_DEALER);
+    const char username[] = "admin";
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username)));
+    const char password[] = "password";
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     bounce (server, client);
-    rc = zmq_close (client);
-    assert (rc == 0);
+    test_context_socket_close (client);
+}
 
+void test_plain_client_as_server_fails ()
+{
     //  Check PLAIN security with badly configured client (as_server)
     //  This will be caught by the plain_server class, not passed to ZAP
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    as_server = 1;
-    rc = zmq_setsockopt (client, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *client = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_ZAP_DOMAIN, domain, strlen (domain)));
+    const int as_server = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     expect_bounce_fail (server, client);
-    close_zero_linger (client);
+    test_context_socket_close_zero_linger (client);
+}
 
+void test_plain_wrong_credentials_fails ()
+{
     //  Check PLAIN security -- failed authentication
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    strcpy (username, "wronguser");
-    strcpy (password, "wrongpass");
-    rc =
-      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
-    assert (rc == 0);
-    rc =
-      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *client = test_context_socket (ZMQ_DEALER);
+    const char username[] = "wronguser";
+    const char password[] = "wrongpass";
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     expect_bounce_fail (server, client);
-    close_zero_linger (client);
+    test_context_socket_close_zero_linger (client);
+}
 
+void test_plain_vanilla_socket ()
+{
     // Unauthenticated messages from a vanilla socket shouldn't be received
     struct sockaddr_in ip4addr;
     fd_t s;
 
     unsigned short int port;
-    rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
-    assert (rc == 1);
+    int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
     ip4addr.sin_family = AF_INET;
     ip4addr.sin_port = htons (port);
@@ -186,7 +212,7 @@ int main (void)
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
-    assert (rc > -1);
+    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
@@ -196,18 +222,19 @@ int main (void)
     char *buf = s_recv (server);
     if (buf != NULL) {
         printf ("Received unauthenticated message: %s\n", buf);
-        assert (buf == NULL);
+        TEST_ASSERT_NULL (buf);
     }
     close (s);
+}
 
-    //  Shutdown
-    rc = zmq_close (server);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+int main (void)
+{
+    setup_test_environment ();
 
-    //  Wait until ZAP handler terminates
-    zmq_threadclose (zap_thread);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_plain_success);
+    RUN_TEST (test_plain_client_as_server_fails);
+    RUN_TEST (test_plain_wrong_credentials_fails);
+    RUN_TEST (test_plain_vanilla_socket);
+    return UNITY_END ();
 }

@@ -709,9 +709,9 @@ zmq::norm_engine_t::NormRxStreamState::List::Iterator::GetNextItem ()
     return nextItem;
 } // end zmq::norm_engine_t::NormRxStreamState::List::Iterator::GetNextItem()
 
-const char *zmq::norm_engine_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::norm_engine_t::get_endpoint () const
 {
-    return "";
+    return _empty_endpoint;
 }
 
 #endif // ZMQ_HAVE_NORM

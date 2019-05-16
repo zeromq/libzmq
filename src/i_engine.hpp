@@ -30,6 +30,8 @@
 #ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
 #define __ZMQ_I_ENGINE_HPP_INCLUDED__
 
+#include "endpoint.hpp"
+
 namespace zmq
 {
 class io_thread_t;
@@ -61,7 +63,7 @@ struct i_engine
 
     virtual void zap_msg_available () = 0;
 
-    virtual const char *get_endpoint () const = 0;
+    virtual const endpoint_uri_pair_t &get_endpoint () const = 0;
 };
 }
 

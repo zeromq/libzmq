@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2018 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -107,9 +107,24 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
         // Application should handle this as suitable
         if (_more) {
             _pipes[_current]->rollback ();
+            // At this point the pipe is already being deallocated
+            // and the first N frames are unreachable (_outpipe is
+            // most likely already NULL so rollback won't actually do
+            // anything and they can't be un-written to deliver later).
+            // Return EFAULT to socket_base caller to drop current message
+            // and any other subsequent frames to avoid them being
+            // "stuck" and received when a new client reconnects, which
+            // would break atomicity of multi-part messages (in blocking mode
+            // socket_base just tries again and again to send the same message)
+            // Note that given dropping mode returns 0, the user will
+            // never know that the message could not be delivered, but
+            // can't really fix it without breaking backward compatibility.
+            // -2/EAGAIN will make sure socket_base caller does not re-enter
+            // immediately or after a short sleep in blocking mode.
+            _dropping = (msg_->flags () & msg_t::more) != 0;
             _more = false;
             errno = EAGAIN;
-            return -1;
+            return -2;
         }
 
         _active--;

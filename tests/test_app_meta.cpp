@@ -31,6 +31,7 @@
 #include "testutil_unity.hpp"
 #include <unity.h>
 
+#include <string.h>
 
 void setUp ()
 {
@@ -86,8 +87,7 @@ void test_app_meta_reqrep ()
         TEST_ASSERT_EQUAL_INT (-1, rc);
     }
 
-    test_bind (rep_sock, "tcp://127.0.0.1:*", connect_address,
-               sizeof (connect_address));
+    bind_loopback_ipv4 (rep_sock, connect_address, sizeof connect_address);
 
     l = 0;
     rc = zmq_setsockopt (req_sock, ZMQ_LINGER, &l, sizeof (l));

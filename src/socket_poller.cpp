@@ -86,6 +86,18 @@ bool zmq::socket_poller_t::check_tag ()
     return _tag == 0xCAFEBABE;
 }
 
+int zmq::socket_poller_t::signaler_fd (fd_t *fd_)
+{
+    if (_signaler) {
+        *fd_ = _signaler->get_fd ();
+        return 0;
+    } else {
+        // Only thread-safe socket types are guaranteed to have a signaler.
+        errno = EINVAL;
+        return -1;
+    }
+}
+
 int zmq::socket_poller_t::add (socket_base_t *socket_,
                                void *user_data_,
                                short events_)
@@ -260,7 +272,7 @@ int zmq::socket_poller_t::remove_fd (fd_t fd_)
     return 0;
 }
 
-void zmq::socket_poller_t::rebuild ()
+int zmq::socket_poller_t::rebuild ()
 {
     _use_signaler = false;
     _pollset_size = 0;
@@ -287,10 +299,15 @@ void zmq::socket_poller_t::rebuild ()
     }
 
     if (_pollset_size == 0)
-        return;
+        return 0;
 
     _pollfds = static_cast<pollfd *> (malloc (_pollset_size * sizeof (pollfd)));
-    alloc_assert (_pollfds);
+
+    if (!_pollfds) {
+        errno = ENOMEM;
+        _need_rebuild = true;
+        return -1;
+    }
 
     int item_nbr = 0;
 
@@ -390,6 +407,8 @@ void zmq::socket_poller_t::rebuild ()
     }
 
 #endif
+
+    return 0;
 }
 
 void zmq::socket_poller_t::zero_trail_events (
@@ -523,8 +542,11 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
         return -1;
     }
 
-    if (_need_rebuild)
-        rebuild ();
+    if (_need_rebuild) {
+        int rc = rebuild ();
+        if (rc == -1)
+            return -1;
+    }
 
     if (unlikely (_pollset_size == 0)) {
         // We'll report an error (timed out) as if the list was non-empty and

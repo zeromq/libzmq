@@ -30,22 +30,10 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
+SETUP_TEARDOWN_TESTCONTEXT
 
-void setUp ()
+void test_conflate ()
 {
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
-
-void test_x ()
-{
-    const char *bind_to = "tcp://127.0.0.1:*";
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
     int rc;
@@ -55,9 +43,7 @@ void test_x ()
     int conflate = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (s_in, ZMQ_CONFLATE, &conflate, sizeof (conflate)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s_in, bind_to));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (s_in, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipv4 (s_in, my_endpoint, sizeof my_endpoint);
 
     void *s_out = test_context_socket (ZMQ_PUSH);
 
@@ -85,6 +71,6 @@ int main (int, char *[])
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_x);
+    RUN_TEST (test_conflate);
     return UNITY_END ();
 }

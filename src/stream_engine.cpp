@@ -63,58 +63,21 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_,
-                                       const options_t &options_,
-                                       const std::string &endpoint_) :
-    _s (fd_),
-    _handle (static_cast<handle_t> (NULL)),
-    _inpos (NULL),
-    _insize (0),
-    _decoder (NULL),
-    _outpos (NULL),
-    _outsize (0),
-    _encoder (NULL),
-    _metadata (NULL),
-    _handshaking (true),
-    _greeting_size (v2_greeting_size),
-    _greeting_bytes_read (0),
-    _session (NULL),
-    _options (options_),
-    _endpoint (endpoint_),
-    _plugged (false),
-    _next_msg (&stream_engine_t::routing_id_msg),
-    _process_msg (&stream_engine_t::process_routing_id_msg),
-    _io_error (false),
-    _subscription_required (false),
-    _mechanism (NULL),
-    _input_stopped (false),
-    _output_stopped (false),
-    _has_handshake_timer (false),
-    _has_ttl_timer (false),
-    _has_timeout_timer (false),
-    _has_heartbeat_timer (false),
-    _heartbeat_timeout (0),
-    _socket (NULL)
+static std::string get_peer_address (zmq::fd_t s_)
 {
-    int rc = _tx_msg.init ();
-    errno_assert (rc == 0);
-    rc = _pong_msg.init ();
-    errno_assert (rc == 0);
+    std::string peer_address;
 
-    //  Put the socket into non-blocking mode.
-    unblock_socket (_s);
-
-    const int family = get_peer_ip_address (_s, _peer_address);
+    const int family = zmq::get_peer_ip_address (s_, peer_address);
     if (family == 0)
-        _peer_address.clear ();
+        peer_address.clear ();
 #if defined ZMQ_HAVE_SO_PEERCRED
     else if (family == PF_UNIX) {
         struct ucred cred;
         socklen_t size = sizeof (cred);
-        if (!getsockopt (_s, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
+        if (!getsockopt (s_, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
             std::ostringstream buf;
             buf << ":" << cred.uid << ":" << cred.gid << ":" << cred.pid;
-            _peer_address += buf.str ();
+            peer_address += buf.str ();
         }
     }
 #elif defined ZMQ_HAVE_LOCAL_PEERCRED
@@ -132,6 +95,54 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_,
         }
     }
 #endif
+
+    return peer_address;
+}
+
+
+zmq::stream_engine_t::stream_engine_t (
+  fd_t fd_,
+  const options_t &options_,
+  const endpoint_uri_pair_t &endpoint_uri_pair_) :
+    _s (fd_),
+    _handle (static_cast<handle_t> (NULL)),
+    _inpos (NULL),
+    _insize (0),
+    _decoder (NULL),
+    _outpos (NULL),
+    _outsize (0),
+    _encoder (NULL),
+    _metadata (NULL),
+    _handshaking (true),
+    _greeting_size (v2_greeting_size),
+    _greeting_bytes_read (0),
+    _session (NULL),
+    _options (options_),
+    _endpoint_uri_pair (endpoint_uri_pair_),
+    _plugged (false),
+    _next_msg (&stream_engine_t::routing_id_msg),
+    _process_msg (&stream_engine_t::process_routing_id_msg),
+    _io_error (false),
+    _subscription_required (false),
+    _mechanism (NULL),
+    _input_stopped (false),
+    _output_stopped (false),
+    _has_handshake_timer (false),
+    _has_ttl_timer (false),
+    _has_timeout_timer (false),
+    _has_heartbeat_timer (false),
+    _heartbeat_timeout (0),
+    _socket (NULL),
+    _peer_address (get_peer_address (_s))
+{
+    int rc = _tx_msg.init ();
+    errno_assert (rc == 0);
+    rc = _pong_msg.init ();
+    errno_assert (rc == 0);
+
+    //  Put the socket into non-blocking mode.
+    unblock_socket (_s);
+
 
     if (_options.heartbeat_interval > 0) {
         _heartbeat_timeout = _options.heartbeat_timeout;
@@ -287,12 +298,19 @@ void zmq::stream_engine_t::terminate ()
 
 void zmq::stream_engine_t::in_event ()
 {
+    // ignore errors
+    const bool res = in_event_internal ();
+    LIBZMQ_UNUSED (res);
+}
+
+bool zmq::stream_engine_t::in_event_internal ()
+{
     zmq_assert (!_io_error);
 
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (_handshaking))
         if (!handshake ())
-            return;
+            return false;
 
     zmq_assert (_decoder);
 
@@ -300,7 +318,7 @@ void zmq::stream_engine_t::in_event ()
     if (_input_stopped) {
         rm_fd (_handle);
         _io_error = true;
-        return;
+        return true; // TODO or return false in this case too?
     }
 
     //  If there's no data to process in the buffer...
@@ -318,12 +336,14 @@ void zmq::stream_engine_t::in_event ()
             // connection closed by peer
             errno = EPIPE;
             error (connection_error);
-            return;
+            return false;
         }
         if (rc == -1) {
-            if (errno != EAGAIN)
+            if (errno != EAGAIN) {
                 error (connection_error);
-            return;
+                return false;
+            }
+            return true;
         }
 
         //  Adjust input size
@@ -352,13 +372,14 @@ void zmq::stream_engine_t::in_event ()
     if (rc == -1) {
         if (errno != EAGAIN) {
             error (protocol_error);
-            return;
+            return false;
         }
         _input_stopped = true;
         reset_pollin (_handle);
     }
 
     _session->flush ();
+    return true;
 }
 
 void zmq::stream_engine_t::out_event ()
@@ -486,7 +507,8 @@ bool zmq::stream_engine_t::restart_input ()
         _session->flush ();
 
         //  Speculative read.
-        in_event ();
+        if (!in_event_internal ())
+            return false;
     }
 
     return true;
@@ -884,9 +906,9 @@ void zmq::stream_engine_t::zap_msg_available ()
         restart_output ();
 }
 
-const char *zmq::stream_engine_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::stream_engine_t::get_endpoint () const
 {
-    return _endpoint.c_str ();
+    return _endpoint_uri_pair;
 }
 
 void zmq::stream_engine_t::mechanism_ready ()
@@ -950,7 +972,7 @@ void zmq::stream_engine_t::mechanism_ready ()
         alloc_assert (_metadata);
     }
 
-    _socket->event_handshake_succeeded (_endpoint, 0);
+    _socket->event_handshake_succeeded (_endpoint_uri_pair, 0);
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -1071,10 +1093,10 @@ void zmq::stream_engine_t::error (error_reason_t reason_)
         && (_mechanism == NULL
             || _mechanism->status () == mechanism_t::handshaking)) {
         int err = errno;
-        _socket->event_handshake_failed_no_detail (_endpoint, err);
+        _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
     }
 
-    _socket->event_disconnected (_endpoint, _s);
+    _socket->event_disconnected (_endpoint_uri_pair, _s);
     _session->flush ();
     _session->engine_error (reason_);
     unplug ();

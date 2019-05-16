@@ -28,73 +28,70 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 #define THREAD_COUNT 100
 
 struct thread_data
 {
-    void *ctx;
     char endpoint[MAX_SOCKET_STRING];
 };
 
 extern "C" {
 static void worker (void *data_)
 {
-    int rc;
-    void *socket;
     struct thread_data *tdata = (struct thread_data *) data_;
 
-    socket = zmq_socket (tdata->ctx, ZMQ_SUB);
-    assert (socket);
+    void *socket = zmq_socket (get_test_context (), ZMQ_SUB);
 
-    rc = zmq_connect (socket, tdata->endpoint);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (socket, tdata->endpoint));
 
     //  Start closing the socket while the connecting process is underway.
-    rc = zmq_close (socket);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
 }
 }
 
-int main (void)
+void test_shutdown_stress ()
 {
-    setup_test_environment ();
-    void *socket;
-    int i;
-    int j;
-    int rc;
     void *threads[THREAD_COUNT];
 
-    for (j = 0; j != 10; j++) {
+    for (int j = 0; j != 10; j++) {
         //  Check the shutdown with many parallel I/O threads.
         struct thread_data tdata;
-        tdata.ctx = zmq_ctx_new ();
-        assert (tdata.ctx);
-        zmq_ctx_set (tdata.ctx, ZMQ_IO_THREADS, 7);
+        setup_test_context ();
+        zmq_ctx_set (get_test_context (), ZMQ_IO_THREADS, 7);
 
-        socket = zmq_socket (tdata.ctx, ZMQ_PUB);
-        assert (socket);
+        void *socket = test_context_socket (ZMQ_PUB);
 
-        rc = zmq_bind (socket, "tcp://127.0.0.1:*");
-        assert (rc == 0);
-        size_t len = MAX_SOCKET_STRING;
-        rc = zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, tdata.endpoint, &len);
-        assert (rc == 0);
+        bind_loopback_ipv4 (socket, tdata.endpoint, sizeof (tdata.endpoint));
 
-        for (i = 0; i != THREAD_COUNT; i++) {
+        for (int i = 0; i != THREAD_COUNT; i++) {
             threads[i] = zmq_threadstart (&worker, &tdata);
         }
 
-        for (i = 0; i != THREAD_COUNT; i++) {
+        for (int i = 0; i != THREAD_COUNT; i++) {
             zmq_threadclose (threads[i]);
         }
 
-        rc = zmq_close (socket);
-        assert (rc == 0);
+        test_context_socket_close (socket);
 
-        rc = zmq_ctx_term (tdata.ctx);
-        assert (rc == 0);
+        teardown_test_context ();
     }
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_shutdown_stress);
+    return UNITY_END ();
 }

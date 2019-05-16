@@ -99,11 +99,18 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
     if (_cpipe.read (cmd_))
         return 0;
 
-    //  Wait for signal from the command sender.
-    int rc = _cond_var.wait (_sync, timeout_);
-    if (rc == -1) {
-        errno_assert (errno == EAGAIN || errno == EINTR);
-        return -1;
+    //  If the timeout is zero, it will be quicker to release the lock, giving other a chance to send a command
+    //  and immediately relock it.
+    if (timeout_ == 0) {
+        _sync->unlock ();
+        _sync->lock ();
+    } else {
+        //  Wait for signal from the command sender.
+        int rc = _cond_var.wait (_sync, timeout_);
+        if (rc == -1) {
+            errno_assert (errno == EAGAIN || errno == EINTR);
+            return -1;
+        }
     }
 
     //  Another thread may already fetch the command

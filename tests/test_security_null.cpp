@@ -28,6 +28,8 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
 #if defined(ZMQ_HAVE_WINDOWS)
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -39,6 +41,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #endif
+
+#include <stdlib.h>
 
 static void zap_handler (void *handler_)
 {
@@ -54,21 +58,21 @@ static void zap_handler (void *handler_)
         char *routing_id = s_recv (handler_);
         char *mechanism = s_recv (handler_);
 
-        assert (streq (version, "1.0"));
-        assert (streq (mechanism, "NULL"));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING ("NULL", mechanism);
 
-        s_sendmore (handler_, version);
-        s_sendmore (handler_, sequence);
+        send_string_expect_success (handler_, version, ZMQ_SNDMORE);
+        send_string_expect_success (handler_, sequence, ZMQ_SNDMORE);
         if (streq (domain, "TEST")) {
-            s_sendmore (handler_, "200");
-            s_sendmore (handler_, "OK");
-            s_sendmore (handler_, "anonymous");
-            s_send (handler_, "");
+            send_string_expect_success (handler_, "200", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "anonymous", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", 0);
         } else {
-            s_sendmore (handler_, "400");
-            s_sendmore (handler_, "BAD DOMAIN");
-            s_sendmore (handler_, "");
-            s_send (handler_, "");
+            send_string_expect_success (handler_, "400", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "BAD DOMAIN", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", 0);
         }
         free (version);
         free (sequence);
@@ -80,140 +84,97 @@ static void zap_handler (void *handler_)
     close_zero_linger (handler_);
 }
 
-int main (void)
+void *zap_thread;
+
+static void setup_zap_handler ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    //  We first test client/server with a ZAP domain but with no handler
-    //  If there is no handler, libzmq should ignore the ZAP option unless
-    //  ZMQ_ZAP_ENFORCE_DOMAIN is set
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
-    bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
-
-#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    //  Now set ZMQ_ZAP_ENFORCE_DOMAIN which strictly enforces the ZAP
-    //  RFC but is backward-incompatible, now it should fail
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    int required = 1;
-    rc =
-      zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
-#endif
-
     //  Spawn ZAP handler
     //  We create and bind ZAP socket in main thread to avoid case
     //  where child thread does not start up fast enough.
-    void *handler = zmq_socket (ctx, ZMQ_REP);
-    assert (handler);
-    rc = zmq_bind (handler, "inproc://zeromq.zap.01");
-    assert (rc == 0);
-    void *zap_thread = zmq_threadstart (&zap_handler, handler);
+    void *handler = zmq_socket (get_test_context (), ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (handler, "inproc://zeromq.zap.01"));
+    zap_thread = zmq_threadstart (&zap_handler, handler);
+}
 
-    //  We bounce between a binding server and a connecting client
+static void teardown_zap_handler ()
+{
+    //  Wait until ZAP handler terminates
+    zmq_threadclose (zap_thread);
+}
 
+void setUp ()
+{
+    setup_test_context ();
+    setup_zap_handler ();
+}
+
+void tearDown ()
+{
+    teardown_test_context ();
+    teardown_zap_handler ();
+}
+
+void test_no_domain ()
+{
     //  We first test client/server with no ZAP domain
     //  Libzmq does not call our ZAP handler, the connect must succeed
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_DEALER);
+    void *client = test_context_socket (ZMQ_DEALER);
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
+}
 
+void test_wrong_domain_fails ()
+{
     //  Now define a ZAP domain for the server; this enables
     //  authentication. We're using the wrong domain so this test
     //  must fail.
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_DEALER);
+    void *client = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5));
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     expect_bounce_fail (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
+}
 
+void test_success ()
+{
     //  Now use the right domain, the test must pass
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_DEALER);
+    void *client = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4));
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
     bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
+}
 
+void test_vanilla_socket ()
+{
     // Unauthenticated messages from a vanilla socket shouldn't be received
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-
-    len = MAX_SOCKET_STRING;
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5));
+    char my_endpoint[MAX_SOCKET_STRING];
+    bind_loopback_ipv4 (server, my_endpoint, sizeof my_endpoint);
 
     struct sockaddr_in ip4addr;
     fd_t s;
 
     unsigned short int port;
-    rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
-    assert (rc == 1);
+    int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    TEST_ASSERT_EQUAL_INT (1, rc);
 
     ip4addr.sin_family = AF_INET;
     ip4addr.sin_port = htons (port);
@@ -225,7 +186,7 @@ int main (void)
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     rc = connect (s, (struct sockaddr *) &ip4addr, sizeof ip4addr);
-    assert (rc > -1);
+    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
@@ -235,16 +196,20 @@ int main (void)
     char *buf = s_recv (server);
     if (buf != NULL) {
         printf ("Received unauthenticated message: %s\n", buf);
-        assert (buf == NULL);
+        TEST_ASSERT_NULL (buf);
     }
     close (s);
-    close_zero_linger (server);
+    test_context_socket_close_zero_linger (server);
+}
 
-    //  Shutdown
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-    //  Wait until ZAP handler terminates
-    zmq_threadclose (zap_thread);
+int main ()
+{
+    setup_test_environment ();
 
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_no_domain);
+    RUN_TEST (test_wrong_domain_fails);
+    RUN_TEST (test_success);
+    RUN_TEST (test_vanilla_socket);
+    return UNITY_END ();
 }

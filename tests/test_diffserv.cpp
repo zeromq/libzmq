@@ -28,57 +28,45 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_diffserv ()
 {
-    int rc;
     int tos = 0x28;
     int o_tos;
     size_t tos_size = sizeof (tos);
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
 
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    void *sb = test_context_socket (ZMQ_PAIR);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sb, ZMQ_TOS, &tos, tos_size));
+    bind_loopback_ipv4 (sb, my_endpoint, sizeof (my_endpoint));
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sb);
-    rc = zmq_setsockopt (sb, ZMQ_TOS, &tos, tos_size);
-    assert (rc == 0);
-    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (sb, ZMQ_TOS, &o_tos, &tos_size));
+    TEST_ASSERT_EQUAL (tos, o_tos);
 
-    rc = zmq_getsockopt (sb, ZMQ_TOS, &o_tos, &tos_size);
-    assert (rc == 0);
-    assert (o_tos == tos);
-
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
-    assert (sc);
+    void *sc = test_context_socket (ZMQ_PAIR);
     tos = 0x58;
-    rc = zmq_setsockopt (sc, ZMQ_TOS, &tos, tos_size);
-    assert (rc == 0);
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
-    rc = zmq_getsockopt (sc, ZMQ_TOS, &o_tos, &tos_size);
-    assert (rc == 0);
-    assert (o_tos == tos);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sc, ZMQ_TOS, &tos, tos_size));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (sc, ZMQ_TOS, &o_tos, &tos_size));
+    TEST_ASSERT_EQUAL (tos, o_tos);
 
     // Wireshark can be used to verify that the server socket is
     // using DSCP 0x28 in packets to the client while the client
     // is using 0x58 in packets to the server.
     bounce (sb, sc);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
+int main ()
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_diffserv);
+    return UNITY_END ();
 }

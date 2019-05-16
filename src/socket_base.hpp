@@ -43,6 +43,7 @@
 #include "i_mailbox.hpp"
 #include "clock.hpp"
 #include "pipe.hpp"
+#include "endpoint.hpp"
 
 extern "C" {
 void zmq_free_event (void *data_, void *hint_);
@@ -118,31 +119,51 @@ class socket_base_t : public own_t,
     void lock ();
     void unlock ();
 
-    int monitor (const char *endpoint_, int events_);
+    int monitor (const char *endpoint_,
+                 uint64_t events_,
+                 int event_version_,
+                 int type_);
 
-    void event_connected (const std::string &endpoint_uri_, zmq::fd_t fd_);
-    void event_connect_delayed (const std::string &endpoint_uri_, int err_);
-    void event_connect_retried (const std::string &endpoint_uri_,
+    void event_connected (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                          zmq::fd_t fd_);
+    void event_connect_delayed (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                                int err_);
+    void event_connect_retried (const endpoint_uri_pair_t &endpoint_uri_pair_,
                                 int interval_);
-    void event_listening (const std::string &endpoint_uri_, zmq::fd_t fd_);
-    void event_bind_failed (const std::string &endpoint_uri_, int err_);
-    void event_accepted (const std::string &endpoint_uri_, zmq::fd_t fd_);
-    void event_accept_failed (const std::string &endpoint_uri_, int err_);
-    void event_closed (const std::string &endpoint_uri_, zmq::fd_t fd_);
-    void event_close_failed (const std::string &endpoint_uri_, int err_);
-    void event_disconnected (const std::string &endpoint_uri_, zmq::fd_t fd_);
-    void event_handshake_failed_no_detail (const std::string &endpoint_uri_,
-                                           int err_);
-    void event_handshake_failed_protocol (const std::string &endpoint_uri_,
-                                          int err_);
-    void event_handshake_failed_auth (const std::string &endpoint_uri_,
-                                      int err_);
-    void event_handshake_succeeded (const std::string &endpoint_uri_, int err_);
+    void event_listening (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                          zmq::fd_t fd_);
+    void event_bind_failed (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                            int err_);
+    void event_accepted (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                         zmq::fd_t fd_);
+    void event_accept_failed (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                              int err_);
+    void event_closed (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                       zmq::fd_t fd_);
+    void event_close_failed (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                             int err_);
+    void event_disconnected (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                             zmq::fd_t fd_);
+    void event_handshake_failed_no_detail (
+      const endpoint_uri_pair_t &endpoint_uri_pair_, int err_);
+    void event_handshake_failed_protocol (
+      const endpoint_uri_pair_t &endpoint_uri_pair_, int err_);
+    void
+    event_handshake_failed_auth (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                                 int err_);
+    void
+    event_handshake_succeeded (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                               int err_);
 
     //  Query the state of a specific peer. The default implementation
     //  always returns an ENOTSUP error.
     virtual int get_peer_state (const void *routing_id_,
                                 size_t routing_id_size_) const;
+
+    //  Request for pipes statistics - will generate a ZMQ_EVENT_PIPES_STATS
+    //  after gathering the data asynchronously. Requires event monitoring to
+    //  be enabled.
+    int query_pipes_stats ();
 
   protected:
     socket_base_t (zmq::ctx_t *parent_,
@@ -186,19 +207,24 @@ class socket_base_t : public own_t,
 
   private:
     // test if event should be sent and then dispatch it
-    void event (const std::string &endpoint_uri_, intptr_t value_, int type_);
+    void event (const endpoint_uri_pair_t &endpoint_uri_pair_,
+                uint64_t values_[],
+                uint64_t values_count_,
+                uint64_t type_);
 
     // Socket event data dispatch
-    void monitor_event (int event_,
-                        intptr_t value_,
-                        const std::string &endpoint_uri_) const;
+    void monitor_event (uint64_t event_,
+                        uint64_t values_[],
+                        uint64_t values_count_,
+                        const endpoint_uri_pair_t &endpoint_uri_pair_) const;
 
     // Monitor socket cleanup
     void stop_monitor (bool send_monitor_stopped_event_ = true);
 
     //  Creates new endpoint ID and adds the endpoint to the map.
-    void
-    add_endpoint (const char *endpoint_uri_, own_t *endpoint_, pipe_t *pipe_);
+    void add_endpoint (const endpoint_uri_pair_t &endpoint_pair_,
+                       own_t *endpoint_,
+                       pipe_t *pipe_);
 
     //  Map of open endpoints.
     typedef std::pair<own_t *, pipe_t *> endpoint_pipe_t;
@@ -260,6 +286,9 @@ class socket_base_t : public own_t,
     //  Handlers for incoming commands.
     void process_stop ();
     void process_bind (zmq::pipe_t *pipe_);
+    void process_pipe_stats_publish (uint64_t outbound_queue_count_,
+                                     uint64_t inbound_queue_count_,
+                                     endpoint_uri_pair_t *endpoint_pair_);
     void process_term (int linger_);
     void process_term_endpoint (std::string *endpoint_);
 
@@ -295,7 +324,7 @@ class socket_base_t : public own_t,
     void *_monitor_socket;
 
     // Bitmask of events being monitored
-    int _monitor_events;
+    int64_t _monitor_events;
 
     // Last socket endpoint resolved URI
     std::string _last_endpoint;

@@ -70,7 +70,7 @@ class stream_engine_t : public io_object_t, public i_engine
 
     stream_engine_t (fd_t fd_,
                      const options_t &options_,
-                     const std::string &endpoint_);
+                     const endpoint_uri_pair_t &endpoint_uri_pair_);
     ~stream_engine_t ();
 
     //  i_engine interface implementation.
@@ -79,7 +79,7 @@ class stream_engine_t : public io_object_t, public i_engine
     bool restart_input ();
     void restart_output ();
     void zap_msg_available ();
-    const char *get_endpoint () const;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
     //  i_poll_events interface implementation.
     void in_event ();
@@ -87,6 +87,8 @@ class stream_engine_t : public io_object_t, public i_engine
     void timer_event (int id_);
 
   private:
+    bool in_event_internal ();
+
     //  Unplug the engine from the session.
     void unplug ();
 
@@ -190,8 +192,8 @@ class stream_engine_t : public io_object_t, public i_engine
 
     const options_t _options;
 
-    // String representation of endpoint
-    std::string _endpoint;
+    //  Representation of the connected endpoints.
+    const endpoint_uri_pair_t _endpoint_uri_pair;
 
     bool _plugged;
 
@@ -238,7 +240,7 @@ class stream_engine_t : public io_object_t, public i_engine
     // Socket
     zmq::socket_base_t *_socket;
 
-    std::string _peer_address;
+    const std::string _peer_address;
 
     stream_engine_t (const stream_engine_t &);
     const stream_engine_t &operator= (const stream_engine_t &);

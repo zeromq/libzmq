@@ -28,54 +28,56 @@
 */
 
 #include "testutil_security.hpp"
+#include "testutil_unity.hpp"
 
-static void zap_handler_wrong_version (void *ctx_)
+SETUP_TEARDOWN_TESTCONTEXT
+
+static void zap_handler_wrong_version (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_wrong_version);
+    zap_handler_generic (zap_wrong_version);
 }
 
-static void zap_handler_wrong_request_id (void *ctx_)
+static void zap_handler_wrong_request_id (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_wrong_request_id);
+    zap_handler_generic (zap_wrong_request_id);
 }
 
-static void zap_handler_wrong_status_invalid (void *ctx_)
+static void zap_handler_wrong_status_invalid (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_status_invalid);
+    zap_handler_generic (zap_status_invalid);
 }
 
-static void zap_handler_wrong_status_temporary_failure (void *ctx_)
+static void zap_handler_wrong_status_temporary_failure (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_status_temporary_failure);
+    zap_handler_generic (zap_status_temporary_failure);
 }
 
-static void zap_handler_wrong_status_internal_error (void *ctx_)
+static void zap_handler_wrong_status_internal_error (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_status_internal_error);
+    zap_handler_generic (zap_status_internal_error);
 }
 
-static void zap_handler_too_many_parts (void *ctx_)
+static void zap_handler_too_many_parts (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_too_many_parts);
+    zap_handler_generic (zap_too_many_parts);
 }
 
-static void zap_handler_disconnect (void *ctx_)
+static void zap_handler_disconnect (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_disconnect);
+    zap_handler_generic (zap_disconnect);
 }
 
-static void zap_handler_do_not_recv (void *ctx_)
+static void zap_handler_do_not_recv (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_do_not_recv);
+    zap_handler_generic (zap_do_not_recv);
 }
 
-static void zap_handler_do_not_send (void *ctx_)
+static void zap_handler_do_not_send (void * /*unused_*/)
 {
-    zap_handler_generic (ctx_, zap_do_not_send);
+    zap_handler_generic (zap_do_not_send);
 }
 
 int expect_new_client_bounce_fail_and_count_monitor_events (
-  void *ctx_,
   char *my_endpoint_,
   void *server_,
   socket_config_fn socket_config_,
@@ -88,8 +90,8 @@ int expect_new_client_bounce_fail_and_count_monitor_events (
   int expected_client_value_ = 0)
 {
     expect_new_client_bounce_fail (
-      ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
-      client_mon_, expected_client_event_, expected_client_value_);
+      my_endpoint_, server_, socket_config_, socket_config_data_, client_mon_,
+      expected_client_event_, expected_client_value_);
 
     int events_received = 0;
     events_received = expect_monitor_event_multiple (
@@ -98,8 +100,7 @@ int expect_new_client_bounce_fail_and_count_monitor_events (
     return events_received;
 }
 
-void test_zap_unsuccessful (void *ctx_,
-                            char *my_endpoint_,
+void test_zap_unsuccessful (char *my_endpoint_,
                             void *server_,
                             void *server_mon_,
                             int expected_server_event_,
@@ -112,18 +113,17 @@ void test_zap_unsuccessful (void *ctx_,
 {
     int server_events_received =
       expect_new_client_bounce_fail_and_count_monitor_events (
-        ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
-        client_mon_, server_mon_, expected_server_event_,
-        expected_server_value_, expected_client_event_, expected_client_value_);
+        my_endpoint_, server_, socket_config_, socket_config_data_, client_mon_,
+        server_mon_, expected_server_event_, expected_server_value_,
+        expected_client_event_, expected_client_value_);
 
     //  there may be more than one ZAP request due to repeated attempts by the
     //  client (actually only in case if ZAP status code 300)
-    assert (server_events_received == 0
-            || 1 <= zmq_atomic_counter_value (zap_requests_handled));
+    TEST_ASSERT_TRUE (server_events_received == 0
+                      || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
-void test_zap_unsuccessful_no_handler (void *ctx_,
-                                       char *my_endpoint_,
+void test_zap_unsuccessful_no_handler (char *my_endpoint_,
                                        void *server_,
                                        void *server_mon_,
                                        int expected_event_,
@@ -132,31 +132,29 @@ void test_zap_unsuccessful_no_handler (void *ctx_,
                                        void *socket_config_data_,
                                        void **client_mon_ = NULL)
 {
-    int events_received =
+    const int events_received =
       expect_new_client_bounce_fail_and_count_monitor_events (
-        ctx_, my_endpoint_, server_, socket_config_, socket_config_data_,
-        client_mon_, server_mon_, expected_event_, expected_err_);
+        my_endpoint_, server_, socket_config_, socket_config_data_, client_mon_,
+        server_mon_, expected_event_, expected_err_);
 
     //  there may be more than one ZAP request due to repeated attempts by the
     //  client
-    assert (events_received > 0);
+    TEST_ASSERT_GREATER_THAN_INT (0, events_received);
 }
 
-void test_zap_protocol_error (void *ctx_,
-                              char *my_endpoint_,
+void test_zap_protocol_error (char *my_endpoint_,
                               void *server_,
                               void *server_mon_,
                               socket_config_fn socket_config_,
                               void *socket_config_data_,
                               int expected_error_)
 {
-    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
+    test_zap_unsuccessful (my_endpoint_, server_, server_mon_,
                            ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, expected_error_,
                            socket_config_, socket_config_data_);
 }
 
-void test_zap_unsuccessful_status_300 (void *ctx_,
-                                       char *my_endpoint_,
+void test_zap_unsuccessful_status_300 (char *my_endpoint_,
                                        void *server_,
                                        void *server_mon_,
                                        socket_config_fn client_socket_config_,
@@ -164,193 +162,311 @@ void test_zap_unsuccessful_status_300 (void *ctx_,
 {
     void *client_mon;
     test_zap_unsuccessful (
-      ctx_, my_endpoint_, server_, server_mon_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH,
-      300, client_socket_config_, client_socket_config_data_, &client_mon);
+      my_endpoint_, server_, server_mon_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
+      client_socket_config_, client_socket_config_data_, &client_mon);
 
     // we can use a 0 timeout here, since the client socket is already closed
     assert_no_more_monitor_events_with_timeout (client_mon, 0);
 
-    int rc = zmq_close (client_mon);
-    assert (rc == 0);
+    test_context_socket_close (client_mon);
 }
 
-void test_zap_unsuccessful_status_500 (void *ctx_,
-                                       char *my_endpoint_,
+void test_zap_unsuccessful_status_500 (char *my_endpoint_,
                                        void *server_,
                                        void *server_mon_,
                                        socket_config_fn client_socket_config_,
                                        void *client_socket_config_data_)
 {
-    test_zap_unsuccessful (ctx_, my_endpoint_, server_, server_mon_,
+    test_zap_unsuccessful (my_endpoint_, server_, server_mon_,
                            ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
                            client_socket_config_, client_socket_config_data_,
                            NULL, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500);
 }
 
-void test_zap_errors (socket_config_fn server_socket_config_,
-                      void *server_socket_config_data_,
-                      socket_config_fn client_socket_config_,
-                      void *client_socket_config_data_)
+static void
+test_zap_protocol_error_closure (socket_config_fn server_socket_config_,
+                                 socket_config_fn client_socket_config_,
+                                 void *client_socket_config_data_,
+                                 void *server_socket_config_data_,
+                                 zmq_thread_fn zap_handler_,
+                                 int expected_failure_)
 {
-    void *ctx;
-    void *handler;
-    void *zap_thread;
-    void *server;
-    void *server_mon;
+    void *handler, *zap_thread, *server, *server_mon;
     char my_endpoint[MAX_SOCKET_STRING];
 
-    //  Invalid ZAP protocol tests
-
-    //  wrong version
-    fprintf (stderr, "test_zap_protocol_error wrong_version\n");
     setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_wrong_version, server_socket_config_,
-      server_socket_config_data_);
-    test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
+      &handler, &zap_thread, &server, &server_mon, my_endpoint, zap_handler_,
+      server_socket_config_, server_socket_config_data_);
+    test_zap_protocol_error (my_endpoint, server, server_mon,
                              client_socket_config_, client_socket_config_data_,
-                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  wrong request id
-    fprintf (stderr, "test_zap_protocol_error wrong_request_id\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_wrong_request_id, server_socket_config_,
-      server_socket_config_data_);
-    test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_,
-                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  status invalid (not a 3-digit number)
-    fprintf (stderr, "test_zap_protocol_error wrong_status_invalid\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_wrong_status_invalid, server_socket_config_,
-      server_socket_config_data_);
-    test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_,
-                             ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  too many parts
-    fprintf (stderr, "test_zap_protocol_error too_many_parts\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_too_many_parts, server_socket_config_,
-      server_socket_config_data_);
-    test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_,
-                             ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  ZAP non-standard cases
-
-    //  TODO make these observable on the client side as well (they are
-    //  transmitted as an ERROR message)
-
-    //  status 300 temporary failure
-    fprintf (stderr, "test_zap_unsuccessful status 300\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_wrong_status_temporary_failure, server_socket_config_,
-      server_socket_config_data_);
-    test_zap_unsuccessful_status_300 (ctx, my_endpoint, server, server_mon,
-                                      client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  status 500 internal error
-    fprintf (stderr, "test_zap_unsuccessful status 500\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_wrong_status_internal_error, server_socket_config_);
-    test_zap_unsuccessful_status_500 (ctx, my_endpoint, server, server_mon,
-                                      client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    //  no ZAP handler
-    int enforce = 1;
-    fprintf (stderr, "test_zap_unsuccessful no ZAP handler started\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint, NULL,
-      server_socket_config_,
-      server_socket_config_data_ ? server_socket_config_data_ : &enforce);
-    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
-                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
-                                      EFAULT, client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-#endif
-
-    //  ZAP handler disconnecting on first message
-    fprintf (stderr, "test_zap_unsuccessful ZAP handler disconnects\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_disconnect, server_socket_config_);
-    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
-                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
-                                      EPIPE, client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler, true);
-
-    //  ZAP handler does not read request
-    fprintf (stderr,
-             "test_zap_unsuccessful ZAP handler does not read request\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_do_not_recv, server_socket_config_);
-    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
-                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
-                                      EPIPE, client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
-
-    //  ZAP handler does not send reply
-    fprintf (stderr,
-             "test_zap_unsuccessful ZAP handler does not write reply\n");
-    setup_context_and_server_side (
-      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_do_not_send, server_socket_config_);
-    test_zap_unsuccessful_no_handler (ctx, my_endpoint, server, server_mon,
-                                      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
-                                      EPIPE, client_socket_config_,
-                                      client_socket_config_data_);
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-                                      handler);
+                             expected_failure_);
+    shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
 }
 
-int main (void)
+static void
+test_zap_protocol_error_wrong_version (socket_config_fn server_socket_config_,
+                                       socket_config_fn client_socket_config_,
+                                       void *client_socket_config_data_,
+                                       void *server_socket_config_data_)
+{
+    test_zap_protocol_error_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      server_socket_config_data_, &zap_handler_wrong_version,
+      ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
+}
+
+static void test_zap_protocol_error_wrong_request_id (
+  socket_config_fn server_socket_config_,
+  socket_config_fn client_socket_config_,
+  void *client_socket_config_data_,
+  void *server_socket_config_data_)
+{
+    test_zap_protocol_error_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      server_socket_config_data_, &zap_handler_wrong_request_id,
+      ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
+}
+
+static void test_zap_protocol_error_wrong_status_invalid (
+  socket_config_fn server_socket_config_,
+  socket_config_fn client_socket_config_,
+  void *client_socket_config_data_,
+  void *server_socket_config_data_)
+{
+    test_zap_protocol_error_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      server_socket_config_data_, &zap_handler_wrong_status_invalid,
+      ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE);
+}
+
+static void
+test_zap_protocol_error_too_many_parts (socket_config_fn server_socket_config_,
+                                        socket_config_fn client_socket_config_,
+                                        void *client_socket_config_data_,
+                                        void *server_socket_config_data_)
+{
+    test_zap_protocol_error_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      server_socket_config_data_, &zap_handler_too_many_parts,
+      ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
+}
+
+//  TODO the failed status (300/500) should be observable as monitoring events on the client side as well (they are
+//  already transmitted as an ERROR message)
+
+static void
+test_zap_wrong_status_temporary_failure (socket_config_fn server_socket_config_,
+                                         socket_config_fn client_socket_config_,
+                                         void *client_socket_config_data_,
+                                         void *server_socket_config_data_)
+{
+    void *handler, *zap_thread, *server, *server_mon;
+    char my_endpoint[MAX_SOCKET_STRING];
+    setup_context_and_server_side (
+      &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      &zap_handler_wrong_status_temporary_failure, server_socket_config_,
+      server_socket_config_data_);
+    test_zap_unsuccessful_status_300 (my_endpoint, server, server_mon,
+                                      client_socket_config_,
+                                      client_socket_config_data_);
+    shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
+}
+
+static void
+test_zap_wrong_status_internal_error (socket_config_fn server_socket_config_,
+                                      socket_config_fn client_socket_config_,
+                                      void *client_socket_config_data_)
+{
+    void *handler, *zap_thread, *server, *server_mon;
+    char my_endpoint[MAX_SOCKET_STRING];
+    setup_context_and_server_side (
+      &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      &zap_handler_wrong_status_internal_error, server_socket_config_);
+    test_zap_unsuccessful_status_500 (my_endpoint, server, server_mon,
+                                      client_socket_config_,
+                                      client_socket_config_data_);
+    shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
+}
+
+static void
+test_zap_unsuccesful_no_handler_started (socket_config_fn server_socket_config_,
+                                         socket_config_fn client_socket_config_,
+                                         void *client_socket_config_data_,
+                                         void *server_socket_config_data_)
+{
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
+    void *handler, *zap_thread, *server, *server_mon;
+    char my_endpoint[MAX_SOCKET_STRING];
+    // TODO this looks wrong, where will the enforce value be used?
+
+    //  no ZAP handler
+    int enforce = 1;
+    setup_context_and_server_side (
+      &handler, &zap_thread, &server, &server_mon, my_endpoint, NULL,
+      server_socket_config_,
+      server_socket_config_data_ ? server_socket_config_data_ : &enforce);
+    test_zap_unsuccessful_no_handler (
+      my_endpoint, server, server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+      EFAULT, client_socket_config_, client_socket_config_data_);
+    shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
+#endif
+}
+
+static void
+test_zap_unsuccesful_no_handler_closure (socket_config_fn server_socket_config_,
+                                         socket_config_fn client_socket_config_,
+                                         void *client_socket_config_data_,
+                                         zmq_thread_fn zap_handler_func_,
+                                         bool zap_handler_disconnected_ = false)
+{
+    void *handler, *zap_thread, *server, *server_mon;
+    char my_endpoint[MAX_SOCKET_STRING];
+    setup_context_and_server_side (&handler, &zap_thread, &server, &server_mon,
+                                   my_endpoint, zap_handler_func_,
+                                   server_socket_config_);
+    test_zap_unsuccessful_no_handler (
+      my_endpoint, server, server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+      EPIPE, client_socket_config_, client_socket_config_data_);
+    shutdown_context_and_server_side (zap_thread, server, server_mon, handler,
+                                      zap_handler_disconnected_);
+}
+
+static void
+test_zap_unsuccesful_disconnect (socket_config_fn server_socket_config_,
+                                 socket_config_fn client_socket_config_,
+                                 void *client_socket_config_data_)
+{
+    test_zap_unsuccesful_no_handler_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      &zap_handler_disconnect, true);
+}
+
+static void
+test_zap_unsuccesful_do_not_recv (socket_config_fn server_socket_config_,
+                                  socket_config_fn client_socket_config_,
+                                  void *client_socket_config_data_)
+{
+    test_zap_unsuccesful_no_handler_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      &zap_handler_do_not_recv);
+}
+
+static void
+test_zap_unsuccesful_do_not_send (socket_config_fn server_socket_config_,
+                                  socket_config_fn client_socket_config_,
+                                  void *client_socket_config_data_)
+{
+    test_zap_unsuccesful_no_handler_closure (
+      server_socket_config_, client_socket_config_, client_socket_config_data_,
+      &zap_handler_do_not_send);
+}
+
+#define DEFINE_ZAP_ERROR_TESTS(                                                \
+  name_, server_socket_config_, server_socket_config_data_,                    \
+  client_socket_config_, client_socket_config_data_)                           \
+    void test_zap_protocol_error_wrong_version_##name_ ()                      \
+    {                                                                          \
+        test_zap_protocol_error_wrong_version (                                \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_protocol_error_wrong_request_id_##name_ ()                   \
+    {                                                                          \
+        test_zap_protocol_error_wrong_request_id (                             \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_protocol_error_wrong_status_invalid_##name_ ()               \
+    {                                                                          \
+        test_zap_protocol_error_wrong_status_invalid (                         \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_protocol_error_too_many_parts_##name_ ()                     \
+    {                                                                          \
+        test_zap_protocol_error_too_many_parts (                               \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_wrong_status_temporary_failure_##name_ ()                    \
+    {                                                                          \
+        test_zap_wrong_status_temporary_failure (                              \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_wrong_status_internal_error_##name_ ()                       \
+    {                                                                          \
+        test_zap_wrong_status_internal_error (server_socket_config_,           \
+                                              client_socket_config_,           \
+                                              client_socket_config_data_);     \
+    }                                                                          \
+    void test_zap_unsuccessful_no_handler_started_##name_ ()                   \
+    {                                                                          \
+        test_zap_unsuccesful_no_handler_started (                              \
+          server_socket_config_, client_socket_config_,                        \
+          client_socket_config_data_, server_socket_config_data_);             \
+    }                                                                          \
+    void test_zap_unsuccessful_disconnect_##name_ ()                           \
+    {                                                                          \
+        test_zap_unsuccesful_disconnect (server_socket_config_,                \
+                                         client_socket_config_,                \
+                                         client_socket_config_data_);          \
+    }                                                                          \
+    void test_zap_unsuccessful_do_not_recv_##name_ ()                          \
+    {                                                                          \
+        test_zap_unsuccesful_do_not_recv (server_socket_config_,               \
+                                          client_socket_config_,               \
+                                          client_socket_config_data_);         \
+    }                                                                          \
+    void test_zap_unsuccessful_do_not_send_##name_ ()                          \
+    {                                                                          \
+        test_zap_unsuccesful_do_not_send (server_socket_config_,               \
+                                          client_socket_config_,               \
+                                          client_socket_config_data_);         \
+    }
+
+DEFINE_ZAP_ERROR_TESTS (
+  null, &socket_config_null_server, NULL, &socket_config_null_client, NULL)
+
+DEFINE_ZAP_ERROR_TESTS (
+  plain, &socket_config_plain_server, NULL, &socket_config_plain_client, NULL)
+
+static curve_client_data_t curve_client_data = {
+  valid_server_public, valid_client_public, valid_client_secret};
+
+DEFINE_ZAP_ERROR_TESTS (curve,
+                        &socket_config_curve_server,
+                        valid_server_secret,
+                        &socket_config_curve_client,
+                        &curve_client_data)
+
+#define RUN_ZAP_ERROR_TESTS(name_)                                             \
+    {                                                                          \
+        RUN_TEST (test_zap_protocol_error_wrong_version_##name_);              \
+        RUN_TEST (test_zap_protocol_error_wrong_request_id_##name_);           \
+        RUN_TEST (test_zap_protocol_error_wrong_status_invalid_##name_);       \
+        RUN_TEST (test_zap_protocol_error_too_many_parts_##name_);             \
+        RUN_TEST (test_zap_wrong_status_temporary_failure_##name_);            \
+        RUN_TEST (test_zap_wrong_status_internal_error_##name_);               \
+        RUN_TEST (test_zap_unsuccessful_no_handler_started_##name_);           \
+        RUN_TEST (test_zap_unsuccessful_disconnect_##name_);                   \
+        RUN_TEST (test_zap_unsuccessful_do_not_recv_##name_);                  \
+        RUN_TEST (test_zap_unsuccessful_do_not_send_##name_);                  \
+    }
+
+int main ()
 {
     setup_test_environment ();
 
-    fprintf (stderr, "NULL mechanism\n");
-    test_zap_errors (&socket_config_null_server, NULL,
-                     &socket_config_null_client, NULL);
-
-    fprintf (stderr, "PLAIN mechanism\n");
-    test_zap_errors (&socket_config_plain_server, NULL,
-                     &socket_config_plain_client, NULL);
-
     if (zmq_has ("curve")) {
-        fprintf (stderr, "CURVE mechanism\n");
         setup_testutil_security_curve ();
-
-        curve_client_data_t curve_client_data = {
-          valid_server_public, valid_client_public, valid_client_secret};
-        test_zap_errors (&socket_config_curve_server, valid_server_secret,
-                         &socket_config_curve_client, &curve_client_data);
     }
+
+    UNITY_BEGIN ();
+    RUN_ZAP_ERROR_TESTS (null);
+    RUN_ZAP_ERROR_TESTS (plain);
+    if (zmq_has ("curve")) {
+        RUN_ZAP_ERROR_TESTS (curve);
+    }
+    return UNITY_END ();
 }

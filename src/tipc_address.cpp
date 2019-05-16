@@ -55,10 +55,6 @@ zmq::tipc_address_t::tipc_address_t (const sockaddr *sa, socklen_t sa_len)
     _random = false;
 }
 
-zmq::tipc_address_t::~tipc_address_t ()
-{
-}
-
 void zmq::tipc_address_t::set_random ()
 {
     _random = true;
@@ -134,7 +130,7 @@ int zmq::tipc_address_t::resolve (const char *name)
     return EINVAL;
 }
 
-int zmq::tipc_address_t::to_string (std::string &addr_)
+int zmq::tipc_address_t::to_string (std::string &addr_) const
 {
     if (address.family != AF_TIPC) {
         addr_.clear ();

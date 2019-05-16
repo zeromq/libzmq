@@ -28,65 +28,45 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
+#include <string.h>
+
+#ifndef _WIN32
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 #endif
 
-int main ()
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_stream_exceeds_buffer ()
 {
     const int msgsize = 8193;
     char sndbuf[msgsize] = "\xde\xad\xbe\xef";
     unsigned char rcvbuf[msgsize];
     char my_endpoint[MAX_SOCKET_STRING];
 
-    int server_sock = socket (AF_INET, SOCK_STREAM, 0);
-    assert (server_sock != -1);
+    int server_sock =
+      TEST_ASSERT_SUCCESS_RAW_ERRNO (socket (AF_INET, SOCK_STREAM, 0));
     int enable = 1;
-    int rc = setsockopt (server_sock, SOL_SOCKET, SO_REUSEADDR,
-                         (char *) &enable, sizeof (enable));
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (setsockopt (server_sock, SOL_SOCKET,
+                                               SO_REUSEADDR, (char *) &enable,
+                                               sizeof (enable)));
+    struct sockaddr_in saddr = bind_bsd_socket (server_sock);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (listen (server_sock, 1));
 
-    struct sockaddr_in saddr;
-    memset (&saddr, 0, sizeof (saddr));
-    saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = INADDR_ANY;
-#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
-    saddr.sin_port = 0;
-#else
-    saddr.sin_port = htons (12345);
-#endif
-
-    rc = bind (server_sock, (struct sockaddr *) &saddr, sizeof (saddr));
-    assert (rc != -1);
-    rc = listen (server_sock, 1);
-    assert (rc != -1);
-
-#if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
-    socklen_t saddr_len = sizeof (saddr);
-    rc = getsockname (server_sock, (struct sockaddr *) &saddr, &saddr_len);
-    assert (rc != -1);
-#endif
     sprintf (my_endpoint, "tcp://127.0.0.1:%d", ntohs (saddr.sin_port));
 
-    void *zctx = zmq_ctx_new ();
-    assert (zctx);
-    void *zsock = zmq_socket (zctx, ZMQ_STREAM);
-    assert (zsock);
-    rc = zmq_connect (zsock, my_endpoint);
-    assert (rc != -1);
+    void *zsock = test_context_socket (ZMQ_STREAM);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (zsock, my_endpoint));
 
-    int client_sock = accept (server_sock, NULL, NULL);
-    assert (client_sock != -1);
+    int client_sock =
+      TEST_ASSERT_SUCCESS_RAW_ERRNO (accept (server_sock, NULL, NULL));
 
-    rc = close (server_sock);
-    assert (rc != -1);
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (close (server_sock));
 
-    rc = send (client_sock, sndbuf, msgsize, 0);
-    assert (rc == msgsize);
+    TEST_ASSERT_EQUAL_INT (msgsize, send (client_sock, sndbuf, msgsize, 0));
 
     zmq_msg_t msg;
     zmq_msg_init (&msg);
@@ -94,12 +74,10 @@ int main ()
     int rcvbytes = 0;
     while (rcvbytes == 0) // skip connection notification, if any
     {
-        rc = zmq_msg_recv (&msg, zsock, 0); // peerid
-        assert (rc != -1);
-        assert (zmq_msg_more (&msg));
-        rcvbytes = zmq_msg_recv (&msg, zsock, 0);
-        assert (rcvbytes != -1);
-        assert (!zmq_msg_more (&msg));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, zsock, 0)); // peerid
+        TEST_ASSERT_TRUE (zmq_msg_more (&msg));
+        rcvbytes = TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, zsock, 0));
+        TEST_ASSERT_FALSE (zmq_msg_more (&msg));
     }
 
     // for this test, we only collect the first chunk
@@ -107,18 +85,21 @@ int main ()
     memcpy (rcvbuf, zmq_msg_data (&msg), zmq_msg_size (&msg));
 
     zmq_msg_close (&msg);
-    zmq_close (zsock);
+    test_context_socket_close (zsock);
     close (client_sock);
 
-    zmq_ctx_destroy (zctx);
-
-    assert (rcvbytes >= 4);
+    TEST_ASSERT_GREATER_OR_EQUAL (4, rcvbytes);
 
     // notice that only the 1st byte gets corrupted
-    assert (rcvbuf[3] == 0xef);
-    assert (rcvbuf[2] == 0xbe);
-    assert (rcvbuf[1] == 0xad);
-    assert (rcvbuf[0] == 0xde);
+    TEST_ASSERT_EQUAL_UINT (0xef, rcvbuf[3]);
+    TEST_ASSERT_EQUAL_UINT (0xbe, rcvbuf[2]);
+    TEST_ASSERT_EQUAL_UINT (0xad, rcvbuf[1]);
+    TEST_ASSERT_EQUAL_UINT (0xde, rcvbuf[0]);
+}
 
-    (void) (rc); // avoid -Wunused-but-set-variable warning in release build
+int main ()
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test_stream_exceeds_buffer);
+    return UNITY_END ();
 }

@@ -37,6 +37,7 @@
 #include <pthread.h>
 #endif
 #include <set>
+#include <string>
 
 namespace zmq
 {
@@ -55,6 +56,7 @@ class thread_t
     inline thread_t () :
         _tfn (NULL),
         _arg (NULL),
+        _name (""),
         _started (false),
         _thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
         _thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
@@ -72,7 +74,7 @@ class thread_t
 
     //  Creates OS thread. 'tfn' is main thread function. It'll be passed
     //  'arg' as an argument.
-    void start (thread_fn *tfn_, void *arg_);
+    void start (thread_fn *tfn_, void *arg_, const char *name_);
 
     //  Returns whether the thread was started, i.e. start was called.
     bool get_started () const;
@@ -99,6 +101,7 @@ class thread_t
     void applySchedulingParameters ();
     thread_fn *_tfn;
     void *_arg;
+    std::string _name;
 
   private:
     bool _started;

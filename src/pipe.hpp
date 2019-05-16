@@ -37,6 +37,7 @@
 #include "array.hpp"
 #include "blob.hpp"
 #include "options.hpp"
+#include "endpoint.hpp"
 
 namespace zmq
 {
@@ -141,8 +142,10 @@ class pipe_t : public object_t,
     //  Returns true if HWM is not reached
     bool check_hwm () const;
 
-    void set_endpoint_uri (const char *name_);
-    std::string &get_endpoint_uri ();
+    void set_endpoint_pair (endpoint_uri_pair_t endpoint_pair_);
+    const endpoint_uri_pair_t &get_endpoint_pair () const;
+
+    void send_stats_to_peer (own_t *socket_base_);
 
   private:
     //  Type of the underlying lock-free pipe.
@@ -152,6 +155,9 @@ class pipe_t : public object_t,
     void process_activate_read ();
     void process_activate_write (uint64_t msgs_read_);
     void process_hiccup (void *pipe_);
+    void process_pipe_peer_stats (uint64_t queue_count_,
+                                  own_t *socket_base_,
+                                  endpoint_uri_pair_t *endpoint_pair_);
     void process_pipe_term ();
     void process_pipe_term_ack ();
     void process_pipe_hwm (int inhwm_, int outhwm_);
@@ -247,9 +253,8 @@ class pipe_t : public object_t,
 
     const bool _conflate;
 
-    // If the pipe belongs to socket's endpoint the endpoint's name is stored here.
-    // Otherwise this is empty.
-    std::string _endpoint_uri;
+    // The endpoints of this pipe.
+    endpoint_uri_pair_t _endpoint_pair;
 
     //  Disable copying.
     pipe_t (const pipe_t &);

@@ -28,104 +28,89 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <stdlib.h>
+
+SETUP_TEARDOWN_TESTCONTEXT
 
 // This is a test for issue #1382. The server thread creates a SUB-PUSH
 // steerable proxy. The main process then sends messages to the SUB
 // but there is no pull on the other side, previously the proxy blocks
 // in writing to the backend, preventing the proxy from terminating
 
-void server_task (void *ctx_)
+void server_task (void * /*unused_*/)
 {
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     // Frontend socket talks to main process
-    void *frontend = zmq_socket (ctx_, ZMQ_SUB);
-    assert (frontend);
-    int rc = zmq_setsockopt (frontend, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
-    rc = zmq_bind (frontend, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (frontend, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
+    void *frontend = zmq_socket (get_test_context (), ZMQ_SUB);
+    TEST_ASSERT_NOT_NULL (frontend);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (frontend, ZMQ_SUBSCRIBE, "", 0));
+    bind_loopback_ipv4 (frontend, my_endpoint, sizeof my_endpoint);
 
     // Nice socket which is never read
-    void *backend = zmq_socket (ctx_, ZMQ_PUSH);
-    assert (backend);
-    rc = zmq_bind (backend, "tcp://127.0.0.1:*");
-    assert (rc == 0);
+    void *backend = zmq_socket (get_test_context (), ZMQ_PUSH);
+    TEST_ASSERT_NOT_NULL (backend);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (backend, "tcp://127.0.0.1:*"));
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx_, ZMQ_REQ);
-    assert (control);
-    rc = zmq_connect (control, "inproc://control");
-    assert (rc == 0);
-    rc = s_send (control, my_endpoint);
-    assert (rc > 0);
+    void *control = zmq_socket (get_test_context (), ZMQ_REQ);
+    TEST_ASSERT_NOT_NULL (control);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (control, "inproc://control"));
+    send_string_expect_success (control, my_endpoint, 0);
 
     // Connect backend to frontend via a proxy
-    rc = zmq_proxy_steerable (frontend, backend, NULL, control);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_proxy_steerable (frontend, backend, NULL, control));
 
-    rc = zmq_close (frontend);
-    assert (rc == 0);
-    rc = zmq_close (backend);
-    assert (rc == 0);
-    rc = zmq_close (control);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (frontend));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (backend));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (control));
 }
 
 
 // The main thread simply starts a basic steerable proxy server, publishes some messages, and then
 // waits for the server to terminate.
+void test_proxy_terminate ()
+{
+    void *thread = zmq_threadstart (&server_task, NULL);
+
+    // Control socket receives terminate command from main over inproc
+    void *control = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_NOT_NULL (control);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (control, "inproc://control"));
+    char *my_endpoint = s_recv (control);
+    TEST_ASSERT_NOT_NULL (my_endpoint);
+
+    msleep (500); // Run for 500 ms
+
+    // Start a secondary publisher which writes data to the SUB-PUSH server socket
+    void *publisher = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_NOT_NULL (publisher);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (publisher, my_endpoint));
+
+    msleep (SETTLE_TIME);
+    send_string_expect_success (publisher, "This is a test", 0);
+
+    msleep (50);
+    send_string_expect_success (publisher, "This is a test", 0);
+
+    msleep (50);
+    send_string_expect_success (publisher, "This is a test", 0);
+    send_string_expect_success (control, "TERMINATE", 0);
+
+    test_context_socket_close (publisher);
+    test_context_socket_close (control);
+    free (my_endpoint);
+
+    zmq_threadclose (thread);
+}
 
 int main (void)
 {
     setup_test_environment ();
 
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *thread = zmq_threadstart (&server_task, ctx);
-
-    // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_REP);
-    assert (control);
-    int rc = zmq_bind (control, "inproc://control");
-    assert (rc == 0);
-    char *my_endpoint = s_recv (control);
-    assert (my_endpoint);
-
-    msleep (500); // Run for 500 ms
-
-    // Start a secondary publisher which writes data to the SUB-PUSH server socket
-    void *publisher = zmq_socket (ctx, ZMQ_PUB);
-    assert (publisher);
-    rc = zmq_connect (publisher, my_endpoint);
-    assert (rc == 0);
-
-    msleep (SETTLE_TIME);
-    rc = zmq_send (publisher, "This is a test", 14, 0);
-    assert (rc == 14);
-
-    msleep (50);
-    rc = zmq_send (publisher, "This is a test", 14, 0);
-    assert (rc == 14);
-
-    msleep (50);
-    rc = zmq_send (publisher, "This is a test", 14, 0);
-    assert (rc == 14);
-    rc = zmq_send (control, "TERMINATE", 9, 0);
-    assert (rc == 9);
-
-    rc = zmq_close (publisher);
-    assert (rc == 0);
-    rc = zmq_close (control);
-    assert (rc == 0);
-    free (my_endpoint);
-
-    zmq_threadclose (thread);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_proxy_terminate);
+    return UNITY_END ();
 }

@@ -198,7 +198,8 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         } else {
             /// XXX fixme ?
             _out_address = reinterpret_cast<sockaddr *> (&_raw_address);
-            _out_address_len = sizeof (sockaddr_in);
+            _out_address_len =
+              static_cast<zmq_socklen_t> (sizeof (sockaddr_in));
         }
 
         set_pollout (_handle);
@@ -319,19 +320,26 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_)
     const char *const name = inet_ntoa (addr_->sin_addr);
 
     char port[6];
-    sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
+    const int port_len =
+      sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
+    zmq_assert (port_len > 0);
 
-    const int size = static_cast<int> (strlen (name))
-                     + static_cast<int> (strlen (port)) + 1
-                     + 1; //  Colon + NULL
+    const size_t name_len = strlen (name);
+    const int size = static_cast<int> (name_len) + 1 /* colon */
+                     + port_len + 1;                 //  terminating NUL
     const int rc = msg_->init_size (size);
     errno_assert (rc == 0);
     msg_->set_flags (msg_t::more);
-    char *address = static_cast<char *> (msg_->data ());
 
-    strcpy (address, name);
-    strcat (address, ":");
-    strcat (address, port);
+    //  use memcpy instead of strcpy/strcat, since this is more efficient when
+    //  we already know the lengths, which we calculated above
+    char *address = static_cast<char *> (msg_->data ());
+    memcpy (address, name, name_len);
+    address += name_len;
+    *address++ = ':';
+    memcpy (address, port, static_cast<size_t> (port_len));
+    address += port_len;
+    *address = 0;
 }
 
 int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
@@ -430,11 +438,11 @@ void zmq::udp_engine_t::out_event ()
 
 #ifdef ZMQ_HAVE_WINDOWS
         rc = sendto (_fd, _out_buffer, static_cast<int> (size), 0, _out_address,
-                     static_cast<int> (_out_address_len));
+                     _out_address_len);
         wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_VXWORKS
         rc = sendto (_fd, reinterpret_cast<caddr_t> (_out_buffer), size, 0,
-                     (sockaddr *) _out_address, (int) _out_address_len);
+                     (sockaddr *) _out_address, _out_address_len);
         errno_assert (rc != -1);
 #else
         rc = sendto (_fd, _out_buffer, size, 0, _out_address, _out_address_len);
@@ -444,9 +452,9 @@ void zmq::udp_engine_t::out_event ()
         reset_pollout (_handle);
 }
 
-const char *zmq::udp_engine_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::udp_engine_t::get_endpoint () const
 {
-    return "";
+    return _empty_endpoint;
 }
 
 void zmq::udp_engine_t::restart_output ()
@@ -465,37 +473,23 @@ void zmq::udp_engine_t::restart_output ()
 void zmq::udp_engine_t::in_event ()
 {
     sockaddr_storage in_address;
-    socklen_t in_addrlen = sizeof (sockaddr_storage);
-#ifdef ZMQ_HAVE_WINDOWS
-    int nbytes =
+    zmq_socklen_t in_addrlen =
+      static_cast<zmq_socklen_t> (sizeof (sockaddr_storage));
+
+    const int nbytes =
       recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
                 reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
-    const int last_error = WSAGetLastError ();
+#ifdef ZMQ_HAVE_WINDOWS
     if (nbytes == SOCKET_ERROR) {
+        const int last_error = WSAGetLastError ();
         wsa_assert (last_error == WSAENETDOWN || last_error == WSAENETRESET
                     || last_error == WSAEWOULDBLOCK);
         return;
     }
-#elif defined ZMQ_HAVE_VXWORKS
-    int nbytes = recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                           (sockaddr *) &in_address, (int *) &in_addrlen);
+#else
     if (nbytes == -1) {
         errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
                       && errno != ENOTSOCK);
-        return;
-    }
-#else
-    int nbytes =
-      recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
-    if (nbytes == -1) {
-#if !defined(TARGET_OS_IPHONE) || !TARGET_OS_IPHONE
-        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
-                      && errno != ENOTSOCK);
-#else
-        errno_assert (errno != EBADF && errno != EFAULT && errno != ENOMEM
-                      && errno != ENOTSOCK);
-#endif
         return;
     }
 #endif

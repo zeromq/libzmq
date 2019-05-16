@@ -30,17 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 const int MAX_SENDS = 10000;
 
@@ -151,6 +141,10 @@ void test_decrease_when_full ()
 
     zmq_bind (bind_socket, "inproc://a");
     zmq_connect (connect_socket, "inproc://a");
+
+    //  we must wait for the connect to succeed here, unfortunately we don't
+    //  have monitoring events for inproc, so we just hope SETTLE_TIME suffices
+    msleep (SETTLE_TIME);
 
     // Fill up to hwm
     int send_count = test_fill_up_to_hwm (bind_socket, sndhwm);

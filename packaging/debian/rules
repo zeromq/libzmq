@@ -4,6 +4,8 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all
+
 export TEST_VERBOSE=1
 
 ifeq ($(DEB_BUILD_ARCH_OS), kfreebsd)

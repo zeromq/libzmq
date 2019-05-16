@@ -30,15 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 const uint8_t unsubscribe_a_msg[] = {0, 'A'};
 const uint8_t subscribe_a_msg[] = {1, 'A'};

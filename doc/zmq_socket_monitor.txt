@@ -21,6 +21,11 @@ method creates a 'ZMQ_PAIR' socket and binds that to the specified
 inproc:// 'endpoint'. To collect the socket events, you must create
 your own 'ZMQ_PAIR' socket, and connect that to the endpoint.
 
+Note that there is also a DRAFT function linkzmq:zmq_socket_monitor_versioned[3],
+which allows to subscribe to events that provide more information.
+Calling zmq_socket_monitor is equivalent to calling 'zmq_socket_monitor_versioned'
+with the 'event_version' parameter set to 1, with the exception of error cases.
+
 The 'events' argument is a bitmask of the socket events you wish to
 monitor, see 'Supported events' below. To monitor all events, use the
 event value ZMQ_EVENT_ALL. NOTE: as new events are added, the catch-all
@@ -31,7 +36,7 @@ guarantee compatibility with future versions.
 Each event is sent as two frames. The first frame contains an event
 number (16 bits), and an event value (32 bits) that provides additional
 data according to the event number. The second frame contains a string
-that specifies the affected TCP or IPC endpoint.
+that specifies the affected endpoint.
 
 ----
 The _zmq_socket_monitor()_ method supports only connection-oriented
@@ -111,9 +116,9 @@ The event value is unspecified.
 
 ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ZMTP security mechanism handshake failed due to some mechanism protocol 
-error, either between the ZMTP mechanism peers, or between the mechanism 
-server and the ZAP handler. This indicates a configuration or implementation 
+The ZMTP security mechanism handshake failed due to some mechanism protocol
+error, either between the ZMTP mechanism peers, or between the mechanism
+server and the ZAP handler. This indicates a configuration or implementation
 error in either peer resp. the ZAP handler.
 The event value is one of the ZMQ_PROTOCOL_ERROR_* values:
 ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED
@@ -140,7 +145,7 @@ ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA
 ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ZMTP security mechanism handshake failed due to an authentication failure.
-The event value is the status code returned by the ZAP handler (i.e. 300, 
+The event value is the status code returned by the ZAP handler (i.e. 300,
 400 or 500).
 
 
@@ -254,6 +259,8 @@ int main (void)
         event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CONNECTED);
     event = get_monitor_event (client_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_MONITOR_STOPPED);
 
     //  This is the flow of server events
@@ -261,6 +268,8 @@ int main (void)
     assert (event == ZMQ_EVENT_LISTENING);
     event = get_monitor_event (server_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_ACCEPTED);
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
     event = get_monitor_event (server_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CLOSED);
     event = get_monitor_event (server_mon, NULL, NULL);

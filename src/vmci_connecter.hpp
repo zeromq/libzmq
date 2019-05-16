@@ -45,6 +45,7 @@ class io_thread_t;
 class session_base_t;
 struct address_t;
 
+//  TODO consider refactoring this to derive from stream_connecter_base_t
 class vmci_connecter_t : public own_t, public io_object_t
 {
   public:

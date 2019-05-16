@@ -28,6 +28,18 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+#include <stdlib.h>
+#include <unity.h>
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 static void zap_handler (void *handler_)
 {
@@ -46,21 +58,21 @@ static void zap_handler (void *handler_)
         char *routing_id = s_recv (handler_);
         char *mechanism = s_recv (handler_);
 
-        assert (streq (version, "1.0"));
-        assert (streq (mechanism, "NULL"));
+        TEST_ASSERT_EQUAL_STRING ("1.0", version);
+        TEST_ASSERT_EQUAL_STRING ("NULL", mechanism);
 
-        s_sendmore (handler_, version);
-        s_sendmore (handler_, sequence);
+        send_string_expect_success (handler_, version, ZMQ_SNDMORE);
+        send_string_expect_success (handler_, sequence, ZMQ_SNDMORE);
         if (streq (domain, "DOMAIN")) {
-            s_sendmore (handler_, "200");
-            s_sendmore (handler_, "OK");
-            s_sendmore (handler_, "anonymous");
+            send_string_expect_success (handler_, "200", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "OK", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "anonymous", ZMQ_SNDMORE);
             zmq_send (handler_, metadata, sizeof (metadata), 0);
         } else {
-            s_sendmore (handler_, "400");
-            s_sendmore (handler_, "BAD DOMAIN");
-            s_sendmore (handler_, "");
-            s_send (handler_, "");
+            send_string_expect_success (handler_, "400", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "BAD DOMAIN", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", ZMQ_SNDMORE);
+            send_string_expect_success (handler_, "", 0);
         }
         free (version);
         free (sequence);
@@ -72,59 +84,53 @@ static void zap_handler (void *handler_)
     close_zero_linger (handler_);
 }
 
-int main (void)
+void test_metadata ()
 {
-    setup_test_environment ();
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    setup_test_context ();
 
     //  Spawn ZAP handler
     //  We create and bind ZAP socket in main thread to avoid case
     //  where child thread does not start up fast enough.
-    void *handler = zmq_socket (ctx, ZMQ_REP);
-    assert (handler);
-    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
-    assert (rc == 0);
+    void *handler = zmq_socket (get_test_context (), ZMQ_REP);
+    TEST_ASSERT_NOT_NULL (handler);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (handler, "inproc://zeromq.zap.01"));
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "DOMAIN", 6);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
+    void *server = test_context_socket (ZMQ_DEALER);
+    void *client = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "DOMAIN", 6));
+    bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
-    s_send (client, "This is a message");
+    send_string_expect_success (client, "This is a message", 0);
     zmq_msg_t msg;
     zmq_msg_init (&msg);
-    rc = zmq_msg_recv (&msg, server, 0);
-    assert (rc != -1);
-    assert (streq (zmq_msg_gets (&msg, "Hello"), "World"));
-    assert (streq (zmq_msg_gets (&msg, "Socket-Type"), "DEALER"));
-    assert (streq (zmq_msg_gets (&msg, "User-Id"), "anonymous"));
-    assert (streq (zmq_msg_gets (&msg, "Peer-Address"), "127.0.0.1"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, server, 0));
+    TEST_ASSERT_EQUAL_STRING ("World", zmq_msg_gets (&msg, "Hello"));
+    TEST_ASSERT_EQUAL_STRING ("DEALER", zmq_msg_gets (&msg, "Socket-Type"));
+    TEST_ASSERT_EQUAL_STRING ("anonymous", zmq_msg_gets (&msg, "User-Id"));
+    TEST_ASSERT_EQUAL_STRING ("127.0.0.1", zmq_msg_gets (&msg, "Peer-Address"));
 
-    assert (zmq_msg_gets (&msg, "No Such") == NULL);
-    assert (zmq_errno () == EINVAL);
+    TEST_ASSERT_NULL (zmq_msg_gets (&msg, "No Such"));
+    TEST_ASSERT_EQUAL_INT (EINVAL, zmq_errno ());
     zmq_msg_close (&msg);
 
-    close_zero_linger (client);
-    close_zero_linger (server);
+    test_context_socket_close_zero_linger (client);
+    test_context_socket_close_zero_linger (server);
 
     //  Shutdown
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    teardown_test_context ();
 
     //  Wait until ZAP handler terminates
     zmq_threadclose (zap_thread);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+    UNITY_BEGIN ();
+    RUN_TEST (test_metadata);
+    return UNITY_END ();
 }

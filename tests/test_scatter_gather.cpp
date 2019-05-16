@@ -28,57 +28,61 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_scatter_gather_multipart_fails ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    void *scatter = test_context_socket (ZMQ_SCATTER);
+    void *gather = test_context_socket (ZMQ_GATHER);
 
-    void *scatter = zmq_socket (ctx, ZMQ_SCATTER);
-    void *gather = zmq_socket (ctx, ZMQ_GATHER);
-    void *gather2 = zmq_socket (ctx, ZMQ_GATHER);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_bind (scatter, "inproc://test-scatter-gather"));
 
-    int rc = zmq_bind (scatter, "inproc://test-scatter-gather");
-    assert (rc == 0);
-
-    rc = zmq_connect (gather, "inproc://test-scatter-gather");
-    assert (rc == 0);
-
-    rc = zmq_connect (gather2, "inproc://test-scatter-gather");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (gather, "inproc://test-scatter-gather"));
 
     //  Should fail, multipart is not supported
-    rc = s_sendmore (scatter, "1");
-    assert (rc == -1);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL,
+                               zmq_send_const (scatter, "1", 1, ZMQ_SNDMORE));
 
-    rc = s_send (scatter, "1");
-    assert (rc == 1);
+    test_context_socket_close (scatter);
+    test_context_socket_close (gather);
+}
 
-    rc = s_send (scatter, "2");
-    assert (rc == 1);
+void test_scatter_gather ()
+{
+    void *scatter = test_context_socket (ZMQ_SCATTER);
+    void *gather = test_context_socket (ZMQ_GATHER);
+    void *gather2 = test_context_socket (ZMQ_GATHER);
 
-    char *message = s_recv (gather);
-    assert (message);
-    assert (streq (message, "1"));
-    free (message);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_bind (scatter, "inproc://test-scatter-gather"));
 
-    message = s_recv (gather2);
-    assert (message);
-    assert (streq (message, "2"));
-    free (message);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (gather, "inproc://test-scatter-gather"));
 
-    rc = zmq_close (scatter);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (gather2, "inproc://test-scatter-gather"));
 
-    rc = zmq_close (gather);
-    assert (rc == 0);
+    send_string_expect_success (scatter, "1", 0);
+    send_string_expect_success (scatter, "2", 0);
 
-    rc = zmq_close (gather2);
-    assert (rc == 0);
+    recv_string_expect_success (gather, "1", 0);
+    recv_string_expect_success (gather2, "2", 0);
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (scatter);
+    test_context_socket_close (gather);
+    test_context_socket_close (gather2);
+}
 
-    return 0;
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_scatter_gather);
+    RUN_TEST (test_scatter_gather_multipart_fails);
+    return UNITY_END ();
 }

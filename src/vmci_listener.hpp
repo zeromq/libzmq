@@ -46,6 +46,7 @@ namespace zmq
 class io_thread_t;
 class socket_base_t;
 
+//  TODO consider refactoring this to derive from stream_listener_base_t
 class vmci_listener_t : public own_t, public io_object_t
 {
   public:
@@ -55,10 +56,10 @@ class vmci_listener_t : public own_t, public io_object_t
     ~vmci_listener_t ();
 
     //  Set address to listen on.
-    int set_address (const char *addr_);
+    int set_local_address (const char *addr_);
 
     // Get the bound address for use with wildcards
-    int get_address (std::string &addr_);
+    int get_local_address (std::string &addr_);
 
   private:
     //  Handlers for incoming commands.

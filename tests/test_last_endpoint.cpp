@@ -30,26 +30,16 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 static void do_bind_and_verify (void *s_, const char *endpoint_)
 {
-    int rc = zmq_bind (s_, endpoint_);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s_, endpoint_));
     char reported[255];
     size_t size = 255;
-    rc = zmq_getsockopt (s_, ZMQ_LAST_ENDPOINT, reported, &size);
-    assert (rc == 0 && strcmp (reported, endpoint_) == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (s_, ZMQ_LAST_ENDPOINT, reported, &size));
+    TEST_ASSERT_EQUAL_STRING (endpoint_, reported);
 }
 
 void test_last_endpoint ()

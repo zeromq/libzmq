@@ -136,7 +136,7 @@ zmq::socks_request_t::socks_request_t (uint8_t command_,
     hostname (ZMQ_MOVE (hostname_)),
     port (port_)
 {
-    zmq_assert (hostname_.size () <= UINT8_MAX);
+    zmq_assert (hostname.size () <= UINT8_MAX);
 }
 
 zmq::socks_request_encoder_t::socks_request_encoder_t () :

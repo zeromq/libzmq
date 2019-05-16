@@ -103,9 +103,6 @@ class epoll_t : public worker_poller_base_t
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t _retired;
 
-    //  Handle of the physical thread doing the I/O work.
-    thread_t _worker;
-
     epoll_t (const epoll_t &);
     const epoll_t &operator= (const epoll_t &);
 };
