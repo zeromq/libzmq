@@ -41,7 +41,7 @@
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 4
 #define ZMQ_VERSION_MINOR 3
-#define ZMQ_VERSION_PATCH 1
+#define ZMQ_VERSION_PATCH 2
 
 #define ZMQ_MAKE_VERSION(major, minor, patch)                                  \
     ((major) *10000 + (minor) *100 + (patch))
@@ -98,6 +98,9 @@ extern "C" {
 #if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
 #include <inttypes.h>
 #elif defined _MSC_VER && _MSC_VER < 1600
+#ifndef uint64_t
+typedef unsigned __int64 uint64_t;
+#endif
 #ifndef int32_t
 typedef __int32 int32_t;
 #endif
@@ -682,14 +685,16 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 
 #define ZMQ_HAVE_POLLER
 
+#if defined _WIN32
+typedef SOCKET zmq_fd_t;
+#else
+typedef int zmq_fd_t;
+#endif
+
 typedef struct zmq_poller_event_t
 {
     void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    zmq_fd_t fd;
     void *user_data;
     short events;
 } zmq_poller_event_t;
@@ -706,22 +711,33 @@ ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
                                     zmq_poller_event_t *events,
                                     int n_events,
                                     long timeout);
+ZMQ_EXPORT int zmq_poller_fd (void *poller, zmq_fd_t *fd);
 
-#if defined _WIN32
 ZMQ_EXPORT int
-zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, SOCKET fd);
-#else
-ZMQ_EXPORT int
-zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
-#endif
+zmq_poller_add_fd (void *poller, zmq_fd_t fd, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, zmq_fd_t fd, short events);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, zmq_fd_t fd);
 
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
                                           const void *routing_id,
                                           size_t routing_id_size);
+
+/*  DRAFT Socket monitoring events                                            */
+#define ZMQ_EVENT_PIPES_STATS 0x10000
+
+#define ZMQ_CURRENT_EVENT_VERSION 1
+#define ZMQ_CURRENT_EVENT_VERSION_DRAFT 2
+
+#define ZMQ_EVENT_ALL_V1 ZMQ_EVENT_ALL
+#define ZMQ_EVENT_ALL_V2 ZMQ_EVENT_ALL_V1 | ZMQ_EVENT_PIPES_STATS
+
+ZMQ_EXPORT int zmq_socket_monitor_versioned (void *s_,
+                                             const char *addr_,
+                                             uint64_t events_,
+                                             int event_version_);
+ZMQ_EXPORT int zmq_socket_monitor_versioned_typed (
+  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
+ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
 
 #endif // ZMQ_BUILD_DRAFT_API
 

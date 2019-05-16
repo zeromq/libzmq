@@ -370,6 +370,7 @@ The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for
 TCP and IPC transports. The returned value will be a string in the form of
 a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
 the returned address will be 0.0.0.0 (for IPv4).
+Note: not supported on GNU/Hurd with IPC due to non-working getsockname().
 
 [horizontal]
 Option value type:: NULL-terminated character string
@@ -916,7 +917,7 @@ NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int
-Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT|ZMQ_NOTIFY_DISCONNECT
+Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT
 Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 

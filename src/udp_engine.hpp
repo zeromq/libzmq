@@ -43,11 +43,13 @@ class udp_engine_t : public io_object_t, public i_engine
     void in_event ();
     void out_event ();
 
-    const char *get_endpoint () const;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
   private:
     int resolve_raw_address (char *addr_, size_t length_);
     void sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_);
+
+    const endpoint_uri_pair_t _empty_endpoint;
 
     bool _plugged;
 
@@ -60,7 +62,7 @@ class udp_engine_t : public io_object_t, public i_engine
 
     sockaddr_in _raw_address;
     const struct sockaddr *_out_address;
-    socklen_t _out_address_len;
+    zmq_socklen_t _out_address_len;
 
     char _out_buffer[MAX_UDP_MSG];
     char _in_buffer[MAX_UDP_MSG];

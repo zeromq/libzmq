@@ -28,99 +28,90 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_more ()
 {
-    setup_test_environment ();
     //  Create the infrastructure
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    void *sb = test_context_socket (ZMQ_ROUTER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "inproc://a"));
 
-    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (sb);
-
-    int rc = zmq_bind (sb, "inproc://a");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sc);
-
-    rc = zmq_connect (sc, "inproc://a");
-    assert (rc == 0);
+    void *sc = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "inproc://a"));
 
     //  Send 2-part message.
-    rc = zmq_send (sc, "A", 1, ZMQ_SNDMORE);
-    assert (rc == 1);
-    rc = zmq_send (sc, "B", 1, 0);
-    assert (rc == 1);
+    send_string_expect_success (sc, "A", ZMQ_SNDMORE);
+    send_string_expect_success (sc, "B", 0);
 
     //  Routing id comes first.
     zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc >= 0);
-    int more = zmq_msg_more (&msg);
-    assert (more == 1);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, sb, 0));
+    TEST_ASSERT_EQUAL_INT (1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_more (&msg)));
 
     //  Then the first part of the message body.
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 1);
-    more = zmq_msg_more (&msg);
-    assert (more == 1);
+    TEST_ASSERT_EQUAL_INT (
+      1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, sb, 0)));
+    TEST_ASSERT_EQUAL_INT (1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_more (&msg)));
 
     //  And finally, the second part of the message body.
-    rc = zmq_msg_recv (&msg, sb, 0);
-    assert (rc == 1);
-    more = zmq_msg_more (&msg);
-    assert (more == 0);
-
-    // Test ZMQ_SHARED property (case 1, refcounted messages)
-    zmq_msg_t msg_a;
-    rc = zmq_msg_init_size (&msg_a, 1024); // large enough to be a type_lmsg
-    assert (rc == 0);
-
-    // Message is not shared
-    rc = zmq_msg_get (&msg_a, ZMQ_SHARED);
-    assert (rc == 0);
-
-    zmq_msg_t msg_b;
-    rc = zmq_msg_init (&msg_b);
-    assert (rc == 0);
-
-    rc = zmq_msg_copy (&msg_b, &msg_a);
-    assert (rc == 0);
-
-    // Message is now shared
-    rc = zmq_msg_get (&msg_b, ZMQ_SHARED);
-    assert (rc == 1);
-
-    // cleanup
-    rc = zmq_msg_close (&msg_a);
-    assert (rc == 0);
-    rc = zmq_msg_close (&msg_b);
-    assert (rc == 0);
-
-    // Test ZMQ_SHARED property (case 2, constant data messages)
-    rc = zmq_msg_init_data (&msg_a, (void *) "TEST", 5, 0, 0);
-    assert (rc == 0);
-
-    // Message reports as shared
-    rc = zmq_msg_get (&msg_a, ZMQ_SHARED);
-    assert (rc == 1);
-
-    // cleanup
-    rc = zmq_msg_close (&msg_a);
-    assert (rc == 0);
+    TEST_ASSERT_EQUAL_INT (
+      1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, sb, 0)));
+    TEST_ASSERT_EQUAL_INT (0, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_more (&msg)));
 
     //  Deallocate the infrastructure.
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
+void test_shared_refcounted ()
+{
+    // Test ZMQ_SHARED property (case 1, refcounted messages)
+    zmq_msg_t msg_a;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_msg_init_size (&msg_a, 1024)); // large enough to be a type_lmsg
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-    return 0;
+    // Message is not shared
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_get (&msg_a, ZMQ_SHARED));
+
+    zmq_msg_t msg_b;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg_b));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_copy (&msg_b, &msg_a));
+
+    // Message is now shared
+    TEST_ASSERT_EQUAL_INT (
+      1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_get (&msg_b, ZMQ_SHARED)));
+
+    // cleanup
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg_a));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg_b));
+}
+
+void test_shared_const ()
+{
+    zmq_msg_t msg_a;
+    // Test ZMQ_SHARED property (case 2, constant data messages)
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_msg_init_data (&msg_a, (void *) "TEST", 5, 0, 0));
+
+    // Message reports as shared
+    TEST_ASSERT_EQUAL_INT (
+      1, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_get (&msg_a, ZMQ_SHARED)));
+
+    // cleanup
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg_a));
+}
+
+int main ()
+{
+    setup_test_environment ();
+
+    UNITY_BEGIN ();
+    RUN_TEST (test_more);
+    RUN_TEST (test_shared_refcounted);
+    RUN_TEST (test_shared_const);
+    return UNITY_END ();
 }

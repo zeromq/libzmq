@@ -83,7 +83,7 @@ struct node
     inline void set_prefix (const unsigned char *prefix);
     inline void set_first_bytes (const unsigned char *bytes);
     inline void set_first_byte_at (size_t i, unsigned char byte);
-    inline void set_node_ptrs (unsigned char const *ptrs);
+    inline void set_node_ptrs (const unsigned char *ptrs);
     inline void set_node_at (size_t i, node n);
     inline void set_edge_at (size_t i, unsigned char byte, node n);
     void resize (size_t prefix_length, size_t edgecount);

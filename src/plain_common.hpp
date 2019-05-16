@@ -32,7 +32,7 @@
 
 namespace zmq
 {
-const char hello_prefix[] = "\x05WELCOME";
+const char hello_prefix[] = "\x05HELLO";
 const size_t hello_prefix_len = sizeof (hello_prefix) - 1;
 
 const char welcome_prefix[] = "\x07WELCOME";

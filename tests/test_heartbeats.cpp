@@ -26,10 +26,13 @@
 typedef SOCKET raw_socket;
 #else
 #include <arpa/inet.h>
+#include <unistd.h>
 typedef int raw_socket;
 #endif
 
 #include <limits.h>
+#include <stdlib.h>
+#include <string.h>
 
 // TODO remove this here, either ensure that UINT16_MAX is always properly
 // defined or handle this at a more central location
@@ -39,16 +42,7 @@ typedef int raw_socket;
 
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
-
+SETUP_TEARDOWN_TESTCONTEXT
 
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1

@@ -1308,7 +1308,7 @@ NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int
-Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT|ZMQ_NOTIFY_DISCONNECT
+Option value unit:: 0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT
 Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 

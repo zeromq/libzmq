@@ -28,6 +28,15 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
+
+void setUp ()
+{
+}
+
+void tearDown ()
+{
+}
 
 // There is no way to test for correctness because of the embedded RNG.
 void test__zmq_curve_keypair__always__success (void)
@@ -39,10 +48,9 @@ void test__zmq_curve_keypair__always__success (void)
     const int rc = zmq_curve_keypair (public_key, secret_key);
 
 #if defined(ZMQ_HAVE_CURVE)
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
 #else
-    assert (rc == -1);
-    assert (zmq_errno () == ENOTSUP);
+    TEST_ASSERT_FAILURE_ERRNO (ENOTSUP, rc);
 #endif
 }
 
@@ -58,12 +66,10 @@ void test__zmq_curve_public__valid__success ()
     const int rc = zmq_curve_public (out_public, secret_key);
 
 #if defined(ZMQ_HAVE_CURVE)
-    assert (rc == 0);
-    assert (zmq_errno () == 0);
-    assert (streq (out_public, public_key));
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
+    TEST_ASSERT_EQUAL_STRING (public_key, out_public);
 #else
-    assert (rc == -1);
-    assert (zmq_errno () == ENOTSUP);
+    TEST_ASSERT_FAILURE_ERRNO (ENOTSUP, rc);
     (void) public_key;
 #endif
 }
@@ -77,23 +83,32 @@ void test__zmq_curve_public__invalid__failure (const char *secret_)
     const int rc = zmq_curve_public (out_public, secret_);
 
 #if defined(ZMQ_HAVE_CURVE)
-    assert (rc == -1);
-    assert (zmq_errno () == EINVAL);
-    assert (streq (out_public, ""));
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, rc);
+    TEST_ASSERT_EQUAL_STRING ("", out_public);
 #else
-    assert (rc == -1);
-    assert (zmq_errno () == ENOTSUP);
+    TEST_ASSERT_FAILURE_ERRNO (ENOTSUP, rc);
 #endif
 }
 
-int main (void)
+void test__zmq_curve_public__invalid__failure_short ()
 {
-    test__zmq_curve_keypair__always__success ();
-
-    test__zmq_curve_public__valid__success ();
     test__zmq_curve_public__invalid__failure ("42");
+}
+
+void test__zmq_curve_public__invalid__failure_long ()
+{
     test__zmq_curve_public__invalid__failure (
       "0123456789012345678901234567890123456789.");
+}
 
-    return 0;
+int main ()
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test__zmq_curve_keypair__always__success);
+
+    RUN_TEST (test__zmq_curve_public__valid__success);
+    RUN_TEST (test__zmq_curve_public__invalid__failure_short);
+    RUN_TEST (test__zmq_curve_public__invalid__failure_long);
+
+    return UNITY_END ();
 }

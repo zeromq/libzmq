@@ -32,37 +32,33 @@
 #include <vmci_sockets.h>
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_reqrep_vmci ()
 {
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
     std::stringstream s;
     s << "vmci://" << VMCISock_GetLocalCID () << ":" << 5560;
     std::string endpoint = s.str ();
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, endpoint.c_str ());
-    assert (rc == 0);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, endpoint.c_str ()));
 
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, endpoint.c_str ());
-    assert (rc == 0);
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint.c_str ()));
 
     bounce (sb, sc);
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
+int main (void)
+{
+    setup_test_environment ();
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_reqrep_vmci);
+    return UNITY_END ();
 }

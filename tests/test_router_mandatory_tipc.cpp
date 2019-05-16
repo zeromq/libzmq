@@ -30,47 +30,41 @@
 #include <stdio.h>
 #include "testutil.hpp"
 
-int main (void)
+#include "testutil_unity.hpp"
+
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_router_mandatory_tipc ()
 {
     if (!is_tipc_available ()) {
-        printf ("TIPC environment unavailable, skipping test\n");
-        return 77;
+        TEST_IGNORE_MESSAGE ("TIPC environment unavailable, skipping test");
     }
 
-    fprintf (stderr, "test_router_mandatory_tipc running...\n");
-
-    void *ctx = zmq_init (1);
-    assert (ctx);
-
     // Creating the first socket.
-    void *sa = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (sa);
+    void *sa = test_context_socket (ZMQ_ROUTER);
 
-    int rc = zmq_bind (sa, "tipc://{15560,0,0}");
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sa, "tipc://{15560,0,0}"));
 
     // Sending a message to an unknown peer with the default setting
-    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE);
-    assert (rc == 7);
-    rc = zmq_send (sa, "DATA", 4, 0);
-    assert (rc == 4);
+    send_string_expect_success (sa, "UNKNOWN", ZMQ_SNDMORE);
+    send_string_expect_success (sa, "DATA", 0);
 
     int mandatory = 1;
 
     // Set mandatory routing on socket
-    rc =
-      zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY,
+                                               &mandatory, sizeof (mandatory)));
 
     // Send a message and check that it fails
-    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-    assert (rc == -1 && errno == EHOSTUNREACH);
+    TEST_ASSERT_FAILURE_ERRNO (
+      EHOSTUNREACH, zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT));
 
-    rc = zmq_close (sa);
-    assert (rc == 0);
+    test_context_socket_close (sa);
+}
 
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+int main (void)
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test_router_mandatory_tipc);
+    return UNITY_END ();
 }

@@ -30,7 +30,15 @@
 #ifndef __ZMQ_ADDRESS_HPP_INCLUDED__
 #define __ZMQ_ADDRESS_HPP_INCLUDED__
 
+#include "fd.hpp"
+
 #include <string>
+
+#ifndef ZMQ_HAVE_WINDOWS
+#include <sys/socket.h>
+#else
+#include <ws2tcpip.h>
+#endif
 
 namespace zmq
 {
@@ -97,6 +105,37 @@ struct address_t
 
     int to_string (std::string &addr_) const;
 };
+
+#if defined(ZMQ_HAVE_HPUX) || defined(ZMQ_HAVE_VXWORKS)                        \
+  || defined(ZMQ_HAVE_WINDOWS)
+typedef int zmq_socklen_t;
+#else
+typedef socklen_t zmq_socklen_t;
+#endif
+
+enum socket_end_t
+{
+    socket_end_local,
+    socket_end_remote
+};
+
+zmq_socklen_t
+get_socket_address (fd_t fd_, socket_end_t socket_end_, sockaddr_storage *ss_);
+
+template <typename T>
+std::string get_socket_name (fd_t fd_, socket_end_t socket_end_)
+{
+    struct sockaddr_storage ss;
+    const zmq_socklen_t sl = get_socket_address (fd_, socket_end_, &ss);
+    if (sl == 0) {
+        return std::string ();
+    }
+
+    const T addr (reinterpret_cast<struct sockaddr *> (&ss), sl);
+    std::string address_string;
+    addr.to_string (address_string);
+    return address_string;
+}
 }
 
 #endif

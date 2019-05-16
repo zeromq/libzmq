@@ -266,6 +266,9 @@ struct options_t
 
     // Application metadata
     std::map<std::string, std::string> app_metadata;
+
+    // Version of monitor events to emit
+    int monitor_event_version;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

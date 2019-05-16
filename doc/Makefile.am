@@ -11,6 +11,7 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
     zmq_msg_get.3 zmq_msg_set.3 zmq_msg_more.3 zmq_msg_gets.3 \
     zmq_getsockopt.3 zmq_setsockopt.3 \
     zmq_socket.3 zmq_socket_monitor.3 zmq_poll.3 \
+    zmq_socket_monitor_versioned.3 \
     zmq_errno.3 zmq_strerror.3 zmq_version.3 \
     zmq_sendmsg.3 zmq_recvmsg.3 \
     zmq_proxy.3 zmq_proxy_steerable.3 \

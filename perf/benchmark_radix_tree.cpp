@@ -36,10 +36,11 @@
 #include <cstddef>
 #include <cstdio>
 #include <random>
+#include <ratio>
 #include <vector>
 
 const std::size_t nkeys = 10000;
-const std::size_t nqueries = 100000;
+const std::size_t nqueries = 1000000;
 const std::size_t warmup_runs = 10;
 const std::size_t samples = 10;
 const std::size_t key_length = 20;
@@ -51,27 +52,31 @@ void benchmark_lookup (T &t,
                        std::vector<unsigned char *> &input_set,
                        std::vector<unsigned char *> &queries)
 {
-    std::puts ("Starting warmup...");
+    using namespace std::chrono;
+    std::vector<duration<long, std::nano>> samples_vec;
+    samples_vec.reserve (samples);
+
     for (std::size_t run = 0; run < warmup_runs; ++run) {
         for (auto &query : queries)
             t.check (query, key_length);
     }
 
-    std::puts ("Collecting samples...");
-    std::vector<double> samples_vec;
-    samples_vec.reserve (samples);
     for (std::size_t run = 0; run < samples; ++run) {
-        auto start = std::chrono::high_resolution_clock::now ();
-        for (auto &query : queries)
+        duration<long, std::nano> interval (0);
+        for (auto &query : queries) {
+            auto start = steady_clock::now ();
             t.check (query, key_length);
-        auto end = std::chrono::high_resolution_clock::now ();
-        samples_vec.push_back (
-          std::chrono::duration_cast<std::chrono::milliseconds> ((end - start))
-            .count ());
+            auto end = steady_clock::now ();
+            interval += end - start;
+        }
+        samples_vec.push_back (interval / queries.size ());
     }
 
+    std::size_t sum = 0;
     for (const auto &sample : samples_vec)
-        std::printf ("%.2lf\n", sample);
+        sum += sample.count ();
+    std::printf ("Average lookup time = %.1lf ns\n",
+                 static_cast<double> (sum) / samples);
 }
 
 int main ()
@@ -104,6 +109,10 @@ int main ()
     }
 
     // Create a benchmark.
+    std::printf ("keys = %llu, queries = %llu, key size = %llu\n",
+                 static_cast<unsigned long long> (nkeys),
+                 static_cast<unsigned long long> (nqueries),
+                 static_cast<unsigned long long> (key_length));
     std::puts ("[trie]");
     benchmark_lookup (trie, input_set, queries);
 

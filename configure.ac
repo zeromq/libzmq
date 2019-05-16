@@ -19,6 +19,7 @@ m4_include([m4/ax_cxx_compile_stdcxx_11.m4])
 m4_include([m4/ax_code_coverage.m4])
 m4_include([m4/ax_valgrind_check.m4])
 m4_include([m4/ax_check_vscript.m4])
+m4_include([m4/ax_func_posix_memalign.m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -46,9 +47,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.2.5: 6:5:1 (ABI version 5)
 # ZeroMQ version 4.3.0: 7:0:2 (ABI version 5)
 # ZeroMQ version 4.3.1: 7:1:2 (ABI version 5)
+# ZeroMQ version 4.3.2: 7:2:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:1:2"
+LTVER="7:2:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -77,6 +79,7 @@ AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AX_VALGRIND_CHECK
 AX_CHECK_VSCRIPT
+AX_FUNC_POSIX_MEMALIGN
 
 AC_ARG_ENABLE([force-CXX98-compat],
     [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])
@@ -375,6 +378,12 @@ LIBZMQ_CHECK_DOC_BUILD
 # Check polling system, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_POLLER
 
+# Check cacheline size, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_CACHELINE
+
+# Check condition variable implementation, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_CV_IMPL
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(\
@@ -472,16 +481,20 @@ AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
 # conditionally require libgssapi_krb5
 if test "x$require_libgssapi_krb5_ext" != "xno"; then
     PKG_CHECK_MODULES([gssapi_krb5], [krb5-gssapi], [
+        have_gssapi_library="yes"
         PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE krb5-gssapi"
     ], [
         AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
         AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],
-            AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security]),
+            have_gssapi_library="yes",
             AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lgssapi_krb5"
     ])
 fi
-AM_CONDITIONAL(BUILD_GSSAPI, test "x$require_libgssapi_krb5_ext" != "xno")
+if test "x$have_gssapi_library" = "xyes"; then
+    AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security])
+fi
+AM_CONDITIONAL(BUILD_GSSAPI, test "x$have_gssapi_library" = "xyes")
 
 # Select curve encryption library, defaults to tweetnacl
 # To use libsodium instead, use --with-libsodium (must be installed)
@@ -662,8 +675,22 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp accept4)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork mkdtemp accept4)
 AC_CHECK_HEADERS([alloca.h])
+
+# string.h doesn't seem to be included by default in Fedora 30
+AC_MSG_CHECKING([whether strnlen is available])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <string.h>]],
+		[[size_t bar = strnlen ("foo", 1); (void)bar; return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(HAVE_STRNLEN, [1],
+		    [strnlen is available])
+	],[
+		AC_MSG_RESULT([no])
+])
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])

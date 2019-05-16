@@ -30,17 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 const int MAX_SENDS = 10000;
 
@@ -99,6 +89,10 @@ int count_msg (int send_hwm_, int recv_hwm_, TestType test_type_)
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           connect_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
+
+        //  we must wait for the connect to succeed here, unfortunately we don't
+        //  have monitoring events for inproc, so we just hope SETTLE_TIME suffices
+        msleep (SETTLE_TIME);
     } else {
         // Set up connect socket
         connect_socket = test_context_socket (ZMQ_PUSH);
@@ -187,12 +181,8 @@ int test_inproc_connect_and_close_first (int send_hwm_, int recv_hwm_)
 
 int test_inproc_bind_and_close_first (int send_hwm_, int /* recv_hwm */)
 {
-    void *ctx = zmq_ctx_new ();
-    TEST_ASSERT_NOT_NULL (ctx);
-
     // Set up bind socket
-    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
-    TEST_ASSERT_NOT_NULL (bind_socket);
+    void *bind_socket = test_context_socket (ZMQ_PUSH);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, "inproc://a"));
@@ -204,12 +194,11 @@ int test_inproc_bind_and_close_first (int send_hwm_, int /* recv_hwm */)
         ++send_count;
 
     // Close bind
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));
+    test_context_socket_close (bind_socket);
 
     /* TODO Can't currently do connect without then wiring up a bind as things hang, this needs top be fixed.
     // Set up connect socket
-    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
-    TEST_ASSERT_NOT_NULL(connect_socket);
+    void *connect_socket = test_context_socket (ZMQ_PULL);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, "inproc://a"));
 
@@ -222,9 +211,7 @@ int test_inproc_bind_and_close_first (int send_hwm_, int /* recv_hwm */)
     */
 
     // Clean up
-    //TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    //test_context_socket_close (connect_socket);
 
     return send_count;
 }

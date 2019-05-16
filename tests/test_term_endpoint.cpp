@@ -30,15 +30,7 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 /* Use the worst case filename size for the buffer (+1 for trailing NUL), this
  * is larger than MAX_SOCKET_STRING, which is not large enough for IPC */

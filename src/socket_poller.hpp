@@ -75,6 +75,8 @@ class socket_poller_t
     int add_fd (fd_t fd_, void *user_data_, short events_);
     int modify_fd (fd_t fd_, short events_);
     int remove_fd (fd_t fd_);
+    // Returns the signaler's fd if there is one, otherwise errors.
+    int signaler_fd (fd_t *fd_);
 
     int wait (event_t *event_, int n_events_, long timeout_);
 
@@ -101,7 +103,7 @@ class socket_poller_t
                         uint64_t &now_,
                         uint64_t &end_,
                         bool &first_pass_);
-    void rebuild ();
+    int rebuild ();
 
     //  Used to check whether the object is a socket_poller.
     uint32_t _tag;

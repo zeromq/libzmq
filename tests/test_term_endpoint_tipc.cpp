@@ -28,98 +28,76 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+SETUP_TEARDOWN_TESTCONTEXT
+
+const char ep[] = "tipc://{5560,0,0}";
+const char name[] = "tipc://{5560,0}@0.0.0";
+
+void test_term_endpoint_unbind_tipc ()
 {
     if (!is_tipc_available ()) {
-        printf ("TIPC environment unavailable, skipping test\n");
-        return 77;
+        TEST_IGNORE_MESSAGE ("TIPC environment unavailable, skipping test\n");
     }
 
-    int rc;
-    char buf[32];
-    const char *ep = "tipc://{5560,0,0}";
-    const char *name = "tipc://{5560,0}@0.0.0";
-
-    fprintf (stderr, "unbind endpoint test running...\n");
-
     //  Create infrastructure.
-    void *ctx = zmq_init (1);
-    assert (ctx);
-    void *push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_bind (push, ep);
-    assert (rc == 0);
-    void *pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_connect (pull, name);
-    assert (rc == 0);
+    void *push = test_context_socket (ZMQ_PUSH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (push, ep));
+    void *pull = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pull, name));
 
     //  Pass one message through to ensure the connection is established.
-    rc = zmq_send (push, "ABC", 3, 0);
-    assert (rc == 3);
-    rc = zmq_recv (pull, buf, sizeof (buf), 0);
-    assert (rc == 3);
+    send_string_expect_success (push, "ABC", 0);
+    recv_string_expect_success (pull, "ABC", 0);
 
     // Unbind the lisnening endpoint
-    rc = zmq_unbind (push, ep);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (push, ep));
 
     // Let events some time
     msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no outbound connection).
-    rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
-    assert (rc == -1 && zmq_errno () == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (push, "ABC", 3, ZMQ_DONTWAIT));
 
     //  Clean up.
-    rc = zmq_close (pull);
-    assert (rc == 0);
-    rc = zmq_close (push);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
 
-
-    //  Now the other way round.
-    fprintf (stderr, "disconnect endpoint test running...\n");
-
+void test_term_endpoint_disconnect_tipc ()
+{
+    if (!is_tipc_available ()) {
+        TEST_IGNORE_MESSAGE ("TIPC environment unavailable, skipping test\n");
+    }
 
     //  Create infrastructure.
-    ctx = zmq_init (1);
-    assert (ctx);
-    push = zmq_socket (ctx, ZMQ_PUSH);
-    assert (push);
-    rc = zmq_connect (push, name);
-    assert (rc == 0);
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
-    rc = zmq_bind (pull, ep);
-    assert (rc == 0);
+    void *push = test_context_socket (ZMQ_PUSH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (push, name));
+    void *pull = test_context_socket (ZMQ_PULL);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pull, ep));
 
     //  Pass one message through to ensure the connection is established.
-    rc = zmq_send (push, "ABC", 3, 0);
-    assert (rc == 3);
-    rc = zmq_recv (pull, buf, sizeof (buf), 0);
-    assert (rc == 3);
+    send_string_expect_success (push, "ABC", 0);
+    recv_string_expect_success (pull, "ABC", 0);
 
     // Disconnect the bound endpoint
-    rc = zmq_disconnect (push, name);
-    assert (rc == 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (push, name));
 
     msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no inbound connections).
-    rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
-    assert (rc == -1 && zmq_errno () == EAGAIN);
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_send (push, "ABC", 3, ZMQ_DONTWAIT));
 
     //  Clean up.
-    rc = zmq_close (pull);
-    assert (rc == 0);
-    rc = zmq_close (push);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
+    test_context_socket_close (pull);
+    test_context_socket_close (push);
+}
 
-    return 0;
+int main (void)
+{
+    UNITY_BEGIN ();
+    RUN_TEST (test_term_endpoint_unbind_tipc);
+    RUN_TEST (test_term_endpoint_disconnect_tipc);
+    return UNITY_END ();
 }

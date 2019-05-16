@@ -57,7 +57,8 @@ class ipc_address_t
     socklen_t addrlen () const;
 
   private:
-    struct sockaddr_un address;
+    struct sockaddr_un _address;
+    size_t _addrlen;
 
     ipc_address_t (const ipc_address_t &);
     const ipc_address_t &operator= (const ipc_address_t &);

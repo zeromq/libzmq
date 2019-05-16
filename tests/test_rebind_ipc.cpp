@@ -30,36 +30,27 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
-
-static const char *SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_rebind_ipc ()
 {
+    char my_endpoint[32];
+    make_random_ipc_endpoint (my_endpoint);
+
     void *sb0 = test_context_socket (ZMQ_PUSH);
     void *sb1 = test_context_socket (ZMQ_PUSH);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, SOCKET_ADDR));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb0, my_endpoint));
 
     void *sc = test_context_socket (ZMQ_PULL);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, SOCKET_ADDR));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
     send_string_expect_success (sb0, "42", 0);
     recv_string_expect_success (sc, "42", 0);
 
     test_context_socket_close (sb0);
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb1, SOCKET_ADDR));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb1, my_endpoint));
 
     send_string_expect_success (sb1, "42", 0);
     recv_string_expect_success (sc, "42", 0);

@@ -28,75 +28,73 @@
 */
 
 #include "testutil.hpp"
-#include <zmq.h>
+#include "testutil_unity.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_system_max ()
 {
     // Keep allocating sockets until we run out of system resources
     const int no_of_sockets = 2 * 65536;
-    void *ctx = zmq_ctx_new ();
-    zmq_ctx_set (ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
+    zmq_ctx_set (get_test_context (), ZMQ_MAX_SOCKETS, no_of_sockets);
     std::vector<void *> sockets;
 
     while (true) {
-        void *socket = zmq_socket (ctx, ZMQ_PAIR);
+        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
         if (!socket)
             break;
         sockets.push_back (socket);
     }
-    assert (static_cast<int> (sockets.size ()) <= no_of_sockets);
+    TEST_ASSERT_LESS_OR_EQUAL (no_of_sockets,
+                               static_cast<int> (sockets.size ()));
     printf ("Socket creation failed after %i sockets\n",
             static_cast<int> (sockets.size ()));
 
     //  System is out of resources, further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {
-        void *socket = zmq_socket (ctx, ZMQ_PAIR);
-        assert (socket == NULL);
+        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
+        TEST_ASSERT_NULL (socket);
     }
     // Clean up.
     for (unsigned int i = 0; i < sockets.size (); ++i)
-        zmq_close (sockets[i]);
-
-    zmq_ctx_destroy (ctx);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_close (sockets[i]));
 }
 
 void test_zmq_default_max ()
 {
     //  Keep allocating sockets until we hit the default limit
-    void *ctx = zmq_ctx_new ();
     std::vector<void *> sockets;
 
     while (true) {
-        void *socket = zmq_socket (ctx, ZMQ_PAIR);
+        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
         if (!socket)
             break;
         sockets.push_back (socket);
     }
     //  We may stop sooner if system has fewer available sockets
-    assert (sockets.size () <= ZMQ_MAX_SOCKETS_DFLT);
+    TEST_ASSERT_LESS_OR_EQUAL (ZMQ_MAX_SOCKETS_DFLT, sockets.size ());
 
     //  Further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {
-        void *socket = zmq_socket (ctx, ZMQ_PAIR);
-        assert (socket == NULL);
+        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
+        TEST_ASSERT_NULL (socket);
     }
 
     //  Clean up
     for (unsigned int i = 0; i < sockets.size (); ++i)
-        zmq_close (sockets[i]);
-
-    zmq_ctx_destroy (ctx);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_close (sockets[i]));
 }
 
 int main (void)
 {
     setup_test_environment ();
 
-    test_system_max ();
-    test_zmq_default_max ();
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_system_max);
+    RUN_TEST (test_zmq_default_max);
+    return UNITY_END ();
 }

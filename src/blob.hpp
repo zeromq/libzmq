@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+#include <ios>
 
 #if __cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER > 1700
 #define ZMQ_HAS_MOVE_SEMANTICS

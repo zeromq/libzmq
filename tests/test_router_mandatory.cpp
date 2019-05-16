@@ -30,17 +30,9 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
+#include <string.h>
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 #ifdef ZMQ_BUILD_DRAFT_API
 bool send_msg_to_peer_if_ready (void *router_, const char *peer_routing_id_)
@@ -192,13 +184,9 @@ void test_get_peer_state_corner_cases ()
 
 void test_basic ()
 {
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *router = test_context_socket (ZMQ_ROUTER);
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipv4 (router, my_endpoint, sizeof my_endpoint);
 
     //  Send a message to an unknown peer with the default setting
     //  This will not report any error

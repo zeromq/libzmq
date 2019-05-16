@@ -117,7 +117,7 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
 {
 }
 
-const char *zmq::session_base_t::get_endpoint () const
+const zmq::endpoint_uri_pair_t &zmq::session_base_t::get_endpoint () const
 {
     return _engine->get_endpoint ();
 }
@@ -408,6 +408,11 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         //  Remember the local end of the pipe.
         zmq_assert (!_pipe);
         _pipe = pipes[0];
+
+        //  The endpoints strings are not set on bind, set them here so that
+        //  events can use them.
+        pipes[0]->set_endpoint_pair (engine_->get_endpoint ());
+        pipes[1]->set_endpoint_pair (engine_->get_endpoint ());
 
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (_socket, pipes[1]);
@@ -746,19 +751,8 @@ void zmq::session_base_t::start_connecting_udp (io_thread_t * /*io_thread_*/)
     udp_engine_t *engine = new (std::nothrow) udp_engine_t (options);
     alloc_assert (engine);
 
-    bool recv = false;
-    bool send = false;
-
-    if (options.type == ZMQ_RADIO) {
-        send = true;
-        recv = false;
-    } else if (options.type == ZMQ_DISH) {
-        send = false;
-        recv = true;
-    } else if (options.type == ZMQ_DGRAM) {
-        send = true;
-        recv = true;
-    }
+    const bool recv = options.type == ZMQ_DISH || options.type == ZMQ_DGRAM;
+    const bool send = options.type == ZMQ_RADIO || options.type == ZMQ_DGRAM;
 
     const int rc = engine->init (_addr, send, recv);
     errno_assert (rc == 0);

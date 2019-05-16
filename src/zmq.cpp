@@ -267,12 +267,30 @@ int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
     return s->getsockopt (option_, optval_, optvallen_);
 }
 
-int zmq_socket_monitor (void *s_, const char *addr_, int events_)
+int zmq_socket_monitor_versioned (void *s_,
+                                  const char *addr_,
+                                  uint64_t events_,
+                                  int event_version_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
         return -1;
-    return s->monitor (addr_, events_);
+    return s->monitor (addr_, events_, event_version_, ZMQ_PAIR);
+}
+
+int zmq_socket_monitor (void *s_, const char *addr_, int events_)
+{
+    return zmq_socket_monitor_versioned (s_, addr_, events_, 1);
+}
+
+int zmq_socket_monitor_versioned_typed (
+  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+
+    return s->monitor (addr_, events_, event_version_, type_);
 }
 
 int zmq_join (void *s_, const char *group_)
@@ -1270,6 +1288,17 @@ int zmq_poller_wait_all (void *poller_,
     return rc;
 }
 
+int zmq_poller_fd (void *poller_, zmq_fd_t *fd_)
+{
+    if (!poller_
+        || !(static_cast<zmq::socket_poller_t *> (poller_)->check_tag ())) {
+        errno = EFAULT;
+        return -1;
+    } else {
+        return static_cast<zmq::socket_poller_t *> (poller_)->signaler_fd (fd_);
+    }
+}
+
 //  Peer-specific state
 
 int zmq_socket_get_peer_state (void *s_,
@@ -1443,4 +1472,12 @@ int zmq_has (const char *capability_)
 #endif
     //  Whatever the application asked for, we don't have
     return false;
+}
+
+int zmq_socket_monitor_pipes_stats (void *s_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+    return s->query_pipes_stats ();
 }

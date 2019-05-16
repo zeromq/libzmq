@@ -31,6 +31,7 @@ set(tests
   test_unbind_wildcard
   test_ctx_options
   test_ctx_destroy
+  test_security_no_zap_handler
   test_security_null
   test_security_plain
   test_security_zap
@@ -74,9 +75,24 @@ set(tests
   test_mock_pub_sub
 )
 
+if(NOT WIN32)
+  list(APPEND tests
+    test_security_gssapi)
+endif()
+
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests
     test_security_curve)
+endif()
+
+find_program(CAPSH_PROGRAM NAMES capsh)
+
+if (CAPSH_PROGRAM)
+    list(APPEND tests
+        test_pair_tcp_cap_net_admin
+        )
+else()
+    message(STATUS "capsh not found, skipping tests that require CAP_NET_ADMIN")
 endif()
 
 if(NOT WIN32)
@@ -157,6 +173,32 @@ set_target_properties(unity PROPERTIES
 target_compile_definitions(unity PUBLIC "UNITY_USE_COMMAND_LINE_ARGS" "UNITY_EXCLUDE_FLOAT")
 target_include_directories(unity PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../external/unity")
 
+set(TESTUTIL_SOURCES
+    testutil.cpp
+    testutil.hpp
+    testutil_monitoring.cpp
+    testutil_monitoring.hpp
+    testutil_security.cpp
+    testutil_security.hpp
+    testutil_unity.cpp
+    testutil_unity.hpp
+    )
+if(BUILD_STATIC)
+    add_library(testutil-static STATIC ${TESTUTIL_SOURCES})
+    target_link_libraries(testutil-static libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
+endif()
+if(BUILD_SHARED)
+    add_library(testutil STATIC ${TESTUTIL_SOURCES})
+    target_link_libraries(testutil libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
+endif()
+if(BUILD_STATIC AND NOT BUILD_SHARED)
+    # use testutil-static for both tests and unit tests
+    set(TESTUTIL_LIB testutil-static)
+else()
+    # use testutil for tests and testutil-static for unit tests
+    set(TESTUTIL_LIB testutil)
+endif()
+
 if(MSVC_VERSION LESS 1700)
   set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/../external/unity/unity.c" PROPERTIES LANGUAGE CXX)
 endif()
@@ -165,13 +207,11 @@ if(MSVC_VERSION LESS 1600)
   target_compile_definitions(unity PUBLIC "UNITY_EXCLUDE_STDINT_H")
 endif()
 
-# add library and include dirs for all targets
-if(BUILD_SHARED)
-  link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
-else()
-  link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
-endif()
+# add include dirs for all targets
 include_directories("${ZeroMQ_SOURCE_DIR}/../include" "${ZeroMQ_BINARY_DIR}")
+if(WIN32)
+  add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
 
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1
@@ -180,14 +220,11 @@ foreach(test ${tests})
       "../src/tweetnacl.c"
       "../src/err.cpp"
       "../src/random.cpp"
-      "../src/clock.cpp"
-      "testutil_security.hpp")
-  elseif(${test} MATCHES test_security_zap)
-    add_executable(${test} ${test}.cpp
-      "testutil_security.hpp")
+      "../src/clock.cpp")
   else()
-    add_executable(${test} ${test}.cpp "testutil.hpp" "testutil_unity.hpp")
+    add_executable(${test} ${test}.cpp)
   endif()
+  target_link_libraries(${test} ${TESTUTIL_LIB})
   if(WIN32)
     # This is the output for Debug dynamic builds on Visual Studio 6.0
     # You should provide the correct directory, don't know how to do it automatically
@@ -201,14 +238,24 @@ foreach(test ${tests})
       link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
-
+  
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
+
+  if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+    target_link_libraries(${test} socket)
+    target_link_libraries(${test} m)
+  endif()
+
   if(WIN32)
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
-    add_test(NAME ${test} COMMAND ${test})
+    if (${test} MATCHES "_cap_net_admin")
+      add_test(NAME ${test} COMMAND sh -c "sudo ${CAPSH_PROGRAM} --caps=cap_net_admin+eip -- -c $<TARGET_FILE:${test}>")
+    else()
+      add_test(NAME ${test} COMMAND ${test})
+    endif()
   endif()
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
   set_tests_properties(${test} PROPERTIES SKIP_RETURN_CODE 77)

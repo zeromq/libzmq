@@ -35,10 +35,15 @@ foreach(test ${unittests})
     link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
   endif()
 
-  target_link_libraries(${test} libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} unity)
+  target_link_libraries(${test} testutil-static)
 
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
+  endif()
+
+  if(CMAKE_SYSTEM_NAME MATCHES "QNX")
+    target_link_libraries(${test} socket)
+    target_link_libraries(${test} m)
   endif()
 
   if(WIN32)

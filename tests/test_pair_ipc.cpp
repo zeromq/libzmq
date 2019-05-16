@@ -30,25 +30,17 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_roundtrip ()
 {
+    char my_endpoint[256];
+
     void *sb = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ipc:///tmp/test_pair_ipc"));
+    bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
 
     void *sc = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ipc:///tmp/test_pair_ipc"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
     bounce (sb, sc);
 

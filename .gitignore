@@ -7,6 +7,7 @@ doc/Makefile
 Makefile.in
 configure
 libtool
+libtestutil.a
 libunity.a
 config
 config.status
@@ -74,6 +75,7 @@ test_ctx_options
 test_iov
 test_security
 test_security_curve
+test_security_no_zap_handler
 test_probe_router
 test_stream
 test_spec_dealer
@@ -153,6 +155,7 @@ test_proxy_hwm
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller
+unittest_radix_tree
 unittest_udp_address
 unittest_ypipe
 tests/test*.log
@@ -167,6 +170,7 @@ remote_lat
 remote_thr
 inproc_lat
 inproc_thr
+proxy_thr
 benchmark_radix_tree
 !local_lat/
 !local_thr/

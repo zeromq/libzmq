@@ -28,31 +28,15 @@
 */
 
 #include "testutil.hpp"
-
 #include "testutil_unity.hpp"
 
-#include <unity.h>
-
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void test_with_handover ()
 {
-    size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *router = test_context_socket (ZMQ_ROUTER);
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, "tcp://127.0.0.1:*"));
-
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len));
+    bind_loopback_ipv4 (router, my_endpoint, sizeof my_endpoint);
 
     // Enable the handover flag
     int handover = 1;

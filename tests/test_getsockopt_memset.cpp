@@ -23,42 +23,39 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-int main (void)
+#include <string.h>
+
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_getsockopt_memset ()
 {
     int64_t more;
     size_t more_size = sizeof (more);
 
-    setup_test_environment ();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    void *sb = test_context_socket (ZMQ_PUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "inproc://a"));
 
-    void *sb = zmq_socket (ctx, ZMQ_PUB);
-    assert (sb);
-    int rc = zmq_bind (sb, "inproc://a");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_SUB);
-    assert (sc);
-    rc = zmq_connect (sc, "inproc://a");
-    assert (rc == 0);
+    void *sc = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "inproc://a"));
 
     memset (&more, 0xFF, sizeof (int64_t));
-    zmq_getsockopt (sc, ZMQ_RCVMORE, &more, &more_size);
-    assert (more_size == sizeof (int));
-    assert (more == 0);
-
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sc, ZMQ_RCVMORE, &more, &more_size));
+    TEST_ASSERT_EQUAL_INT (sizeof (int), more_size);
+    TEST_ASSERT_EQUAL_INT (0, more);
 
     // Cleanup
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
 
-    rc = zmq_close (sc);
-    assert (rc == 0);
+int main (void)
+{
+    setup_test_environment ();
 
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0;
+    UNITY_BEGIN ();
+    RUN_TEST (test_getsockopt_memset);
+    return UNITY_END ();
 }

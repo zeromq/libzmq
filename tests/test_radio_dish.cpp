@@ -30,7 +30,14 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <unity.h>
+#include <string.h>
+
+#ifndef _WIN32
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
 
 // Helper macro to define the v4/v6 function pairs
 #define MAKE_TEST_V4V6(_test)                                                  \
@@ -44,15 +51,7 @@
         _test (true);                                                          \
     }
 
-void setUp ()
-{
-    setup_test_context ();
-}
-
-void tearDown ()
-{
-    teardown_test_context ();
-}
+SETUP_TEARDOWN_TESTCONTEXT
 
 void msg_send_expect_success (void *s_, const char *group_, const char *body_)
 {
