@@ -293,7 +293,8 @@ int zmq::xpub_t::xsend (msg_t *msg_)
 #ifdef ZMQ_BUILD_DRAFT_API
         if (_manual && _last_pipe && _send_last_pipe) {
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
-                                  msg_->size (), mark_last_pipe_as_matching, this);
+                                  msg_->size (), mark_last_pipe_as_matching,
+                                  this);
             _last_pipe = NULL;
         } else
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
