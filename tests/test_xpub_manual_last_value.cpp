@@ -451,7 +451,7 @@ void test_manual_last_value ()
     //  set pub socket options
     int manual = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
-            zmq_setsockopt (pub, ZMQ_XPUB_MANUAL_LAST_VALUE, &manual, 4));
+      zmq_setsockopt (pub, ZMQ_XPUB_MANUAL_LAST_VALUE, &manual, 4));
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
 
@@ -481,7 +481,7 @@ void test_manual_last_value ()
     recv_array_expect_success (pub, subscription, 0);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "A", 1));
     send_string_expect_success (pub, "A", 0);
-    recv_string_expect_success(sub2, "A", 0);
+    recv_string_expect_success (sub2, "A", 0);
 
     char buffer[255];
     //  sub won't get a message because the last subscription pipe is sub2.
