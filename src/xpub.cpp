@@ -193,8 +193,10 @@ int zmq::xpub_t::xsetsockopt (int option_,
                               size_t optvallen_)
 {
     if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
-        || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL
-        || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE
+#endif
+        || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL) {
         if (optvallen_ != sizeof (int)
             || *static_cast<const int *> (optval_) < 0) {
             errno = EINVAL;
