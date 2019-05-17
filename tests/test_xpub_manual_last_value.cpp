@@ -208,13 +208,19 @@ void test_xpub_proxy_unsubscribe_on_disconnect ()
     // proxy reroutes data messages to subscribers
     recv_array_expect_success (xsub_proxy, topic_buff, ZMQ_DONTWAIT);
     recv_array_expect_success (xsub_proxy, payload_buff, ZMQ_DONTWAIT);
+
+    // send 2 messages
+    send_array_expect_success (xpub_proxy, topic_buff, ZMQ_SNDMORE);
+    send_array_expect_success (xpub_proxy, payload_buff, 0);
     send_array_expect_success (xpub_proxy, topic_buff, ZMQ_SNDMORE);
     send_array_expect_success (xpub_proxy, payload_buff, 0);
 
     // wait
     msleep (SETTLE_TIME);
 
-    // each subscriber should now get a message
+    // sub2 will get 2 messages because the last subscription is sub2.
+    recv_array_expect_success (sub2, topic_buff, ZMQ_DONTWAIT);
+    recv_array_expect_success (sub2, payload_buff, ZMQ_DONTWAIT);
     recv_array_expect_success (sub2, topic_buff, ZMQ_DONTWAIT);
     recv_array_expect_success (sub2, payload_buff, ZMQ_DONTWAIT);
 
@@ -344,12 +350,12 @@ void test_missing_subscriptions ()
     // wait
     msleep (SETTLE_TIME);
 
-    // each subscriber should now get a message
+    // only sub2 should now get a message
     recv_string_expect_success (sub2, topic2, ZMQ_DONTWAIT);
     recv_string_expect_success (sub2, payload, ZMQ_DONTWAIT);
 
-    recv_string_expect_success (sub1, topic1, ZMQ_DONTWAIT);
-    recv_string_expect_success (sub1, payload, ZMQ_DONTWAIT);
+    //recv_string_expect_success (sub1, topic1, ZMQ_DONTWAIT);
+    //recv_string_expect_success (sub1, payload, ZMQ_DONTWAIT);
 
     //  Clean up
     test_context_socket_close (sub1);
@@ -434,6 +440,58 @@ void test_unsubscribe_cleanup ()
     test_context_socket_close (sub);
 }
 
+void test_manual_last_value() {
+//  Create a publisher
+    void *pub = test_context_socket (ZMQ_XPUB);
+
+    int hwm = 2000;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4));
+
+    //  set pub socket options
+    int manual = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+            zmq_setsockopt (pub, ZMQ_XPUB_MANUAL_LAST_VALUE, &manual, 4));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
+
+    //  Create a subscriber
+    void *sub = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
+
+    //  Create another subscriber
+    void *sub2 = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, "inproc://soname"));
+
+    //  Subscribe for "A".
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "A", 1));
+
+    const uint8_t subscription[2] = {1, 'A'};
+    //  we must wait for the subscription to be processed here, otherwise some
+    //  or all published messages might be lost
+    recv_array_expect_success (pub, subscription, 0);
+
+    //  manual subscribe message
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "A", 1));
+    send_string_expect_success (pub, "A", 0);
+    recv_string_expect_success(sub, "A", 0);
+
+    //  Subscribe for "A".
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, "A", 1));
+    recv_array_expect_success (pub, subscription, 0);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_SUBSCRIBE, "A", 1));
+    send_string_expect_success (pub, "A", 0);
+    recv_string_expect_success(sub2, "A", 0);
+
+    char buffer[255];
+    //  sub won't get a message because the last subscription pipe is sub2.
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN, zmq_recv (sub, buffer, sizeof (buffer), ZMQ_DONTWAIT));
+
+    //  Clean up.
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+    test_context_socket_close (sub2);
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -444,6 +502,7 @@ int main ()
     RUN_TEST (test_xpub_proxy_unsubscribe_on_disconnect);
     RUN_TEST (test_missing_subscriptions);
     RUN_TEST (test_unsubscribe_cleanup);
+    RUN_TEST (test_manual_last_value);
 
     return UNITY_END ();
 }

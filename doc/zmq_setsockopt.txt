@@ -1073,6 +1073,23 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
+ZMQ_XPUB_MANUAL_LAST_VALUE: change the subscription handling to manual
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This option is similar to ZMQ_XPUB_MANUAL.
+What is the difference, ZMQ_XPUB_MANUAL_LAST_VALUE sets the 'XPUB' socket
+behaviour to send the first message to the last subscriber after the 'XPUB' socket
+recieve a subscription and call setsockopt with ZMQ_SUBSCRIBE on 'XPUB' socket.
+This prevent duplicated message when use last value caching(LVC).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XPUB
+
+
 ZMQ_XPUB_NODROP: do not silently drop messages if SENDHWM is reached
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the 'XPUB' socket behaviour to return error EAGAIN if SENDHWM is
