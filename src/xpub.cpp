@@ -44,7 +44,9 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     _more (false),
     _lossy (true),
     _manual (false),
+#ifdef ZMQ_BUILD_DRAFT_API
     _send_last_pipe (false),
+#endif
     _pending_pipes (),
     _welcome_msg ()
 {
@@ -204,9 +206,11 @@ int zmq::xpub_t::xsetsockopt (int option_,
         } else if (option_ == ZMQ_XPUB_VERBOSER) {
             _verbose_subs = (*static_cast<const int *> (optval_) != 0);
             _verbose_unsubs = _verbose_subs;
+#ifdef ZMQ_BUILD_DRAFT_API
         } else if (option_ == ZMQ_XPUB_MANUAL_LAST_VALUE) {
             _manual = (*static_cast<const int *> (optval_) != 0);
             _send_last_pipe = _manual;
+#endif
         } else if (option_ == ZMQ_XPUB_NODROP)
             _lossy = (*static_cast<const int *> (optval_) == 0);
         else if (option_ == ZMQ_XPUB_MANUAL)
@@ -270,18 +274,32 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, xpub_t *self_)
     self_->_dist.match (pipe_);
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::xpub_t::mark_last_pipe_as_matching (pipe_t *pipe_, xpub_t *self_)
+{
+    if (self_->_last_pipe == pipe_)
+        self_->_dist.match (pipe_);
+}
+#endif
+
 int zmq::xpub_t::xsend (msg_t *msg_)
 {
     bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!_more) {
+#ifdef ZMQ_BUILD_DRAFT_API
         if (_manual && _last_pipe && _send_last_pipe) {
-            _dist.match(_last_pipe);
+            _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
+                                  msg_->size (), mark_last_pipe_as_matching, this);
             _last_pipe = NULL;
         } else
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
-                    msg_->size (), mark_as_matching, this);
+                                  msg_->size (), mark_as_matching, this);
+#else
+        _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
+                              msg_->size (), mark_as_matching, this);
+#endif
         // If inverted matching is used, reverse the selection now
         if (options.invert_matching) {
             _dist.reverse_match ();

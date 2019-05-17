@@ -153,6 +153,7 @@ if(ENABLE_DRAFTS)
     test_dgram
     test_app_meta
     test_router_notify
+    test_xpub_manual_last_value
   )
 endif()
 

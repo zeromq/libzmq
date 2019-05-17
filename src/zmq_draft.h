@@ -52,6 +52,7 @@
 #define ZMQ_METADATA 95
 #define ZMQ_MULTICAST_LOOP 96
 #define ZMQ_ROUTER_NOTIFY 97
+#define ZMQ_XPUB_MANUAL_LAST_VALUE 98
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
