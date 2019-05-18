@@ -761,10 +761,10 @@ int zmq::options_t::setsockopt (int option_,
             break;
     }
 
-            // TODO mechanism should either be set explicitly, or determined when
-            // connecting. currently, it depends on the order of setsockopt calls
-            // if there is some inconsistency, which is confusing. in addition,
-            // the assumed or set mechanism should be queryable (as a socket option)
+        // TODO mechanism should either be set explicitly, or determined when
+        // connecting. currently, it depends on the order of setsockopt calls
+        // if there is some inconsistency, which is confusing. in addition,
+        // the assumed or set mechanism should be queryable (as a socket option)
 
 #if defined(ZMQ_ACT_MILITANT)
     //  There is no valid use case for passing an error back to the application

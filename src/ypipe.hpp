@@ -62,9 +62,9 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  just to keep ICC and code checking tools from complaining.
     inline virtual ~ypipe_t () {}
 
-        //  Following function (write) deliberately copies uninitialised data
-        //  when used with zmq_msg. Initialising the VSM body for
-        //  non-VSM messages won't be good for performance.
+    //  Following function (write) deliberately copies uninitialised data
+    //  when used with zmq_msg. Initialising the VSM body for
+    //  non-VSM messages won't be good for performance.
 
 #ifdef ZMQ_HAVE_OPENVMS
 #pragma message save

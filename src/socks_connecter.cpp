@@ -255,7 +255,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
         }
     }
 
-        //  Connect to the remote peer.
+    //  Connect to the remote peer.
 #if defined ZMQ_HAVE_VXWORKS
     rc = ::connect (_s, (sockaddr *) tcp_addr->addr (), tcp_addr->addrlen ());
 #else
