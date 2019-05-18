@@ -966,6 +966,7 @@ test_apps += tests/test_poller \
 	tests/test_scatter_gather \
 	tests/test_dgram \
 	tests/test_app_meta \
+	tests/test_xpub_manual_last_value \
 	tests/test_router_notify
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
@@ -995,6 +996,10 @@ tests_test_scatter_gather_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_dgram_SOURCES = tests/test_dgram.cpp
 tests_test_dgram_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_dgram_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_xpub_manual_last_value_SOURCES = tests/test_xpub_manual_last_value.cpp
+tests_test_xpub_manual_last_value_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_manual_last_value_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_app_meta_SOURCES = tests/test_app_meta.cpp
 tests_test_app_meta_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
