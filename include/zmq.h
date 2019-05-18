@@ -732,11 +732,7 @@ ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
 #define ZMQ_EVENT_ALL_V1 ZMQ_EVENT_ALL
 #define ZMQ_EVENT_ALL_V2 ZMQ_EVENT_ALL_V1 | ZMQ_EVENT_PIPES_STATS
 
-ZMQ_EXPORT int zmq_socket_monitor_versioned (void *s_,
-                                             const char *addr_,
-                                             uint64_t events_,
-                                             int event_version_);
-ZMQ_EXPORT int zmq_socket_monitor_versioned_typed (
+ZMQ_EXPORT int zmq_socket_monitor_versioned (
   void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
 
