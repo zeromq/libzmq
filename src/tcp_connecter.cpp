@@ -219,7 +219,7 @@ int zmq::tcp_connecter_t::open ()
             return -1;
     }
 
-        //  Connect to the remote peer.
+    //  Connect to the remote peer.
 #if defined ZMQ_HAVE_VXWORKS
     rc = ::connect (_s, (sockaddr *) tcp_addr->addr (), tcp_addr->addrlen ());
 #else
@@ -230,8 +230,8 @@ int zmq::tcp_connecter_t::open ()
         return 0;
     }
 
-        //  Translate error codes indicating asynchronous connect has been
-        //  launched to a uniform EINPROGRESS.
+    //  Translate error codes indicating asynchronous connect has been
+    //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
     const int last_error = WSAGetLastError ();
     if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)

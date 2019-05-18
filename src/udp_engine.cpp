@@ -222,8 +222,8 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         bool multicast = udp_addr->is_mcast ();
 
         if (multicast) {
-        //  Multicast addresses should be allowed to bind to more than
-        //  one port as all ports should receive the message
+            //  Multicast addresses should be allowed to bind to more than
+            //  one port as all ports should receive the message
 #ifdef SO_REUSEPORT
             rc = setsockopt (_fd, SOL_SOCKET, SO_REUSEPORT,
                              reinterpret_cast<char *> (&on), sizeof (on));
