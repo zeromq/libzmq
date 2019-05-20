@@ -93,24 +93,28 @@ void zmq::thread_t::setSchedulingParameters (
     LIBZMQ_UNUSED (affinity_cpus_);
 }
 
+
 void zmq::thread_t::setThreadName (const char *name_)
 {
     if (!name_)
         return;
 
     struct {
-        DWORD _type = 0x1000;
-        LPCSTR _name = NULL;
-        DWORD _thread_id = -1;
-        DWORD flags = 0x0;
+        DWORD _type;
+        LPCSTR _name;
+        DWORD _thread_id;
+        DWORD _flags;
     } thread_info;
 
+	thread_info._type = 0x1000;
     thread_info._name = name_;
+    thread_info._thread_id = -1;
+    thread_info._flags = 0;
 
     __try {
         DWORD MS_VC_EXCEPTION = 0x406D1388;
         RaiseException (MS_VC_EXCEPTION, 0, sizeof (thread_info) / sizeof (ULONG_PTR),
-                        (const ULONG_PTR *) &thread_info);
+                        (ULONG_PTR *) &thread_info);
     }
     __except (EXCEPTION_CONTINUE_EXECUTION) {
 
