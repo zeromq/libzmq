@@ -98,25 +98,21 @@ void zmq::thread_t::setThreadName (const char *name_)
     if (!name_)
         return;
 
-    struct
-    {
+    struct {
         DWORD _type = 0x1000;
         LPCSTR _name = NULL;
-        DWORD _thread_id = 0;
+        DWORD _thread_id = -1;
         DWORD flags = 0x0;
     } thread_info;
 
-    thread_info._thread_id = GetCurrentThreadId();
     thread_info._name = name_;
 
-    __try
-    {
+    __try {
         DWORD MS_VC_EXCEPTION = 0x406D1388;
         RaiseException (MS_VC_EXCEPTION, 0, sizeof (thread_info) / sizeof (ULONG_PTR),
                         (const ULONG_PTR *) &thread_info);
     }
-    __except (EXCEPTION_CONTINUE_EXECUTION)
-    {
+    __except (EXCEPTION_CONTINUE_EXECUTION) {
 
     }
 }
