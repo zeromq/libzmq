@@ -48,10 +48,6 @@
 
 char error_message_buffer[256];
 
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-
 void *handler;
 void *zap_thread;
 void *server;

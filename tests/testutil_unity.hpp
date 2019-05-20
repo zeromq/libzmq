@@ -35,10 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <unity.h>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-#define snprintf _snprintf
-#endif
-
 // Internal helper functions that are not intended to be directly called from
 // tests. They must be declared in the header since they are used by macros.
 
