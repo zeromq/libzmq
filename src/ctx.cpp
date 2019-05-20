@@ -425,15 +425,11 @@ void zmq::thread_ctx_t::start_thread (thread_t &thread_,
     thread_.setSchedulingParameters (_thread_priority, _thread_sched_policy,
                                      _thread_affinity_cpus);
 
-    char namebuf[16] = "";
-#ifdef ZMQ_HAVE_WINDOWS
-    LIBZMQ_UNUSED (name_);
-#else
+    char namebuf[128] = "";
     snprintf (namebuf, sizeof (namebuf), "%s%sZMQbg%s%s",
               _thread_name_prefix.empty () ? "" : _thread_name_prefix.c_str (),
               _thread_name_prefix.empty () ? "" : "/", name_ ? "/" : "",
               name_ ? name_ : "");
-#endif
     thread_.start (tfn_, arg_, namebuf);
 }
 
