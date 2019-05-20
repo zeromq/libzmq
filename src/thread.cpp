@@ -93,7 +93,6 @@ void zmq::thread_t::setSchedulingParameters (
     LIBZMQ_UNUSED (affinity_cpus_);
 }
 
-
 void zmq::thread_t::setThreadName (const char *name_)
 {
     if (!name_)
@@ -106,7 +105,7 @@ void zmq::thread_t::setThreadName (const char *name_)
         DWORD _flags;
     } thread_info;
 
-	thread_info._type = 0x1000;
+    thread_info._type = 0x1000;
     thread_info._name = name_;
     thread_info._thread_id = -1;
     thread_info._flags = 0;
