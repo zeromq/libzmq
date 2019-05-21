@@ -37,7 +37,7 @@
 #include <pthread.h>
 #endif
 #include <set>
-#include <string>
+#include <cstring>
 
 namespace zmq
 {
@@ -56,11 +56,11 @@ class thread_t
     inline thread_t () :
         _tfn (NULL),
         _arg (NULL),
-        _name (""),
         _started (false),
         _thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
         _thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
+        memset (_name, 0, sizeof (_name));
     }
 
 #ifdef ZMQ_HAVE_VXWORKS
@@ -74,6 +74,8 @@ class thread_t
 
     //  Creates OS thread. 'tfn' is main thread function. It'll be passed
     //  'arg' as an argument.
+    //  Name is 16 characters max including terminating NUL. Thread naming is
+    //  implemented only for pthread, and windows when a debugger is attached.
     void start (thread_fn *tfn_, void *arg_, const char *name_);
 
     //  Returns whether the thread was started, i.e. start was called.
@@ -92,16 +94,13 @@ class thread_t
                                   int scheduling_policy_,
                                   const std::set<int> &affinity_cpus_);
 
-    // Sets the thread name, 16 characters max including terminating NUL.
-    // Only implemented for pthread. Has no effect on other platforms.
-    void setThreadName (const char *name_);
-
     //  These are internal members. They should be private, however then
     //  they would not be accessible from the main C routine of the thread.
     void applySchedulingParameters ();
+    void applyThreadName ();
     thread_fn *_tfn;
     void *_arg;
-    std::string _name;
+    char _name[16];
 
   private:
     bool _started;
