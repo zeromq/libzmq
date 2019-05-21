@@ -58,7 +58,7 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
     _tfn = tfn_;
     _arg = arg_;
     if (name_)
-        strncpy (_name, name_, sizeof (_name));
+        strncpy (_name, name_, sizeof (_name) - 1);
 #if defined _WIN32_WCE
     _descriptor =
       (HANDLE) CreateThread (NULL, 0, &::thread_routine, this, 0, NULL);
@@ -232,7 +232,7 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
     _tfn = tfn_;
     _arg = arg_;
     if (name_)
-        strncpy (_name, name_, sizeof (_name));
+        strncpy (_name, name_, sizeof (_name) - 1);
     int rc = pthread_create (&_descriptor, NULL, thread_routine, this);
     posix_assert (rc);
     _started = true;
