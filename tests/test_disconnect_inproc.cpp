@@ -126,11 +126,51 @@ void test_disconnect_inproc ()
     test_context_socket_close (sub_socket);
 }
 
+void test_issue_3485 ()
+{
+    // create ROUTER client and server socket
+    void *server = test_context_socket (ZMQ_ROUTER);
+    void *client = test_context_socket (ZMQ_ROUTER);
+
+    // set identity
+    zmq_setsockopt (server, ZMQ_IDENTITY, "server", 6);
+    zmq_setsockopt (client, ZMQ_IDENTITY, "client", 6);
+
+    // server bind, client connect, let server send 3 frames: <client-id><><dummy-content>
+    zmq_bind (server, "inproc://server");
+    zmq_connect (client, "inproc://server");
+    char msg1[] = "client";
+    char msg2[] = "";
+    char msg3[] = "test";
+    zmq_send (server, msg1, 6, ZMQ_SNDMORE);
+    zmq_send (server, msg2, 1, ZMQ_SNDMORE);
+    zmq_send (server, msg3, 5, 0);
+
+    // poll on client until data ready to read
+    zmq_pollitem_t items[1];
+    items[0].socket = client;
+    items[0].events = ZMQ_POLLIN;
+    zmq_poll (items, 1, -1);
+
+    // client disconnect to server
+    zmq_disconnect (client, "inproc://server");
+
+    // read 3 frames out
+    char buf[256];
+    int len1 = zmq_recv (client, buf, 256, ZMQ_DONTWAIT);
+    int len2 = zmq_recv (client, buf, 256, ZMQ_DONTWAIT);
+    int len3 = zmq_recv (client, buf, 256, ZMQ_DONTWAIT);
+
+    test_context_socket_close (server);
+    test_context_socket_close (client);
+}
+
 int main (int, char **)
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_disconnect_inproc);
+    RUN_TEST (test_issue_3485);
     return UNITY_END ();
 }

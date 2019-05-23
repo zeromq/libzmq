@@ -185,7 +185,8 @@ bool zmq::pipe_t::read (msg_t *msg_)
 {
     if (unlikely (!_in_active))
         return false;
-    if (unlikely (_state != active && _state != waiting_for_delimiter))
+    if (unlikely (_state != active && _state != waiting_for_delimiter
+                  && _state != term_req_sent1))
         return false;
 
     for (bool payload_read = false; !payload_read;) {
