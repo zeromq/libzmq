@@ -146,7 +146,7 @@ AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes
                   [Build with GCC Address Sanitizer instrumentation])],
                   [ZMQ_ASAN="$enableval"])
 
-if test "x${ZMQ_ASAN}" == "xyes"; then
+if test "x${ZMQ_ASAN}" = "xyes"; then
     CFLAGS="${CFLAGS} -fsanitize=address"
     CXXFLAGS="${CXXFLAGS} -fsanitize=address"
 
