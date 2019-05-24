@@ -130,6 +130,30 @@ Third datagram payload
 ....
 
 
+CONFIGURATION
+-------------
+
+The PGM is protocol is capable of multicasting data at high rates (500Mbps+)
+with large messages (1MB+), however it requires setting the relevent ZMQ socket
+options that are documented in linkzmq:zmq_setsockopt[3]:
+
+* The 'ZMQ_RATE' should be set sufficiently high, e.g. 1Gbps
+* The 'ZMQ_RCVBUF' should be increased on the subscriber, e.g. 4MB
+* The 'ZMQ_SNDBUF' should be increased on the publisher, e.g. 4MB
+
+It's important to note that the 'ZMQ_RCVBUF' and 'ZMQ_SNDBUF' options are
+limited by the underlying host OS tx/rx buffer size limit. On linux, these can
+be increased for the current session with the following commands:
+
+....
+# set tx/rx buffers to 4MB (default can also be read as the initial buffer size)
+sudo sysctl -w net.core.rmem_max=4194304
+sudo sysctl -w net.core.wmem_max=4194304
+sudo sysctl -w net.core.rmem_default=4194304
+sudo sysctl -w net.core.wmem_default=4194304
+....
+
+
 EXAMPLE
 -------
 .Connecting a socket
