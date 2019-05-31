@@ -33,9 +33,12 @@ Specifies that the message being sent is a multi-part message, and that further
 message parts are to follow. Refer to the section regarding multi-part messages
 below for a detailed description.
 
-The _zmq_msg_t_ structure passed to _zmq_msg_send()_ is nullified during the
-call. If you want to send the same message to multiple sockets you have to copy
-it (e.g. using _zmq_msg_copy()_).
+The _zmq_msg_t_ structure passed to _zmq_msg_send()_ is nullified on a
+successful call. If you want to send the same message to multiple sockets you
+have to copy it (e.g. using _zmq_msg_copy()_). If the call fails, the
+_zmq_msg_t_ structure stays intact, and must be consumed by another call to
+_zmq_msg_send()_ on the same or another socket, or released using
+_zmq_msg_close()_ to avoid a memory leak.
 
 NOTE: A successful invocation of _zmq_msg_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
