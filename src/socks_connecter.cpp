@@ -207,6 +207,7 @@ void zmq::socks_connecter_t::error ()
     _choice_decoder.reset ();
     _request_encoder.reset ();
     _response_decoder.reset ();
+    _status = unplugged;
     add_reconnect_timer ();
 }
 
@@ -215,29 +216,28 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (_s == retired_fd);
 
     //  Resolve the address
-    if (_addr->resolved.tcp_addr != NULL) {
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+    if (_proxy_addr->resolved.tcp_addr != NULL) {
+        LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
     }
 
-    _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-    alloc_assert (_addr->resolved.tcp_addr);
+    _proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+    alloc_assert (_proxy_addr->resolved.tcp_addr);
     //  Automatic fallback to ipv4 is disabled here since this was the existing
     //  behaviour, however I don't see a real reason for this. Maybe this can
     //  be changed to true (and then the parameter can be removed entirely).
-    _s = tcp_open_socket (_addr->address.c_str (), options, false, false,
-                          _addr->resolved.tcp_addr);
+    _s = tcp_open_socket (_proxy_addr->address.c_str (), options, false, false,
+                          _proxy_addr->resolved.tcp_addr);
     if (_s == retired_fd) {
         //  TODO we should emit some event in this case!
-
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+        LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
         return -1;
     }
-    zmq_assert (_addr->resolved.tcp_addr != NULL);
+    zmq_assert (_proxy_addr->resolved.tcp_addr != NULL);
 
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (_s);
 
-    const tcp_address_t *const tcp_addr = _addr->resolved.tcp_addr;
+    const tcp_address_t *const tcp_addr = _proxy_addr->resolved.tcp_addr;
 
     int rc;
 
