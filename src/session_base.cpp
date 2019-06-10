@@ -668,8 +668,14 @@ zmq::own_t *zmq::session_base_t::create_connecter_tcp (io_thread_t *io_thread_,
         address_t *proxy_address = new (std::nothrow) address_t (
           protocol_name::tcp, options.socks_proxy_address, this->get_ctx ());
         alloc_assert (proxy_address);
-        return new (std::nothrow) socks_connecter_t (
+        socks_connecter_t *connecter =  new (std::nothrow) socks_connecter_t (
           io_thread_, this, options, _addr, proxy_address, wait_);
+	alloc_assert(connecter);
+	if (!options.socks_proxy_username.empty ()) {
+	  connecter->set_auth_method_basic(options.socks_proxy_username,
+					   options.socks_proxy_password);
+	}
+	return connecter;
     }
     return new (std::nothrow)
       tcp_connecter_t (io_thread_, this, options, _addr, wait_);

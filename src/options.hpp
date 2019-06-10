@@ -159,6 +159,12 @@ struct options_t
     //  Address of SOCKS proxy
     std::string socks_proxy_address;
 
+    // Credentials for SOCKS proxy.
+    // Conneciton method will be basic auth if username
+    // is not empty, no auth otherwise.
+    std::string socks_proxy_username;
+    std::string socks_proxy_password;
+
     //  TCP keep-alive settings.
     //  Defaults to -1 = do not change socket options
     int tcp_keepalive;

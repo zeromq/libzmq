@@ -54,6 +54,11 @@ class socks_connecter_t : public stream_connecter_base_t
                        bool delayed_start_);
     ~socks_connecter_t ();
 
+    void set_auth_method_basic (const std::string username,
+                                const std::string password);
+    void set_auth_method_none ();
+
+
   private:
     enum
     {
@@ -62,6 +67,8 @@ class socks_connecter_t : public stream_connecter_base_t
         waiting_for_proxy_connection,
         sending_greeting,
         waiting_for_choice,
+        sending_basic_auth_request,
+        waiting_for_auth_response,
         sending_request,
         waiting_for_response
     };
@@ -69,7 +76,9 @@ class socks_connecter_t : public stream_connecter_base_t
     //  Method ID
     enum
     {
-        socks_no_auth_required = 0
+        socks_no_auth_required = 0x00,
+        socks_basic_auth = 0x02,
+        socks_no_acceptable_method = 0xff
     };
 
     //  Handlers for I/O events.
@@ -81,6 +90,7 @@ class socks_connecter_t : public stream_connecter_base_t
 
     int process_server_response (const socks_choice_t &response_);
     int process_server_response (const socks_response_t &response_);
+    int process_server_response (const socks_auth_response_t &response_);
 
     int parse_address (const std::string &address_,
                        std::string &hostname_,
@@ -101,11 +111,20 @@ class socks_connecter_t : public stream_connecter_base_t
 
     socks_greeting_encoder_t _greeting_encoder;
     socks_choice_decoder_t _choice_decoder;
+    socks_basic_auth_request_encoder_t _basic_auth_request_encoder;
+    socks_auth_response_decoder_t _auth_response_decoder;
     socks_request_encoder_t _request_encoder;
     socks_response_decoder_t _response_decoder;
 
     //  SOCKS address; owned by this connecter.
     address_t *_proxy_addr;
+
+    // User defined authentication method
+    int _auth_method;
+
+    // Credentials for basic authentication
+    std::string _auth_username;
+    std::string _auth_password;
 
     int _status;
 

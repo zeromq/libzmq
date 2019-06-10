@@ -461,6 +461,24 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_string_allow_empty_strict (
               optval_, optvallen_, &socks_proxy_address, SIZE_MAX);
 
+        case ZMQ_SOCKS_USERNAME:
+            /* Make empty string or NULL equivalent. */
+            if (optval_ == NULL || optvallen_ == 0) {
+                socks_proxy_username.clear();
+                return 0;
+            } else {
+                return do_setsockopt_string_allow_empty_strict (
+                    optval_, optvallen_, &socks_proxy_username, 255);
+            }
+        case ZMQ_SOCKS_PASSWORD:
+            /* Make empty string or NULL equivalent. */
+            if (optval_ == NULL || optvallen_ == 0) {
+                socks_proxy_password.clear();
+                return 0;
+            } else {
+                return do_setsockopt_string_allow_empty_strict (
+                    optval_, optvallen_, &socks_proxy_password, 255);
+            }
         case ZMQ_TCP_KEEPALIVE:
             if (is_int && (value == -1 || value == 0 || value == 1)) {
                 tcp_keepalive = value;
@@ -957,6 +975,14 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_SOCKS_PROXY:
             return do_getsockopt (optval_, optvallen_, socks_proxy_address);
+            break;
+
+        case ZMQ_SOCKS_USERNAME:
+            return do_getsockopt (optval_, optvallen_, socks_proxy_username);
+            break;
+
+        case ZMQ_SOCKS_PASSWORD:
+            return do_getsockopt (optval_, optvallen_, socks_proxy_password);
             break;
 
         case ZMQ_TCP_KEEPALIVE:
