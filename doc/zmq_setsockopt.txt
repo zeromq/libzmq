@@ -891,10 +891,42 @@ Applicable socket types:: all
 ZMQ_SOCKS_PROXY: Set SOCKS5 proxy address
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the SOCKS5 proxy address that shall be used by the socket for the TCP
-connection(s). Does not support SOCKS5 authentication. If the endpoints are
-domain names instead of addresses they shall not be resolved and they shall
-be forwarded unchanged to the SOCKS proxy service in the client connection
-request message (address type 0x03 domain name).
+connection(s). Supported authentication methods are: no authentication
+or basic authentication when setup with ZMQ_SOCKS_USERNAME. If the endpoints
+are domain names instead of addresses they shall not be resolved and they
+shall be forwarded unchanged to the SOCKS proxy service in the client
+connection request message (address type 0x03 domain name).
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_SOCKS_USERNAME: Set SOCKS username and select basic authentication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the username for authenticated connection to the SOCKS5 proxy.
+If you set this to a non-null and non-empty value, the authentication
+method used for the SOCKS5 connection shall be basic authentication.
+In this case, use ZMQ_SOCKS_PASSWORD option in order to set the password.
+If you set this to a null value or empty value, the authentication method
+shall be no authentication, the default.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_SOCKS_PASSWORD: Set SOCKS basic authentication password
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the password for authenticating to the SOCKS5 proxy server.
+This is used only when the SOCKS5 authentication method has been
+set to basic authentication through the ZMQ_SOCKS_USERNAME option.
+Setting this to a null value (the default) is equivalent to an
+empty password string.
 
 [horizontal]
 Option value type:: character string

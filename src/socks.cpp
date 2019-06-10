@@ -129,6 +129,96 @@ void zmq::socks_choice_decoder_t::reset ()
 }
 
 
+zmq::socks_basic_auth_request_t::socks_basic_auth_request_t (std::string username_,
+                                                             std::string password_) :
+    username (username_),
+    password (password_)
+{
+    zmq_assert (username_.size () <= UINT8_MAX);
+    zmq_assert (password_.size () <= UINT8_MAX);
+}
+
+
+zmq::socks_basic_auth_request_encoder_t::socks_basic_auth_request_encoder_t () :
+    _bytes_encoded (0),
+    _bytes_written (0)
+{
+}
+
+void zmq::socks_basic_auth_request_encoder_t::encode (const socks_basic_auth_request_t &req_)
+{
+
+    unsigned char *ptr = _buf;
+    *ptr++ = 0x01;
+    *ptr++ = static_cast<unsigned char> (req_.username.size ());
+    memcpy (ptr, req_.username.c_str (), req_.username.size ());
+    ptr += req_.username.size ();
+    *ptr++ = static_cast<unsigned char> (req_.password.size ());
+    memcpy (ptr, req_.password.c_str (), req_.password.size ());
+    ptr += req_.password.size ();
+
+    _bytes_encoded = ptr - _buf;
+    _bytes_written = 0;
+}
+
+int zmq::socks_basic_auth_request_encoder_t::output (fd_t fd_)
+{
+    const int rc =
+      tcp_write (fd_, _buf + _bytes_written, _bytes_encoded - _bytes_written);
+    if (rc > 0)
+        _bytes_written += static_cast<size_t> (rc);
+    return rc;
+}
+
+bool zmq::socks_basic_auth_request_encoder_t::has_pending_data () const
+{
+    return _bytes_written < _bytes_encoded;
+}
+
+void zmq::socks_basic_auth_request_encoder_t::reset ()
+{
+    _bytes_encoded = _bytes_written = 0;
+}
+
+
+zmq::socks_auth_response_t::socks_auth_response_t (uint8_t response_code_) :
+    response_code (response_code_)
+{
+}
+
+zmq::socks_auth_response_decoder_t::socks_auth_response_decoder_t () : _bytes_read (0)
+{
+}
+
+int zmq::socks_auth_response_decoder_t::input (fd_t fd_)
+{
+    zmq_assert (_bytes_read < 2);
+    const int rc = tcp_read (fd_, _buf + _bytes_read, 2 - _bytes_read);
+    if (rc > 0) {
+        _bytes_read += static_cast<size_t> (rc);
+        if (_buf[0] != 0x01)
+            return -1;
+    }
+    return rc;
+}
+
+bool zmq::socks_auth_response_decoder_t::message_ready () const
+{
+    return _bytes_read == 2;
+}
+
+zmq::socks_auth_response_t zmq::socks_auth_response_decoder_t::decode ()
+{
+    zmq_assert (message_ready ());
+    return socks_auth_response_t (_buf[1]);
+}
+
+void zmq::socks_auth_response_decoder_t::reset ()
+{
+    _bytes_read = 0;
+}
+
+
 zmq::socks_request_t::socks_request_t (uint8_t command_,
                                        std::string hostname_,
                                        uint16_t port_) :
