@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../lib/libtestutil.a  CMakeFiles/testutil.dir/testutil.cpp.o CMakeFiles/testutil.dir/testutil_monitoring.cpp.o CMakeFiles/testutil.dir/testutil_security.cpp.o CMakeFiles/testutil.dir/testutil_unity.cpp.o
+/usr/bin/ranlib ../lib/libtestutil.a

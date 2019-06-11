@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/somdoron/git/libzmq/external/unity/unity.c
+unity.h
+/home/somdoron/git/libzmq/external/unity/unity.h
+stddef.h
+-
+
+/home/somdoron/git/libzmq/external/unity/unity.h
+unity_internals.h
+/home/somdoron/git/libzmq/external/unity/unity_internals.h
+
+/home/somdoron/git/libzmq/external/unity/unity_internals.h
+unity_config.h
+/home/somdoron/git/libzmq/external/unity/unity_config.h
+setjmp.h
+-
+math.h
+-
+stdint.h
+-
+limits.h
+-
+stdio.h
+-
+stdio.h
+-
+

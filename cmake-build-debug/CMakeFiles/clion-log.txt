@@ -1,0 +1,25 @@
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/somdoron/git/libzmq
+-- Detected ZMQ Version - 4.3.2
+-- Using tweetnacl for CURVE security
+-- Using radix tree implementation to manage subscriptions
+-- Using polling method in I/O threads: epoll
+-- Using polling method in zmq_poll(er)_* API: poll
+-- Using 64 bytes alignment for lock-free data structures
+-- Using condition_variable_t implementation: stl11
+-- Checking whether EFD_CLOEXEC is supported
+-- Checking whether noexcept is supported
+-- Checking whether SOCK_CLOEXEC is supported
+-- Checking whether O_CLOEXEC is supported
+-- Checking whether SO_BINDTODEVICE is supported
+-- Checking whether SO_KEEPALIVE is supported
+-- Checking whether TCP_KEEPCNT is supported
+-- Checking whether TCP_KEEPIDLE is supported
+-- Checking whether TCP_KEEPINTVL is supported
+-- Checking whether TCP_KEEPALIVE is supported
+-- Checking whether TIPC is supported
+-- Checking pthread_setname signature
+-- Checking pthread_setaffinity signature
+-- Checking whether getrandom is supported
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/somdoron/git/libzmq/cmake-build-debug

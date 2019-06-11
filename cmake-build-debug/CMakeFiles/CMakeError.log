@@ -1,0 +1,386 @@
+Determining if the function kqueue exists failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_9f664/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_9f664.dir/build.make CMakeFiles/cmTC_9f664.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9f664.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/sys/event.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=kqueue   -o CMakeFiles/cmTC_9f664.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_9f664
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9f664.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=kqueue    -rdynamic CMakeFiles/cmTC_9f664.dir/CheckFunctionExists.c.o  -o cmTC_9f664 
+/usr/bin/ld: CMakeFiles/cmTC_9f664.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x10): undefined reference to `kqueue'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_9f664.dir/build.make:87: cmTC_9f664] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_9f664/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_948d2/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_948d2.dir/build.make CMakeFiles/cmTC_948d2.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_948d2.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_948d2.dir/CheckSymbolExists.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_948d2
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_948d2.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_948d2.dir/CheckSymbolExists.c.o  -o cmTC_948d2 
+/usr/bin/ld: CMakeFiles/cmTC_948d2.dir/CheckSymbolExists.c.o: in function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_948d2.dir/build.make:87: cmTC_948d2] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_948d2/fast] Error 2
+
+File /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_1d84b/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_1d84b.dir/build.make CMakeFiles/cmTC_1d84b.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1d84b.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_1d84b.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_1d84b
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1d84b.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_1d84b.dir/CheckFunctionExists.c.o  -o cmTC_1d84b -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_1d84b.dir/build.make:87: cmTC_1d84b] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_1d84b/fast] Error 2
+
+
+Determining if files windows.h exist failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_0c1b5/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_0c1b5.dir/build.make CMakeFiles/cmTC_0c1b5.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_0c1b5.dir/ZMQ_HAVE_WINDOWS.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_0c1b5.dir/ZMQ_HAVE_WINDOWS.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_WINDOWS.c
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_WINDOWS.c:2:10: fatal error: windows.h: No such file or directory
+ #include <windows.h>
+          ^~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_0c1b5.dir/build.make:66: CMakeFiles/cmTC_0c1b5.dir/ZMQ_HAVE_WINDOWS.c.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_0c1b5/fast] Error 2
+
+Source:
+/* */
+#include <windows.h>
+
+
+int main(void){return 0;}
+
+Determining if the LOCAL_PEERCRED exist failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_ef3a6/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_ef3a6.dir/build.make CMakeFiles/cmTC_ef3a6.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ef3a6.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_ef3a6.dir/CheckSymbolExists.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx: In function ‘int main(int, char**)’:
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: error: ‘LOCAL_PEERCRED’ was not declared in this scope
+   return ((int*)(&LOCAL_PEERCRED))[argc];
+                   ^~~~~~~~~~~~~~
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:8:19: note: suggested alternative: ‘SO_PEERCRED’
+   return ((int*)(&LOCAL_PEERCRED))[argc];
+                   ^~~~~~~~~~~~~~
+                   SO_PEERCRED
+At global scope:
+cc1plus: warning: unrecognized command line option ‘-Wno-tautological-constant-compare’
+gmake[1]: *** [CMakeFiles/cmTC_ef3a6.dir/build.make:66: CMakeFiles/cmTC_ef3a6.dir/CheckSymbolExists.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_ef3a6/fast] Error 2
+
+File /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <sys/socket.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef LOCAL_PEERCRED
+  return ((int*)(&LOCAL_PEERCRED))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function gethrtime exists failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_be880/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_be880.dir/build.make CMakeFiles/cmTC_be880.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_be880.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/sys/time.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=gethrtime   -o CMakeFiles/cmTC_be880.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_be880
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_be880.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=gethrtime    -rdynamic CMakeFiles/cmTC_be880.dir/CheckFunctionExists.c.o  -o cmTC_be880 
+/usr/bin/ld: CMakeFiles/cmTC_be880.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x10): undefined reference to `gethrtime'
+collect2: error: ld returned 1 exit status
+gmake[1]: *** [CMakeFiles/cmTC_be880.dir/build.make:87: cmTC_be880] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_be880/fast] Error 2
+
+
+Performing C++ SOURCE FILE Test HAVE_FLAG_-Wall failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_73086/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_73086.dir/build.make CMakeFiles/cmTC_73086.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_73086.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wall   -Wall -o CMakeFiles/cmTC_73086.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+<command-line>: warning: ISO C++11 requires whitespace after the macro name
+cc1plus: warning: unrecognized command line option '-Wno-tautological-constant-compare'
+Linking CXX executable cmTC_73086
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_73086.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wall    -rdynamic CMakeFiles/cmTC_73086.dir/src.cxx.o  -o cmTC_73086 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_FLAG_-Wextra failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_363da/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_363da.dir/build.make CMakeFiles/cmTC_363da.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_363da.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wextra   -Wextra -o CMakeFiles/cmTC_363da.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+<command-line>: warning: ISO C++11 requires whitespace after the macro name
+cc1plus: warning: unrecognized command line option '-Wno-tautological-constant-compare'
+Linking CXX executable cmTC_363da
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_363da.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wextra    -rdynamic CMakeFiles/cmTC_363da.dir/src.cxx.o  -o cmTC_363da 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_FLAG_-Wno-long-long failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_412f0/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_412f0.dir/build.make CMakeFiles/cmTC_412f0.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_412f0.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wno-long-long   -Wno-long-long -o CMakeFiles/cmTC_412f0.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+<command-line>: warning: ISO C++11 requires whitespace after the macro name
+cc1plus: warning: unrecognized command line option '-Wno-tautological-constant-compare'
+Linking CXX executable cmTC_412f0
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_412f0.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wno-long-long    -rdynamic CMakeFiles/cmTC_412f0.dir/src.cxx.o  -o cmTC_412f0 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_FLAG_-Wno-uninitialized failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_2b257/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_2b257.dir/build.make CMakeFiles/cmTC_2b257.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_2b257.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wno-uninitialized   -Wno-uninitialized -o CMakeFiles/cmTC_2b257.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+<command-line>: warning: ISO C++11 requires whitespace after the macro name
+cc1plus: warning: unrecognized command line option '-Wno-tautological-constant-compare'
+Linking CXX executable cmTC_2b257
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2b257.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-Wno-uninitialized    -rdynamic CMakeFiles/cmTC_2b257.dir/src.cxx.o  -o cmTC_2b257 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_FLAG_-pedantic failed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_bf47b/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_bf47b.dir/build.make CMakeFiles/cmTC_bf47b.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_bf47b.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-pedantic   -pedantic -o CMakeFiles/cmTC_bf47b.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+<command-line>: warning: ISO C++11 requires whitespace after the macro name
+cc1plus: warning: unrecognized command line option '-Wno-tautological-constant-compare'
+Linking CXX executable cmTC_bf47b
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bf47b.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DHAVE_FLAG_-pedantic    -rdynamic CMakeFiles/cmTC_bf47b.dir/src.cxx.o  -o cmTC_bf47b 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test ZMQ_HAVE_TCP_KEEPALIVE failed with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_bc40d/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_bc40d.dir/build.make CMakeFiles/cmTC_bc40d.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bc40d.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPALIVE   -o CMakeFiles/cmTC_bc40d.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: In function ‘main’:
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:13:42: error: ‘TCP_KEEPALIVE’ undeclared (first use in this function); did you mean ‘SO_KEEPALIVE’?
+        ((rc = setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,(char*) &opt, sizeof(int))) == -1)
+                                          ^~~~~~~~~~~~~
+                                          SO_KEEPALIVE
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:13:42: note: each undeclared identifier is reported only once for each function it appears in
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: At top level:
+cc1: warning: unrecognized command line option ‘-Wno-tautological-constant-compare’
+gmake[1]: *** [CMakeFiles/cmTC_bc40d.dir/build.make:66: CMakeFiles/cmTC_bc40d.dir/src.c.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_bc40d/fast] Error 2
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int main(int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return(
+       ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) ||
+       ((rc = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,(char*) &opt, sizeof(int))) == -1) ||
+       ((rc = setsockopt(s, IPPROTO_TCP, TCP_KEEPALIVE,(char*) &opt, sizeof(int))) == -1)
+    );
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_PTHREAD_SETNAME_1 failed with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_2f5a1/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_2f5a1.dir/build.make CMakeFiles/cmTC_2f5a1.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2f5a1.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETNAME_1 -D_GNU_SOURCE -Werror -pthread   -o CMakeFiles/cmTC_2f5a1.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: In function ‘main’:
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:6:25: error: passing argument 1 of ‘pthread_setname_np’ makes integer from pointer without a cast [-Werror=int-conversion]
+     pthread_setname_np ("foo");
+                         ^~~~~
+In file included from /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:2:
+/usr/include/pthread.h:452:42: note: expected ‘pthread_t’ {aka ‘long unsigned int’} but argument is of type ‘char *’
+ extern int pthread_setname_np (pthread_t __target_thread, const char *__name)
+                                ~~~~~~~~~~^~~~~~~~~~~~~~~
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:6:5: error: too few arguments to function ‘pthread_setname_np’
+     pthread_setname_np ("foo");
+     ^~~~~~~~~~~~~~~~~~
+In file included from /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:2:
+/usr/include/pthread.h:452:12: note: declared here
+ extern int pthread_setname_np (pthread_t __target_thread, const char *__name)
+            ^~~~~~~~~~~~~~~~~~
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: At top level:
+cc1: error: unrecognized command line option ‘-Wno-tautological-constant-compare’ [-Werror]
+cc1: all warnings being treated as errors
+gmake[1]: *** [CMakeFiles/cmTC_2f5a1.dir/build.make:66: CMakeFiles/cmTC_2f5a1.dir/src.c.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_2f5a1/fast] Error 2
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np ("foo");
+    return 0;
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_PTHREAD_SETNAME_3 failed with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_e7c70/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_e7c70.dir/build.make CMakeFiles/cmTC_e7c70.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e7c70.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETNAME_3 -D_GNU_SOURCE -Werror -pthread   -o CMakeFiles/cmTC_e7c70.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: In function ‘main’:
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:6:5: error: too many arguments to function ‘pthread_setname_np’
+     pthread_setname_np (pthread_self(), "foo", (void *)0);
+     ^~~~~~~~~~~~~~~~~~
+In file included from /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:2:
+/usr/include/pthread.h:452:12: note: declared here
+ extern int pthread_setname_np (pthread_t __target_thread, const char *__name)
+            ^~~~~~~~~~~~~~~~~~
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: At top level:
+cc1: error: unrecognized command line option ‘-Wno-tautological-constant-compare’ [-Werror]
+cc1: all warnings being treated as errors
+gmake[1]: *** [CMakeFiles/cmTC_e7c70.dir/build.make:66: CMakeFiles/cmTC_e7c70.dir/src.c.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_e7c70/fast] Error 2
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np (pthread_self(), "foo", (void *)0);
+    return 0;
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_PTHREAD_SET_NAME failed with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_b97e0/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_b97e0.dir/build.make CMakeFiles/cmTC_b97e0.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b97e0.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SET_NAME -D_GNU_SOURCE -Werror -pthread   -o CMakeFiles/cmTC_b97e0.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: In function ‘main’:
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:6:5: error: implicit declaration of function ‘pthread_set_name_np’; did you mean ‘pthread_setname_np’? [-Werror=implicit-function-declaration]
+     pthread_set_name_np (pthread_self(), "foo");
+     ^~~~~~~~~~~~~~~~~~~
+     pthread_setname_np
+/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: At top level:
+cc1: error: unrecognized command line option ‘-Wno-tautological-constant-compare’ [-Werror]
+cc1: all warnings being treated as errors
+gmake[1]: *** [CMakeFiles/cmTC_b97e0.dir/build.make:66: CMakeFiles/cmTC_b97e0.dir/src.c.o] Error 1
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:121: cmTC_b97e0/fast] Error 2
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_set_name_np (pthread_self(), "foo");
+    return 0;
+}
+

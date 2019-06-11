@@ -1,0 +1,1345 @@
+The system is: Linux - 4.18.17-300.fc29.x86_64 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/bin/c++ 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_25d38/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_25d38.dir/build.make CMakeFiles/cmTC_25d38.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_25d38.dir/testCCompiler.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_25d38.dir/testCCompiler.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_25d38
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_25d38.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_25d38.dir/testCCompiler.c.o  -o cmTC_25d38 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_6f636/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_6f636.dir/build.make CMakeFiles/cmTC_6f636.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc    -o CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_6f636
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6f636.dir/link.txt --verbose=1
+/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o  -o cmTC_6f636 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/cc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-redhat-linux
+Configured with: ../configure --enable-bootstrap --enable-languages=c,c++,fortran,objc,obj-c++,ada,go,lto --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-shared --enable-threads=posix --enable-checking=release --enable-multilib --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-gcc-major-version-only --with-linker-hash-style=gnu --enable-plugin --enable-initfini-array --with-isl --enable-libmpx --enable-offload-targets=nvptx-none --without-cuda-driver --enable-gnu-indirect-function --enable-cet --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 8.2.1 20181105 (Red Hat 8.2.1-5) (GCC) 
+COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_6f636' '-mtune=generic' '-march=x86-64'
+ /usr/libexec/gcc/x86_64-redhat-linux/8/collect2 -plugin /usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccdTzrMc.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_6f636 /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/8/crtend.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_6f636' '-mtune=generic' '-march=x86-64'
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/gmake" "cmTC_6f636/fast"]
+  ignore line: [/usr/bin/gmake -f CMakeFiles/cmTC_6f636.dir/build.make CMakeFiles/cmTC_6f636.dir/build]
+  ignore line: [gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc    -o CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_6f636]
+  ignore line: [/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6f636.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc     -v -rdynamic CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o  -o cmTC_6f636 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/cc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-redhat-linux]
+  ignore line: [Configured with: ../configure --enable-bootstrap --enable-languages=c,c++,fortran,objc,obj-c++,ada,go,lto --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-shared --enable-threads=posix --enable-checking=release --enable-multilib --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-gcc-major-version-only --with-linker-hash-style=gnu --enable-plugin --enable-initfini-array --with-isl --enable-libmpx --enable-offload-targets=nvptx-none --without-cuda-driver --enable-gnu-indirect-function --enable-cet --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 8.2.1 20181105 (Red Hat 8.2.1-5) (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_6f636' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/libexec/gcc/x86_64-redhat-linux/8/collect2 -plugin /usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccdTzrMc.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_6f636 /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/8/crtend.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o]
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/8/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccdTzrMc.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--no-add-needed] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_6f636] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o] ==> ignore
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8/../../..] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../..]
+    arg [CMakeFiles/cmTC_6f636.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--no-as-needed] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o] ==> ignore
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8] ==> [/usr/lib/gcc/x86_64-redhat-linux/8]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../..] ==> [/usr/lib]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit dirs: [/usr/lib/gcc/x86_64-redhat-linux/8;/usr/lib64;/lib64;/usr/lib]
+  implicit fwks: []
+
+
+
+
+Detecting C [-std=c11] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_1ef0d/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_1ef0d.dir/build.make CMakeFiles/cmTC_1ef0d.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1ef0d.dir/feature_tests.c.o
+/usr/bin/cc   -std=c11 -o CMakeFiles/cmTC_1ef0d.dir/feature_tests.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_1ef0d
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1ef0d.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_1ef0d.dir/feature_tests.c.o  -o cmTC_1ef0d 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:1c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c99] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_1510c/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_1510c.dir/build.make CMakeFiles/cmTC_1510c.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1510c.dir/feature_tests.c.o
+/usr/bin/cc   -std=c99 -o CMakeFiles/cmTC_1510c.dir/feature_tests.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_1510c
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1510c.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_1510c.dir/feature_tests.c.o  -o cmTC_1510c 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:1c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:1c_variadic_macros
+
+
+Detecting C [-std=c90] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_bd749/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_bd749.dir/build.make CMakeFiles/cmTC_bd749.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_bd749.dir/feature_tests.c.o
+/usr/bin/cc   -std=c90 -o CMakeFiles/cmTC_bd749.dir/feature_tests.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.c
+Linking C executable cmTC_bd749
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bd749.dir/link.txt --verbose=1
+/usr/bin/cc      -rdynamic CMakeFiles/cmTC_bd749.dir/feature_tests.c.o  -o cmTC_bd749 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: C_FEATURE:1c_function_prototypes
+    Feature record: C_FEATURE:0c_restrict
+    Feature record: C_FEATURE:0c_static_assert
+    Feature record: C_FEATURE:0c_variadic_macros
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_bdaa3/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_bdaa3.dir/build.make CMakeFiles/cmTC_bdaa3.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_bdaa3.dir/testCXXCompiler.cxx.o
+/usr/bin/c++     -o CMakeFiles/cmTC_bdaa3.dir/testCXXCompiler.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_bdaa3
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bdaa3.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_bdaa3.dir/testCXXCompiler.cxx.o  -o cmTC_bdaa3 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_f3874/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_f3874.dir/build.make CMakeFiles/cmTC_f3874.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++     -o CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_f3874
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f3874.dir/link.txt --verbose=1
+/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_f3874 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/c++
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-redhat-linux
+Configured with: ../configure --enable-bootstrap --enable-languages=c,c++,fortran,objc,obj-c++,ada,go,lto --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-shared --enable-threads=posix --enable-checking=release --enable-multilib --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-gcc-major-version-only --with-linker-hash-style=gnu --enable-plugin --enable-initfini-array --with-isl --enable-libmpx --enable-offload-targets=nvptx-none --without-cuda-driver --enable-gnu-indirect-function --enable-cet --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 8.2.1 20181105 (Red Hat 8.2.1-5) (GCC) 
+COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_f3874' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+ /usr/libexec/gcc/x86_64-redhat-linux/8/collect2 -plugin /usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccGZsSbF.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_f3874 /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/8/crtend.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_f3874' '-shared-libgcc' '-mtune=generic' '-march=x86-64'
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:"/usr/bin/gmake" "cmTC_f3874/fast"]
+  ignore line: [/usr/bin/gmake -f CMakeFiles/cmTC_f3874.dir/build.make CMakeFiles/cmTC_f3874.dir/build]
+  ignore line: [gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++     -o CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_f3874]
+  ignore line: [/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f3874.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++      -v -rdynamic CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_f3874 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/c++]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-redhat-linux]
+  ignore line: [Configured with: ../configure --enable-bootstrap --enable-languages=c,c++,fortran,objc,obj-c++,ada,go,lto --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-shared --enable-threads=posix --enable-checking=release --enable-multilib --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-gcc-major-version-only --with-linker-hash-style=gnu --enable-plugin --enable-initfini-array --with-isl --enable-libmpx --enable-offload-targets=nvptx-none --without-cuda-driver --enable-gnu-indirect-function --enable-cet --with-tune=generic --with-arch_32=i686 --build=x86_64-redhat-linux]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 8.2.1 20181105 (Red Hat 8.2.1-5) (GCC) ]
+  ignore line: [COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/8/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/8/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/8/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-rdynamic' '-o' 'cmTC_f3874' '-shared-libgcc' '-mtune=generic' '-march=x86-64']
+  link line: [ /usr/libexec/gcc/x86_64-redhat-linux/8/collect2 -plugin /usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so -plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper -plugin-opt=-fresolution=/tmp/ccGZsSbF.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -export-dynamic -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_f3874 /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-redhat-linux/8/crtend.o /usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o]
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/8/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/libexec/gcc/x86_64-redhat-linux/8/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/libexec/gcc/x86_64-redhat-linux/8/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccGZsSbF.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--no-add-needed] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_f3874] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crt1.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/crtbegin.o] ==> ignore
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib/gcc/x86_64-redhat-linux/8/../../..] ==> dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../..]
+    arg [CMakeFiles/cmTC_f3874.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/crtend.o] ==> ignore
+    arg [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64/crtn.o] ==> ignore
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8] ==> [/usr/lib/gcc/x86_64-redhat-linux/8]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib/gcc/x86_64-redhat-linux/8/../../..] ==> [/usr/lib]
+  implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+  implicit dirs: [/usr/lib/gcc/x86_64-redhat-linux/8;/usr/lib64;/lib64;/usr/lib]
+  implicit fwks: []
+
+
+
+
+Detecting CXX [-std=c++2a] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_03cd1/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_03cd1.dir/build.make CMakeFiles/cmTC_03cd1.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_03cd1.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++2a -o CMakeFiles/cmTC_03cd1.dir/feature_tests.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_03cd1
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_03cd1.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_03cd1.dir/feature_tests.cxx.o  -o cmTC_03cd1 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++17] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_edd52/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_edd52.dir/build.make CMakeFiles/cmTC_edd52.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_edd52.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++17 -o CMakeFiles/cmTC_edd52.dir/feature_tests.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_edd52
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_edd52.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_edd52.dir/feature_tests.cxx.o  -o cmTC_edd52 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++14] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_f27d6/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_f27d6.dir/build.make CMakeFiles/cmTC_f27d6.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_f27d6.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++14 -o CMakeFiles/cmTC_f27d6.dir/feature_tests.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_f27d6
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f27d6.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_f27d6.dir/feature_tests.cxx.o  -o cmTC_f27d6 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: CXX_FEATURE:1cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:1cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:1cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:1cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:1cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:1cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:1cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:1cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:1cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:1cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:1cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++11] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_96ff3/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_96ff3.dir/build.make CMakeFiles/cmTC_96ff3.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_96ff3.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++11 -o CMakeFiles/cmTC_96ff3.dir/feature_tests.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_96ff3
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_96ff3.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_96ff3.dir/feature_tests.cxx.o  -o cmTC_96ff3 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:1cxx_alias_templates
+    Feature record: CXX_FEATURE:1cxx_alignas
+    Feature record: CXX_FEATURE:1cxx_alignof
+    Feature record: CXX_FEATURE:1cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:1cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:1cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:1cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:1cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:1cxx_default_function_template_args
+    Feature record: CXX_FEATURE:1cxx_defaulted_functions
+    Feature record: CXX_FEATURE:1cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:1cxx_delegating_constructors
+    Feature record: CXX_FEATURE:1cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:1cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:1cxx_explicit_conversions
+    Feature record: CXX_FEATURE:1cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:1cxx_extern_templates
+    Feature record: CXX_FEATURE:1cxx_final
+    Feature record: CXX_FEATURE:1cxx_func_identifier
+    Feature record: CXX_FEATURE:1cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:1cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:1cxx_inline_namespaces
+    Feature record: CXX_FEATURE:1cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:1cxx_local_type_template_args
+    Feature record: CXX_FEATURE:1cxx_long_long_type
+    Feature record: CXX_FEATURE:1cxx_noexcept
+    Feature record: CXX_FEATURE:1cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:1cxx_nullptr
+    Feature record: CXX_FEATURE:1cxx_override
+    Feature record: CXX_FEATURE:1cxx_range_for
+    Feature record: CXX_FEATURE:1cxx_raw_string_literals
+    Feature record: CXX_FEATURE:1cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:1cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:1cxx_rvalue_references
+    Feature record: CXX_FEATURE:1cxx_sizeof_member
+    Feature record: CXX_FEATURE:1cxx_static_assert
+    Feature record: CXX_FEATURE:1cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:1cxx_thread_local
+    Feature record: CXX_FEATURE:1cxx_trailing_return_types
+    Feature record: CXX_FEATURE:1cxx_unicode_literals
+    Feature record: CXX_FEATURE:1cxx_uniform_initialization
+    Feature record: CXX_FEATURE:1cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:1cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:1cxx_variadic_macros
+    Feature record: CXX_FEATURE:1cxx_variadic_templates
+
+
+Detecting CXX [-std=c++98] compiler features compiled with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a67b6/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a67b6.dir/build.make CMakeFiles/cmTC_a67b6.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a67b6.dir/feature_tests.cxx.o
+/usr/bin/c++    -std=c++98 -o CMakeFiles/cmTC_a67b6.dir/feature_tests.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_a67b6
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a67b6.dir/link.txt --verbose=1
+/usr/bin/c++       -rdynamic CMakeFiles/cmTC_a67b6.dir/feature_tests.cxx.o  -o cmTC_a67b6 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+    Feature record: CXX_FEATURE:0cxx_aggregate_default_initializers
+    Feature record: CXX_FEATURE:0cxx_alias_templates
+    Feature record: CXX_FEATURE:0cxx_alignas
+    Feature record: CXX_FEATURE:0cxx_alignof
+    Feature record: CXX_FEATURE:0cxx_attributes
+    Feature record: CXX_FEATURE:0cxx_attribute_deprecated
+    Feature record: CXX_FEATURE:0cxx_auto_type
+    Feature record: CXX_FEATURE:0cxx_binary_literals
+    Feature record: CXX_FEATURE:0cxx_constexpr
+    Feature record: CXX_FEATURE:0cxx_contextual_conversions
+    Feature record: CXX_FEATURE:0cxx_decltype
+    Feature record: CXX_FEATURE:0cxx_decltype_auto
+    Feature record: CXX_FEATURE:0cxx_decltype_incomplete_return_types
+    Feature record: CXX_FEATURE:0cxx_default_function_template_args
+    Feature record: CXX_FEATURE:0cxx_defaulted_functions
+    Feature record: CXX_FEATURE:0cxx_defaulted_move_initializers
+    Feature record: CXX_FEATURE:0cxx_delegating_constructors
+    Feature record: CXX_FEATURE:0cxx_deleted_functions
+    Feature record: CXX_FEATURE:0cxx_digit_separators
+    Feature record: CXX_FEATURE:0cxx_enum_forward_declarations
+    Feature record: CXX_FEATURE:0cxx_explicit_conversions
+    Feature record: CXX_FEATURE:0cxx_extended_friend_declarations
+    Feature record: CXX_FEATURE:0cxx_extern_templates
+    Feature record: CXX_FEATURE:0cxx_final
+    Feature record: CXX_FEATURE:0cxx_func_identifier
+    Feature record: CXX_FEATURE:0cxx_generalized_initializers
+    Feature record: CXX_FEATURE:0cxx_generic_lambdas
+    Feature record: CXX_FEATURE:0cxx_inheriting_constructors
+    Feature record: CXX_FEATURE:0cxx_inline_namespaces
+    Feature record: CXX_FEATURE:0cxx_lambdas
+    Feature record: CXX_FEATURE:0cxx_lambda_init_captures
+    Feature record: CXX_FEATURE:0cxx_local_type_template_args
+    Feature record: CXX_FEATURE:0cxx_long_long_type
+    Feature record: CXX_FEATURE:0cxx_noexcept
+    Feature record: CXX_FEATURE:0cxx_nonstatic_member_init
+    Feature record: CXX_FEATURE:0cxx_nullptr
+    Feature record: CXX_FEATURE:0cxx_override
+    Feature record: CXX_FEATURE:0cxx_range_for
+    Feature record: CXX_FEATURE:0cxx_raw_string_literals
+    Feature record: CXX_FEATURE:0cxx_reference_qualified_functions
+    Feature record: CXX_FEATURE:0cxx_relaxed_constexpr
+    Feature record: CXX_FEATURE:0cxx_return_type_deduction
+    Feature record: CXX_FEATURE:0cxx_right_angle_brackets
+    Feature record: CXX_FEATURE:0cxx_rvalue_references
+    Feature record: CXX_FEATURE:0cxx_sizeof_member
+    Feature record: CXX_FEATURE:0cxx_static_assert
+    Feature record: CXX_FEATURE:0cxx_strong_enums
+    Feature record: CXX_FEATURE:1cxx_template_template_parameters
+    Feature record: CXX_FEATURE:0cxx_thread_local
+    Feature record: CXX_FEATURE:0cxx_trailing_return_types
+    Feature record: CXX_FEATURE:0cxx_unicode_literals
+    Feature record: CXX_FEATURE:0cxx_uniform_initialization
+    Feature record: CXX_FEATURE:0cxx_unrestricted_unions
+    Feature record: CXX_FEATURE:0cxx_user_literals
+    Feature record: CXX_FEATURE:0cxx_variable_templates
+    Feature record: CXX_FEATURE:0cxx_variadic_macros
+    Feature record: CXX_FEATURE:0cxx_variadic_templates
+Performing C++ SOURCE FILE Test COMPILER_SUPPORTS_CXX11 succeeded with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a87d9/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a87d9.dir/build.make CMakeFiles/cmTC_a87d9.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a87d9.dir/src.cxx.o
+/usr/bin/c++    -DCOMPILER_SUPPORTS_CXX11   -std=gnu++11 -o CMakeFiles/cmTC_a87d9.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a87d9
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a87d9.dir/link.txt --verbose=1
+/usr/bin/c++   -DCOMPILER_SUPPORTS_CXX11    -rdynamic CMakeFiles/cmTC_a87d9.dir/src.cxx.o  -o cmTC_a87d9 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test COMPILER_SUPPORTS_C11 succeeded with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_43cf7/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_43cf7.dir/build.make CMakeFiles/cmTC_43cf7.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_43cf7.dir/src.c.o
+/usr/bin/cc   -DCOMPILER_SUPPORTS_C11   -std=gnu11 -o CMakeFiles/cmTC_43cf7.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_43cf7
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_43cf7.dir/link.txt --verbose=1
+/usr/bin/cc  -DCOMPILER_SUPPORTS_C11    -rdynamic CMakeFiles/cmTC_43cf7.dir/src.c.o  -o cmTC_43cf7 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main(void) { return 0; }
+Performing C++ SOURCE FILE Test CXX_HAS_TAUT_WARNING succeeded with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a4c87/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a4c87.dir/build.make CMakeFiles/cmTC_a4c87.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a4c87.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -DCXX_HAS_TAUT_WARNING   -Wno-tautological-constant-compare -o CMakeFiles/cmTC_a4c87.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a4c87
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a4c87.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -DCXX_HAS_TAUT_WARNING    -rdynamic CMakeFiles/cmTC_a4c87.dir/src.cxx.o  -o cmTC_a4c87 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test CC_HAS_TAUT_WARNING succeeded with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_b60da/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_b60da.dir/build.make CMakeFiles/cmTC_b60da.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b60da.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -DCC_HAS_TAUT_WARNING   -Wno-tautological-constant-compare -o CMakeFiles/cmTC_b60da.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_b60da
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b60da.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -DCC_HAS_TAUT_WARNING    -rdynamic CMakeFiles/cmTC_b60da.dir/src.c.o  -o cmTC_b60da 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+int main(void) { return 0; }
+Determining if the function epoll_create exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_57006/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_57006.dir/build.make CMakeFiles/cmTC_57006.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_57006.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/sys/epoll.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=epoll_create   -o CMakeFiles/cmTC_57006.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_57006
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_57006.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=epoll_create    -rdynamic CMakeFiles/cmTC_57006.dir/CheckFunctionExists.c.o  -o cmTC_57006 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the function epoll_create1 exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_b49cc/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_b49cc.dir/build.make CMakeFiles/cmTC_b49cc.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b49cc.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=epoll_create1   -o CMakeFiles/cmTC_b49cc.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_b49cc
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b49cc.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=epoll_create1    -rdynamic CMakeFiles/cmTC_b49cc.dir/CheckFunctionExists.c.o  -o cmTC_b49cc 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the include file pthread.h exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a342c/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a342c.dir/build.make CMakeFiles/cmTC_a342c.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a342c.dir/CheckIncludeFile.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_a342c.dir/CheckIncludeFile.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_a342c
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a342c.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_a342c.dir/CheckIncludeFile.c.o  -o cmTC_a342c 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the function pthread_create exists in the pthread passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_de4de/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_de4de.dir/build.make CMakeFiles/cmTC_de4de.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_de4de.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_de4de.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_de4de
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_de4de.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_de4de.dir/CheckFunctionExists.c.o  -o cmTC_de4de -lpthread 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if files condition_variable exist passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_d7c41/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_d7c41.dir/build.make CMakeFiles/cmTC_d7c41.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_d7c41.dir/ZMQ_HAVE_STL_CONDITION_VARIABLE.cpp.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_d7c41.dir/ZMQ_HAVE_STL_CONDITION_VARIABLE.cpp.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_STL_CONDITION_VARIABLE.cpp
+Linking CXX executable cmTC_d7c41
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d7c41.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_d7c41.dir/ZMQ_HAVE_STL_CONDITION_VARIABLE.cpp.o  -o cmTC_d7c41 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if files ifaddrs.h exist passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_2d1fb/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_2d1fb.dir/build.make CMakeFiles/cmTC_2d1fb.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2d1fb.dir/ZMQ_HAVE_IFADDRS.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_2d1fb.dir/ZMQ_HAVE_IFADDRS.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_IFADDRS.c
+Linking C executable cmTC_2d1fb
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2d1fb.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_2d1fb.dir/ZMQ_HAVE_IFADDRS.c.o  -o cmTC_2d1fb 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if files sys/uio.h exist passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_46f27/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_46f27.dir/build.make CMakeFiles/cmTC_46f27.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_46f27.dir/ZMQ_HAVE_UIO.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_46f27.dir/ZMQ_HAVE_UIO.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_UIO.c
+Linking C executable cmTC_46f27
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_46f27.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_46f27.dir/ZMQ_HAVE_UIO.c.o  -o cmTC_46f27 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if files sys/eventfd.h exist passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_5842d/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_5842d.dir/build.make CMakeFiles/cmTC_5842d.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5842d.dir/ZMQ_HAVE_EVENTFD.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_5842d.dir/ZMQ_HAVE_EVENTFD.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CheckIncludeFiles/ZMQ_HAVE_EVENTFD.c
+Linking C executable cmTC_5842d
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5842d.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_5842d.dir/ZMQ_HAVE_EVENTFD.c.o  -o cmTC_5842d 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Performing C SOURCE FILE Test ZMQ_HAVE_EVENTFD_CLOEXEC succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_76fee/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_76fee.dir/build.make CMakeFiles/cmTC_76fee.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_76fee.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_EVENTFD_CLOEXEC   -o CMakeFiles/cmTC_76fee.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_76fee
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_76fee.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_EVENTFD_CLOEXEC    -rdynamic CMakeFiles/cmTC_76fee.dir/src.c.o  -o cmTC_76fee 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/eventfd.h>
+
+int main(int argc, char *argv [])
+{
+    int s = eventfd (0, EFD_CLOEXEC);
+    return(s == -1);
+}
+
+Determining if the SO_PEERCRED exist passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_64de3/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_64de3.dir/build.make CMakeFiles/cmTC_64de3.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_64de3.dir/CheckSymbolExists.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare    -o CMakeFiles/cmTC_64de3.dir/CheckSymbolExists.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx
+Linking CXX executable cmTC_64de3
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_64de3.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare     -rdynamic CMakeFiles/cmTC_64de3.dir/CheckSymbolExists.cxx.o  -o cmTC_64de3 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+File /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/CheckSymbolExists.cxx:
+/* */
+#include <sys/socket.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef SO_PEERCRED
+  return ((int*)(&SO_PEERCRED))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function clock_gettime exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_60f7f/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_60f7f.dir/build.make CMakeFiles/cmTC_60f7f.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_60f7f.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=clock_gettime   -o CMakeFiles/cmTC_60f7f.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_60f7f
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_60f7f.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=clock_gettime    -rdynamic CMakeFiles/cmTC_60f7f.dir/CheckFunctionExists.c.o  -o cmTC_60f7f -lrt 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the function fork exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_000bf/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_000bf.dir/build.make CMakeFiles/cmTC_000bf.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_000bf.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/unistd.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=fork   -o CMakeFiles/cmTC_000bf.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+<command-line>: warning: conflicting types for built-in function ‘fork’ [-Wbuiltin-declaration-mismatch]
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c:7:3: note: in expansion of macro ‘CHECK_FUNCTION_EXISTS’
+   CHECK_FUNCTION_EXISTS(void);
+   ^~~~~~~~~~~~~~~~~~~~~
+cc1: warning: unrecognized command line option ‘-Wno-tautological-constant-compare’
+Linking C executable cmTC_000bf
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_000bf.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=fork    -rdynamic CMakeFiles/cmTC_000bf.dir/CheckFunctionExists.c.o  -o cmTC_000bf 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the function mkdtemp exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_b38dc/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_b38dc.dir/build.make CMakeFiles/cmTC_b38dc.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b38dc.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/stdlib.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=mkdtemp   -o CMakeFiles/cmTC_b38dc.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_b38dc
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b38dc.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=mkdtemp    -rdynamic CMakeFiles/cmTC_b38dc.dir/CheckFunctionExists.c.o  -o cmTC_b38dc 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Determining if the function accept4 exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_5075c/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_5075c.dir/build.make CMakeFiles/cmTC_5075c.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5075c.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/sys/socket.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=accept4   -o CMakeFiles/cmTC_5075c.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_5075c
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5075c.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=accept4    -rdynamic CMakeFiles/cmTC_5075c.dir/CheckFunctionExists.c.o  -o cmTC_5075c 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+Performing C++ SOURCE FILE Test ZMQ_HAVE_NOEXCEPT succeeded with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_d9e07/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_d9e07.dir/build.make CMakeFiles/cmTC_d9e07.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_d9e07.dir/src.cxx.o
+/usr/bin/c++    -std=gnu++11 -Wno-tautological-constant-compare -DZMQ_HAVE_NOEXCEPT   -o CMakeFiles/cmTC_d9e07.dir/src.cxx.o -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_d9e07
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d9e07.dir/link.txt --verbose=1
+/usr/bin/c++   -std=gnu++11 -Wno-tautological-constant-compare -DZMQ_HAVE_NOEXCEPT    -rdynamic CMakeFiles/cmTC_d9e07.dir/src.cxx.o  -o cmTC_d9e07 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+struct X 
+{
+    X(int i) noexcept {}
+};
+
+int main(int argc, char *argv [])
+{
+    X x(5);
+    return 0;
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_SOCK_CLOEXEC succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_272c8/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_272c8.dir/build.make CMakeFiles/cmTC_272c8.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_272c8.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SOCK_CLOEXEC   -o CMakeFiles/cmTC_272c8.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_272c8
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_272c8.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SOCK_CLOEXEC    -rdynamic CMakeFiles/cmTC_272c8.dir/src.c.o  -o cmTC_272c8 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main(int argc, char *argv [])
+{
+    int s = socket(PF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
+    return(s == -1);
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_O_CLOEXEC succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_9c133/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_9c133.dir/build.make CMakeFiles/cmTC_9c133.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9c133.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_O_CLOEXEC   -o CMakeFiles/cmTC_9c133.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_9c133
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9c133.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_O_CLOEXEC    -rdynamic CMakeFiles/cmTC_9c133.dir/src.c.o  -o cmTC_9c133 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv [])
+{
+    int s = open ("/dev/null", O_CLOEXEC | O_RDONLY);
+    return (s == -1);
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_SO_BINDTODEVICE succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_9e681/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_9e681.dir/build.make CMakeFiles/cmTC_9e681.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_9e681.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SO_BINDTODEVICE   -o CMakeFiles/cmTC_9e681.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_9e681
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9e681.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SO_BINDTODEVICE    -rdynamic CMakeFiles/cmTC_9e681.dir/src.c.o  -o cmTC_9e681 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/socket.h>
+
+int main(int argc, char *argv [])
+{
+/* Actually making the setsockopt() call requires CAP_NET_RAW */
+#ifndef SO_BINDTODEVICE
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_SO_KEEPALIVE succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_05567/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_05567.dir/build.make CMakeFiles/cmTC_05567.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_05567.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SO_KEEPALIVE   -o CMakeFiles/cmTC_05567.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_05567
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_05567.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_SO_KEEPALIVE    -rdynamic CMakeFiles/cmTC_05567.dir/src.c.o  -o cmTC_05567 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main(int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return(
+       ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) ||
+       ((rc = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,(char*) &opt, sizeof(int))) == -1)
+    );
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_TCP_KEEPCNT succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a5d2a/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a5d2a.dir/build.make CMakeFiles/cmTC_a5d2a.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a5d2a.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPCNT   -o CMakeFiles/cmTC_a5d2a.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_a5d2a
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a5d2a.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPCNT    -rdynamic CMakeFiles/cmTC_a5d2a.dir/src.c.o  -o cmTC_a5d2a 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int main(int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return(
+       ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) ||
+       ((rc = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,(char*) &opt, sizeof(int))) == -1) ||
+       ((rc = setsockopt(s, IPPROTO_TCP, TCP_KEEPCNT,(char*) &opt, sizeof(int))) == -1)
+    );
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_TCP_KEEPIDLE succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_fa526/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_fa526.dir/build.make CMakeFiles/cmTC_fa526.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_fa526.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPIDLE   -o CMakeFiles/cmTC_fa526.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_fa526
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_fa526.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPIDLE    -rdynamic CMakeFiles/cmTC_fa526.dir/src.c.o  -o cmTC_fa526 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int main(int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return(
+       ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) ||
+       ((rc = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,(char*) &opt, sizeof(int))) == -1) ||
+       ((rc = setsockopt(s, IPPROTO_TCP, TCP_KEEPIDLE,(char*) &opt, sizeof(int))) == -1)
+    );
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_TCP_KEEPINTVL succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_6c25f/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_6c25f.dir/build.make CMakeFiles/cmTC_6c25f.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6c25f.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPINTVL   -o CMakeFiles/cmTC_6c25f.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_6c25f
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6c25f.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TCP_KEEPINTVL    -rdynamic CMakeFiles/cmTC_6c25f.dir/src.c.o  -o cmTC_6c25f 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int main(int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return(
+       ((s = socket(PF_INET, SOCK_STREAM, 0)) == -1) ||
+       ((rc = setsockopt(s, SOL_SOCKET, SO_KEEPALIVE,(char*) &opt, sizeof(int))) == -1) ||
+       ((rc = setsockopt(s, IPPROTO_TCP, TCP_KEEPINTVL,(char*) &opt, sizeof(int))) == -1)
+    );
+}
+
+
+Performing C SOURCE FILE Test ZMQ_HAVE_TIPC succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_71919/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_71919.dir/build.make CMakeFiles/cmTC_71919.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_71919.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TIPC   -o CMakeFiles/cmTC_71919.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_71919
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_71919.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_TIPC    -rdynamic CMakeFiles/cmTC_71919.dir/src.c.o  -o cmTC_71919 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <linux/tipc.h>
+
+int main(int argc, char *argv [])
+{
+    struct sockaddr_tipc topsrv;
+    int sd = socket(AF_TIPC, SOCK_SEQPACKET, 0);
+    memset(&topsrv, 0, sizeof(topsrv));
+    topsrv.family = AF_TIPC;
+    topsrv.addrtype = TIPC_ADDR_NAME;
+    topsrv.addr.name.name.type = TIPC_TOP_SRV;
+    topsrv.addr.name.name.instance = TIPC_TOP_SRV;
+    fcntl(sd, F_SETFL, O_NONBLOCK);
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_PTHREAD_SETNAME_2 succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_b3ee8/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_b3ee8.dir/build.make CMakeFiles/cmTC_b3ee8.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b3ee8.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETNAME_2 -D_GNU_SOURCE -Werror -pthread   -o CMakeFiles/cmTC_b3ee8.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_b3ee8
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b3ee8.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETNAME_2 -D_GNU_SOURCE -Werror -pthread    -rdynamic CMakeFiles/cmTC_b3ee8.dir/src.c.o  -o cmTC_b3ee8 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np (pthread_self(), "foo");
+    return 0;
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_PTHREAD_SETAFFINITY succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_3b878/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_3b878.dir/build.make CMakeFiles/cmTC_3b878.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3b878.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETAFFINITY -D_GNU_SOURCE -Werror -pthread   -o CMakeFiles/cmTC_3b878.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_3b878
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3b878.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_PTHREAD_SETAFFINITY -D_GNU_SOURCE -Werror -pthread    -rdynamic CMakeFiles/cmTC_3b878.dir/src.c.o  -o cmTC_3b878 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    cpu_set_t test; 
+    pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test);
+    return 0;
+}
+
+Performing C SOURCE FILE Test ZMQ_HAVE_GETRANDOM succeeded with the following compile output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_a5020/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_a5020.dir/build.make CMakeFiles/cmTC_a5020.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a5020.dir/src.c.o
+/usr/bin/cc   -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_GETRANDOM   -o CMakeFiles/cmTC_a5020.dir/src.c.o   -c /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_a5020
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a5020.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DZMQ_HAVE_GETRANDOM    -rdynamic CMakeFiles/cmTC_a5020.dir/src.c.o  -o cmTC_a5020 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+...and run output:
+
+Return value: 1
+Source file was:
+
+#include <sys/random.h>
+
+int main (int argc, char *argv [])
+{
+    char buf[4];
+    int rc = getrandom(buf, 4, 0);
+    return rc == -1 ? 1 : 0;
+}
+
+Determining if the function strnlen exists passed with the following output:
+Change Dir: /home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/gmake" "cmTC_05cdd/fast"
+/usr/bin/gmake -f CMakeFiles/cmTC_05cdd.dir/build.make CMakeFiles/cmTC_05cdd.dir/build
+gmake[1]: Entering directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_05cdd.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp/string.h  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=strnlen   -o CMakeFiles/cmTC_05cdd.dir/CheckFunctionExists.c.o   -c /home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/share/cmake-3.13/Modules/CheckFunctionExists.c
+Linking C executable cmTC_05cdd
+/home/somdoron/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/183.5153.40/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_05cdd.dir/link.txt --verbose=1
+/usr/bin/cc  -std=gnu11 -Wno-tautological-constant-compare -DCHECK_FUNCTION_EXISTS=strnlen    -rdynamic CMakeFiles/cmTC_05cdd.dir/CheckFunctionExists.c.o  -o cmTC_05cdd 
+gmake[1]: Leaving directory '/home/somdoron/git/libzmq/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+

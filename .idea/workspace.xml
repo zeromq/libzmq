@@ -1,0 +1,1146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated>
+      <config projectName="ZeroMQ" targetName="test_reqrep_tipc" />
+      <config projectName="ZeroMQ" targetName="test_socket_null" />
+      <config projectName="ZeroMQ" targetName="test_fork" />
+      <config projectName="ZeroMQ" targetName="libzmq" />
+      <config projectName="ZeroMQ" targetName="test_term_endpoint_tipc" />
+      <config projectName="ZeroMQ" targetName="test_poller" />
+      <config projectName="ZeroMQ" targetName="test_xpub_manual_last_value" />
+      <config projectName="ZeroMQ" targetName="test_connect_delay_tipc" />
+      <config projectName="ZeroMQ" targetName="test_use_fd" />
+      <config projectName="ZeroMQ" targetName="test_many_sockets" />
+      <config projectName="ZeroMQ" targetName="clang-format" />
+      <config projectName="ZeroMQ" targetName="test_scatter_gather" />
+      <config projectName="ZeroMQ" targetName="test_capabilities" />
+      <config projectName="ZeroMQ" targetName="test_spec_dealer" />
+      <config projectName="ZeroMQ" targetName="test_proxy_single_socket" />
+      <config projectName="ZeroMQ" targetName="test_pair_tcp" />
+      <config projectName="ZeroMQ" targetName="test_shutdown_stress" />
+      <config projectName="ZeroMQ" targetName="test_system" />
+      <config projectName="ZeroMQ" targetName="test_router_notify" />
+      <config projectName="ZeroMQ" targetName="test_spec_pushpull" />
+      <config projectName="ZeroMQ" targetName="test_zmq_poll_fd" />
+      <config projectName="ZeroMQ" targetName="test_client_server" />
+      <config projectName="ZeroMQ" targetName="test_pub_invert_matching" />
+      <config projectName="ZeroMQ" targetName="test_stream_empty" />
+      <config projectName="ZeroMQ" targetName="test_connect_rid" />
+      <config projectName="ZeroMQ" targetName="unittest_udp_address" />
+      <config projectName="ZeroMQ" targetName="test_ctx_destroy" />
+      <config projectName="ZeroMQ" targetName="test_stream_disconnect" />
+      <config projectName="ZeroMQ" targetName="test_router_mandatory_hwm" />
+      <config projectName="ZeroMQ" targetName="test_spec_rep" />
+      <config projectName="ZeroMQ" targetName="test_reconnect_ivl" />
+      <config projectName="ZeroMQ" targetName="test_spec_req" />
+      <config projectName="ZeroMQ" targetName="test_hwm" />
+      <config projectName="ZeroMQ" targetName="test_pair_tcp_cap_net_admin" />
+      <config projectName="ZeroMQ" targetName="test_ctx_options" />
+      <config projectName="ZeroMQ" targetName="test_sockopt_hwm" />
+      <config projectName="ZeroMQ" targetName="test_pair_tipc" />
+      <config projectName="ZeroMQ" targetName="test_issue_566" />
+      <config projectName="ZeroMQ" targetName="test_pair_ipc" />
+      <config projectName="ZeroMQ" targetName="test_diffserv" />
+      <config projectName="ZeroMQ" targetName="test_timeo" />
+      <config projectName="ZeroMQ" targetName="test_shutdown_stress_tipc" />
+      <config projectName="ZeroMQ" targetName="test_bind_src_address" />
+      <config projectName="ZeroMQ" targetName="test_security_zap" />
+      <config projectName="ZeroMQ" targetName="test_security_null" />
+      <config projectName="ZeroMQ" targetName="test_getsockopt_memset" />
+      <config projectName="ZeroMQ" targetName="test_reqrep_device_tipc" />
+      <config projectName="ZeroMQ" targetName="test_sub_forward_tipc" />
+      <config projectName="ZeroMQ" targetName="test_msg_ffn" />
+      <config projectName="ZeroMQ" targetName="test_stream_exceeds_buffer" />
+      <config projectName="ZeroMQ" targetName="test_monitor" />
+      <config projectName="ZeroMQ" targetName="test_xpub_manual" />
+      <config projectName="ZeroMQ" targetName="test_atomics" />
+      <config projectName="ZeroMQ" targetName="test_req_relaxed" />
+      <config projectName="ZeroMQ" targetName="test_sodium" />
+      <config projectName="ZeroMQ" targetName="test_xpub_nodrop" />
+      <config projectName="ZeroMQ" targetName="test_stream" />
+      <config projectName="ZeroMQ" targetName="test_rebind_ipc" />
+      <config projectName="ZeroMQ" targetName="test_msg_flags" />
+      <config projectName="ZeroMQ" targetName="test_address_tipc" />
+      <config projectName="ZeroMQ" targetName="test_security_plain" />
+      <config projectName="ZeroMQ" targetName="test_proxy" />
+      <config projectName="ZeroMQ" targetName="libzmq-static" />
+      <config projectName="ZeroMQ" targetName="test_pair_inproc" />
+      <config projectName="ZeroMQ" targetName="test_req_correlate" />
+      <config projectName="ZeroMQ" targetName="test_security_no_zap_handler" />
+      <config projectName="ZeroMQ" targetName="test_iov" />
+      <config projectName="ZeroMQ" targetName="test_metadata" />
+      <config projectName="ZeroMQ" targetName="test_sub_forward" />
+      <config projectName="ZeroMQ" targetName="test_bind_after_connect_tcp" />
+      <config projectName="ZeroMQ" targetName="test_mock_pub_sub" />
+      <config projectName="ZeroMQ" targetName="test_disconnect_inproc" />
+      <config projectName="ZeroMQ" targetName="test_spec_router" />
+      <config projectName="ZeroMQ" targetName="test_timers" />
+      <config projectName="ZeroMQ" targetName="test_last_endpoint" />
+      <config projectName="ZeroMQ" targetName="unittest_radix_tree" />
+      <config projectName="ZeroMQ" targetName="test_dgram" />
+      <config projectName="ZeroMQ" targetName="unittest_mtrie" />
+      <config projectName="ZeroMQ" targetName="test_base85" />
+      <config projectName="ZeroMQ" targetName="test_invalid_rep" />
+      <config projectName="ZeroMQ" targetName="test_router_mandatory" />
+      <config projectName="ZeroMQ" targetName="test_proxy_terminate" />
+      <config projectName="ZeroMQ" targetName="test_hwm_pubsub" />
+      <config projectName="ZeroMQ" targetName="clang-format-diff" />
+      <config projectName="ZeroMQ" targetName="test_xpub_welcome_msg" />
+      <config projectName="ZeroMQ" targetName="test_app_meta" />
+      <config projectName="ZeroMQ" targetName="test_reqrep_inproc" />
+      <config projectName="ZeroMQ" targetName="test_router_mandatory_tipc" />
+      <config projectName="ZeroMQ" targetName="test_setsockopt" />
+      <config projectName="ZeroMQ" targetName="test_inproc_connect" />
+      <config projectName="ZeroMQ" targetName="test_heartbeats" />
+      <config projectName="ZeroMQ" targetName="clang-format-check" />
+      <config projectName="ZeroMQ" targetName="test_reqrep_ipc" />
+      <config projectName="ZeroMQ" targetName="test_connect_resolve" />
+      <config projectName="ZeroMQ" targetName="test_router_handover" />
+      <config projectName="ZeroMQ" targetName="test_term_endpoint" />
+      <config projectName="ZeroMQ" targetName="testutil" />
+      <config projectName="ZeroMQ" targetName="unittest_ip_resolver" />
+      <config projectName="ZeroMQ" targetName="unittest_poller" />
+      <config projectName="ZeroMQ" targetName="test_security_curve" />
+      <config projectName="ZeroMQ" targetName="test_proxy_hwm" />
+      <config projectName="ZeroMQ" targetName="unity" />
+      <config projectName="ZeroMQ" targetName="test_srcfd" />
+      <config projectName="ZeroMQ" targetName="test_reqrep_device" />
+      <config projectName="ZeroMQ" targetName="test_conflate" />
+      <config projectName="ZeroMQ" targetName="test_xpub_verbose" />
+      <config projectName="ZeroMQ" targetName="test_stream_timeout" />
+      <config projectName="ZeroMQ" targetName="test_ancillaries" />
+      <config projectName="ZeroMQ" targetName="test_filter_ipc" />
+      <config projectName="ZeroMQ" targetName="test_probe_router" />
+      <config projectName="ZeroMQ" targetName="objects" />
+      <config projectName="ZeroMQ" targetName="test_immediate" />
+      <config projectName="ZeroMQ" targetName="testutil-static" />
+      <config projectName="ZeroMQ" targetName="unittest_ypipe" />
+      <config projectName="ZeroMQ" targetName="test_abstract_ipc" />
+      <config projectName="ZeroMQ" targetName="test_unbind_wildcard" />
+      <config projectName="ZeroMQ" targetName="test_reqrep_tcp" />
+      <config projectName="ZeroMQ" targetName="test_thread_safe" />
+      <config projectName="ZeroMQ" targetName="test_ipc_wildcard" />
+      <config projectName="ZeroMQ" targetName="test_radio_dish" />
+      <config projectName="ZeroMQ" targetName="test_security_gssapi" />
+    </generated>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3888223c-1af4-4cbd-b74b-116230e1cb23" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/appveyor.yml" beforeDir="false" afterPath="$PROJECT_DIR$/appveyor.yml" afterDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="600">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/appveyor.yml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="792">
+              <caret line="33" column="19" lean-forward="true" selection-start-line="33" selection-start-column="19" selection-end-line="33" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2595">
+              <caret line="438" column="50" selection-start-line="438" selection-start-column="50" selection-end-line="438" selection-end-column="50" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>tcp_listener</find>
+      <find>__ZMQ_HTTP_LISTENER_HPP_INCLUDED__</find>
+      <find>tcp_listener_t</find>
+      <find>tcp_address</find>
+      <find>addr_</find>
+      <find>-&gt;resolve</find>
+      <find>-&gt;resolv</find>
+      <find>_dns_allowed</find>
+      <find>BINTRAY</find>
+      <find>CMAKE_GENERATOR</find>
+      <find>skip</find>
+      <find>ZMQ_VERSION_MAJOR</find>
+      <find>MT</find>
+      <find>ENABLE_CPACK</find>
+      <find>ZMQ_VERsion</find>
+      <find>ZMQ_VERsion_MAJOR</find>
+      <find>ps:</find>
+      <find>mt</find>
+      <find>echo</find>
+      <find>ARTIFACT_NAME</find>
+      <find>cache</find>
+      <find>cd</find>
+      <find>git pull</find>
+      <find>CMAKE_C_COMPILER</find>
+      <find>CMAKE_C_FLAGS_RELEASE</find>
+      <find>x64</find>
+      <find>compiler</find>
+      <find>MSVC</find>
+      <find>MSVC_TOOLSET</find>
+      <find>CMAKE_VS_PLATFORM_TOOLSET</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>ws</replace>
+      <replace>http</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/pipe.cpp" />
+        <option value="$PROJECT_DIR$/tests/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/tests/test_hwm_pubsub.cpp" />
+        <option value="$PROJECT_DIR$/tests/test_sndtimeo_zero.cpp" />
+        <option value="$PROJECT_DIR$/src/ws_address.cpp" />
+        <option value="$PROJECT_DIR$/src/address.hpp" />
+        <option value="$PROJECT_DIR$/src/socket_base.cpp" />
+        <option value="$PROJECT_DIR$/src/ws_address.hpp" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/src/ctx.hpp" />
+        <option value="$PROJECT_DIR$/src/ctx.cpp" />
+        <option value="$PROJECT_DIR$/Makefile.am" />
+        <option value="$PROJECT_DIR$/src/http_listener.hpp" />
+        <option value="$PROJECT_DIR$/src/http_listener.cpp" />
+        <option value="$PROJECT_DIR$/src/http_address.cpp" />
+        <option value="$USER_HOME$/CMakeLists.txt" />
+        <option value="$USER_HOME$/builds/cmake/Modules/TestZMQVersion.cmake" />
+        <option value="$USER_HOME$/appveyor.yml" />
+        <option value="$PROJECT_DIR$/appveyor.yml" />
+      </list>
+    </option>
+  </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="2556" />
+    <option name="y" value="8" />
+    <option name="width" value="3848" />
+    <option name="height" value="2156" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="ZeroMQ" type="b2602c69:ProjectViewProjectNode" />
+              <item name="libzmq" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Makefile.am" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.test_abstract_ipc">
+    <configuration name="clang-format-check" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="clang-format-check" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clang-format-diff" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="clang-format-diff" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clang-format" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="clang-format" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="libzmq-static" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="libzmq-static" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="libzmq" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="libzmq" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="objects" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="objects" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_abstract_ipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_abstract_ipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_abstract_ipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_address_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_address_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_address_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_ancillaries" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_ancillaries" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_ancillaries">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_app_meta" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_app_meta" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_app_meta">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_atomics" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_atomics" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_atomics">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_base85" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_base85" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_base85">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_bind_after_connect_tcp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_bind_after_connect_tcp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_bind_after_connect_tcp">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_bind_src_address" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_bind_src_address" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_bind_src_address">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_capabilities" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_capabilities" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_capabilities">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_client_server" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_client_server" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_client_server">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_conflate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_conflate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_conflate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_connect_delay_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_connect_delay_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_connect_delay_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_connect_resolve" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_connect_resolve" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_connect_resolve">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_connect_rid" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_connect_rid" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_connect_rid">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_ctx_destroy" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_ctx_destroy" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_ctx_destroy">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_ctx_options" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_ctx_options" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_ctx_options">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_dgram" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_dgram" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_dgram">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_diffserv" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_diffserv" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_diffserv">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_disconnect_inproc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_disconnect_inproc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_disconnect_inproc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_filter_ipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_filter_ipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_filter_ipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_fork" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_fork" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_fork">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_getsockopt_memset" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_getsockopt_memset" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_getsockopt_memset">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_heartbeats" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_heartbeats" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_heartbeats">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_hwm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_hwm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_hwm">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_hwm_pubsub" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_hwm_pubsub" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_hwm_pubsub">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_immediate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_immediate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_immediate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_inproc_connect" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_inproc_connect" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_inproc_connect">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_invalid_rep" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_invalid_rep" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_invalid_rep">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_iov" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_iov" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_iov">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_ipc_wildcard" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_ipc_wildcard" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_ipc_wildcard">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_issue_566" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_issue_566" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_issue_566">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_last_endpoint" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_last_endpoint" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_last_endpoint">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_many_sockets" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_many_sockets" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_many_sockets">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_metadata" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_metadata" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_metadata">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_mock_pub_sub" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_mock_pub_sub" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_mock_pub_sub">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_monitor" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_monitor" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_monitor">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_msg_ffn" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_msg_ffn" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_msg_ffn">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_msg_flags" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_msg_flags" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_msg_flags">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pair_inproc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pair_inproc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pair_inproc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pair_ipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pair_ipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pair_ipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pair_tcp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pair_tcp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pair_tcp">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pair_tcp_cap_net_admin" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pair_tcp_cap_net_admin" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pair_tcp_cap_net_admin">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pair_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pair_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pair_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_poller" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_poller" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_poller">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_probe_router" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_probe_router" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_probe_router">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_proxy" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_proxy" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_proxy">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_proxy_hwm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_proxy_hwm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_proxy_hwm">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_proxy_single_socket" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_proxy_single_socket" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_proxy_single_socket">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_proxy_terminate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_proxy_terminate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_proxy_terminate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_pub_invert_matching" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_pub_invert_matching" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_pub_invert_matching">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_radio_dish" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_radio_dish" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_radio_dish">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_rebind_ipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_rebind_ipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_rebind_ipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reconnect_ivl" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reconnect_ivl" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reconnect_ivl">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_req_correlate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_req_correlate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_req_correlate">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_req_relaxed" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_req_relaxed" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_req_relaxed">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_device" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_device" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_device">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_device_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_device_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_device_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_inproc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_inproc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_inproc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_ipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_ipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_ipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_tcp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_tcp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_tcp">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_reqrep_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_reqrep_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_reqrep_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_router_handover" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_router_handover" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_router_handover">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_router_mandatory" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_router_mandatory" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_router_mandatory">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_router_mandatory_hwm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_router_mandatory_hwm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_router_mandatory_hwm">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_router_mandatory_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_router_mandatory_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_router_mandatory_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_router_notify" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_router_notify" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_router_notify">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_scatter_gather" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_scatter_gather" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_scatter_gather">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_curve" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_curve" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_curve">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_gssapi" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_gssapi" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_gssapi">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_no_zap_handler" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_no_zap_handler" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_no_zap_handler">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_null" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_null" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_null">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_plain" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_plain" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_plain">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_security_zap" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_security_zap" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_security_zap">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_setsockopt" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_setsockopt" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_setsockopt">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_shutdown_stress" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_shutdown_stress" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_shutdown_stress">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_shutdown_stress_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_shutdown_stress_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_shutdown_stress_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_socket_null" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_socket_null" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_socket_null">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_sockopt_hwm" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_sockopt_hwm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_sockopt_hwm">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_sodium" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_sodium" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_sodium">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_spec_dealer" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_spec_dealer" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_spec_dealer">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_spec_pushpull" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_spec_pushpull" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_spec_pushpull">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_spec_rep" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_spec_rep" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_spec_rep">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_spec_req" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_spec_req" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_spec_req">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_spec_router" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_spec_router" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_spec_router">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_srcfd" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_srcfd" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_srcfd">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_stream" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_stream" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_stream">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_stream_disconnect" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_stream_disconnect" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_stream_disconnect">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_stream_empty" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_stream_empty" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_stream_empty">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_stream_exceeds_buffer" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_stream_exceeds_buffer" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_stream_exceeds_buffer">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_stream_timeout" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_stream_timeout" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_stream_timeout">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_sub_forward" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_sub_forward" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_sub_forward">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_sub_forward_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_sub_forward_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_sub_forward_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_system" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_system" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_system">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_term_endpoint" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_term_endpoint" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_term_endpoint">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_term_endpoint_tipc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_term_endpoint_tipc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_term_endpoint_tipc">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_thread_safe" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_thread_safe" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_thread_safe">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_timeo" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_timeo" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_timeo">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_timers" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_timers" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_timers">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_unbind_wildcard" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_unbind_wildcard" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_unbind_wildcard">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_use_fd" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_use_fd" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_use_fd">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_xpub_manual" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_xpub_manual" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_xpub_manual">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_xpub_manual_last_value" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_xpub_manual_last_value" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_xpub_manual_last_value">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_xpub_nodrop" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_xpub_nodrop" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_xpub_nodrop">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_xpub_verbose" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_xpub_verbose" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_xpub_verbose">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_xpub_welcome_msg" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_xpub_welcome_msg" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_xpub_welcome_msg">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test_zmq_poll_fd" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="test_zmq_poll_fd" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="test_zmq_poll_fd">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="testutil-static" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="testutil-static" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="testutil" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="testutil" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_ip_resolver" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_ip_resolver" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_ip_resolver">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_mtrie" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_mtrie" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_mtrie">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_poller" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_poller" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_poller">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_radix_tree" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_radix_tree" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_radix_tree">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_udp_address" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_udp_address" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_udp_address">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unittest_ypipe" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unittest_ypipe" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="ZeroMQ" RUN_TARGET_NAME="unittest_ypipe">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="unity" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="ZeroMQ" TARGET_NAME="unity" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.clang-format-check" />
+      <item itemvalue="Application.clang-format-diff" />
+      <item itemvalue="Application.clang-format" />
+      <item itemvalue="Application.libzmq-static" />
+      <item itemvalue="Application.libzmq" />
+      <item itemvalue="Application.objects" />
+      <item itemvalue="Application.test_abstract_ipc" />
+      <item itemvalue="Application.test_address_tipc" />
+      <item itemvalue="Application.test_ancillaries" />
+      <item itemvalue="Application.test_app_meta" />
+      <item itemvalue="Application.test_atomics" />
+      <item itemvalue="Application.test_base85" />
+      <item itemvalue="Application.test_bind_after_connect_tcp" />
+      <item itemvalue="Application.test_bind_src_address" />
+      <item itemvalue="Application.test_capabilities" />
+      <item itemvalue="Application.test_client_server" />
+      <item itemvalue="Application.test_conflate" />
+      <item itemvalue="Application.test_connect_delay_tipc" />
+      <item itemvalue="Application.test_connect_resolve" />
+      <item itemvalue="Application.test_connect_rid" />
+      <item itemvalue="Application.test_ctx_destroy" />
+      <item itemvalue="Application.test_ctx_options" />
+      <item itemvalue="Application.test_dgram" />
+      <item itemvalue="Application.test_diffserv" />
+      <item itemvalue="Application.test_disconnect_inproc" />
+      <item itemvalue="Application.test_filter_ipc" />
+      <item itemvalue="Application.test_fork" />
+      <item itemvalue="Application.test_getsockopt_memset" />
+      <item itemvalue="Application.test_heartbeats" />
+      <item itemvalue="Application.test_hwm" />
+      <item itemvalue="Application.test_hwm_pubsub" />
+      <item itemvalue="Application.test_immediate" />
+      <item itemvalue="Application.test_inproc_connect" />
+      <item itemvalue="Application.test_invalid_rep" />
+      <item itemvalue="Application.test_iov" />
+      <item itemvalue="Application.test_ipc_wildcard" />
+      <item itemvalue="Application.test_issue_566" />
+      <item itemvalue="Application.test_last_endpoint" />
+      <item itemvalue="Application.test_many_sockets" />
+      <item itemvalue="Application.test_metadata" />
+      <item itemvalue="Application.test_mock_pub_sub" />
+      <item itemvalue="Application.test_monitor" />
+      <item itemvalue="Application.test_msg_ffn" />
+      <item itemvalue="Application.test_msg_flags" />
+      <item itemvalue="Application.test_pair_inproc" />
+      <item itemvalue="Application.test_pair_ipc" />
+      <item itemvalue="Application.test_pair_tcp" />
+      <item itemvalue="Application.test_pair_tcp_cap_net_admin" />
+      <item itemvalue="Application.test_pair_tipc" />
+      <item itemvalue="Application.test_poller" />
+      <item itemvalue="Application.test_probe_router" />
+      <item itemvalue="Application.test_proxy" />
+      <item itemvalue="Application.test_proxy_hwm" />
+      <item itemvalue="Application.test_proxy_single_socket" />
+      <item itemvalue="Application.test_proxy_terminate" />
+      <item itemvalue="Application.test_pub_invert_matching" />
+      <item itemvalue="Application.test_radio_dish" />
+      <item itemvalue="Application.test_rebind_ipc" />
+      <item itemvalue="Application.test_reconnect_ivl" />
+      <item itemvalue="Application.test_req_correlate" />
+      <item itemvalue="Application.test_req_relaxed" />
+      <item itemvalue="Application.test_reqrep_device" />
+      <item itemvalue="Application.test_reqrep_device_tipc" />
+      <item itemvalue="Application.test_reqrep_inproc" />
+      <item itemvalue="Application.test_reqrep_ipc" />
+      <item itemvalue="Application.test_reqrep_tcp" />
+      <item itemvalue="Application.test_reqrep_tipc" />
+      <item itemvalue="Application.test_router_handover" />
+      <item itemvalue="Application.test_router_mandatory" />
+      <item itemvalue="Application.test_router_mandatory_hwm" />
+      <item itemvalue="Application.test_router_mandatory_tipc" />
+      <item itemvalue="Application.test_router_notify" />
+      <item itemvalue="Application.test_scatter_gather" />
+      <item itemvalue="Application.test_security_curve" />
+      <item itemvalue="Application.test_security_gssapi" />
+      <item itemvalue="Application.test_security_no_zap_handler" />
+      <item itemvalue="Application.test_security_null" />
+      <item itemvalue="Application.test_security_plain" />
+      <item itemvalue="Application.test_security_zap" />
+      <item itemvalue="Application.test_setsockopt" />
+      <item itemvalue="Application.test_shutdown_stress" />
+      <item itemvalue="Application.test_shutdown_stress_tipc" />
+      <item itemvalue="Application.test_socket_null" />
+      <item itemvalue="Application.test_sockopt_hwm" />
+      <item itemvalue="Application.test_sodium" />
+      <item itemvalue="Application.test_spec_dealer" />
+      <item itemvalue="Application.test_spec_pushpull" />
+      <item itemvalue="Application.test_spec_rep" />
+      <item itemvalue="Application.test_spec_req" />
+      <item itemvalue="Application.test_spec_router" />
+      <item itemvalue="Application.test_srcfd" />
+      <item itemvalue="Application.test_stream" />
+      <item itemvalue="Application.test_stream_disconnect" />
+      <item itemvalue="Application.test_stream_empty" />
+      <item itemvalue="Application.test_stream_exceeds_buffer" />
+      <item itemvalue="Application.test_stream_timeout" />
+      <item itemvalue="Application.test_sub_forward" />
+      <item itemvalue="Application.test_sub_forward_tipc" />
+      <item itemvalue="Application.test_system" />
+      <item itemvalue="Application.test_term_endpoint" />
+      <item itemvalue="Application.test_term_endpoint_tipc" />
+      <item itemvalue="Application.test_thread_safe" />
+      <item itemvalue="Application.test_timeo" />
+      <item itemvalue="Application.test_timers" />
+      <item itemvalue="Application.test_unbind_wildcard" />
+      <item itemvalue="Application.test_use_fd" />
+      <item itemvalue="Application.test_xpub_manual" />
+      <item itemvalue="Application.test_xpub_manual_last_value" />
+      <item itemvalue="Application.test_xpub_nodrop" />
+      <item itemvalue="Application.test_xpub_verbose" />
+      <item itemvalue="Application.test_xpub_welcome_msg" />
+      <item itemvalue="Application.test_zmq_poll_fd" />
+      <item itemvalue="Application.testutil" />
+      <item itemvalue="Application.testutil-static" />
+      <item itemvalue="Application.unittest_ip_resolver" />
+      <item itemvalue="Application.unittest_mtrie" />
+      <item itemvalue="Application.unittest_poller" />
+      <item itemvalue="Application.unittest_radix_tree" />
+      <item itemvalue="Application.unittest_udp_address" />
+      <item itemvalue="Application.unittest_ypipe" />
+      <item itemvalue="Application.unity" />
+    </list>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3888223c-1af4-4cbd-b74b-116230e1cb23" name="Default Changelist" comment="" />
+      <created>1553653436281</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1553653436281</updated>
+      <workItem from="1553653437675" duration="3241000" />
+      <workItem from="1553657623782" duration="1913000" />
+      <workItem from="1553678567853" duration="3396000" />
+      <workItem from="1554055101632" duration="2000" />
+      <workItem from="1558348413847" duration="7237000" />
+      <workItem from="1560231913631" duration="17069000" />
+      <workItem from="1560332486068" duration="4603000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="37461000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="2556" y="8" width="3848" height="2156" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19169329" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.8150289" />
+      <window_info anchor="bottom" id="Database Changes" order="9" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="10" sideWeight="0.49959612" visible="true" weight="0.27136198" />
+      <window_info anchor="bottom" id="Event Log" order="11" sideWeight="0.5004039" side_tool="true" weight="0.29397193" />
+      <window_info anchor="bottom" id="CMake" order="12" weight="0.29000518" />
+      <window_info anchor="bottom" id="Messages" order="13" visible="true" weight="0.26255825" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$USER_HOME$/tests/test_reqrep_ipc.cpp" />
+    <entry file="file://$USER_HOME$/tests/test_reqrep_inproc.cpp" />
+    <entry file="file://$USER_HOME$/tests/testutil_unity.cpp" />
+    <entry file="file://$USER_HOME$/src/options.cpp" />
+    <entry file="file://$USER_HOME$/tests/testutil_unity.hpp" />
+    <entry file="file:///usr/include/inttypes.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="569">
+          <caret line="50" column="45" selection-start-line="50" selection-start-column="45" selection-end-line="50" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/src/pipe.cpp" />
+    <entry file="file://$USER_HOME$/tests/testutil.cpp" />
+    <entry file="file://$PROJECT_DIR$/tests/test_sndtimeo_zero.cpp" />
+    <entry file="file://$USER_HOME$/tests/test_hwm_pubsub.cpp" />
+    <entry file="file://$USER_HOME$/src/zmq.cpp" />
+    <entry file="file://$USER_HOME$/include/zmq.h" />
+    <entry file="file://$USER_HOME$/src/ws_engine.hpp" />
+    <entry file="file://$USER_HOME$/src/ws_engine.cpp" />
+    <entry file="file://$USER_HOME$/src/tcp_address.cpp" />
+    <entry file="file://$USER_HOME$/src/address.hpp" />
+    <entry file="file://$USER_HOME$/src/tcp_address.hpp" />
+    <entry file="file://$USER_HOME$/src/tipc_listener.cpp" />
+    <entry file="file://$USER_HOME$/src/io_thread.hpp" />
+    <entry file="file://$USER_HOME$/src/own.hpp" />
+    <entry file="file://$USER_HOME$/tests/CMakeLists.txt" />
+    <entry file="file://$USER_HOME$/src/ctx.cpp" />
+    <entry file="file://$USER_HOME$/Makefile.am" />
+    <entry file="file://$USER_HOME$/Makefile.in" />
+    <entry file="file://$USER_HOME$/configure.ac" />
+    <entry file="file://$USER_HOME$/src/ctx.hpp" />
+    <entry file="file://$USER_HOME$/src/io_object.hpp" />
+    <entry file="file://$USER_HOME$/src/stream_listener_base.hpp" />
+    <entry file="file://$USER_HOME$/src/stream_listener_base.cpp" />
+    <entry file="file://$USER_HOME$/src/tcp_listener.hpp" />
+    <entry file="file://$USER_HOME$/src/tcp_connecter.cpp" />
+    <entry file="file://$USER_HOME$/src/socket_base.cpp" />
+    <entry file="file://$USER_HOME$/src/ip_resolver.hpp" />
+    <entry file="file://$USER_HOME$/src/http_listener.hpp" />
+    <entry file="file://$USER_HOME$/src/http_address.hpp" />
+    <entry file="file://$USER_HOME$/src/tcp_listener.cpp" />
+    <entry file="file://$USER_HOME$/src/tcp.cpp" />
+    <entry file="file://$USER_HOME$/src/http_address.cpp" />
+    <entry file="file://$USER_HOME$/src/http_listener.cpp" />
+    <entry file="file://$USER_HOME$/src/ip_resolver.cpp" />
+    <entry file="file://$USER_HOME$/builds/msvc/Makefile" />
+    <entry file="file://$USER_HOME$/builds/cmake/NSIS.template32.in" />
+    <entry file="file://$USER_HOME$/config.status" />
+    <entry file="file://$USER_HOME$/builds/cmake/platform.hpp.in" />
+    <entry file="file://$USER_HOME$/builds/cmake/ci_build.sh" />
+    <entry file="file://$USER_HOME$/builds/cmake/Modules/TestZMQVersion.cmake" />
+    <entry file="file://$USER_HOME$/CMakeLists.txt" />
+    <entry file="file://$USER_HOME$/appveyor.yml" />
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2595">
+          <caret line="438" column="50" selection-start-line="438" selection-start-column="50" selection-end-line="438" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/appveyor.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="792">
+          <caret line="33" column="19" lean-forward="true" selection-start-line="33" selection-start-column="19" selection-end-line="33" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
