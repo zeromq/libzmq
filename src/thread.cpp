@@ -248,7 +248,7 @@ void zmq::thread_t::stop ()
 
 bool zmq::thread_t::is_current_thread () const
 {
-    return bool( pthread_equal(pthread_self (), _descriptor) );
+    return bool(pthread_equal (pthread_self (), _descriptor));
 }
 
 void zmq::thread_t::setSchedulingParameters (
