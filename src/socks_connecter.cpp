@@ -61,7 +61,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     stream_connecter_base_t (
       io_thread_, session_, options_, addr_, delayed_start_),
     _proxy_addr (proxy_addr_),
-    _auth_method(socks_no_auth_required),
+    _auth_method (socks_no_auth_required),
     _status (unplugged)
 {
     zmq_assert (_addr->protocol == protocol_name::tcp);
@@ -76,8 +76,8 @@ zmq::socks_connecter_t::~socks_connecter_t ()
 void zmq::socks_connecter_t::set_auth_method_none ()
 {
     _auth_method = socks_no_auth_required;
-    _auth_username.clear();
-    _auth_password.clear();
+    _auth_username.clear ();
+    _auth_password.clear ();
 }
 
 void zmq::socks_connecter_t::set_auth_method_basic (const std::string username,
@@ -103,8 +103,10 @@ void zmq::socks_connecter_t::in_event ()
             if (rc == -1)
                 error ();
             else {
-                if (choice.method == socks_basic_auth) expected_status = sending_basic_auth_request;
-                else expected_status = sending_request;
+                if (choice.method == socks_basic_auth)
+                    expected_status = sending_basic_auth_request;
+                else
+                    expected_status = sending_request;
             }
         }
     } else if (_status == waiting_for_auth_response) {
@@ -112,7 +114,8 @@ void zmq::socks_connecter_t::in_event ()
         if (rc == 0 || rc == -1)
             error ();
         else if (_auth_response_decoder.message_ready ()) {
-            const socks_auth_response_t auth_response = _auth_response_decoder.decode ();
+            const socks_auth_response_t auth_response =
+              _auth_response_decoder.decode ();
             rc = process_server_response (auth_response);
             if (rc == -1)
                 error ();
@@ -141,7 +144,8 @@ void zmq::socks_connecter_t::in_event ()
         error ();
 
     if (expected_status == sending_basic_auth_request) {
-        _basic_auth_request_encoder.encode (socks_basic_auth_request_t (_auth_username, _auth_password));
+        _basic_auth_request_encoder.encode (
+          socks_basic_auth_request_t (_auth_username, _auth_password));
         reset_pollin (_handle);
         set_pollout (_handle);
         _status = sending_basic_auth_request;
@@ -157,23 +161,20 @@ void zmq::socks_connecter_t::in_event ()
             _status = sending_request;
         }
     }
-
 }
 
 void zmq::socks_connecter_t::out_event ()
 {
-    zmq_assert (_status == waiting_for_proxy_connection
-                || _status == sending_greeting
-                || _status == sending_basic_auth_request
-                || _status == sending_request);
+    zmq_assert (
+      _status == waiting_for_proxy_connection || _status == sending_greeting
+      || _status == sending_basic_auth_request || _status == sending_request);
 
     if (_status == waiting_for_proxy_connection) {
         const int rc = static_cast<int> (check_proxy_connection ());
         if (rc == -1)
             error ();
         else {
-            _greeting_encoder.encode (
-              socks_greeting_t (_auth_method));
+            _greeting_encoder.encode (socks_greeting_t (_auth_method));
             _status = sending_greeting;
         }
     } else if (_status == sending_greeting) {
@@ -241,9 +242,10 @@ void zmq::socks_connecter_t::start_connecting ()
 int zmq::socks_connecter_t::process_server_response (
   const socks_choice_t &response_)
 {
-    return response_.method == socks_no_auth_required ||
-      response_.method == socks_basic_auth ?
-      0 : -1;
+    return response_.method == socks_no_auth_required
+               || response_.method == socks_basic_auth
+             ? 0
+             : -1;
 }
 
 int zmq::socks_connecter_t::process_server_response (

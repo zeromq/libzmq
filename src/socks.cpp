@@ -129,8 +129,8 @@ void zmq::socks_choice_decoder_t::reset ()
 }
 
 
-zmq::socks_basic_auth_request_t::socks_basic_auth_request_t (std::string username_,
-                                                             std::string password_) :
+zmq::socks_basic_auth_request_t::socks_basic_auth_request_t (
+  std::string username_, std::string password_) :
     username (username_),
     password (password_)
 {
@@ -145,9 +145,9 @@ zmq::socks_basic_auth_request_encoder_t::socks_basic_auth_request_encoder_t () :
 {
 }
 
-void zmq::socks_basic_auth_request_encoder_t::encode (const socks_basic_auth_request_t &req_)
+void zmq::socks_basic_auth_request_encoder_t::encode (
+  const socks_basic_auth_request_t &req_)
 {
-
     unsigned char *ptr = _buf;
     *ptr++ = 0x01;
     *ptr++ = static_cast<unsigned char> (req_.username.size ());
@@ -186,7 +186,8 @@ zmq::socks_auth_response_t::socks_auth_response_t (uint8_t response_code_) :
 {
 }
 
-zmq::socks_auth_response_decoder_t::socks_auth_response_decoder_t () : _bytes_read (0)
+zmq::socks_auth_response_decoder_t::socks_auth_response_decoder_t () :
+    _bytes_read (0)
 {
 }
 
