@@ -122,8 +122,7 @@ install:
             if not exist "%LIBSODIUMDIR%" (
                 git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
             ) else (
-                cd "%LIBSODIUMDIR%" &&
-                git pull
+                git -C "%LIBSODIUMDIR%" pull
             )
          )
   - cmd: if "%WITH_LIBSODIUM%"=="ON" msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
