@@ -37,7 +37,8 @@
 
 int test_assert_success_message_errno_helper (int rc_,
                                               const char *msg_,
-                                              const char *expr_)
+                                              const char *expr_,
+                                              int line)
 {
     if (rc_ == -1) {
         char buffer[512];
@@ -47,14 +48,15 @@ int test_assert_success_message_errno_helper (int rc_,
                   "%s failed%s%s%s, errno = %i (%s)", expr_,
                   msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
                   msg_ ? ")" : "", zmq_errno (), zmq_strerror (zmq_errno ()));
-        TEST_FAIL_MESSAGE (buffer);
+        UNITY_TEST_FAIL (line, buffer);
     }
     return rc_;
 }
 
 int test_assert_success_message_raw_errno_helper (int rc_,
                                                   const char *msg_,
-                                                  const char *expr_)
+                                                  const char *expr_,
+                                                  int line)
 {
     if (rc_ == -1) {
 #if defined ZMQ_HAVE_WINDOWS
@@ -69,15 +71,13 @@ int test_assert_success_message_raw_errno_helper (int rc_,
         snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
                   expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
                   msg_ ? ")" : "", current_errno);
-        TEST_FAIL_MESSAGE (buffer);
+        UNITY_TEST_FAIL (line, buffer);
     }
     return rc_;
 }
 
-int test_assert_failure_message_raw_errno_helper (int rc_,
-                                                  int expected_errno_,
-                                                  const char *msg_,
-                                                  const char *expr_)
+int test_assert_failure_message_raw_errno_helper (
+  int rc_, int expected_errno_, const char *msg_, const char *expr_, int line)
 {
     char buffer[512];
     buffer[sizeof (buffer) - 1] =
@@ -88,7 +88,7 @@ int test_assert_failure_message_raw_errno_helper (int rc_,
                   "errno = %i, actual return value = %i",
                   expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
                   msg_ ? ")" : "", expected_errno_, rc_);
-        TEST_FAIL_MESSAGE (buffer);
+        UNITY_TEST_FAIL (line, buffer);
     } else {
 #if defined ZMQ_HAVE_WINDOWS
         int current_errno = WSAGetLastError ();
@@ -102,7 +102,7 @@ int test_assert_failure_message_raw_errno_helper (int rc_,
                       expr_, msg_ ? " (additional info: " : "",
                       msg_ ? msg_ : "", msg_ ? ")" : "", expected_errno_,
                       current_errno);
-            TEST_FAIL_MESSAGE (buffer);
+            UNITY_TEST_FAIL (line, buffer);
         }
     }
     return rc_;
