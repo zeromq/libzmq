@@ -932,11 +932,16 @@ endif
 
 if ON_LINUX
 test_apps += tests/test_abstract_ipc \
-		tests/test_many_sockets
+	tests/test_many_sockets \
+	tests/test_socks
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
 tests_test_abstract_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_socks_SOURCES = tests/test_socks.cpp
+tests_test_socks_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
 
