@@ -31,6 +31,11 @@ environment:
       WITH_LIBSODIUM: ON
       ENABLE_CURVE: ON
       ARTIFACT_NAME: v120
+    - platform: x64
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      ARTIFACT_NAME: v120-x64
     - platform: Win32
       configuration: Release
       POLLER: epoll
@@ -66,6 +71,15 @@ environment:
       MSVCVERSION: "v140"
       MSVCYEAR: "vs2015"
       ARTIFACT_NAME: v140
+    - platform: x64
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GENERATOR: "Visual Studio 14 2015"
+      MSVCVERSION: "v140"
+      MSVCYEAR: "vs2015"
+      ARTIFACT_NAME: v140-x64
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: ON
@@ -76,6 +90,16 @@ environment:
       MSVCYEAR: "vs2017"
       TEST_OPTIONS: '-E "(test_many_sockets)"'
       ARTIFACT_NAME: v141
+    - platform: x64
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      MSVCVERSION: "v141"
+      MSVCYEAR: "vs2017"
+      TEST_OPTIONS: '-E "(test_many_sockets)"'
+      ARTIFACT_NAME: v141-x64
     - platform: cygwin64
       WITH_LIBSODIUM: OFF
       ENABLE_CURVE: ON
@@ -210,7 +234,7 @@ test_script:
             echo "Running tests in parallel" &&
             set TEST_OPTIONS=%TEST_OPTIONS% -j5
          )
-  - cmd: ctest -C "%Configuration%" -V %TEST_OPTIONS%
+  - cmd: if "%APPVEYOR_REPO_TAG%"=="false" (ctest -C "%Configuration%" -V %TEST_OPTIONS%)
 
 deploy:
   - provider: BinTray
