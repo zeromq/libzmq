@@ -1,0 +1,35 @@
+
+zmq_msg_is_leave(3)
+=====================
+
+
+NAME
+----
+zmq_msg_is_leave - returns whether the msg is a 'leave' notification.
+
+
+SYNOPSIS
+--------
+bool zmq_msg_is_leave (zmq_msg_t '*message');*
+
+
+DESCRIPTION
+-----------
+The _zmq_msg_is_leave()_ function returns whether the msg is a 'leave'
+notification. A leave notification can be received by a `ZMQ_RADIO` socket
+when ZMQ_RADIO_NOTIFY is set to one and a connected `ZMQ_DISH` socket leaved
+a group.
+
+RETURN VALUE
+------------
+The _zmq_msg_is_leave()_ function shall return 'true' if it is a 'leave'
+notification.
+
+--------
+linkzmq:zmq_msg_is_leave[3]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

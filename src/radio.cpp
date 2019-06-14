@@ -38,7 +38,9 @@
 
 zmq::radio_t::radio_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_, true),
-    _lossy (true)
+    _pending_notifs (),
+    _lossy (true),
+    _notify (false)
 {
     options.type = ZMQ_RADIO;
 }
@@ -94,6 +96,19 @@ void zmq::radio_t::xread_activated (pipe_t *pipe_)
                     }
                 }
             }
+
+            //  Notify the user of the subscription.
+            if (unlikely (_notify)) {
+                msg_t notif;
+                int rc = notif.init ();
+                errno_assert (rc == 0);
+
+                rc = notif.move (msg);
+                errno_assert (rc == 0);
+                //  If the user does not `recv` the notifications,
+                //  the queue will grow infinitely.
+                _pending_notifs.push (notif);
+            }
         }
         msg.close ();
     }
@@ -113,6 +128,8 @@ int zmq::radio_t::xsetsockopt (int option_,
     }
     if (option_ == ZMQ_XPUB_NODROP)
         _lossy = (*static_cast<const int *> (optval_) == 0);
+    else if (option_ == ZMQ_RADIO_NOTIFY)
+        _notify = (*static_cast<const int *> (optval_) == 1);
     else {
         errno = EINVAL;
         return -1;
@@ -186,10 +203,21 @@ bool zmq::radio_t::xhas_out ()
 
 int zmq::radio_t::xrecv (msg_t *msg_)
 {
-    //  Messages cannot be received from PUB socket.
-    LIBZMQ_UNUSED (msg_);
-    errno = ENOTSUP;
-    return -1;
+    if (_notify) {
+        //  If there is at least one
+        if (_pending_notifs.empty ()) {
+            errno = EAGAIN;
+            return -1;
+        }
+        int rc = msg_->move (_pending_notifs.front ());
+        errno_assert (rc == 0);
+        _pending_notifs.pop ();
+        return 0;
+    } else {
+        LIBZMQ_UNUSED (msg_);
+        errno = ENOTSUP;
+        return -1;
+    }
 }
 
 bool zmq::radio_t::xhas_in ()

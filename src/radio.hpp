@@ -33,6 +33,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <queue>
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
@@ -76,8 +77,12 @@ class radio_t : public socket_base_t
     //  Distributor of messages holding the list of outbound pipes.
     dist_t _dist;
 
+    std::queue<msg_t> _pending_notifs;
+
     //  Drop messages if HWM reached, otherwise return with EAGAIN
     bool _lossy;
+    //  Queue the join and leave messages so the client can `recv` them.
+    bool _notify;
 
     radio_t (const radio_t &);
     const radio_t &operator= (const radio_t &);

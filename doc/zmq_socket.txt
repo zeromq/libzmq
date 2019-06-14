@@ -183,7 +183,7 @@ option on sends. This limits them to single part data.
 .Summary of ZMQ_RADIO characteristics
 Compatible peer sockets:: 'ZMQ_DISH'
 Direction:: Unidirectional
-Send/receive pattern:: Send only
+Send/receive pattern:: Send only (unless 'ZMQ_RADIO_NOTIFY' is specified)
 Incoming routing strategy:: N/A
 Outgoing routing strategy:: Fan out
 Action in mute state:: Drop

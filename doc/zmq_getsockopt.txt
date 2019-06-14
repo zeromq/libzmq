@@ -922,6 +922,23 @@ Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 
 
+ZMQ_RADIO_NOTIFY: Receive 'join' and 'leave' notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tells the RADIO socket to queue 'join' and 'leave' messages received from
+connected DISH sockets, so that the user can retrieve them using 'zmq_recv'.
+A notification is an empty 'zmq_msg' with an associated 'group'
+that can be accessed via 'zmq_msg_group'. The type of notification
+can be determined using 'zmq_msg_is_join' or 'zmq_msg_is_leave'.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: ZMQ_RADIO
+
+
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it

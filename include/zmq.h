@@ -658,6 +658,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_XPUB_MANUAL_LAST_VALUE 98
 #define ZMQ_SOCKS_USERNAME 99
 #define ZMQ_SOCKS_PASSWORD 100
+#define ZMQ_RADIO_NOTIFY 101
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
@@ -671,6 +672,8 @@ ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
 ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
+ZMQ_EXPORT bool zmq_msg_is_leave (zmq_msg_t *msg);
+ZMQ_EXPORT bool zmq_msg_is_join (zmq_msg_t *msg);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"

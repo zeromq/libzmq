@@ -684,6 +684,16 @@ const char *zmq_msg_group (zmq_msg_t *msg_)
     return (reinterpret_cast<zmq::msg_t *> (msg_))->group ();
 }
 
+bool zmq_msg_is_join (zmq_msg_t *msg_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))->is_join ();
+}
+
+bool zmq_msg_is_leave (zmq_msg_t *msg_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))->is_leave ();
+}
+
 //  Get message metadata string
 
 const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)

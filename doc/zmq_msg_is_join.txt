@@ -1,0 +1,35 @@
+
+zmq_msg_is_join(3)
+=====================
+
+
+NAME
+----
+zmq_msg_is_join - returns whether the msg is a 'join' notification.
+
+
+SYNOPSIS
+--------
+bool zmq_msg_is_join (zmq_msg_t '*message');*
+
+
+DESCRIPTION
+-----------
+The _zmq_msg_is_join()_ function returns whether the msg is a 'join'
+notification. A join notification can be received by a `ZMQ_RADIO` socket
+when ZMQ_RADIO_NOTIFY is set to one and a connected `ZMQ_DISH` socket joined
+a group.
+
+RETURN VALUE
+------------
+The _zmq_msg_is_join()_ function shall return 'true' if it is a 'join'
+notification.
+
+--------
+linkzmq:zmq_msg_is_join[3]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

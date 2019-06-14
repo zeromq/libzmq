@@ -355,6 +355,10 @@ size_t zmq::msg_t::size () const
             return _u.zclmsg.content->size;
         case type_cmsg:
             return _u.cmsg.size;
+        case type_join:
+            return 0;
+        case type_leave:
+            return 0;
         default:
             zmq_assert (false);
             return 0;

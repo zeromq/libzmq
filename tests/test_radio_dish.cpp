@@ -122,6 +122,56 @@ void test_join_twice_fails ()
     test_context_socket_close (dish);
 }
 
+void test_radio_notify ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *radio = test_context_socket (ZMQ_RADIO);
+    bind_loopback (radio, false, my_endpoint, len);
+
+    int notify = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (radio, ZMQ_RADIO_NOTIFY, &notify, sizeof (int)));
+
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    // Joining
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "Movies"));
+
+    // Connecting
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dish, my_endpoint));
+
+    zmq_msg_t msg;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, radio, 0));
+    TEST_ASSERT_FALSE (zmq_msg_size (&msg));
+    TEST_ASSERT_TRUE (zmq_msg_is_join (&msg));
+
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
+                               zmq_msg_recv (&msg, radio, ZMQ_DONTWAIT));
+
+    msleep (SETTLE_TIME);
+
+    //  Leaving group
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_leave (dish, "Movies"));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, radio, 0));
+    TEST_ASSERT_FALSE (zmq_msg_size (&msg));
+    TEST_ASSERT_TRUE (zmq_msg_is_leave (&msg));
+
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
+                               zmq_msg_recv (&msg, radio, ZMQ_DONTWAIT));
+
+    zmq_sleep (1);
+
+    zmq_msg_close (&msg);
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
 void test_radio_dish_tcp_poll (int ipv6_)
 {
     size_t len = MAX_SOCKET_STRING;
@@ -515,6 +565,7 @@ int main (void)
     RUN_TEST (test_radio_dish_tcp_poll_ipv6);
     RUN_TEST (test_radio_dish_udp_ipv4);
     RUN_TEST (test_radio_dish_udp_ipv6);
+    RUN_TEST (test_radio_notify);
 
     RUN_TEST (test_radio_dish_mcast_ipv4);
     RUN_TEST (test_radio_dish_no_loop_ipv4);
