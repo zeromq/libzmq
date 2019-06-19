@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 node::node (unsigned char *data) : data_ (data)
 {
@@ -517,35 +518,25 @@ bool zmq::radix_tree::check (const unsigned char *key, size_t size)
 
 static void
 visit_keys (node n,
-            unsigned char **buffer,
-            size_t buffer_size,
-            size_t maxbuffer_size,
+            std::vector<unsigned char> &buffer,
             void (*func) (unsigned char *data, size_t size, void *arg),
             void *arg)
 {
-    if (buffer_size >= maxbuffer_size) {
-        maxbuffer_size += 256;
-        *buffer =
-          static_cast<unsigned char *> (realloc (*buffer, maxbuffer_size));
-        zmq_assert (*buffer);
-    }
-
     for (size_t i = 0; i < n.prefix_length (); ++i)
-        (*buffer)[buffer_size++] = n.prefix ()[i];
+        buffer.push_back (n.prefix ()[i]);
     if (n.refcount () > 0)
-        func (*buffer, buffer_size, arg);
+        func (buffer.data (), buffer.size (), arg);
     for (size_t i = 0; i < n.edgecount (); ++i)
-        visit_keys (n.node_at (i), buffer, buffer_size, maxbuffer_size, func,
-                    arg);
-    buffer_size -= n.prefix_length ();
+        visit_keys (n.node_at (i), buffer, func, arg);
+    for (size_t i = 0; i < n.prefix_length (); ++i)
+        buffer.pop_back ();
 }
 
 void zmq::radix_tree::apply (
   void (*func) (unsigned char *data, size_t size, void *arg), void *arg)
 {
-    unsigned char *buffer = NULL;
-    visit_keys (root_, &buffer, 0, 0, func, arg);
-    free (buffer);
+    std::vector<unsigned char> buffer;
+    visit_keys (root_, buffer, func, arg);
 }
 
 size_t zmq::radix_tree::size () const
