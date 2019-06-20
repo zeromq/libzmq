@@ -524,8 +524,12 @@ visit_keys (node n,
 {
     for (size_t i = 0; i < n.prefix_length (); ++i)
         buffer.push_back (n.prefix ()[i]);
-    if (n.refcount () > 0)
-        func (buffer.data (), buffer.size (), arg);
+
+    if (n.refcount () > 0) {
+        zmq_assert (!buffer.empty ());
+        func (&buffer[0], buffer.size (), arg);
+    }
+
     for (size_t i = 0; i < n.edgecount (); ++i)
         visit_keys (n.node_at (i), buffer, func, arg);
     for (size_t i = 0; i < n.prefix_length (); ++i)
@@ -535,8 +539,12 @@ visit_keys (node n,
 void zmq::radix_tree::apply (
   void (*func) (unsigned char *data, size_t size, void *arg), void *arg)
 {
+    if (root_.refcount () > 0)
+        func (NULL, 0, arg); // Root node is always empty.
+
     std::vector<unsigned char> buffer;
-    visit_keys (root_, buffer, func, arg);
+    for (size_t i = 0; i < root_.edgecount (); ++i)
+        visit_keys (root_.node_at (i), buffer, func, arg);
 }
 
 size_t zmq::radix_tree::size () const
