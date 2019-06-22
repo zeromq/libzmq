@@ -368,6 +368,11 @@ DEFINE_TESTS (pull, push, ZMQ_PULL, ZMQ_PUSH)
 DEFINE_TESTS (sub, pub, ZMQ_SUB, ZMQ_PUB)
 DEFINE_TESTS (pair, pair, ZMQ_PAIR, ZMQ_PAIR)
 
+#ifdef ZMQ_BUILD_DRAFT_API
+DEFINE_TESTS (gather, scatter, ZMQ_GATHER, ZMQ_SCATTER)
+DEFINE_TESTS (client, server, ZMQ_CLIENT, ZMQ_SERVER)
+#endif
+
 const int deciseconds_per_millisecond = 100;
 const int heartbeat_ttl_max =
   (UINT16_MAX + 1) * deciseconds_per_millisecond - 1;
@@ -440,6 +445,17 @@ int main (void)
     RUN_TEST (test_heartbeat_notimeout_pull_push_with_curve);
     RUN_TEST (test_heartbeat_notimeout_sub_pub_with_curve);
     RUN_TEST (test_heartbeat_notimeout_pair_pair_with_curve);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    RUN_TEST (test_heartbeat_ttl_client_server);
+    RUN_TEST (test_heartbeat_ttl_gather_scatter);
+
+    RUN_TEST (test_heartbeat_notimeout_client_server);
+    RUN_TEST (test_heartbeat_notimeout_gather_scatter);
+
+    RUN_TEST (test_heartbeat_notimeout_client_server_with_curve);
+    RUN_TEST (test_heartbeat_notimeout_gather_scatter_with_curve);
+#endif
 
     return UNITY_END ();
 }
