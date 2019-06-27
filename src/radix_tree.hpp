@@ -60,54 +60,55 @@
 // The link to each child is looked up using its index, e.g. the child
 // with index 0 will have its first byte and node pointer at the start
 // of the chunk of first bytes and node pointers respectively.
-struct node
+struct node_t
 {
     unsigned char *data_;
 
-    explicit node (unsigned char *data);
+    explicit node_t (unsigned char *data);
 
-    bool operator== (node other) const;
-    bool operator!= (node other) const;
+    bool operator== (node_t other) const;
+    bool operator!= (node_t other) const;
 
     inline uint32_t refcount ();
     inline uint32_t prefix_length ();
     inline uint32_t edgecount ();
     inline unsigned char *prefix ();
     inline unsigned char *first_bytes ();
-    inline unsigned char first_byte_at (size_t i);
-    inline unsigned char *node_ptrs ();
-    inline node node_at (size_t i);
+    inline unsigned char first_byte_at (size_t index);
+    inline unsigned char *node_pointers ();
+    inline node_t node_at (size_t index);
     inline void set_refcount (uint32_t value);
     inline void set_prefix_length (uint32_t value);
     inline void set_edgecount (uint32_t value);
     inline void set_prefix (const unsigned char *prefix);
     inline void set_first_bytes (const unsigned char *bytes);
-    inline void set_first_byte_at (size_t i, unsigned char byte);
-    inline void set_node_ptrs (const unsigned char *ptrs);
-    inline void set_node_at (size_t i, node n);
-    inline void set_edge_at (size_t i, unsigned char byte, node n);
+    inline void set_first_byte_at (size_t index, unsigned char byte);
+    inline void set_node_pointers (const unsigned char *pointers);
+    inline void set_node_at (size_t index, node_t node);
+    inline void
+    set_edge_at (size_t index, unsigned char first_byte, node_t node);
     void resize (size_t prefix_length, size_t edgecount);
 };
 
-node make_node (size_t refcount, size_t prefix_length, size_t nedges);
+node_t make_node (size_t refcount, size_t prefix_length, size_t edgecount);
 
-struct match_result
+struct match_result_t
 {
-    size_t nkey;
-    size_t nprefix;
+    size_t key_bytes_matched;
+    size_t prefix_bytes_matched;
     size_t edge_index;
-    size_t gp_edge_index;
-    node current_node;
-    node parent_node;
-    node grandparent_node;
+    size_t parent_edge_index;
+    node_t current_node;
+    node_t parent_node;
+    node_t grandparent_node;
 
-    match_result (size_t i,
-                  size_t j,
-                  size_t edge_index,
-                  size_t gp_edge_index,
-                  node current,
-                  node parent,
-                  node grandparent);
+    match_result_t (size_t key_bytes_matched,
+                    size_t prefix_bytes_matched,
+                    size_t edge_index,
+                    size_t parent_edge_index,
+                    node_t current,
+                    node_t parent,
+                    node_t grandparent);
 };
 
 namespace zmq
@@ -120,26 +121,26 @@ class radix_tree
 
     //  Add key to the tree. Returns true if this was a new key rather
     //  than a duplicate.
-    bool add (const unsigned char *prefix_, size_t size_);
+    bool add (const unsigned char *key_, size_t key_size_);
 
-    //  Remove key from the tree. Returns true if he item is acually
+    //  Remove key from the tree. Returns true if the item is actually
     //  removed from the tree.
-    bool rm (const unsigned char *prefix_, size_t size_);
+    bool rm (const unsigned char *key_, size_t key_size_);
 
     //  Check whether particular key is in the tree.
-    bool check (const unsigned char *prefix, size_t size_);
+    bool check (const unsigned char *key_, size_t key_size_);
 
     //  Apply the function supplied to each key in the tree.
-    void apply (void (*func) (unsigned char *data_, size_t size_, void *arg_),
-                void *arg);
+    void apply (void (*func_) (unsigned char *data, size_t size, void *arg),
+                void *arg_);
 
     size_t size () const;
 
   private:
-    inline match_result
-    match (const unsigned char *key, size_t size, bool check) const;
+    inline match_result_t
+    match (const unsigned char *key, size_t key_size, bool is_lookup) const;
 
-    node root_;
+    node_t root_;
     size_t size_;
 };
 }
