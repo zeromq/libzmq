@@ -346,10 +346,10 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     //  For receiver transport preallocate pgm_msgv array.
     if (receiver) {
-        zmq_assert (in_batch_size > 0);
+        zmq_assert (options.in_batch_size > 0);
         size_t max_tsdu_size = get_max_tsdu_size ();
-        pgm_msgv_len = (int) in_batch_size / max_tsdu_size;
-        if ((int) in_batch_size % max_tsdu_size)
+        pgm_msgv_len = (int) options.in_batch_size / max_tsdu_size;
+        if ((int) options.in_batch_size % max_tsdu_size)
             pgm_msgv_len++;
         zmq_assert (pgm_msgv_len);
 

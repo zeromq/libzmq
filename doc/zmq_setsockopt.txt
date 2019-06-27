@@ -1362,6 +1362,40 @@ Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 
 
+ZMQ_IN_BATCH_SIZE: Maximal receive batch size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the maximal amount of messages that can be received in a single
+'recv' system call. This can be used to improved throughtput at the expense of
+latency and vice-versa.
+
+Cannot be zero.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: messages
+Default value:: 8192
+Applicable socket types:: All
+
+
+ZMQ_OUT_BATCH_SIZE: Maximal send batch size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the maximal amount of messages that can be sent in a single
+'send' system call. This can be used to improved throughtput at the expense of
+latency and vice-versa.
+
+Cannot be zero.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: messages
+Default value:: 8192
+Applicable socket types:: All
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it

@@ -243,6 +243,8 @@ zmq::options_t::options_t () :
     zap_enforce_domain (false),
     loopback_fastpath (false),
     multicast_loop (true),
+    in_batch_size (8192),
+    out_batch_size (8192),
     zero_copy (true),
     router_notify (0),
     monitor_event_version (1)
@@ -768,6 +770,22 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
                                                       &multicast_loop);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_IN_BATCH_SIZE:
+            if (is_int && value > 0) {
+                in_batch_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_OUT_BATCH_SIZE:
+            if (is_int && value > 0) {
+                out_batch_size = value;
+                return 0;
+            }
+            break;
+#endif
+
         default:
 #if defined(ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -1181,6 +1199,19 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
+                return 0;
+            }
+            break;
+        case ZMQ_IN_BATCH_SIZE:
+            if (is_int) {
+                *value = in_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_OUT_BATCH_SIZE:
+            if (is_int) {
+                *value = out_batch_size;
                 return 0;
             }
             break;
