@@ -658,6 +658,8 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_XPUB_MANUAL_LAST_VALUE 98
 #define ZMQ_SOCKS_USERNAME 99
 #define ZMQ_SOCKS_PASSWORD 100
+#define ZMQ_IN_BATCH_SIZE 101
+#define ZMQ_OUT_BATCH_SIZE 102
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10

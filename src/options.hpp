@@ -264,6 +264,17 @@ struct options_t
     //  Loop sent multicast packets to local sockets
     bool multicast_loop;
 
+    //  Maximal batching size for engines with receiving functionality.
+    //  So, if there are 10 messages that fit into the batch size, all of
+    //  them may be read by a single 'recv' system call, thus avoiding
+    //  unnecessary network stack traversals.
+    int in_batch_size;
+    //  Maximal batching size for engines with sending functionality.
+    //  So, if there are 10 messages that fit into the batch size, all of
+    //  them may be written by a single 'send' system call, thus avoiding
+    //  unnecessary network stack traversals.
+    int out_batch_size;
+
     // Use zero copy strategy for storing message content when decoding.
     bool zero_copy;
 

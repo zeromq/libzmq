@@ -71,7 +71,8 @@ class norm_engine_t : public io_object_t, public i_engine
       public:
         NormRxStreamState (NormObjectHandle normStream,
                            int64_t maxMsgSize,
-                           bool zeroCopy);
+                           bool zeroCopy,
+                           int inBatchSize);
         ~NormRxStreamState ();
 
         NormObjectHandle GetStreamHandle () const { return norm_stream; }
@@ -136,6 +137,7 @@ class norm_engine_t : public io_object_t, public i_engine
         NormObjectHandle norm_stream;
         int64_t max_msg_size;
         bool zero_copy;
+        int in_batch_size;
         bool in_sync;
         bool rx_ready;
         v2_decoder_t *zmq_decoder;

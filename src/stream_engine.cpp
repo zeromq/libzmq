@@ -207,10 +207,10 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
 
     if (_options.raw_socket) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
-        _encoder = new (std::nothrow) raw_encoder_t (out_batch_size);
+        _encoder = new (std::nothrow) raw_encoder_t (_options.out_batch_size);
         alloc_assert (_encoder);
 
-        _decoder = new (std::nothrow) raw_decoder_t (in_batch_size);
+        _decoder = new (std::nothrow) raw_decoder_t (_options.in_batch_size);
         alloc_assert (_decoder);
 
         // disable handshaking for raw socket
@@ -399,12 +399,13 @@ void zmq::stream_engine_t::out_event ()
         _outpos = NULL;
         _outsize = _encoder->encode (&_outpos, 0);
 
-        while (_outsize < static_cast<size_t> (out_batch_size)) {
+        while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
             if ((this->*_next_msg) (&_tx_msg) == -1)
                 break;
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
-            size_t n = _encoder->encode (&bufptr, out_batch_size - _outsize);
+            size_t n =
+              _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
             zmq_assert (n > 0);
             if (_outpos == NULL)
                 _outpos = bufptr;
@@ -664,11 +665,11 @@ bool zmq::stream_engine_t::handshake_v1_0_unversioned ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
+    _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
-    _decoder =
-      new (std::nothrow) v1_decoder_t (in_batch_size, _options.maxmsgsize);
+    _decoder = new (std::nothrow)
+      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     //  We have already sent the message header.
@@ -716,11 +717,11 @@ bool zmq::stream_engine_t::handshake_v1_0 ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
+    _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
-    _decoder =
-      new (std::nothrow) v1_decoder_t (in_batch_size, _options.maxmsgsize);
+    _decoder = new (std::nothrow)
+      v1_decoder_t (_options.in_batch_size, _options.maxmsgsize);
     alloc_assert (_decoder);
 
     return true;
@@ -734,11 +735,11 @@ bool zmq::stream_engine_t::handshake_v2_0 ()
         return false;
     }
 
-    _encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
+    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
-    _decoder = new (std::nothrow)
-      v2_decoder_t (in_batch_size, _options.maxmsgsize, _options.zero_copy);
+    _decoder = new (std::nothrow) v2_decoder_t (
+      _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
     alloc_assert (_decoder);
 
     return true;
@@ -746,11 +747,11 @@ bool zmq::stream_engine_t::handshake_v2_0 ()
 
 bool zmq::stream_engine_t::handshake_v3_0 ()
 {
-    _encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
+    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
-    _decoder = new (std::nothrow)
-      v2_decoder_t (in_batch_size, _options.maxmsgsize, _options.zero_copy);
+    _decoder = new (std::nothrow) v2_decoder_t (
+      _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
     alloc_assert (_decoder);
 
     if (_options.mechanism == ZMQ_NULL
