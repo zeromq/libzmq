@@ -25,26 +25,11 @@ associated with the endpoint will be discarded. However, if the socket's linger
 period is non-zero, libzmq will still attempt to transmit these discarded messages,
 until the linger period expires.
 
-Addionally, if the disconnected endpoint was previously connected to
-(as opposed to bound), the incoming message queue associated with the
-endpoint will be discarded. This means that after unbinding an endpoint
-using `disconnect`, it is possible to received messages originating
-from that same endpoint if they were already present in the incoming message
-queue before unbinding. However, this is not the case when disconnecting
-from a connected endpoint.
-
 The 'endpoint' argument is as described in linkzmq:zmq_connect[3]
 
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
 this behaviour may cause the application to block when calling _zmq_ctx_term()_.
 For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_ctx_term[3].
-
-Unbinding wild-card address from a socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When a wild-card `*` 'endpoint' (described in linkzmq:zmq_tcp[7],
-linkzmq:zmq_ipc[7] and linkzmq:zmq_vmci[7]) was used in _zmq_bind()_, the caller
-should use the real 'endpoint' obtained from the ZMQ_LAST_ENDPOINT socket option
-to unbind this 'endpoint' from a socket.
 
 RETURN VALUE
 ------------
@@ -75,37 +60,6 @@ rc = zmq_connect (socket, "tcp://server001:5555");
 assert (rc == 0);
 /* Disconnect from the previously connected endpoint */
 rc = zmq_disconnect (socket, "tcp://server001:5555");
-assert (rc == 0);
-----
-
-.Unbind a subscriber socket from a TCP transport
-----
-/* Create a ZMQ_SUB socket */
-void *socket = zmq_socket (context, ZMQ_SUB);
-assert (socket);
-/* Connect it to the host server001, port 5555 using a TCP transport */
-rc = zmq_bind (socket, "tcp://127.0.0.1:5555");
-assert (rc == 0);
-/* Disconnect from the previously connected endpoint */
-rc = zmq_disconnect(socket, "tcp://127.0.0.1:5555");
-assert (rc == 0);
-----
-
-.Unbind wild-card `*` binded socket
-----
-/* Create a ZMQ_SUB socket */
-void *socket = zmq_socket (context, ZMQ_SUB);
-assert (socket);
-/* Bind it to the system-assigned ephemeral port using a TCP transport */
-rc = zmq_bind (socket, "tcp://127.0.0.1:*");
-assert (rc == 0);
-/* Obtain real endpoint */
-const size_t buf_size = 32;
-char buf[buf_size];
-rc = zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
-assert (rc == 0);
-/* Unbind socket by real endpoint */
-rc = zmq_disconnect (socket, buf);
 assert (rc == 0);
 ----
 
