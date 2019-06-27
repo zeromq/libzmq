@@ -1363,10 +1363,12 @@ Applicable socket types:: ZMQ_ROUTER
 
 
 ZMQ_IN_BATCH_SIZE: Maximal receive batch size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the maximal amount of messages that can be received in a single
-'recv' system call. This can be used to improved throughtput at the expense of
-latency and vice-versa.
+'recv' system call. WARNING: this option should almost never be changed.
+The default has been chosen to offer the best compromise between latency and
+throughtput. In the vast majority of cases, changing this option will result in
+worst result if not outright breakages.
 
 Cannot be zero.
 
@@ -1376,14 +1378,16 @@ NOTE: in DRAFT state, not yet available in stable releases.
 Option value type:: int
 Option value unit:: messages
 Default value:: 8192
-Applicable socket types:: All
+Applicable socket types:: All, when using TCP, IPC, PGM or NORM transport.
 
 
 ZMQ_OUT_BATCH_SIZE: Maximal send batch size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the maximal amount of messages that can be sent in a single
-'send' system call. This can be used to improved throughtput at the expense of
-latency and vice-versa.
+'send' system call. WARNING: this option should almost never be changed.
+The default has been chosen to offer the best compromise between latency and
+throughtput. In the vast majority of cases, changing this option will result in
+worst result if not outright breakages.
 
 Cannot be zero.
 
@@ -1393,7 +1397,7 @@ NOTE: in DRAFT state, not yet available in stable releases.
 Option value type:: int
 Option value unit:: messages
 Default value:: 8192
-Applicable socket types:: All
+Applicable socket types:: All, when using TCP, IPC, PGM or NORM transport.
 
 
 RETURN VALUE
