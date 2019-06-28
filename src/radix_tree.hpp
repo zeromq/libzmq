@@ -62,62 +62,62 @@
 // of the chunk of first bytes and node pointers respectively.
 struct node_t
 {
-    unsigned char *data_;
+    explicit node_t (unsigned char *data_);
 
-    explicit node_t (unsigned char *data);
-
-    bool operator== (node_t other) const;
-    bool operator!= (node_t other) const;
+    bool operator== (node_t other_) const;
+    bool operator!= (node_t other_) const;
 
     inline uint32_t refcount ();
     inline uint32_t prefix_length ();
     inline uint32_t edgecount ();
     inline unsigned char *prefix ();
     inline unsigned char *first_bytes ();
-    inline unsigned char first_byte_at (size_t index);
+    inline unsigned char first_byte_at (size_t index_);
     inline unsigned char *node_pointers ();
-    inline node_t node_at (size_t index);
-    inline void set_refcount (uint32_t value);
-    inline void set_prefix_length (uint32_t value);
-    inline void set_edgecount (uint32_t value);
-    inline void set_prefix (const unsigned char *prefix);
-    inline void set_first_bytes (const unsigned char *bytes);
-    inline void set_first_byte_at (size_t index, unsigned char byte);
-    inline void set_node_pointers (const unsigned char *pointers);
-    inline void set_node_at (size_t index, node_t node);
+    inline node_t node_at (size_t index_);
+    inline void set_refcount (uint32_t value_);
+    inline void set_prefix_length (uint32_t value_);
+    inline void set_edgecount (uint32_t value_);
+    inline void set_prefix (const unsigned char *prefix_);
+    inline void set_first_bytes (const unsigned char *bytes_);
+    inline void set_first_byte_at (size_t index_, unsigned char byte_);
+    inline void set_node_pointers (const unsigned char *pointers_);
+    inline void set_node_at (size_t index_, node_t node_);
     inline void
-    set_edge_at (size_t index, unsigned char first_byte, node_t node);
-    void resize (size_t prefix_length, size_t edgecount);
+    set_edge_at (size_t index_, unsigned char first_byte_, node_t node_);
+    void resize (size_t prefix_length_, size_t edgecount_);
+
+    unsigned char *_data;
 };
 
-node_t make_node (size_t refcount, size_t prefix_length, size_t edgecount);
+node_t make_node (size_t refcount_, size_t prefix_length_, size_t edgecount_);
 
 struct match_result_t
 {
-    size_t key_bytes_matched;
-    size_t prefix_bytes_matched;
-    size_t edge_index;
-    size_t parent_edge_index;
-    node_t current_node;
-    node_t parent_node;
-    node_t grandparent_node;
-
-    match_result_t (size_t key_bytes_matched,
-                    size_t prefix_bytes_matched,
-                    size_t edge_index,
-                    size_t parent_edge_index,
-                    node_t current,
-                    node_t parent,
+    match_result_t (size_t key_bytes_matched_,
+                    size_t prefix_bytes_matched_,
+                    size_t edge_index_,
+                    size_t parent_edge_index_,
+                    node_t current_,
+                    node_t parent_,
                     node_t grandparent);
+
+    size_t _key_bytes_matched;
+    size_t _prefix_bytes_matched;
+    size_t _edge_index;
+    size_t _parent_edge_index;
+    node_t _current_node;
+    node_t _parent_node;
+    node_t _grandparent_node;
 };
 
 namespace zmq
 {
-class radix_tree
+class radix_tree_t
 {
   public:
-    radix_tree ();
-    ~radix_tree ();
+    radix_tree_t ();
+    ~radix_tree_t ();
 
     //  Add key to the tree. Returns true if this was a new key rather
     //  than a duplicate.
@@ -138,10 +138,10 @@ class radix_tree
 
   private:
     inline match_result_t
-    match (const unsigned char *key, size_t key_size, bool is_lookup) const;
+    match (const unsigned char *key_, size_t key_size_, bool is_lookup_) const;
 
-    node_t root_;
-    size_t size_;
+    node_t _root;
+    size_t _size;
 };
 }
 
