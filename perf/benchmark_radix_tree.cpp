@@ -48,28 +48,28 @@ const char *chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 const int chars_len = 36;
 
 template <class T>
-void benchmark_lookup (T &t,
-                       std::vector<unsigned char *> &input_set,
-                       std::vector<unsigned char *> &queries)
+void benchmark_lookup (T &subscriptions_,
+                       std::vector<unsigned char *> &input_set_,
+                       std::vector<unsigned char *> &queries_)
 {
     using namespace std::chrono;
     std::vector<duration<long, std::nano>> samples_vec;
     samples_vec.reserve (samples);
 
     for (std::size_t run = 0; run < warmup_runs; ++run) {
-        for (auto &query : queries)
-            t.check (query, key_length);
+        for (auto &query : queries_)
+            subscriptions_.check (query, key_length);
     }
 
     for (std::size_t run = 0; run < samples; ++run) {
         duration<long, std::nano> interval (0);
-        for (auto &query : queries) {
+        for (auto &query : queries_) {
             auto start = steady_clock::now ();
-            t.check (query, key_length);
+            subscriptions_.check (query, key_length);
             auto end = steady_clock::now ();
             interval += end - start;
         }
-        samples_vec.push_back (interval / queries.size ());
+        samples_vec.push_back (interval / queries_.size ());
     }
 
     std::size_t sum = 0;
@@ -102,7 +102,7 @@ int main ()
     // Keeping initialization out of the benchmarking function helps
     // heaptrack detect peak memory consumption of the radix tree.
     zmq::trie_t trie;
-    zmq::radix_tree radix_tree;
+    zmq::radix_tree_t radix_tree;
     for (auto &key : input_set) {
         trie.add (key, key_length);
         radix_tree.add (key, key_length);
