@@ -10,7 +10,7 @@
 %endif
 %define lib_name libzmq5
 Name:          zeromq
-Version:       4.3.0
+Version:       4.3.2
 Release:       1%{?dist}
 Summary:       The ZeroMQ messaging library
 Group:         Applications/Internet
