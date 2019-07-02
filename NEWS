@@ -1,12 +1,29 @@
 0MQ version 4.1.7 stable, released on 20xx/xx/xx
 ================================================
 
+* CVE-2019-13132: a remote, unauthenticated client connecting to a
+  libzmq application, running with a socket listening with CURVE
+  encryption/authentication enabled, may cause a stack overflow and
+  overwrite the stack with arbitrary data, due to a buffer overflow in
+  the library. Users running public servers with the above configuration
+  are highly encouraged to upgrade as soon as possible, as there are no
+  known mitigations. All versions from 4.0.0 and upwards are affected.
+
 * Fixed #2254 - zmq 4.1.6 cannot pub msg to a zmq 2.x
 
 * Fixed #2623 - ZMQ_ROUTER: with ZMQ_ROUTER_MANDATORY, ZMQ_POLLOUT will now
                 now return true only if at least one pipe is ready for writing
 
+* Fixed #159 - off-by-one error leaves ZMQ_STREAM unusable
+
+* Fixed #163 - Fix divide by zero, in case of race condition, with ZMQ_PUSH
+
 * Fixed #164 - EHOSTDOWN socket error assertion
+
+* Fixed #165 - inproc pub/sub does not work when sub connects/binds before pub
+               does
+
+* Fix parsing application metadata when using CURVE
 
 
 0MQ version 4.1.6 stable, released on 2016/11/01
