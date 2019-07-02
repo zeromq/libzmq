@@ -440,8 +440,12 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     const size_t clen = (msg_->size () - 113) + crypto_box_BOXZEROBYTES;
 
     uint8_t initiate_nonce [crypto_box_NONCEBYTES];
-    uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
-    uint8_t initiate_box [crypto_box_BOXZEROBYTES + 144 + 256];
+    uint8_t *initiate_plaintext =
+      static_cast<uint8_t *> (malloc (crypto_box_ZEROBYTES + clen));
+    alloc_assert (initiate_plaintext);
+    uint8_t *initiate_box =
+      static_cast<uint8_t *> (malloc (crypto_box_BOXZEROBYTES + clen));
+    alloc_assert (initiate_box);
 
     //  Open Box [C + vouch + metadata](C'->S')
     memset (initiate_box, 0, crypto_box_BOXZEROBYTES);
@@ -452,16 +456,17 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     memcpy (initiate_nonce + 16, initiate + 105, 8);
     cn_peer_nonce = get_uint64(initiate + 105);
 
+    const uint8_t *client_key = initiate_plaintext + crypto_box_ZEROBYTES;
+
     rc = crypto_box_open (initiate_plaintext, initiate_box,
                           clen, initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
         //  Temporary support for security debugging
         puts ("CURVE I: cannot open client INITIATE");
         errno = EPROTO;
-        return -1;
+        rc = -1;
+        goto exit;
     }
-
-    const uint8_t *client_key = initiate_plaintext + crypto_box_ZEROBYTES;
 
     uint8_t vouch_nonce [crypto_box_NONCEBYTES];
     uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 64];
@@ -483,7 +488,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         //  Temporary support for security debugging
         puts ("CURVE I: cannot open client INITIATE vouch");
         errno = EPROTO;
-        return -1;
+        rc = -1;
+        goto exit;
     }
 
     //  What we decrypted must be the client's short-term public key
@@ -491,7 +497,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         //  Temporary support for security debugging
         puts ("CURVE I: invalid handshake from client (public key)");
         errno = EPROTO;
-        return -1;
+        rc = -1;
+        goto exit;
     }
 
     //  Precompute connection secret from client key
@@ -510,14 +517,21 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         else
         if (errno == EAGAIN)
             state = expect_zap_reply;
-        else
-            return -1;
+        else {
+            rc = -1;
+            goto exit;
+        }
     }
     else
         state = send_ready;
 
-    return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
+    rc = parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);
+
+exit:
+    free (initiate_plaintext);
+    free (initiate_box);
+    return rc;
 }
 
 int zmq::curve_server_t::produce_ready (msg_t *msg_)
