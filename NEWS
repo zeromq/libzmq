@@ -1,6 +1,119 @@
 0MQ version 4.3.2 stable, released on 20xx/xx/xx
 ================================================
 
+* CVE-2019-13132: a remote, unauthenticated client connecting to a
+  libzmq application, running with a socket listening with CURVE
+  encryption/authentication enabled, may cause a stack overflow and
+  overwrite the stack with arbitrary data, due to a buffer overflow in
+  the library. Users running public servers with the above configuration
+  are highly encouraged to upgrade as soon as possible, as there are no
+  known mitigations. All versions from 4.0.0 and upwards are affected.
+  Thank you Fang-Pen Lin for finding the issue and reporting it!
+
+* New DRAFT (see NEWS for 4.2.0) zmq_socket_monitor_versioned API that supports
+  a versioned monitoring events protocol as a parameter. Passing 1 results in
+  the same behaviour as zmq_socket_monitor.
+  Version 2 of the events protocol allows new events, new metadata, different
+  socket types for the monitors and more. It is described in details in
+  doc/zmq_socket_monitor_versioned.txt
+
+* New DRAFT (see NEWS for 4.2.0) zmq_socket_monitor_pipes_stats that triggers
+  a new ZMQ_EVENT_PIPES_STATS to be delivered via zmq_socket_monitor_versioned
+  v2 API, which contains the current status of all the queues owned by the
+  monitored socket. See doc/zmq_socket_monitor_versioned.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_poller_fd that returns the FD of a thread
+  safe socket. See doc/zmq_poller.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) socket options:
+  - ZMQ_XPUB_MANUAL_LAST_VALUE is similar to ZMQ_XPUB_MANUAL but allows to avoid
+    duplicates when using last value caching.
+  - ZMQ_SOCKS_USERNAME and ZMQ_SOCKS_PASSWORD that implement SOCKS5 proxy
+    authentication.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* Implemented background thread names for Windows, when the Visual Studio
+  debugger is being used.
+
+* Fixed #3358 - test_security_zap failing due to SIGBUS on SPARC64, hard-coded
+                IPC socket binds in tests cause race conditions
+
+* Fixed #3361 - enabling GSSAPI support (when using autools) does not work due
+                to regression introduced in 4.2.3
+
+* Fixed #3362 - remove documentation for ZMQ_THREAD_PRIORITY context option
+                getter, it's not implemented
+
+* Fixed #3363 - tests fail to build due to stricter compiler printf validation
+                in new versions of GCC
+
+* Fixed #3367 - try to infer cacheline size at build time, first with
+                getconf LEVEL1_DCACHE_LINESIZE, and then by reading
+                /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size
+                (autoconf only), and only then falling back to the previous
+                default of 64 bytes. Avoids false sharing on POWER and s390x.
+                Import ax_func_posix_memalign.m4 as a more reliable check for
+                posix_memalign presence on some unix platforms.
+                Prefer c++11 atomic primitives to compiler intrinsics, when
+                both are available, as the former is more reliable.
+                Set test_pair_ipc and test_rebind_ipc to XFAIL on GNU/Hurd due
+                to non-functioning getsockname on AF_UNIX.
+
+* Fixed #3370 - Make queue length and HWM state observable
+
+* Fixed #3373 - performance regression in zmq_poll on CentOS 6/7
+
+* Fixed #3375 - assign names to all pthreads created by the library to ease
+                debugging
+
+* Fixed #3376 - assigned random TIPC port is not returned by ZMQ_LAST_ENDPOINT
+
+* Fixed #3385 - TCP port in ZMQ_LAST_ENDPOINT depends on global locale
+
+* Fixed #3404 - use std::condition_variable_any when possible
+
+* Fixed #3436 - reconnect interval exponential backoff and may lead to integer
+                overflows
+
+* Fixed #3440 - improve zmq_proxy performance by batching of up to 1000
+                consecutive messages (if any) and add perf/proxy_thr tool
+
+* Fixed #3451 - fix support of /dev/poll on Solaris
+
+* Fixed #3452 - strnlen may not be available
+
+* Fixed #1462 - test failure in test_filter_ipc due to invalid system groups
+
+* Fixed #3269 - Boost.ASIO integration stopped working with v4.3.0
+
+* Fixed #3479 - ZeroMQ does not build for QNX 6.6 with CMake
+
+* Fixed #3481 - add <ios> include to fix uClibc++ compilation
+
+* Fixed #3491 - build broken on Fedora 30
+
+* Fixed #3494 - ZeroMQConfig.cmake fails if shared libraries are not built
+
+* Fixed #3498 - syntax error on Windows related to socket descriptor type
+
+* Fixed #3500 - PLAIN HELLO message incorrectly uses WELCOME literal, regression
+                introduced in 4.3.0
+
+* Fixed #3517 - configure errors because of syntax errors in the use of test
+                shell command
+
+* Fixed #3521 - document how to achieve high performance with the PGM transport
+
+* Fixed #3526 - failure case behavior unclear in zmq_msg_send documentation
+
+* Fixed #3537 - fix build on z/OS by using pthread_equal instead of comparing
+                variables directly
+
+* Fixed #3546 - CMake links with librt on MinGW which is not available
+
+* Many coding style, duplication, testing and static analysis improvements.
+
+
 0MQ version 4.3.1 stable, released on 2019/01/12
 ================================================
 
