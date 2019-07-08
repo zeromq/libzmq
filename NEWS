@@ -1,6 +1,19 @@
 0MQ version 4.0.9 stable, released on 2016/xx/xx
 ================================================
 
+* CVE-2019-13132: a remote, unauthenticated client connecting to a
+  libzmq application, running with a socket listening with CURVE
+  encryption/authentication enabled, may cause a stack overflow and
+  overwrite the stack with arbitrary data, due to a buffer overflow in
+  the library. Users running public servers with the above configuration
+  are highly encouraged to upgrade as soon as possible, as there are no
+  known mitigations. All versions from 4.0.0 and upwards are affected.
+
+* Fix documentation to remove mention of features that are not available in
+  4.0.x.
+
+* Fix parsing application metadata when using CURVE.
+
 
 0MQ version 4.0.8 stable, released on 2016/06/17
 ================================================
