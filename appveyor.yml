@@ -240,7 +240,7 @@ deploy:
   - provider: BinTray
     username: somdoron
     api_key:
-      secure: GTpnqv6RB1urgspx4kTsUDksN2Vaow/x4kFJKmUX4zFjMDUlBsRUCrpFBiedYb33
+      secure: B4TC4GvUMbwX13Skh2Kvyc6SnqLkjNS9W0gtN2yxUC2Y4oQSCK2F4eRgtpMpCasg
     subject: zeromq
     repo: generic
     package: libzmq
