@@ -21,6 +21,11 @@ if(NOT TARGET libzmq AND NOT TARGET libzmq-static)
 
   if (TARGET libzmq)
     get_target_property(@PROJECT_NAME@_INCLUDE_DIR libzmq INTERFACE_INCLUDE_DIRECTORIES)
+  else ()
+    get_target_property(@PROJECT_NAME@_INCLUDE_DIR libzmq-static INTERFACE_INCLUDE_DIRECTORIES)
+  endif()
+
+  if (TARGET libzmq)
     get_target_property(@PROJECT_NAME@_LIBRARY libzmq LOCATION)
   endif()
   if (TARGET libzmq-static)
