@@ -63,18 +63,17 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     if (msg_->flags () & msg_t::command)
         flags |= 0x02;
 
-    uint8_t *message_plaintext = static_cast<uint8_t *> (malloc (mlen));
-    alloc_assert (message_plaintext);
+    std::vector<uint8_t> message_plaintext (mlen);
 
-    memset (message_plaintext, 0, crypto_box_ZEROBYTES);
+    std::fill (message_plaintext.begin (),
+               message_plaintext.begin () + crypto_box_ZEROBYTES, 0);
     message_plaintext[crypto_box_ZEROBYTES] = flags;
-    memcpy (message_plaintext + crypto_box_ZEROBYTES + 1, msg_->data (),
+    memcpy (&message_plaintext[crypto_box_ZEROBYTES + 1], msg_->data (),
             msg_->size ());
 
-    uint8_t *message_box = static_cast<uint8_t *> (malloc (mlen));
-    alloc_assert (message_box);
+    std::vector<uint8_t> message_box (mlen);
 
-    int rc = crypto_box_afternm (message_box, message_plaintext, mlen,
+    int rc = crypto_box_afternm (&message_box[0], &message_plaintext[0], mlen,
                                  message_nonce, cn_precom);
     zmq_assert (rc == 0);
 
@@ -88,11 +87,8 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
 
     memcpy (message, "\x07MESSAGE", 8);
     memcpy (message + 8, message_nonce + 16, 8);
-    memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
+    memcpy (message + 16, &message_box[crypto_box_BOXZEROBYTES],
             mlen - crypto_box_BOXZEROBYTES);
-
-    free (message_plaintext);
-    free (message_box);
 
     cn_nonce++;
 
@@ -137,17 +133,15 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
 
     const size_t clen = crypto_box_BOXZEROBYTES + msg_->size () - 16;
 
-    uint8_t *message_plaintext = static_cast<uint8_t *> (malloc (clen));
-    alloc_assert (message_plaintext);
+    std::vector<uint8_t> message_plaintext (clen);
+    std::vector<uint8_t> message_box (clen);
 
-    uint8_t *message_box = static_cast<uint8_t *> (malloc (clen));
-    alloc_assert (message_box);
-
-    memset (message_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (message_box + crypto_box_BOXZEROBYTES, message + 16,
+    std::fill (message_box.begin (),
+               message_box.begin () + crypto_box_BOXZEROBYTES, 0);
+    memcpy (&message_box[crypto_box_BOXZEROBYTES], message + 16,
             msg_->size () - 16);
 
-    rc = crypto_box_open_afternm (message_plaintext, message_box, clen,
+    rc = crypto_box_open_afternm (&message_plaintext[0], &message_box[0], clen,
                                   message_nonce, cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
@@ -162,7 +156,7 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
         if (flags & 0x02)
             msg_->set_flags (msg_t::command);
 
-        memcpy (msg_->data (), message_plaintext + crypto_box_ZEROBYTES + 1,
+        memcpy (msg_->data (), &message_plaintext[crypto_box_ZEROBYTES + 1],
                 msg_->size ());
     } else {
         // CURVE I : connection key used for MESSAGE is wrong
@@ -170,8 +164,6 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
     }
-    free (message_plaintext);
-    free (message_box);
 
     return rc;
 }
