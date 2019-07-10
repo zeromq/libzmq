@@ -47,6 +47,8 @@
 #include "wire.hpp"
 #include "err.hpp"
 
+#include <vector>
+
 namespace zmq
 {
 struct curve_client_tools_t
@@ -164,30 +166,30 @@ struct curve_client_tools_t
             return -1;
 
         uint8_t initiate_nonce[crypto_box_NONCEBYTES];
-        uint8_t *initiate_box = static_cast<uint8_t *> (
-          malloc (crypto_box_BOXZEROBYTES + 144 + metadata_length_));
-        alloc_assert (initiate_box);
-        uint8_t *initiate_plaintext = static_cast<uint8_t *> (
-          malloc (crypto_box_ZEROBYTES + 128 + metadata_length_));
-        alloc_assert (initiate_plaintext);
+        std::vector<uint8_t> initiate_box (crypto_box_BOXZEROBYTES + 144
+                                           + metadata_length_);
+        std::vector<uint8_t> initiate_plaintext (crypto_box_ZEROBYTES + 128
+                                                 + metadata_length_);
 
         //  Create Box [C + vouch + metadata](C'->S')
-        memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
-        memcpy (initiate_plaintext + crypto_box_ZEROBYTES, public_key_, 32);
-        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 32, vouch_nonce + 8,
+        std::fill (initiate_plaintext.begin (),
+                   initiate_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+        memcpy (&initiate_plaintext[crypto_box_ZEROBYTES], public_key_, 32);
+        memcpy (&initiate_plaintext[crypto_box_ZEROBYTES + 32], vouch_nonce + 8,
                 16);
-        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48,
+        memcpy (&initiate_plaintext[crypto_box_ZEROBYTES + 48],
                 vouch_box + crypto_box_BOXZEROBYTES, 80);
-        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48 + 80,
-                metadata_plaintext_, metadata_length_);
+        if (metadata_length_) {
+            memcpy (&initiate_plaintext[crypto_box_ZEROBYTES + 48 + 80],
+                    metadata_plaintext_, metadata_length_);
+        }
 
         memcpy (initiate_nonce, "CurveZMQINITIATE", 16);
         put_uint64 (initiate_nonce + 16, cn_nonce_);
 
-        rc = crypto_box (initiate_box, initiate_plaintext,
+        rc = crypto_box (&initiate_box[0], &initiate_plaintext[0],
                          crypto_box_ZEROBYTES + 128 + metadata_length_,
                          initiate_nonce, cn_server_, cn_secret_);
-        free (initiate_plaintext);
 
         if (rc == -1)
             return -1;
@@ -203,9 +205,8 @@ struct curve_client_tools_t
         //  Short nonce, prefixed by "CurveZMQINITIATE"
         memcpy (initiate + 105, initiate_nonce + 16, 8);
         //  Box [C + vouch + metadata](C'->S')
-        memcpy (initiate + 113, initiate_box + crypto_box_BOXZEROBYTES,
+        memcpy (initiate + 113, &initiate_box[crypto_box_BOXZEROBYTES],
                 128 + metadata_length_ + crypto_box_BOXZEROBYTES);
-        free (initiate_box);
 
         return 0;
     }
