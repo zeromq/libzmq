@@ -52,7 +52,7 @@ void benchmark_lookup (T &subscriptions_,
                        std::vector<unsigned char *> &queries_)
 {
     using namespace std::chrono;
-    std::vector<duration<long, std::nano>> samples_vec;
+    std::vector<duration<long, std::nano> > samples_vec;
     samples_vec.reserve (samples);
 
     for (std::size_t run = 0; run < warmup_runs; ++run) {
