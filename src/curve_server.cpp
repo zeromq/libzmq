@@ -37,6 +37,7 @@
 #include "err.hpp"
 #include "curve_server.hpp"
 #include "wire.hpp"
+#include "secure_allocator.hpp"
 
 zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
@@ -174,7 +175,8 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     memcpy (_cn_client, hello + 80, 32);
 
     uint8_t hello_nonce[crypto_box_NONCEBYTES];
-    uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > hello_plaintext (
+      crypto_box_ZEROBYTES + 64);
     uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
 
     memcpy (hello_nonce, "CurveZMQHELLO---", 16);
@@ -185,7 +187,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     memcpy (hello_box + crypto_box_BOXZEROBYTES, hello + 120, 80);
 
     //  Open Box [64 * %x0](C'->S)
-    rc = crypto_box_open (hello_plaintext, hello_box, sizeof hello_box,
+    rc = crypto_box_open (&hello_plaintext[0], hello_box, sizeof hello_box,
                           hello_nonce, _cn_client, _secret_key);
     if (rc != 0) {
         // CURVE I: cannot open client HELLO -- wrong server key?
@@ -202,7 +204,8 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 {
     uint8_t cookie_nonce[crypto_secretbox_NONCEBYTES];
-    uint8_t cookie_plaintext[crypto_secretbox_ZEROBYTES + 64];
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > cookie_plaintext (
+      crypto_secretbox_ZEROBYTES + 64);
     uint8_t cookie_ciphertext[crypto_secretbox_BOXZEROBYTES + 80];
 
     //  Create full nonce for encryption
@@ -211,21 +214,23 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     randombytes (cookie_nonce + 8, 16);
 
     //  Generate cookie = Box [C' + s'](t)
-    memset (cookie_plaintext, 0, crypto_secretbox_ZEROBYTES);
-    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES, _cn_client, 32);
-    memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, _cn_secret, 32);
+    std::fill (cookie_plaintext.begin (),
+               cookie_plaintext.begin () + crypto_secretbox_ZEROBYTES, 0);
+    memcpy (&cookie_plaintext[crypto_secretbox_ZEROBYTES], _cn_client, 32);
+    memcpy (&cookie_plaintext[crypto_secretbox_ZEROBYTES + 32], _cn_secret, 32);
 
     //  Generate fresh cookie key
     randombytes (_cookie_key, crypto_secretbox_KEYBYTES);
 
     //  Encrypt using symmetric cookie key
     int rc =
-      crypto_secretbox (cookie_ciphertext, cookie_plaintext,
-                        sizeof cookie_plaintext, cookie_nonce, _cookie_key);
+      crypto_secretbox (cookie_ciphertext, &cookie_plaintext[0],
+                        cookie_plaintext.size (), cookie_nonce, _cookie_key);
     zmq_assert (rc == 0);
 
     uint8_t welcome_nonce[crypto_box_NONCEBYTES];
-    uint8_t welcome_plaintext[crypto_box_ZEROBYTES + 128];
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > welcome_plaintext (
+      crypto_box_ZEROBYTES + 128);
     uint8_t welcome_ciphertext[crypto_box_BOXZEROBYTES + 144];
 
     //  Create full nonce for encryption
@@ -234,15 +239,16 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     randombytes (welcome_nonce + 8, crypto_box_NONCEBYTES - 8);
 
     //  Create 144-byte Box [S' + cookie](S->C')
-    memset (welcome_plaintext, 0, crypto_box_ZEROBYTES);
-    memcpy (welcome_plaintext + crypto_box_ZEROBYTES, _cn_public, 32);
-    memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 32, cookie_nonce + 8,
+    std::fill (welcome_plaintext.begin (),
+               welcome_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+    memcpy (&welcome_plaintext[crypto_box_ZEROBYTES], _cn_public, 32);
+    memcpy (&welcome_plaintext[crypto_box_ZEROBYTES + 32], cookie_nonce + 8,
             16);
-    memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 48,
+    memcpy (&welcome_plaintext[crypto_box_ZEROBYTES + 48],
             cookie_ciphertext + crypto_secretbox_BOXZEROBYTES, 80);
 
-    rc = crypto_box (welcome_ciphertext, welcome_plaintext,
-                     sizeof welcome_plaintext, welcome_nonce, _cn_client,
+    rc = crypto_box (welcome_ciphertext, &welcome_plaintext[0],
+                     welcome_plaintext.size (), welcome_nonce, _cn_client,
                      _secret_key);
 
     //  TODO I think we should change this back to zmq_assert (rc == 0);
@@ -327,7 +333,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     const size_t clen = (size - 113) + crypto_box_BOXZEROBYTES;
 
     uint8_t initiate_nonce[crypto_box_NONCEBYTES];
-    std::vector<uint8_t> initiate_plaintext (crypto_box_ZEROBYTES + clen);
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > initiate_plaintext (
+      crypto_box_ZEROBYTES + clen);
     std::vector<uint8_t> initiate_box (crypto_box_BOXZEROBYTES + clen);
 
     //  Open Box [C + vouch + metadata](C'->S')
@@ -353,7 +360,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     }
 
     uint8_t vouch_nonce[crypto_box_NONCEBYTES];
-    uint8_t vouch_plaintext[crypto_box_ZEROBYTES + 64];
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > vouch_plaintext (
+      crypto_box_ZEROBYTES + 64);
     uint8_t vouch_box[crypto_box_BOXZEROBYTES + 80];
 
     //  Open Box Box [C',S](C->S') and check contents
@@ -365,7 +373,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     memcpy (vouch_nonce + 8, &initiate_plaintext[crypto_box_ZEROBYTES + 32],
             16);
 
-    rc = crypto_box_open (vouch_plaintext, vouch_box, sizeof vouch_box,
+    rc = crypto_box_open (&vouch_plaintext[0], vouch_box, sizeof vouch_box,
                           vouch_nonce, client_key, _cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE vouch
@@ -376,7 +384,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     }
 
     //  What we decrypted must be the client's short-term public key
-    if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, _cn_client, 32)) {
+    if (memcmp (&vouch_plaintext[crypto_box_ZEROBYTES], _cn_client, 32)) {
         // TODO this case is very hard to test, as it would require a modified
         //  client that knows the server's secret short-term key
 
@@ -429,8 +437,8 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     const size_t metadata_length = basic_properties_len ();
     uint8_t ready_nonce[crypto_box_NONCEBYTES];
 
-    std::vector<uint8_t> ready_plaintext (crypto_box_ZEROBYTES
-                                          + metadata_length);
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > ready_plaintext (
+      crypto_box_ZEROBYTES + metadata_length);
 
     //  Create Box [metadata](S'->C')
     std::fill (ready_plaintext.begin (),

@@ -38,6 +38,7 @@
 #include "curve_client.hpp"
 #include "wire.hpp"
 #include "curve_client_tools.hpp"
+#include "secure_allocator.hpp"
 
 zmq::curve_client_t::curve_client_t (session_base_t *session_,
                                      const options_t &options_) :
@@ -175,7 +176,8 @@ int zmq::curve_client_t::process_welcome (const uint8_t *msg_data_,
 int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 {
     const size_t metadata_length = basic_properties_len ();
-    std::vector<unsigned char> metadata_plaintext (metadata_length);
+    std::vector<unsigned char, secure_allocator_t<unsigned char> >
+      metadata_plaintext (metadata_length);
 
     add_basic_properties (&metadata_plaintext[0], metadata_length);
 
@@ -214,7 +216,8 @@ int zmq::curve_client_t::process_ready (const uint8_t *msg_data_,
     const size_t clen = (msg_size_ - 14) + crypto_box_BOXZEROBYTES;
 
     uint8_t ready_nonce[crypto_box_NONCEBYTES];
-    std::vector<uint8_t> ready_plaintext (crypto_box_ZEROBYTES + clen);
+    std::vector<uint8_t, secure_allocator_t<uint8_t> > ready_plaintext (
+      crypto_box_ZEROBYTES + clen);
     std::vector<uint8_t> ready_box (crypto_box_BOXZEROBYTES + 16 + clen);
 
     std::fill (ready_box.begin (), ready_box.begin () + crypto_box_BOXZEROBYTES,

@@ -46,6 +46,7 @@
 
 #include "wire.hpp"
 #include "err.hpp"
+#include "secure_allocator.hpp"
 
 #include <vector>
 
@@ -60,7 +61,8 @@ struct curve_client_tools_t
                               const uint8_t *cn_secret_)
     {
         uint8_t hello_nonce[crypto_box_NONCEBYTES];
-        uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
+        std::vector<uint8_t, secure_allocator_t<uint8_t> > hello_plaintext (
+          crypto_box_ZEROBYTES + 64, 0);
         uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
 
         //  Prepare the full nonce
@@ -68,10 +70,9 @@ struct curve_client_tools_t
         put_uint64 (hello_nonce + 16, cn_nonce_);
 
         //  Create Box [64 * %x0](C'->S)
-        memset (hello_plaintext, 0, sizeof hello_plaintext);
-
-        int rc = crypto_box (hello_box, hello_plaintext, sizeof hello_plaintext,
-                             hello_nonce, server_key_, cn_secret_);
+        int rc =
+          crypto_box (hello_box, &hello_plaintext[0], hello_plaintext.size (),
+                      hello_nonce, server_key_, cn_secret_);
         if (rc == -1)
             return -1;
 
@@ -106,7 +107,8 @@ struct curve_client_tools_t
         }
 
         uint8_t welcome_nonce[crypto_box_NONCEBYTES];
-        uint8_t welcome_plaintext[crypto_box_ZEROBYTES + 128];
+        std::vector<uint8_t, secure_allocator_t<uint8_t> > welcome_plaintext (
+          crypto_box_ZEROBYTES + 128);
         uint8_t welcome_box[crypto_box_BOXZEROBYTES + 144];
 
         //  Open Box [S' + cookie](C'->S)
@@ -116,16 +118,16 @@ struct curve_client_tools_t
         memcpy (welcome_nonce, "WELCOME-", 8);
         memcpy (welcome_nonce + 8, msg_data_ + 8, 16);
 
-        int rc =
-          crypto_box_open (welcome_plaintext, welcome_box, sizeof welcome_box,
-                           welcome_nonce, server_key_, cn_secret_);
+        int rc = crypto_box_open (&welcome_plaintext[0], welcome_box,
+                                  sizeof welcome_box, welcome_nonce,
+                                  server_key_, cn_secret_);
         if (rc != 0) {
             errno = EPROTO;
             return -1;
         }
 
-        memcpy (cn_server_, welcome_plaintext + crypto_box_ZEROBYTES, 32);
-        memcpy (cn_cookie_, welcome_plaintext + crypto_box_ZEROBYTES + 32,
+        memcpy (cn_server_, &welcome_plaintext[crypto_box_ZEROBYTES], 32);
+        memcpy (cn_cookie_, &welcome_plaintext[crypto_box_ZEROBYTES + 32],
                 16 + 80);
 
         //  Message independent precomputation
@@ -149,27 +151,30 @@ struct curve_client_tools_t
                                  const size_t metadata_length_)
     {
         uint8_t vouch_nonce[crypto_box_NONCEBYTES];
-        uint8_t vouch_plaintext[crypto_box_ZEROBYTES + 64];
+        std::vector<uint8_t, secure_allocator_t<uint8_t> > vouch_plaintext (
+          crypto_box_ZEROBYTES + 64);
         uint8_t vouch_box[crypto_box_BOXZEROBYTES + 80];
 
         //  Create vouch = Box [C',S](C->S')
-        memset (vouch_plaintext, 0, crypto_box_ZEROBYTES);
-        memcpy (vouch_plaintext + crypto_box_ZEROBYTES, cn_public_, 32);
-        memcpy (vouch_plaintext + crypto_box_ZEROBYTES + 32, server_key_, 32);
+        std::fill (vouch_plaintext.begin (),
+                   vouch_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+        memcpy (&vouch_plaintext[crypto_box_ZEROBYTES], cn_public_, 32);
+        memcpy (&vouch_plaintext[crypto_box_ZEROBYTES + 32], server_key_, 32);
 
         memcpy (vouch_nonce, "VOUCH---", 8);
         randombytes (vouch_nonce + 8, 16);
 
-        int rc = crypto_box (vouch_box, vouch_plaintext, sizeof vouch_plaintext,
-                             vouch_nonce, cn_server_, secret_key_);
+        int rc =
+          crypto_box (vouch_box, &vouch_plaintext[0], vouch_plaintext.size (),
+                      vouch_nonce, cn_server_, secret_key_);
         if (rc == -1)
             return -1;
 
         uint8_t initiate_nonce[crypto_box_NONCEBYTES];
         std::vector<uint8_t> initiate_box (crypto_box_BOXZEROBYTES + 144
                                            + metadata_length_);
-        std::vector<uint8_t> initiate_plaintext (crypto_box_ZEROBYTES + 128
-                                                 + metadata_length_);
+        std::vector<uint8_t, secure_allocator_t<uint8_t> > initiate_plaintext (
+          crypto_box_ZEROBYTES + 128 + metadata_length_);
 
         //  Create Box [C + vouch + metadata](C'->S')
         std::fill (initiate_plaintext.begin (),

@@ -68,6 +68,8 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     std::fill (message_plaintext.begin (),
                message_plaintext.begin () + crypto_box_ZEROBYTES, 0);
     message_plaintext[crypto_box_ZEROBYTES] = flags;
+    // this is copying the data from insecure memory, so there is no point in
+    // using secure_allocator_t for message_plaintext
     memcpy (&message_plaintext[crypto_box_ZEROBYTES + 1], msg_->data (),
             msg_->size ());
 
@@ -156,6 +158,8 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
         if (flags & 0x02)
             msg_->set_flags (msg_t::command);
 
+        // this is copying the data to insecure memory, so there is no point in
+        // using secure_allocator_t for message_plaintext
         memcpy (msg_->data (), &message_plaintext[crypto_box_ZEROBYTES + 1],
                 msg_->size ());
     } else {
