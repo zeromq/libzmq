@@ -49,7 +49,6 @@ const int chars_len = 36;
 
 template <class T>
 void benchmark_lookup (T &subscriptions_,
-                       std::vector<unsigned char *> &input_set_,
                        std::vector<unsigned char *> &queries_)
 {
     using namespace std::chrono;
@@ -114,10 +113,10 @@ int main ()
                  static_cast<unsigned long long> (nqueries),
                  static_cast<unsigned long long> (key_length));
     std::puts ("[trie]");
-    benchmark_lookup (trie, input_set, queries);
+    benchmark_lookup (trie, queries);
 
     std::puts ("[radix_tree]");
-    benchmark_lookup (radix_tree, input_set, queries);
+    benchmark_lookup (radix_tree, queries);
 
     for (auto &op : input_set)
         delete[] op;
