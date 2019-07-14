@@ -56,7 +56,7 @@ zmq::address_t::address_t (const std::string &protocol_,
 
 zmq::address_t::~address_t ()
 {
-    if (protocol == protocol_name::tcp) {
+    if (protocol == protocol_name::tcp || protocol == protocol_name::ws) {
         LIBZMQ_DELETE (resolved.tcp_addr);
     } else if (protocol == protocol_name::udp) {
         LIBZMQ_DELETE (resolved.udp_addr);

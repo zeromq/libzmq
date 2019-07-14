@@ -27,63 +27,55 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
-#define __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
+#ifndef __ZMQ_WS_DECODER_HPP_INCLUDED__
+#define __ZMQ_WS_DECODER_HPP_INCLUDED__
 
-#include <string>
-
-#include "fd.hpp"
-#include "own.hpp"
-#include "stdint.hpp"
-#include "io_object.hpp"
-#include "address.hpp"
+#include "decoder.hpp"
+#include "decoder_allocators.hpp"
+#include "ws_protocol.hpp"
 
 namespace zmq
 {
-class io_thread_t;
-class socket_base_t;
-
-class stream_listener_base_t : public own_t, public io_object_t
+//  Decoder for Web socket framing protocol. Converts data stream into messages.
+//  The class has to inherit from shared_message_memory_allocator because
+//  the base class calls allocate in its constructor.
+class ws_decoder_t
+    : public decoder_base_t<ws_decoder_t, shared_message_memory_allocator>
 {
   public:
-    stream_listener_base_t (zmq::io_thread_t *io_thread_,
-                            zmq::socket_base_t *socket_,
-                            const options_t &options_);
-    ~stream_listener_base_t ();
+    ws_decoder_t (size_t bufsize_,
+                  int64_t maxmsgsize_,
+                  bool zero_copy_,
+                  bool must_mask_);
+    virtual ~ws_decoder_t ();
 
-    // Get the bound address for use with wildcards
-    int get_local_address (std::string &addr_) const;
-
-  protected:
-    virtual std::string get_socket_name (fd_t fd_,
-                                         socket_end_t socket_end_) const = 0;
+    //  i_decoder interface.
+    virtual msg_t *msg () { return &_in_progress; }
 
   private:
-    //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
+    int opcode_ready (unsigned char const *);
+    int size_first_byte_ready (unsigned char const *);
+    int short_size_ready (unsigned char const *);
+    int long_size_ready (unsigned char const *);
+    int mask_ready (unsigned char const *);
+    int flags_ready (unsigned char const *);
+    int message_ready (unsigned char const *);
 
-  protected:
-    //  Close the listening socket.
-    virtual int close ();
+    int size_ready (unsigned char const *);
 
-    virtual void create_engine (fd_t fd);
+    unsigned char _tmpbuf[8];
+    unsigned char _msg_flags;
+    msg_t _in_progress;
 
-    //  Underlying socket.
-    fd_t _s;
+    const bool _zero_copy;
+    const int64_t _max_msg_size;
+    const bool _must_mask;
+    uint64_t _size;
+    zmq::ws_protocol_t::opcode_t _opcode;
+    unsigned char _mask[4];
 
-    //  Handle corresponding to the listening socket.
-    handle_t _handle;
-
-    //  Socket the listener belongs to.
-    zmq::socket_base_t *_socket;
-
-    // String representation of endpoint to bind to
-    std::string _endpoint;
-
-  private:
-    stream_listener_base_t (const stream_listener_base_t &);
-    const stream_listener_base_t &operator= (const stream_listener_base_t &);
+    ws_decoder_t (const ws_decoder_t &);
+    void operator= (const ws_decoder_t &);
 };
 }
 

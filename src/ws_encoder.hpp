@@ -27,63 +27,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
-#define __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
+#ifndef __ZMQ_WS_ENCODER_HPP_INCLUDED__
+#define __ZMQ_WS_ENCODER_HPP_INCLUDED__
 
-#include <string>
-
-#include "fd.hpp"
-#include "own.hpp"
-#include "stdint.hpp"
-#include "io_object.hpp"
-#include "address.hpp"
+#include "encoder.hpp"
 
 namespace zmq
 {
-class io_thread_t;
-class socket_base_t;
+//  Encoder for web socket framing protocol. Converts messages into data stream.
 
-class stream_listener_base_t : public own_t, public io_object_t
+class ws_encoder_t : public encoder_base_t<ws_encoder_t>
 {
   public:
-    stream_listener_base_t (zmq::io_thread_t *io_thread_,
-                            zmq::socket_base_t *socket_,
-                            const options_t &options_);
-    ~stream_listener_base_t ();
-
-    // Get the bound address for use with wildcards
-    int get_local_address (std::string &addr_) const;
-
-  protected:
-    virtual std::string get_socket_name (fd_t fd_,
-                                         socket_end_t socket_end_) const = 0;
+    ws_encoder_t (size_t bufsize_, bool must_mask_);
+    virtual ~ws_encoder_t ();
 
   private:
-    //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
+    void size_ready ();
+    void message_ready ();
 
-  protected:
-    //  Close the listening socket.
-    virtual int close ();
+    unsigned char _tmp_buf[16];
+    bool _must_mask;
+    unsigned char _mask[4];
+    msg_t _masked_msg;
 
-    virtual void create_engine (fd_t fd);
-
-    //  Underlying socket.
-    fd_t _s;
-
-    //  Handle corresponding to the listening socket.
-    handle_t _handle;
-
-    //  Socket the listener belongs to.
-    zmq::socket_base_t *_socket;
-
-    // String representation of endpoint to bind to
-    std::string _endpoint;
-
-  private:
-    stream_listener_base_t (const stream_listener_base_t &);
-    const stream_listener_base_t &operator= (const stream_listener_base_t &);
+    ws_encoder_t (const ws_encoder_t &);
+    const ws_encoder_t &operator= (const ws_encoder_t &);
 };
 }
 

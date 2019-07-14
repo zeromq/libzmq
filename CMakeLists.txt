@@ -221,6 +221,8 @@ else()
   message(FATAL_ERROR "Invalid polling method")
 endif()
 
+list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
+
 if(POLLER STREQUAL "epoll" AND WIN32)
   message(STATUS "Including wepoll")
   list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/wepoll/wepoll.c ${CMAKE_CURRENT_SOURCE_DIR}/external/wepoll/wepoll.h)
@@ -780,6 +782,11 @@ set(cxx-sources
   gather.cpp
   ip_resolver.cpp
   zap_client.cpp
+  ws_connecter.cpp
+  ws_decoder.cpp
+  ws_encoder.cpp
+  ws_engine.cpp
+  ws_listener.cpp
   # at least for VS, the header files must also be listed
   address.hpp
   array.hpp
@@ -910,6 +917,12 @@ set(cxx-sources
   vmci_listener.hpp
   windows.hpp
   wire.hpp
+  ws_connecter.hpp
+  ws_decoder.hpp
+  ws_encoder.hpp
+  ws_engine.hpp
+  ws_listener.hpp
+  ws_protocol.hpp
   xpub.hpp
   xsub.hpp
   ypipe.hpp

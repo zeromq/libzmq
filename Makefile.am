@@ -247,6 +247,17 @@ src_libzmq_la_SOURCES = \
 	src/vmci_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
+	src/ws_connecter.cpp \
+	src/ws_connecter.hpp \
+	src/ws_decoder.cpp \
+	src/ws_decoder.hpp \
+	src/ws_encoder.cpp \
+	src/ws_encoder.hpp \
+	src/ws_engine.cpp \
+	src/ws_engine.hpp \
+	src/ws_listener.cpp \
+	src/ws_listener.hpp \
+	src/ws_protocol.hpp \
 	src/xpub.cpp \
 	src/xpub.hpp \
 	src/xsub.cpp \
@@ -263,7 +274,9 @@ src_libzmq_la_SOURCES = \
 	src/socket_poller.hpp \
 	src/zap_client.cpp \
 	src/zap_client.hpp \
-	src/zmq_draft.h
+	src/zmq_draft.h \
+	external/sha1/sha1.c \
+	external/sha1/sha1.h
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
@@ -459,7 +472,8 @@ test_apps = \
 	tests/test_sodium \
 	tests/test_reconnect_ivl \
 	tests/test_mock_pub_sub \
-	tests/test_socket_null
+	tests/test_socket_null \
+	tests/test_ws_transport
 
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
@@ -773,6 +787,10 @@ tests_test_reconnect_ivl_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
 tests_test_mock_pub_sub_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
 tests_test_mock_pub_sub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_ws_transport_SOURCES = tests/test_ws_transport.cpp
+tests_test_ws_transport_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ws_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_CURVE
 
