@@ -60,6 +60,7 @@ namespace protocol_name
 static const char inproc[] = "inproc";
 static const char tcp[] = "tcp";
 static const char udp[] = "udp";
+static const char ws[] = "ws";
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
 static const char ipc[] = "ipc";

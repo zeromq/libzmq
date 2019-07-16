@@ -27,63 +27,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
-#define __ZMQ_STREAM_LISTENER_BASE_HPP_INCLUDED__
-
-#include <string>
-
-#include "fd.hpp"
-#include "own.hpp"
-#include "stdint.hpp"
-#include "io_object.hpp"
-#include "address.hpp"
+#ifndef __ZMQ_WS_PROTOCOL_HPP_INCLUDED__
+#define __ZMQ_WS_PROTOCOL_HPP_INCLUDED__
 
 namespace zmq
 {
-class io_thread_t;
-class socket_base_t;
-
-class stream_listener_base_t : public own_t, public io_object_t
+//  Definition of constants for WS transport protocol.
+class ws_protocol_t
 {
   public:
-    stream_listener_base_t (zmq::io_thread_t *io_thread_,
-                            zmq::socket_base_t *socket_,
-                            const options_t &options_);
-    ~stream_listener_base_t ();
+    //  Message flags.
+    enum opcode_t
+    {
+        opcode_continuation = 0,
+        opcode_text = 0x01,
+        opcode_binary = 0x02,
+        opcode_close = 0x08,
+        opcode_ping = 0x09,
+        opcode_pong = 0xA
+    };
 
-    // Get the bound address for use with wildcards
-    int get_local_address (std::string &addr_) const;
-
-  protected:
-    virtual std::string get_socket_name (fd_t fd_,
-                                         socket_end_t socket_end_) const = 0;
-
-  private:
-    //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
-
-  protected:
-    //  Close the listening socket.
-    virtual int close ();
-
-    virtual void create_engine (fd_t fd);
-
-    //  Underlying socket.
-    fd_t _s;
-
-    //  Handle corresponding to the listening socket.
-    handle_t _handle;
-
-    //  Socket the listener belongs to.
-    zmq::socket_base_t *_socket;
-
-    // String representation of endpoint to bind to
-    std::string _endpoint;
-
-  private:
-    stream_listener_base_t (const stream_listener_base_t &);
-    const stream_listener_base_t &operator= (const stream_listener_base_t &);
+    enum
+    {
+        more_flag = 1,
+        command_flag = 2
+    };
 };
 }
 

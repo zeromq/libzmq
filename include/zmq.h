@@ -475,6 +475,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION 0x20000003
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE 0x20000004
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
+#define ZMQ_PROTOCOL_ERROR_WS_UNSPECIFIED 0x30000000
 
 ZMQ_EXPORT void *zmq_socket (void *, int type_);
 ZMQ_EXPORT int zmq_close (void *s_);

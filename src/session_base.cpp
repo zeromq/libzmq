@@ -35,6 +35,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 #include "tcp_connecter.hpp"
+#include "ws_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
@@ -559,6 +560,8 @@ zmq::session_base_t::connecter_factory_entry_t
   zmq::session_base_t::_connecter_factories[] = {
     connecter_factory_entry_t (protocol_name::tcp,
                                &zmq::session_base_t::create_connecter_tcp),
+    connecter_factory_entry_t (protocol_name::ws,
+                               &zmq::session_base_t::create_connecter_ws),
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
     connecter_factory_entry_t (protocol_name::ipc,
@@ -679,6 +682,13 @@ zmq::own_t *zmq::session_base_t::create_connecter_tcp (io_thread_t *io_thread_,
     }
     return new (std::nothrow)
       tcp_connecter_t (io_thread_, this, options, _addr, wait_);
+}
+
+zmq::own_t *zmq::session_base_t::create_connecter_ws (io_thread_t *io_thread_,
+                                                      bool wait_)
+{
+    return new (std::nothrow)
+      ws_connecter_t (io_thread_, this, options, _addr, wait_);
 }
 
 #ifdef ZMQ_HAVE_OPENPGM

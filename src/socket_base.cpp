@@ -50,6 +50,7 @@
 
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
+#include "ws_listener.hpp"
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
@@ -333,6 +334,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
         && protocol_ != protocol_name::ipc
 #endif
         && protocol_ != protocol_name::tcp
+        && protocol_ != protocol_name::ws
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -629,6 +631,27 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return 0;
     }
 
+    if (protocol == protocol_name::ws) {
+        ws_listener_t *listener =
+          new (std::nothrow) ws_listener_t (io_thread, this, options);
+        alloc_assert (listener);
+        rc = listener->set_local_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (listener);
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
+            return -1;
+        }
+
+        // Save last endpoint URI
+        listener->get_local_address (_last_endpoint);
+
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
+        options.connected = true;
+        return 0;
+    }
+
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
     if (protocol == protocol_name::ipc) {
@@ -826,6 +849,47 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
     //  Resolve address (if needed by the protocol)
     if (protocol == protocol_name::tcp) {
         //  Do some basic sanity checks on tcp:// address syntax
+        //  - hostname starts with digit or letter, with embedded '-' or '.'
+        //  - IPv6 address may contain hex chars and colons.
+        //  - IPv6 link local address may contain % followed by interface name / zone_id
+        //    (Reference: https://tools.ietf.org/html/rfc4007)
+        //  - IPv4 address may contain decimal digits and dots.
+        //  - Address must end in ":port" where port is *, or numeric
+        //  - Address may contain two parts separated by ':'
+        //  Following code is quick and dirty check to catch obvious errors,
+        //  without trying to be fully accurate.
+        const char *check = address.c_str ();
+        if (isalnum (*check) || isxdigit (*check) || *check == '['
+            || *check == ':') {
+            check++;
+            while (isalnum (*check) || isxdigit (*check) || *check == '.'
+                   || *check == '-' || *check == ':' || *check == '%'
+                   || *check == ';' || *check == '[' || *check == ']'
+                   || *check == '_' || *check == '*') {
+                check++;
+            }
+        }
+        //  Assume the worst, now look for success
+        rc = -1;
+        //  Did we reach the end of the address safely?
+        if (*check == 0) {
+            //  Do we have a valid port string? (cannot be '*' in connect
+            check = strrchr (address.c_str (), ':');
+            if (check) {
+                check++;
+                if (*check && (isdigit (*check)))
+                    rc = 0; //  Valid
+            }
+        }
+        if (rc == -1) {
+            errno = EINVAL;
+            LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+        //  Defer resolution until a socket is opened
+        paddr->resolved.tcp_addr = NULL;
+    } else if (protocol == protocol_name::ws) {
+        //  Do some basic sanity checks on ws:// address syntax
         //  - hostname starts with digit or letter, with embedded '-' or '.'
         //  - IPv6 address may contain hex chars and colons.
         //  - IPv6 link local address may contain % followed by interface name / zone_id
