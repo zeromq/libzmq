@@ -29,6 +29,9 @@
 
 // TODO remove this workaround for handling libsodium/tweetnacl
 
+//  To define SIZE_MAX with older compilers
+#define __STDC_LIMIT_MACROS
+
 #if defined ZMQ_CUSTOM_PLATFORM_HPP
 #include "platform.hpp"
 #else
