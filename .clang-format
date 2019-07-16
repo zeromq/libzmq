@@ -38,7 +38,7 @@ SpaceInEmptyParentheses: false
 SpacesInAngles: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
-Standard: Cpp11
+Standard: Cpp03
 
 SortIncludes: false
 

@@ -179,6 +179,7 @@ src_libzmq_la_SOURCES = \
 	src/router.hpp \
 	src/scatter.cpp \
 	src/scatter.hpp \
+	src/secure_allocator.hpp \
 	src/select.cpp \
 	src/select.hpp \
 	src/server.cpp \

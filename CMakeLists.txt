@@ -871,6 +871,7 @@ set(cxx-sources
   req.hpp
   router.hpp
   scatter.hpp
+  secure_allocator.hpp
   select.hpp
   server.hpp
   session_base.hpp

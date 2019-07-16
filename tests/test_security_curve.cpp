@@ -27,6 +27,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// TODO remove this workaround for handling libsodium/tweetnacl
+
+#if defined ZMQ_CUSTOM_PLATFORM_HPP
+#include "platform.hpp"
+#else
+#include "../src/platform.hpp"
+#endif
+
+#ifndef ZMQ_USE_TWEETNACL
+#define ZMQ_USE_TWEETNACL
+#endif
+#ifdef ZMQ_USE_LIBSODIUM
+#undef ZMQ_USE_LIBSODIUM
+#endif
+
 #include "testutil.hpp"
 #include "testutil_security.hpp"
 #if defined(ZMQ_HAVE_WINDOWS)
