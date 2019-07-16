@@ -69,6 +69,8 @@ typedef unsigned __int64 uint64_t;
 
 #else
 
+//  To define SIZE_MAX with older compilers
+#define __STDC_LIMIT_MACROS
 #include <stdint.h>
 
 #endif
