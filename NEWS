@@ -1,6 +1,11 @@
 0MQ version 4.3.x stable, released on 20xx/xx/xx
 ================================================
 
+* Note for packagers: an external, self-contained sha1 library is now
+  included in the source tree under external/sha1/ - it is licensed
+  under BSD-3-Clause and thus it is fully compatible with libzmq's
+  license.
+
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================
 
