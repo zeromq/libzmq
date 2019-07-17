@@ -36,7 +36,6 @@
 #include <new>
 #include <string>
 
-#include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
 #include "random.hpp"

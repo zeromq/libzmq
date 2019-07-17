@@ -3,10 +3,10 @@
 #define __ZMQ_WS_ENGINE_HPP_INCLUDED__
 
 #include "io_object.hpp"
-#include "i_engine.hpp"
 #include "address.hpp"
 #include "msg.hpp"
-#include "stream_engine.hpp"
+#include "stream_engine_base.hpp"
+
 
 #define WS_BUFFER_SIZE 8192
 #define MAX_HEADER_NAME_LENGTH 1024
@@ -96,7 +96,7 @@ typedef enum
     client_handshake_error = -1
 } ws_client_handshake_state_t;
 
-class ws_engine_t : public io_object_t, public i_engine
+class ws_engine_t : public stream_engine_base_t
 {
   public:
     ws_engine_t (fd_t fd_,
@@ -105,49 +105,19 @@ class ws_engine_t : public io_object_t, public i_engine
                  bool client_);
     ~ws_engine_t ();
 
-    //  i_engine interface implementation.
-    //  Plug the engine to the session.
-    void plug (zmq::io_thread_t *io_thread_, class session_base_t *session_);
-
-    //  Terminate and deallocate the engine. Note that 'detached'
-    //  events are not fired on termination.
-    void terminate ();
-
-    //  This method is called by the session to signalise that more
-    //  messages can be written to the pipe.
-    bool restart_input ();
-
-    //  This method is called by the session to signalise that there
-    //  are messages to send available.
-    void restart_output ();
-
-    void zap_msg_available (){};
-
-    void in_event ();
-    void out_event ();
-
-    const endpoint_uri_pair_t &get_endpoint () const;
+  protected:
+    bool handshake ();
+    void plug_internal ();
 
   private:
+    int routing_id_msg (msg_t *msg_);
+    int process_routing_id_msg (msg_t *msg_);
+
     bool client_handshake ();
     bool server_handshake ();
-    void error (zmq::stream_engine_t::error_reason_t reason_);
-    void unplug ();
 
     bool _client;
-    bool _plugged;
 
-    socket_base_t *_socket;
-    fd_t _fd;
-    session_base_t *_session;
-    handle_t _handle;
-
-    options_t _options;
-
-    //  Representation of the connected endpoints.
-    const endpoint_uri_pair_t _endpoint_uri_pair;
-
-    bool _handshaking;
     ws_client_handshake_state_t _client_handshake_state;
     ws_server_handshake_state_t _server_handshake_state;
 
@@ -163,21 +133,6 @@ class ws_engine_t : public io_object_t, public i_engine
     bool _websocket_protocol;
     char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1];
     char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1];
-
-    bool _input_stopped;
-    i_decoder *_decoder;
-    unsigned char *_inpos;
-    size_t _insize;
-
-    bool _output_stopped;
-    unsigned char *_outpos;
-    size_t _outsize;
-    i_encoder *_encoder;
-
-    bool _sent_routing_id;
-    bool _received_routing_id;
-
-    msg_t _tx_msg;
 };
 }
 

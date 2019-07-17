@@ -31,7 +31,8 @@
 #include "stream_listener_base.hpp"
 #include "session_base.hpp"
 #include "socket_base.hpp"
-#include "stream_engine.hpp"
+#include "zmtp_engine.hpp"
+#include "raw_engine.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -102,8 +103,11 @@ void zmq::stream_listener_base_t::create_engine (fd_t fd)
       get_socket_name (fd, socket_end_local),
       get_socket_name (fd, socket_end_remote), endpoint_type_bind);
 
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, endpoint_pair);
+    i_engine *engine;
+    if (options.raw_socket)
+        engine = new (std::nothrow) raw_engine_t (fd, options, endpoint_pair);
+    else
+        engine = new (std::nothrow) zmtp_engine_t (fd, options, endpoint_pair);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

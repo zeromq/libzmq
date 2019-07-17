@@ -33,7 +33,6 @@
 
 #include "macros.hpp"
 #include "ws_connecter.hpp"
-#include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "err.hpp"
 #include "ip.hpp"
