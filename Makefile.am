@@ -169,6 +169,8 @@ src_libzmq_la_SOURCES = \
 	src/raw_decoder.hpp \
 	src/raw_encoder.cpp \
 	src/raw_encoder.hpp \
+	src/raw_engine.cpp \
+	src/raw_engine.hpp \
 	src/reaper.cpp \
 	src/reaper.hpp \
 	src/rep.cpp \
@@ -201,8 +203,8 @@ src_libzmq_la_SOURCES = \
 	src/stream_connecter_base.hpp \
 	src/stream_listener_base.cpp \
 	src/stream_listener_base.hpp \
-	src/stream_engine.cpp \
-	src/stream_engine.hpp \
+	src/stream_engine_base.cpp \
+	src/stream_engine_base.hpp \
 	src/sub.cpp \
 	src/sub.hpp \
 	src/tcp.cpp \
@@ -275,6 +277,8 @@ src_libzmq_la_SOURCES = \
 	src/socket_poller.hpp \
 	src/zap_client.cpp \
 	src/zap_client.hpp \
+	src/zmtp_engine.cpp \
+	src/zmtp_engine.hpp \
 	src/zmq_draft.h \
 	external/sha1/sha1.c \
 	external/sha1/sha1.h

@@ -741,6 +741,7 @@ set(cxx-sources
   random.cpp
   raw_encoder.cpp
   raw_decoder.cpp
+  raw_engine.cpp
   reaper.cpp
   rep.cpp
   req.cpp
@@ -753,7 +754,7 @@ set(cxx-sources
   socks.cpp
   socks_connecter.cpp
   stream.cpp
-  stream_engine.cpp
+  stream_engine_base.cpp
   sub.cpp
   tcp.cpp
   tcp_address.cpp
@@ -787,6 +788,7 @@ set(cxx-sources
   ws_encoder.cpp
   ws_engine.cpp
   ws_listener.cpp
+  zmtp_engine.cpp
   # at least for VS, the header files must also be listed
   address.hpp
   array.hpp
@@ -873,6 +875,7 @@ set(cxx-sources
   random.hpp
   raw_decoder.hpp
   raw_encoder.hpp
+  raw_engine.hpp
   reaper.hpp
   rep.hpp
   req.hpp
@@ -889,7 +892,7 @@ set(cxx-sources
   socks_connecter.hpp
   stdint.hpp
   stream.hpp
-  stream_engine.hpp
+  stream_engine_base.hpp
   stream_connecter_base.hpp
   stream_connecter_base.cpp
   stream_listener_base.hpp
@@ -931,6 +934,7 @@ set(cxx-sources
   ypipe_conflate.hpp
   yqueue.hpp
   zap_client.hpp
+  zmtp_engine.hpp
 )
 
 if(MINGW)

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2019 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,50 +27,51 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
-#define __ZMQ_I_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_RAW_ENGINE_HPP_INCLUDED__
+#define __ZMQ_RAW_ENGINE_HPP_INCLUDED__
 
-#include "endpoint.hpp"
+#include <stddef.h>
+
+#include "fd.hpp"
+#include "i_engine.hpp"
+#include "io_object.hpp"
+#include "i_encoder.hpp"
+#include "i_decoder.hpp"
+#include "options.hpp"
+#include "socket_base.hpp"
+#include "metadata.hpp"
+#include "msg.hpp"
+#include "stream_engine_base.hpp"
 
 namespace zmq
 {
+//  Protocol revisions
+
 class io_thread_t;
+class session_base_t;
+class mechanism_t;
 
-//  Abstract interface to be implemented by various engines.
+//  This engine handles any socket with SOCK_STREAM semantics,
+//  e.g. TCP socket or an UNIX domain socket.
 
-struct i_engine
+class raw_engine_t : public stream_engine_base_t
 {
-    enum error_reason_t
-    {
-        protocol_error,
-        connection_error,
-        timeout_error
-    };
+  public:
+    raw_engine_t (fd_t fd_,
+                  const options_t &options_,
+                  const endpoint_uri_pair_t &endpoint_uri_pair_);
+    ~raw_engine_t ();
 
-    virtual ~i_engine () {}
+  protected:
+    void error (error_reason_t reason_);
+    void plug_internal ();
+    bool handshake ();
 
-    //  Plug the engine to the session.
-    virtual void plug (zmq::io_thread_t *io_thread_,
-                       class session_base_t *session_) = 0;
+  private:
+    int push_raw_msg_to_session (msg_t *msg_);
 
-    //  Terminate and deallocate the engine. Note that 'detached'
-    //  events are not fired on termination.
-    virtual void terminate () = 0;
-
-    //  This method is called by the session to signalise that more
-    //  messages can be written to the pipe.
-    //  Returns false if the engine was deleted due to an error.
-    //  TODO it is probably better to change the design such that the engine
-    //  does not delete itself
-    virtual bool restart_input () = 0;
-
-    //  This method is called by the session to signalise that there
-    //  are messages to send available.
-    virtual void restart_output () = 0;
-
-    virtual void zap_msg_available () = 0;
-
-    virtual const endpoint_uri_pair_t &get_endpoint () const = 0;
+    raw_engine_t (const raw_engine_t &);
+    const raw_engine_t &operator= (const raw_engine_t &);
 };
 }
 

@@ -32,6 +32,8 @@
 #include "session_base.hpp"
 #include "address.hpp"
 #include "random.hpp"
+#include "zmtp_engine.hpp"
+#include "raw_engine.hpp"
 
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -173,8 +175,11 @@ void zmq::stream_connecter_base_t::create_engine (
                                              endpoint_type_connect);
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine =
-      new (std::nothrow) stream_engine_t (fd, options, endpoint_pair);
+    i_engine *engine;
+    if (options.raw_socket)
+        engine = new (std::nothrow) raw_engine_t (fd, options, endpoint_pair);
+    else
+        engine = new (std::nothrow) zmtp_engine_t (fd, options, endpoint_pair);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
