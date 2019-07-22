@@ -1439,6 +1439,11 @@ endif()
 
 option(ENABLE_CPACK "Enables cpack rules" ON)
 if(MSVC AND ENABLE_CPACK)
+  if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    set(CMAKE_INSTALL_DEBUG_LIBRARIES_ONLY TRUE)
+    set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)
+    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+  endif()
   include(InstallRequiredSystemLibraries)
 
   if(CMAKE_CL_64)
