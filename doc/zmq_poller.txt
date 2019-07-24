@@ -134,6 +134,9 @@ and stores it in the address pointer to by 'fd'.
 The zmq_poller is only guaranteed to have a file descriptor if
 at least one thread-safe socket is currently registered.
 
+Note that closing a socket that is registered in a poller leads to undefined
+behavior. The socket must be unregistered first.
+
 EVENT TYPES
 -----------
 
