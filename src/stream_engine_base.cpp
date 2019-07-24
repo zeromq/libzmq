@@ -522,7 +522,7 @@ const zmq::endpoint_uri_pair_t &zmq::stream_engine_base_t::get_endpoint () const
 
 void zmq::stream_engine_base_t::mechanism_ready ()
 {
-    if (_options.heartbeat_interval > 0) {
+    if (_options.heartbeat_interval > 0 && !_has_heartbeat_timer) {
         add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
         _has_heartbeat_timer = true;
     }
