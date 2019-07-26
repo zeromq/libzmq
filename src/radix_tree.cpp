@@ -292,8 +292,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
 
     if (key_bytes_matched != key_size_) {
         // Not all characters match, we might have to split the node.
-        if (key_bytes_matched == 0
-            || prefix_bytes_matched == current_node.prefix_length ()) {
+        if (prefix_bytes_matched == current_node.prefix_length ()) {
             // The mismatch is at one of the outgoing edges, so we
             // create an edge from the current node to a new leaf node
             // that has the rest of the key as the prefix.
