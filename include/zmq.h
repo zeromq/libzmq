@@ -493,6 +493,15 @@ zmq_send_const (void *s_, const void *buf_, size_t len_, int flags_);
 ZMQ_EXPORT int zmq_recv (void *s_, void *buf_, size_t len_, int flags_);
 ZMQ_EXPORT int zmq_socket_monitor (void *s_, const char *addr_, int events_);
 
+/******************************************************************************/
+/*  Hide socket fd type; this was before zmq_poller_event_t typedef below     */
+/******************************************************************************/
+
+#if defined _WIN32
+typedef SOCKET zmq_fd_t;
+#else
+typedef int zmq_fd_t;
+#endif
 
 /******************************************************************************/
 /*  Deprecated I/O multiplexing. Prefer using zmq_poller API                  */
@@ -506,11 +515,7 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s_, const char *addr_, int events_);
 typedef struct zmq_pollitem_t
 {
     void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    zmq_fd_t fd;
     short events;
     short revents;
 } zmq_pollitem_t;
@@ -690,12 +695,6 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 /******************************************************************************/
 
 #define ZMQ_HAVE_POLLER
-
-#if defined _WIN32
-typedef SOCKET zmq_fd_t;
-#else
-typedef int zmq_fd_t;
-#endif
 
 typedef struct zmq_poller_event_t
 {
