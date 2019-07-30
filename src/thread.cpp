@@ -124,15 +124,17 @@ typedef struct _MY_EXCEPTION_REGISTRATION_RECORD
 } MY_EXCEPTION_REGISTRATION_RECORD;
 
 static EXCEPTION_DISPOSITION NTAPI continue_execution (EXCEPTION_RECORD *rec,
-	void *frame, CONTEXT *ctx, void *disp)
+                                                       void *frame,
+                                                       CONTEXT *ctx,
+                                                       void *disp)
 {
-	return ExceptionContinueExecution;
+    return ExceptionContinueExecution;
 }
 
 void zmq::thread_t::
   applyThreadName () // to be called in secondary thread context
 {
-    if (!_name[0] || !IsDebuggerPresent())
+    if (!_name[0] || !IsDebuggerPresent ())
         return;
 
     thread_info_t thread_info;
@@ -141,19 +143,21 @@ void zmq::thread_t::
     thread_info._thread_id = -1;
     thread_info._flags = 0;
 
-    NT_TIB *tib = ((NT_TIB*)NtCurrentTeb());
+    NT_TIB *tib = ((NT_TIB *) NtCurrentTeb ());
 
     MY_EXCEPTION_REGISTRATION_RECORD rec;
-    rec.Next = (MY_EXCEPTION_REGISTRATION_RECORD *)tib->ExceptionList;
+    rec.Next = (MY_EXCEPTION_REGISTRATION_RECORD *) tib->ExceptionList;
     rec.Handler = continue_execution;
 
     // push our handler, raise, and finally pop our handler
-    tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *)&rec;
+    tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *) &rec;
     DWORD MS_VC_EXCEPTION = 0x406D1388;
-        RaiseException (MS_VC_EXCEPTION, 0,
-            sizeof (thread_info) / sizeof (ULONG_PTR),
-            (ULONG_PTR *) &thread_info);
-    tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *)(((MY_EXCEPTION_REGISTRATION_RECORD *)tib->ExceptionList)->Next);
+    RaiseException (MS_VC_EXCEPTION, 0,
+                    sizeof (thread_info) / sizeof (ULONG_PTR),
+                    (ULONG_PTR *) &thread_info);
+    tib->ExceptionList =
+      (_EXCEPTION_REGISTRATION_RECORD
+         *) (((MY_EXCEPTION_REGISTRATION_RECORD *) tib->ExceptionList)->Next);
 }
 
 #elif defined ZMQ_HAVE_VXWORKS
