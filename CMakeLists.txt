@@ -67,6 +67,8 @@ endif()
 check_c_compiler_flag("-std=gnu11" COMPILER_SUPPORTS_C11)
 if(COMPILER_SUPPORTS_C11)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+else()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 endif()
 
 if(NOT MSVC)
