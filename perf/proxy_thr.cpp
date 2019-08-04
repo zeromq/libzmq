@@ -176,7 +176,7 @@ static void publisher_thread_main (void *pvoid)
     }
 
     zmq_close (pubsocket);
-    printf ("publisher thread ended\n");
+    //printf ("publisher thread ended\n");
 }
 
 static void subscriber_thread_main (void *pvoid)
@@ -215,7 +215,7 @@ static void subscriber_thread_main (void *pvoid)
     //  Cleanup
 
     zmq_close (subsocket);
-    printf ("subscriber thread ended\n");
+    //printf ("subscriber thread ended\n");
 }
 
 static void proxy_thread_main (void *pvoid)
@@ -284,7 +284,7 @@ static void proxy_thread_main (void *pvoid)
     zmq_close (frontend_xsub);
     zmq_close (backend_xpub);
     zmq_close (control_rep);
-    printf ("proxy thread ended\n");
+    //printf ("proxy thread ended\n");
 }
 
 void terminate_proxy (const proxy_hwm_cfg_t *cfg)
@@ -314,7 +314,7 @@ void terminate_proxy (const proxy_hwm_cfg_t *cfg)
 int main (int argc, char *argv[])
 {
     if (argc != 3) {
-        printf ("usage: inproc_thr <message-size> <message-count>\n");
+        printf ("usage: proxy_thr <message-size> <message-count>\n");
         return 1;
     }
 
