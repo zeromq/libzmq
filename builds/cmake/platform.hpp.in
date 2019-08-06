@@ -75,8 +75,13 @@
   #define ZMQ_HAVE_MINGW32
 #endif
 
-#if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   #define ZMQ_HAVE_FREEBSD
+#endif
+
+#if defined(__DragonFly__)
+  #define ZMQ_HAVE_FREEBSD
+  #define ZMQ_HAVE_DRAGONFLY
 #endif
 
 #if defined __hpux
