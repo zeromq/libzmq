@@ -69,6 +69,7 @@ case of a released version.
 OS and version | Architecture | Compiler and version | Build system | Last report | Remarks
 -------------- | ------------ | -------------------- | ------------ | ----------- | -------
 Solaris 10 | x86, amd64, sparc | GCC 8.1.0 | CMake | 2019/03/18 |
+DragonFly BSD | amd64 | gcc 8.3 | autotools | 2018/08/07 git-72854e63 |
 
 
 ### Supported platforms without known active users
@@ -83,6 +84,7 @@ GNU/kFreeBSD | ? | ? | autotools, CMake |
 FreeBSD | ? | ? | autotools, CMake |
 NetBSD | ? | ? | autotools, CMake |
 OpenBSD | ? | ? | autotools, CMake |
+DragonFly BSD | amd64 | gcc 8.3 | autotools, CMake |
 HP-UX | ? | ? | autotools, CMake |
 GNU/Hurd | ? | ? | autotools |
 VxWorks 6.8 | ? | ? | ? |
