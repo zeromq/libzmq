@@ -81,6 +81,7 @@ function generate_output_file()
     fi
 
     echo "Resetting output file $OUTPUT_FILE_TXT and $OUTPUT_FILE_CSV"
+    mkdir -p ${OUTPUT_DIR}
     > $OUTPUT_FILE_TXT
     echo "$CSV_HEADER_LINE" > $OUTPUT_FILE_CSV
 
