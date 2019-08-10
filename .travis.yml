@@ -44,7 +44,6 @@ matrix:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
-    sudo: false
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
     addons:
@@ -73,7 +72,6 @@ matrix:
         - xmlto
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled
     os: linux
-    sudo: required
     addons:
       apt:
         sources:
@@ -134,7 +132,6 @@ matrix:
         - abi-dumper
         - abi-compliance-checker
     
-sudo: false
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
