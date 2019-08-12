@@ -1,23 +1,13 @@
-# Permission to Relicense under MPLV2
+# Permission to Relicense under MPLv2
 
-This directory collects grants from individuals and firms that hold
-copyrights in ZeroMQ to permit licensing the ZeroMQ code under
-the [Mozilla Public License, version
-2](https://www.mozilla.org/en-US/MPL/2.0/).  See [GitHub Pull
-Request #1917](https://github.com/zeromq/libzmq/pull/1917),
-the [0MQ Licensing Page](http://zeromq.org/area:licensing) and
-[original iMatix zeromq-dev license
-grant](http://lists.zeromq.org/pipermail/zeromq-dev/2016-April/030288.html)
-for some background information.
+This is a statement by Dhammika Pathirana
+that grants permission to relicense its copyrights in the libzmq C++
+library (ZeroMQ) under the Mozilla Public License v2 (MPLv2).
 
-Please create a separate file in this directory for each individual
-or firm holding copyright in ZeroMQ, named after the individual or
-firm holding the copyright.
+A portion of the commits made by the Github handle "dhammika", with
+commit author "Dhammika Pathirana <dhammika@gmail.com>", are copyright of Dhammika Pathirana .
+This document hereby grants the libzmq project team to relicense libzmq, 
+including all past, present and future contributions of the author listed above.
 
-Each patch must be made with a GitHub handle that is clearly
-associated with the copyright owner, to guarantee the identity of
-the signatory.  Please avoid changing the files created by other
-individuals or firms granting a copyright license over their
-copyrights (if rewording is required contact them and ask them to
-submit an updated version).  This makes it easier to verify that
-the license grant was made by an authorized GitHub account.
+Dhammika Pathirana
+2019/08/12
