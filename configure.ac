@@ -233,6 +233,7 @@ case "${host_os}" in
         ;;
     *dragonfly*)
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have DragonFly OS])
         AC_DEFINE(ZMQ_HAVE_DRAGONFLY, 1, [Have DragonFly OS])
         ;;
     *darwin*)
