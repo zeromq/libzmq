@@ -71,9 +71,9 @@ except:
     result_dir = "results" # default value
 
 try:
-    tcp_link_speed_gbps = os.environ['TCP_LINK_SPEED_GBPS']
+    tcp_link_speed_gbps = int(os.environ['TCP_LINK_SPEED_GBPS'])
 except:
-    tcp_link_speed_gbps = "10" # default value
+    tcp_link_speed_gbps = 10 # default value
     
     
 
