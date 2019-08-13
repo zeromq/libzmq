@@ -47,6 +47,9 @@ typedef char
   zmq_msg_size_check[2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0)
                      - 1];
 
+#define ALLOCATE_CONTENT_T_INSIDE_PROVIDED_BUFFER (1)
+
+
 bool zmq::msg_t::check () const
 {
     return _u.base.type >= type_min && _u.base.type <= type_max;
@@ -166,15 +169,26 @@ int zmq::msg_t::init_data (void *data_,
         _u.lmsg.flags = 0;
         _u.lmsg.group[0] = '\0';
         _u.lmsg.routing_id = 0;
+#if ALLOCATE_CONTENT_T_INSIDE_PROVIDED_BUFFER
+        zmq_assert (size_ > sizeof (content_t));
+        _u.lmsg.content = reinterpret_cast<content_t *> (data_);
+#else
         _u.lmsg.content =
           static_cast<content_t *> (malloc (sizeof (content_t)));
+#endif
         if (!_u.lmsg.content) {
             errno = ENOMEM;
             return -1;
         }
 
+#if ALLOCATE_CONTENT_T_INSIDE_PROVIDED_BUFFER
+        uint8_t *data_bytes = (uint8_t *) data_;
+        _u.lmsg.content->data = data_bytes + sizeof (content_t);
+        _u.lmsg.content->size = size_ - sizeof (content_t);
+#else
         _u.lmsg.content->data = data_;
         _u.lmsg.content->size = size_;
+#endif
         _u.lmsg.content->ffn = ffn_;
         _u.lmsg.content->hint = hint_;
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
@@ -228,11 +242,23 @@ int zmq::msg_t::close ()
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
             _u.lmsg.content->refcnt.~atomic_counter_t ();
-
+#if ALLOCATE_CONTENT_T_INSIDE_PROVIDED_BUFFER
+            // take a local copy since we are going to remove (through the user-provided deallocator)
+            // the whole malloc'ed buffer, including the content_t block itself!
+            // NOTE: this copy should not be strictly needed but it's here just to help debugging:
+            content_t content;
+            content.data = _u.lmsg.content->data;
+            content.size = _u.lmsg.content->size;
+            content.ffn = _u.lmsg.content->ffn;
+            content.hint = _u.lmsg.content->hint;
+            if (content.ffn)
+                content.ffn (content.data, content.hint);
+#else
             if (_u.lmsg.content->ffn)
                 _u.lmsg.content->ffn (_u.lmsg.content->data,
                                       _u.lmsg.content->hint);
             free (_u.lmsg.content);
+#endif
         }
     }
 
