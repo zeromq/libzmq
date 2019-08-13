@@ -48,6 +48,35 @@ function verify_ssh()
     echo "SSH connection to the remote $REMOTE_IP_SSH is working fine."
 }
 
+function set_reproducible_tcp_kernel_buff_size()
+{
+    sysctl -w net.core.rmem_max=8388608 && \
+        sysctl -w net.core.wmem_max=8388608 && \
+        sysctl -w net.core.rmem_default=65536 && \
+        sysctl -w net.core.wmem_default=65536 && \
+        sysctl -w net.ipv4.tcp_rmem='4096 87380 8388608' && \
+        sysctl -w net.ipv4.tcp_wmem='4096 65536 8388608' && \
+        sysctl -w net.ipv4.tcp_mem='8388608 8388608 8388608' && \
+        sysctl -w net.ipv4.route.flush=1
+    if [ $? -ne 0 ]; then
+        echo "Failed setting kernel socket buffer sizes LOCALLY"
+        exit 2
+    fi
+
+    ssh $REMOTE_IP_SSH "sysctl -w net.core.rmem_max=8388608 && \
+        sysctl -w net.core.wmem_max=8388608 && \
+        sysctl -w net.core.rmem_default=65536 && \
+        sysctl -w net.core.wmem_default=65536 && \
+        sysctl -w net.ipv4.tcp_rmem='4096 87380 8388608' && \
+        sysctl -w net.ipv4.tcp_wmem='4096 65536 8388608' && \
+        sysctl -w net.ipv4.tcp_mem='8388608 8388608 8388608' && \
+        sysctl -w net.ipv4.route.flush=1"
+    if [ $? -ne 0 ]; then
+        echo "Failed setting kernel socket buffer sizes on the REMOTE system $REMOTE_IP_SSH"
+        exit 2
+    fi
+}
+
 function run_remote_perf_util()
 {
     local MESSAGE_SIZE_BYTES="$1"
@@ -112,6 +141,7 @@ function generate_output_file()
 # main:
 
 verify_ssh
+set_reproducible_tcp_kernel_buff_size
 
 THROUGHPUT_CSV_HEADER_LINE="# message_size,message_count,PPS[msg/s],throughput[Mb/s]"
 
