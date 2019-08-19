@@ -117,11 +117,14 @@ struct thread_info_t
 #pragma pack(pop)
 }
 
-typedef struct _MY_EXCEPTION_REGISTRATION_RECORD
+struct MY_EXCEPTION_REGISTRATION_RECORD
 {
-    struct _MY_EXCEPTION_REGISTRATION_RECORD *Next;
-    EXCEPTION_DISPOSITION NTAPI (*Handler) (EXCEPTION_RECORD*, void*, CONTEXT*, void*);
-} MY_EXCEPTION_REGISTRATION_RECORD;
+    typedef EXCEPTION_DISPOSITION (NTAPI *HandlerFunctionType) (
+      EXCEPTION_RECORD *, void *, CONTEXT *, void *);
+
+    MY_EXCEPTION_REGISTRATION_RECORD *Next;
+    HandlerFunctionType Handler;
+};
 
 static EXCEPTION_DISPOSITION NTAPI continue_execution (EXCEPTION_RECORD *rec,
                                                        void *frame,
