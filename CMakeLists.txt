@@ -1080,7 +1080,8 @@ if(ZMQ_BUILD_FRAMEWORK)
   COMMENT "Perf tools")
 endif()
 
-if(MSVC)
+option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" ON)
+if(MSVC AND ENABLE_PRECOMPILED)
   # default for all sources is to use precompiled headers
   foreach(source ${sources})
     # C and C++ can not use the same precompiled header
