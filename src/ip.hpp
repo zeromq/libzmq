@@ -71,6 +71,10 @@ int make_fdpair (fd_t *r_, fd_t *w_);
 // Makes a socket non-inheritable to child processes.
 // Asserts on any failure.
 void make_socket_noninheritable (fd_t sock_);
+
+//  Asserts that an internal error did not occur.  Does not assert
+//  on network errors such as reset or aborted connections.
+void assert_socket_tuning_error (fd_t s_, int rc_);
 }
 
 #endif

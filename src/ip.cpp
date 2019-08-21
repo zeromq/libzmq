@@ -681,3 +681,47 @@ void zmq::make_socket_noninheritable (fd_t sock_)
     LIBZMQ_UNUSED (sock_);
 #endif
 }
+
+void zmq::assert_socket_tuning_error (zmq::fd_t s_, int rc_)
+{
+    if (rc_ == 0)
+        return;
+
+    //  Check whether an error occurred
+    int err = 0;
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
+    int len = sizeof err;
+#else
+    socklen_t len = sizeof err;
+#endif
+
+    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
+
+    //  Assert if the error was caused by 0MQ bug.
+    //  Networking problems are OK. No need to assert.
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (rc == 0);
+    if (err != 0) {
+        wsa_assert (err == WSAECONNREFUSED || err == WSAECONNRESET
+                    || err == WSAECONNABORTED || err == WSAEINTR
+                    || err == WSAETIMEDOUT || err == WSAEHOSTUNREACH
+                    || err == WSAENETUNREACH || err == WSAENETDOWN
+                    || err == WSAENETRESET || err == WSAEACCES
+                    || err == WSAEINVAL || err == WSAEADDRINUSE);
+    }
+#else
+    //  Following code should handle both Berkeley-derived socket
+    //  implementations and Solaris.
+    if (rc == -1)
+        err = errno;
+    if (err != 0) {
+        errno = err;
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ECONNABORTED || errno == EINTR
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN
+                      || errno == ENETRESET || errno == EINVAL);
+    }
+#endif
+}
