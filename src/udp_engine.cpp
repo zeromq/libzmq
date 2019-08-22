@@ -120,7 +120,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
     // Bind the socket to a device if applicable
     if (!_options.bound_device.empty ())
-        rc |= bind_to_device (_fd, _options.bound_device);
+        rc = rc | bind_to_device (_fd, _options.bound_device);
 
     if (_send_enabled) {
         if (!_options.raw_socket) {
@@ -130,15 +130,15 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
             if (out->is_multicast ()) {
                 bool is_ipv6 = (out->family () == AF_INET6);
-                rc |= set_udp_multicast_loop (_fd, is_ipv6,
+                rc = rc | set_udp_multicast_loop (_fd, is_ipv6,
                         _options.multicast_loop);
 
                 if (_options.multicast_hops > 0) {
-                    rc |= set_udp_multicast_ttl (_fd, is_ipv6,
+                    rc = rc | set_udp_multicast_ttl (_fd, is_ipv6,
                             _options.multicast_hops);
                 }
 
-                rc |= set_udp_multicast_iface (_fd, is_ipv6, udp_addr);
+                rc = rc | set_udp_multicast_iface (_fd, is_ipv6, udp_addr);
             }
         } else {
             /// XXX fixme ?
@@ -149,7 +149,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     }
 
     if (_recv_enabled) {
-        rc |= set_udp_reuse_address (_fd, true);
+        rc = rc | set_udp_reuse_address (_fd, true);
 
         const ip_addr_t *bind_addr = udp_addr->bind_addr ();
         ip_addr_t any = ip_addr_t::any (bind_addr->family ());
@@ -161,7 +161,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
             //  Multicast addresses should be allowed to bind to more than
             //  one port as all ports should receive the message
 #ifdef SO_REUSEPORT
-            rc |= set_udp_reuse_port (_fd, true);
+            rc = rc | set_udp_reuse_port (_fd, true);
 #endif
 
             //  In multicast we should bind ANY and use the mreq struct to
@@ -174,15 +174,15 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         }
 
 #ifdef ZMQ_HAVE_VXWORKS
-        rc |= bind (_fd, (sockaddr *) real_bind_addr->as_sockaddr (),
+        rc = rc | bind (_fd, (sockaddr *) real_bind_addr->as_sockaddr (),
                    real_bind_addr->sockaddr_len ());
 #else
-        rc |= bind (_fd, real_bind_addr->as_sockaddr (),
+        rc = rc | bind (_fd, real_bind_addr->as_sockaddr (),
                    real_bind_addr->sockaddr_len ());
 #endif
 
         if (multicast) {
-            rc |= add_membership (_fd, udp_addr);
+            rc = rc | add_membership (_fd, udp_addr);
         }
     }
 
@@ -277,17 +277,21 @@ int zmq::udp_engine_t::set_udp_reuse_address (fd_t s_, bool on_)
 
 int zmq::udp_engine_t::set_udp_reuse_port (fd_t s_, bool on_)
 {
+#ifndef SO_REUSEPORT
+    return 0;
+#else
     int on = on_ ? 1 : 0;
     int rc = setsockopt (s_, SOL_SOCKET, SO_REUSEPORT,
                          reinterpret_cast<char *> (&on), sizeof (on));
     assert_socket_tuning_error (s_, rc);
     return rc;
+#endif
 }
 
 int zmq::udp_engine_t::add_membership (fd_t s_, const udp_address_t *addr_)
 {
     const ip_addr_t *mcast_addr = addr_->target_addr ();
-    int rc;
+    int rc = 0;
 
     if (mcast_addr->family () == AF_INET) {
         struct ip_mreq mreq;
