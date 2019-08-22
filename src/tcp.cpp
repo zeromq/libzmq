@@ -316,11 +316,6 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 #endif
 }
 
-void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
-{
-    assert_socket_tuning_error (s_, rc_);
-}
-
 void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 {
 #if defined ZMQ_HAVE_WINDOWS && defined SIO_LOOPBACK_FAST_PATH
