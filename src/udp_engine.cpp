@@ -130,12 +130,14 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 
             if (out->is_multicast ()) {
                 bool is_ipv6 = (out->family () == AF_INET6);
-                rc = rc | set_udp_multicast_loop (_fd, is_ipv6,
-                        _options.multicast_loop);
+                rc = rc
+                     | set_udp_multicast_loop (_fd, is_ipv6,
+                                               _options.multicast_loop);
 
                 if (_options.multicast_hops > 0) {
-                    rc = rc | set_udp_multicast_ttl (_fd, is_ipv6,
-                            _options.multicast_hops);
+                    rc = rc
+                         | set_udp_multicast_ttl (_fd, is_ipv6,
+                                                  _options.multicast_hops);
                 }
 
                 rc = rc | set_udp_multicast_iface (_fd, is_ipv6, udp_addr);
@@ -174,11 +176,13 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         }
 
 #ifdef ZMQ_HAVE_VXWORKS
-        rc = rc | bind (_fd, (sockaddr *) real_bind_addr->as_sockaddr (),
-                   real_bind_addr->sockaddr_len ());
+        rc = rc
+             | bind (_fd, (sockaddr *) real_bind_addr->as_sockaddr (),
+                     real_bind_addr->sockaddr_len ());
 #else
-        rc = rc | bind (_fd, real_bind_addr->as_sockaddr (),
-                   real_bind_addr->sockaddr_len ());
+        rc = rc
+             | bind (_fd, real_bind_addr->as_sockaddr (),
+                     real_bind_addr->sockaddr_len ());
 #endif
 
         if (multicast) {
@@ -202,7 +206,9 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     }
 }
 
-int zmq::udp_engine_t::set_udp_multicast_loop (fd_t s_, bool is_ipv6_, bool loop_)
+int zmq::udp_engine_t::set_udp_multicast_loop (fd_t s_,
+                                               bool is_ipv6_,
+                                               bool loop_)
 {
     int level;
     int optname;
@@ -216,8 +222,8 @@ int zmq::udp_engine_t::set_udp_multicast_loop (fd_t s_, bool is_ipv6_, bool loop
     }
 
     int loop = loop_ ? 1 : 0;
-    int rc = setsockopt (s_, level, optname,
-                         reinterpret_cast<char *> (&loop), sizeof (loop));
+    int rc = setsockopt (s_, level, optname, reinterpret_cast<char *> (&loop),
+                         sizeof (loop));
     assert_socket_tuning_error (s_, rc);
     return rc;
 }
@@ -238,7 +244,9 @@ int zmq::udp_engine_t::set_udp_multicast_ttl (fd_t s_, bool is_ipv6_, int hops_)
     return rc;
 }
 
-int zmq::udp_engine_t::set_udp_multicast_iface (fd_t s_, bool is_ipv6_, const udp_address_t *addr_)
+int zmq::udp_engine_t::set_udp_multicast_iface (fd_t s_,
+                                                bool is_ipv6_,
+                                                const udp_address_t *addr_)
 {
     int rc = 0;
 
@@ -296,7 +304,7 @@ int zmq::udp_engine_t::add_membership (fd_t s_, const udp_address_t *addr_)
     if (mcast_addr->family () == AF_INET) {
         struct ip_mreq mreq;
         mreq.imr_multiaddr = mcast_addr->ipv4.sin_addr;
-        mreq.imr_interface = addr_->bind_addr()->ipv4.sin_addr;
+        mreq.imr_interface = addr_->bind_addr ()->ipv4.sin_addr;
 
         rc = setsockopt (s_, IPPROTO_IP, IP_ADD_MEMBERSHIP,
                          reinterpret_cast<char *> (&mreq), sizeof (mreq));
@@ -322,7 +330,7 @@ void zmq::udp_engine_t::error (error_reason_t reason_)
 {
     zmq_assert (_session);
     _session->engine_error (reason_);
-    terminate();
+    terminate ();
 }
 
 void zmq::udp_engine_t::terminate ()
