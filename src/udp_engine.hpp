@@ -49,6 +49,22 @@ class udp_engine_t : public io_object_t, public i_engine
     int resolve_raw_address (char *addr_, size_t length_);
     void sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_);
 
+    int set_udp_reuse_address (fd_t s_, bool on_);
+    int set_udp_reuse_port (fd_t s_, bool on_);
+    // Indicate, if the multicast data being sent should be looped back
+    int set_udp_multicast_loop (fd_t s_, bool is_ipv6_, bool loop_);
+    // Set multicast TTL
+    int set_udp_multicast_ttl (fd_t s_, bool is_ipv6_, int hops_);
+    // Set multicast address/interface
+    int set_udp_multicast_iface (fd_t s_,
+                                 bool is_ipv6_,
+                                 const udp_address_t *addr_);
+    // Join a multicast group
+    int add_membership (fd_t s_, const udp_address_t *addr_);
+
+    //  Function to handle network issues.
+    void error (error_reason_t reason_);
+
     const endpoint_uri_pair_t _empty_endpoint;
 
     bool _plugged;
