@@ -237,6 +237,8 @@ int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
     if (rc != 0) {
         assert_success_or_recoverable (s_, rc);
         return -1;
+    } else {
+        return 0;
     }
 #else
     LIBZMQ_UNUSED (s_);
