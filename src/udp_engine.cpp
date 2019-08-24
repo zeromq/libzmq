@@ -491,14 +491,14 @@ void zmq::udp_engine_t::out_event ()
         rc = sendto (_fd, _out_buffer, size, 0, _out_address, _out_address_len);
 #endif
         if (rc < 0) {
-            assert_success_or_recoverable (_fd, rc);
 #ifdef ZMQ_HAVE_WINDOWS
-            const int last_error = WSAGetLastError ();
-            if (last_error != WSAEWOULDBLOCK) {
+            if (WSAGetLastError () != WSAEWOULDBLOCK) {
+                assert_success_or_recoverable (_fd, rc);
                 error (connection_error);
             }
 #else
             if (rc != EWOULDBLOCK) {
+                assert_success_or_recoverable (_fd, rc);
                 error (connection_error);
             }
 #endif
@@ -537,14 +537,14 @@ void zmq::udp_engine_t::in_event ()
                 reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
 
     if (nbytes < 0) {
-        assert_success_or_recoverable (_fd, nbytes);
 #ifdef ZMQ_HAVE_WINDOWS
-        const int last_error = WSAGetLastError ();
-        if (last_error != WSAEWOULDBLOCK) {
+        if (WSAGetLastError () != WSAEWOULDBLOCK) {
+            assert_success_or_recoverable (_fd, nbytes);
             error (connection_error);
         }
 #else
         if (nbytes != EWOULDBLOCK) {
+            assert_success_or_recoverable (_fd, nbytes);
             error (connection_error);
         }
 #endif
