@@ -234,20 +234,10 @@ int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
                          bound_device_.c_str (), bound_device_.length ());
-
-#ifdef ZMQ_HAVE_WINDOWS
-    if (rc != SOCKET_ERROR)
-        return 0;
-    const int lastError = WSAGetLastError ();
-    errno = wsa_error_to_errno (lastError);
-    wsa_assert (lastError != WSAENOTSOCK);
-    return -1;
-#else
-    if (rc == 0)
-        return 0;
-    errno_assert (errno != ENOTSOCK);
-    return -1;
-#endif
+    if (rc != 0) {
+        assert_success_or_recoverable (s_, rc);
+        return -1;
+    }
 #else
     LIBZMQ_UNUSED (s_);
     LIBZMQ_UNUSED (bound_device_);
@@ -682,10 +672,17 @@ void zmq::make_socket_noninheritable (fd_t sock_)
 #endif
 }
 
-void zmq::assert_socket_tuning_error (zmq::fd_t s_, int rc_)
+void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
 {
-    if (rc_ == 0)
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc_ != SOCKET_ERROR) {
         return;
+    }
+#else
+    if (rc_ != -1) {
+        return;
+    }
+#endif
 
     //  Check whether an error occurred
     int err = 0;
@@ -703,12 +700,12 @@ void zmq::assert_socket_tuning_error (zmq::fd_t s_, int rc_)
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        wsa_assert (err == WSAECONNREFUSED || err == WSAECONNRESET
-                    || err == WSAECONNABORTED || err == WSAEINTR
-                    || err == WSAETIMEDOUT || err == WSAEHOSTUNREACH
-                    || err == WSAENETUNREACH || err == WSAENETDOWN
-                    || err == WSAENETRESET || err == WSAEACCES
-                    || err == WSAEINVAL || err == WSAEADDRINUSE);
+        wsa_assert (
+          err == WSAECONNREFUSED || err == WSAECONNRESET
+          || err == WSAECONNABORTED || err == WSAEINTR || err == WSAETIMEDOUT
+          || err == WSAEHOSTUNREACH || err == WSAENETUNREACH
+          || err == WSAENETDOWN || err == WSAENETRESET || err == WSAEINVAL
+          || err == WSAEADDRINUSE || err == WSAEACCES || err == WSAEWOULDBLOCK);
     }
 #else
     //  Following code should handle both Berkeley-derived socket
@@ -717,11 +714,12 @@ void zmq::assert_socket_tuning_error (zmq::fd_t s_, int rc_)
         err = errno;
     if (err != 0) {
         errno = err;
-        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
-                      || errno == ECONNABORTED || errno == EINTR
-                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
-                      || errno == ENETUNREACH || errno == ENETDOWN
-                      || errno == ENETRESET || errno == EINVAL);
+        errno_assert (
+          errno == ECONNREFUSED || errno == ECONNRESET || errno == ECONNABORTED
+          || errno == EINTR || errno == ETIMEDOUT || errno == EHOSTUNREACH
+          || errno == ENETUNREACH || errno == ENETDOWN || errno == ENETRESET
+          || errno == EINVAL || errno == EADDRINUSE || errno == EACCES
+          || errno == EWOULDBLOCK || errno == EAGAIN || errno == EPIPE);
     }
 #endif
 }

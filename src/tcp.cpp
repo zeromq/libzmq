@@ -62,7 +62,7 @@ int zmq::tune_tcp_socket (fd_t s_)
     int nodelay = 1;
     int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY,
                          reinterpret_cast<char *> (&nodelay), sizeof (int));
-    assert_socket_tuning_error (s_, rc);
+    assert_success_or_recoverable (s_, rc);
     if (rc != 0)
         return rc;
 
@@ -81,7 +81,7 @@ int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
     const int rc =
       setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 }
 
@@ -90,7 +90,7 @@ int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
     const int rc =
       setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 }
 
@@ -133,7 +133,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         int rc =
           setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
                       reinterpret_cast<char *> (&keepalive_), sizeof (int));
-        assert_socket_tuning_error (s_, rc);
+        assert_success_or_recoverable (s_, rc);
         if (rc != 0)
             return rc;
 
@@ -141,7 +141,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_cnt_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_cnt_,
                                  sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -160,7 +160,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE,
                                  &keepalive_idle_, sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -171,7 +171,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_intvl_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL,
                                  &keepalive_intvl_, sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
