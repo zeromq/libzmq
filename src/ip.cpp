@@ -702,12 +702,12 @@ void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        wsa_assert (
-          err == WSAECONNREFUSED || err == WSAECONNRESET
-          || err == WSAECONNABORTED || err == WSAEINTR || err == WSAETIMEDOUT
-          || err == WSAEHOSTUNREACH || err == WSAENETUNREACH
-          || err == WSAENETDOWN || err == WSAENETRESET || err == WSAEINVAL
-          || err == WSAEADDRINUSE || err == WSAEACCES || err == WSAEWOULDBLOCK);
+        wsa_assert (err == WSAECONNREFUSED || err == WSAECONNRESET
+                    || err == WSAECONNABORTED || err == WSAEINTR
+                    || err == WSAETIMEDOUT || err == WSAEHOSTUNREACH
+                    || err == WSAENETUNREACH || err == WSAENETDOWN
+                    || err == WSAENETRESET || err == WSAEACCES
+                    || err == WSAEINVAL || err == WSAEADDRINUSE);
     }
 #else
     //  Following code should handle both Berkeley-derived socket
@@ -716,12 +716,11 @@ void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
         err = errno;
     if (err != 0) {
         errno = err;
-        errno_assert (
-          errno == ECONNREFUSED || errno == ECONNRESET || errno == ECONNABORTED
-          || errno == EINTR || errno == ETIMEDOUT || errno == EHOSTUNREACH
-          || errno == ENETUNREACH || errno == ENETDOWN || errno == ENETRESET
-          || errno == EINVAL || errno == EADDRINUSE || errno == EACCES
-          || errno == EWOULDBLOCK || errno == EAGAIN || errno == EPIPE);
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ECONNABORTED || errno == EINTR
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN
+                      || errno == ENETRESET || errno == EINVAL);
     }
 #endif
 }
