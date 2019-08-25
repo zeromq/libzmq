@@ -62,7 +62,7 @@ int zmq::tune_tcp_socket (fd_t s_)
     int nodelay = 1;
     int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY,
                          reinterpret_cast<char *> (&nodelay), sizeof (int));
-    assert_socket_tuning_error (s_, rc);
+    assert_success_or_recoverable (s_, rc);
     if (rc != 0)
         return rc;
 
@@ -71,7 +71,7 @@ int zmq::tune_tcp_socket (fd_t s_)
     int nodelack = 1;
     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char *) &nodelack,
                      sizeof (int));
-    assert_socket_tuning_error (s_, rc);
+    assert_success_or_recoverable (s_, rc);
 #endif
     return rc;
 }
@@ -81,7 +81,7 @@ int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
     const int rc =
       setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 }
 
@@ -90,7 +90,7 @@ int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
     const int rc =
       setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
                   reinterpret_cast<char *> (&bufsize_), sizeof bufsize_);
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 }
 
@@ -123,7 +123,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         int rc = WSAIoctl (s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
                            sizeof (keepalive_opts), NULL, 0,
                            &num_bytes_returned, NULL, NULL);
-        assert_socket_tuning_error (s_, rc);
+        assert_success_or_recoverable (s_, rc);
         if (rc == SOCKET_ERROR)
             return rc;
     }
@@ -133,7 +133,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         int rc =
           setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
                       reinterpret_cast<char *> (&keepalive_), sizeof (int));
-        assert_socket_tuning_error (s_, rc);
+        assert_success_or_recoverable (s_, rc);
         if (rc != 0)
             return rc;
 
@@ -141,7 +141,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_cnt_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_cnt_,
                                  sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -151,7 +151,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE,
                                  &keepalive_idle_, sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -160,7 +160,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE,
                                  &keepalive_idle_, sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -171,7 +171,7 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         if (keepalive_intvl_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL,
                                  &keepalive_intvl_, sizeof (int));
-            assert_socket_tuning_error (s_, rc);
+            assert_success_or_recoverable (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -196,13 +196,13 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     int rc =
       setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT,
                   reinterpret_cast<char *> (&timeout_), sizeof (timeout_));
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
 #elif defined(TCP_USER_TIMEOUT)
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
                          sizeof (timeout_));
-    assert_socket_tuning_error (sockfd_, rc);
+    assert_success_or_recoverable (sockfd_, rc);
     return rc;
 #else
     return 0;
