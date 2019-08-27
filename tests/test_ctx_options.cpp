@@ -116,7 +116,6 @@ void test_ctx_thread_opts ()
     }
 
 
-#ifdef ZMQ_THREAD_AFFINITY_CPU_ADD
     // test affinity:
 
     // this should result in background threads being placed only on the
@@ -138,10 +137,8 @@ void test_ctx_thread_opts ()
                                                 ZMQ_THREAD_AFFINITY_CPU_REMOVE,
                                                 cpus_remove[idx]));
     }
-#endif
 
 
-#ifdef ZMQ_THREAD_NAME_PREFIX
     // test INTEGER thread name prefix:
 
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -149,7 +146,7 @@ void test_ctx_thread_opts ()
     TEST_ASSERT_EQUAL_INT (
       1234, zmq_ctx_get (get_test_context (), ZMQ_THREAD_NAME_PREFIX));
 
-
+#ifdef ZMQ_BUILD_DRAFT_API
     // test STRING thread name prefix:
 
     const char prefix[] = "MyPrefix9012345"; // max len is 16 chars
