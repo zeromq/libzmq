@@ -72,8 +72,8 @@ class thread_ctx_t
                        void *arg_,
                        const char *name_ = NULL) const;
 
-    int set (int option_, int optval_);
-    int get (int option_);
+    int set (int option_, const void *optval_, size_t optvallen_);
+    int get (int option_, void *optval_, size_t *optvallen_);
 
   protected:
     //  Synchronisation of access to context options.
@@ -115,7 +115,8 @@ class ctx_t : public thread_ctx_t
     int shutdown ();
 
     //  Set and get context properties.
-    int set (int option_, int optval_);
+    int set (int option_, const void *optval_, size_t optvallen_);
+    int get (int option_, void *optval_, size_t *optvallen_);
     int get (int option_);
 
     //  Create and destroy a socket.

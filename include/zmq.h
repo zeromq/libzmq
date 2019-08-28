@@ -670,6 +670,16 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
 
+/*  DRAFT Context methods.                                                    */
+ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,
+                                int option_,
+                                const void *optval_,
+                                size_t optvallen_);
+ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
+                                int option_,
+                                void *optval_,
+                                size_t *optvallen_);
+
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
 ZMQ_EXPORT int zmq_leave (void *s, const char *group);

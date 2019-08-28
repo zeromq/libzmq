@@ -1,0 +1,82 @@
+zmq_ctx_get_ext(3)
+==================
+
+
+NAME
+----
+
+zmq_ctx_get_ext - get extended context options
+
+
+SYNOPSIS
+--------
+*int zmq_ctx_get_ext (void '*context', int 'option_name', void '*option_value', size_t '*option_len');*
+
+
+DESCRIPTION
+-----------
+The _zmq_ctx_get()_ function shall retrieve the value for the option
+specified by the 'option_name' argument and store it in the buffer pointed to
+by the 'option_value' argument. 
+The 'option_len' argument is the size in bytes of the buffer pointed
+to by 'option_value'; upon successful completion _zmq_ctx_get_ext()_ shall
+modify the 'option_len' argument to indicate the actual size of the option
+value stored in the buffer.
+
+The _zmq_ctx_get_ext()_ function accepts all the option names accepted by
+_zmq_ctx_get()_.
+Options that make most sense to retrieve using _zmq_ctx_get_ext()_ instead of
+_zmq_ctx_get()_ are:
+
+ZMQ_THREAD_NAME_PREFIX: Get name prefix for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_NAME_PREFIX' argument gets the string prefix of each thread
+created for the internal context's thread pool.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: empty string
+
+
+RETURN VALUE
+------------
+The _zmq_ctx_get_ext()_ function returns a value of 0 or greater if successful.
+Otherwise it returns `-1` and sets 'errno' to one of the values defined
+below.
+
+
+ERRORS
+------
+*EINVAL*::
+The requested option _option_name_ is unknown.
+
+
+EXAMPLE
+-------
+.Setting a prefix on internal ZMQ threda names:
+----
+void *context = zmq_ctx_new ();
+const char prefix[] = "MyApp";
+size_t prefixLen = sizeof(prefix);
+zmq_ctx_set (context, ZMQ_THREAD_NAME_PREFIX, &prefix, &prefixLen);
+
+char buff[256];
+size_t buffLen = sizeof(buff);
+int rc = zmq_ctx_get (context, ZMQ_THREAD_NAME_PREFIX, &buff, &buffLen);
+assert (rc == 0);
+assert (buffLen == prefixLen);
+
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_ctx_get[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

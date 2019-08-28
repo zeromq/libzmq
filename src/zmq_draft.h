@@ -61,6 +61,16 @@
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
 
+/*  DRAFT Context methods.                                                    */
+int zmq_ctx_set_ext (void *context_,
+                     int option_,
+                     const void *optval_,
+                     size_t optvallen_);
+int zmq_ctx_get_ext (void *context_,
+                     int option_,
+                     void *optval_,
+                     size_t *optvallen_);
+
 /*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s_, const char *group_);
 int zmq_leave (void *s_, const char *group_);

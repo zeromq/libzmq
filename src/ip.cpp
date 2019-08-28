@@ -234,20 +234,12 @@ int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
                          bound_device_.c_str (), bound_device_.length ());
-
-#ifdef ZMQ_HAVE_WINDOWS
-    if (rc != SOCKET_ERROR)
+    if (rc != 0) {
+        assert_success_or_recoverable (s_, rc);
+        return -1;
+    } else {
         return 0;
-    const int lastError = WSAGetLastError ();
-    errno = wsa_error_to_errno (lastError);
-    wsa_assert (lastError != WSAENOTSOCK);
-    return -1;
-#else
-    if (rc == 0)
-        return 0;
-    errno_assert (errno != ENOTSOCK);
-    return -1;
-#endif
+    }
 #else
     LIBZMQ_UNUSED (s_);
     LIBZMQ_UNUSED (bound_device_);
@@ -682,10 +674,17 @@ void zmq::make_socket_noninheritable (fd_t sock_)
 #endif
 }
 
-void zmq::assert_socket_tuning_error (zmq::fd_t s_, int rc_)
+void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
 {
-    if (rc_ == 0)
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc_ != SOCKET_ERROR) {
         return;
+    }
+#else
+    if (rc_ != -1) {
+        return;
+    }
+#endif
 
     //  Check whether an error occurred
     int err = 0;
