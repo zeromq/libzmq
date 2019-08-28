@@ -35,7 +35,7 @@
 #include "concurrentqueue.h"
 
 // FIXME: we need to grow dynamically the mempool
-#define MAX_ACTIVE_MESSAGES (8192)
+#define MAX_ACTIVE_MESSAGES (16384)
 
 namespace zmq
 {
@@ -85,7 +85,16 @@ class global_memory_pool_t
             return MsgBlock_SizeClass_256;
         else if (n < 512)
             return MsgBlock_SizeClass_512;
+        else if (n < 1024)
+            return MsgBlock_SizeClass_1024;
+        else if (n < 2048)
+            return MsgBlock_SizeClass_2048;
+        else if (n < 4096)
+            return MsgBlock_SizeClass_4096;
+        else if (n < 8192)
+            return MsgBlock_SizeClass_8192;
 
+        // size too big
         return MsgBlock_NumSizeClasses;
     }
 
