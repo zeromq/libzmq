@@ -10,7 +10,6 @@
 #    export LOCAL_TEST_ENDPOINT="tcp://192.168.1.1:1234"
 #    export REMOTE_TEST_ENDPOINT="tcp://192.168.1.2:1234"
 #    export REMOTE_LIBZMQ_PATH="/home/fmontorsi/libzmq/perf"
-#    export MESSAGE_SIZE_LIST="8 16 32 64 128 210"
 #    ./generate_csv.sh
 #
 
@@ -23,7 +22,7 @@ LOCAL_TEST_ENDPOINT=${LOCAL_TEST_ENDPOINT:-tcp://192.168.1.1:1234}
 REMOTE_TEST_ENDPOINT=${REMOTE_TEST_ENDPOINT:-tcp://192.168.1.2:1234}
 
 # constant values:
-MESSAGE_SIZE_LIST="${MESSAGE_SIZE_LIST:-8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072}"
+MESSAGE_SIZE_LIST="8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536 131072"
 OUTPUT_DIR="results"
 OUTPUT_FILE_PREFIX="results.txt"
 OUTPUT_FILE_CSV_PREFIX="results.csv"
@@ -46,35 +45,6 @@ function verify_ssh()
     fi
 
     echo "SSH connection to the remote $REMOTE_IP_SSH is working fine."
-}
-
-function set_reproducible_tcp_kernel_buff_size()
-{
-    sysctl -w net.core.rmem_max=8388608 && \
-        sysctl -w net.core.wmem_max=8388608 && \
-        sysctl -w net.core.rmem_default=65536 && \
-        sysctl -w net.core.wmem_default=65536 && \
-        sysctl -w net.ipv4.tcp_rmem='4096 87380 8388608' && \
-        sysctl -w net.ipv4.tcp_wmem='4096 65536 8388608' && \
-        sysctl -w net.ipv4.tcp_mem='8388608 8388608 8388608' && \
-        sysctl -w net.ipv4.route.flush=1
-    if [ $? -ne 0 ]; then
-        echo "Failed setting kernel socket buffer sizes LOCALLY"
-        exit 2
-    fi
-
-    ssh $REMOTE_IP_SSH "sysctl -w net.core.rmem_max=8388608 && \
-        sysctl -w net.core.wmem_max=8388608 && \
-        sysctl -w net.core.rmem_default=65536 && \
-        sysctl -w net.core.wmem_default=65536 && \
-        sysctl -w net.ipv4.tcp_rmem='4096 87380 8388608' && \
-        sysctl -w net.ipv4.tcp_wmem='4096 65536 8388608' && \
-        sysctl -w net.ipv4.tcp_mem='8388608 8388608 8388608' && \
-        sysctl -w net.ipv4.route.flush=1"
-    if [ $? -ne 0 ]; then
-        echo "Failed setting kernel socket buffer sizes on the REMOTE system $REMOTE_IP_SSH"
-        exit 2
-    fi
 }
 
 function run_remote_perf_util()
@@ -141,7 +111,6 @@ function generate_output_file()
 # main:
 
 verify_ssh
-set_reproducible_tcp_kernel_buff_size
 
 THROUGHPUT_CSV_HEADER_LINE="# message_size,message_count,PPS[msg/s],throughput[Mb/s]"
 
