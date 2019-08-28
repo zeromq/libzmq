@@ -95,6 +95,7 @@ struct iovec
 #include "timers.hpp"
 #include "ip.hpp"
 #include "address.hpp"
+#include "allocator.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -212,6 +213,36 @@ int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
     }
     return (static_cast<zmq::ctx_t *> (ctx_))
       ->get (option_, optval_, optvallen_);
+}
+
+
+// New allocator API
+
+void *zmq_msg_allocator_new (int type_)
+{
+    zmq::allocator_t *pool = new (std::nothrow) zmq::allocator_t;
+    if (!pool) {
+        errno = ENOMEM;
+        return NULL;
+    }
+
+    pool->init (type_);
+    return pool;
+}
+
+int zmq_msg_allocator_destroy (void **allocator_)
+{
+    if (allocator_) {
+        zmq::allocator_t *const allocator =
+          static_cast<zmq::allocator_t *> (*allocator_);
+        if (allocator && allocator->check_tag ()) {
+            delete allocator;
+            *allocator_ = NULL;
+            return 0;
+        }
+    }
+    errno = EFAULT;
+    return -1;
 }
 
 
@@ -598,6 +629,13 @@ int zmq_msg_init (zmq_msg_t *msg_)
 int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_size (size_);
+}
+
+int zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))
+      ->init_from_allocator (size_,
+                             reinterpret_cast<zmq::allocator_t *> (allocator_));
 }
 
 int zmq_msg_init_data (

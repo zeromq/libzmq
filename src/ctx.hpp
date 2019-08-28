@@ -35,6 +35,7 @@
 #include <string>
 #include <stdarg.h>
 
+//#include "allocator.hpp"
 #include "mailbox.hpp"
 #include "array.hpp"
 #include "config.hpp"
@@ -219,6 +220,9 @@ class ctx_t : public thread_ctx_t
 
     //  Synchronisation of access to the list of inproc endpoints.
     mutex_t _endpoints_sync;
+
+    // Allocator for messages
+    //allocator_t *_allocator;
 
     //  Maximum socket ID.
     static atomic_counter_t max_socket_id;

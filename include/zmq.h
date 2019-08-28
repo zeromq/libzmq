@@ -268,6 +268,8 @@ typedef void(zmq_free_fn) (void *data_, void *hint_);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
+ZMQ_EXPORT int
+zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_);
 ZMQ_EXPORT int zmq_msg_init_data (
   zmq_msg_t *msg_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_);
 ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_);
@@ -669,6 +671,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
+//#define ZMQ_MSG_ALLOCATOR 11
 
 /*  DRAFT Context methods.                                                    */
 ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,
@@ -679,6 +682,17 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
                                 int option_,
                                 void *optval_,
                                 size_t *optvallen_);
+
+/* ZMQ-provided message-pool implementations.                                 */
+// default allocator using malloc/free
+#define ZMQ_MSG_ALLOCATOR_DEFAULT 0
+// using internally a SPSC queue (cannot be used with inproc maybe?) or perhaps an MPMC queue anyway
+#define ZMQ_MSG_ALLOCATOR_PER_THREAD_POOL 1
+// using internally a MPMC queue
+#define ZMQ_MSG_ALLOCATOR_GLOBAL_POOL 2
+
+ZMQ_EXPORT void *zmq_msg_allocator_new (int type_);
+ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);

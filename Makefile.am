@@ -22,6 +22,8 @@ include_HEADERS = \
 src_libzmq_la_SOURCES = \
 	src/address.cpp \
 	src/address.hpp \
+	src/allocator.cpp \
+	src/allocator.hpp \
 	src/array.hpp \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \

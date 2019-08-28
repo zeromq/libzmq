@@ -51,6 +51,8 @@ typedef void(msg_free_fn) (void *data_, void *hint_);
 
 namespace zmq
 {
+class allocator_t;
+
 //  Note that this structure needs to be explicitly constructed
 //  (init functions) and destructed (close function).
 
@@ -105,6 +107,7 @@ class msg_t
                                size_t size_,
                                msg_free_fn *ffn_,
                                void *hint_);
+    int init_from_allocator (size_t size_, zmq::allocator_t *alloc_);
     int init_delimiter ();
     int init_join ();
     int init_leave ();
@@ -236,9 +239,10 @@ class msg_t
         {
             metadata_t *metadata;
             content_t *content;
+            unsigned char allocator_was_used; // boolean flag
             unsigned char unused[msg_t_size
                                  - (sizeof (metadata_t *) + sizeof (content_t *)
-                                    + 2 + 16 + sizeof (uint32_t))];
+                                    + 3 + 16 + sizeof (uint32_t))];
             unsigned char type;
             unsigned char flags;
             char group[16];
