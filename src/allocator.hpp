@@ -116,7 +116,14 @@ class global_memory_pool_t
             }
         }
     }
-    ~global_memory_pool_t () {}
+    ~global_memory_pool_t ()
+    {
+        // deallocate all message classes
+        for (int i = 0; i < MsgBlock_NumSizeClasses; i++) {
+            free (m_storage[i].raw_data);
+            m_storage[i].raw_data = NULL;
+        }
+    }
 
     void *allocate_msg (size_t len) // consumer thread: user app thread
     {
