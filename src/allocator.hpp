@@ -177,10 +177,10 @@ class allocator_t
 
     void init (int type_) { _type = type_; }
 
-    // allocate() gets called by the consumer thread: the user app thread
+    // allocate() typically gets called by the consumer thread: the user app thread(s)
     void *allocate (size_t len);
 
-    // deallocate_msg() gets called by the producer thread: the ZMQ background IO thread
+    // deallocate_msg() typically gets called by the producer thread: the ZMQ background IO thread(s)
     static void deallocate_msg (void *data_, void *hint_);
 
     size_t size () const;
