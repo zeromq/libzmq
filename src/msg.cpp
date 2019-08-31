@@ -190,25 +190,36 @@ int zmq::msg_t::init_from_allocator (size_t size_, zmq::allocator_t *alloc_)
 {
     zmq_assert (alloc_ != NULL && size_ != 0);
 
-    _u.lmsg.metadata = NULL;
-    _u.lmsg.type = type_lmsg;
-    _u.lmsg.flags = 0;
-    _u.lmsg.allocator_was_used = 1;
-    _u.lmsg.group[0] = '\0';
-    _u.lmsg.routing_id = 0;
-    _u.lmsg.content = reinterpret_cast<content_t *> (
-      alloc_->allocate (size_ + sizeof (content_t)));
+    if (size_ <= max_vsm_size) {
+        // in case we can fit the message data inside the msg_t itself, this option will always
+        // be fastest rather than using the allocator!
+        _u.vsm.metadata = NULL;
+        _u.vsm.type = type_vsm;
+        _u.vsm.flags = 0;
+        _u.vsm.size = static_cast<unsigned char> (size_);
+        _u.vsm.group[0] = '\0';
+        _u.vsm.routing_id = 0;
+    } else {
+        _u.lmsg.metadata = NULL;
+        _u.lmsg.type = type_lmsg;
+        _u.lmsg.flags = 0;
+        _u.lmsg.allocator_was_used = 1;
+        _u.lmsg.group[0] = '\0';
+        _u.lmsg.routing_id = 0;
+        _u.lmsg.content = reinterpret_cast<content_t *> (
+          alloc_->allocate (size_ + sizeof (content_t)));
 
-    if (!_u.lmsg.content) {
-        errno = ENOMEM;
-        return -1;
+        if (!_u.lmsg.content) {
+            errno = ENOMEM;
+            return -1;
+        }
+
+        _u.lmsg.content->data = _u.lmsg.content + 1;
+        _u.lmsg.content->size = size_;
+        _u.lmsg.content->ffn = (zmq_free_fn *) alloc_->deallocate_msg;
+        _u.lmsg.content->hint = alloc_;
+        new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
-
-    _u.lmsg.content->data = _u.lmsg.content + 1;
-    _u.lmsg.content->size = size_;
-    _u.lmsg.content->ffn = (zmq_free_fn *) alloc_->deallocate_msg;
-    _u.lmsg.content->hint = alloc_;
-    new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
 
     return 0;
 }
