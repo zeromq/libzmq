@@ -104,13 +104,10 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             data = static_cast<unsigned char *> (sub.command_body ());
             size = sub.command_body_size ();
             subscribe = sub.is_subscribe ();
-        } else if (sub.size () > 0) {
-            unsigned char first = *msg_data;
-            if (first == 0 || first == 1) {
-                data = msg_data + 1;
-                size = sub.size () - 1;
-                subscribe = first == 1;
-            }
+        } else if (sub.size () > 0 && (*msg_data == 0 || *msg_data == 1)) {
+            data = msg_data + 1;
+            size = sub.size () - 1;
+            subscribe = *msg_data == 1;
         } else {
             //  Process user message coming upstream from xsub socket
             _pending_data.push_back (blob_t (msg_data, sub.size ()));
