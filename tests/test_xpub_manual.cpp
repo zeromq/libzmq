@@ -434,6 +434,28 @@ void test_unsubscribe_cleanup ()
     test_context_socket_close (sub);
 }
 
+void test_user_message ()
+{
+    //  Create a publisher
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
+
+    //  Create a subscriber
+    void *sub = test_context_socket (ZMQ_XSUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
+
+    //  Send some data that is neither sub nor unsub
+    const char subscription[] = {2, 'A', 0};
+    send_string_expect_success (sub, subscription, 0);
+
+    // Receive subscriptions from subscriber
+    recv_string_expect_success (pub, subscription, 0);
+
+    //  Clean up.
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -444,6 +466,7 @@ int main ()
     RUN_TEST (test_xpub_proxy_unsubscribe_on_disconnect);
     RUN_TEST (test_missing_subscriptions);
     RUN_TEST (test_unsubscribe_cleanup);
+    RUN_TEST (test_user_message);
 
     return UNITY_END ();
 }
