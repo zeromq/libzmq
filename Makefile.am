@@ -502,299 +502,299 @@ tests_libtestutil_a_CPPFLAGS = ${UNITY_CPPFLAGS}
 noinst_LIBRARIES = external/unity/libunity.a tests/libtestutil.a
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
-tests_test_ancillaries_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ancillaries_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_ancillaries_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_system_SOURCES = tests/test_system.cpp
-tests_test_system_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_system_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_system_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_pair_inproc_SOURCES = tests/test_pair_inproc.cpp
-tests_test_pair_inproc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_pair_inproc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_pair_inproc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_pair_tcp_SOURCES = tests/test_pair_tcp.cpp
-tests_test_pair_tcp_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_pair_tcp_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_pair_tcp_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_inproc_SOURCES = tests/test_reqrep_inproc.cpp
-tests_test_reqrep_inproc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_inproc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_inproc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_tcp_SOURCES = tests/test_reqrep_tcp.cpp
-tests_test_reqrep_tcp_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_tcp_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_tcp_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_hwm_SOURCES = tests/test_hwm.cpp
-tests_test_hwm_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_hwm_pubsub_SOURCES = tests/test_hwm_pubsub.cpp
-tests_test_hwm_pubsub_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_hwm_pubsub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_hwm_pubsub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_device_SOURCES = tests/test_reqrep_device.cpp
-tests_test_reqrep_device_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_device_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_device_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_sub_forward_SOURCES = tests/test_sub_forward.cpp
-tests_test_sub_forward_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_sub_forward_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_sub_forward_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_invalid_rep_SOURCES = tests/test_invalid_rep.cpp
-tests_test_invalid_rep_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_invalid_rep_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_invalid_rep_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
-tests_test_msg_flags_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_msg_flags_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_msg_flags_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
-tests_test_msg_ffn_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_msg_ffn_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_msg_ffn_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
-tests_test_connect_resolve_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_connect_resolve_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_connect_resolve_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_immediate_SOURCES = tests/test_immediate.cpp
-tests_test_immediate_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_immediate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_immediate_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_last_endpoint_SOURCES = tests/test_last_endpoint.cpp
-tests_test_last_endpoint_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_last_endpoint_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_last_endpoint_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_term_endpoint_SOURCES = tests/test_term_endpoint.cpp
-tests_test_term_endpoint_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_term_endpoint_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_term_endpoint_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_srcfd_SOURCES = tests/test_srcfd.cpp
-tests_test_srcfd_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_srcfd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_srcfd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_monitor_SOURCES = tests/test_monitor.cpp
-tests_test_monitor_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_monitor_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_monitor_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_router_mandatory_SOURCES = tests/test_router_mandatory.cpp
-tests_test_router_mandatory_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_router_mandatory_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_mandatory_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_router_mandatory_hwm_SOURCES = tests/test_router_mandatory_hwm.cpp
-tests_test_router_mandatory_hwm_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_router_mandatory_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_mandatory_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_router_handover_SOURCES = tests/test_router_handover.cpp
-tests_test_router_handover_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_router_handover_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_handover_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_probe_router_SOURCES = tests/test_probe_router.cpp
-tests_test_probe_router_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_probe_router_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_probe_router_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_SOURCES = tests/test_stream.cpp
-tests_test_stream_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_stream_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_empty_SOURCES = tests/test_stream_empty.cpp
-tests_test_stream_empty_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_stream_empty_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_empty_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_timeout_SOURCES = tests/test_stream_timeout.cpp
-tests_test_stream_timeout_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_stream_timeout_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_timeout_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_disconnect_SOURCES = tests/test_stream_disconnect.cpp
-tests_test_stream_disconnect_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_stream_disconnect_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_disconnect_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_disconnect_inproc_SOURCES = tests/test_disconnect_inproc.cpp
-tests_test_disconnect_inproc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_disconnect_inproc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_disconnect_inproc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_unbind_wildcard_SOURCES = tests/test_unbind_wildcard.cpp
-tests_test_unbind_wildcard_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_unbind_wildcard_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_unbind_wildcard_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_ctx_options_SOURCES = tests/test_ctx_options.cpp
-tests_test_ctx_options_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ctx_options_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_ctx_options_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_iov_SOURCES = tests/test_iov.cpp
-tests_test_iov_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_iov_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_iov_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_ctx_destroy_SOURCES = tests/test_ctx_destroy.cpp
-tests_test_ctx_destroy_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ctx_destroy_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_ctx_destroy_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_security_no_zap_handler_SOURCES = tests/test_security_no_zap_handler.cpp
-tests_test_security_no_zap_handler_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_security_no_zap_handler_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_no_zap_handler_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_security_null_SOURCES = tests/test_security_null.cpp
-tests_test_security_null_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_security_null_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_null_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
-tests_test_security_plain_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_security_plain_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_plain_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_security_zap_SOURCES = tests/test_security_zap.cpp
-tests_test_security_zap_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_security_zap_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_zap_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
-tests_test_spec_req_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_spec_req_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_spec_req_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_spec_rep_SOURCES = tests/test_spec_rep.cpp
-tests_test_spec_rep_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_spec_rep_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_spec_rep_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_spec_dealer_SOURCES = tests/test_spec_dealer.cpp
-tests_test_spec_dealer_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_spec_dealer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_spec_dealer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_spec_router_SOURCES = tests/test_spec_router.cpp
-tests_test_spec_router_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_spec_router_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_spec_router_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_spec_pushpull_SOURCES = tests/test_spec_pushpull.cpp
-tests_test_spec_pushpull_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_spec_pushpull_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_spec_pushpull_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_req_correlate_SOURCES = tests/test_req_correlate.cpp
-tests_test_req_correlate_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_req_correlate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_req_correlate_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_req_relaxed_SOURCES = tests/test_req_relaxed.cpp
-tests_test_req_relaxed_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_req_relaxed_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_req_relaxed_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_conflate_SOURCES = tests/test_conflate.cpp
-tests_test_conflate_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_conflate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_conflate_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_inproc_connect_SOURCES = tests/test_inproc_connect.cpp
-tests_test_inproc_connect_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_inproc_connect_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_inproc_connect_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
-tests_test_issue_566_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_issue_566_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_issue_566_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
-tests_test_proxy_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_proxy_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_proxy_hwm_SOURCES = tests/test_proxy_hwm.cpp
-tests_test_proxy_hwm_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_proxy_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
-tests_test_proxy_single_socket_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_proxy_single_socket_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_single_socket_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
-tests_test_proxy_terminate_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_proxy_terminate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_terminate_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
-tests_test_getsockopt_memset_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_getsockopt_memset_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_getsockopt_memset_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
-tests_test_many_sockets_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_many_sockets_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_many_sockets_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
-tests_test_diffserv_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_diffserv_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_diffserv_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_connect_rid_SOURCES = tests/test_connect_rid.cpp
-tests_test_connect_rid_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_connect_rid_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_connect_rid_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_bind_src_address_SOURCES = tests/test_bind_src_address.cpp
-tests_test_bind_src_address_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_bind_src_address_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_bind_src_address_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_metadata_SOURCES = tests/test_metadata.cpp
-tests_test_metadata_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_metadata_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_metadata_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_capabilities_SOURCES = tests/test_capabilities.cpp
-tests_test_capabilities_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_capabilities_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_capabilities_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_nodrop_SOURCES = tests/test_xpub_nodrop.cpp
-tests_test_xpub_nodrop_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_nodrop_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_nodrop_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_manual_SOURCES = tests/test_xpub_manual.cpp
-tests_test_xpub_manual_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_manual_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_manual_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
-tests_test_xpub_welcome_msg_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_welcome_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_welcome_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_verbose_SOURCES = tests/test_xpub_verbose.cpp
-tests_test_xpub_verbose_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_verbose_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_verbose_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
-tests_test_atomics_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_atomics_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_atomics_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_sockopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
-tests_test_sockopt_hwm_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_sockopt_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_sockopt_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
-tests_test_setsockopt_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_setsockopt_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_setsockopt_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
-tests_test_heartbeats_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_heartbeats_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_heartbeats_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
-tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_stream_exceeds_buffer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_exceeds_buffer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
-tests_test_pub_invert_matching_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_pub_invert_matching_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_pub_invert_matching_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_bind_after_connect_tcp_SOURCES = tests/test_bind_after_connect_tcp.cpp
-tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_bind_after_connect_tcp_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_bind_after_connect_tcp_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_base85_SOURCES = tests/test_base85.cpp
-tests_test_base85_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_base85_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_base85_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
-tests_test_sodium_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_sodium_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_sodium_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
-tests_test_socket_null_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_socket_null_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socket_null_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
-tests_test_reconnect_ivl_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reconnect_ivl_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reconnect_ivl_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
-tests_test_mock_pub_sub_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_mock_pub_sub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_mock_pub_sub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_ws_transport_SOURCES = tests/test_ws_transport.cpp
-tests_test_ws_transport_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ws_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_ws_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_CURVE
@@ -818,7 +818,7 @@ tests_test_security_curve_SOURCES += \
 endif
 
 tests_test_security_curve_LDADD = \
-        src/libzmq.la ${TESTUTIL_LIBS} $(LIBUNWIND_LIBS)
+        ${TESTUTIL_LIBS} src/libzmq.la $(LIBUNWIND_LIBS)
 tests_test_security_curve_CPPFLAGS = \
         ${TESTUTIL_CPPFLAGS} \
 	${LIBUNWIND_CFLAGS}
@@ -846,39 +846,39 @@ test_apps += \
 	tests/test_filter_ipc
 
 tests_test_shutdown_stress_SOURCES = tests/test_shutdown_stress.cpp
-tests_test_shutdown_stress_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_shutdown_stress_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_shutdown_stress_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_ipc_wildcard_SOURCES = tests/test_ipc_wildcard.cpp
-tests_test_ipc_wildcard_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_ipc_wildcard_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_ipc_wildcard_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_pair_ipc_SOURCES = tests/test_pair_ipc.cpp
-tests_test_pair_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_pair_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_pair_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_rebind_ipc_SOURCES = tests/test_rebind_ipc.cpp
-tests_test_rebind_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_rebind_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_rebind_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_ipc_SOURCES = tests/test_reqrep_ipc.cpp
-tests_test_reqrep_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_timeo_SOURCES = tests/test_timeo.cpp
-tests_test_timeo_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_timeo_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_timeo_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
-tests_test_filter_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_filter_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_filter_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_use_fd_SOURCES = tests/test_use_fd.cpp
-tests_test_use_fd_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_use_fd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_use_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_zmq_poll_fd_SOURCES = tests/test_zmq_poll_fd.cpp
-tests_test_zmq_poll_fd_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_zmq_poll_fd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_zmq_poll_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_FORK
@@ -886,7 +886,7 @@ if !VALGRIND_ENABLED
 test_apps += tests/test_fork
 
 tests_test_fork_SOURCES = tests/test_fork.cpp
-tests_test_fork_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_fork_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_fork_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
@@ -907,39 +907,39 @@ test_apps += \
 	tests/test_address_tipc
 
 tests_test_connect_delay_tipc_SOURCES = tests/test_connect_delay_tipc.cpp
-tests_test_connect_delay_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_connect_delay_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_connect_delay_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_pair_tipc_SOURCES = tests/test_pair_tipc.cpp
-tests_test_pair_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_pair_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_pair_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_device_tipc_SOURCES = tests/test_reqrep_device_tipc.cpp
-tests_test_reqrep_device_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_device_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_device_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_tipc_SOURCES = tests/test_reqrep_tipc.cpp
-tests_test_reqrep_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_reqrep_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_router_mandatory_tipc_SOURCES = tests/test_router_mandatory_tipc.cpp
-tests_test_router_mandatory_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_router_mandatory_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_mandatory_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_shutdown_stress_tipc_SOURCES = tests/test_shutdown_stress_tipc.cpp
-tests_test_shutdown_stress_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_shutdown_stress_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_shutdown_stress_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_sub_forward_tipc_SOURCES = tests/test_sub_forward_tipc.cpp
-tests_test_sub_forward_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_sub_forward_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_sub_forward_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_term_endpoint_tipc_SOURCES = tests/test_term_endpoint_tipc.cpp
-tests_test_term_endpoint_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_term_endpoint_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_term_endpoint_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_address_tipc_SOURCES = tests/test_address_tipc.cpp
-tests_test_address_tipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_address_tipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_address_tipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
@@ -948,7 +948,7 @@ if BUILD_GSSAPI
 test_apps += tests/test_security_gssapi
 
 tests_test_security_gssapi_SOURCES = tests/test_security_gssapi.cpp
-tests_test_security_gssapi_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_security_gssapi_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_gssapi_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
@@ -959,11 +959,11 @@ test_apps += tests/test_abstract_ipc \
 	tests/test_socks
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
-tests_test_abstract_ipc_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_abstract_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_socks_SOURCES = tests/test_socks.cpp
-tests_test_socks_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_socks_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
@@ -972,13 +972,13 @@ if HAVE_VMCI
 test_apps += test_pair_vmci test_reqrep_vmci
 
 test_pair_vmci_SOURCES = tests/test_pair_vmci.cpp
-test_pair_vmci_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+test_pair_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 test_pair_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 test_pair_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
 test_pair_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
 test_reqrep_vmci_SOURCES = tests/test_reqrep_vmci.cpp
-test_reqrep_vmci_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+test_reqrep_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 test_reqrep_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
 test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
@@ -998,43 +998,43 @@ test_apps += tests/test_poller \
 	tests/test_router_notify
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
-tests_test_poller_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_poller_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
-tests_test_client_server_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_client_server_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_client_server_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
-tests_test_thread_safe_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_thread_safe_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_thread_safe_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
-tests_test_timers_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_timers_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_timers_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
-tests_test_radio_dish_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_radio_dish_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_radio_dish_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
-tests_test_scatter_gather_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_scatter_gather_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_scatter_gather_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_dgram_SOURCES = tests/test_dgram.cpp
-tests_test_dgram_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_dgram_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_dgram_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_manual_last_value_SOURCES = tests/test_xpub_manual_last_value.cpp
-tests_test_xpub_manual_last_value_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_xpub_manual_last_value_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_manual_last_value_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_app_meta_SOURCES = tests/test_app_meta.cpp
-tests_test_app_meta_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_app_meta_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_app_meta_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_router_notify_SOURCES = tests/test_router_notify.cpp
-tests_test_router_notify_LDADD = src/libzmq.la ${TESTUTIL_LIBS}
+tests_test_router_notify_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_notify_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
