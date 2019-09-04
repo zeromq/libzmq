@@ -202,7 +202,10 @@ class msg_t
         //  Leave message for radio_dish
         type_leave = 107,
 
-        type_max = 107
+        // Notification message.
+        type_notif = 108,
+
+        type_max = 108
     };
 
     //  Note that fields shared between different message types are not
