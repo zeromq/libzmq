@@ -161,7 +161,7 @@ class ws_engine_t : public stream_engine_base_t
 
     bool _header_upgrade_websocket;
     bool _header_connection_upgrade;
-    bool _websocket_protocol;
+    char _websocket_protocol[256];
     char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1];
     char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1];
 };
