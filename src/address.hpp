@@ -45,6 +45,7 @@ namespace zmq
 class ctx_t;
 class tcp_address_t;
 class udp_address_t;
+class ws_address_t;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 class ipc_address_t;
 #endif
@@ -92,6 +93,7 @@ struct address_t
         void *dummy;
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
+        ws_address_t *ws_addr;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
         ipc_address_t *ipc_addr;

@@ -69,9 +69,11 @@ encode_base64 (const unsigned char *in, int in_len, char *out, int out_len);
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,
                                const endpoint_uri_pair_t &endpoint_uri_pair_,
+                               ws_address_t &address_,
                                bool client_) :
     stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
     _client (client_),
+    _address (address_),
     _client_handshake_state (client_handshake_initial),
     _server_handshake_state (handshake_initial),
     _header_name_position (0),
@@ -109,16 +111,15 @@ void zmq::ws_engine_t::plug_internal ()
           encode_base64 (nonce, 16, _websocket_key, MAX_HEADER_VALUE_LENGTH);
         assert (size > 0);
 
-        size = snprintf (
-          (char *) _write_buffer, WS_BUFFER_SIZE,
-          "GET / HTTP/1.1\r\n"
-          "Host: server.example.com\r\n" // TODO: we need the address here
-          "Upgrade: websocket\r\n"
-          "Connection: Upgrade\r\n"
-          "Sec-WebSocket-Key: %s\r\n"
-          "Sec-WebSocket-Protocol: ZWS2.0\r\n"
-          "Sec-WebSocket-Version: 13\r\n\r\n",
-          _websocket_key);
+        size = snprintf ((char *) _write_buffer, WS_BUFFER_SIZE,
+                         "GET %s HTTP/1.1\r\n"
+                         "Host: %s\r\n"
+                         "Upgrade: websocket\r\n"
+                         "Connection: Upgrade\r\n"
+                         "Sec-WebSocket-Key: %s\r\n"
+                         "Sec-WebSocket-Protocol: ZWS2.0\r\n"
+                         "Sec-WebSocket-Version: 13\r\n\r\n",
+                         _address.path (), _address.host (), _websocket_key);
         assert (size > 0 && size < WS_BUFFER_SIZE);
         _outpos = _write_buffer;
         _outsize = size;

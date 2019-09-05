@@ -785,6 +785,7 @@ set(cxx-sources
   gather.cpp
   ip_resolver.cpp
   zap_client.cpp
+  ws_address.cpp
   ws_connecter.cpp
   ws_decoder.cpp
   ws_encoder.cpp
@@ -923,6 +924,7 @@ set(cxx-sources
   vmci_listener.hpp
   windows.hpp
   wire.hpp
+  ws_address.hpp
   ws_connecter.hpp
   ws_decoder.hpp
   ws_encoder.hpp

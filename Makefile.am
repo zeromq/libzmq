@@ -250,6 +250,8 @@ src_libzmq_la_SOURCES = \
 	src/vmci_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
+	src/ws_address.cpp \
+	src/ws_address.hpp \
 	src/ws_connecter.cpp \
 	src/ws_connecter.hpp \
 	src/ws_decoder.cpp \
