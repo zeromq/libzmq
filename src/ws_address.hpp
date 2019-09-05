@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2019 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,46 +27,48 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_WS_LISTENER_HPP_INCLUDED__
-#define __ZMQ_WS_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_WS_ADDRESS_HPP_INCLUDED__
+#define __ZMQ_WS_ADDRESS_HPP_INCLUDED__
 
-#include "fd.hpp"
-#include "ws_address.hpp"
-#include "stream_listener_base.hpp"
+#if !defined ZMQ_HAVE_WINDOWS
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
+#include "ip_resolver.hpp"
 
 namespace zmq
 {
-class ws_listener_t : public stream_listener_base_t
+class ws_address_t
 {
   public:
-    ws_listener_t (zmq::io_thread_t *io_thread_,
-                   zmq::socket_base_t *socket_,
-                   const options_t &options_);
+    ws_address_t ();
+    ws_address_t (const sockaddr *sa_, socklen_t sa_len_);
 
-    //  Set address to listen on.
-    int set_local_address (const char *addr_);
+    //  This function translates textual WS address into an address
+    //  structure. If 'local' is true, names are resolved as local interface
+    //  names. If it is false, names are resolved as remote hostnames.
+    //  If 'ipv6' is true, the name may resolve to IPv6 address.
+    int resolve (const char *name_, bool local_, bool ipv6_);
 
-  protected:
-    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
-    void create_engine (fd_t fd);
+    //  The opposite to resolve()
+    int to_string (std::string &addr_) const;
+
+#if defined ZMQ_HAVE_WINDOWS
+    unsigned short family () const;
+#else
+    sa_family_t family () const;
+#endif
+    const sockaddr *addr () const;
+    socklen_t addrlen () const;
+
+    const char *host () const;
+    const char *path () const;
 
   private:
-    //  Handlers for I/O events.
-    void in_event ();
-
-    //  Accept the new connection. Returns the file descriptor of the
-    //  newly created connection. The function may return retired_fd
-    //  if the connection was dropped while waiting in the listen backlog
-    //  or was denied because of accept filters.
-    fd_t accept ();
-
-    int create_socket (const char *addr_);
-
-    //  Address to listen on.
-    ws_address_t _address;
-
-    ws_listener_t (const ws_listener_t &);
-    const ws_listener_t &operator= (const ws_listener_t &);
+    ip_addr_t _address;
+    std::string _host;
+    std::string _path;
 };
 }
 

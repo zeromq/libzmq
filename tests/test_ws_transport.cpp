@@ -35,10 +35,11 @@ SETUP_TEARDOWN_TESTCONTEXT
 void test_roundtrip ()
 {
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5556"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5556/roundtrip"));
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5556"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (sc, "ws://127.0.0.1:5556/roundtrip"));
 
     bounce (sb, sc);
 
@@ -49,10 +50,10 @@ void test_roundtrip ()
 void test_short_message ()
 {
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557/short"));
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557/short"));
 
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 255));
@@ -78,10 +79,10 @@ void test_short_message ()
 void test_large_message ()
 {
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557/large"));
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557/large"));
 
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 65536));

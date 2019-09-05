@@ -100,7 +100,8 @@ std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
 {
-    _s = tcp_open_socket (addr_, options, true, true, &_address);
+    tcp_address_t address;
+    _s = tcp_open_socket (addr_, options, true, true, &address);
     if (_s == retired_fd) {
         return -1;
     }
@@ -133,7 +134,7 @@ int zmq::ws_listener_t::create_socket (const char *addr_)
 #if defined ZMQ_HAVE_VXWORKS
     rc = bind (_s, (sockaddr *) _address.addr (), _address.addrlen ());
 #else
-    rc = bind (_s, _address.addr (), _address.addrlen ());
+    rc = bind (_s, address.addr (), address.addrlen ());
 #endif
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -173,6 +174,10 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
         //  socket was already created by the application
         _s = options.use_fd;
     } else {
+        int rc = _address.resolve (addr_, true, options.ipv6);
+        if (rc != 0)
+            return -1;
+
         if (create_socket (addr_) == -1)
             return -1;
     }
@@ -251,8 +256,8 @@ void zmq::ws_listener_t::create_engine (fd_t fd)
       get_socket_name (fd, socket_end_local),
       get_socket_name (fd, socket_end_remote), endpoint_type_bind);
 
-    ws_engine_t *engine =
-      new (std::nothrow) ws_engine_t (fd, options, endpoint_pair, false);
+    ws_engine_t *engine = new (std::nothrow)
+      ws_engine_t (fd, options, endpoint_pair, _address, false);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

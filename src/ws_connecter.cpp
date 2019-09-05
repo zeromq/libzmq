@@ -38,7 +38,7 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "address.hpp"
-#include "tcp_address.hpp"
+#include "ws_address.hpp"
 #include "session_base.hpp"
 #include "ws_engine.hpp"
 
@@ -111,7 +111,7 @@ void zmq::ws_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd, get_socket_name<tcp_address_t> (fd, socket_end_local));
+    create_engine (fd, get_socket_name<ws_address_t> (fd, socket_end_local));
 }
 
 void zmq::ws_connecter_t::timer_event (int id_)
@@ -167,63 +167,20 @@ int zmq::ws_connecter_t::open ()
 {
     zmq_assert (_s == retired_fd);
 
-    //  Resolve the address
-    if (_addr->resolved.tcp_addr != NULL) {
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
-    }
-
-    _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-    alloc_assert (_addr->resolved.tcp_addr);
+    tcp_address_t tcp_addr;
     _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
-                          _addr->resolved.tcp_addr);
-    if (_s == retired_fd) {
-        //  TODO we should emit some event in this case!
-
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+                          &tcp_addr);
+    if (_s == retired_fd)
         return -1;
-    }
-    zmq_assert (_addr->resolved.tcp_addr != NULL);
 
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (_s);
 
-    const tcp_address_t *const tcp_addr = _addr->resolved.tcp_addr;
-
-    int rc;
-
-    // Set a source address for conversations
-    if (tcp_addr->has_src_addr ()) {
-        //  Allow reusing of the address, to connect to different servers
-        //  using the same source port on the client.
-        int flag = 1;
-#ifdef ZMQ_HAVE_WINDOWS
-        rc = setsockopt (_s, SOL_SOCKET, SO_REUSEADDR,
-                         reinterpret_cast<const char *> (&flag), sizeof (int));
-        wsa_assert (rc != SOCKET_ERROR);
-#elif defined ZMQ_HAVE_VXWORKS
-        rc = setsockopt (_s, SOL_SOCKET, SO_REUSEADDR, (char *) &flag,
-                         sizeof (int));
-        errno_assert (rc == 0);
-#else
-        rc = setsockopt (_s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-        errno_assert (rc == 0);
-#endif
-
-#if defined ZMQ_HAVE_VXWORKS
-        rc = ::bind (_s, (sockaddr *) tcp_addr->src_addr (),
-                     tcp_addr->src_addrlen ());
-#else
-        rc = ::bind (_s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
-#endif
-        if (rc == -1)
-            return -1;
-    }
-
     //  Connect to the remote peer.
 #if defined ZMQ_HAVE_VXWORKS
-    rc = ::connect (_s, (sockaddr *) tcp_addr->addr (), tcp_addr->addrlen ());
+    int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
-    rc = ::connect (_s, tcp_addr->addr (), tcp_addr->addrlen ());
+    int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0) {
@@ -307,8 +264,8 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
                                              endpoint_type_connect);
 
     //  Create the engine object for this connection.
-    ws_engine_t *engine =
-      new (std::nothrow) ws_engine_t (fd, options, endpoint_pair, true);
+    ws_engine_t *engine = new (std::nothrow)
+      ws_engine_t (fd, options, endpoint_pair, *_addr->resolved.ws_addr, true);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
