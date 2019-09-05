@@ -79,11 +79,11 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
     _header_name_position (0),
     _header_value_position (0),
     _header_upgrade_websocket (false),
-    _header_connection_upgrade (false),
-    _websocket_protocol (false)
+    _header_connection_upgrade (false)
 {
     memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
     memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
+    memset (_websocket_protocol, 0, MAX_HEADER_VALUE_LENGTH + 1);
 
     _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
       &ws_engine_t::routing_id_msg);
@@ -365,9 +365,25 @@ bool zmq::ws_engine_t::server_handshake ()
                              == 0)
                         strcpy (_websocket_key, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
-                             == 0)
-                        _websocket_protocol =
-                          true; // TODO: check if the value is ZWS2.0
+                             == 0) {
+                        // Currently only the ZWS2.0 is supported
+                        // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
+                        // if _websocket_protocol is already set we skip the check
+                        if (_websocket_protocol[0] == '\0') {
+                            char *p = strtok (_header_value, ",");
+                            while (p != NULL) {
+                                if (*p == ' ')
+                                    p++;
+
+                                if (strcmp ("ZWS2.0", p) == 0) {
+                                    strcpy (_websocket_protocol, p);
+                                    break;
+                                }
+
+                                p = strtok (NULL, ",");
+                            }
+                        }
+                    }
 
                     _server_handshake_state = header_field_cr;
                 } else if (_header_value_position + 1 > MAX_HEADER_VALUE_LENGTH)
@@ -387,7 +403,8 @@ bool zmq::ws_engine_t::server_handshake ()
             case handshake_end_line_cr:
                 if (c == '\n') {
                     if (_header_connection_upgrade && _header_upgrade_websocket
-                        && _websocket_protocol && _websocket_key[0] != '\0') {
+                        && _websocket_protocol[0] != '\0'
+                        && _websocket_key[0] != '\0') {
                         _server_handshake_state = handshake_complete;
 
                         const char *magic_string =
@@ -418,9 +435,9 @@ bool zmq::ws_engine_t::server_handshake ()
                                     "Upgrade: websocket\r\n"
                                     "Connection: Upgrade\r\n"
                                     "Sec-WebSocket-Accept: %s\r\n"
-                                    "Sec-WebSocket-Protocol: ZWS2.0\r\n"
+                                    "Sec-WebSocket-Protocol: %s\r\n"
                                     "\r\n",
-                                    _websocket_accept);
+                                    _websocket_accept, _websocket_protocol);
                         assert (written >= 0 && written < WS_BUFFER_SIZE);
                         _outpos = _write_buffer;
                         _outsize = written;
@@ -744,9 +761,10 @@ bool zmq::ws_engine_t::client_handshake ()
                              == 0)
                         strcpy (_websocket_accept, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
-                             == 0)
-                        _websocket_protocol = true; // TODO: check if ZWS2.0
-
+                             == 0) {
+                        if (strcmp ("ZWS2.0", _header_value) == 0)
+                            strcpy (_websocket_protocol, _header_value);
+                    }
                     _client_handshake_state = client_header_field_cr;
                 } else if (_header_value_position + 1 > MAX_HEADER_VALUE_LENGTH)
                     _client_handshake_state = client_handshake_error;
@@ -765,7 +783,7 @@ bool zmq::ws_engine_t::client_handshake ()
             case client_handshake_end_line_cr:
                 if (c == '\n') {
                     if (_header_connection_upgrade && _header_upgrade_websocket
-                        && _websocket_protocol
+                        && _websocket_protocol[0] != '\0'
                         && _websocket_accept[0] != '\0') {
                         _client_handshake_state = client_handshake_complete;
 
