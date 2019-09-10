@@ -104,6 +104,13 @@ For more details, see [here](SupportedPlatforms.md).
 For some platforms (Linux, Mac OS X), [prebuilt binary packages are supplied by the ZeroMQ organization](#installation). 
 For other platforms, you need to [build your own binaries](#build).
 
+## Installation through vcpkg
+
+If you are using the [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager you can download and install ZeroMQ with CMake integration in a single command:
+```
+vcpkg install zeromq
+```
+
 ## Installation of binary packages <a name="installation"/>
 
 ### Linux
