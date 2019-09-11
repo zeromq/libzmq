@@ -9,6 +9,7 @@ Build-Depends: debhelper (>= 9),
  libpgm-dev,
  libsodium-dev,
  libunwind-dev | libunwind8-dev | libunwind7-dev,
+ libnss3-dev,
  pkg-config,
  asciidoc-base | asciidoc, xmlto,
 Standards-Version: 3.9.8
@@ -38,6 +39,7 @@ Depends: libzmq5 (= ${binary:Version}), ${misc:Depends},
  libpgm-dev,
  libsodium-dev,
  libunwind-dev | libunwind8-dev | libunwind7-dev,
+ libnss3-dev,
 Conflicts: libzmq-dev, libzmq5-dev
 Replaces: libzmq5-dev
 Provides: libzmq5-dev
