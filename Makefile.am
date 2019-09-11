@@ -250,19 +250,6 @@ src_libzmq_la_SOURCES = \
 	src/vmci_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
-	src/ws_address.cpp \
-	src/ws_address.hpp \
-	src/ws_connecter.cpp \
-	src/ws_connecter.hpp \
-	src/ws_decoder.cpp \
-	src/ws_decoder.hpp \
-	src/ws_encoder.cpp \
-	src/ws_encoder.hpp \
-	src/ws_engine.cpp \
-	src/ws_engine.hpp \
-	src/ws_listener.cpp \
-	src/ws_listener.hpp \
-	src/ws_protocol.hpp \
 	src/xpub.cpp \
 	src/xpub.hpp \
 	src/xsub.cpp \
@@ -281,9 +268,7 @@ src_libzmq_la_SOURCES = \
 	src/zap_client.hpp \
 	src/zmtp_engine.cpp \
 	src/zmtp_engine.hpp \
-	src/zmq_draft.h \
-	external/sha1/sha1.c \
-	external/sha1/sha1.h
+	src/zmq_draft.h
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
@@ -295,6 +280,29 @@ if USE_TWEETNACL
 src_libzmq_la_SOURCES += \
 	src/tweetnacl.c \
 	src/tweetnacl.h
+endif
+
+if HAVE_WS
+src_libzmq_la_SOURCES += \
+	src/ws_address.cpp \
+	src/ws_address.hpp \
+	src/ws_connecter.cpp \
+	src/ws_connecter.hpp \
+	src/ws_decoder.cpp \
+	src/ws_decoder.hpp \
+	src/ws_encoder.cpp \
+	src/ws_encoder.hpp \
+	src/ws_engine.cpp \
+	src/ws_engine.hpp \
+	src/ws_listener.cpp \
+	src/ws_listener.hpp \
+	src/ws_protocol.hpp
+endif
+
+if USE_BUILTIN_SHA1
+src_libzmq_la_SOURCES += \
+	external/sha1/sha1.c \
+	external/sha1/sha1.h
 endif
 
 if ON_MINGW
@@ -333,6 +341,11 @@ src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS) $(LIBUNWIND_CFLAGS)
 src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@ $(CODE_COVERAGE_CXXFLAGS) \
 	$(LIBUNWIND_CFLAGS)
 src_libzmq_la_LIBADD = $(CODE_COVERAGE_LDFLAGS) $(LIBUNWIND_LIBS)
+
+if HAVE_WS
+src_libzmq_la_CPPFLAGS += ${NSS3_CFLAGS}
+src_libzmq_la_LIBADD += ${NSS3_LIBS}
+endif
 
 if USE_LIBSODIUM
 src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
@@ -479,8 +492,7 @@ test_apps = \
 	tests/test_sodium \
 	tests/test_reconnect_ivl \
 	tests/test_mock_pub_sub \
-	tests/test_socket_null \
-	tests/test_ws_transport
+	tests/test_socket_null
 
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
@@ -795,10 +807,6 @@ tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
 tests_test_mock_pub_sub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_mock_pub_sub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_ws_transport_SOURCES = tests/test_ws_transport.cpp
-tests_test_ws_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_ws_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
 if HAVE_CURVE
 
 test_apps += \
@@ -832,6 +840,14 @@ tests_test_security_curve_LDADD += \
 	${sodium_LIBS}
 endif
 
+endif
+
+if HAVE_WS
+test_apps += \
+	tests/test_ws_transport
+tests_test_ws_transport_SOURCES = tests/test_ws_transport.cpp
+tests_test_ws_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la ${NSS3_LIBS}
+tests_test_ws_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS} ${NSS3_CFLAGS}
 endif
 
 if !ON_MINGW

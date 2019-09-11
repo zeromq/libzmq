@@ -54,6 +54,7 @@
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
+#include "ws_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -65,7 +66,6 @@
 #include "address.hpp"
 #include "ipc_address.hpp"
 #include "tcp_address.hpp"
-#include "ws_address.hpp"
 #include "udp_address.hpp"
 #include "tipc_address.hpp"
 #include "mailbox.hpp"
@@ -335,7 +335,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
         && protocol_ != protocol_name::ipc
 #endif
         && protocol_ != protocol_name::tcp
+#ifdef ZMQ_HAVE_WS
         && protocol_ != protocol_name::ws
+#endif
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -632,6 +634,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return 0;
     }
 
+#ifdef ZMQ_HAVE_WS
     if (protocol == protocol_name::ws) {
         ws_listener_t *listener =
           new (std::nothrow) ws_listener_t (io_thread, this, options);
@@ -652,6 +655,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         options.connected = true;
         return 0;
     }
+#endif
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
@@ -889,7 +893,9 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
         }
         //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
-    } else if (protocol == protocol_name::ws) {
+    }
+#ifdef ZMQ_HAVE_WS
+    else if (protocol == protocol_name::ws) {
         paddr->resolved.ws_addr = new (std::nothrow) ws_address_t ();
         alloc_assert (paddr->resolved.ws_addr);
         rc = paddr->resolved.ws_addr->resolve (address.c_str (), false,
@@ -899,6 +905,8 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
             return -1;
         }
     }
+#endif
+
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
     else if (protocol == protocol_name::ipc) {

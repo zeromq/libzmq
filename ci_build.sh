@@ -24,6 +24,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("LDFLAGS=-fuse-ld=gold")
     fi
 
+    if [ $USE_NSS == "yes" ]; then
+        CONFIG_OPTS+=("--with-nss")
+    fi
+
     if [ -z $CURVE ]; then
         CONFIG_OPTS+=("--disable-curve")
     elif [ $CURVE == "libsodium" ]; then
