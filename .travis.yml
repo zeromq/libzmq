@@ -44,6 +44,13 @@ matrix:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
+  - env: BUILD_TYPE=default CURVE=tweetnacl USE_NSS=yes
+    os: linux
+    dist: precise
+    addons:
+      apt:
+        packages:
+          - libnss3-dev
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
     addons:
