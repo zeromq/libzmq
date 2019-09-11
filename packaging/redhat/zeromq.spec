@@ -110,7 +110,6 @@ This package contains the ZeroMQ shared library.
 Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
 Requires: %{lib_name} = %{version}-%{release}, pkgconfig
-Requires: libsodium-devel
 %bcond_with pgm
 %if %{with pgm}
 Requires:  openpgm-devel
