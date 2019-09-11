@@ -94,6 +94,47 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif()
 
+# Disable webSocket transport
+option(DISABLE_WS "Disable WebSocket transport" OFF)
+option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
+
+if (NOT DISABLE_WS)
+  list(APPEND sources
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_protocol.hpp)
+  set(ZMQ_HAVE_WS 1)
+
+  if (WITH_NSS)
+    find_package("NSS3")
+    if (NSS3_FOUND)
+      message(STATUS "Using NSS")
+      include_directories(${NSS3_INCLUDE_DIRS})
+      set(pkg_config_names_private "${pkg_config_names_private} nss3")
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
+      set(ZMQ_USE_NSS 1)
+    else()
+      message(FATAL_ERROR
+              "nss is not installed. Install it, then run CMake again")
+    endif()
+  else()
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
+    message("Using builtin sha1")
+    set(ZMQ_USE_BUILTIN_SHA1 1)
+  endif()
+endif()
+
+
 # Select curve encryption library, defaults to tweetnacl
 # To use libsodium instead, use --with-libsodium(must be installed)
 # To disable curve, use --disable-curve
@@ -222,8 +263,6 @@ if(POLLER STREQUAL "kqueue"
 else()
   message(FATAL_ERROR "Invalid polling method")
 endif()
-
-list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
 
 if(POLLER STREQUAL "epoll" AND WIN32)
   message(STATUS "Including wepoll")
@@ -785,12 +824,6 @@ set(cxx-sources
   gather.cpp
   ip_resolver.cpp
   zap_client.cpp
-  ws_address.cpp
-  ws_connecter.cpp
-  ws_decoder.cpp
-  ws_encoder.cpp
-  ws_engine.cpp
-  ws_listener.cpp
   zmtp_engine.cpp
   # at least for VS, the header files must also be listed
   address.hpp
@@ -924,13 +957,6 @@ set(cxx-sources
   vmci_listener.hpp
   windows.hpp
   wire.hpp
-  ws_address.hpp
-  ws_connecter.hpp
-  ws_decoder.hpp
-  ws_encoder.hpp
-  ws_engine.hpp
-  ws_listener.hpp
-  ws_protocol.hpp
   xpub.hpp
   xsub.hpp
   ypipe.hpp
@@ -1232,6 +1258,10 @@ endforeach()
 if(BUILD_SHARED)
   target_link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+  if(NSS3_FOUND)
+    target_link_libraries(libzmq ${NSS3_LIBRARIES})
+  endif()
+
   if(SODIUM_FOUND)
     target_link_libraries(libzmq ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
@@ -1261,6 +1291,10 @@ endif()
 
 if(BUILD_STATIC)
   target_link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+  if(NSS3_FOUND)
+    target_link_libraries(libzmq-static ${NSS3_LIBRARIES})
+  endif()
 
   if(SODIUM_FOUND)
     target_link_libraries(libzmq-static ${SODIUM_LIBRARIES})

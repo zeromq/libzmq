@@ -52,6 +52,10 @@
 #include <vmci_sockets.h>
 #endif
 
+#ifdef ZMQ_USE_NSS
+#include <nss.h>
+#endif
+
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD 0xdeadbeef
 
@@ -87,6 +91,10 @@ zmq::ctx_t::ctx_t () :
 
     //  Initialise crypto library, if needed.
     zmq::random_open ();
+
+#ifdef ZMQ_USE_NSS
+    NSS_NoDB_Init (NULL);
+#endif
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -118,6 +126,10 @@ zmq::ctx_t::~ctx_t ()
 
     //  De-initialise crypto library, if needed.
     zmq::random_close ();
+
+#ifdef ZMQ_USE_NSS
+    NSS_Shutdown ();
+#endif
 
     //  Remove the tag, so that the object is considered dead.
     _tag = ZMQ_CTX_TAG_VALUE_BAD;

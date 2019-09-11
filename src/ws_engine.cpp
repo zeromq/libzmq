@@ -29,6 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "precompiled.hpp"
 
+#ifdef ZMQ_USE_NSS
+#include <secoid.h>
+#include <sechash.h>
+#define SHA_DIGEST_LENGTH 20
+#else
+#include "../external/sha1/sha1.h"
+#endif
+
 #if !defined ZMQ_HAVE_WINDOWS
 #include <sys/types.h>
 #include <unistd.h>
@@ -46,7 +54,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "err.hpp"
 #include "ip.hpp"
 #include "random.hpp"
-#include "../external/sha1/sha1.h"
 #include "ws_decoder.hpp"
 #include "ws_encoder.hpp"
 
@@ -65,6 +72,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static int
 encode_base64 (const unsigned char *in, int in_len, char *out, int out_len);
+
+static void compute_accept_key (char *key,
+                                unsigned char output[SHA_DIGEST_LENGTH]);
 
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,
@@ -407,21 +417,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         && _websocket_key[0] != '\0') {
                         _server_handshake_state = handshake_complete;
 
-                        const char *magic_string =
-                          "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-                        char plain[MAX_HEADER_VALUE_LENGTH + 36 + 1];
-                        strcpy (plain, _websocket_key);
-                        strcat (plain, magic_string);
-
-                        sha1_ctxt ctx;
-                        SHA1_Init (&ctx);
-                        SHA1_Update (&ctx, (unsigned char *) _websocket_key,
-                                     strlen (_websocket_key));
-                        SHA1_Update (&ctx, (unsigned char *) magic_string,
-                                     strlen (magic_string));
-
                         unsigned char hash[SHA_DIGEST_LENGTH];
-                        SHA1_Final (hash, &ctx);
+                        compute_accept_key (_websocket_key, hash);
 
                         int accept_key_len = encode_base64 (
                           hash, SHA_DIGEST_LENGTH, _websocket_accept,
@@ -854,4 +851,29 @@ encode_base64 (const unsigned char *in, int in_len, char *out, int out_len)
         return -1; /* no room for null terminator */
     out[io] = 0;
     return io;
+}
+
+static void compute_accept_key (char *key, unsigned char *hash)
+{
+    const char *magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+#ifdef ZMQ_USE_NSS
+    unsigned int len;
+    HASH_HashType type = HASH_GetHashTypeByOidTag (SEC_OID_SHA1);
+    HASHContext *ctx = HASH_Create (type);
+    assert (ctx);
+
+    HASH_Begin (ctx);
+    HASH_Update (ctx, (unsigned char *) key, (unsigned int) strlen (key));
+    HASH_Update (ctx, (unsigned char *) magic_string,
+                 (unsigned int) strlen (magic_string));
+    HASH_End (ctx, hash, &len, SHA_DIGEST_LENGTH);
+    HASH_Destroy (ctx);
+#else
+    sha1_ctxt ctx;
+    SHA1_Init (&ctx);
+    SHA1_Update (&ctx, (unsigned char *) key, strlen (key));
+    SHA1_Update (&ctx, (unsigned char *) magic_string, strlen (magic_string));
+
+    SHA1_Final (hash, &ctx);
+#endif
 }

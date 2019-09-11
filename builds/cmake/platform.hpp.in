@@ -51,6 +51,10 @@
 #cmakedefine HAVE_ACCEPT4
 #cmakedefine HAVE_STRNLEN
 
+#cmakedefine ZMQ_USE_BUILTIN_SHA1
+#cmakedefine ZMQ_USE_NSS
+#cmakedefine ZMQ_HAVE_WS
+
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
