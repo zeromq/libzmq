@@ -47,7 +47,11 @@ BuildRequires:  libsodium-devel
 %endif
 %bcond_with nss
 %if %{with nss}
+%if 0%{?suse_version}
+BuildRequires:  mozilla-nss-devel
+%else
 BuildRequires:  nss-devel
+%endif
 %define NSS yes
 %else
 %define NSS no
@@ -83,8 +87,13 @@ Requires:      libstdc++
 %{?_with_pgm:BuildRequires: openpgm-devel}
 %{?_with_pgm:Requires: openpgm}
 
+%if 0%{?suse_version}
+%{?_with_nss:BuildRequires: mozilla-nss-devel}
+%{?_with_nss:Requires: mozilla-nss}
+%else
 %{?_with_nss:BuildRequires: nss-devel}
 %{?_with_nss:Requires: nss}
+%endif
 
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
 %{!?_with_pic: %{!?_without_pic: %define _with_pic --with-pic}}
@@ -135,7 +144,11 @@ Requires:  libsodium-devel
 %endif
 %bcond_with nss
 %if %{with nss}
+%if 0%{?suse_version}
+Requires:  mozilla-nss-devel
+%else
 Requires:  nss-devel
+%endif
 %endif
 
 %description devel
