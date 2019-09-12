@@ -45,6 +45,13 @@ BuildRequires:  libsodium-devel
 %else
 %define SODIUM no
 %endif
+%bcond_with nss
+%if %{with nss}
+BuildRequires:  nss-devel
+%define NSS yes
+%else
+%define NSS no
+%endif
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
@@ -60,6 +67,7 @@ Requires:      libstdc++
 %{!?_with_libgssapi_krb5: %{!?_without_libgssapi_krb5: %define _without_libgssapi_krb5 --without-liblibgssapi_krb5}}
 %{!?_with_libsodium: %{!?_without_libsodium: %define _without_libsodium --without-libsodium}}
 %{!?_with_pgm: %{!?_without_pgm: %define _without_pgm --without-pgm}}
+%{!?_with_nss: %{!?_without_nss: %define _without_nss --without-nss}}
 
 # It's an error if both --with and --without options are specified
 %{?_with_libgssapi_krb5: %{?_without_libgssapi_krb5: %{error: both _with_libgssapi_krb5 and _without_libgssapi_krb5}}}
@@ -74,6 +82,9 @@ Requires:      libstdc++
 
 %{?_with_pgm:BuildRequires: openpgm-devel}
 %{?_with_pgm:Requires: openpgm}
+
+%{?_with_nss:BuildRequires: nss-devel}
+%{?_with_nss:Requires: nss}
 
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
 %{!?_with_pic: %{!?_without_pic: %define _with_pic --with-pic}}
@@ -110,7 +121,6 @@ This package contains the ZeroMQ shared library.
 Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
 Requires: %{lib_name} = %{version}-%{release}, pkgconfig
-Requires: libsodium-devel
 %bcond_with pgm
 %if %{with pgm}
 Requires:  openpgm-devel
@@ -122,6 +132,10 @@ Requires:  krb5-devel
 %bcond_with libsodium
 %if %{with libsodium}
 Requires:  libsodium-devel
+%endif
+%bcond_with nss
+%if %{with nss}
+Requires:  nss-devel
 %endif
 
 %description devel
@@ -164,6 +178,7 @@ autoreconf -fi
     --with-pgm=%{PGM} \
     --with-libsodium=%{SODIUM} \
     --with-libgssapi_krb5=%{GSSAPI} \
+    --with-nss=%{NSS} \
     %{?_with_pic} \
     %{?_without_pic} \
     %{?_with_gnu_ld} \
@@ -216,6 +231,9 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Wed Sep 11 2019 Luca Boccassi <luca.boccassi@gmail.com>
+- Add macro for optional NSS dependency
+
 * Sat Aug 19 2017 Luca Boccassi <luca.boccassi@gmail.com>
 - Fix parsing and usage of conditionals for sodium/pgm/krb5 so that they work
   in OBS

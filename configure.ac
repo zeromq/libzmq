@@ -949,6 +949,20 @@ AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
     [],
     [-Werror])
 
+# LTO is enabled by default on SUSE Tumbleweed and RPM lint generates an error if
+# the flag is not used to compile archives:
+# E: lto-no-text-in-archive
+AC_LANG_PUSH([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CFLAGS+=" -ffat-lto-objects"],
+    [],
+    [-Werror])
+AC_LANG_POP([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CXXFLAGS+=" -ffat-lto-objects"],
+    [],
+    [-Werror])
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)

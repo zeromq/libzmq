@@ -44,13 +44,6 @@ matrix:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
-  - env: BUILD_TYPE=default CURVE=tweetnacl USE_NSS=yes
-    os: linux
-    dist: precise
-    addons:
-      apt:
-        packages:
-          - libnss3-dev
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
     addons:
@@ -77,7 +70,7 @@ matrix:
         - libsodium-dev
         - asciidoc
         - xmlto
-  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled USE_NSS=yes
     os: linux
     addons:
       apt:
@@ -89,6 +82,7 @@ matrix:
         - libnorm-dev
         - libpgm-dev
         - libsodium-dev
+        - libnss3-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
