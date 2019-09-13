@@ -71,7 +71,6 @@ extern "C" {
 #error You need at least Windows XP target
 #endif
 #endif
-#include <winsock2.h>
 #endif
 
 /*  Handle DSO symbol visibility                                             */
@@ -498,7 +497,12 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s_, const char *addr_, int events_);
 /******************************************************************************/
 
 #if defined _WIN32
-typedef SOCKET zmq_fd_t;
+// Windows uses a pointer-sized unsigned integer to store the socket fd.
+#if defined _WIN64
+typedef unsigned __int64 zmq_fd_t;
+#else
+typedef unsigned int zmq_fd_t;
+#endif
 #else
 typedef int zmq_fd_t;
 #endif
