@@ -12,6 +12,8 @@ AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
+# Allow "configure --disable-maintainer-mode" to disable timestamp checking 
+AM_MAINTAINER_MODE([enable])
 
 m4_pattern_allow([AC_PROG_CC_C99])
 m4_include([m4/ax_check_compile_flag.m4])
