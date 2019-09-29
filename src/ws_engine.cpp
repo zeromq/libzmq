@@ -33,8 +33,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <secoid.h>
 #include <sechash.h>
 #define SHA_DIGEST_LENGTH 20
-#else
+#elif defined ZMQ_USE_BUILTIN_SHA1
 #include "../external/sha1/sha1.h"
+#elif defined ZMQ_USE_GNUTLS
+#define SHA_DIGEST_LENGTH 20
+#include <gnutls/gnutls.h>
+#include <gnutls/crypto.h>
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -105,7 +109,7 @@ zmq::ws_engine_t::~ws_engine_t ()
 {
 }
 
-void zmq::ws_engine_t::plug_internal ()
+void zmq::ws_engine_t::start_ws_handshake ()
 {
     if (_client) {
         unsigned char nonce[16];
@@ -135,7 +139,11 @@ void zmq::ws_engine_t::plug_internal ()
         _outsize = size;
         set_pollout ();
     }
+}
 
+void zmq::ws_engine_t::plug_internal ()
+{
+    start_ws_handshake ();
     set_pollin ();
     in_event ();
 }
@@ -147,6 +155,7 @@ int zmq::ws_engine_t::routing_id_msg (msg_t *msg_)
     if (_options.routing_id_size > 0)
         memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
     _next_msg = &ws_engine_t::pull_msg_from_session;
+
     return 0;
 }
 
@@ -197,12 +206,8 @@ bool zmq::ws_engine_t::handshake ()
 
 bool zmq::ws_engine_t::server_handshake ()
 {
-    int nbytes = tcp_read (_read_buffer, WS_BUFFER_SIZE);
-    if (nbytes == 0) {
-        errno = EPIPE;
-        error (zmq::i_engine::connection_error);
-        return false;
-    } else if (nbytes == -1) {
+    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
         return false;
@@ -470,12 +475,8 @@ bool zmq::ws_engine_t::server_handshake ()
 
 bool zmq::ws_engine_t::client_handshake ()
 {
-    int nbytes = tcp_read (_read_buffer, WS_BUFFER_SIZE);
-    if (nbytes == 0) {
-        errno = EPIPE;
-        error (zmq::i_engine::connection_error);
-        return false;
-    } else if (nbytes == -1) {
+    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
         return false;
@@ -868,12 +869,20 @@ static void compute_accept_key (char *key, unsigned char *hash)
                  (unsigned int) strlen (magic_string));
     HASH_End (ctx, hash, &len, SHA_DIGEST_LENGTH);
     HASH_Destroy (ctx);
-#else
+#elif defined ZMQ_USE_BUILTIN_SHA1
     sha1_ctxt ctx;
     SHA1_Init (&ctx);
     SHA1_Update (&ctx, (unsigned char *) key, strlen (key));
     SHA1_Update (&ctx, (unsigned char *) magic_string, strlen (magic_string));
 
     SHA1_Final (hash, &ctx);
+#elif defined ZMQ_USE_GNUTLS
+    gnutls_hash_hd_t hd;
+    gnutls_hash_init (&hd, GNUTLS_DIG_SHA1);
+    gnutls_hash (hd, key, strlen (key));
+    gnutls_hash (hd, magic_string, strlen (magic_string));
+    gnutls_hash_deinit (hd, hash);
+#else
+#error "No sha1 implementation set"
 #endif
 }

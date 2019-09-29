@@ -42,6 +42,10 @@
 #include "session_base.hpp"
 #include "ws_engine.hpp"
 
+#ifdef ZMQ_HAVE_WSS
+#include "wss_engine.hpp"
+#endif
+
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/types.h>
@@ -67,12 +71,15 @@ zmq::ws_connecter_t::ws_connecter_t (class io_thread_t *io_thread_,
                                      class session_base_t *session_,
                                      const options_t &options_,
                                      address_t *addr_,
-                                     bool delayed_start_) :
+                                     bool delayed_start_,
+                                     bool wss_,
+                                     const char *tls_hostname_) :
     stream_connecter_base_t (
       io_thread_, session_, options_, addr_, delayed_start_),
-    _connect_timer_started (false)
+    _connect_timer_started (false),
+    _wss (wss_),
+    _hostname (tls_hostname_)
 {
-    zmq_assert (_addr->protocol == protocol_name::ws);
 }
 
 zmq::ws_connecter_t::~ws_connecter_t ()
@@ -264,8 +271,18 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
                                              endpoint_type_connect);
 
     //  Create the engine object for this connection.
-    ws_engine_t *engine = new (std::nothrow)
-      ws_engine_t (fd, options, endpoint_pair, *_addr->resolved.ws_addr, true);
+    i_engine *engine = NULL;
+    if (_wss)
+#ifdef ZMQ_HAVE_WSS
+        engine = new (std::nothrow)
+          wss_engine_t (fd, options, endpoint_pair, *_addr->resolved.ws_addr,
+                        true, NULL, _hostname);
+#else
+        assert (false);
+#endif
+    else
+        engine = new (std::nothrow) ws_engine_t (
+          fd, options, endpoint_pair, *_addr->resolved.ws_addr, true);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.

@@ -36,7 +36,6 @@
 #include "stream_engine_base.hpp"
 #include "ws_address.hpp"
 
-
 #define WS_BUFFER_SIZE 8192
 #define MAX_HEADER_NAME_LENGTH 1024
 #define MAX_HEADER_VALUE_LENGTH 2048
@@ -138,6 +137,7 @@ class ws_engine_t : public stream_engine_base_t
   protected:
     bool handshake ();
     void plug_internal ();
+    void start_ws_handshake ();
 
   private:
     int routing_id_msg (msg_t *msg_);

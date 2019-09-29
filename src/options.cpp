@@ -247,7 +247,8 @@ zmq::options_t::options_t () :
     out_batch_size (8192),
     zero_copy (true),
     router_notify (0),
-    monitor_event_version (1)
+    monitor_event_version (1),
+    wss_trust_system (false)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
@@ -784,6 +785,26 @@ int zmq::options_t::setsockopt (int option_,
                 return 0;
             }
             break;
+
+        case ZMQ_WSS_KEY_PEM:
+            // TODO: check if valid certificate
+            wss_key_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_CERT_PEM:
+            // TODO: check if valid certificate
+            wss_cert_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_TRUST_PEM:
+            // TODO: check if valid certificate
+            wss_trust_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_HOSTNAME:
+            wss_hostname = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_TRUST_SYSTEM:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &wss_trust_system);
+
 #endif
 
         default:

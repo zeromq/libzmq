@@ -50,12 +50,14 @@ matrix:
       apt:
         packages:
         - lcov
-  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
+  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled TLS=enabled
     os: linux
+    dist: xenial
     addons:
       apt:
         packages:
         - valgrind
+        - libgnutls-dev
   - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled NORM=enabled
     os: linux
     addons:
@@ -70,6 +72,13 @@ matrix:
         - libsodium-dev
         - asciidoc
         - xmlto
+  - env: BUILD_TYPE=default DRAFT=enabled TLS=enabled
+    os: linux
+    dist: xenial
+    addons:
+      apt:
+        packages:
+          - libgnutls-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled USE_NSS=yes
     os: linux
     addons:

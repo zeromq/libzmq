@@ -275,14 +275,8 @@ bool zmq::stream_engine_base_t::in_event_internal ()
         size_t bufsize = 0;
         _decoder->get_buffer (&_inpos, &bufsize);
 
-        const int rc = tcp_read (_inpos, bufsize);
+        int rc = read (_inpos, bufsize);
 
-        if (rc == 0) {
-            // connection closed by peer
-            errno = EPIPE;
-            error (connection_error);
-            return false;
-        }
         if (rc == -1) {
             if (errno != EAGAIN) {
                 error (connection_error);
@@ -370,7 +364,7 @@ void zmq::stream_engine_base_t::out_event ()
     //  arbitrarily large. However, we assume that underlying TCP layer has
     //  limited transmission buffer and thus the actual number of bytes
     //  written should be reasonably modest.
-    const int nbytes = tcp_write (_s, _outpos, _outsize);
+    const int nbytes = write (_outpos, _outsize);
 
     //  IO error has occurred. We stop waiting for output events.
     //  The engine is not terminated until we detect input error;
@@ -744,7 +738,20 @@ void zmq::stream_engine_base_t::timer_event (int id_)
         assert (false);
 }
 
-int zmq::stream_engine_base_t::tcp_read (void *data_, size_t size_)
+int zmq::stream_engine_base_t::read (void *data_, size_t size_)
 {
-    return zmq::tcp_read (_s, data_, size_);
+    int rc = zmq::tcp_read (_s, data_, size_);
+
+    if (rc == 0) {
+        // connection closed by peer
+        errno = EPIPE;
+        return -1;
+    }
+
+    return rc;
+}
+
+int zmq::stream_engine_base_t::write (const void *data_, size_t size_)
+{
+    return zmq::tcp_write (_s, data_, size_);
 }

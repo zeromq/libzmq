@@ -27,58 +27,39 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_WS_LISTENER_HPP_INCLUDED__
-#define __ZMQ_WS_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_WSS_ENGINE_HPP_INCLUDED__
+#define __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 
-#include "fd.hpp"
-#include "ws_address.hpp"
-#include "stream_listener_base.hpp"
-
-#if ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
-#endif
+#include "ws_engine.hpp"
+
+#define WSS_BUFFER_SIZE 8192
 
 namespace zmq
 {
-class ws_listener_t : public stream_listener_base_t
+class wss_engine_t : public ws_engine_t
 {
   public:
-    ws_listener_t (zmq::io_thread_t *io_thread_,
-                   zmq::socket_base_t *socket_,
-                   const options_t &options_,
-                   bool wss_);
-
-    ~ws_listener_t ();
-
-    //  Set address to listen on.
-    int set_local_address (const char *addr_);
+    wss_engine_t (fd_t fd_,
+                  const options_t &options_,
+                  const endpoint_uri_pair_t &endpoint_uri_pair_,
+                  ws_address_t &address_,
+                  bool client_,
+                  void *tls_server_cred_,
+                  const char *hostname_);
+    ~wss_engine_t ();
 
   protected:
-    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
-    void create_engine (fd_t fd);
+    bool handshake ();
+    void plug_internal ();
+    int read (void *data, size_t size_);
+    int write (const void *data_, size_t size_);
+
 
   private:
-    //  Handlers for I/O events.
-    void in_event ();
-
-    //  Accept the new connection. Returns the file descriptor of the
-    //  newly created connection. The function may return retired_fd
-    //  if the connection was dropped while waiting in the listen backlog
-    //  or was denied because of accept filters.
-    fd_t accept ();
-
-    int create_socket (const char *addr_);
-
-    //  Address to listen on.
-    ws_address_t _address;
-
-    ws_listener_t (const ws_listener_t &);
-    const ws_listener_t &operator= (const ws_listener_t &);
-
-    bool _wss;
-#if ZMQ_HAVE_WSS
-    gnutls_certificate_credentials_t _tls_cred;
-#endif
+    bool _established;
+    gnutls_certificate_credentials_t _tls_client_cred;
+    gnutls_session_t _tls_session;
 };
 }
 

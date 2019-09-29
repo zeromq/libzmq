@@ -60,6 +60,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("--with-poller=${POLLER}")
     fi
 
+    if [ -n "$TLS" ] && [ "$TLS" == "enabled" ]; then
+        CONFIG_OPTS+=("--with-tls=yes")
+    fi
+
     if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then
         CONFIG_OPTS+=("--enable-drafts=no")
     elif [ $DRAFT == "enabled" ]; then

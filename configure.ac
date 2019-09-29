@@ -553,7 +553,7 @@ AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
 AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
 
 # Check requiring packages for WebSocket
-sha1_library=""
+ws_crypto_library=""
 
 AC_ARG_ENABLE([ws],
     [AS_HELP_STRING([--disable-ws], [Disable WebSocket transport [default=no]])])
@@ -561,28 +561,43 @@ AC_ARG_ENABLE([ws],
 AC_ARG_WITH([nss],
     [AS_HELP_STRING([--with-nss], [use nss instead of built-in sha1 [default=no]])])
 
+AC_ARG_WITH([tls],
+    [AS_HELP_STRING([--with-tls], [Enable TLS (WSS transport) [default=no]])])
+
 if test "x$enable_ws" != "xno"; then
-    if test "x$with_nss" = "xyes"; then
+    if test "x$with_tls" = "xyes"; then
+        PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            ws_crypto_library="gnutls"
+            AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
+            AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+            AC_DEFINE(ZMQ_HAVE_WSS, [1], [WSS enabled])
+            AC_MSG_NOTICE(Using gnutls)
+        ],[
+          AC_MSG_ERROR([GnuTLS is not installed. Install it, then run configure again])
+        ])
+    elif test "x$with_nss" = "xyes"; then
         PKG_CHECK_MODULES([NSS3], [nss], [
             PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE nss"
             AC_DEFINE(ZMQ_USE_NSS, [1], [Using NSS])
             AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
-            sha1_library="nss"
+            ws_crypto_library="nss"
             AC_MSG_NOTICE(Using NSS)
         ], [
-            AC_MSG_ERROR(nss is not installed. Install it, then run configure again)
+            AC_MSG_ERROR([nss is not installed. Install it, then run configure again])
         ])
     else
-        AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
         AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
-        sha1_library="builtin"
+        AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
         AC_MSG_NOTICE(Using builting SHA1)
+        ws_crypto_library="builtin"
     fi
 fi
 
-AM_CONDITIONAL(HAVE_WS, test "x$sha1_library" != "x")
-AM_CONDITIONAL(USE_NSS, test "x$sha1_library" = "xnss")
-AM_CONDITIONAL(USE_BUILTIN_SHA1, test "x$sha1_library" = "xbuiltin")
+AM_CONDITIONAL(HAVE_WS, test "x$ws_crypto_library" != "x")
+AM_CONDITIONAL(USE_NSS, test "x$ws_crypto_library" = "xnss")
+AM_CONDITIONAL(USE_BUILTIN_SHA1, test "x$ws_crypto_library" = "xbuiltin")
+AM_CONDITIONAL(USE_GNUTLS, test "x$ws_crypto_library" = "xgnutls")
+AM_CONDITIONAL(HAVE_WSS, test "x$ws_crypto_library" = "xgnutls")
 
 # build using pgm
 have_pgm_library="no"

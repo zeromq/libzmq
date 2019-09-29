@@ -45,7 +45,9 @@ class ws_connecter_t : public stream_connecter_base_t
                     zmq::session_base_t *session_,
                     const options_t &options_,
                     address_t *addr_,
-                    bool delayed_start_);
+                    bool delayed_start_,
+                    bool wss_,
+                    const char *tls_hostname_);
     ~ws_connecter_t ();
 
   protected:
@@ -88,6 +90,9 @@ class ws_connecter_t : public stream_connecter_base_t
 
     ws_connecter_t (const ws_connecter_t &);
     const ws_connecter_t &operator= (const ws_connecter_t &);
+
+    bool _wss;
+    const char *_hostname;
 };
 }
 

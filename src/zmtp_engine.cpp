@@ -148,13 +148,8 @@ int zmq::zmtp_engine_t::receive_greeting ()
 {
     bool unversioned = false;
     while (_greeting_bytes_read < _greeting_size) {
-        const int n = tcp_read (_greeting_recv + _greeting_bytes_read,
-                                _greeting_size - _greeting_bytes_read);
-        if (n == 0) {
-            errno = EPIPE;
-            error (connection_error);
-            return -1;
-        }
+        const int n = read (_greeting_recv + _greeting_bytes_read,
+                            _greeting_size - _greeting_bytes_read);
         if (n == -1) {
             if (errno != EAGAIN)
                 error (connection_error);
