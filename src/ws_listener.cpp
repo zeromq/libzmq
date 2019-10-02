@@ -44,6 +44,10 @@
 #include "ws_engine.hpp"
 #include "session_base.hpp"
 
+#ifdef ZMQ_HAVE_WSS
+#include "wss_engine.hpp"
+#endif
+
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/socket.h>
@@ -63,9 +67,33 @@
 
 zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
                                    socket_base_t *socket_,
-                                   const options_t &options_) :
-    stream_listener_base_t (io_thread_, socket_, options_)
+                                   const options_t &options_,
+                                   bool wss_) :
+    stream_listener_base_t (io_thread_, socket_, options_),
+    _wss (wss_)
 {
+#ifdef ZMQ_HAVE_WSS
+    if (_wss) {
+        int rc = gnutls_certificate_allocate_credentials (&_tls_cred);
+        assert (rc == GNUTLS_E_SUCCESS);
+
+        gnutls_datum_t cert = {(unsigned char *) options_.wss_cert_pem.c_str (),
+                               (unsigned int) options_.wss_cert_pem.length ()};
+        gnutls_datum_t key = {(unsigned char *) options_.wss_key_pem.c_str (),
+                              (unsigned int) options_.wss_key_pem.length ()};
+        rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
+                                                  GNUTLS_X509_FMT_PEM);
+        assert (rc == GNUTLS_E_SUCCESS);
+    }
+#endif
+}
+
+zmq::ws_listener_t::~ws_listener_t ()
+{
+#ifdef ZMQ_HAVE_WSS
+    if (_wss)
+        gnutls_certificate_free_credentials (_tls_cred);
+#endif
 }
 
 void zmq::ws_listener_t::in_event ()
@@ -256,8 +284,17 @@ void zmq::ws_listener_t::create_engine (fd_t fd)
       get_socket_name (fd, socket_end_local),
       get_socket_name (fd, socket_end_remote), endpoint_type_bind);
 
-    ws_engine_t *engine = new (std::nothrow)
-      ws_engine_t (fd, options, endpoint_pair, _address, false);
+    i_engine *engine = NULL;
+    if (_wss)
+#ifdef ZMQ_HAVE_WSS
+        engine = new (std::nothrow) wss_engine_t (
+          fd, options, endpoint_pair, _address, false, _tls_cred, NULL);
+#else
+        assert (false);
+#endif
+    else
+        engine = new (std::nothrow)
+          ws_engine_t (fd, options, endpoint_pair, _address, false);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

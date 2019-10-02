@@ -64,6 +64,9 @@ static const char udp[] = "udp";
 #ifdef ZMQ_HAVE_WS
 static const char ws[] = "ws";
 #endif
+#ifdef ZMQ_HAVE_WSS
+static const char wss[] = "wss";
+#endif
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
   && !defined ZMQ_HAVE_VXWORKS
 static const char ipc[] = "ipc";

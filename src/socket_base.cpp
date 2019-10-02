@@ -338,6 +338,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #ifdef ZMQ_HAVE_WS
         && protocol_ != protocol_name::ws
 #endif
+#ifdef ZMQ_HAVE_WSS
+        && protocol_ != protocol_name::wss
+#endif
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -635,9 +638,15 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
     }
 
 #ifdef ZMQ_HAVE_WS
+#ifdef ZMQ_HAVE_WSS
+    if (protocol == protocol_name::ws || protocol == protocol_name::wss) {
+        ws_listener_t *listener = new (std::nothrow) ws_listener_t (
+          io_thread, this, options, protocol == protocol_name::wss);
+#else
     if (protocol == protocol_name::ws) {
         ws_listener_t *listener =
-          new (std::nothrow) ws_listener_t (io_thread, this, options);
+          new (std::nothrow) ws_listener_t (io_thread, this, options, false);
+#endif
         alloc_assert (listener);
         rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
@@ -895,7 +904,11 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
         paddr->resolved.tcp_addr = NULL;
     }
 #ifdef ZMQ_HAVE_WS
+#ifdef ZMQ_HAVE_WSS
+    else if (protocol == protocol_name::ws || protocol == protocol_name::wss) {
+#else
     else if (protocol == protocol_name::ws) {
+#endif
         paddr->resolved.ws_addr = new (std::nothrow) ws_address_t ();
         alloc_assert (paddr->resolved.ws_addr);
         rc = paddr->resolved.ws_addr->resolve (address.c_str (), false,

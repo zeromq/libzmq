@@ -305,6 +305,12 @@ src_libzmq_la_SOURCES += \
 	external/sha1/sha1.h
 endif
 
+if HAVE_WSS
+src_libzmq_la_SOURCES += \
+	src/wss_engine.cpp \
+	src/wss_engine.hpp
+endif
+
 if ON_MINGW
 src_libzmq_la_LDFLAGS = \
 	-no-undefined \
@@ -342,9 +348,14 @@ src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@ $(CODE_COVERAGE_CXXFLAGS) \
 	$(LIBUNWIND_CFLAGS)
 src_libzmq_la_LIBADD = $(CODE_COVERAGE_LDFLAGS) $(LIBUNWIND_LIBS)
 
-if HAVE_WS
+if USE_NSS
 src_libzmq_la_CPPFLAGS += ${NSS3_CFLAGS}
 src_libzmq_la_LIBADD += ${NSS3_LIBS}
+endif
+
+if USE_GNUTLS
+src_libzmq_la_CPPFLAGS += ${GNUTLS_CFLAGS}
+src_libzmq_la_LIBADD += ${GNUTLS_LIBS}
 endif
 
 if USE_LIBSODIUM
@@ -848,6 +859,14 @@ test_apps += \
 tests_test_ws_transport_SOURCES = tests/test_ws_transport.cpp
 tests_test_ws_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la ${NSS3_LIBS}
 tests_test_ws_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS} ${NSS3_CFLAGS}
+endif
+
+if HAVE_WSS
+test_apps += \
+	tests/test_wss_transport
+tests_test_wss_transport_SOURCES = tests/test_wss_transport.cpp
+tests_test_wss_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la ${GNUTLS_LIBS}
+tests_test_wss_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS} ${GNUTLS_CFLAGS}
 endif
 
 if !ON_MINGW

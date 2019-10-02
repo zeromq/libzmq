@@ -56,6 +56,10 @@
 #include <nss.h>
 #endif
 
+#ifdef ZMQ_USE_GNUTLS
+#include <gnutls/gnutls.h>
+#endif
+
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD 0xdeadbeef
 
@@ -95,6 +99,10 @@ zmq::ctx_t::ctx_t () :
 #ifdef ZMQ_USE_NSS
     NSS_NoDB_Init (NULL);
 #endif
+
+#ifdef ZMQ_USE_GNUTLS
+    gnutls_global_init ();
+#endif
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -129,6 +137,10 @@ zmq::ctx_t::~ctx_t ()
 
 #ifdef ZMQ_USE_NSS
     NSS_Shutdown ();
+#endif
+
+#ifdef ZMQ_USE_GNUTLS
+    gnutls_global_deinit ();
 #endif
 
     //  Remove the tag, so that the object is considered dead.

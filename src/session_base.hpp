@@ -120,6 +120,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     own_t *create_connecter_ipc (io_thread_t *io_thread_, bool wait_);
     own_t *create_connecter_tcp (io_thread_t *io_thread_, bool wait_);
     own_t *create_connecter_ws (io_thread_t *io_thread_, bool wait_);
+    own_t *create_connecter_wss (io_thread_t *io_thread_, bool wait_);
 
     typedef void (session_base_t::*start_connecting_fun_t) (
       io_thread_t *io_thread);
@@ -190,6 +191,10 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 
     //  Protocol and address to use when connecting.
     address_t *_addr;
+
+    //  TLS handshake, we need to take a copy when the session is created,
+    //  in order to maintain the value at the creation time
+    char *_wss_hostname;
 
     session_base_t (const session_base_t &);
     const session_base_t &operator= (const session_base_t &);

@@ -153,6 +153,7 @@ test_xpub_verbose
 test_mock_pub_sub
 test_proxy_hwm
 test_ws_transport
+test_wss_transport
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller

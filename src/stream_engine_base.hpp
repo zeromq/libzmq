@@ -90,7 +90,6 @@ class stream_engine_base_t : public io_object_t, public i_engine
     int decode_and_push (msg_t *msg_);
 
     void set_handshake_timer ();
-    int tcp_read (void *data_, size_t size_);
 
     virtual bool handshake () { return true; };
     virtual void plug_internal (){};
@@ -99,6 +98,9 @@ class stream_engine_base_t : public io_object_t, public i_engine
     virtual int produce_ping_message (msg_t *msg_) { return -1; };
     virtual int process_heartbeat_message (msg_t *msg_) { return -1; };
     virtual int produce_pong_message (msg_t *msg_) { return -1; };
+
+    virtual int read (void *data, size_t size_);
+    virtual int write (const void *data_, size_t size_);
 
     void set_pollout () { io_object_t::set_pollout (_handle); }
     void set_pollin () { io_object_t::set_pollin (_handle); }

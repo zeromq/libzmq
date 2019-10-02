@@ -670,6 +670,12 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_SOCKS_PASSWORD 100
 #define ZMQ_IN_BATCH_SIZE 101
 #define ZMQ_OUT_BATCH_SIZE 102
+#define ZMQ_WSS_KEY_PEM 103
+#define ZMQ_WSS_CERT_PEM 104
+#define ZMQ_WSS_TRUST_PEM 105
+#define ZMQ_WSS_HOSTNAME 106
+#define ZMQ_WSS_TRUST_SYSTEM 107
+
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10

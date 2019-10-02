@@ -286,6 +286,13 @@ struct options_t
 
     // Version of monitor events to emit
     int monitor_event_version;
+
+    //  WSS Keys
+    std::string wss_key_pem;
+    std::string wss_cert_pem;
+    std::string wss_trust_pem;
+    std::string wss_hostname;
+    bool wss_trust_system;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)
