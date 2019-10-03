@@ -285,7 +285,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         AC_CHECK_LIB(socket, socket)
         ;;
-    *aix*)
+    *aix*|*os400*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)

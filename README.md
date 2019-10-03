@@ -70,6 +70,7 @@ OS and version | Architecture | Compiler and version | Build system | Last repor
 -------------- | ------------ | -------------------- | ------------ | ----------- | -------
 Solaris 10 | x86, amd64, sparc | GCC 8.1.0 | CMake | 2019/03/18 |
 DragonFly BSD | amd64 | gcc 8.3 | autotools | 2018/08/07 git-72854e63 |
+IBM i | ppc64 | gcc 6.3 | autotools | 2019/10/02 git-25320a3 |
 
 
 ### Supported platforms without known active users
