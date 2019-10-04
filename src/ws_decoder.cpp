@@ -49,6 +49,7 @@ zmq::ws_decoder_t::ws_decoder_t (size_t bufsize_,
     _must_mask (must_mask_),
     _size (0)
 {
+    memset (_tmpbuf, 0, sizeof (_tmpbuf));
     int rc = _in_progress.init ();
     errno_assert (rc == 0);
 

@@ -106,6 +106,43 @@ void test_large_message ()
     test_context_socket_close (sb);
 }
 
+void test_curve ()
+{
+    char client_public[41];
+    char client_secret[41];
+    char server_public[41];
+    char server_secret[41];
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_curve_keypair (server_public, server_secret));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_curve_keypair (client_public, client_secret));
+
+    void *server = test_context_socket (ZMQ_REP);
+    int as_server = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:5556/roundtrip"));
+
+
+    void *client = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_connect (client, "ws://127.0.0.1:5556/roundtrip"));
+
+    bounce (server, client);
+
+    test_context_socket_close (client);
+    test_context_socket_close (server);
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -114,5 +151,9 @@ int main ()
     RUN_TEST (test_roundtrip);
     RUN_TEST (test_short_message);
     RUN_TEST (test_large_message);
+
+    if (zmq_has ("curve"))
+        RUN_TEST (test_curve);
+
     return UNITY_END ();
 }

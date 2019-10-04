@@ -1481,6 +1481,14 @@ int zmq_has (const char *capability_)
     if (strcmp (capability_, "draft") == 0)
         return true;
 #endif
+#if defined(ZMQ_HAVE_WS)
+    if (strcmp (capability_, "WS") == 0)
+        return true;
+#endif
+#if defined(ZMQ_HAVE_WSS)
+    if (strcmp (capability_, "WSS") == 0)
+        return true;
+#endif
     //  Whatever the application asked for, we don't have
     return false;
 }
