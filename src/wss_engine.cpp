@@ -128,21 +128,53 @@ void zmq::wss_engine_t::plug_internal ()
     in_event ();
 }
 
+void zmq::wss_engine_t::out_event ()
+{
+    if (_established)
+        return ws_engine_t::out_event ();
+
+    int rc = gnutls_handshake (_tls_session);
+
+    reset_pollout ();
+
+    if (rc == GNUTLS_E_SUCCESS) {
+        start_ws_handshake ();
+        _established = true;
+        return;
+    } else if (rc == GNUTLS_E_AGAIN) {
+        int direction = gnutls_record_get_direction (_tls_session);
+        if (direction == 1)
+            set_pollout ();
+
+        return;
+    } else if (rc == GNUTLS_E_INTERRUPTED
+               || rc == GNUTLS_E_WARNING_ALERT_RECEIVED) {
+        return;
+    } else {
+        error (zmq::i_engine::connection_error);
+        return;
+    }
+}
+
 bool zmq::wss_engine_t::handshake ()
 {
     if (!_established) {
         int rc = gnutls_handshake (_tls_session);
 
-        // TODO: when E_AGAIN is returned we might need to call gnutls_handshake for out_event as well, see gnutls_record_get_direction
-
         if (rc == GNUTLS_E_SUCCESS) {
             start_ws_handshake ();
             _established = true;
             return false;
-        } else if (rc == GNUTLS_E_AGAIN || rc == GNUTLS_E_INTERRUPTED
-                   || rc == GNUTLS_E_WARNING_ALERT_RECEIVED)
+        } else if (rc == GNUTLS_E_AGAIN) {
+            int direction = gnutls_record_get_direction (_tls_session);
+            if (direction == 1)
+                set_pollout ();
+
             return false;
-        else {
+        } else if (rc == GNUTLS_E_INTERRUPTED
+                   || rc == GNUTLS_E_WARNING_ALERT_RECEIVED) {
+            return false;
+        } else {
             error (zmq::i_engine::connection_error);
             return false;
         }
@@ -171,6 +203,11 @@ int zmq::wss_engine_t::read (void *data_, size_t size_)
         return -1;
     }
 
+    if (rc < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
     // TODO: change return type to ssize_t (signed)
     return rc;
 }
@@ -186,6 +223,11 @@ int zmq::wss_engine_t::write (const void *data_, size_t size_)
 
     if (rc == GNUTLS_E_AGAIN) {
         errno = EAGAIN;
+        return -1;
+    }
+
+    if (rc < 0) {
+        errno = EINVAL;
         return -1;
     }
 
