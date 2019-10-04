@@ -354,7 +354,7 @@ void zmq::stream_engine_base_t::out_event ()
         //  If there is no data to send, stop polling for output.
         if (_outsize == 0) {
             _output_stopped = true;
-            reset_pollout (_handle);
+            reset_pollout ();
             return;
         }
     }
@@ -370,7 +370,7 @@ void zmq::stream_engine_base_t::out_event ()
     //  The engine is not terminated until we detect input error;
     //  this is necessary to prevent losing incoming messages.
     if (nbytes == -1) {
-        reset_pollout (_handle);
+        reset_pollout ();
         return;
     }
 
@@ -381,7 +381,7 @@ void zmq::stream_engine_base_t::out_event ()
     //  to send, stop polling for output.
     if (unlikely (_handshaking))
         if (_outsize == 0)
-            reset_pollout (_handle);
+            reset_pollout ();
 }
 
 void zmq::stream_engine_base_t::restart_output ()

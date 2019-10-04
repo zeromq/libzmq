@@ -102,6 +102,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
     virtual int read (void *data, size_t size_);
     virtual int write (const void *data_, size_t size_);
 
+    void reset_pollout () { io_object_t::reset_pollout (_handle); }
     void set_pollout () { io_object_t::set_pollout (_handle); }
     void set_pollin () { io_object_t::set_pollin (_handle); }
     session_base_t *session () { return _session; }

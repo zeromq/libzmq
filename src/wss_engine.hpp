@@ -49,6 +49,8 @@ class wss_engine_t : public ws_engine_t
                   const char *hostname_);
     ~wss_engine_t ();
 
+    void out_event ();
+
   protected:
     bool handshake ();
     void plug_internal ();
