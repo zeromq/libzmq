@@ -143,6 +143,8 @@ class ws_engine_t : public stream_engine_base_t
     int routing_id_msg (msg_t *msg_);
     int process_routing_id_msg (msg_t *msg_);
 
+    bool select_protocol (char *protocol);
+
     bool client_handshake ();
     bool server_handshake ();
 
