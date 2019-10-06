@@ -232,7 +232,7 @@ autoreconf -fi
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
 
 # Install the package to build area
-%{__make} check
+%{__make} check VERBOSE=1
 %makeinstall
 
 %post
