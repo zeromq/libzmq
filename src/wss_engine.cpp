@@ -110,8 +110,6 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
 
     gnutls_set_default_priority (_tls_session);
     gnutls_transport_set_int (_tls_session, fd_);
-    gnutls_handshake_set_timeout (_tls_session,
-                                  GNUTLS_DEFAULT_HANDSHAKE_TIMEOUT);
 }
 
 zmq::wss_engine_t::~wss_engine_t ()
