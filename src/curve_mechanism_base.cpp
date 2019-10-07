@@ -70,8 +70,9 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     message_plaintext[crypto_box_ZEROBYTES] = flags;
     // this is copying the data from insecure memory, so there is no point in
     // using secure_allocator_t for message_plaintext
-    memcpy (&message_plaintext[crypto_box_ZEROBYTES + 1], msg_->data (),
-            msg_->size ());
+    if (msg_->size () > 0)
+        memcpy (&message_plaintext[crypto_box_ZEROBYTES + 1], msg_->data (),
+                msg_->size ());
 
     std::vector<uint8_t> message_box (mlen);
 
@@ -160,8 +161,9 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
 
         // this is copying the data to insecure memory, so there is no point in
         // using secure_allocator_t for message_plaintext
-        memcpy (msg_->data (), &message_plaintext[crypto_box_ZEROBYTES + 1],
-                msg_->size ());
+        if (msg_->size () > 0)
+            memcpy (msg_->data (), &message_plaintext[crypto_box_ZEROBYTES + 1],
+                    msg_->size ());
     } else {
         // CURVE I : connection key used for MESSAGE is wrong
         session->get_socket ()->event_handshake_failed_protocol (
