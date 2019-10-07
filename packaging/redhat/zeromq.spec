@@ -56,6 +56,17 @@ BuildRequires:  nss-devel
 %else
 %define NSS no
 %endif
+%bcond_with tls
+%if %{with tls} && ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+BuildRequires:  libgnutls-devel
+%else
+BuildRequires:  gnutls-devel
+%endif
+%define TLS yes
+%else
+%define TLS no
+%endif
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
@@ -93,6 +104,15 @@ Requires:      libstdc++
 %else
 %{?_with_nss:BuildRequires: nss-devel}
 %{?_with_nss:Requires: nss}
+%endif
+
+%if ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+%{?_with_tls:BuildRequires: libgnutls-devel}
+%else
+%{?_with_tls:BuildRequires: gnutls-devel}
+%endif
+%{?_with_tls:Requires: gnutls}
 %endif
 
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
@@ -150,6 +170,14 @@ Requires:  mozilla-nss-devel
 Requires:  nss-devel
 %endif
 %endif
+%bcond_with tls
+%if %{with tls} && ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+Requires:  libgnutls-devel
+%else
+Requires:  gnutls-devel
+%endif
+%endif
 
 %description devel
 The 0MQ lightweight messaging kernel is a library which extends the
@@ -192,6 +220,7 @@ autoreconf -fi
     --with-libsodium=%{SODIUM} \
     --with-libgssapi_krb5=%{GSSAPI} \
     --with-nss=%{NSS} \
+    --with-tls=%{TLS} \
     %{?_with_pic} \
     %{?_without_pic} \
     %{?_with_gnu_ld} \
@@ -203,7 +232,7 @@ autoreconf -fi
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
 
 # Install the package to build area
-%{__make} check
+%{__make} check VERBOSE=1
 %makeinstall
 
 %post
@@ -244,6 +273,9 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Fri Oct 4 2019 Luca Boccassi <luca.boccassi@gmail.com>
+- Add macro for optional TLS dependency
+
 * Wed Sep 11 2019 Luca Boccassi <luca.boccassi@gmail.com>
 - Add macro for optional NSS dependency
 
