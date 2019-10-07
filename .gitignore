@@ -154,6 +154,8 @@ test_mock_pub_sub
 test_proxy_hwm
 test_ws_transport
 test_wss_transport
+test_socks
+test_xpub_manual_last_value
 unittest_ip_resolver
 unittest_mtrie
 unittest_poller
@@ -202,3 +204,5 @@ zeromq-*.zip
 core
 build
 test-suite.log
+.idea/
+cmake-build-debug/

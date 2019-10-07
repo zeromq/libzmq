@@ -101,8 +101,15 @@ void test ()
         send_count++;
     TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
 
-    while (zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT) == 0)
+    if (send_count > 0) {
+        //  Receive first message with blocking
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_recv (sub, NULL, 0, 0));
         recv_count++;
+
+        while (zmq_recv (sub, NULL, 0, ZMQ_DONTWAIT) == 0)
+            recv_count++;
+    }
+
     TEST_ASSERT_EQUAL_INT (send_count, recv_count);
 
     //  Clean up.
