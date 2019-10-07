@@ -220,7 +220,7 @@ after_build:
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
   - cmd: copy "%LIBZMQ_SRCDIR%\include\zmq.h" .
-  - cmd: copy ..\..\lib\%Configuration%\libzmq*.lib .
+  - cmd: copy ..\..\lib\%Configuration%\libzmq*.lib . & exit 0
   - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb *.h *.lib
   - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:ARTIFACT_NAME}-${env:ZMQ_VERSION_MAJOR}_${env:ZMQ_VERSION_MINOR}_${env:ZMQ_VERSION_PATCH}.zip"
 
