@@ -33,6 +33,7 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
+#ifdef ZMQ_WSS_CERT_PEM
 const char *key =
   "-----BEGIN PRIVATE KEY-----\n"
   "MIIJRAIBADANBgkqhkiG9w0BAQEFAASCCS4wggkqAgEAAoICAQCrXKFPWrRqbdNo\n"
@@ -148,3 +149,10 @@ int main ()
     RUN_TEST (test_roundtrip);
     return UNITY_END ();
 }
+#else
+int main ()
+{
+    printf ("WSS unavailable, skipping test\n");
+    return 77;
+}
+#endif
