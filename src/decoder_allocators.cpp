@@ -30,8 +30,6 @@
 #include "precompiled.hpp"
 #include "decoder_allocators.hpp"
 
-#include <cmath>
-
 #include "msg.hpp"
 
 zmq::shared_message_memory_allocator::shared_message_memory_allocator (
@@ -40,9 +38,7 @@ zmq::shared_message_memory_allocator::shared_message_memory_allocator (
     _buf_size (0),
     _max_size (bufsize_),
     _msg_content (NULL),
-    _max_counters (static_cast<size_t> (
-      std::ceil (static_cast<double> (_max_size)
-                 / static_cast<double> (msg_t::max_vsm_size))))
+    _max_counters ((_max_size + msg_t::max_vsm_size - 1) / msg_t::max_vsm_size)
 {
 }
 
