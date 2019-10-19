@@ -51,6 +51,8 @@
 #cmakedefine HAVE_ACCEPT4
 #cmakedefine HAVE_STRNLEN
 
+#cmakedefine ZMQ_HAVE_IPC
+
 #cmakedefine ZMQ_USE_BUILTIN_SHA1
 #cmakedefine ZMQ_USE_NSS
 #cmakedefine ZMQ_HAVE_WS
@@ -104,8 +106,10 @@
   #define ZMQ_HAVE_OPENBSD
 #endif
 
+// TODO better move OS-specific defines to the automake files, and check for availability of IPC with an explicit test there
 #if defined __VMS
   #define ZMQ_HAVE_OPENVMS
+  #undef ZMQ_HAVE_IPC
 #endif
 
 #if defined __APPLE__

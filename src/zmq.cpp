@@ -1449,7 +1449,7 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
 
 int zmq_has (const char *capability_)
 {
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
+#if defined(ZMQ_HAVE_IPC)
     if (strcmp (capability_, zmq::protocol_name::ipc) == 0)
         return true;
 #endif

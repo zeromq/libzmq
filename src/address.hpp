@@ -46,7 +46,7 @@ class ctx_t;
 class tcp_address_t;
 class udp_address_t;
 class ws_address_t;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#if defined ZMQ_HAVE_IPC
 class ipc_address_t;
 #endif
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS
@@ -67,8 +67,7 @@ static const char ws[] = "ws";
 #ifdef ZMQ_HAVE_WSS
 static const char wss[] = "wss";
 #endif
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 static const char ipc[] = "ipc";
 #endif
 #if defined ZMQ_HAVE_TIPC
@@ -101,8 +100,7 @@ struct address_t
 #ifdef ZMQ_HAVE_WS
         ws_address_t *ws_addr;
 #endif
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
         ipc_address_t *ipc_addr;
 #endif
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS
