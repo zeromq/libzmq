@@ -299,14 +299,14 @@ static bool is_multicast_available (int ipv6_)
         any_ipv6->sin6_flowinfo = 0;
         any_ipv6->sin6_scope_id = 0;
 
-        rc = inet_pton (AF_INET6, "::", &any_ipv6->sin6_addr);
+        rc = test_inet_pton (AF_INET6, "::", &any_ipv6->sin6_addr);
         if (rc == 0) {
             goto out;
         }
 
         *mcast_ipv6 = *any_ipv6;
 
-        rc = inet_pton (AF_INET6, MCAST_IPV6, &mcast_ipv6->sin6_addr);
+        rc = test_inet_pton (AF_INET6, MCAST_IPV6, &mcast_ipv6->sin6_addr);
         if (rc == 0) {
             goto out;
         }
@@ -319,14 +319,14 @@ static bool is_multicast_available (int ipv6_)
         any_ipv4->sin_family = AF_INET;
         any_ipv4->sin_port = htons (5555);
 
-        rc = inet_pton (AF_INET, "0.0.0.0", &any_ipv4->sin_addr);
+        rc = test_inet_pton (AF_INET, "0.0.0.0", &any_ipv4->sin_addr);
         if (rc == 0) {
             goto out;
         }
 
         *mcast_ipv4 = *any_ipv4;
 
-        rc = inet_pton (AF_INET, MCAST_IPV4, &mcast_ipv4->sin_addr);
+        rc = test_inet_pton (AF_INET, MCAST_IPV4, &mcast_ipv4->sin_addr);
         if (rc == 0) {
             goto out;
         }

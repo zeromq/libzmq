@@ -581,7 +581,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 
     char *if_name_result = NULL;
 
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP
     if_name_result = if_indextoname (index_, buffer);
 #endif
 
@@ -724,7 +724,7 @@ void zmq::ip_resolver_t::do_freeaddrinfo (struct addrinfo *res_)
 
 unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
 {
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP         \
   && !defined ZMQ_HAVE_VXWORKS
     return if_nametoindex (ifname_);
 #else
