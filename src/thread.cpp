@@ -65,10 +65,10 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
         strncpy (_name, name_, sizeof (_name) - 1);
 #if defined _WIN32_WCE
     _descriptor =
-      (HANDLE) CreateThread (NULL, 0, &::thread_routine, this, 0, NULL);
+      (HANDLE) CreateThread (NULL, 0, &::thread_routine, this, 0, &_thread_id);
 #else
-    _descriptor =
-      (HANDLE) _beginthreadex (NULL, 0, &::thread_routine, this, 0, NULL);
+    _descriptor = (HANDLE) _beginthreadex (NULL, 0, &::thread_routine, this, 0,
+                                           &_thread_id);
 #endif
     win_assert (_descriptor != NULL);
     _started = true;
@@ -76,7 +76,7 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
 
 bool zmq::thread_t::is_current_thread () const
 {
-    return GetCurrentThreadId () == GetThreadId (_descriptor);
+    return GetCurrentThreadId () == _thread_id;
 }
 
 void zmq::thread_t::stop ()

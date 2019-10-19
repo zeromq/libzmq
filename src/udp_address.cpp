@@ -104,7 +104,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
         if (src_name == "*") {
             _bind_interface = 0;
         } else {
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP         \
   && !defined ZMQ_HAVE_VXWORKS
             _bind_interface = if_nametoindex (src_name.c_str ());
             if (_bind_interface == 0) {
