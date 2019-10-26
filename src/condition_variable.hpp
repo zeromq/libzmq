@@ -56,8 +56,8 @@ class condition_variable_t
 
   private:
     //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    condition_variable_t (const condition_variable_t &) = delete;
+    void operator= (const condition_variable_t &) = delete;
 };
 }
 
@@ -96,8 +96,8 @@ class condition_variable_t
     CONDITION_VARIABLE _cv;
 
     //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    condition_variable_t (const condition_variable_t &) = delete;
+    void operator= (const condition_variable_t &) = delete;
 };
 }
 
@@ -140,8 +140,8 @@ class condition_variable_t
     std::condition_variable_any _cv;
 
     //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    condition_variable_t (const condition_variable_t &) = delete;
+    void operator= (const condition_variable_t &) = delete;
 };
 }
 
@@ -225,8 +225,8 @@ class condition_variable_t
     std::vector<SEM_ID> _listeners;
 
     // Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    const condition_variable_t &operator= (const condition_variable_t &);
+    condition_variable_t (const condition_variable_t &) = delete;
+    const condition_variable_t &operator= (const condition_variable_t &) = delete;
 };
 }
 
@@ -319,8 +319,8 @@ class condition_variable_t
     pthread_cond_t _cond;
 
     // Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    const condition_variable_t &operator= (const condition_variable_t &);
+    condition_variable_t (const condition_variable_t &) = delete;
+    const condition_variable_t &operator= (const condition_variable_t &) = delete;
 };
 }
 
