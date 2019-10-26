@@ -72,6 +72,46 @@
   <ItemGroup>
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />
+    <ClInclude Include="..\..\..\..\src\curve_client_tools.hpp" />
+    <ClInclude Include="..\..\..\..\src\curve_mechanism_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\dbuffer.hpp" />
+    <ClInclude Include="..\..\..\..\src\dealer.hpp" />
+    <ClInclude Include="..\..\..\..\src\endpoint.hpp" />
+    <ClInclude Include="..\..\..\..\src\generic_mtrie.hpp" />
+    <ClInclude Include="..\..\..\..\src\generic_mtrie_impl.hpp" />
+    <ClInclude Include="..\..\..\..\src\ip_resolver.hpp" />
+    <ClInclude Include="..\..\..\..\src\i_decoder.hpp" />
+    <ClInclude Include="..\..\..\..\src\i_encoder.hpp" />
+    <ClInclude Include="..\..\..\..\src\i_mailbox.hpp" />
+    <ClInclude Include="..\..\..\..\src\macros.hpp" />
+    <ClInclude Include="..\..\..\..\src\mechanism.hpp" />
+    <ClInclude Include="..\..\..\..\src\mechanism_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\metadata.hpp" />
+    <ClInclude Include="..\..\..\..\src\norm_engine.hpp" />
+    <ClInclude Include="..\..\..\..\src\null_mechanism.hpp" />
+    <ClInclude Include="..\..\..\..\src\plain_client.hpp" />
+    <ClInclude Include="..\..\..\..\src\plain_common.hpp" />
+    <ClInclude Include="..\..\..\..\src\plain_server.hpp" />
+    <ClInclude Include="..\..\..\..\src\polling_util.hpp" />
+    <ClInclude Include="..\..\..\..\src\pollset.hpp" />
+    <ClInclude Include="..\..\..\..\src\radix_tree.hpp" />
+    <ClInclude Include="..\..\..\..\src\socket_poller.hpp" />
+    <ClInclude Include="..\..\..\..\src\stream.hpp" />
+    <ClInclude Include="..\..\..\..\src\stream_connecter_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\stream_listener_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\tipc_address.hpp" />
+    <ClInclude Include="..\..\..\..\src\tipc_connecter.hpp" />
+    <ClInclude Include="..\..\..\..\src\tipc_listener.hpp" />
+    <ClInclude Include="..\..\..\..\src\v2_decoder.hpp" />
+    <ClInclude Include="..\..\..\..\src\v2_encoder.hpp" />
+    <ClInclude Include="..\..\..\..\src\v2_protocol.hpp" />
+    <ClInclude Include="..\..\..\..\src\vmci.hpp" />
+    <ClInclude Include="..\..\..\..\src\vmci_address.hpp" />
+    <ClInclude Include="..\..\..\..\src\vmci_connecter.hpp" />
+    <ClInclude Include="..\..\..\..\src\vmci_listener.hpp" />
+    <ClInclude Include="..\..\..\..\src\ypipe_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\ypipe_conflate.hpp" />
+    <ClInclude Include="..\..\..\..\src\zap_client.hpp" />
     <ClInclude Include="..\..\..\..\include\zmq.h" />
     <ClInclude Include="..\..\..\..\src\zmq_draft.h" />
     <ClInclude Include="..\..\..\..\src\address.hpp" />
@@ -164,12 +204,9 @@
     <ClInclude Include="..\..\..\..\src\udp_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_encoder.hpp" />
-    <ClInclude Include="..\..\..\..\src\v1_protocol.hpp" />
     <ClInclude Include="..\..\..\..\src\windows.hpp" />
     <ClInclude Include="..\..\..\..\src\wire.hpp" />
     <ClInclude Include="..\..\..\..\src\xpub.hpp" />
-    <ClInclude Include="..\..\..\..\src\xrep.hpp" />
-    <ClInclude Include="..\..\..\..\src\xreq.hpp" />
     <ClInclude Include="..\..\..\..\src\xsub.hpp" />
     <ClInclude Include="..\..\..\..\src\ypipe.hpp" />
     <ClInclude Include="..\..\..\..\src\yqueue.hpp" />
@@ -188,6 +225,7 @@
     <ClCompile Include="..\..\..\..\src\dgram.cpp" />
     <ClCompile Include="..\..\..\..\src\dish.cpp" />
     <ClCompile Include="..\..\..\..\src\dist.cpp" />
+    <ClCompile Include="..\..\..\..\src\endpoint.cpp" />
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\..\src\err.cpp" />
     <ClCompile Include="..\..\..\..\src\fq.cpp" />
@@ -201,6 +239,7 @@
     <ClCompile Include="..\..\..\..\src\ipc_address.cpp" />
     <ClCompile Include="..\..\..\..\src\ipc_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\ipc_listener.cpp" />
+    <ClCompile Include="..\..\..\..\src\ip_resolver.cpp" />
     <ClCompile Include="..\..\..\..\src\kqueue.cpp" />
     <ClCompile Include="..\..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
@@ -210,6 +249,7 @@
     <ClCompile Include="..\..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
+    <ClCompile Include="..\..\..\..\src\norm_engine.cpp" />
     <ClCompile Include="..\..\..\..\src\null_mechanism.cpp" />
     <ClCompile Include="..\..\..\..\src\object.cpp" />
     <ClCompile Include="..\..\..\..\src\options.cpp" />
@@ -223,6 +263,8 @@
     <ClCompile Include="..\..\..\..\src\plain_server.cpp" />
     <ClCompile Include="..\..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\polling_util.cpp" />
+    <ClCompile Include="..\..\..\..\src\pollset.cpp" />
     <ClCompile Include="..\..\..\..\src\precompiled.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -231,6 +273,7 @@
     <ClCompile Include="..\..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\..\src\push.cpp" />
     <ClCompile Include="..\..\..\..\src\radio.cpp" />
+    <ClCompile Include="..\..\..\..\src\radix_tree.cpp" />
     <ClCompile Include="..\..\..\..\src\random.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_encoder.cpp" />
@@ -248,7 +291,9 @@
     <ClCompile Include="..\..\..\..\src\socks.cpp" />
     <ClCompile Include="..\..\..\..\src\socks_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\stream.cpp" />
+    <ClCompile Include="..\..\..\..\src\stream_connecter_base.cpp" />
     <ClCompile Include="..\..\..\..\src\stream_engine.cpp" />
+    <ClCompile Include="..\..\..\..\src\stream_listener_base.cpp" />
     <ClCompile Include="..\..\..\..\src\sub.cpp" />
     <ClCompile Include="..\..\..\..\src\tcp.cpp" />
     <ClCompile Include="..\..\..\..\src\tcp_address.cpp" />
@@ -256,6 +301,9 @@
     <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\thread.cpp" />
     <ClCompile Include="..\..\..\..\src\timers.cpp" />
+    <ClCompile Include="..\..\..\..\src\tipc_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\tipc_connecter.cpp" />
+    <ClCompile Include="..\..\..\..\src\tipc_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\trie.cpp" />
     <ClCompile Include="..\..\..\..\src\tweetnacl.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -266,6 +314,10 @@
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\vmci.cpp" />
+    <ClCompile Include="..\..\..\..\src\vmci_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\vmci_connecter.cpp" />
+    <ClCompile Include="..\..\..\..\src\vmci_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\..\src\zap_client.cpp" />
@@ -274,7 +326,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\packaging\nuget\package.bat" />
-    <None Include="..\..\..\..\packaging\nuget\package.config" />
+    <None Include="..\..\..\..\packaging\nuget\package.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="..\..\..\..\packaging\nuget\package.gsl" />
     <None Include="..\..\..\..\packaging\nuget\package.nuspec" />
     <None Include="..\..\..\..\packaging\nuget\package.targets" />

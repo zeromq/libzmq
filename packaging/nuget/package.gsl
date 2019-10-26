@@ -39,7 +39,7 @@
         <!-- include -->
         
         <file src="..\\..\\include\\*.h" target="build\\native\\include" />
-        <file src="..\\..\\builds\\msvc\\platform.hpp" target="build\\native\\include" />
+        <file src="..\\..\\builds\\deprecated-msvc\\platform.hpp" target="build\\native\\include" />
 
         <!-- targets -->
       
