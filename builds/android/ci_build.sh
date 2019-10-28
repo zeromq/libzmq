@@ -18,7 +18,7 @@ export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
 
 (cd '/tmp' \
     && wget http://dl.google.com/android/repository/$FILENAME \
-    && unzip $FILENAME &> /dev/null ) || exit 1
+    && unzip -q $FILENAME) || exit 1
 unset FILENAME
 
 function _build_arch {
