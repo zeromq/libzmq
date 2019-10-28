@@ -248,7 +248,7 @@ function android_build_verify_so {
     fi
     android_build_check_fail
 
-    local elfoutput=$($readelf_bin -d ${sofile})
+    local elfoutput=$(LC_ALL=C $readelf_bin -d ${sofile})
     
     local soname_regexp='soname: \[([[:alnum:]\.]+)\]'
     if [[ $elfoutput =~ $soname_regexp ]]; then
