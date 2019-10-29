@@ -143,6 +143,15 @@ if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
 
+# IPC is available on all platforms supported by autotools build at the moment except OpenVMS and VxWorks.
+case "${host_os}" in
+    *vxworks*|*openvms*)
+        ;;
+    *)
+        AC_DEFINE(ZMQ_HAVE_IPC, 1, [Have AF_UNIX sockets for ipc transport])
+        ;;
+esac
+
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
 AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],

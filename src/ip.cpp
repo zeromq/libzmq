@@ -449,20 +449,23 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Listen for incoming connections.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
         rc = listen (listener, 1);
+    }
 
     //  Connect writer to the listener.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
         rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
                       sizeof addr);
-
-    //  Set TCP_NODELAY on writer socket.
-    tune_socket (*w_);
+    }
 
     //  Accept connection from writer.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
+        //  Set TCP_NODELAY on writer socket.
+        tune_socket (*w_);
+
         *r_ = accept (listener, NULL, NULL);
+    }
 
     //  Send/receive large chunk to work around TCP slow start
     //  This code is a workaround for #1608

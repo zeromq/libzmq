@@ -30,8 +30,7 @@
 #ifndef __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 #define __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include <string>
 
@@ -77,7 +76,7 @@ class ipc_listener_t : public stream_listener_base_t
     bool _has_file;
 
     //  Name of the temporary directory (if any) that has the
-    //  the UNIX domain socket
+    //  UNIX domain socket
     std::string _tmp_socket_dirname;
 
     //  Name of the file associated with the UNIX domain address.

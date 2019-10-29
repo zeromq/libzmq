@@ -58,7 +58,7 @@ void test_reconnect_ivl_against_pair_socket (const char *my_endpoint_,
     test_context_socket_close (sc);
 }
 
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
+#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_GNU)
 void test_reconnect_ivl_ipc (void)
 {
     char my_endpoint[256];

@@ -193,6 +193,54 @@ set(API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid 
 
 set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
+  
+if (WIN32)
+    # from https://stackoverflow.com/a/40217291/2019765
+    macro(get_WIN32_WINNT version)
+        if (CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
+            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
+            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+            if ("${verMajor}" MATCHES "10")
+                set(verMajor "A")
+                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
+            endif ("${verMajor}" MATCHES "10")
+            # Remove all remaining '.' characters.
+            string(REPLACE "." "" ver ${ver})
+            # Prepend each digit with a zero.
+            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
+            set(${version} "0x${ver}")
+        endif(CMAKE_SYSTEM_VERSION)
+    endmacro(get_WIN32_WINNT)
+
+    get_WIN32_WINNT(ZMQ_WIN32_WINNT_DEFAULT)
+    message(STATUS "Detected _WIN32_WINNT from CMAKE_SYSTEM_VERSION: ${ZMQ_WIN32_WINNT_DEFAULT}")
+
+    # TODO limit _WIN32_WINNT to the actual Windows SDK version, which might be different from the default version installed with Visual Studio
+    if(MSVC_VERSION STREQUAL "1500" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.0")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0600")
+    elseif(MSVC_VERSION STREQUAL "1600" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
+    elseif(MSVC_VERSION STREQUAL "1700" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
+    elseif(MSVC_VERSION STREQUAL "1800" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.2")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0602")
+    endif()
+    if(ZMQ_WIN32_WINNT_LIMIT)
+        message(STATUS "Mismatch of Visual Studio Version (${MSVC_VERSION}) and CMAKE_SYSTEM_VERSION (${CMAKE_SYSTEM_VERSION}), limiting _WIN32_WINNT to ${ZMQ_WIN32_WINNT_LIMIT}, you may override this by setting ZMQ_WIN32_WINNT")
+        set(ZMQ_WIN32_WINNT_DEFAULT "${ZMQ_WIN32_WINNT_LIMIT}")
+    endif()
+
+    set(ZMQ_WIN32_WINNT "${ZMQ_WIN32_WINNT_DEFAULT}" CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
+
+	# On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc support)
+	if (ZMQ_WIN32_WINNT GREATER "0x05FF" AND MSVC_VERSION GREATER 1799 AND POLLER STREQUAL "")
+	  set(POLLER "epoll")
+	endif()
+
+    add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
+endif(WIN32)
 
 if(NOT MSVC)
   if(POLLER STREQUAL "")
@@ -294,48 +342,11 @@ if(NOT CYGWIN)
   check_include_files(windows.h ZMQ_HAVE_WINDOWS)
 endif()
 
-if (WIN32)
-    # from https://stackoverflow.com/a/40217291/2019765
-    macro(get_WIN32_WINNT version)
-        if (CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if ("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif ("${verMajor}" MATCHES "10")
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-
-    get_WIN32_WINNT(ZMQ_WIN32_WINNT_DEFAULT)
-    message(STATUS "Detected _WIN32_WINNT from CMAKE_SYSTEM_VERSION: ${ZMQ_WIN32_WINNT_DEFAULT}")
-
-    # TODO limit _WIN32_WINNT to the actual Windows SDK version, which might be different from the default version installed with Visual Studio
-    if(MSVC_VERSION STREQUAL "1500" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.0")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0600")
-    elseif(MSVC_VERSION STREQUAL "1600" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1700" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1800" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.2")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0602")
-    endif()
-    if(ZMQ_WIN32_WINNT_LIMIT)
-        message(STATUS "Mismatch of Visual Studio Version (${MSVC_VERSION}) and CMAKE_SYSTEM_VERSION (${CMAKE_SYSTEM_VERSION}), limiting _WIN32_WINNT to ${ZMQ_WIN32_WINNT_LIMIT}, you may override this by setting ZMQ_WIN32_WINNT")
-        set(ZMQ_WIN32_WINNT_DEFAULT "${ZMQ_WIN32_WINNT_LIMIT}")
-    endif()
-
-    set(ZMQ_WIN32_WINNT "${ZMQ_WIN32_WINNT_DEFAULT}" CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
-
-    add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
-endif(WIN32)
+if(NOT WIN32)
+    set(ZMQ_HAVE_IPC 1)
+else()
+    check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+endif()
 
 ###################### BEGIN condition_variable_t selection
 if(NOT ZMQ_CV_IMPL)
@@ -438,6 +449,8 @@ if(NOT MSVC)
   check_cxx_symbol_exists(mkdtemp stdlib.h HAVE_MKDTEMP)
   check_cxx_symbol_exists(accept4 sys/socket.h HAVE_ACCEPT4)
   check_cxx_symbol_exists(strnlen string.h HAVE_STRNLEN)
+else()
+  set(HAVE_STRNLEN 1)
 endif()
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)

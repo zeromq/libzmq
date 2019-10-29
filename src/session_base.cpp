@@ -576,8 +576,7 @@ zmq::session_base_t::connecter_factory_entry_t
     connecter_factory_entry_t (protocol_name::wss,
                                &zmq::session_base_t::create_connecter_wss),
 #endif
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
     connecter_factory_entry_t (protocol_name::ipc,
                                &zmq::session_base_t::create_connecter_ipc),
 #endif
@@ -668,8 +667,7 @@ zmq::own_t *zmq::session_base_t::create_connecter_tipc (io_thread_t *io_thread_,
 }
 #endif
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 zmq::own_t *zmq::session_base_t::create_connecter_ipc (io_thread_t *io_thread_,
                                                        bool wait_)
 {
