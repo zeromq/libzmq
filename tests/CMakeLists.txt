@@ -85,14 +85,17 @@ if(ZMQ_HAVE_CURVE)
     test_security_curve)
 endif()
 
-find_program(CAPSH_PROGRAM NAMES capsh)
+option(ENABLE_CAPSH "Run tests that require sudo and capsh (for cap_net_admin)" OFF)
+if(ENABLE_CAPSH)
+  find_program(CAPSH_PROGRAM NAMES capsh)
 
-if (CAPSH_PROGRAM)
-    list(APPEND tests
-        test_pair_tcp_cap_net_admin
-        )
-else()
-    message(STATUS "capsh not found, skipping tests that require CAP_NET_ADMIN")
+  if (CAPSH_PROGRAM)
+      list(APPEND tests
+          test_pair_tcp_cap_net_admin
+          )
+  else()
+      message(STATUS "capsh not found, skipping tests that require CAP_NET_ADMIN")
+  endif()
 endif()
 
 if(ZMQ_HAVE_IPC)
