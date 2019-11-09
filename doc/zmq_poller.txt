@@ -134,6 +134,9 @@ and stores it in the address pointer to by 'fd'.
 The zmq_poller is only guaranteed to have a file descriptor if
 at least one thread-safe socket is currently registered.
 
+Note that closing a socket that is registered in a poller leads to undefined
+behavior. The socket must be unregistered first.
+
 EVENT TYPES
 -----------
 
@@ -261,9 +264,9 @@ void *poller = zmq_poller_new ();
 
 zmq_poller_event_t events [2];
 /* First item refers to 0MQ socket 'socket' */
-zmq_poller_add (poller, socket, ZMQ_POLLIN, NULL);
+zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
 /* Second item refers to standard socket 'fd' */
-zmq_poller_add_fd (poller, fd, ZMQ_POLLIN, NULL);
+zmq_poller_add_fd (poller, fd, NULL, ZMQ_POLLIN);
 /* Poll for events indefinitely */
 int rc = zmq_poller_wait_all (items, events, 2, -1);
 assert (rc >= 0);

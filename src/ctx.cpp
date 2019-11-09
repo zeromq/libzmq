@@ -52,6 +52,14 @@
 #include <vmci_sockets.h>
 #endif
 
+#ifdef ZMQ_USE_NSS
+#include <nss.h>
+#endif
+
+#ifdef ZMQ_USE_GNUTLS
+#include <gnutls/gnutls.h>
+#endif
+
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD 0xdeadbeef
 
@@ -87,6 +95,14 @@ zmq::ctx_t::ctx_t () :
 
     //  Initialise crypto library, if needed.
     zmq::random_open ();
+
+#ifdef ZMQ_USE_NSS
+    NSS_NoDB_Init (NULL);
+#endif
+
+#ifdef ZMQ_USE_GNUTLS
+    gnutls_global_init ();
+#endif
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -118,6 +134,14 @@ zmq::ctx_t::~ctx_t ()
 
     //  De-initialise crypto library, if needed.
     zmq::random_close ();
+
+#ifdef ZMQ_USE_NSS
+    NSS_Shutdown ();
+#endif
+
+#ifdef ZMQ_USE_GNUTLS
+    gnutls_global_deinit ();
+#endif
 
     //  Remove the tag, so that the object is considered dead.
     _tag = ZMQ_CTX_TAG_VALUE_BAD;
@@ -223,57 +247,152 @@ int zmq::ctx_t::shutdown ()
     return 0;
 }
 
-int zmq::ctx_t::set (int option_, int optval_)
+int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
 {
-    int rc = 0;
-    if (option_ == ZMQ_MAX_SOCKETS && optval_ >= 1
-        && optval_ == clipped_maxsocket (optval_)) {
-        scoped_lock_t locker (_opt_sync);
-        _max_sockets = optval_;
-    } else if (option_ == ZMQ_IO_THREADS && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _io_thread_count = optval_;
-    } else if (option_ == ZMQ_IPV6 && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _ipv6 = (optval_ != 0);
-    } else if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _blocky = (optval_ != 0);
-    } else if (option_ == ZMQ_MAX_MSGSZ && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _max_msgsz = optval_ < INT_MAX ? optval_ : INT_MAX;
-    } else if (option_ == ZMQ_ZERO_COPY_RECV && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _zero_copy = (optval_ != 0);
-    } else {
-        rc = thread_ctx_t::set (option_, optval_);
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = 0;
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
+
+    switch (option_) {
+        case ZMQ_MAX_SOCKETS:
+            if (is_int && value >= 1 && value == clipped_maxsocket (value)) {
+                scoped_lock_t locker (_opt_sync);
+                _max_sockets = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_IO_THREADS:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _io_thread_count = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_IPV6:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _ipv6 = (value != 0);
+                return 0;
+            }
+            break;
+
+        case ZMQ_BLOCKY:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _blocky = (value != 0);
+                return 0;
+            }
+            break;
+
+        case ZMQ_MAX_MSGSZ:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _max_msgsz = value < INT_MAX ? value : INT_MAX;
+                return 0;
+            }
+            break;
+
+        case ZMQ_ZERO_COPY_RECV:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _zero_copy = (value != 0);
+                return 0;
+            }
+            break;
+
+        default: {
+            return thread_ctx_t::set (option_, optval_, optvallen_);
+        }
     }
-    return rc;
+
+    errno = EINVAL;
+    return -1;
+}
+
+int zmq::ctx_t::get (int option_, void *optval_, size_t *optvallen_)
+{
+    const bool is_int = (*optvallen_ == sizeof (int));
+    int *value = static_cast<int *> (optval_);
+
+    switch (option_) {
+        case ZMQ_MAX_SOCKETS:
+            if (is_int) {
+                *value = _max_sockets;
+                return 0;
+            }
+            break;
+
+        case ZMQ_SOCKET_LIMIT:
+            if (is_int) {
+                *value = clipped_maxsocket (65535);
+                return 0;
+            }
+            break;
+
+        case ZMQ_IO_THREADS:
+            if (is_int) {
+                *value = _io_thread_count;
+                return 0;
+            }
+            break;
+
+        case ZMQ_IPV6:
+            if (is_int) {
+                *value = _ipv6;
+                return 0;
+            }
+            break;
+
+        case ZMQ_BLOCKY:
+            if (is_int) {
+                *value = _blocky;
+                return 0;
+            }
+            break;
+
+        case ZMQ_MAX_MSGSZ:
+            if (is_int) {
+                *value = _max_msgsz;
+                return 0;
+            }
+            break;
+
+        case ZMQ_MSG_T_SIZE:
+            if (is_int) {
+                *value = sizeof (zmq_msg_t);
+                return 0;
+            }
+            break;
+
+        case ZMQ_ZERO_COPY_RECV:
+            if (is_int) {
+                *value = _zero_copy;
+                return 0;
+            }
+            break;
+
+        default: {
+            return thread_ctx_t::get (option_, optval_, optvallen_);
+        }
+    }
+
+    errno = EINVAL;
+    return -1;
 }
 
 int zmq::ctx_t::get (int option_)
 {
-    int rc = 0;
-    if (option_ == ZMQ_MAX_SOCKETS)
-        rc = _max_sockets;
-    else if (option_ == ZMQ_SOCKET_LIMIT)
-        rc = clipped_maxsocket (65535);
-    else if (option_ == ZMQ_IO_THREADS)
-        rc = _io_thread_count;
-    else if (option_ == ZMQ_IPV6)
-        rc = _ipv6;
-    else if (option_ == ZMQ_BLOCKY)
-        rc = _blocky;
-    else if (option_ == ZMQ_MAX_MSGSZ)
-        rc = _max_msgsz;
-    else if (option_ == ZMQ_MSG_T_SIZE)
-        rc = sizeof (zmq_msg_t);
-    else if (option_ == ZMQ_ZERO_COPY_RECV) {
-        rc = _zero_copy;
-    } else {
-        rc = thread_ctx_t::get (option_);
-    }
-    return rc;
+    int optval_ = 0;
+    size_t optvallen_ = sizeof (int);
+
+    if (get (option_, &optval_, &optvallen_) == 0)
+        return optval_;
+
+    errno = EINVAL;
+    return -1;
 }
 
 bool zmq::ctx_t::start ()
@@ -433,50 +552,100 @@ void zmq::thread_ctx_t::start_thread (thread_t &thread_,
     thread_.start (tfn_, arg_, namebuf);
 }
 
-int zmq::thread_ctx_t::set (int option_, int optval_)
+int zmq::thread_ctx_t::set (int option_, const void *optval_, size_t optvallen_)
 {
-    int rc = 0;
-    if (option_ == ZMQ_THREAD_SCHED_POLICY && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _thread_sched_policy = optval_;
-    } else if (option_ == ZMQ_THREAD_AFFINITY_CPU_ADD && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _thread_affinity_cpus.insert (optval_);
-    } else if (option_ == ZMQ_THREAD_AFFINITY_CPU_REMOVE && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        if (0 == _thread_affinity_cpus.erase (optval_)) {
-            errno = EINVAL;
-            rc = -1;
-        }
-    } else if (option_ == ZMQ_THREAD_NAME_PREFIX && optval_ >= 0) {
-        std::ostringstream s;
-        s << optval_;
-        scoped_lock_t locker (_opt_sync);
-        _thread_name_prefix = s.str ();
-    } else if (option_ == ZMQ_THREAD_PRIORITY && optval_ >= 0) {
-        scoped_lock_t locker (_opt_sync);
-        _thread_priority = optval_;
-    } else {
-        errno = EINVAL;
-        rc = -1;
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = 0;
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
+
+    switch (option_) {
+        case ZMQ_THREAD_SCHED_POLICY:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _thread_sched_policy = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_THREAD_AFFINITY_CPU_ADD:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _thread_affinity_cpus.insert (value);
+                return 0;
+            }
+            break;
+
+        case ZMQ_THREAD_AFFINITY_CPU_REMOVE:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                if (0 == _thread_affinity_cpus.erase (value)) {
+                    errno = EINVAL;
+                    return -1;
+                }
+                return 0;
+            }
+            break;
+
+        case ZMQ_THREAD_PRIORITY:
+            if (is_int && value >= 0) {
+                scoped_lock_t locker (_opt_sync);
+                _thread_priority = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_THREAD_NAME_PREFIX:
+            // start_thread() allows max 16 chars for thread name
+            if (is_int) {
+                std::ostringstream s;
+                s << value;
+                scoped_lock_t locker (_opt_sync);
+                _thread_name_prefix = s.str ();
+                return 0;
+            } else if (optvallen_ > 0 && optvallen_ <= 16) {
+                scoped_lock_t locker (_opt_sync);
+                _thread_name_prefix.assign (static_cast<const char *> (optval_),
+                                            optvallen_);
+                return 0;
+            }
+            break;
     }
-    return rc;
+
+    errno = EINVAL;
+    return -1;
 }
 
-int zmq::thread_ctx_t::get (int option_)
+int zmq::thread_ctx_t::get (int option_, void *optval_, size_t *optvallen_)
 {
-    int rc = 0;
-    if (option_ == ZMQ_THREAD_SCHED_POLICY) {
-        scoped_lock_t locker (_opt_sync);
-        rc = _thread_sched_policy;
-    } else if (option_ == ZMQ_THREAD_NAME_PREFIX) {
-        scoped_lock_t locker (_opt_sync);
-        rc = atoi (_thread_name_prefix.c_str ());
-    } else {
-        errno = EINVAL;
-        rc = -1;
+    const bool is_int = (*optvallen_ == sizeof (int));
+    int *value = static_cast<int *> (optval_);
+
+    switch (option_) {
+        case ZMQ_THREAD_SCHED_POLICY:
+            if (is_int) {
+                scoped_lock_t locker (_opt_sync);
+                *value = _thread_sched_policy;
+                return 0;
+            }
+            break;
+
+        case ZMQ_THREAD_NAME_PREFIX:
+            if (is_int) {
+                scoped_lock_t locker (_opt_sync);
+                *value = atoi (_thread_name_prefix.c_str ());
+                return 0;
+            } else if (*optvallen_ >= _thread_name_prefix.size ()) {
+                scoped_lock_t locker (_opt_sync);
+                memcpy (optval_, _thread_name_prefix.data (),
+                        _thread_name_prefix.size ());
+                return 0;
+            }
+            break;
     }
-    return rc;
+
+    errno = EINVAL;
+    return -1;
 }
 
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)

@@ -68,12 +68,14 @@ class ip_resolver_options_t
     ip_resolver_options_t &ipv6 (bool ipv6_);
     ip_resolver_options_t &expect_port (bool expect_);
     ip_resolver_options_t &allow_dns (bool allow_);
+    ip_resolver_options_t &allow_path (bool allow_);
 
     bool bindable ();
     bool allow_nic_name ();
     bool ipv6 ();
     bool expect_port ();
     bool allow_dns ();
+    bool allow_path ();
 
   private:
     bool _bindable_wanted;
@@ -81,6 +83,7 @@ class ip_resolver_options_t
     bool _ipv6_wanted;
     bool _port_expected;
     bool _dns_allowed;
+    bool _path_allowed;
 };
 
 class ip_resolver_t

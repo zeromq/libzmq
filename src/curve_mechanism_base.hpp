@@ -48,6 +48,8 @@
 #include "mechanism_base.hpp"
 #include "options.hpp"
 
+#include <memory>
+
 namespace zmq
 {
 class curve_mechanism_base_t : public virtual mechanism_base_t

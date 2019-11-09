@@ -35,6 +35,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 #include "tcp_connecter.hpp"
+#include "ws_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
@@ -113,8 +114,14 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     _socket (socket_),
     _io_thread (io_thread_),
     _has_linger_timer (false),
-    _addr (addr_)
+    _addr (addr_),
+    _wss_hostname (NULL)
 {
+    if (options_.wss_hostname.length () > 0) {
+        _wss_hostname = (char *) malloc (options_.wss_hostname.length () + 1);
+        assert (_wss_hostname);
+        strcpy (_wss_hostname, options_.wss_hostname.c_str ());
+    }
 }
 
 const zmq::endpoint_uri_pair_t &zmq::session_base_t::get_endpoint () const
@@ -136,6 +143,9 @@ zmq::session_base_t::~session_base_t ()
     //  Close the engine.
     if (_engine)
         _engine->terminate ();
+
+    if (_wss_hostname)
+        free (_wss_hostname);
 
     LIBZMQ_DELETE (_addr);
 }
@@ -424,8 +434,7 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
     _engine->plug (_io_thread, this);
 }
 
-void zmq::session_base_t::engine_error (
-  zmq::stream_engine_t::error_reason_t reason_)
+void zmq::session_base_t::engine_error (zmq::i_engine::error_reason_t reason_)
 {
     //  Engine is dead. Let's forget about it.
     _engine = NULL;
@@ -434,20 +443,20 @@ void zmq::session_base_t::engine_error (
     if (_pipe)
         clean_pipes ();
 
-    zmq_assert (reason_ == stream_engine_t::connection_error
-                || reason_ == stream_engine_t::timeout_error
-                || reason_ == stream_engine_t::protocol_error);
+    zmq_assert (reason_ == i_engine::connection_error
+                || reason_ == i_engine::timeout_error
+                || reason_ == i_engine::protocol_error);
 
     switch (reason_) {
-        case stream_engine_t::timeout_error:
+        case i_engine::timeout_error:
             /* FALLTHROUGH */
-        case stream_engine_t::connection_error:
+        case i_engine::connection_error:
             if (_active) {
                 reconnect ();
                 break;
             }
             /* FALLTHROUGH */
-        case stream_engine_t::protocol_error:
+        case i_engine::protocol_error:
             if (_pending) {
                 if (_pipe)
                     _pipe->terminate (false);
@@ -559,8 +568,15 @@ zmq::session_base_t::connecter_factory_entry_t
   zmq::session_base_t::_connecter_factories[] = {
     connecter_factory_entry_t (protocol_name::tcp,
                                &zmq::session_base_t::create_connecter_tcp),
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_WS
+    connecter_factory_entry_t (protocol_name::ws,
+                               &zmq::session_base_t::create_connecter_ws),
+#endif
+#ifdef ZMQ_HAVE_WSS
+    connecter_factory_entry_t (protocol_name::wss,
+                               &zmq::session_base_t::create_connecter_wss),
+#endif
+#if defined ZMQ_HAVE_IPC
     connecter_factory_entry_t (protocol_name::ipc,
                                &zmq::session_base_t::create_connecter_ipc),
 #endif
@@ -651,8 +667,7 @@ zmq::own_t *zmq::session_base_t::create_connecter_tipc (io_thread_t *io_thread_,
 }
 #endif
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 zmq::own_t *zmq::session_base_t::create_connecter_ipc (io_thread_t *io_thread_,
                                                        bool wait_)
 {
@@ -680,6 +695,24 @@ zmq::own_t *zmq::session_base_t::create_connecter_tcp (io_thread_t *io_thread_,
     return new (std::nothrow)
       tcp_connecter_t (io_thread_, this, options, _addr, wait_);
 }
+
+#ifdef ZMQ_HAVE_WS
+zmq::own_t *zmq::session_base_t::create_connecter_ws (io_thread_t *io_thread_,
+                                                      bool wait_)
+{
+    return new (std::nothrow)
+      ws_connecter_t (io_thread_, this, options, _addr, wait_, false, NULL);
+}
+#endif
+
+#ifdef ZMQ_HAVE_WSS
+zmq::own_t *zmq::session_base_t::create_connecter_wss (io_thread_t *io_thread_,
+                                                       bool wait_)
+{
+    return new (std::nothrow) ws_connecter_t (io_thread_, this, options, _addr,
+                                              wait_, true, _wss_hostname);
+}
+#endif
 
 #ifdef ZMQ_HAVE_OPENPGM
 void zmq::session_base_t::start_connecting_pgm (io_thread_t *io_thread_)

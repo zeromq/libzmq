@@ -147,7 +147,7 @@ on the context. You can query the maximal allowed value with
 linkzmq:zmq_ctx_get[3] using the 'ZMQ_SOCKET_LIMIT' option.
 
 [horizontal]
-Default value:: 1024
+Default value:: 1023
 
 
 ZMQ_IPV6: Set IPv6 option

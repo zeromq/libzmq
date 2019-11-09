@@ -63,7 +63,7 @@ class stream_connecter_base_t : public own_t, public io_object_t
     void timer_event (int id_);
 
     //  Internal function to create the engine after connection was established.
-    void create_engine (fd_t fd, const std::string &local_address_);
+    virtual void create_engine (fd_t fd, const std::string &local_address_);
 
     //  Internal function to add a reconnect timer
     void add_reconnect_timer ();
@@ -91,6 +91,9 @@ class stream_connecter_base_t : public own_t, public io_object_t
     // Socket
     zmq::socket_base_t *const _socket;
 
+    //  Reference to the session we belong to.
+    zmq::session_base_t *const _session;
+
   private:
     //  ID of the timer used to delay the reconnection.
     enum
@@ -110,9 +113,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
     //  True iff a timer has been started.
     bool _reconnect_timer_started;
-
-    //  Reference to the session we belong to.
-    zmq::session_base_t *const _session;
 
     //  Current reconnect ivl, updated for backoff strategy
     int _current_reconnect_ivl;

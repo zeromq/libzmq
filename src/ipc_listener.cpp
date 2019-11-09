@@ -30,8 +30,7 @@
 #include "precompiled.hpp"
 #include "ipc_listener.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include <new>
 
@@ -45,11 +44,26 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 
+#ifdef _MSC_VER
+#ifdef ZMQ_IOTHREAD_POLLER_USE_SELECT
+#error On Windows, IPC does not work with POLLER=select, use POLLER=epoll instead, or disable IPC transport
+#endif
+
+#include <afunix.h>
+#include <direct.h>
+
+#define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
+
+#define rmdir _rmdir
+#define unlink _unlink
+
+#else
 #include <unistd.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#endif
 
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED
 #include <sys/types.h>
@@ -69,10 +83,26 @@ const char *zmq::ipc_listener_t::tmp_env_vars[] = {
   0 // Sentinel
 };
 
-
 int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
                                                   std::string &file_)
 {
+#if defined ZMQ_HAVE_WINDOWS
+    char buffer[MAX_PATH];
+
+    {
+        const errno_t rc = tmpnam_s (buffer);
+        errno_assert (rc == 0);
+    }
+
+    // TODO or use CreateDirectoryA and specify permissions?
+    const int rc = _mkdir (buffer);
+    if (rc != 0) {
+        return -1;
+    }
+
+    path_.assign (buffer);
+    file_ = path_ + "/socket";
+#else
     std::string tmp_path;
 
     // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
@@ -102,7 +132,7 @@ int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
     std::vector<char> buffer (tmp_path.length () + 1);
     strcpy (&buffer[0], tmp_path.c_str ());
 
-#ifdef HAVE_MKDTEMP
+#if defined HAVE_MKDTEMP
     // Create the directory.  POSIX requires that mkdtemp() creates the
     // directory with 0700 permissions, meaning the only possible race
     // with socket creation could be the same user.  However, since
@@ -123,6 +153,7 @@ int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
     ::close (fd);
 
     file_.assign (&buffer[0]);
+#endif
 #endif
 
     return 0;
@@ -202,7 +233,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     } else {
         //  Create a listening socket.
         _s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-        if (_s == -1) {
+        if (_s == retired_fd) {
             if (!_tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
                 int tmp_errno = errno;
@@ -242,9 +273,14 @@ error:
 int zmq::ipc_listener_t::close ()
 {
     zmq_assert (_s != retired_fd);
-    int fd_for_event = _s;
+    fd_t fd_for_event = _s;
+#ifdef ZMQ_HAVE_WINDOWS
+    int rc = closesocket (_s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
     int rc = ::close (_s);
     errno_assert (rc == 0);
+#endif
 
     _s = retired_fd;
 
@@ -352,12 +388,27 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
     fd_t sock = ::accept4 (_s, NULL, NULL, SOCK_CLOEXEC);
 #else
-    fd_t sock = ::accept (_s, NULL, NULL);
+    struct sockaddr_storage ss;
+    memset (&ss, 0, sizeof (ss));
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
+    int ss_len = sizeof (ss);
+#else
+    socklen_t ss_len = sizeof (ss);
 #endif
-    if (sock == -1) {
+
+    fd_t sock =
+      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+#endif
+    if (sock == retired_fd) {
+#if defined ZMQ_HAVE_WINDOWS
+        const int last_error = WSAGetLastError ();
+        wsa_assert (last_error == WSAEWOULDBLOCK || last_error == WSAECONNRESET
+                    || last_error == WSAEMFILE || last_error == WSAENOBUFS);
+#else
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
                       || errno == ECONNABORTED || errno == EPROTO
                       || errno == ENFILE);
+#endif
         return retired_fd;
     }
 

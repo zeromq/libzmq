@@ -14,6 +14,10 @@ CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
 CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 CONFIG_OPTS+=("--enable-valgrind")
 
+if [ -n "$TLS" ] && [ "$TLS" == "enabled" ]; then
+    CONFIG_OPTS+=("--with-tls=yes")
+fi
+
 if [ -z $CURVE ]; then
     CONFIG_OPTS+=("--disable-curve")
 elif [ $CURVE == "libsodium" ]; then

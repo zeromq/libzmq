@@ -38,7 +38,7 @@
 #include <crtdbg.h>
 #pragma warning(disable : 4996)
 // iphlpapi is needed for if_nametoindex (not on Windows XP)
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP
 #pragma comment(lib, "iphlpapi")
 #endif
 #endif

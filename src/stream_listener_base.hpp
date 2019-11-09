@@ -67,7 +67,7 @@ class stream_listener_base_t : public own_t, public io_object_t
     //  Close the listening socket.
     virtual int close ();
 
-    void create_engine (fd_t fd);
+    virtual void create_engine (fd_t fd);
 
     //  Underlying socket.
     fd_t _s;

@@ -176,21 +176,44 @@ int zmq_ctx_shutdown (void *ctx_)
 
 int zmq_ctx_set (void *ctx_, int option_, int optval_)
 {
-    if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {
-        errno = EFAULT;
-        return -1;
-    }
-    return (static_cast<zmq::ctx_t *> (ctx_))->set (option_, optval_);
+    return zmq_ctx_set_ext (ctx_, option_, &optval_, sizeof (int));
 }
 
-int zmq_ctx_get (void *ctx_, int option_)
+int zmq_ctx_set_ext (void *ctx_,
+                     int option_,
+                     const void *optval_,
+                     size_t optvallen_)
 {
     if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-    return (static_cast<zmq::ctx_t *> (ctx_))->get (option_);
+    return (static_cast<zmq::ctx_t *> (ctx_))
+      ->set (option_, optval_, optvallen_);
 }
+
+int zmq_ctx_get (void *ctx_, int option_)
+{
+    int optval_ = 0;
+    size_t optvallen_ = sizeof (int);
+    if (zmq_ctx_get_ext (ctx_, option_, &optval_, &optvallen_) == 0) {
+        return optval_;
+    }
+
+    errno = EFAULT;
+    return -1;
+}
+
+int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
+{
+    if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+    return (static_cast<zmq::ctx_t *> (ctx_))
+      ->get (option_, optval_, optvallen_);
+}
+
 
 //  Stable/legacy context API
 
@@ -1426,7 +1449,7 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
 
 int zmq_has (const char *capability_)
 {
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
+#if defined(ZMQ_HAVE_IPC)
     if (strcmp (capability_, zmq::protocol_name::ipc) == 0)
         return true;
 #endif
@@ -1456,6 +1479,14 @@ int zmq_has (const char *capability_)
 #endif
 #if defined(ZMQ_BUILD_DRAFT_API)
     if (strcmp (capability_, "draft") == 0)
+        return true;
+#endif
+#if defined(ZMQ_HAVE_WS)
+    if (strcmp (capability_, "WS") == 0)
+        return true;
+#endif
+#if defined(ZMQ_HAVE_WSS)
+    if (strcmp (capability_, "WSS") == 0)
         return true;
 #endif
     //  Whatever the application asked for, we don't have

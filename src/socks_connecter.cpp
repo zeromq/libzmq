@@ -33,7 +33,6 @@
 
 #include "macros.hpp"
 #include "socks_connecter.hpp"
-#include "stream_engine.hpp"
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"

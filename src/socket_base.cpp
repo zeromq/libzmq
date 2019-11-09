@@ -50,9 +50,11 @@
 
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
+#include "ws_listener.hpp"
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
+#include "ws_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -328,11 +330,16 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != protocol_name::inproc
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
         && protocol_ != protocol_name::ipc
 #endif
         && protocol_ != protocol_name::tcp
+#ifdef ZMQ_HAVE_WS
+        && protocol_ != protocol_name::ws
+#endif
+#ifdef ZMQ_HAVE_WSS
+        && protocol_ != protocol_name::wss
+#endif
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != "pgm"
@@ -629,8 +636,36 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return 0;
     }
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_WS
+#ifdef ZMQ_HAVE_WSS
+    if (protocol == protocol_name::ws || protocol == protocol_name::wss) {
+        ws_listener_t *listener = new (std::nothrow) ws_listener_t (
+          io_thread, this, options, protocol == protocol_name::wss);
+#else
+    if (protocol == protocol_name::ws) {
+        ws_listener_t *listener =
+          new (std::nothrow) ws_listener_t (io_thread, this, options, false);
+#endif
+        alloc_assert (listener);
+        rc = listener->set_local_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (listener);
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
+            return -1;
+        }
+
+        // Save last endpoint URI
+        listener->get_local_address (_last_endpoint);
+
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
+        options.connected = true;
+        return 0;
+    }
+#endif
+
+#if defined ZMQ_HAVE_IPC
     if (protocol == protocol_name::ipc) {
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
@@ -866,8 +901,24 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
         //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
     }
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_WS
+#ifdef ZMQ_HAVE_WSS
+    else if (protocol == protocol_name::ws || protocol == protocol_name::wss) {
+#else
+    else if (protocol == protocol_name::ws) {
+#endif
+        paddr->resolved.ws_addr = new (std::nothrow) ws_address_t ();
+        alloc_assert (paddr->resolved.ws_addr);
+        rc = paddr->resolved.ws_addr->resolve (address.c_str (), false,
+                                               options.ipv6);
+        if (rc != 0) {
+            LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+    }
+#endif
+
+#if defined ZMQ_HAVE_IPC
     else if (protocol == protocol_name::ipc) {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);

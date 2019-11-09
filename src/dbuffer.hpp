@@ -78,12 +78,12 @@ template <> class dbuffer_t<msg_t>
         msg_t &xvalue = const_cast<msg_t &> (value_);
 
         zmq_assert (xvalue.check ());
-        _back->move (xvalue); // cannot just overwrite, might leak
+        *_back = value_;
 
         zmq_assert (_back->check ());
 
         if (_sync.try_lock ()) {
-            std::swap (_back, _front);
+            _front->move (*_back);
             _has_msg = true;
 
             _sync.unlock ();

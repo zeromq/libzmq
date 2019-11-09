@@ -24,6 +24,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("LDFLAGS=-fuse-ld=gold")
     fi
 
+    if [ $USE_NSS == "yes" ]; then
+        CONFIG_OPTS+=("--with-nss")
+    fi
+
     if [ -z $CURVE ]; then
         CONFIG_OPTS+=("--disable-curve")
     elif [ $CURVE == "libsodium" ]; then
@@ -54,6 +58,10 @@ if [ $BUILD_TYPE == "default" ]; then
 
     if [ -n "$POLLER" ]; then
         CONFIG_OPTS+=("--with-poller=${POLLER}")
+    fi
+
+    if [ -n "$TLS" ] && [ "$TLS" == "enabled" ]; then
+        CONFIG_OPTS+=("--with-tls=yes")
     fi
 
     if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then

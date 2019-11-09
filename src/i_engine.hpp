@@ -40,6 +40,13 @@ class io_thread_t;
 
 struct i_engine
 {
+    enum error_reason_t
+    {
+        protocol_error,
+        connection_error,
+        timeout_error
+    };
+
     virtual ~i_engine () {}
 
     //  Plug the engine to the session.

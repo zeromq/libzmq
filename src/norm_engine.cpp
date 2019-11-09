@@ -407,7 +407,8 @@ void zmq::norm_engine_t::recv_data (NormObjectHandle object)
         if (NULL == rxState) {
             // This is a new stream, so create rxState with zmq decoder, etc
             rxState = new (std::nothrow)
-              NormRxStreamState (object, options.maxmsgsize, options.zero_copy);
+              NormRxStreamState (object, options.maxmsgsize, options.zero_copy,
+                                 options.in_batch_size);
             errno_assert (rxState);
 
             if (!rxState->Init ()) {
@@ -548,10 +549,14 @@ void zmq::norm_engine_t::recv_data (NormObjectHandle object)
 } // end zmq::norm_engine_t::recv_data()
 
 zmq::norm_engine_t::NormRxStreamState::NormRxStreamState (
-  NormObjectHandle normStream, int64_t maxMsgSize, bool zeroCopy) :
+  NormObjectHandle normStream,
+  int64_t maxMsgSize,
+  bool zeroCopy,
+  int inBatchSize) :
     norm_stream (normStream),
     max_msg_size (maxMsgSize),
     zero_copy (zeroCopy),
+    in_batch_size (inBatchSize),
     in_sync (false),
     rx_ready (false),
     zmq_decoder (NULL),
@@ -583,7 +588,6 @@ bool zmq::norm_engine_t::NormRxStreamState::Init ()
     skip_norm_sync = false;
     if (NULL != zmq_decoder)
         delete zmq_decoder;
-    // Note "in_batch_size" comes from config.h
     zmq_decoder =
       new (std::nothrow) v2_decoder_t (in_batch_size, max_msg_size, zero_copy);
     alloc_assert (zmq_decoder);

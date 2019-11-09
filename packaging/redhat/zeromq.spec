@@ -10,7 +10,7 @@
 %endif
 %define lib_name libzmq5
 Name:          zeromq
-Version:       4.3.0
+Version:       4.3.3
 Release:       1%{?dist}
 Summary:       The ZeroMQ messaging library
 Group:         Applications/Internet
@@ -45,6 +45,28 @@ BuildRequires:  libsodium-devel
 %else
 %define SODIUM no
 %endif
+%bcond_with nss
+%if %{with nss}
+%if 0%{?suse_version}
+BuildRequires:  mozilla-nss-devel
+%else
+BuildRequires:  nss-devel
+%endif
+%define NSS yes
+%else
+%define NSS no
+%endif
+%bcond_with tls
+%if %{with tls} && ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+BuildRequires:  libgnutls-devel
+%else
+BuildRequires:  gnutls-devel
+%endif
+%define TLS yes
+%else
+%define TLS no
+%endif
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
@@ -60,6 +82,7 @@ Requires:      libstdc++
 %{!?_with_libgssapi_krb5: %{!?_without_libgssapi_krb5: %define _without_libgssapi_krb5 --without-liblibgssapi_krb5}}
 %{!?_with_libsodium: %{!?_without_libsodium: %define _without_libsodium --without-libsodium}}
 %{!?_with_pgm: %{!?_without_pgm: %define _without_pgm --without-pgm}}
+%{!?_with_nss: %{!?_without_nss: %define _without_nss --without-nss}}
 
 # It's an error if both --with and --without options are specified
 %{?_with_libgssapi_krb5: %{?_without_libgssapi_krb5: %{error: both _with_libgssapi_krb5 and _without_libgssapi_krb5}}}
@@ -74,6 +97,23 @@ Requires:      libstdc++
 
 %{?_with_pgm:BuildRequires: openpgm-devel}
 %{?_with_pgm:Requires: openpgm}
+
+%if 0%{?suse_version}
+%{?_with_nss:BuildRequires: mozilla-nss-devel}
+%{?_with_nss:Requires: mozilla-nss}
+%else
+%{?_with_nss:BuildRequires: nss-devel}
+%{?_with_nss:Requires: nss}
+%endif
+
+%if ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+%{?_with_tls:BuildRequires: libgnutls-devel}
+%else
+%{?_with_tls:BuildRequires: gnutls-devel}
+%endif
+%{?_with_tls:Requires: gnutls}
+%endif
 
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
 %{!?_with_pic: %{!?_without_pic: %define _with_pic --with-pic}}
@@ -110,7 +150,6 @@ This package contains the ZeroMQ shared library.
 Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
 Requires: %{lib_name} = %{version}-%{release}, pkgconfig
-Requires: libsodium-devel
 %bcond_with pgm
 %if %{with pgm}
 Requires:  openpgm-devel
@@ -122,6 +161,22 @@ Requires:  krb5-devel
 %bcond_with libsodium
 %if %{with libsodium}
 Requires:  libsodium-devel
+%endif
+%bcond_with nss
+%if %{with nss}
+%if 0%{?suse_version}
+Requires:  mozilla-nss-devel
+%else
+Requires:  nss-devel
+%endif
+%endif
+%bcond_with tls
+%if %{with tls} && ! 0%{?centos_version} < 700
+%if 0%{?suse_version}
+Requires:  libgnutls-devel
+%else
+Requires:  gnutls-devel
+%endif
 %endif
 
 %description devel
@@ -164,6 +219,8 @@ autoreconf -fi
     --with-pgm=%{PGM} \
     --with-libsodium=%{SODIUM} \
     --with-libgssapi_krb5=%{GSSAPI} \
+    --with-nss=%{NSS} \
+    --with-tls=%{TLS} \
     %{?_with_pic} \
     %{?_without_pic} \
     %{?_with_gnu_ld} \
@@ -175,7 +232,7 @@ autoreconf -fi
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
 
 # Install the package to build area
-%{__make} check
+%{__make} check VERBOSE=1
 %makeinstall
 
 %post
@@ -216,6 +273,12 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Fri Oct 4 2019 Luca Boccassi <luca.boccassi@gmail.com>
+- Add macro for optional TLS dependency
+
+* Wed Sep 11 2019 Luca Boccassi <luca.boccassi@gmail.com>
+- Add macro for optional NSS dependency
+
 * Sat Aug 19 2017 Luca Boccassi <luca.boccassi@gmail.com>
 - Fix parsing and usage of conditionals for sodium/pgm/krb5 so that they work
   in OBS

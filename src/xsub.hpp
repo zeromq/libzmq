@@ -83,7 +83,7 @@ class xsub_t : public socket_base_t
 
     //  The repository of subscriptions.
 #ifdef ZMQ_USE_RADIX_TREE
-    radix_tree _subscriptions;
+    radix_tree_t _subscriptions;
 #else
     trie_t _subscriptions;
 #endif

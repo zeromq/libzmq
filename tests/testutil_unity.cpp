@@ -31,7 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -288,9 +290,24 @@ void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
     test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
 }
 
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
+#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_GNU)
 void make_random_ipc_endpoint (char *out_endpoint_)
 {
+#ifdef ZMQ_HAVE_WINDOWS
+    char random_file[MAX_PATH];
+
+    {
+        const errno_t rc = tmpnam_s (random_file);
+        TEST_ASSERT_EQUAL (0, rc);
+    }
+
+    // TODO or use CreateDirectoryA and specify permissions?
+    const int rc = _mkdir (random_file);
+    TEST_ASSERT_EQUAL (0, rc);
+
+    strcat (random_file, "/ipc");
+
+#else
     char random_file[16];
     strcpy (random_file, "tmpXXXXXX");
 
@@ -301,6 +318,7 @@ void make_random_ipc_endpoint (char *out_endpoint_)
     int fd = mkstemp (random_file);
     TEST_ASSERT_TRUE (fd != -1);
     close (fd);
+#endif
 #endif
 
     strcpy (out_endpoint_, "ipc://");

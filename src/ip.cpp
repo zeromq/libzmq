@@ -129,7 +129,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 {
     LIBZMQ_UNUSED (s_);
 
-#if defined IPV6_V6ONLY && !defined ZMQ_HAVE_OPENBSD
+#if defined IPV6_V6ONLY && !defined ZMQ_HAVE_OPENBSD                           \
+  && !defined ZMQ_HAVE_DRAGONFLY
 #ifdef ZMQ_HAVE_WINDOWS
     DWORD flag = 0;
 #else
@@ -233,20 +234,12 @@ int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE
     int rc = setsockopt (s_, SOL_SOCKET, SO_BINDTODEVICE,
                          bound_device_.c_str (), bound_device_.length ());
-
-#ifdef ZMQ_HAVE_WINDOWS
-    if (rc != SOCKET_ERROR)
+    if (rc != 0) {
+        assert_success_or_recoverable (s_, rc);
+        return -1;
+    } else {
         return 0;
-    const int lastError = WSAGetLastError ();
-    errno = wsa_error_to_errno (lastError);
-    wsa_assert (lastError != WSAENOTSOCK);
-    return -1;
-#else
-    if (rc == 0)
-        return 0;
-    errno_assert (errno != ENOTSOCK);
-    return -1;
-#endif
+    }
 #else
     LIBZMQ_UNUSED (s_);
     LIBZMQ_UNUSED (bound_device_);
@@ -456,20 +449,23 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Listen for incoming connections.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
         rc = listen (listener, 1);
+    }
 
     //  Connect writer to the listener.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
         rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
                       sizeof addr);
-
-    //  Set TCP_NODELAY on writer socket.
-    tune_socket (*w_);
+    }
 
     //  Accept connection from writer.
-    if (rc != SOCKET_ERROR)
+    if (rc != SOCKET_ERROR) {
+        //  Set TCP_NODELAY on writer socket.
+        tune_socket (*w_);
+
         *r_ = accept (listener, NULL, NULL);
+    }
 
     //  Send/receive large chunk to work around TCP slow start
     //  This code is a workaround for #1608
@@ -678,5 +674,56 @@ void zmq::make_socket_noninheritable (fd_t sock_)
     errno_assert (rc != -1);
 #else
     LIBZMQ_UNUSED (sock_);
+#endif
+}
+
+void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
+{
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc_ != SOCKET_ERROR) {
+        return;
+    }
+#else
+    if (rc_ != -1) {
+        return;
+    }
+#endif
+
+    //  Check whether an error occurred
+    int err = 0;
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
+    int len = sizeof err;
+#else
+    socklen_t len = sizeof err;
+#endif
+
+    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
+
+    //  Assert if the error was caused by 0MQ bug.
+    //  Networking problems are OK. No need to assert.
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (rc == 0);
+    if (err != 0) {
+        wsa_assert (err == WSAECONNREFUSED || err == WSAECONNRESET
+                    || err == WSAECONNABORTED || err == WSAEINTR
+                    || err == WSAETIMEDOUT || err == WSAEHOSTUNREACH
+                    || err == WSAENETUNREACH || err == WSAENETDOWN
+                    || err == WSAENETRESET || err == WSAEACCES
+                    || err == WSAEINVAL || err == WSAEADDRINUSE);
+    }
+#else
+    //  Following code should handle both Berkeley-derived socket
+    //  implementations and Solaris.
+    if (rc == -1)
+        err = errno;
+    if (err != 0) {
+        errno = err;
+        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET
+                      || errno == ECONNABORTED || errno == EINTR
+                      || errno == ETIMEDOUT || errno == EHOSTUNREACH
+                      || errno == ENETUNREACH || errno == ENETDOWN
+                      || errno == ENETRESET || errno == EINVAL);
+    }
 #endif
 }

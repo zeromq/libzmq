@@ -67,6 +67,8 @@ endif()
 check_c_compiler_flag("-std=gnu11" COMPILER_SUPPORTS_C11)
 if(COMPILER_SUPPORTS_C11)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+else()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 endif()
 
 if(NOT MSVC)
@@ -91,6 +93,47 @@ option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif()
+
+# Disable webSocket transport
+option(DISABLE_WS "Disable WebSocket transport" OFF)
+option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
+
+if (NOT DISABLE_WS)
+  list(APPEND sources
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_protocol.hpp)
+  set(ZMQ_HAVE_WS 1)
+
+  if (WITH_NSS)
+    find_package("NSS3")
+    if (NSS3_FOUND)
+      message(STATUS "Using NSS")
+      include_directories(${NSS3_INCLUDE_DIRS})
+      set(pkg_config_names_private "${pkg_config_names_private} nss3")
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
+      set(ZMQ_USE_NSS 1)
+    else()
+      message(FATAL_ERROR
+              "nss is not installed. Install it, then run CMake again")
+    endif()
+  else()
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
+    message("Using builtin sha1")
+    set(ZMQ_USE_BUILTIN_SHA1 1)
+  endif()
+endif()
+
 
 # Select curve encryption library, defaults to tweetnacl
 # To use libsodium instead, use --with-libsodium(must be installed)
@@ -150,6 +193,54 @@ set(API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid 
 
 set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
+  
+if (WIN32)
+    # from https://stackoverflow.com/a/40217291/2019765
+    macro(get_WIN32_WINNT version)
+        if (CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
+            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
+            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+            if ("${verMajor}" MATCHES "10")
+                set(verMajor "A")
+                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
+            endif ("${verMajor}" MATCHES "10")
+            # Remove all remaining '.' characters.
+            string(REPLACE "." "" ver ${ver})
+            # Prepend each digit with a zero.
+            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
+            set(${version} "0x${ver}")
+        endif(CMAKE_SYSTEM_VERSION)
+    endmacro(get_WIN32_WINNT)
+
+    get_WIN32_WINNT(ZMQ_WIN32_WINNT_DEFAULT)
+    message(STATUS "Detected _WIN32_WINNT from CMAKE_SYSTEM_VERSION: ${ZMQ_WIN32_WINNT_DEFAULT}")
+
+    # TODO limit _WIN32_WINNT to the actual Windows SDK version, which might be different from the default version installed with Visual Studio
+    if(MSVC_VERSION STREQUAL "1500" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.0")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0600")
+    elseif(MSVC_VERSION STREQUAL "1600" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
+    elseif(MSVC_VERSION STREQUAL "1700" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
+    elseif(MSVC_VERSION STREQUAL "1800" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.2")
+        set(ZMQ_WIN32_WINNT_LIMIT "0x0602")
+    endif()
+    if(ZMQ_WIN32_WINNT_LIMIT)
+        message(STATUS "Mismatch of Visual Studio Version (${MSVC_VERSION}) and CMAKE_SYSTEM_VERSION (${CMAKE_SYSTEM_VERSION}), limiting _WIN32_WINNT to ${ZMQ_WIN32_WINNT_LIMIT}, you may override this by setting ZMQ_WIN32_WINNT")
+        set(ZMQ_WIN32_WINNT_DEFAULT "${ZMQ_WIN32_WINNT_LIMIT}")
+    endif()
+
+    set(ZMQ_WIN32_WINNT "${ZMQ_WIN32_WINNT_DEFAULT}" CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
+
+	# On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc support)
+	if (ZMQ_WIN32_WINNT GREATER "0x05FF" AND MSVC_VERSION GREATER 1799 AND POLLER STREQUAL "")
+	  set(POLLER "epoll")
+	endif()
+
+    add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
+endif(WIN32)
 
 if(NOT MSVC)
   if(POLLER STREQUAL "")
@@ -251,48 +342,11 @@ if(NOT CYGWIN)
   check_include_files(windows.h ZMQ_HAVE_WINDOWS)
 endif()
 
-if (WIN32)
-    # from https://stackoverflow.com/a/40217291/2019765
-    macro(get_WIN32_WINNT version)
-        if (CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if ("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif ("${verMajor}" MATCHES "10")
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-
-    get_WIN32_WINNT(ZMQ_WIN32_WINNT_DEFAULT)
-    message(STATUS "Detected _WIN32_WINNT from CMAKE_SYSTEM_VERSION: ${ZMQ_WIN32_WINNT_DEFAULT}")
-
-    # TODO limit _WIN32_WINNT to the actual Windows SDK version, which might be different from the default version installed with Visual Studio
-    if(MSVC_VERSION STREQUAL "1500" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.0")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0600")
-    elseif(MSVC_VERSION STREQUAL "1600" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1700" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1800" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.2")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0602")
-    endif()
-    if(ZMQ_WIN32_WINNT_LIMIT)
-        message(STATUS "Mismatch of Visual Studio Version (${MSVC_VERSION}) and CMAKE_SYSTEM_VERSION (${CMAKE_SYSTEM_VERSION}), limiting _WIN32_WINNT to ${ZMQ_WIN32_WINNT_LIMIT}, you may override this by setting ZMQ_WIN32_WINNT")
-        set(ZMQ_WIN32_WINNT_DEFAULT "${ZMQ_WIN32_WINNT_LIMIT}")
-    endif()
-
-    set(ZMQ_WIN32_WINNT "${ZMQ_WIN32_WINNT_DEFAULT}" CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
-
-    add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
-endif(WIN32)
+if(NOT WIN32)
+    set(ZMQ_HAVE_IPC 1)
+else()
+    check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+endif()
 
 ###################### BEGIN condition_variable_t selection
 if(NOT ZMQ_CV_IMPL)
@@ -395,6 +449,8 @@ if(NOT MSVC)
   check_cxx_symbol_exists(mkdtemp stdlib.h HAVE_MKDTEMP)
   check_cxx_symbol_exists(accept4 sys/socket.h HAVE_ACCEPT4)
   check_cxx_symbol_exists(strnlen string.h HAVE_STRNLEN)
+else()
+  set(HAVE_STRNLEN 1)
 endif()
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
@@ -667,8 +723,8 @@ if(MSVC)
 
   # Compile the static lib with debug information included
   # note: we assume here that the default flags contain some /Z flag
-  string(REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-  string(REGEX REPLACE "/Z." "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  string(REGEX REPLACE "/Z.[^:]" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  string(REGEX REPLACE "/Z.[^:]" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
   # Optimization flags.
   # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
@@ -739,6 +795,7 @@ set(cxx-sources
   random.cpp
   raw_encoder.cpp
   raw_decoder.cpp
+  raw_engine.cpp
   reaper.cpp
   rep.cpp
   req.cpp
@@ -751,7 +808,7 @@ set(cxx-sources
   socks.cpp
   socks_connecter.cpp
   stream.cpp
-  stream_engine.cpp
+  stream_engine_base.cpp
   sub.cpp
   tcp.cpp
   tcp_address.cpp
@@ -780,6 +837,7 @@ set(cxx-sources
   gather.cpp
   ip_resolver.cpp
   zap_client.cpp
+  zmtp_engine.cpp
   # at least for VS, the header files must also be listed
   address.hpp
   array.hpp
@@ -866,11 +924,13 @@ set(cxx-sources
   random.hpp
   raw_decoder.hpp
   raw_encoder.hpp
+  raw_engine.hpp
   reaper.hpp
   rep.hpp
   req.hpp
   router.hpp
   scatter.hpp
+  secure_allocator.hpp
   select.hpp
   server.hpp
   session_base.hpp
@@ -881,7 +941,7 @@ set(cxx-sources
   socks_connecter.hpp
   stdint.hpp
   stream.hpp
-  stream_engine.hpp
+  stream_engine_base.hpp
   stream_connecter_base.hpp
   stream_connecter_base.cpp
   stream_listener_base.hpp
@@ -917,6 +977,7 @@ set(cxx-sources
   ypipe_conflate.hpp
   yqueue.hpp
   zap_client.hpp
+  zmtp_engine.hpp
 )
 
 if(MINGW)
@@ -1060,7 +1121,8 @@ if(ZMQ_BUILD_FRAMEWORK)
   COMMENT "Perf tools")
 endif()
 
-if(MSVC)
+option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" ON)
+if(MSVC AND ENABLE_PRECOMPILED)
   # default for all sources is to use precompiled headers
   foreach(source ${sources})
     # C and C++ can not use the same precompiled header
@@ -1156,7 +1218,7 @@ else()
     set_target_properties(libzmq PROPERTIES
       COMPILE_DEFINITIONS "DLL_EXPORT"
       PUBLIC_HEADER "${public_headers}"
-      VERSION "5.2.2"
+      VERSION "5.2.3"
       SOVERSION "5"
       OUTPUT_NAME "zmq"
       PREFIX "lib")
@@ -1209,6 +1271,10 @@ endforeach()
 if(BUILD_SHARED)
   target_link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
+  if(NSS3_FOUND)
+    target_link_libraries(libzmq ${NSS3_LIBRARIES})
+  endif()
+
   if(SODIUM_FOUND)
     target_link_libraries(libzmq ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
@@ -1238,6 +1304,10 @@ endif()
 
 if(BUILD_STATIC)
   target_link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+
+  if(NSS3_FOUND)
+    target_link_libraries(libzmq-static ${NSS3_LIBRARIES})
+  endif()
 
   if(SODIUM_FOUND)
     target_link_libraries(libzmq-static ${SODIUM_LIBRARIES})
@@ -1421,6 +1491,11 @@ endif()
 
 option(ENABLE_CPACK "Enables cpack rules" ON)
 if(MSVC AND ENABLE_CPACK)
+  if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    set(CMAKE_INSTALL_DEBUG_LIBRARIES_ONLY TRUE)
+    set(CMAKE_INSTALL_DEBUG_LIBRARIES TRUE)
+    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+  endif()
   include(InstallRequiredSystemLibraries)
 
   if(CMAKE_CL_64)

@@ -12,6 +12,8 @@ AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
+# Allow "configure --disable-maintainer-mode" to disable timestamp checking 
+AM_MAINTAINER_MODE([enable])
 
 m4_pattern_allow([AC_PROG_CC_C99])
 m4_include([m4/ax_check_compile_flag.m4])
@@ -48,9 +50,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.3.0: 7:0:2 (ABI version 5)
 # ZeroMQ version 4.3.1: 7:1:2 (ABI version 5)
 # ZeroMQ version 4.3.2: 7:2:2 (ABI version 5)
+# ZeroMQ version 4.3.3: 7:3:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:2:2"
+LTVER="7:3:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -139,6 +142,15 @@ AC_ARG_WITH([militant],
 if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
+
+# IPC is available on all platforms supported by autotools build at the moment except OpenVMS and VxWorks.
+case "${host_os}" in
+    *vxworks*|*openvms*)
+        ;;
+    *)
+        AC_DEFINE(ZMQ_HAVE_IPC, 1, [Have AF_UNIX sockets for ipc transport])
+        ;;
+esac
 
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
@@ -232,6 +244,7 @@ case "${host_os}" in
         ;;
     *dragonfly*)
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have DragonFly OS])
         AC_DEFINE(ZMQ_HAVE_DRAGONFLY, 1, [Have DragonFly OS])
         ;;
     *darwin*)
@@ -281,7 +294,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         AC_CHECK_LIB(socket, socket)
         ;;
-    *aix*)
+    *aix*|*os400*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
@@ -546,8 +559,54 @@ AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_ena
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
-
 AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
+
+# Check requiring packages for WebSocket
+ws_crypto_library=""
+
+AC_ARG_ENABLE([ws],
+    [AS_HELP_STRING([--disable-ws], [Disable WebSocket transport [default=no]])])
+
+AC_ARG_WITH([nss],
+    [AS_HELP_STRING([--with-nss], [use nss instead of built-in sha1 [default=no]])])
+
+AC_ARG_WITH([tls],
+    [AS_HELP_STRING([--with-tls], [Enable TLS (WSS transport) [default=no]])])
+
+if test "x$enable_ws" != "xno"; then
+    if test "x$with_tls" = "xyes"; then
+        PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            ws_crypto_library="gnutls"
+            AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
+            AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+            AC_DEFINE(ZMQ_HAVE_WSS, [1], [WSS enabled])
+            AC_MSG_NOTICE(Using gnutls)
+        ],[
+          AC_MSG_ERROR([GnuTLS is not installed. Install it, then run configure again])
+        ])
+    elif test "x$with_nss" = "xyes"; then
+        PKG_CHECK_MODULES([NSS3], [nss], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE nss"
+            AC_DEFINE(ZMQ_USE_NSS, [1], [Using NSS])
+            AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+            ws_crypto_library="nss"
+            AC_MSG_NOTICE(Using NSS)
+        ], [
+            AC_MSG_ERROR([nss is not installed. Install it, then run configure again])
+        ])
+    else
+        AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+        AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
+        AC_MSG_NOTICE(Using builting SHA1)
+        ws_crypto_library="builtin"
+    fi
+fi
+
+AM_CONDITIONAL(HAVE_WS, test "x$ws_crypto_library" != "x")
+AM_CONDITIONAL(USE_NSS, test "x$ws_crypto_library" = "xnss")
+AM_CONDITIONAL(USE_BUILTIN_SHA1, test "x$ws_crypto_library" = "xbuiltin")
+AM_CONDITIONAL(USE_GNUTLS, test "x$ws_crypto_library" = "xgnutls")
+AM_CONDITIONAL(HAVE_WSS, test "x$ws_crypto_library" = "xgnutls")
 
 # build using pgm
 have_pgm_library="no"
@@ -913,6 +972,20 @@ AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
     [CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [],
+    [-Werror])
+
+# LTO is enabled by default on SUSE Tumbleweed and RPM lint generates an error if
+# the flag is not used to compile archives:
+# E: lto-no-text-in-archive
+AC_LANG_PUSH([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CFLAGS+=" -ffat-lto-objects"],
+    [],
+    [-Werror])
+AC_LANG_POP([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CXXFLAGS+=" -ffat-lto-objects"],
     [],
     [-Werror])
 

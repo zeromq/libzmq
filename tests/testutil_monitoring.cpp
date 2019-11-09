@@ -339,9 +339,9 @@ void expect_monitor_event_v2 (void *monitor_,
     }
     if (expected_remote_address_
         && 0 != strcmp (remote_address, expected_remote_address_)) {
-        pos += snprintf (pos, sizeof buf - (pos - buf),
-                         "Expected remote address %s, but received %s\n",
-                         expected_remote_address_, remote_address);
+        snprintf (pos, sizeof buf - (pos - buf),
+                  "Expected remote address %s, but received %s\n",
+                  expected_remote_address_, remote_address);
     }
     free (local_address);
     free (remote_address);

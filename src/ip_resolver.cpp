@@ -97,7 +97,8 @@ zmq::ip_resolver_options_t::ip_resolver_options_t () :
     _nic_name_allowed (false),
     _ipv6_wanted (false),
     _port_expected (false),
-    _dns_allowed (false)
+    _dns_allowed (false),
+    _path_allowed (false)
 {
 }
 
@@ -141,6 +142,13 @@ zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::allow_dns (bool allow_)
     return *this;
 }
 
+zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::allow_path (bool allow_)
+{
+    _path_allowed = allow_;
+
+    return *this;
+}
+
 bool zmq::ip_resolver_options_t::bindable ()
 {
     return _bindable_wanted;
@@ -164,6 +172,11 @@ bool zmq::ip_resolver_options_t::expect_port ()
 bool zmq::ip_resolver_options_t::allow_dns ()
 {
     return _dns_allowed;
+}
+
+bool zmq::ip_resolver_options_t::allow_path ()
+{
+    return _path_allowed;
 }
 
 zmq::ip_resolver_t::ip_resolver_t (ip_resolver_options_t opts_) :
@@ -212,6 +225,13 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     } else {
         addr = std::string (name_);
         port = 0;
+    }
+
+    // Check if path is allowed in ip address, if allowed it must be truncated
+    if (_options.allow_path ()) {
+        size_t pos = addr.find ('/');
+        if (pos != std::string::npos)
+            addr = addr.substr (0, pos);
     }
 
     //  Trim any square brackets surrounding the address. Used for
@@ -561,7 +581,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 
     char *if_name_result = NULL;
 
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP
     if_name_result = if_indextoname (index_, buffer);
 #endif
 
@@ -704,7 +724,7 @@ void zmq::ip_resolver_t::do_freeaddrinfo (struct addrinfo *res_)
 
 unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
 {
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP         \
   && !defined ZMQ_HAVE_VXWORKS
     return if_nametoindex (ifname_);
 #else

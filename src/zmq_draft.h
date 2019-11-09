@@ -55,9 +55,21 @@
 #define ZMQ_XPUB_MANUAL_LAST_VALUE 98
 #define ZMQ_SOCKS_USERNAME 99
 #define ZMQ_SOCKS_PASSWORD 100
+#define ZMQ_IN_BATCH_SIZE 101
+#define ZMQ_OUT_BATCH_SIZE 102
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
+
+/*  DRAFT Context methods.                                                    */
+int zmq_ctx_set_ext (void *context_,
+                     int option_,
+                     const void *optval_,
+                     size_t optvallen_);
+int zmq_ctx_get_ext (void *context_,
+                     int option_,
+                     void *optval_,
+                     size_t *optvallen_);
 
 /*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s_, const char *group_);

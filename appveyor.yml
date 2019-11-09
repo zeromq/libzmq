@@ -216,10 +216,12 @@ after_build:
             # -Dsonar.cxx.compiler.reportPath=build.log 
             # -Dsonar.cxx.compiler.charset=UTF-8 
             # -Dsonar.cxx.compiler.regex=^(?<filename>.*)\\((?<line>[0-9]+)\\):\\x20warning\\x20(?<id>C\\d\\d\\d\\d):(?<message>.*)$
+# TODO this should be done differently, using the INSTALL cmake target, the current handling depends on the details of the CMakeLists.txt
   - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
   - cmd: copy "%LIBZMQ_SRCDIR%\include\zmq.h" .
-  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb *.h
+  - cmd: copy ..\..\lib\%Configuration%\libzmq*.lib . & exit 0
+  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll *.pdb *.h *.lib
   - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:ARTIFACT_NAME}-${env:ZMQ_VERSION_MAJOR}_${env:ZMQ_VERSION_MINOR}_${env:ZMQ_VERSION_PATCH}.zip"
 
 test_script:
@@ -240,7 +242,7 @@ deploy:
   - provider: BinTray
     username: somdoron
     api_key:
-      secure: GTpnqv6RB1urgspx4kTsUDksN2Vaow/x4kFJKmUX4zFjMDUlBsRUCrpFBiedYb33
+      secure: B4TC4GvUMbwX13Skh2Kvyc6SnqLkjNS9W0gtN2yxUC2Y4oQSCK2F4eRgtpMpCasg
     subject: zeromq
     repo: generic
     package: libzmq

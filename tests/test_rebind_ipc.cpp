@@ -34,7 +34,7 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_rebind_ipc ()
 {
-    char my_endpoint[32];
+    char my_endpoint[MAX_SOCKET_STRING];
     make_random_ipc_endpoint (my_endpoint);
 
     void *sb0 = test_context_socket (ZMQ_PUSH);

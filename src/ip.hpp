@@ -71,6 +71,11 @@ int make_fdpair (fd_t *r_, fd_t *w_);
 // Makes a socket non-inheritable to child processes.
 // Asserts on any failure.
 void make_socket_noninheritable (fd_t sock_);
+
+//  Asserts that:
+//  - an internal 0MQ error did not occur,
+//  - and, if a socket error occured, it can be recovered from.
+void assert_success_or_recoverable (fd_t s_, int rc_);
 }
 
 #endif

@@ -30,13 +30,11 @@
 #include "precompiled.hpp"
 #include "ipc_connecter.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include <new>
 #include <string>
 
-#include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "random.hpp"
 #include "err.hpp"
@@ -45,11 +43,14 @@
 #include "ipc_address.hpp"
 #include "session_base.hpp"
 
+#ifdef _MSC_VER
+#include <afunix.h>
+#else
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-
+#endif
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
                                        class session_base_t *session_,
@@ -128,12 +129,19 @@ int zmq::ipc_connecter_t::open ()
     if (rc == 0)
         return 0;
 
-    //  Translate other error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
+        //  Translate other error codes indicating asynchronous connect has been
+        //  launched to a uniform EINPROGRESS.
+#ifdef ZMQ_HAVE_WINDOWS
+    const int last_error = WSAGetLastError ();
+    if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
+        errno = EINPROGRESS;
+    else
+        errno = wsa_error_to_errno (last_error);
+#else
     if (rc == -1 && errno == EINTR) {
         errno = EINPROGRESS;
-        return -1;
     }
+#endif
 
     //  Forward the error.
     return -1;

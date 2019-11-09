@@ -36,14 +36,6 @@
 #include "random.hpp"
 #include "likely.hpp"
 
-extern "C" {
-static void free_id (void *data_, void *hint_)
-{
-    LIBZMQ_UNUSED (hint_);
-    free (data_);
-}
-}
-
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     dealer_t (parent_, tid_, sid_),
     _receiving_reply (false),
@@ -81,22 +73,16 @@ int zmq::req_t::xsend (msg_t *msg_)
         if (_request_id_frames_enabled) {
             _request_id++;
 
-            //  Copy request id before sending (see issue #1695 for details).
-            uint32_t *request_id_copy =
-              static_cast<uint32_t *> (malloc (sizeof (uint32_t)));
-            zmq_assert (request_id_copy);
-
-            *request_id_copy = _request_id;
-
             msg_t id;
-            int rc =
-              id.init_data (request_id_copy, sizeof (uint32_t), free_id, NULL);
+            int rc = id.init_size (sizeof (uint32_t));
+            memcpy (id.data (), &_request_id, sizeof (uint32_t));
             errno_assert (rc == 0);
             id.set_flags (msg_t::more);
 
             rc = dealer_t::sendpipe (&id, &_reply_pipe);
-            if (rc != 0)
+            if (rc != 0) {
                 return -1;
+            }
         }
 
         msg_t bottom;
