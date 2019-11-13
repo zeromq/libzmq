@@ -44,6 +44,8 @@ if (ENABLE_INTRINSICS)
    add_definitions(-DZMQ_HAVE_ATOMIC_INTRINSICS)
 endif()
 
+set (ZMQ_OUTPUT_BASENAME "zmq" CACHE STRING "Output zmq library base name")
+
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   # Find more information: https://cmake.org/Wiki/CMake_RPATH_handling
 
@@ -1161,7 +1163,7 @@ if(MSVC)
   # of file content.
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
   set(PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-  set(PDB_NAME "libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+  set(PDB_NAME "lib${ZMQ_OUTPUT_BASENAME}${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
   function(enable_vs_guideline_checker target)
     set_target_properties(${target} PROPERTIES
       VS_GLOBAL_EnableCppCoreCheck true
@@ -1181,7 +1183,7 @@ if(MSVC)
       DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
       COMPILE_DEFINITIONS "DLL_EXPORT"
-      OUTPUT_NAME "libzmq")
+      OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
   endif()
 
   if(BUILD_STATIC)
@@ -1193,7 +1195,7 @@ if(MSVC)
       MINSIZEREL_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
       DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
       COMPILE_FLAGS "/DZMQ_STATIC"
-      OUTPUT_NAME "libzmq")
+      OUTPUT_NAME "lib{ZMQ_OUTPUT_BASENAME}")
   endif()
 else()
   # avoid building everything twice for shared + static
@@ -1220,7 +1222,7 @@ else()
       PUBLIC_HEADER "${public_headers}"
       VERSION "5.2.3"
       SOVERSION "5"
-      OUTPUT_NAME "zmq"
+      OUTPUT_NAME "${ZMQ_OUTPUT_BASENAME}"
       PREFIX "lib")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
@@ -1250,7 +1252,7 @@ else()
     endif()
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
-      OUTPUT_NAME "zmq"
+      OUTPUT_NAME "${ZMQ_OUTPUT_BASENAME}"
       PREFIX "lib")
   endif()
 endif()
