@@ -91,7 +91,10 @@ class xpub_t : public socket_base_t
     bool _verbose_unsubs;
 
     //  True if we are in the middle of sending a multi-part message.
-    bool _more;
+    bool _more_send;
+
+    //  True if we are in the middle of receiving a multi-part message.
+    bool _more_recv;
 
     //  Drop messages if HWM reached, otherwise return with EAGAIN
     bool _lossy;

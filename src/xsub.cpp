@@ -37,7 +37,8 @@
 zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     _has_message (false),
-    _more (false)
+    _more_send (false),
+    _more_recv (false)
 {
     options.type = ZMQ_XSUB;
 
@@ -99,6 +100,13 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     size_t size = msg_->size ();
     unsigned char *data = static_cast<unsigned char *> (msg_->data ());
 
+    bool send_more = _more_send;
+    _more_send = (msg_->flags () & msg_t::more) != 0;
+
+    if (send_more)
+        //  User message sent upstream to XPUB socket
+        return _dist.send_to_all (msg_);
+
     if (msg_->is_subscribe () || (size > 0 && *data == 1)) {
         //  Process subscribe message
         //  This used to filter out duplicate subscriptions,
@@ -152,7 +160,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
         int rc = msg_->move (_message);
         errno_assert (rc == 0);
         _has_message = false;
-        _more = (msg_->flags () & msg_t::more) != 0;
+        _more_recv = (msg_->flags () & msg_t::more) != 0;
         return 0;
     }
 
@@ -170,8 +178,8 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
 
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed
-        if (_more || !options.filter || match (msg_)) {
-            _more = (msg_->flags () & msg_t::more) != 0;
+        if (_more_recv || !options.filter || match (msg_)) {
+            _more_recv = (msg_->flags () & msg_t::more) != 0;
             return 0;
         }
 
@@ -187,7 +195,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
 bool zmq::xsub_t::xhas_in ()
 {
     //  There are subsequent parts of the partly-read message available.
-    if (_more)
+    if (_more_recv)
         return true;
 
     //  If there's already a message prepared by a previous call to zmq_poll,
