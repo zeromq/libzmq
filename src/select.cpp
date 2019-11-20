@@ -373,10 +373,9 @@ void zmq::select_t::loop ()
                     //  http://stackoverflow.com/q/35043420/188530
                     if (FD_ISSET (fd, &family_entry.fds_set.read)
                         && FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc =
-                          WSAEventSelect (fd, wsa_events.events[3],
-                                          FD_READ | FD_ACCEPT | FD_CLOSE
-                                            | FD_WRITE | FD_CONNECT);
+                        rc = WSAEventSelect (fd, wsa_events.events[3],
+                                             FD_READ | FD_ACCEPT | FD_CLOSE
+                                               | FD_WRITE | FD_CONNECT);
                     else if (FD_ISSET (fd, &family_entry.fds_set.read))
                         rc = WSAEventSelect (fd, wsa_events.events[0],
                                              FD_READ | FD_ACCEPT | FD_CLOSE);
