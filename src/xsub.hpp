@@ -93,9 +93,13 @@ class xsub_t : public socket_base_t
     bool _has_message;
     msg_t _message;
 
+    //  If true, part of a multipart message was already sent, but
+    //  there are following parts still waiting.
+    bool _more_send;
+
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting.
-    bool _more;
+    bool _more_recv;
 
     xsub_t (const xsub_t &);
     const xsub_t &operator= (const xsub_t &);

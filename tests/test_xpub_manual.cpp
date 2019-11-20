@@ -456,6 +456,58 @@ void test_user_message ()
     test_context_socket_close (sub);
 }
 
+void test_user_message_multi ()
+{
+    //  Create a publisher
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
+
+    //  Create a subscriber
+    void *sub = test_context_socket (ZMQ_XSUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
+
+    //  Send some data that is neither sub nor unsub
+    const uint8_t msg_common[] = {'A', 'B', 'C'};
+    //  Message starts with 0 but should still treated as user
+    const uint8_t msg_0[] = {0, 'B', 'C'};
+    //  Message starts with 1 but should still treated as user
+    const uint8_t msg_1[] = {1, 'B', 'C'};
+
+    // Test second message starting with 0
+    send_array_expect_success (sub, msg_common, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_0, 0);
+
+    // Receive messages from subscriber
+    recv_array_expect_success (pub, msg_common, 0);
+    recv_array_expect_success (pub, msg_0, 0);
+
+    // Test second message starting with 1
+    send_array_expect_success (sub, msg_common, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_1, 0);
+
+    // Receive messages from subscriber
+    recv_array_expect_success (pub, msg_common, 0);
+    recv_array_expect_success (pub, msg_1, 0);
+
+    char buffer[255];
+    // Test first message starting with 0
+    send_array_expect_success (sub, msg_0, 0);
+
+    // wait
+    msleep (SETTLE_TIME);
+
+    int rc = zmq_recv (pub, buffer, sizeof (buffer), ZMQ_DONTWAIT);
+    TEST_ASSERT_EQUAL_INT (-1, rc);
+
+    // Test first message starting with 1
+    send_array_expect_success (sub, msg_1, 0);
+    recv_array_expect_success (pub, msg_1, 0);
+
+    //  Clean up.
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -467,6 +519,7 @@ int main ()
     RUN_TEST (test_missing_subscriptions);
     RUN_TEST (test_unsubscribe_cleanup);
     RUN_TEST (test_user_message);
+    RUN_TEST (test_user_message_multi);
 
     return UNITY_END ();
 }
