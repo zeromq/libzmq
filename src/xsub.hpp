@@ -57,6 +57,7 @@ class xsub_t : public socket_base_t
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
                        bool locally_initiated_);
+    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
     int xsend (zmq::msg_t *msg_);
     bool xhas_out ();
     int xrecv (zmq::msg_t *msg_);
@@ -100,6 +101,15 @@ class xsub_t : public socket_base_t
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting.
     bool _more_recv;
+
+    //  If true, subscribe and cancel messages are processed for the rest
+    //  of multipart message.
+    bool _process_subscribe;
+
+    //  This option is enabled with ZMQ_ONLY_FIRST_SUBSCRIBE.
+    //  If true, messages following subscribe/unsubscribe in a multipart
+    //  message are treated as user data regardless of the first byte.
+    bool _only_first_subscribe;
 
     xsub_t (const xsub_t &);
     const xsub_t &operator= (const xsub_t &);

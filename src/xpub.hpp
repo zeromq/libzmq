@@ -96,6 +96,15 @@ class xpub_t : public socket_base_t
     //  True if we are in the middle of receiving a multi-part message.
     bool _more_recv;
 
+    //  If true, subscribe and cancel messages are processed for the rest
+    //  of multipart message.
+    bool _process_subscribe;
+
+    //  This option is enabled with ZMQ_ONLY_FIRST_SUBSCRIBE.
+    //  If true, messages following subscribe/unsubscribe in a multipart
+    //  message are treated as user data regardless of the first byte.
+    bool _only_first_subscribe;
+
     //  Drop messages if HWM reached, otherwise return with EAGAIN
     bool _lossy;
 
