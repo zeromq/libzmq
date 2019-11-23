@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
@@ -34,12 +35,16 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_roundtrip ()
 {
+    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+    strcat (connect_address, "/roundtrip");
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (sc, "ws://127.0.0.1:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
     bounce (sb, sc);
 
@@ -49,11 +54,16 @@ void test_roundtrip ()
 
 void test_short_message ()
 {
+    char connect_address[MAX_SOCKET_STRING + strlen ("/short")];
+    size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557/short"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/short"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557/short"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 255));
@@ -78,11 +88,16 @@ void test_short_message ()
 
 void test_large_message ()
 {
+    char connect_address[MAX_SOCKET_STRING + strlen ("/large")];
+    size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:5557/large"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/large"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, "ws://127.0.0.1:5557/large"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 65536));
@@ -108,6 +123,8 @@ void test_large_message ()
 
 void test_curve ()
 {
+    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    size_t addr_length = sizeof (connect_address);
     char client_public[41];
     char client_secret[41];
     char server_public[41];
@@ -124,7 +141,10 @@ void test_curve ()
       zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:*/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (server, ZMQ_LAST_ENDPOINT,
+                                               connect_address, &addr_length));
+    strcat (connect_address, "/roundtrip");
 
 
     void *client = test_context_socket (ZMQ_REQ);
@@ -134,8 +154,7 @@ void test_curve ()
       zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (client, "ws://127.0.0.1:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, connect_address));
 
     bounce (server, client);
 

@@ -124,16 +124,20 @@ const char *cert =
 
 void test_roundtrip ()
 {
+    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     zmq_setsockopt (sb, ZMQ_WSS_CERT_PEM, cert, strlen (cert));
     zmq_setsockopt (sb, ZMQ_WSS_KEY_PEM, key, strlen (key));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "wss://*:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "wss://*:*/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+    strcat (connect_address, "/roundtrip");
 
     void *sc = test_context_socket (ZMQ_REQ);
     zmq_setsockopt (sc, ZMQ_WSS_TRUST_PEM, cert, strlen (cert));
     zmq_setsockopt (sc, ZMQ_WSS_HOSTNAME, "zeromq.org", strlen ("zeromq.org"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_connect (sc, "wss://127.0.0.1:5556/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
     bounce (sb, sc);
 
