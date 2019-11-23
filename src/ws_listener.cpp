@@ -123,7 +123,7 @@ void zmq::ws_listener_t::in_event ()
 std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
                                                  socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
+    return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
