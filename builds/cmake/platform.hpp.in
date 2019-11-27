@@ -127,4 +127,9 @@
 #cmakedefine ZMQ_HAVE_WINDOWS
 #cmakedefine ZMQ_HAVE_WINDOWS_UWP
 
+// TODO check if ther is a way to use IPC on UWP Platform, use select instead as before IPC was introduced
+#if defined ZMQ_HAVE_WINDOWS_UWP
+  #undef ZMQ_HAVE_IPC
+#endif
+
 #endif
