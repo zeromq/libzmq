@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2019 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,50 +27,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_WS_ADDRESS_HPP_INCLUDED__
-#define __ZMQ_WS_ADDRESS_HPP_INCLUDED__
+#ifndef __ZMQ_WSS_ADDRESS_HPP_INCLUDED__
+#define __ZMQ_WSS_ADDRESS_HPP_INCLUDED__
 
-#if !defined ZMQ_HAVE_WINDOWS
-#include <sys/socket.h>
-#include <netinet/in.h>
-#endif
-
-#include "ip_resolver.hpp"
+#include "ws_address.hpp"
 
 namespace zmq
 {
-class ws_address_t
+class wss_address_t : public ws_address_t
 {
   public:
-    ws_address_t ();
-    ws_address_t (const sockaddr *sa_, socklen_t sa_len_);
-
-    //  This function translates textual WS address into an address
-    //  structure. If 'local' is true, names are resolved as local interface
-    //  names. If it is false, names are resolved as remote hostnames.
-    //  If 'ipv6' is true, the name may resolve to IPv6 address.
-    int resolve (const char *name_, bool local_, bool ipv6_);
-
+    wss_address_t ();
+    wss_address_t (const sockaddr *sa_, socklen_t sa_len_);
     //  The opposite to resolve()
     int to_string (std::string &addr_) const;
-
-#if defined ZMQ_HAVE_WINDOWS
-    unsigned short family () const;
-#else
-    sa_family_t family () const;
-#endif
-    const sockaddr *addr () const;
-    socklen_t addrlen () const;
-
-    const char *host () const;
-    const char *path () const;
-
-  protected:
-    ip_addr_t _address;
-
-  private:
-    std::string _host;
-    std::string _path;
 };
 }
 

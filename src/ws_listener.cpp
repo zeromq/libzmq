@@ -42,6 +42,7 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 #include "ws_engine.hpp"
+#include "wss_address.hpp"
 #include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
@@ -123,7 +124,10 @@ void zmq::ws_listener_t::in_event ()
 std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
                                                  socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
+    if (_wss)
+        return zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
+    else
+        return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
