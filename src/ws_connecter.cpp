@@ -39,6 +39,7 @@
 #include "tcp.hpp"
 #include "address.hpp"
 #include "ws_address.hpp"
+#include "wss_address.hpp"
 #include "session_base.hpp"
 #include "ws_engine.hpp"
 
@@ -118,7 +119,12 @@ void zmq::ws_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd, get_socket_name<ws_address_t> (fd, socket_end_local));
+    if (_wss)
+        create_engine (fd,
+                       get_socket_name<wss_address_t> (fd, socket_end_local));
+    else
+        create_engine (fd,
+                       get_socket_name<ws_address_t> (fd, socket_end_local));
 }
 
 void zmq::ws_connecter_t::timer_event (int id_)

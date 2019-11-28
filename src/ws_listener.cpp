@@ -42,6 +42,7 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 #include "ws_engine.hpp"
+#include "wss_address.hpp"
 #include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
@@ -123,7 +124,10 @@ void zmq::ws_listener_t::in_event ()
 std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
                                                  socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
+    if (_wss)
+        return zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
+    else
+        return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
@@ -206,7 +210,10 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
         if (rc != 0)
             return -1;
 
-        if (create_socket (addr_) == -1)
+        //  remove the path, otherwise resolving the port will fail with wildcard
+        const char *delim = strrchr (addr_, '/');
+        std::string host_port = std::string (addr_, delim - addr_);
+        if (create_socket (host_port.c_str ()) == -1)
             return -1;
     }
 

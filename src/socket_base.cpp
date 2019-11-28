@@ -55,6 +55,7 @@
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "ws_address.hpp"
+#include "wss_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -904,13 +905,22 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
 #ifdef ZMQ_HAVE_WS
 #ifdef ZMQ_HAVE_WSS
     else if (protocol == protocol_name::ws || protocol == protocol_name::wss) {
+        if (protocol == protocol_name::wss) {
+            paddr->resolved.wss_addr = new (std::nothrow) wss_address_t ();
+            alloc_assert (paddr->resolved.wss_addr);
+            rc = paddr->resolved.wss_addr->resolve (address.c_str (), false,
+                                                    options.ipv6);
+        } else
 #else
     else if (protocol == protocol_name::ws) {
 #endif
-        paddr->resolved.ws_addr = new (std::nothrow) ws_address_t ();
-        alloc_assert (paddr->resolved.ws_addr);
-        rc = paddr->resolved.ws_addr->resolve (address.c_str (), false,
-                                               options.ipv6);
+        {
+            paddr->resolved.ws_addr = new (std::nothrow) ws_address_t ();
+            alloc_assert (paddr->resolved.ws_addr);
+            rc = paddr->resolved.ws_addr->resolve (address.c_str (), false,
+                                                   options.ipv6);
+        }
+
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;

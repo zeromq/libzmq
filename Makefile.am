@@ -286,6 +286,8 @@ if HAVE_WS
 src_libzmq_la_SOURCES += \
 	src/ws_address.cpp \
 	src/ws_address.hpp \
+	src/wss_address.cpp \
+	src/wss_address.hpp \
 	src/ws_connecter.cpp \
 	src/ws_connecter.hpp \
 	src/ws_decoder.cpp \

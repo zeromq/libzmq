@@ -103,12 +103,14 @@ option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
 if (NOT DISABLE_WS)
   list(APPEND sources
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.hpp
