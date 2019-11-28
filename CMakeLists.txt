@@ -389,6 +389,7 @@ endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION STREQUAL "10.0")
   set(ZMQ_HAVE_WINDOWS_UWP ON)
+  set(ZMQ_HAVE_IPC OFF)
 endif()
 if(NOT MSVC)
   check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
