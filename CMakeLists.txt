@@ -197,6 +197,10 @@ set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values 
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
   
 if (WIN32)
+    if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
+        set(ZMQ_HAVE_WINDOWS_UWP ON)
+        set(ZMQ_HAVE_IPC OFF)
+    endif()
     # from https://stackoverflow.com/a/40217291/2019765
     macro(get_WIN32_WINNT version)
         if (CMAKE_SYSTEM_VERSION)
@@ -236,10 +240,10 @@ if (WIN32)
 
     set(ZMQ_WIN32_WINNT "${ZMQ_WIN32_WINNT_DEFAULT}" CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
 
-	# On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc support)
-	if (ZMQ_WIN32_WINNT GREATER "0x05FF" AND MSVC_VERSION GREATER 1799 AND POLLER STREQUAL "")
-	  set(POLLER "epoll")
-	endif()
+  # On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc support)
+  if (ZMQ_WIN32_WINNT GREATER "0x05FF" AND MSVC_VERSION GREATER 1799 AND POLLER STREQUAL "" AND NOT ZMQ_HAVE_WINDOWS_UWP)
+    set(POLLER "epoll")
+  endif()
 
     add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
 endif(WIN32)
@@ -387,10 +391,6 @@ else()
 endif()
 ###################### END condition_variable_t selection
 
-if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
-  set(ZMQ_HAVE_WINDOWS_UWP ON)
-  set(ZMQ_HAVE_IPC OFF)
-endif()
 if(NOT MSVC)
   check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
   check_include_files(sys/uio.h ZMQ_HAVE_UIO)
