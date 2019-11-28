@@ -387,7 +387,7 @@ else()
 endif()
 ###################### END condition_variable_t selection
 
-if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION STREQUAL "10.0")
+if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
   set(ZMQ_HAVE_WINDOWS_UWP ON)
   set(ZMQ_HAVE_IPC OFF)
 endif()
