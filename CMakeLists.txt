@@ -200,6 +200,12 @@ if (WIN32)
     if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
         set(ZMQ_HAVE_WINDOWS_UWP ON)
         set(ZMQ_HAVE_IPC OFF)
+        # to remove compile warninging "D9002 ignoring unknown option"
+        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
+        set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} CACHE STRING "" FORCE)
+        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} CACHE STRING "" FORCE)
+        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
     endif()
     # from https://stackoverflow.com/a/40217291/2019765
     macro(get_WIN32_WINNT version)
@@ -1185,6 +1191,9 @@ if(MSVC)
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
       COMPILE_DEFINITIONS "DLL_EXPORT"
       OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
+      if(ZMQ_HAVE_WINDOWS_UWP)
+          set_target_properties(libzmq PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+      endif()
   endif()
 
   if(BUILD_STATIC)
