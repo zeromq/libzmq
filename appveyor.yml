@@ -121,6 +121,7 @@ environment:
       ARTIFACT_NAME: v141-x86-uwp
       CMAKE_SYSTEM_NAME: WindowsStore
       CMAKE_SYSTEM_VERSION: 10.0.18362
+      EXTRA_FLAGS: -DZMQ_BUILD_TESTS=OFF # can't generate tests on uwp platform
 
 matrix:
   fast_finish: false
@@ -151,7 +152,7 @@ install:
   - cmd: if "%Platform%"=="mingw64" C:\msys64\usr\bin\bash -lc "pacman -Qg"
   - cmd: if "%Platform%"=="mingw64" set PATH=C:\msys64\usr\bin;%PATH%
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
-  - cmd: if "%Platform%"=="Win32-uwp" set "CMAKE_GENERATOR=%CMAKE_GENERATOR%" -CMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION%""
+  - cmd: if "%Platform%"=="Win32-uwp" set "CMAKE_GENERATOR=%CMAKE_GENERATOR%" -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION%""
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
