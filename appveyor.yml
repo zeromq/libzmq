@@ -194,7 +194,7 @@ build_script:
   - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
   - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" == "Win32" (
+  - cmd: if "%PLATFORM:~0,5%" == "Win32" (
             if "%MSVCYEAR%"=="vs2008" (
                 cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
             ) else (
