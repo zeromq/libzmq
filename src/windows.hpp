@@ -43,10 +43,6 @@
 #define _WIN32_WINNT 0x0600
 #endif
 
-#if defined ZMQ_HAVE_WINDOWS_UWP
-#define _WIN32_WINNT _WIN32_WINNT_WIN10
-#endif
-
 #ifdef __MINGW32__
 //  Require Windows XP or higher with MinGW for getaddrinfo().
 #if (_WIN32_WINNT >= 0x0501)

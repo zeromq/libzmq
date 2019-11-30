@@ -251,7 +251,7 @@ if (WIN32)
     set(POLLER "epoll")
   endif()
 
-    add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
+  add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
 endif(WIN32)
 
 if(NOT MSVC)
