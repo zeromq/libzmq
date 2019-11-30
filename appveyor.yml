@@ -118,7 +118,7 @@ environment:
       CMAKE_GENERATOR: "Visual Studio 15 2017"
       MSVCVERSION: "v141"
       MSVCYEAR: "vs2017"
-      ARTIFACT_NAME: v141-x86-uwp
+      ARTIFACT_NAME: v141-gd-uwp
       CMAKE_SYSTEM_NAME: WindowsStore
       CMAKE_SYSTEM_VERSION: 10.0.18362
       EXTRA_FLAGS: -DZMQ_BUILD_TESTS=OFF # can't generate tests on uwp platform
@@ -128,7 +128,6 @@ matrix:
   allow_failures:
     - platform: cygwin64 # TODO allow failures until tests are fixed
     - platform: mingw64  # TODO allow failures until tests are fixed
-    - platform: Win32-uwp  # TODO allow failures until tests are fixed
 
 init:
   - cmd: if "%NO_PR%"=="TRUE" (
