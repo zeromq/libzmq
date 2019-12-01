@@ -122,6 +122,18 @@ environment:
       CMAKE_SYSTEM_NAME: WindowsStore
       CMAKE_SYSTEM_VERSION: 10.0.18362
       EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DZMQ_BUILD_TESTS=OFF # can't generate tests on uwp platform
+    - platform: Win32-uwp
+      configuration: Release
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      MSVCVERSION: "v141"
+      MSVCYEAR: "vs2017"
+      ARTIFACT_NAME: v141-uwp
+      CMAKE_SYSTEM_NAME: WindowsStore
+      CMAKE_SYSTEM_VERSION: 10.0.18362
+      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DZMQ_BUILD_TESTS=OFF # can't generate tests on uwp platform
 
 matrix:
   fast_finish: false
