@@ -383,7 +383,7 @@ void expect_new_client_bounce_fail (char *my_endpoint_,
                                     int expected_client_event_,
                                     int expected_client_value_)
 {
-    void *my_client_mon;
+    void *my_client_mon = NULL;
     TEST_ASSERT_TRUE (client_mon_ == NULL || expected_client_event_ == 0);
     if (expected_client_event_ != 0)
         client_mon_ = &my_client_mon;
