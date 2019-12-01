@@ -1192,7 +1192,7 @@ if(MSVC)
       COMPILE_DEFINITIONS "DLL_EXPORT"
       OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
       if(ZMQ_HAVE_WINDOWS_UWP)
-          set_target_properties(libzmq PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+          set_target_properties(libzmq PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
       endif()
   endif()
 
@@ -1388,7 +1388,7 @@ if(BUILD_SHARED)
           COMPONENT PerfTools)
       endif()
 	  if(ZMQ_HAVE_WINDOWS_UWP)
-	      set_target_properties(${perf-tool} PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+	      set_target_properties(${perf-tool} PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
 	  endif()
     endforeach()
 
@@ -1399,7 +1399,7 @@ if(BUILD_SHARED)
         PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/src")
 	  if(ZMQ_HAVE_WINDOWS_UWP)
-	      set_target_properties(benchmark_radix_tree PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+	      set_target_properties(benchmark_radix_tree PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
 	  endif()
     endif()
 
