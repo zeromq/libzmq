@@ -1387,6 +1387,9 @@ if(BUILD_SHARED)
           RUNTIME DESTINATION bin
           COMPONENT PerfTools)
       endif()
+	  if(ZMQ_HAVE_WINDOWS_UWP)
+	      set_target_properties(${perf-tool} PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+	  endif()
     endforeach()
 
     if(BUILD_STATIC)
@@ -1395,6 +1398,9 @@ if(BUILD_SHARED)
       target_include_directories(benchmark_radix_tree
         PUBLIC
         "${CMAKE_CURRENT_LIST_DIR}/src")
+	  if(ZMQ_HAVE_WINDOWS_UWP)
+	      set_target_properties(benchmark_radix_tree PROPERTIES LINK_FLAGS "/INCREMENTAL:NO")
+	  endif()
     endif()
 
   endif()
