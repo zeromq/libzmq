@@ -1154,6 +1154,22 @@ Default value:: NULL
 Applicable socket types:: ZMQ_XPUB
 
 
+ZMQ_ONLY_FIRST_SUBSCRIBE: Process only fist subscribe/unsubscribe in a multipart message
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If set, only the first part of the multipart message is processed as
+a subscribe/unsubscribe message. The rest are forwarded as user data
+regardless of message contents.
+
+It not set (default), subscribe/unsubscribe messages in a multipart message
+are processed as such regardless of their number and order.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: ZMQ_XSUB, ZMQ_XPUB
+
+
 ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the domain for ZAP (ZMQ RFC 27) authentication. A ZAP domain must be 

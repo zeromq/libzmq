@@ -675,6 +675,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_WSS_TRUST_PEM 105
 #define ZMQ_WSS_HOSTNAME 106
 #define ZMQ_WSS_TRUST_SYSTEM 107
+#define ZMQ_ONLY_FIRST_SUBSCRIBE 108
 
 
 /*  DRAFT Context options                                                     */

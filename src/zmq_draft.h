@@ -57,6 +57,8 @@
 #define ZMQ_SOCKS_PASSWORD 100
 #define ZMQ_IN_BATCH_SIZE 101
 #define ZMQ_OUT_BATCH_SIZE 102
+#define ZMQ_ONLY_FIRST_SUBSCRIBE 108
+
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10

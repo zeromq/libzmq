@@ -43,6 +43,8 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     _verbose_unsubs (false),
     _more_send (false),
     _more_recv (false),
+    _process_subscribe (false),
+    _only_first_subscribe (false),
     _lossy (true),
     _manual (false),
     _send_last_pipe (false),
@@ -101,7 +103,10 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         bool subscribe = false;
         bool is_subscribe_or_cancel = false;
 
-        if (!_more_recv) {
+        bool first_part = !_more_recv;
+        _more_recv = (msg.flags () & msg_t::more) != 0;
+
+        if (first_part || _process_subscribe) {
             //  Apply the subscription to the trie
             if (msg.is_subscribe () || msg.is_cancel ()) {
                 data = static_cast<unsigned char *> (msg.command_body ());
@@ -116,7 +121,9 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             }
         }
 
-        _more_recv = (msg.flags () & msg_t::more) != 0;
+        if (first_part)
+            _process_subscribe =
+              !_only_first_subscribe || is_subscribe_or_cancel;
 
         if (!is_subscribe_or_cancel) {
             //  Process user message coming upstream from xsub socket
@@ -199,7 +206,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
 {
     if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
         || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE || option_ == ZMQ_XPUB_NODROP
-        || option_ == ZMQ_XPUB_MANUAL) {
+        || option_ == ZMQ_XPUB_MANUAL || option_ == ZMQ_ONLY_FIRST_SUBSCRIBE) {
         if (optvallen_ != sizeof (int)
             || *static_cast<const int *> (optval_) < 0) {
             errno = EINVAL;
@@ -218,6 +225,8 @@ int zmq::xpub_t::xsetsockopt (int option_,
             _lossy = (*static_cast<const int *> (optval_) == 0);
         else if (option_ == ZMQ_XPUB_MANUAL)
             _manual = (*static_cast<const int *> (optval_) != 0);
+        else if (option_ == ZMQ_ONLY_FIRST_SUBSCRIBE)
+            _only_first_subscribe = (*static_cast<const int *> (optval_) != 0);
     } else if (option_ == ZMQ_SUBSCRIBE && _manual) {
         if (_last_pipe != NULL)
             _subscriptions.add ((unsigned char *) optval_, optvallen_,
