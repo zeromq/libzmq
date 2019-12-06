@@ -121,7 +121,7 @@ environment:
       ARTIFACT_NAME: v141-gd-uwp
       CMAKE_SYSTEM_NAME: WindowsStore
       CMAKE_SYSTEM_VERSION: 10.0.18362
-      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION%
+      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DBUILD_TESTS=OFF
     - platform: Win32-uwp
       configuration: Release
       WITH_LIBSODIUM: OFF
@@ -133,14 +133,13 @@ environment:
       ARTIFACT_NAME: v141-uwp
       CMAKE_SYSTEM_NAME: WindowsStore
       CMAKE_SYSTEM_VERSION: 10.0.18362
-      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION%
+      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DBUILD_TESTS=OFF
 
 matrix:
   fast_finish: false
   allow_failures:
     - platform: cygwin64 # TODO allow failures until tests are fixed
     - platform: mingw64  # TODO allow failures until tests are fixed
-    - platform: Win32-uwp  # TODO allow failures until tests are fixed
 
 init:
   - cmd: if "%NO_PR%"=="TRUE" (
