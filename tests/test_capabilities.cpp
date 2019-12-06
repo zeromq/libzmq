@@ -40,7 +40,7 @@ void tearDown ()
 
 void test_capabilities ()
 {
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_OPENVMS)
+#if defined(ZMQ_HAVE_IPC)
     TEST_ASSERT_TRUE (zmq_has ("ipc"));
 #else
     TEST_ASSERT_TRUE (!zmq_has ("ipc"));
