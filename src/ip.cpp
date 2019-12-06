@@ -316,29 +316,9 @@ static void tune_socket (const SOCKET socket_)
 
     zmq::tcp_tune_loopback_fast_path (socket_);
 }
-#endif
 
-int zmq::make_fdpair (fd_t *r_, fd_t *w_)
+static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
 {
-#if defined ZMQ_HAVE_EVENTFD
-    int flags = 0;
-#if defined ZMQ_HAVE_EVENTFD_CLOEXEC
-    //  Setting this option result in sane behaviour when exec() functions
-    //  are used. Old sockets are closed and don't block TCP ports, avoid
-    //  leaks, etc.
-    flags |= EFD_CLOEXEC;
-#endif
-    fd_t fd = eventfd (0, flags);
-    if (fd == -1) {
-        errno_assert (errno == ENFILE || errno == EMFILE);
-        *w_ = *r_ = -1;
-        return -1;
-    } else {
-        *w_ = *r_ = fd;
-        return 0;
-    }
-
-#elif defined ZMQ_HAVE_WINDOWS
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
     //  Windows CE does not manage security attributes
     SECURITY_DESCRIPTOR sd;
@@ -367,7 +347,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     //  Otherwise use Mutex implementation.
     int event_signaler_port = 5905;
 
-    if (signaler_port == event_signaler_port) {
+    if (zmq::signaler_port == event_signaler_port) {
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         sync =
           CreateEventW (&sa, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
@@ -380,14 +360,14 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
                                L"Global\\zmq-signaler-port-sync");
 
         win_assert (sync != NULL);
-    } else if (signaler_port != 0) {
+    } else if (zmq::signaler_port != 0) {
         wchar_t mutex_name[MAX_PATH];
 #ifdef __MINGW32__
         _snwprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
                     signaler_port);
 #else
         swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
-                  signaler_port);
+                  zmq::signaler_port);
 #endif
 
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
@@ -408,7 +388,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Create listening socket.
     SOCKET listener;
-    listener = open_socket (AF_INET, SOCK_STREAM, 0);
+    listener = zmq::open_socket (AF_INET, SOCK_STREAM, 0);
     wsa_assert (listener != INVALID_SOCKET);
 
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
@@ -425,10 +405,10 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     memset (&addr, 0, sizeof addr);
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-    addr.sin_port = htons (signaler_port);
+    addr.sin_port = htons (zmq::signaler_port);
 
     //  Create the writer socket.
-    *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
+    *w_ = zmq::open_socket (AF_INET, SOCK_STREAM, 0);
     wsa_assert (*w_ != INVALID_SOCKET);
 
     if (sync != NULL) {
@@ -441,7 +421,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     rc = bind (listener, reinterpret_cast<const struct sockaddr *> (&addr),
                sizeof addr);
 
-    if (rc != SOCKET_ERROR && signaler_port == 0) {
+    if (rc != SOCKET_ERROR && zmq::signaler_port == 0) {
         //  Retrieve ephemeral port number
         int addrlen = sizeof addr;
         rc = getsockname (listener, reinterpret_cast<struct sockaddr *> (&addr),
@@ -510,7 +490,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     if (sync != NULL) {
         //  Exit the critical section.
         BOOL brc;
-        if (signaler_port == event_signaler_port)
+        if (zmq::signaler_port == event_signaler_port)
             brc = SetEvent (sync);
         else
             brc = ReleaseMutex (sync);
@@ -522,7 +502,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     if (*r_ != INVALID_SOCKET) {
-        make_socket_noninheritable (*r_);
+        zmq::make_socket_noninheritable (*r_);
         return 0;
     }
     //  Cleanup writer if connection failed
@@ -532,10 +512,33 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         *w_ = INVALID_SOCKET;
     }
     //  Set errno from saved value
-    errno = wsa_error_to_errno (saved_errno);
+    errno = zmq::wsa_error_to_errno (saved_errno);
     return -1;
+}
+#endif
 
+int zmq::make_fdpair (fd_t *r_, fd_t *w_)
+{
+#if defined ZMQ_HAVE_EVENTFD
+    int flags = 0;
+#if defined ZMQ_HAVE_EVENTFD_CLOEXEC
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports, avoid
+    //  leaks, etc.
+    flags |= EFD_CLOEXEC;
+#endif
+    fd_t fd = eventfd (0, flags);
+    if (fd == -1) {
+        errno_assert (errno == ENFILE || errno == EMFILE);
+        *w_ = *r_ = -1;
+        return -1;
+    } else {
+        *w_ = *r_ = fd;
+        return 0;
+    }
 
+#elif defined ZMQ_HAVE_WINDOWS
+    return make_fdpair_tcpip (r_, w_);
 #elif defined ZMQ_HAVE_OPENVMS
 
     //  Whilst OpenVMS supports socketpair - it maps to AF_INET only.  Further,
