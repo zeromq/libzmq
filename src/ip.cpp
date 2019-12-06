@@ -48,6 +48,9 @@
 #include <vector>
 #else
 #include "tcp.hpp"
+#ifdef ZMQ_HAVE_IPC
+#include "ipc_address.hpp"
+#endif
 
 #include <direct.h>
 #endif
@@ -553,6 +556,89 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
 #elif defined ZMQ_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_IPC
+    ipc_address_t address;
+    std::string dirname, filename;
+
+    //  Create a listening socket.
+    SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
+    if (listener == retired_fd) {
+        //  This may happen if the library was built on a system supporting AF_UNIX, but the system running doesn't support it.
+        goto try_tcpip;
+    }
+
+    create_ipc_wildcard_address (dirname, filename);
+
+    //  Initialise the address structure.
+    int rc = address.resolve (filename.c_str ());
+    if (rc != 0) {
+        goto error_closelistener;
+    }
+
+    //  Bind the socket to the file path.
+    rc = bind (listener, const_cast<sockaddr *> (address.addr ()),
+               address.addrlen ());
+    if (rc != 0) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        goto error_closelistener;
+    }
+
+    //  Listen for incoming connections.
+    rc = listen (listener, 1);
+    if (rc != 0) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        goto error_closelistener;
+    }
+
+    sockaddr_un lcladdr;
+    socklen_t lcladdr_len = sizeof lcladdr;
+
+    rc = getsockname (listener, reinterpret_cast<struct sockaddr *> (&lcladdr),
+                      &lcladdr_len);
+    wsa_assert (rc != -1);
+
+    //  Create the client socket.
+    *w_ = open_socket (AF_UNIX, SOCK_STREAM, 0);
+    if (*w_ == -1) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
+        goto error_closelistener;
+    }
+
+    //  Connect to the remote peer.
+    rc = ::connect (*w_, reinterpret_cast<const struct sockaddr *> (&lcladdr),
+                    lcladdr_len);
+    if (rc == -1) {
+        goto error_closeclient;
+    }
+
+    *r_ = accept (listener, NULL, NULL);
+    errno_assert (*r_ != -1);
+
+    //  Close the listener socket, we don't need it anymore.
+    rc = closesocket (listener);
+    wsa_assert (rc == 0);
+
+    return 0;
+
+error_closeclient:
+    int saved_errno = errno;
+    rc = closesocket (*w_);
+    wsa_assert (rc == 0);
+    errno = saved_errno;
+
+error_closelistener:
+    saved_errno = errno;
+    rc = closesocket (listener);
+    wsa_assert (rc == 0);
+    errno = saved_errno;
+
+    return -1;
+
+try_tcpip:
+    // try to fallback to TCP/IP
+    // TODO: maybe remember this decision permanently?
+#endif
+
     return make_fdpair_tcpip (r_, w_);
 #elif defined ZMQ_HAVE_OPENVMS
 
