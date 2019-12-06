@@ -10,6 +10,15 @@ environment:
   MSVCYEAR: "vs2013"
   ENABLE_DRAFTS: ON
   matrix:
+    - platform: x64
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      CMAKE_GENERATOR: "Visual Studio 16 2019"
+      MSVCVERSION: "v142"
+      MSVCYEAR: "vs2019"
+      ARTIFACT_NAME: v142-x64
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: OFF # unavailable build files for VS2008
@@ -138,7 +147,7 @@ install:
   - cmd: if "%Platform%"=="cygwin64" set PATH=C:\cygwin64\bin;%PATH%
   - cmd: if "%Platform%"=="mingw64" C:\msys64\usr\bin\bash -lc "pacman -Qg"
   - cmd: if "%Platform%"=="mingw64" set PATH=C:\msys64\usr\bin;%PATH%
-  - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
+  - cmd: if "%Platform%"=="x64" (if not "%MSVCVERSION%"=="v142" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64")
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
