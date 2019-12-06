@@ -76,6 +76,11 @@ void make_socket_noninheritable (fd_t sock_);
 //  - an internal 0MQ error did not occur,
 //  - and, if a socket error occured, it can be recovered from.
 void assert_success_or_recoverable (fd_t s_, int rc_);
+
+#ifdef ZMQ_HAVE_IPC
+// Create an IPC wildcard path address
+int create_ipc_wildcard_address (std::string &path_, std::string &file_);
+#endif
 }
 
 #endif

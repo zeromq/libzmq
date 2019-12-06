@@ -38,11 +38,18 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <vector>
 #else
 #include "tcp.hpp"
+
+#include <direct.h>
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
@@ -69,6 +76,14 @@
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
+#endif
+
+#ifndef ZMQ_HAVE_WINDOWS
+// Acceptable temporary directory environment variables
+static const char *tmp_env_vars[] = {
+  "TMPDIR", "TEMPDIR", "TMP",
+  0 // Sentinel
+};
 #endif
 
 zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
@@ -730,3 +745,80 @@ void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
     }
 #endif
 }
+
+#ifdef ZMQ_HAVE_IPC
+int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
+{
+#if defined ZMQ_HAVE_WINDOWS
+    char buffer[MAX_PATH];
+
+    {
+        const errno_t rc = tmpnam_s (buffer);
+        errno_assert (rc == 0);
+    }
+
+    // TODO or use CreateDirectoryA and specify permissions?
+    const int rc = _mkdir (buffer);
+    if (rc != 0) {
+        return -1;
+    }
+
+    path_.assign (buffer);
+    file_ = path_ + "/socket";
+#else
+    std::string tmp_path;
+
+    // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
+    // the socket directory there.
+    const char **tmp_env = tmp_env_vars;
+    while (tmp_path.empty () && *tmp_env != 0) {
+        char *tmpdir = getenv (*tmp_env);
+        struct stat statbuf;
+
+        // Confirm it is actually a directory before trying to use
+        if (tmpdir != 0 && ::stat (tmpdir, &statbuf) == 0
+            && S_ISDIR (statbuf.st_mode)) {
+            tmp_path.assign (tmpdir);
+            if (*(tmp_path.rbegin ()) != '/') {
+                tmp_path.push_back ('/');
+            }
+        }
+
+        // Try the next environment variable
+        ++tmp_env;
+    }
+
+    // Append a directory name
+    tmp_path.append ("tmpXXXXXX");
+
+    // We need room for tmp_path + trailing NUL
+    std::vector<char> buffer (tmp_path.length () + 1);
+    strcpy (&buffer[0], tmp_path.c_str ());
+
+#if defined HAVE_MKDTEMP
+    // Create the directory.  POSIX requires that mkdtemp() creates the
+    // directory with 0700 permissions, meaning the only possible race
+    // with socket creation could be the same user.  However, since
+    // each socket is created in a directory created by mkdtemp(), and
+    // mkdtemp() guarantees a unique directory name, there will be no
+    // collision.
+    if (mkdtemp (&buffer[0]) == 0) {
+        return -1;
+    }
+
+    path_.assign (&buffer[0]);
+    file_ = path_ + "/socket";
+#else
+    LIBZMQ_UNUSED (path_);
+    int fd = mkstemp (&buffer[0]);
+    if (fd == -1)
+        return -1;
+    ::close (fd);
+
+    file_.assign (&buffer[0]);
+#endif
+#endif
+
+    return 0;
+}
+#endif
