@@ -52,8 +52,6 @@
 #include <afunix.h>
 #include <direct.h>
 
-#define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
-
 #define rmdir _rmdir
 #define unlink _unlink
 
@@ -62,7 +60,6 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/un.h>
-#include <sys/stat.h>
 #endif
 
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED
@@ -77,87 +74,6 @@
 #define ucred sockpeercred
 #endif
 #endif
-
-const char *zmq::ipc_listener_t::tmp_env_vars[] = {
-  "TMPDIR", "TEMPDIR", "TMP",
-  0 // Sentinel
-};
-
-int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
-                                                  std::string &file_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    char buffer[MAX_PATH];
-
-    {
-        const errno_t rc = tmpnam_s (buffer);
-        errno_assert (rc == 0);
-    }
-
-    // TODO or use CreateDirectoryA and specify permissions?
-    const int rc = _mkdir (buffer);
-    if (rc != 0) {
-        return -1;
-    }
-
-    path_.assign (buffer);
-    file_ = path_ + "/socket";
-#else
-    std::string tmp_path;
-
-    // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
-    // the socket directory there.
-    const char **tmp_env = tmp_env_vars;
-    while (tmp_path.empty () && *tmp_env != 0) {
-        char *tmpdir = getenv (*tmp_env);
-        struct stat statbuf;
-
-        // Confirm it is actually a directory before trying to use
-        if (tmpdir != 0 && ::stat (tmpdir, &statbuf) == 0
-            && S_ISDIR (statbuf.st_mode)) {
-            tmp_path.assign (tmpdir);
-            if (*(tmp_path.rbegin ()) != '/') {
-                tmp_path.push_back ('/');
-            }
-        }
-
-        // Try the next environment variable
-        ++tmp_env;
-    }
-
-    // Append a directory name
-    tmp_path.append ("tmpXXXXXX");
-
-    // We need room for tmp_path + trailing NUL
-    std::vector<char> buffer (tmp_path.length () + 1);
-    strcpy (&buffer[0], tmp_path.c_str ());
-
-#if defined HAVE_MKDTEMP
-    // Create the directory.  POSIX requires that mkdtemp() creates the
-    // directory with 0700 permissions, meaning the only possible race
-    // with socket creation could be the same user.  However, since
-    // each socket is created in a directory created by mkdtemp(), and
-    // mkdtemp() guarantees a unique directory name, there will be no
-    // collision.
-    if (mkdtemp (&buffer[0]) == 0) {
-        return -1;
-    }
-
-    path_.assign (&buffer[0]);
-    file_ = path_ + "/socket";
-#else
-    LIBZMQ_UNUSED (path_);
-    int fd = mkstemp (&buffer[0]);
-    if (fd == -1)
-        return -1;
-    ::close (fd);
-
-    file_.assign (&buffer[0]);
-#endif
-#endif
-
-    return 0;
-}
 
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
@@ -197,7 +113,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
 
     //  Allow wildcard file
     if (options.use_fd == -1 && addr[0] == '*') {
-        if (create_wildcard_address (_tmp_socket_dirname, addr) < 0) {
+        if (create_ipc_wildcard_address (_tmp_socket_dirname, addr) < 0) {
             return -1;
         }
     }
