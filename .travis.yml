@@ -150,9 +150,9 @@ before_install:
     curl -L https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip -o build-wrapper-linux-x86.zip ;
     unzip build-wrapper-linux-x86.zip ;
     export SONARCLOUD_BUILD_WRAPPER_PATH="$(pwd)/build-wrapper-linux-x86/" ;
-    curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-linux.zip -o sonar-scanner-cli.zip ;
+    curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip -o sonar-scanner-cli.zip ;
     unzip sonar-scanner-cli.zip ;
-    export SONAR_SCANNER_CLI_PATH="$(pwd)/sonar-scanner-3.1.0.1141-linux/bin/" ;
+    export SONAR_SCANNER_CLI_PATH="$(pwd)/sonar-scanner-4.2.0.1873-linux/bin/" ;
   fi
 
 before_script:
