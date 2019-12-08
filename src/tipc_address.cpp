@@ -165,7 +165,7 @@ const sockaddr *zmq::tipc_address_t::addr () const
 
 socklen_t zmq::tipc_address_t::addrlen () const
 {
-    return (socklen_t) sizeof address;
+    return static_cast<socklen_t> (sizeof address);
 }
 
 #endif

@@ -130,7 +130,7 @@ void test_pull_fair_queue_in (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         TEST_ASSERT_EQUAL_INT (
           2, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pull, 0)));
-        const char *str = (const char *) zmq_msg_data (&msg);
+        const char *str = static_cast<const char *> (zmq_msg_data (&msg));
         first_half -= str[0];
     }
     TEST_ASSERT_EQUAL_INT (0, first_half);
@@ -139,7 +139,7 @@ void test_pull_fair_queue_in (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         TEST_ASSERT_EQUAL_INT (
           2, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pull, 0)));
-        const char *str = (const char *) zmq_msg_data (&msg);
+        const char *str = static_cast<const char *> (zmq_msg_data (&msg));
         second_half -= str[0];
     }
     TEST_ASSERT_EQUAL_INT (0, second_half);

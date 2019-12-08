@@ -165,7 +165,7 @@ static void internal_manage_test_sockets (void *socket_, bool add_)
             fprintf (stderr,
                      "WARNING: Forced closure of %i sockets, this is an "
                      "implementation error unless the test case failed\n",
-                     (int) test_socket_count);
+                     static_cast<int> (test_socket_count));
             test_socket_count = 0;
         }
     } else {

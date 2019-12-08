@@ -63,11 +63,11 @@ void zmq::ws_encoder_t::message_ready ()
     size++; // TODO: check if binary
 
     if (size <= 125)
-        _tmp_buf[offset++] |= (unsigned char) (size & 127);
+        _tmp_buf[offset++] |= static_cast<unsigned char> (size & 127);
     else if (size <= 0xFFFF) {
         _tmp_buf[offset++] |= 126;
-        _tmp_buf[offset++] = (unsigned char) ((size >> 8) & 0xFF);
-        _tmp_buf[offset++] = (unsigned char) (size & 0xFF);
+        _tmp_buf[offset++] = static_cast<unsigned char> ((size >> 8) & 0xFF);
+        _tmp_buf[offset++] = static_cast<unsigned char> (size & 0xFF);
     } else {
         _tmp_buf[offset++] |= 127;
         put_uint64 (_tmp_buf + offset, size);
@@ -106,8 +106,10 @@ void zmq::ws_encoder_t::size_ready ()
         _masked_msg.init_size (size);
 
         int mask_index = 1; // TODO: check if binary message
-        unsigned char *dest = (unsigned char *) _masked_msg.data ();
-        unsigned char *src = (unsigned char *) in_progress ()->data ();
+        unsigned char *dest =
+          static_cast<unsigned char *> (_masked_msg.data ());
+        unsigned char *src =
+          static_cast<unsigned char *> (in_progress ()->data ());
         for (size_t i = 0; i < in_progress ()->size (); ++i, mask_index++)
             dest[i] = src[i] ^ _mask[mask_index % 4];
 

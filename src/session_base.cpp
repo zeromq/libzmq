@@ -118,7 +118,8 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     _wss_hostname (NULL)
 {
     if (options_.wss_hostname.length () > 0) {
-        _wss_hostname = (char *) malloc (options_.wss_hostname.length () + 1);
+        _wss_hostname =
+          static_cast<char *> (malloc (options_.wss_hostname.length () + 1));
         assert (_wss_hostname);
         strcpy (_wss_hostname, options_.wss_hostname.c_str ());
     }

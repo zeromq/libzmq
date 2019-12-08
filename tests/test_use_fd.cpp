@@ -119,7 +119,7 @@ void test_client_server (pre_allocate_sock_fun_t pre_allocate_sock_fun_)
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
-    char *data = (char *) zmq_msg_data (&msg);
+    char *data = static_cast<char *> (zmq_msg_data (&msg));
     data[0] = 1;
 
     int rc = zmq_msg_send (&msg, sc, ZMQ_SNDMORE);
@@ -141,7 +141,7 @@ void test_client_server (pre_allocate_sock_fun_t pre_allocate_sock_fun_)
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
-    data = (char *) zmq_msg_data (&msg);
+    data = static_cast<char *> (zmq_msg_data (&msg));
     data[0] = 2;
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_routing_id (&msg, routing_id));
@@ -227,7 +227,8 @@ void pre_allocate_sock_ipc_int (void *zmq_socket_, const char *path_)
     // TODO check return value of unlink
     unlink (path_);
 
-    setup_socket_and_set_fd (zmq_socket_, AF_UNIX, 0, (struct sockaddr *) &addr,
+    setup_socket_and_set_fd (zmq_socket_, AF_UNIX, 0,
+                             reinterpret_cast<struct sockaddr *> (&addr),
                              sizeof (struct sockaddr_un));
 }
 

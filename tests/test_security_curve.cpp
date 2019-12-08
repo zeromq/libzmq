@@ -241,7 +241,8 @@ fd_t connect_vanilla_socket (char *my_endpoint_)
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
+    rc = connect (s, reinterpret_cast<struct sockaddr *> (&ip4addr),
+                  sizeof (ip4addr));
     TEST_ASSERT_GREATER_THAN_INT (-1, rc);
     return s;
 }
@@ -348,7 +349,7 @@ template <size_t N> void send_command (fd_t s_, char (&command_)[N])
     } else {
         send (s_, "\x06");
         uint64_t len = host_to_network (N);
-        send_all (s_, (char *) &len, 8);
+        send_all (s_, reinterpret_cast<char *> (&len), 8);
     }
     send_all (s_, command_, N);
 }
@@ -411,7 +412,7 @@ void recv_all (fd_t fd_, uint8_t *data_, socket_size_t len_)
 {
     socket_size_t received = 0;
     while (received < len_) {
-        int res = recv (fd_, (char *) data_, len_, 0);
+        int res = recv (fd_, reinterpret_cast<char *> (data_), len_, 0);
         TEST_ASSERT_GREATER_THAN_INT (0, res);
 
         data_ += res;

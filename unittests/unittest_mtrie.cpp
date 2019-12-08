@@ -36,7 +36,7 @@ void tearDown ()
 
 int getlen (const zmq::generic_mtrie_t<int>::prefix_t &data_)
 {
-    return (int) strlen (reinterpret_cast<const char *> (data_));
+    return static_cast<int> (strlen (reinterpret_cast<const char *> (data_)));
 }
 
 void test_create ()
@@ -303,7 +303,8 @@ void test_add_multiple_reverse ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 2; i >= 0; --i) {
-        add_indexed_expect_unique (mtrie, pipes, names, (size_t) i);
+        add_indexed_expect_unique (mtrie, pipes, names,
+                                   static_cast<size_t> (i));
     }
 
     for (size_t i = 0; i < 3; ++i) {

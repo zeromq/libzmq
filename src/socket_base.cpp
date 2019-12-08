@@ -1777,98 +1777,98 @@ int zmq::socket_base_t::monitor (const char *endpoint_,
 void zmq::socket_base_t::event_connected (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    uint64_t values[1] = {(uint64_t) fd_};
+    uint64_t values[1] = {static_cast<uint64_t> (fd_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECTED);
 }
 
 void zmq::socket_base_t::event_connect_delayed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECT_DELAYED);
 }
 
 void zmq::socket_base_t::event_connect_retried (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int interval_)
 {
-    uint64_t values[1] = {(uint64_t) interval_};
+    uint64_t values[1] = {static_cast<uint64_t> (interval_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CONNECT_RETRIED);
 }
 
 void zmq::socket_base_t::event_listening (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    uint64_t values[1] = {(uint64_t) fd_};
+    uint64_t values[1] = {static_cast<uint64_t> (fd_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_LISTENING);
 }
 
 void zmq::socket_base_t::event_bind_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_BIND_FAILED);
 }
 
 void zmq::socket_base_t::event_accepted (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    uint64_t values[1] = {(uint64_t) fd_};
+    uint64_t values[1] = {static_cast<uint64_t> (fd_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_ACCEPTED);
 }
 
 void zmq::socket_base_t::event_accept_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_ACCEPT_FAILED);
 }
 
 void zmq::socket_base_t::event_closed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    uint64_t values[1] = {(uint64_t) fd_};
+    uint64_t values[1] = {static_cast<uint64_t> (fd_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CLOSED);
 }
 
 void zmq::socket_base_t::event_close_failed (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_CLOSE_FAILED);
 }
 
 void zmq::socket_base_t::event_disconnected (
   const endpoint_uri_pair_t &endpoint_uri_pair_, zmq::fd_t fd_)
 {
-    uint64_t values[1] = {(uint64_t) fd_};
+    uint64_t values[1] = {static_cast<uint64_t> (fd_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_DISCONNECTED);
 }
 
 void zmq::socket_base_t::event_handshake_failed_no_detail (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_protocol (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
 }
 
 void zmq::socket_base_t::event_handshake_failed_auth (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
 }
 
 void zmq::socket_base_t::event_handshake_succeeded (
   const endpoint_uri_pair_t &endpoint_uri_pair_, int err_)
 {
-    uint64_t values[1] = {(uint64_t) err_};
+    uint64_t values[1] = {static_cast<uint64_t> (err_)};
     event (endpoint_uri_pair_, values, 1, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 

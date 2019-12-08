@@ -69,7 +69,7 @@ int zmq::ws_decoder_t::opcode_ready (unsigned char const *)
     if (!final)
         return -1; // non final messages are not supported
 
-    _opcode = (zmq::ws_protocol_t::opcode_t) (_tmpbuf[0] & 0xF);
+    _opcode = static_cast<zmq::ws_protocol_t::opcode_t> (_tmpbuf[0] & 0xF);
 
     _msg_flags = 0;
 
@@ -101,7 +101,7 @@ int zmq::ws_decoder_t::size_first_byte_ready (unsigned char const *read_from_)
     if (is_masked != _must_mask) // wrong mask value
         return -1;
 
-    _size = (uint64_t) (_tmpbuf[0] & 0x7F);
+    _size = static_cast<uint64_t> (_tmpbuf[0] & 0x7F);
 
     if (_size < 126) {
         if (_must_mask)
@@ -260,7 +260,8 @@ int zmq::ws_decoder_t::message_ready (unsigned char const *)
     if (_must_mask) {
         int mask_index = _opcode == ws_protocol_t::opcode_binary ? 1 : 0;
 
-        unsigned char *data = (unsigned char *) _in_progress.data ();
+        unsigned char *data =
+          static_cast<unsigned char *> (_in_progress.data ());
         for (size_t i = 0; i < _size; ++i, mask_index++)
             data[i] = data[i] ^ _mask[mask_index % 4];
     }

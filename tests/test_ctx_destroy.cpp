@@ -124,7 +124,7 @@ struct poller_test_data_t
 void run_poller (void *data_)
 {
     struct poller_test_data_t *poller_test_data =
-      (struct poller_test_data_t *) data_;
+      static_cast<struct poller_test_data_t *> (data_);
 
     void *socket =
       zmq_socket (poller_test_data->ctx, poller_test_data->socket_type);
