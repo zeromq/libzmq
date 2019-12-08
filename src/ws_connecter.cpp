@@ -270,7 +270,7 @@ bool zmq::ws_connecter_t::tune_socket (const fd_t fd_)
     return rc == 0;
 }
 
-void zmq::ws_connecter_t::create_engine (fd_t fd,
+void zmq::ws_connecter_t::create_engine (fd_t fd_,
                                          const std::string &local_address_)
 {
     const endpoint_uri_pair_t endpoint_pair (local_address_, _endpoint,
@@ -281,14 +281,14 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
         engine = new (std::nothrow)
-          wss_engine_t (fd, options, endpoint_pair, *_addr->resolved.ws_addr,
+          wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
                         true, NULL, _hostname);
 #else
         assert (false);
 #endif
     else
         engine = new (std::nothrow) ws_engine_t (
-          fd, options, endpoint_pair, *_addr->resolved.ws_addr, true);
+          fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -297,5 +297,5 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
     //  Shut the connecter down.
     terminate ();
 
-    _socket->event_connected (endpoint_pair, fd);
+    _socket->event_connected (endpoint_pair, fd_);
 }

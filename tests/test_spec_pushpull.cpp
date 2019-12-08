@@ -237,7 +237,7 @@ void test_destroy_queue_on_disconnect (const char *bind_address_)
 
 // PUSH and PULL: SHALL either receive or drop multipart messages atomically.
 void test_push_multipart_atomic_drop (const char *bind_address_,
-                                      const bool block)
+                                      const bool block_)
 {
     int linger = 0;
     int hwm = 1;
@@ -312,7 +312,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     send_string_expect_success (push, "3", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));
     memset (zmq_msg_data (&msg_data), 'c', len);
-    if (block) {
+    if (block_) {
         TEST_ASSERT_EQUAL_INT (len,
                                zmq_msg_send (&msg_data, push, ZMQ_SNDMORE));
     } else {

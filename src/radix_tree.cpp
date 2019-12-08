@@ -540,7 +540,7 @@ bool zmq::radix_tree_t::check (const unsigned char *key_, size_t key_size_)
 static void
 visit_keys (node_t node_,
             std::vector<unsigned char> &buffer_,
-            void (*func_) (unsigned char *data, size_t size, void *arg),
+            void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_)
 {
     for (size_t i = 0; i < node_.prefix_length (); ++i)
@@ -558,7 +558,7 @@ visit_keys (node_t node_,
 }
 
 void zmq::radix_tree_t::apply (
-  void (*func_) (unsigned char *data, size_t size, void *arg), void *arg_)
+  void (*func_) (unsigned char *data_, size_t size_, void *arg_), void *arg_)
 {
     if (_root.refcount () > 0)
         func_ (NULL, 0, arg_); // Root node is always empty.

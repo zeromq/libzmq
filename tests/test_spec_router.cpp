@@ -37,7 +37,7 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 // SHALL receive incoming messages from its peers using a fair-queuing
 // strategy.
-void test_fair_queue_in (const char *bind_address)
+void test_fair_queue_in (const char *bind_address_)
 {
     char connect_address[MAX_SOCKET_STRING];
     void *receiver = test_context_socket (ZMQ_ROUTER);
@@ -46,7 +46,7 @@ void test_fair_queue_in (const char *bind_address)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (receiver, bind_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (receiver, bind_address_));
     size_t len = MAX_SOCKET_STRING;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (receiver, ZMQ_LAST_ENDPOINT, connect_address, &len));
@@ -116,7 +116,7 @@ void test_fair_queue_in (const char *bind_address)
 // SHALL create a double queue when a peer connects to it. If this peer
 // disconnects, the ROUTER socket SHALL destroy its double queue and SHALL
 // discard any messages it contains.
-void test_destroy_queue_on_disconnect (const char *bind_address)
+void test_destroy_queue_on_disconnect (const char *bind_address_)
 {
     void *a = test_context_socket (ZMQ_ROUTER);
 
@@ -124,7 +124,7 @@ void test_destroy_queue_on_disconnect (const char *bind_address)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (a, ZMQ_ROUTER_MANDATORY, &enabled, sizeof (enabled)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (a, bind_address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (a, bind_address_));
     size_t len = MAX_SOCKET_STRING;
     char connect_address[MAX_SOCKET_STRING];
     TEST_ASSERT_SUCCESS_ERRNO (

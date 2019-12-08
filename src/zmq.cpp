@@ -194,10 +194,10 @@ int zmq_ctx_set_ext (void *ctx_,
 
 int zmq_ctx_get (void *ctx_, int option_)
 {
-    int optval_ = 0;
-    size_t optvallen_ = sizeof (int);
-    if (zmq_ctx_get_ext (ctx_, option_, &optval_, &optvallen_) == 0) {
-        return optval_;
+    int optval = 0;
+    size_t optvallen = sizeof (int);
+    if (zmq_ctx_get_ext (ctx_, option_, &optval, &optvallen) == 0) {
+        return optval;
     }
 
     errno = EFAULT;

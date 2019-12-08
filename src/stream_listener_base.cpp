@@ -97,17 +97,17 @@ int zmq::stream_listener_base_t::close ()
     return 0;
 }
 
-void zmq::stream_listener_base_t::create_engine (fd_t fd)
+void zmq::stream_listener_base_t::create_engine (fd_t fd_)
 {
     const endpoint_uri_pair_t endpoint_pair (
-      get_socket_name (fd, socket_end_local),
-      get_socket_name (fd, socket_end_remote), endpoint_type_bind);
+      get_socket_name (fd_, socket_end_local),
+      get_socket_name (fd_, socket_end_remote), endpoint_type_bind);
 
     i_engine *engine;
     if (options.raw_socket)
-        engine = new (std::nothrow) raw_engine_t (fd, options, endpoint_pair);
+        engine = new (std::nothrow) raw_engine_t (fd_, options, endpoint_pair);
     else
-        engine = new (std::nothrow) zmtp_engine_t (fd, options, endpoint_pair);
+        engine = new (std::nothrow) zmtp_engine_t (fd_, options, endpoint_pair);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -123,5 +123,5 @@ void zmq::stream_listener_base_t::create_engine (fd_t fd)
     launch_child (session);
     send_attach (session, engine, false);
 
-    _socket->event_accepted (endpoint_pair, fd);
+    _socket->event_accepted (endpoint_pair, fd_);
 }

@@ -385,11 +385,11 @@ int zmq::ctx_t::get (int option_, void *optval_, size_t *optvallen_)
 
 int zmq::ctx_t::get (int option_)
 {
-    int optval_ = 0;
-    size_t optvallen_ = sizeof (int);
+    int optval = 0;
+    size_t optvallen = sizeof (int);
 
-    if (get (option_, &optval_, &optvallen_) == 0)
-        return optval_;
+    if (get (option_, &optval, &optvallen) == 0)
+        return optval;
 
     errno = EINVAL;
     return -1;
