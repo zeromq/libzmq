@@ -78,7 +78,7 @@ class socket_poller_t
     // Returns the signaler's fd if there is one, otherwise errors.
     int signaler_fd (fd_t *fd_);
 
-    int wait (event_t *event_, int n_events_, long timeout_);
+    int wait (event_t *events_, int n_events_, long timeout_);
 
     inline int size () { return static_cast<int> (_items.size ()); };
 

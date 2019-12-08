@@ -78,7 +78,7 @@ struct node_t
     inline void set_refcount (uint32_t value_);
     inline void set_prefix_length (uint32_t value_);
     inline void set_edgecount (uint32_t value_);
-    inline void set_prefix (const unsigned char *prefix_);
+    inline void set_prefix (const unsigned char *bytes_);
     inline void set_first_bytes (const unsigned char *bytes_);
     inline void set_first_byte_at (size_t index_, unsigned char byte_);
     inline void set_node_pointers (const unsigned char *pointers_);

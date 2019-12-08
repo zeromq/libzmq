@@ -86,7 +86,7 @@ static int
 encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_);
 
 static void compute_accept_key (char *key_,
-                                unsigned char output_[SHA_DIGEST_LENGTH]);
+                                unsigned char hash_[SHA_DIGEST_LENGTH]);
 
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,

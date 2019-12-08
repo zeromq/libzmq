@@ -71,7 +71,7 @@ class xpub_t : public socket_base_t
                                      xpub_t *self_);
 
     //  Function to be applied to each matching pipes.
-    static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *arg_);
+    static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *self_);
 
     //  List of all subscriptions mapped to corresponding pipes.
     mtrie_t _subscriptions;
@@ -115,7 +115,7 @@ class xpub_t : public socket_base_t
     bool _send_last_pipe;
 
     //  Function to be applied to match the last pipe.
-    static void mark_last_pipe_as_matching (zmq::pipe_t *pipe_, xpub_t *arg_);
+    static void mark_last_pipe_as_matching (zmq::pipe_t *pipe_, xpub_t *self_);
 
     //  Last pipe that sent subscription message, only used if xpub is on manual
     pipe_t *_last_pipe;

@@ -103,7 +103,7 @@ class shared_message_memory_allocator
 
     void inc_ref ();
 
-    static void call_dec_ref (void *, void *buffer_);
+    static void call_dec_ref (void *, void *hint_);
 
     std::size_t size () const;
 
