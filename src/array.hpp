@@ -79,8 +79,6 @@ template <typename T, int ID = 0> class array_t
 
     inline array_t () {}
 
-    inline ~array_t () {}
-
     inline size_type size () { return _items.size (); }
 
     inline bool empty () { return _items.empty (); }
