@@ -144,8 +144,7 @@ class socket_poller_t
     zmq::fd_t _max_fd;
 #endif
 
-    socket_poller_t (const socket_poller_t &);
-    const socket_poller_t &operator= (const socket_poller_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (socket_poller_t)
 };
 }
 

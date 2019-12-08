@@ -83,8 +83,7 @@ class req_t : public dealer_t
     //  still pending.
     bool _strict;
 
-    req_t (const req_t &);
-    const req_t &operator= (const req_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (req_t)
 };
 
 class req_session_t : public session_base_t
@@ -109,8 +108,7 @@ class req_session_t : public session_base_t
         body
     } _state;
 
-    req_session_t (const req_session_t &);
-    const req_session_t &operator= (const req_session_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (req_session_t)
 };
 }
 

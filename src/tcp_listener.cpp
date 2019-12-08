@@ -81,8 +81,8 @@ void zmq::tcp_listener_t::in_event ()
     int rc = tune_tcp_socket (fd);
     rc = rc
          | tune_tcp_keepalives (
-             fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+           fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+           options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
         _socket->event_accept_failed (

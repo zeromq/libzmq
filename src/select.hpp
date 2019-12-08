@@ -160,8 +160,7 @@ class select_t : public worker_poller_base_t
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries_, handle_t handle_);
 
-    select_t (const select_t &);
-    const select_t &operator= (const select_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (select_t)
 };
 
 typedef select_t poller_t;

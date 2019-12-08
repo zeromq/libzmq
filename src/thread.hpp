@@ -129,8 +129,7 @@ class thread_t
     int _thread_sched_policy;
     std::set<int> _thread_affinity_cpus;
 
-    thread_t (const thread_t &);
-    const thread_t &operator= (const thread_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (thread_t)
 };
 }
 

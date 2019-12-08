@@ -207,9 +207,7 @@ template <typename T, int N> class yqueue_t
     //  us from having to call malloc/free.
     atomic_ptr_t<chunk_t> _spare_chunk;
 
-    //  Disable copying of yqueue.
-    yqueue_t (const yqueue_t &);
-    const yqueue_t &operator= (const yqueue_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (yqueue_t)
 };
 }
 

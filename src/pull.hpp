@@ -61,8 +61,7 @@ class pull_t : public socket_base_t
     //  Fair queueing object for inbound pipes.
     fq_t _fq;
 
-    pull_t (const pull_t &);
-    const pull_t &operator= (const pull_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pull_t)
 };
 }
 

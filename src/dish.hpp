@@ -87,8 +87,7 @@ class dish_t : public socket_base_t
     bool _has_message;
     msg_t _message;
 
-    dish_t (const dish_t &);
-    const dish_t &operator= (const dish_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dish_t)
 };
 
 class dish_session_t : public session_base_t
@@ -115,8 +114,7 @@ class dish_session_t : public session_base_t
 
     msg_t _group_msg;
 
-    dish_session_t (const dish_session_t &);
-    const dish_session_t &operator= (const dish_session_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dish_session_t)
 };
 }
 

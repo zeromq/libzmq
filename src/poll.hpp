@@ -99,8 +99,7 @@ class poll_t : public worker_poller_base_t
     //  If true, there's at least one retired event source.
     bool retired;
 
-    poll_t (const poll_t &);
-    const poll_t &operator= (const poll_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (poll_t)
 };
 
 typedef poll_t poller_t;

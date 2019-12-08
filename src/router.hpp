@@ -123,8 +123,7 @@ class router_t : public routing_socket_base_t
     // will be terminated.
     bool _handover;
 
-    router_t (const router_t &);
-    const router_t &operator= (const router_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (router_t)
 };
 }
 

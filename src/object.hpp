@@ -31,8 +31,10 @@
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
 #include <string>
-#include "stdint.hpp"
+
 #include "endpoint.hpp"
+#include "macros.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -157,8 +159,7 @@ class object_t
 
     void send_command (command_t &cmd_);
 
-    object_t (const object_t &);
-    const object_t &operator= (const object_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (object_t)
 };
 }
 

@@ -64,8 +64,7 @@ class tcp_listener_t : public stream_listener_base_t
     //  Address to listen on.
     tcp_address_t _address;
 
-    tcp_listener_t (const tcp_listener_t &);
-    const tcp_listener_t &operator= (const tcp_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (tcp_listener_t)
 };
 }
 

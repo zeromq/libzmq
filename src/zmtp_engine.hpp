@@ -125,8 +125,7 @@ class zmtp_engine_t : public stream_engine_base_t
 
     int _heartbeat_timeout;
 
-    zmtp_engine_t (const zmtp_engine_t &);
-    const zmtp_engine_t &operator= (const zmtp_engine_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (zmtp_engine_t)
 };
 }
 

@@ -31,6 +31,7 @@
 #ifndef __ZMQ_YPIPE_BASE_HPP_INCLUDED__
 #define __ZMQ_YPIPE_BASE_HPP_INCLUDED__
 
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -41,7 +42,7 @@ namespace zmq
 template <typename T> class ypipe_base_t
 {
   public:
-    virtual ~ypipe_base_t () {}
+    virtual ~ypipe_base_t () ZMQ_DEFAULT;
     virtual void write (const T &value_, bool incomplete_) = 0;
     virtual bool unwrite (T *value_) = 0;
     virtual bool flush () = 0;

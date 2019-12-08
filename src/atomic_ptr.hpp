@@ -232,8 +232,7 @@ template <typename T> class atomic_ptr_t
 #endif
 
 #if !defined ZMQ_ATOMIC_PTR_CXX11
-    atomic_ptr_t (const atomic_ptr_t &);
-    const atomic_ptr_t &operator= (const atomic_ptr_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (atomic_ptr_t)
 #endif
 };
 

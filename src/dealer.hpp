@@ -76,8 +76,7 @@ class dealer_t : public socket_base_t
     // if true, send an empty message to every connected router peer
     bool _probe_router;
 
-    dealer_t (const dealer_t &);
-    const dealer_t &operator= (const dealer_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dealer_t)
 };
 }
 

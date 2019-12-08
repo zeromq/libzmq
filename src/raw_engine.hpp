@@ -70,8 +70,7 @@ class raw_engine_t : public stream_engine_base_t
   private:
     int push_raw_msg_to_session (msg_t *msg_);
 
-    raw_engine_t (const raw_engine_t &);
-    const raw_engine_t &operator= (const raw_engine_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (raw_engine_t)
 };
 }
 

@@ -81,8 +81,7 @@ class server_t : public socket_base_t
     //  algorithm. This value is the next ID to use (if not used already).
     uint32_t _next_routing_id;
 
-    server_t (const server_t &);
-    const server_t &operator= (const server_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (server_t)
 };
 }
 

@@ -132,8 +132,7 @@ class xpub_t : public socket_base_t
     std::deque<metadata_t *> _pending_metadata;
     std::deque<unsigned char> _pending_flags;
 
-    xpub_t (const xpub_t &);
-    const xpub_t &operator= (const xpub_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (xpub_t)
 };
 }
 

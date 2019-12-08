@@ -196,8 +196,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     //  in order to maintain the value at the creation time
     char *_wss_hostname;
 
-    session_base_t (const session_base_t &);
-    const session_base_t &operator= (const session_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (session_base_t)
 };
 }
 

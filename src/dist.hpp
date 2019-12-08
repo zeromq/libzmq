@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "array.hpp"
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -107,8 +108,7 @@ class dist_t
     //  True if last we are in the middle of a multipart message.
     bool _more;
 
-    dist_t (const dist_t &);
-    const dist_t &operator= (const dist_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dist_t)
 };
 }
 

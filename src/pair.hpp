@@ -64,8 +64,7 @@ class pair_t : public socket_base_t
 
     zmq::pipe_t *_last_in;
 
-    pair_t (const pair_t &);
-    const pair_t &operator= (const pair_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pair_t)
 };
 }
 

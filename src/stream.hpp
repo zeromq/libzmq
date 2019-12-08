@@ -87,8 +87,7 @@ class stream_t : public routing_socket_base_t
     //  algorithm. This value is the next ID to use (if not used already).
     uint32_t _next_integral_routing_id;
 
-    stream_t (const stream_t &);
-    const stream_t &operator= (const stream_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_t)
 };
 }
 

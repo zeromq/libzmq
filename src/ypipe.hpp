@@ -58,10 +58,6 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
         _c.set (&_queue.back ());
     }
 
-    //  The destructor doesn't have to be virtual. It is made virtual
-    //  just to keep ICC and code checking tools from complaining.
-    inline virtual ~ypipe_t () {}
-
     //  Following function (write) deliberately copies uninitialised data
     //  when used with zmq_msg. Initialising the VSM body for
     //  non-VSM messages won't be good for performance.
@@ -202,9 +198,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  atomic operations.
     atomic_ptr_t<T> _c;
 
-    //  Disable copying of ypipe object.
-    ypipe_t (const ypipe_t &);
-    const ypipe_t &operator= (const ypipe_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ypipe_t)
 };
 }
 

@@ -66,8 +66,7 @@ class client_t : public socket_base_t
     fq_t _fq;
     lb_t _lb;
 
-    client_t (const client_t &);
-    const client_t &operator= (const client_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (client_t)
 };
 }
 

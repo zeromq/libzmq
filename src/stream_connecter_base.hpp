@@ -117,8 +117,7 @@ class stream_connecter_base_t : public own_t, public io_object_t
     //  Current reconnect ivl, updated for backoff strategy
     int _current_reconnect_ivl;
 
-    stream_connecter_base_t (const stream_connecter_base_t &);
-    const stream_connecter_base_t &operator= (const stream_connecter_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_connecter_base_t)
 };
 }
 

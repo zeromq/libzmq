@@ -67,8 +67,7 @@ class dgram_t : public socket_base_t
     //  If true, more outgoing message parts are expected.
     bool _more_out;
 
-    dgram_t (const dgram_t &);
-    const dgram_t &operator= (const dgram_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dgram_t)
 };
 }
 

@@ -135,8 +135,7 @@ class pgm_receiver_t : public io_object_t, public i_engine
     //  Poll handle associated with engine PGM waiting pipe.
     handle_t pipe_handle;
 
-    pgm_receiver_t (const pgm_receiver_t &);
-    const pgm_receiver_t &operator= (const pgm_receiver_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pgm_receiver_t)
 };
 }
 

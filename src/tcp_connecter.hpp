@@ -83,8 +83,7 @@ class tcp_connecter_t : public stream_connecter_base_t
     //  True iff a timer has been started.
     bool _connect_timer_started;
 
-    tcp_connecter_t (const tcp_connecter_t &);
-    const tcp_connecter_t &operator= (const tcp_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (tcp_connecter_t)
 };
 }
 

@@ -115,8 +115,7 @@ class pgm_sender_t : public io_object_t, public i_engine
     //  If zero, there are no data to be sent.
     size_t write_size;
 
-    pgm_sender_t (const pgm_sender_t &);
-    const pgm_sender_t &operator= (const pgm_sender_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pgm_sender_t)
 };
 }
 #endif

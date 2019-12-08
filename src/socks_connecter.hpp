@@ -128,8 +128,7 @@ class socks_connecter_t : public stream_connecter_base_t
 
     int _status;
 
-    socks_connecter_t (const socks_connecter_t &);
-    const socks_connecter_t &operator= (const socks_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (socks_connecter_t)
 };
 }
 

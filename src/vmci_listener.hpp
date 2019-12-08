@@ -89,8 +89,7 @@ class vmci_listener_t : public own_t, public io_object_t
     // String representation of endpoint to bind to
     std::string endpoint;
 
-    vmci_listener_t (const vmci_listener_t &);
-    const vmci_listener_t &operator= (const vmci_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (vmci_listener_t)
 };
 }
 

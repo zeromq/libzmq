@@ -30,6 +30,7 @@
 #ifndef __ZMQ_I_DECODER_HPP_INCLUDED__
 #define __ZMQ_I_DECODER_HPP_INCLUDED__
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -41,7 +42,7 @@ class msg_t;
 class i_decoder
 {
   public:
-    virtual ~i_decoder () {}
+    virtual ~i_decoder () ZMQ_DEFAULT;
 
     virtual void get_buffer (unsigned char **data_, size_t *size_) = 0;
 

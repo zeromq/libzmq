@@ -67,8 +67,7 @@ class tipc_listener_t : public stream_listener_base_t
     // Address to listen on
     tipc_address_t _address;
 
-    tipc_listener_t (const tipc_listener_t &);
-    const tipc_listener_t &operator= (const tipc_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (tipc_listener_t)
 };
 }
 

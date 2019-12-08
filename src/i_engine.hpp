@@ -31,6 +31,7 @@
 #define __ZMQ_I_ENGINE_HPP_INCLUDED__
 
 #include "endpoint.hpp"
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -47,7 +48,7 @@ struct i_engine
         timeout_error
     };
 
-    virtual ~i_engine () {}
+    virtual ~i_engine () ZMQ_DEFAULT;
 
     //  Plug the engine to the session.
     virtual void plug (zmq::io_thread_t *io_thread_,

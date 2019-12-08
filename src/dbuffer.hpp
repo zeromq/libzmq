@@ -132,9 +132,7 @@ template <> class dbuffer_t<msg_t>
     mutex_t _sync;
     bool _has_msg;
 
-    //  Disable copying of dbuffer.
-    dbuffer_t (const dbuffer_t &);
-    const dbuffer_t &operator= (const dbuffer_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dbuffer_t)
 };
 }
 

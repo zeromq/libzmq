@@ -111,8 +111,7 @@ class xsub_t : public socket_base_t
     //  message are treated as user data regardless of the first byte.
     bool _only_first_subscribe;
 
-    xsub_t (const xsub_t &);
-    const xsub_t &operator= (const xsub_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (xsub_t)
 };
 }
 

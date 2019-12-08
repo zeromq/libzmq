@@ -31,6 +31,7 @@
 #define __ZMQ_MUTEX_HPP_INCLUDED__
 
 #include "err.hpp"
+#include "macros.hpp"
 
 //  Mutex class encapsulates OS mutex in a platform-independent way.
 
@@ -61,9 +62,7 @@ class mutex_t
   private:
     CRITICAL_SECTION _cs;
 
-    //  Disable copy construction and assignment.
-    mutex_t (const mutex_t &);
-    void operator= (const mutex_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mutex_t)
 };
 }
 
@@ -100,9 +99,7 @@ class mutex_t
   private:
     SEM_ID _semId;
 
-    // Disable copy construction and assignment.
-    mutex_t (const mutex_t &);
-    const mutex_t &operator= (const mutex_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mutex_t)
 };
 }
 
@@ -164,9 +161,7 @@ class mutex_t
     pthread_mutex_t _mutex;
     pthread_mutexattr_t _attr;
 
-    // Disable copy construction and assignment.
-    mutex_t (const mutex_t &);
-    const mutex_t &operator= (const mutex_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mutex_t)
 };
 }
 
@@ -184,9 +179,7 @@ struct scoped_lock_t
   private:
     mutex_t &_mutex;
 
-    // Disable copy construction and assignment.
-    scoped_lock_t (const scoped_lock_t &);
-    const scoped_lock_t &operator= (const scoped_lock_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (scoped_lock_t)
 };
 
 
@@ -207,9 +200,7 @@ struct scoped_optional_lock_t
   private:
     mutex_t *_mutex;
 
-    // Disable copy construction and assignment.
-    scoped_optional_lock_t (const scoped_lock_t &);
-    const scoped_optional_lock_t &operator= (const scoped_lock_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (scoped_optional_lock_t)
 };
 }
 
