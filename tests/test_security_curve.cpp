@@ -100,9 +100,9 @@ static void zap_handler_large_routing_id (void * /*unused_*/)
     zap_handler_generic (zap_ok, large_routing_id);
 }
 
-void expect_new_client_curve_bounce_fail (char *server_public_,
-                                          char *client_public_,
-                                          char *client_secret_,
+void expect_new_client_curve_bounce_fail (const char *server_public_,
+                                          const char *client_public_,
+                                          const char *client_secret_,
                                           char *my_endpoint_,
                                           void *server_,
                                           void **client_mon_ = NULL,

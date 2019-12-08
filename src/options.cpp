@@ -85,7 +85,7 @@ int zmq::do_getsockopt (void *const optval_,
 
 #ifdef ZMQ_HAVE_CURVE
 static int do_getsockopt_curve_key (void *const optval_,
-                                    size_t *const optvallen_,
+                                    const size_t *const optvallen_,
                                     const uint8_t (&curve_key_)[CURVE_KEYSIZE])
 {
     if (*optvallen_ == CURVE_KEYSIZE) {
