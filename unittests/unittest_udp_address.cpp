@@ -54,9 +54,9 @@ static void test_resolve (bool bind_,
         TEST_ASSERT_EQUAL (-1, rc);
         TEST_ASSERT_EQUAL (EINVAL, errno);
         return;
-    } else {
-        TEST_ASSERT_EQUAL (0, rc);
     }
+    TEST_ASSERT_EQUAL (0, rc);
+
 
     TEST_ASSERT_EQUAL (multicast_, addr.is_mcast ());
 

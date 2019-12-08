@@ -128,8 +128,8 @@ zmq::mechanism_t::status_t zmq::curve_client_t::status () const
         return mechanism_t::ready;
     if (_state == error_received)
         return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
+
+    return mechanism_t::handshaking;
 }
 
 int zmq::curve_client_t::produce_hello (msg_t *msg_)

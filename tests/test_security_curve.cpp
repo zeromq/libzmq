@@ -335,9 +335,8 @@ static uint64_t host_to_network (uint64_t value_)
           htonl (static_cast<uint32_t> (value_ & 0xFFFFFFFFLL));
 
         return (static_cast<uint64_t> (low_part) << 32) | high_part;
-    } else {
-        return value_;
     }
+    return value_;
 }
 
 template <size_t N> void send_command (fd_t s_, char (&command_)[N])

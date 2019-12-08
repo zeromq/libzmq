@@ -109,10 +109,9 @@ int zmq::xsub_t::xsetsockopt (int option_,
         }
         _only_first_subscribe = (*static_cast<const int *> (optval_) != 0);
         return 0;
-    } else {
-        errno = EINVAL;
-        return -1;
     }
+    errno = EINVAL;
+    return -1;
 }
 
 int zmq::xsub_t::xsend (msg_t *msg_)

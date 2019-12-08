@@ -160,9 +160,9 @@ static void test_resolve (zmq::ip_resolver_options_t opts_,
         // TODO also check the expected errno
         TEST_ASSERT_EQUAL (-1, rc);
         return;
-    } else {
-        TEST_ASSERT_SUCCESS_ERRNO (rc);
     }
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
+
 
     validate_address (family, &addr, expected_addr_, expected_port_,
                       expected_zone_, expected_addr_v4_failover_);

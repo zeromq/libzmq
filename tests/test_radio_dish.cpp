@@ -257,9 +257,8 @@ static const char *mcast_url (int ipv6_)
 {
     if (ipv6_) {
         return "udp://[" MCAST_IPV6 "]:5555";
-    } else {
-        return "udp://" MCAST_IPV4 ":5555";
     }
+    return "udp://" MCAST_IPV4 ":5555";
 }
 
 //  OSX uses a different name for this socket option

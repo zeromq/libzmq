@@ -126,8 +126,8 @@ std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
 {
     if (_wss)
         return zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
-    else
-        return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
+
+    return zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)

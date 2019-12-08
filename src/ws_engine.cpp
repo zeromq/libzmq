@@ -204,8 +204,9 @@ bool zmq::ws_engine_t::select_protocol (char *protocol_)
         _process_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::process_routing_id_msg);
         return true;
-    } else if (_options.mechanism == ZMQ_NULL
-               && strcmp ("ZWS2.0/NULL", protocol_) == 0) {
+    }
+    if (_options.mechanism == ZMQ_NULL
+        && strcmp ("ZWS2.0/NULL", protocol_) == 0) {
         _mechanism = new (std::nothrow)
           null_mechanism_t (session (), _peer_address, _options);
         alloc_assert (_mechanism);
@@ -510,8 +511,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         _insize--;
 
                         return true;
-                    } else
-                        _server_handshake_state = handshake_error;
+                    }
+                    _server_handshake_state = handshake_error;
                 } else
                     _server_handshake_state = handshake_error;
                 break;
@@ -853,8 +854,8 @@ bool zmq::ws_engine_t::client_handshake ()
                         _insize--;
 
                         return true;
-                    } else
-                        _client_handshake_state = client_handshake_error;
+                    }
+                    _client_handshake_state = client_handshake_error;
                 } else
                     _client_handshake_state = client_handshake_error;
                 break;

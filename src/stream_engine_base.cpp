@@ -465,14 +465,13 @@ int zmq::stream_engine_base_t::next_handshake_command (msg_t *msg_)
     if (_mechanism->status () == mechanism_t::error) {
         errno = EPROTO;
         return -1;
-    } else {
-        const int rc = _mechanism->next_handshake_command (msg_);
-
-        if (rc == 0)
-            msg_->set_flags (msg_t::command);
-
-        return rc;
     }
+    const int rc = _mechanism->next_handshake_command (msg_);
+
+    if (rc == 0)
+        msg_->set_flags (msg_t::command);
+
+    return rc;
 }
 
 int zmq::stream_engine_base_t::process_handshake_command (msg_t *msg_)

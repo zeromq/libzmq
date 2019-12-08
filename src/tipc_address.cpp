@@ -108,7 +108,8 @@ int zmq::tipc_address_t::resolve (const char *name_)
         address.addr.nameseq.upper = upper;
         address.scope = TIPC_ZONE_SCOPE;
         return 0;
-    } else if (res == 2 && type > TIPC_RESERVED_TYPES) {
+    }
+    if (res == 2 && type > TIPC_RESERVED_TYPES) {
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
