@@ -107,15 +107,15 @@ matrix:
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
-  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=/usr/lib/llvm-7/bin/clang-format
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=/usr/lib/llvm-8/bin/clang-format
     os: linux
     addons:
       apt:
         sources:
-        - llvm-toolchain-trusty-7
+        - llvm-toolchain-trusty-8
         - ubuntu-toolchain-r-test
         packages:
-        - clang-format-7
+        - clang-format-8
   - env: BUILD_TYPE=default POLLER=poll
     os: linux
   - env: BUILD_TYPE=default POLLER=select
