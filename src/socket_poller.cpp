@@ -91,11 +91,10 @@ int zmq::socket_poller_t::signaler_fd (fd_t *fd_)
     if (_signaler) {
         *fd_ = _signaler->get_fd ();
         return 0;
-    } else {
-        // Only thread-safe socket types are guaranteed to have a signaler.
-        errno = EINVAL;
-        return -1;
     }
+    // Only thread-safe socket types are guaranteed to have a signaler.
+    errno = EINVAL;
+    return -1;
 }
 
 int zmq::socket_poller_t::add (socket_base_t *socket_,

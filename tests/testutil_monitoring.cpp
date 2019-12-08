@@ -50,8 +50,8 @@ static int get_monitor_event_internal (void *monitor_,
     }
     TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
-    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-    uint16_t event = *(uint16_t *) (data);
+    uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
+    uint16_t event = *reinterpret_cast<uint16_t *> (data);
     if (value_)
         memcpy (value_, data + 2, sizeof (uint32_t));
 
@@ -61,9 +61,9 @@ static int get_monitor_event_internal (void *monitor_,
     TEST_ASSERT_FALSE (zmq_msg_more (&msg));
 
     if (address_) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
         size_t size = zmq_msg_size (&msg);
-        *address_ = (char *) malloc (size + 1);
+        *address_ = static_cast<char *> (malloc (size + 1));
         memcpy (*address_, data, size);
         (*address_)[size] = 0;
     }
@@ -246,9 +246,9 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
     if (local_address_) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
         size_t size = zmq_msg_size (&msg);
-        *local_address_ = (char *) malloc (size + 1);
+        *local_address_ = static_cast<char *> (malloc (size + 1));
         memcpy (*local_address_, data, size);
         (*local_address_)[size] = 0;
     }
@@ -260,9 +260,9 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     TEST_ASSERT_TRUE (!zmq_msg_more (&msg));
 
     if (remote_address_) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
         size_t size = zmq_msg_size (&msg);
-        *remote_address_ = (char *) malloc (size + 1);
+        *remote_address_ = static_cast<char *> (malloc (size + 1));
         memcpy (*remote_address_, data, size);
         (*remote_address_)[size] = 0;
     }
@@ -328,7 +328,8 @@ void expect_monitor_event_v2 (void *monitor_,
     if (event != expected_event_) {
         pos += snprintf (pos, sizeof buf - (pos - buf),
                          "Expected monitor event %llx, but received %llx\n",
-                         (long long) expected_event_, (long long) event);
+                         static_cast<long long> (expected_event_),
+                         static_cast<long long> (event));
         failed = true;
     }
     if (expected_local_address_

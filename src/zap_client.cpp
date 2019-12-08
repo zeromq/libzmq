@@ -274,8 +274,8 @@ zmq::mechanism_t::status_t zap_client_common_handshake_t::status () const
         return mechanism_t::ready;
     if (state == error_sent)
         return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
+
+    return mechanism_t::handshaking;
 }
 
 int zap_client_common_handshake_t::zap_msg_available ()

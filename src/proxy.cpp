@@ -128,8 +128,8 @@ int forward (class zmq::socket_base_t *from_,
             if (rc < 0) {
                 if (likely (errno == EAGAIN && i > 0))
                     return 0; // End of burst
-                else
-                    return -1;
+
+                return -1;
             }
 
             complete_msg_size += msg_->size ();

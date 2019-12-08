@@ -54,9 +54,9 @@ static void test_resolve (bool bind_,
         TEST_ASSERT_EQUAL (-1, rc);
         TEST_ASSERT_EQUAL (EINVAL, errno);
         return;
-    } else {
-        TEST_ASSERT_EQUAL (0, rc);
     }
+    TEST_ASSERT_EQUAL (0, rc);
+
 
     TEST_ASSERT_EQUAL (multicast_, addr.is_mcast ());
 
@@ -69,32 +69,36 @@ static void test_resolve (bool bind_,
         }
     }
 
-    validate_address (family_, addr.target_addr(), target_addr_, expected_port_);
-    validate_address (family_, addr.bind_addr(), bind_addr_, expected_port_);
+    validate_address (family_, addr.target_addr (), target_addr_,
+                      expected_port_);
+    validate_address (family_, addr.bind_addr (), bind_addr_, expected_port_);
 }
 
 static void test_resolve_bind (int family_,
-                               const char *name_, const char *dest_addr_,
-                                uint16_t expected_port_ = 0,
+                               const char *name_,
+                               const char *dest_addr_,
+                               uint16_t expected_port_ = 0,
                                const char *bind_addr_ = NULL,
                                bool multicast_ = false)
 {
-test_resolve (true, family_, name_, dest_addr_, expected_port_, bind_addr_,
+    test_resolve (true, family_, name_, dest_addr_, expected_port_, bind_addr_,
                   multicast_);
 }
 
-static void test_resolve_connect (int family_, const char *name_, const char *dest_addr_,
+static void test_resolve_connect (int family_,
+                                  const char *name_,
+                                  const char *dest_addr_,
                                   uint16_t expected_port_ = 0,
                                   const char *bind_addr_ = NULL,
                                   bool multicast_ = false)
 {
-test_resolve (false, family_, name_, dest_addr_, expected_port_, bind_addr_,
+    test_resolve (false, family_, name_, dest_addr_, expected_port_, bind_addr_,
                   multicast_);
 }
 
 static void test_resolve_ipv4_simple ()
 {
-test_resolve_connect (AF_INET, "127.0.0.1:5555", "127.0.0.1", 5555);
+    test_resolve_connect (AF_INET, "127.0.0.1:5555", "127.0.0.1", 5555);
 }
 
 static void test_resolve_ipv6_simple ()
@@ -104,12 +108,14 @@ static void test_resolve_ipv6_simple ()
 
 static void test_resolve_ipv4_bind ()
 {
-    test_resolve_bind (AF_INET, "127.0.0.1:5555", "127.0.0.1", 5555, "127.0.0.1");
+    test_resolve_bind (AF_INET, "127.0.0.1:5555", "127.0.0.1", 5555,
+                       "127.0.0.1");
 }
 
 static void test_resolve_ipv6_bind ()
 {
-    test_resolve_bind (AF_INET6, "[abcd::1234:1]:5555", "abcd::1234:1", 5555, "abcd::1234:1");
+    test_resolve_bind (AF_INET6, "[abcd::1234:1]:5555", "abcd::1234:1", 5555,
+                       "abcd::1234:1");
 }
 
 static void test_resolve_ipv4_bind_any ()
@@ -129,7 +135,8 @@ static void test_resolve_ipv4_bind_anyport ()
 
 static void test_resolve_ipv6_bind_anyport ()
 {
-    test_resolve_bind (AF_INET6, "[1:2:3:4::5]:*", "1:2:3:4::5", 0, "1:2:3:4::5");
+    test_resolve_bind (AF_INET6, "[1:2:3:4::5]:*", "1:2:3:4::5", 0,
+                       "1:2:3:4::5");
 }
 
 static void test_resolve_ipv4_bind_any_port ()
@@ -176,7 +183,8 @@ static void test_resolve_ipv6_connect_port0 ()
 
 static void test_resolve_ipv4_bind_mcast ()
 {
-    test_resolve_bind (AF_INET, "239.0.0.1:1234", "239.0.0.1", 1234, "0.0.0.0", true);
+    test_resolve_bind (AF_INET, "239.0.0.1:1234", "239.0.0.1", 1234, "0.0.0.0",
+                       true);
 }
 
 static void test_resolve_ipv6_bind_mcast ()
@@ -186,12 +194,14 @@ static void test_resolve_ipv6_bind_mcast ()
 
 static void test_resolve_ipv4_connect_mcast ()
 {
-    test_resolve_connect (AF_INET, "239.0.0.1:2222", "239.0.0.1", 2222, NULL, true);
+    test_resolve_connect (AF_INET, "239.0.0.1:2222", "239.0.0.1", 2222, NULL,
+                          true);
 }
 
 static void test_resolve_ipv6_connect_mcast ()
 {
-    test_resolve_connect (AF_INET6, "[ff00::1]:2222", "ff00::1", 2222, NULL, true);
+    test_resolve_connect (AF_INET6, "[ff00::1]:2222", "ff00::1", 2222, NULL,
+                          true);
 }
 
 static void test_resolve_ipv4_mcast_src_bind ()
@@ -223,14 +233,13 @@ static void test_resolve_ipv4_mcast_src_bind_any ()
 
 static void test_resolve_ipv6_mcast_src_bind_any ()
 {
-    test_resolve_bind (AF_INET6, "*;[ffff::]:5555", "ffff::", 5555,
-                       "::", true);
+    test_resolve_bind (AF_INET6, "*;[ffff::]:5555", "ffff::", 5555, "::", true);
 }
 
 static void test_resolve_ipv4_mcast_src_connect ()
 {
-    test_resolve_connect (AF_INET, "8.9.10.11;230.2.8.12:5555", "230.2.8.12", 5555,
-                          "8.9.10.11", true);
+    test_resolve_connect (AF_INET, "8.9.10.11;230.2.8.12:5555", "230.2.8.12",
+                          5555, "8.9.10.11", true);
 }
 
 static void test_resolve_ipv6_mcast_src_connect ()

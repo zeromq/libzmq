@@ -46,7 +46,7 @@ class udp_engine_t : public io_object_t, public i_engine
     const endpoint_uri_pair_t &get_endpoint () const;
 
   private:
-    int resolve_raw_address (char *addr_, size_t length_);
+    int resolve_raw_address (char *name_, size_t length_);
     void sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_);
 
     int set_udp_reuse_address (fd_t s_, bool on_);

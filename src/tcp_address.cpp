@@ -113,23 +113,23 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 }
 
 template <size_t N1, size_t N2>
-static std::string make_address_string (const char *hbuf,
-                                        uint16_t port,
-                                        const char (&ipv6_prefix)[N1],
-                                        const char (&ipv6_suffix)[N2])
+static std::string make_address_string (const char *hbuf_,
+                                        uint16_t port_,
+                                        const char (&ipv6_prefix_)[N1],
+                                        const char (&ipv6_suffix_)[N2])
 {
     const size_t max_port_str_length = 5;
-    char buf[NI_MAXHOST + sizeof ipv6_prefix + sizeof ipv6_suffix
+    char buf[NI_MAXHOST + sizeof ipv6_prefix_ + sizeof ipv6_suffix_
              + max_port_str_length];
     char *pos = buf;
-    memcpy (pos, ipv6_prefix, sizeof ipv6_prefix - 1);
-    pos += sizeof ipv6_prefix - 1;
-    const size_t hbuf_len = strlen (hbuf);
-    memcpy (pos, hbuf, hbuf_len);
+    memcpy (pos, ipv6_prefix_, sizeof ipv6_prefix_ - 1);
+    pos += sizeof ipv6_prefix_ - 1;
+    const size_t hbuf_len = strlen (hbuf_);
+    memcpy (pos, hbuf_, hbuf_len);
     pos += hbuf_len;
-    memcpy (pos, ipv6_suffix, sizeof ipv6_suffix - 1);
-    pos += sizeof ipv6_suffix - 1;
-    pos += sprintf (pos, "%d", ntohs (port));
+    memcpy (pos, ipv6_suffix_, sizeof ipv6_suffix_ - 1);
+    pos += sizeof ipv6_suffix_ - 1;
+    pos += sprintf (pos, "%d", ntohs (port_));
     return std::string (buf, pos - buf);
 }
 

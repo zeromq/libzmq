@@ -52,8 +52,8 @@ static int get_monitor_event (void *monitor_)
         }
         TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        uint16_t event = *(uint16_t *) (data);
+        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
+        uint16_t event = *reinterpret_cast<uint16_t *> (data);
 
         //  Second frame in message contains event address
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
@@ -136,7 +136,7 @@ static void prep_server_socket (void **server_out_,
     *mon_out_ = server_mon;
 }
 
-static void test_mock_sub (bool sub_command)
+static void test_mock_sub (bool sub_command_)
 {
     int rc;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -167,7 +167,7 @@ static void test_mock_sub (bool sub_command)
     rc = get_monitor_event (server_mon);
     TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_ACCEPTED, rc);
 
-    if (sub_command) {
+    if (sub_command_) {
         const uint8_t sub[13] = {4,   11,  9,   'S', 'U', 'B', 'S',
                                  'C', 'R', 'I', 'B', 'E', 'A'};
         rc =

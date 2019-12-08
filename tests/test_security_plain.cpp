@@ -211,7 +211,8 @@ void test_plain_vanilla_socket ()
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
+    rc = connect (s, reinterpret_cast<struct sockaddr *> (&ip4addr),
+                  sizeof (ip4addr));
     TEST_ASSERT_GREATER_THAN_INT (-1, rc);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);

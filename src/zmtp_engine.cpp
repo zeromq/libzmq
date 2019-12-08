@@ -229,14 +229,14 @@ void zmq::zmtp_engine_t::receive_greeting_versioned ()
 }
 
 zmq::zmtp_engine_t::handshake_fun_t
-zmq::zmtp_engine_t::select_handshake_fun (bool unversioned,
-                                          unsigned char revision)
+zmq::zmtp_engine_t::select_handshake_fun (bool unversioned_,
+                                          unsigned char revision_)
 {
     //  Is the peer using ZMTP/1.0 with no revision number?
-    if (unversioned) {
+    if (unversioned_) {
         return &zmtp_engine_t::handshake_v1_0_unversioned;
     }
-    switch (revision) {
+    switch (revision_) {
         case ZMTP_1_0:
             return &zmtp_engine_t::handshake_v1_0;
         case ZMTP_2_0:

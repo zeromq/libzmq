@@ -38,13 +38,13 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
-int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
+int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint_)
 {
     char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up and bind XPUB socket
     void *pub_socket = test_context_socket (ZMQ_XPUB);
-    test_bind (pub_socket, endpoint, pub_endpoint, sizeof pub_endpoint);
+    test_bind (pub_socket, endpoint_, pub_endpoint, sizeof pub_endpoint);
 
     // Set up and connect SUB socket
     void *sub_socket = test_context_socket (ZMQ_SUB);
@@ -86,10 +86,10 @@ int test_defaults (int send_hwm_, int msg_cnt_, const char *endpoint)
     return recv_count;
 }
 
-int receive (void *socket_, int *is_termination)
+int receive (void *socket_, int *is_termination_)
 {
     int recv_count = 0;
-    *is_termination = 0;
+    *is_termination_ = 0;
 
     // Now receive all sent messages
     char buffer[255];
@@ -98,7 +98,7 @@ int receive (void *socket_, int *is_termination)
         ++recv_count;
 
         if (len == 3 && strncmp (buffer, "end", len) == 0) {
-            *is_termination = 1;
+            *is_termination_ = 1;
             return recv_count;
         }
     }
@@ -106,13 +106,13 @@ int receive (void *socket_, int *is_termination)
     return recv_count;
 }
 
-int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint)
+int test_blocking (int send_hwm_, int msg_cnt_, const char *endpoint_)
 {
     char pub_endpoint[SOCKET_STRING_LEN];
 
     // Set up bind socket
     void *pub_socket = test_context_socket (ZMQ_XPUB);
-    test_bind (pub_socket, endpoint, pub_endpoint, sizeof pub_endpoint);
+    test_bind (pub_socket, endpoint_, pub_endpoint, sizeof pub_endpoint);
 
     // Set up connect socket
     void *sub_socket = test_context_socket (ZMQ_SUB);

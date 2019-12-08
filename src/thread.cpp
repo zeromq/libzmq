@@ -277,10 +277,10 @@ bool zmq::thread_t::is_current_thread () const
 }
 
 void zmq::thread_t::setSchedulingParameters (
-  int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
+  int priority_, int scheduling_policy_, const std::set<int> &affinity_cpus_)
 {
     _thread_priority = priority_;
-    _thread_sched_policy = schedulingPolicy_;
+    _thread_sched_policy = scheduling_policy_;
     _thread_affinity_cpus = affinity_cpus_;
 }
 

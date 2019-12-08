@@ -84,7 +84,8 @@ class socks_choice_decoder_t
 
 struct socks_basic_auth_request_t
 {
-    socks_basic_auth_request_t (std::string username_, std::string password_);
+    socks_basic_auth_request_t (const std::string &username_,
+                                const std::string &password_);
 
     const std::string username;
     const std::string password;
@@ -152,7 +153,7 @@ class socks_request_encoder_t
 struct socks_response_t
 {
     socks_response_t (uint8_t response_code_,
-                      std::string address_,
+                      const std::string &address_,
                       uint16_t port_);
     uint8_t response_code;
     std::string address;

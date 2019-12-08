@@ -44,7 +44,7 @@ void socket_config_null_server (void *server_, void *server_secret_)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    int required = server_secret_ ? *(int *) server_secret_ : 0;
+    int required = server_secret_ ? *static_cast<int *> (server_secret_) : 0;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN,
                                                &required, sizeof (int)));
 #else

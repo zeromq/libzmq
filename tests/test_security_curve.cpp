@@ -100,9 +100,9 @@ static void zap_handler_large_routing_id (void * /*unused_*/)
     zap_handler_generic (zap_ok, large_routing_id);
 }
 
-void expect_new_client_curve_bounce_fail (char *server_public_,
-                                          char *client_public_,
-                                          char *client_secret_,
+void expect_new_client_curve_bounce_fail (const char *server_public_,
+                                          const char *client_public_,
+                                          const char *client_secret_,
                                           char *my_endpoint_,
                                           void *server_,
                                           void **client_mon_ = NULL,
@@ -241,7 +241,8 @@ fd_t connect_vanilla_socket (char *my_endpoint_)
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
+    rc = connect (s, reinterpret_cast<struct sockaddr *> (&ip4addr),
+                  sizeof (ip4addr));
     TEST_ASSERT_GREATER_THAN_INT (-1, rc);
     return s;
 }
@@ -334,9 +335,8 @@ static uint64_t host_to_network (uint64_t value_)
           htonl (static_cast<uint32_t> (value_ & 0xFFFFFFFFLL));
 
         return (static_cast<uint64_t> (low_part) << 32) | high_part;
-    } else {
-        return value_;
     }
+    return value_;
 }
 
 template <size_t N> void send_command (fd_t s_, char (&command_)[N])
@@ -348,7 +348,7 @@ template <size_t N> void send_command (fd_t s_, char (&command_)[N])
     } else {
         send (s_, "\x06");
         uint64_t len = host_to_network (N);
-        send_all (s_, (char *) &len, 8);
+        send_all (s_, reinterpret_cast<char *> (&len), 8);
     }
     send_all (s_, command_, N);
 }
@@ -411,7 +411,7 @@ void recv_all (fd_t fd_, uint8_t *data_, socket_size_t len_)
 {
     socket_size_t received = 0;
     while (received < len_) {
-        int res = recv (fd_, (char *) data_, len_, 0);
+        int res = recv (fd_, reinterpret_cast<char *> (data_), len_, 0);
         TEST_ASSERT_GREATER_THAN_INT (0, res);
 
         data_ += res;

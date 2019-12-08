@@ -83,10 +83,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 static int
-encode_base64 (const unsigned char *in, int in_len, char *out, int out_len);
+encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_);
 
-static void compute_accept_key (char *key,
-                                unsigned char output[SHA_DIGEST_LENGTH]);
+static void compute_accept_key (char *key_,
+                                unsigned char hash_[SHA_DIGEST_LENGTH]);
 
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,
@@ -131,7 +131,7 @@ void zmq::ws_engine_t::start_ws_handshake ()
             assert (false);
 
         unsigned char nonce[16];
-        int *p = (int *) nonce;
+        int *p = reinterpret_cast<int *> (nonce);
 
         // The nonce doesn't have to be secure one, it is just use to avoid proxy cache
         *p = zmq::generate_random ();
@@ -143,16 +143,16 @@ void zmq::ws_engine_t::start_ws_handshake ()
           encode_base64 (nonce, 16, _websocket_key, MAX_HEADER_VALUE_LENGTH);
         assert (size > 0);
 
-        size = snprintf ((char *) _write_buffer, WS_BUFFER_SIZE,
-                         "GET %s HTTP/1.1\r\n"
-                         "Host: %s\r\n"
-                         "Upgrade: websocket\r\n"
-                         "Connection: Upgrade\r\n"
-                         "Sec-WebSocket-Key: %s\r\n"
-                         "Sec-WebSocket-Protocol: %s\r\n"
-                         "Sec-WebSocket-Version: 13\r\n\r\n",
-                         _address.path (), _address.host (), _websocket_key,
-                         protocol);
+        size = snprintf (
+          reinterpret_cast<char *> (_write_buffer), WS_BUFFER_SIZE,
+          "GET %s HTTP/1.1\r\n"
+          "Host: %s\r\n"
+          "Upgrade: websocket\r\n"
+          "Connection: Upgrade\r\n"
+          "Sec-WebSocket-Key: %s\r\n"
+          "Sec-WebSocket-Protocol: %s\r\n"
+          "Sec-WebSocket-Version: 13\r\n\r\n",
+          _address.path (), _address.host (), _websocket_key, protocol);
         assert (size > 0 && size < WS_BUFFER_SIZE);
         _outpos = _write_buffer;
         _outsize = size;
@@ -196,22 +196,23 @@ int zmq::ws_engine_t::process_routing_id_msg (msg_t *msg_)
     return 0;
 }
 
-bool zmq::ws_engine_t::select_protocol (char *protocol)
+bool zmq::ws_engine_t::select_protocol (char *protocol_)
 {
-    if (_options.mechanism == ZMQ_NULL && (strcmp ("ZWS2.0", protocol) == 0)) {
+    if (_options.mechanism == ZMQ_NULL && (strcmp ("ZWS2.0", protocol_) == 0)) {
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::routing_id_msg);
         _process_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::process_routing_id_msg);
         return true;
-    } else if (_options.mechanism == ZMQ_NULL
-               && strcmp ("ZWS2.0/NULL", protocol) == 0) {
+    }
+    if (_options.mechanism == ZMQ_NULL
+        && strcmp ("ZWS2.0/NULL", protocol_) == 0) {
         _mechanism = new (std::nothrow)
           null_mechanism_t (session (), _peer_address, _options);
         alloc_assert (_mechanism);
         return true;
     } else if (_options.mechanism == ZMQ_PLAIN
-               && strcmp ("ZWS2.0/PLAIN", protocol) == 0) {
+               && strcmp ("ZWS2.0/PLAIN", protocol_) == 0) {
         if (_options.as_server)
             _mechanism = new (std::nothrow)
               plain_server_t (session (), _peer_address, _options);
@@ -223,7 +224,7 @@ bool zmq::ws_engine_t::select_protocol (char *protocol)
     }
 #ifdef ZMQ_HAVE_CURVE
     else if (_options.mechanism == ZMQ_CURVE
-             && strcmp ("ZWS2.0/CURVE", protocol) == 0) {
+             && strcmp ("ZWS2.0/CURVE", protocol_) == 0) {
         if (_options.as_server)
             _mechanism = new (std::nothrow)
               curve_server_t (session (), _peer_address, _options);
@@ -278,7 +279,7 @@ bool zmq::ws_engine_t::server_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = (char) *_inpos;
+        char c = static_cast<char> (*_inpos);
 
         switch (_server_handshake_state) {
             case handshake_initial:
@@ -391,7 +392,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         _server_handshake_state = handshake_error;
                         break;
                     default:
-                        _header_name[0] = (char) c;
+                        _header_name[0] = c;
                         _header_name_position = 1;
                         _server_handshake_state = header_field_name;
                         break;
@@ -493,7 +494,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         _websocket_accept[accept_key_len] = '\0';
 
                         int written =
-                          snprintf ((char *) _write_buffer, WS_BUFFER_SIZE,
+                          snprintf (reinterpret_cast<char *> (_write_buffer),
+                                    WS_BUFFER_SIZE,
                                     "HTTP/1.1 101 Switching Protocols\r\n"
                                     "Upgrade: websocket\r\n"
                                     "Connection: Upgrade\r\n"
@@ -509,8 +511,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         _insize--;
 
                         return true;
-                    } else
-                        _server_handshake_state = handshake_error;
+                    }
+                    _server_handshake_state = handshake_error;
                 } else
                     _server_handshake_state = handshake_error;
                 break;
@@ -547,7 +549,7 @@ bool zmq::ws_engine_t::client_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = (char) *_inpos;
+        char c = static_cast<char> (*_inpos);
 
         switch (_client_handshake_state) {
             case client_handshake_initial:
@@ -769,7 +771,7 @@ bool zmq::ws_engine_t::client_handshake ()
                         _client_handshake_state = client_handshake_error;
                         break;
                     default:
-                        _header_name[0] = (char) c;
+                        _header_name[0] = c;
                         _header_name_position = 1;
                         _client_handshake_state = client_header_field_name;
                         break;
@@ -852,8 +854,8 @@ bool zmq::ws_engine_t::client_handshake ()
                         _insize--;
 
                         return true;
-                    } else
-                        _client_handshake_state = client_handshake_error;
+                    }
+                    _client_handshake_state = client_handshake_error;
                 } else
                     _client_handshake_state = client_handshake_error;
                 break;
@@ -877,7 +879,7 @@ bool zmq::ws_engine_t::client_handshake ()
 }
 
 static int
-encode_base64 (const unsigned char *in, int in_len, char *out, int out_len)
+encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_)
 {
     static const unsigned char base64enc_tab[65] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -886,36 +888,36 @@ encode_base64 (const unsigned char *in, int in_len, char *out, int out_len)
     uint32_t v;
     int rem;
 
-    for (io = 0, ii = 0, v = 0, rem = 0; ii < in_len; ii++) {
+    for (io = 0, ii = 0, v = 0, rem = 0; ii < in_len_; ii++) {
         unsigned char ch;
-        ch = in[ii];
+        ch = in_[ii];
         v = (v << 8) | ch;
         rem += 8;
         while (rem >= 6) {
             rem -= 6;
-            if (io >= out_len)
+            if (io >= out_len_)
                 return -1; /* truncation is failure */
-            out[io++] = base64enc_tab[(v >> rem) & 63];
+            out_[io++] = base64enc_tab[(v >> rem) & 63];
         }
     }
     if (rem) {
         v <<= (6 - rem);
-        if (io >= out_len)
+        if (io >= out_len_)
             return -1; /* truncation is failure */
-        out[io++] = base64enc_tab[v & 63];
+        out_[io++] = base64enc_tab[v & 63];
     }
     while (io & 3) {
-        if (io >= out_len)
+        if (io >= out_len_)
             return -1; /* truncation is failure */
-        out[io++] = '=';
+        out_[io++] = '=';
     }
-    if (io >= out_len)
+    if (io >= out_len_)
         return -1; /* no room for null terminator */
-    out[io] = 0;
+    out_[io] = 0;
     return io;
 }
 
-static void compute_accept_key (char *key, unsigned char *hash)
+static void compute_accept_key (char *key_, unsigned char *hash_)
 {
     const char *magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 #ifdef ZMQ_USE_NSS
@@ -925,24 +927,24 @@ static void compute_accept_key (char *key, unsigned char *hash)
     assert (ctx);
 
     HASH_Begin (ctx);
-    HASH_Update (ctx, (unsigned char *) key, (unsigned int) strlen (key));
+    HASH_Update (ctx, (unsigned char *) key_, (unsigned int) strlen (key_));
     HASH_Update (ctx, (unsigned char *) magic_string,
                  (unsigned int) strlen (magic_string));
-    HASH_End (ctx, hash, &len, SHA_DIGEST_LENGTH);
+    HASH_End (ctx, hash_, &len, SHA_DIGEST_LENGTH);
     HASH_Destroy (ctx);
 #elif defined ZMQ_USE_BUILTIN_SHA1
     sha1_ctxt ctx;
     SHA1_Init (&ctx);
-    SHA1_Update (&ctx, (unsigned char *) key, strlen (key));
+    SHA1_Update (&ctx, (unsigned char *) key_, strlen (key_));
     SHA1_Update (&ctx, (unsigned char *) magic_string, strlen (magic_string));
 
-    SHA1_Final (hash, &ctx);
+    SHA1_Final (hash_, &ctx);
 #elif defined ZMQ_USE_GNUTLS
     gnutls_hash_hd_t hd;
     gnutls_hash_init (&hd, GNUTLS_DIG_SHA1);
-    gnutls_hash (hd, key, strlen (key));
+    gnutls_hash (hd, key_, strlen (key_));
     gnutls_hash (hd, magic_string, strlen (magic_string));
-    gnutls_hash_deinit (hd, hash);
+    gnutls_hash_deinit (hd, hash_);
 #else
 #error "No sha1 implementation set"
 #endif

@@ -255,9 +255,9 @@ int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
     if (rc != 0) {
         assert_success_or_recoverable (s_, rc);
         return -1;
-    } else {
-        return 0;
     }
+    return 0;
+
 #else
     LIBZMQ_UNUSED (s_);
     LIBZMQ_UNUSED (bound_device_);
@@ -550,10 +550,10 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
         return -1;
-    } else {
-        *w_ = *r_ = fd;
-        return 0;
     }
+    *w_ = *r_ = fd;
+    return 0;
+
 
 #elif defined ZMQ_HAVE_WINDOWS
 #ifdef ZMQ_HAVE_IPC
