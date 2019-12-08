@@ -54,8 +54,8 @@ class socks_connecter_t : public stream_connecter_base_t
                        bool delayed_start_);
     ~socks_connecter_t ();
 
-    void set_auth_method_basic (const std::string username,
-                                const std::string password);
+    void set_auth_method_basic (const std::string &username,
+                                const std::string &password);
     void set_auth_method_none ();
 
 

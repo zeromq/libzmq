@@ -79,8 +79,8 @@ void zmq::socks_connecter_t::set_auth_method_none ()
     _auth_password.clear ();
 }
 
-void zmq::socks_connecter_t::set_auth_method_basic (const std::string username_,
-                                                    const std::string password_)
+void zmq::socks_connecter_t::set_auth_method_basic (
+  const std::string &username_, const std::string &password_)
 {
     _auth_method = socks_basic_auth;
     _auth_username = username_;
