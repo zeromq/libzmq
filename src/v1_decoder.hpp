@@ -55,8 +55,7 @@ class v1_decoder_t : public decoder_base_t<v1_decoder_t>
 
     const int64_t _max_msg_size;
 
-    v1_decoder_t (const v1_decoder_t &);
-    void operator= (const v1_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (v1_decoder_t)
 };
 }
 

@@ -48,8 +48,7 @@ class v2_encoder_t : public encoder_base_t<v2_encoder_t>
 
     unsigned char _tmp_buf[9];
 
-    v2_encoder_t (const v2_encoder_t &);
-    const v2_encoder_t &operator= (const v2_encoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (v2_encoder_t)
 };
 }
 

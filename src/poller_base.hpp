@@ -155,8 +155,7 @@ class poller_base_t
     //  registered.
     atomic_counter_t _load;
 
-    poller_base_t (const poller_base_t &);
-    const poller_base_t &operator= (const poller_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (poller_base_t)
 };
 
 //  Base class for a poller with a single worker thread.

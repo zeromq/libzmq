@@ -128,8 +128,7 @@ class vmci_connecter_t : public own_t, public io_object_t
     // Socket
     zmq::socket_base_t *socket;
 
-    vmci_connecter_t (const vmci_connecter_t &);
-    const vmci_connecter_t &operator= (const vmci_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (vmci_connecter_t)
 };
 }
 

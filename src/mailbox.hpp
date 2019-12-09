@@ -79,9 +79,7 @@ class mailbox_t : public i_mailbox
     //  read commands from it.
     bool _active;
 
-    //  Disable copying of mailbox_t object.
-    mailbox_t (const mailbox_t &);
-    const mailbox_t &operator= (const mailbox_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_t)
 };
 }
 

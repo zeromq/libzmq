@@ -171,10 +171,9 @@ template <typename T> class encoder_base_t : public i_encoder
     const size_t _buf_size;
     unsigned char *const _buf;
 
-    encoder_base_t (const encoder_base_t &);
-    void operator= (const encoder_base_t &);
-
     msg_t *_in_progress;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (encoder_base_t)
 };
 }
 

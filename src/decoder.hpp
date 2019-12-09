@@ -186,8 +186,7 @@ class decoder_base_t : public i_decoder
     A _allocator;
     unsigned char *_buf;
 
-    decoder_base_t (const decoder_base_t &);
-    const decoder_base_t &operator= (const decoder_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (decoder_base_t)
 };
 }
 

@@ -78,8 +78,7 @@ class lb_t
     //  True if we are dropping current message.
     bool _dropping;
 
-    lb_t (const lb_t &);
-    const lb_t &operator= (const lb_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (lb_t)
 };
 }
 

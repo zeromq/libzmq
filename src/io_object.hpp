@@ -76,8 +76,7 @@ class io_object_t : public i_poll_events
   private:
     poller_t *_poller;
 
-    io_object_t (const io_object_t &);
-    const io_object_t &operator= (const io_object_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (io_object_t)
 };
 }
 

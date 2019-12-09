@@ -146,7 +146,9 @@ matrix:
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
 - if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew update; brew install libsodium ; fi
+# To allow sonar to process history information, unshallow clone first.
 - if [ -n "$CLANG_TIDY" ] ; then
+    git fetch --unshallow ;
     curl -L https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip -o build-wrapper-linux-x86.zip ;
     unzip build-wrapper-linux-x86.zip ;
     export SONARCLOUD_BUILD_WRAPPER_PATH="$(pwd)/build-wrapper-linux-x86/" ;

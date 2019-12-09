@@ -103,8 +103,7 @@ class epoll_t : public worker_poller_base_t
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t _retired;
 
-    epoll_t (const epoll_t &);
-    const epoll_t &operator= (const epoll_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (epoll_t)
 };
 
 typedef epoll_t poller_t;

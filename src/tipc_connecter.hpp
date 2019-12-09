@@ -66,8 +66,7 @@ class tipc_connecter_t : public stream_connecter_base_t
     //  EAGAIN errno if async connect was launched.
     int open ();
 
-    tipc_connecter_t (const tipc_connecter_t &);
-    const tipc_connecter_t &operator= (const tipc_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (tipc_connecter_t)
 };
 }
 

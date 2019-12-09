@@ -140,8 +140,7 @@ class own_t : public object_t
     //  Number of events we have to get before we can destroy the object.
     int _term_acks;
 
-    own_t (const own_t &);
-    const own_t &operator= (const own_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (own_t)
 };
 }
 

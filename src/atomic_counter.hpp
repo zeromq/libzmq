@@ -214,8 +214,7 @@ class atomic_counter_t
 #endif
 
 #if !defined ZMQ_ATOMIC_COUNTER_CXX11
-    atomic_counter_t (const atomic_counter_t &);
-    const atomic_counter_t &operator= (const atomic_counter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (atomic_counter_t)
 #endif
 #if defined(__GNUC__) || defined(__INTEL_COMPILER)                             \
   || (defined(__SUNPRO_C) && __SUNPRO_C >= 0x590)                              \

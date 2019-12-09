@@ -90,8 +90,7 @@ class devpoll_t : public worker_poller_base_t
     //  Pollset manipulation function.
     void devpoll_ctl (fd_t fd_, short events_);
 
-    devpoll_t (const devpoll_t &);
-    const devpoll_t &operator= (const devpoll_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (devpoll_t)
 };
 
 typedef devpoll_t poller_t;

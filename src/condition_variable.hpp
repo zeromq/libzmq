@@ -44,8 +44,6 @@ class condition_variable_t
   public:
     inline condition_variable_t () { zmq_assert (false); }
 
-    inline ~condition_variable_t () {}
-
     inline int wait (mutex_t *mutex_, int timeout_)
     {
         zmq_assert (false);
@@ -54,10 +52,7 @@ class condition_variable_t
 
     inline void broadcast () { zmq_assert (false); }
 
-  private:
-    //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (condition_variable_t)
 };
 }
 
@@ -71,8 +66,6 @@ class condition_variable_t
 {
   public:
     inline condition_variable_t () { InitializeConditionVariable (&_cv); }
-
-    inline ~condition_variable_t () {}
 
     inline int wait (mutex_t *mutex_, int timeout_)
     {
@@ -95,9 +88,7 @@ class condition_variable_t
   private:
     CONDITION_VARIABLE _cv;
 
-    //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (condition_variable_t)
 };
 }
 
@@ -110,9 +101,7 @@ namespace zmq
 class condition_variable_t
 {
   public:
-    inline condition_variable_t () {}
-
-    inline ~condition_variable_t () {}
+    inline condition_variable_t () ZMQ_DEFAULT;
 
     inline int wait (mutex_t *mutex_, int timeout_)
     {
@@ -139,9 +128,7 @@ class condition_variable_t
   private:
     std::condition_variable_any _cv;
 
-    //  Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    void operator= (const condition_variable_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (condition_variable_t)
 };
 }
 
@@ -154,7 +141,7 @@ namespace zmq
 class condition_variable_t
 {
   public:
-    inline condition_variable_t () {}
+    inline condition_variable_t () ZMQ_DEFAULT;
 
     inline ~condition_variable_t ()
     {
@@ -224,9 +211,7 @@ class condition_variable_t
     mutex_t _listenersMutex;
     std::vector<SEM_ID> _listeners;
 
-    // Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    const condition_variable_t &operator= (const condition_variable_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (condition_variable_t)
 };
 }
 
@@ -318,9 +303,7 @@ class condition_variable_t
   private:
     pthread_cond_t _cond;
 
-    // Disable copy construction and assignment.
-    condition_variable_t (const condition_variable_t &);
-    const condition_variable_t &operator= (const condition_variable_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (condition_variable_t)
 };
 }
 

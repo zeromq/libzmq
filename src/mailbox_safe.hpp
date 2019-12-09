@@ -81,9 +81,7 @@ class mailbox_safe_t : public i_mailbox
 
     std::vector<zmq::signaler_t *> _signalers;
 
-    //  Disable copying of mailbox_t object.
-    mailbox_safe_t (const mailbox_safe_t &);
-    const mailbox_safe_t &operator= (const mailbox_safe_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_safe_t)
 };
 }
 

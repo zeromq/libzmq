@@ -81,9 +81,7 @@ class stream_listener_base_t : public own_t, public io_object_t
     // String representation of endpoint to bind to
     std::string _endpoint;
 
-  private:
-    stream_listener_base_t (const stream_listener_base_t &);
-    const stream_listener_base_t &operator= (const stream_listener_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_listener_base_t)
 };
 }
 

@@ -85,8 +85,7 @@ class io_thread_t : public object_t, public i_poll_events
     //  I/O multiplexing is performed using a poller object.
     poller_t *_poller;
 
-    io_thread_t (const io_thread_t &);
-    const io_thread_t &operator= (const io_thread_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (io_thread_t)
 };
 }
 

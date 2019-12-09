@@ -30,6 +30,7 @@
 #ifndef __ZMQ_CLOCK_HPP_INCLUDED__
 #define __ZMQ_CLOCK_HPP_INCLUDED__
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 #if defined ZMQ_HAVE_OSX
@@ -72,8 +73,7 @@ class clock_t
     //  Physical time corresponding to the TSC above (in milliseconds).
     uint64_t _last_time;
 
-    clock_t (const clock_t &);
-    const clock_t &operator= (const clock_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (clock_t)
 };
 }
 

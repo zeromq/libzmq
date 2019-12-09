@@ -79,8 +79,7 @@ class ipc_listener_t : public stream_listener_base_t
     //  Name of the file associated with the UNIX domain address.
     std::string _filename;
 
-    ipc_listener_t (const ipc_listener_t &);
-    const ipc_listener_t &operator= (const ipc_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_listener_t)
 };
 }
 

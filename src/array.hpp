@@ -33,6 +33,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "macros.hpp"
+
 namespace zmq
 {
 //  Implementation of fast arrays with O(1) access, insertion and
@@ -55,7 +57,7 @@ template <int ID = 0> class array_item_t
 
     //  The destructor doesn't have to be virtual. It is made virtual
     //  just to keep ICC and code checking tools from complaining.
-    inline virtual ~array_item_t () {}
+    inline virtual ~array_item_t () ZMQ_DEFAULT;
 
     inline void set_array_index (int index_) { _array_index = index_; }
 
@@ -64,8 +66,7 @@ template <int ID = 0> class array_item_t
   private:
     int _array_index;
 
-    array_item_t (const array_item_t &);
-    const array_item_t &operator= (const array_item_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (array_item_t)
 };
 
 
@@ -77,9 +78,7 @@ template <typename T, int ID = 0> class array_t
   public:
     typedef typename std::vector<T *>::size_type size_type;
 
-    inline array_t () {}
-
-    inline ~array_t () {}
+    inline array_t () ZMQ_DEFAULT;
 
     inline size_type size () { return _items.size (); }
 
@@ -127,8 +126,7 @@ template <typename T, int ID = 0> class array_t
     typedef std::vector<T *> items_t;
     items_t _items;
 
-    array_t (const array_t &);
-    const array_t &operator= (const array_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (array_t)
 };
 }
 

@@ -32,6 +32,7 @@
 
 #include <stddef.h>
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -77,8 +78,7 @@ class trie_t
         class trie_t **table;
     } _next;
 
-    trie_t (const trie_t &);
-    const trie_t &operator= (const trie_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (trie_t)
 };
 }
 

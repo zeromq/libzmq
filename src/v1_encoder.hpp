@@ -48,8 +48,7 @@ class v1_encoder_t : public encoder_base_t<v1_encoder_t>
 
     unsigned char _tmpbuf[10];
 
-    v1_encoder_t (const v1_encoder_t &);
-    const v1_encoder_t &operator= (const v1_encoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (v1_encoder_t)
 };
 }
 

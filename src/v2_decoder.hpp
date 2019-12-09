@@ -63,8 +63,7 @@ class v2_decoder_t
     const bool _zero_copy;
     const int64_t _max_msg_size;
 
-    v2_decoder_t (const v2_decoder_t &);
-    void operator= (const v2_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (v2_decoder_t)
 };
 }
 

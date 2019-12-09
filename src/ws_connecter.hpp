@@ -88,11 +88,10 @@ class ws_connecter_t : public stream_connecter_base_t
     //  True iff a timer has been started.
     bool _connect_timer_started;
 
-    ws_connecter_t (const ws_connecter_t &);
-    const ws_connecter_t &operator= (const ws_connecter_t &);
-
     bool _wss;
     const char *_hostname;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_connecter_t)
 };
 }
 

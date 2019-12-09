@@ -341,8 +341,7 @@ class socket_base_t : public own_t,
     // Mutex to synchronize access to the monitor Pair socket
     mutex_t _monitor_sync;
 
-    socket_base_t (const socket_base_t &);
-    const socket_base_t &operator= (const socket_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (socket_base_t)
 };
 
 class routing_socket_base_t : public socket_base_t

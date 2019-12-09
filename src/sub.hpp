@@ -50,9 +50,7 @@ class sub_t : public xsub_t
     int xsend (zmq::msg_t *msg_);
     bool xhas_out ();
 
-  private:
-    sub_t (const sub_t &);
-    const sub_t &operator= (const sub_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (sub_t)
 };
 }
 

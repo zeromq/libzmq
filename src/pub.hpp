@@ -52,9 +52,7 @@ class pub_t : public xpub_t
     int xrecv (zmq::msg_t *msg_);
     bool xhas_in ();
 
-  private:
-    pub_t (const pub_t &);
-    const pub_t &operator= (const pub_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pub_t)
 };
 }
 

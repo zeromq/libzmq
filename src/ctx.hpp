@@ -241,8 +241,7 @@ class ctx_t : public thread_ctx_t
     // Should we use zero copy message decoding in this context?
     bool _zero_copy;
 
-    ctx_t (const ctx_t &);
-    const ctx_t &operator= (const ctx_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ctx_t)
 
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.

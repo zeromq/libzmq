@@ -93,8 +93,7 @@ class kqueue_t : public worker_poller_base_t
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t retired;
 
-    kqueue_t (const kqueue_t &);
-    const kqueue_t &operator= (const kqueue_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (kqueue_t)
 
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.

@@ -61,8 +61,7 @@ class raw_decoder_t : public i_decoder
 
     shared_message_memory_allocator _allocator;
 
-    raw_decoder_t (const raw_decoder_t &);
-    void operator= (const raw_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (raw_decoder_t)
 };
 }
 

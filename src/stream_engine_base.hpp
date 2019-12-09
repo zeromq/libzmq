@@ -191,8 +191,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
     // Socket
     zmq::socket_base_t *_socket;
 
-    stream_engine_base_t (const stream_engine_base_t &);
-    const stream_engine_base_t &operator= (const stream_engine_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_engine_base_t)
 };
 }
 

@@ -49,8 +49,7 @@ class raw_encoder_t : public encoder_base_t<raw_encoder_t>
   private:
     void raw_message_ready ();
 
-    raw_encoder_t (const raw_encoder_t &);
-    const raw_encoder_t &operator= (const raw_encoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (raw_encoder_t)
 };
 }
 

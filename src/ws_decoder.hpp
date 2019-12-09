@@ -74,8 +74,7 @@ class ws_decoder_t
     zmq::ws_protocol_t::opcode_t _opcode;
     unsigned char _mask[4];
 
-    ws_decoder_t (const ws_decoder_t &);
-    void operator= (const ws_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_decoder_t)
 };
 }
 

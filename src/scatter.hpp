@@ -61,8 +61,7 @@ class scatter_t : public socket_base_t
     //  Load balancer managing the outbound pipes.
     lb_t _lb;
 
-    scatter_t (const scatter_t &);
-    const scatter_t &operator= (const scatter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (scatter_t)
 };
 }
 

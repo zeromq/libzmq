@@ -30,9 +30,9 @@
 #ifndef __ZMQ_IPC_ADDRESS_HPP_INCLUDED__
 #define __ZMQ_IPC_ADDRESS_HPP_INCLUDED__
 
-#include <string>
-
 #if defined ZMQ_HAVE_IPC
+
+#include <string>
 
 #if defined _MSC_VER
 #include <afunix.h>
@@ -40,6 +40,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #endif
+
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -63,8 +65,7 @@ class ipc_address_t
     struct sockaddr_un _address;
     socklen_t _addrlen;
 
-    ipc_address_t (const ipc_address_t &);
-    const ipc_address_t &operator= (const ipc_address_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_address_t)
 };
 }
 

@@ -59,7 +59,7 @@ int pipepair (zmq::object_t *parents_[2],
 
 struct i_pipe_events
 {
-    virtual ~i_pipe_events () {}
+    virtual ~i_pipe_events () ZMQ_DEFAULT;
 
     virtual void read_activated (zmq::pipe_t *pipe_) = 0;
     virtual void write_activated (zmq::pipe_t *pipe_) = 0;
@@ -256,9 +256,7 @@ class pipe_t : public object_t,
     // The endpoints of this pipe.
     endpoint_uri_pair_t _endpoint_pair;
 
-    //  Disable copying.
-    pipe_t (const pipe_t &);
-    const pipe_t &operator= (const pipe_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pipe_t)
 };
 
 void send_routing_id (pipe_t *pipe_, const options_t &options_);

@@ -51,8 +51,7 @@ class ws_encoder_t : public encoder_base_t<ws_encoder_t>
     unsigned char _mask[4];
     msg_t _masked_msg;
 
-    ws_encoder_t (const ws_encoder_t &);
-    const ws_encoder_t &operator= (const ws_encoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_encoder_t)
 };
 }
 

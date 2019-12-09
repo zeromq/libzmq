@@ -105,8 +105,7 @@ class pollset_t : public poller_base_t
     //  Handle of the physical thread doing the I/O work.
     thread_t worker;
 
-    pollset_t (const pollset_t &);
-    const pollset_t &operator= (const pollset_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pollset_t)
 };
 
 typedef pollset_t poller_t;

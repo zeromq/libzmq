@@ -49,10 +49,6 @@ template <typename T> class ypipe_conflate_t : public ypipe_base_t<T>
     //  Initialises the pipe.
     inline ypipe_conflate_t () : reader_awake (false) {}
 
-    //  The destructor doesn't have to be virtual. It is made virtual
-    //  just to keep ICC and code checking tools from complaining.
-    inline virtual ~ypipe_conflate_t () {}
-
     //  Following function (write) deliberately copies uninitialised data
     //  when used with zmq_msg. Initialising the VSM body for
     //  non-VSM messages won't be good for performance.
@@ -110,9 +106,7 @@ template <typename T> class ypipe_conflate_t : public ypipe_base_t<T>
     dbuffer_t<T> dbuffer;
     bool reader_awake;
 
-    //  Disable copying of ypipe object.
-    ypipe_conflate_t (const ypipe_conflate_t &);
-    const ypipe_conflate_t &operator= (const ypipe_conflate_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ypipe_conflate_t)
 };
 }
 

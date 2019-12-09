@@ -61,8 +61,7 @@ class push_t : public socket_base_t
     //  Load balancer managing the outbound pipes.
     lb_t _lb;
 
-    push_t (const push_t &);
-    const push_t &operator= (const push_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (push_t)
 };
 }
 
