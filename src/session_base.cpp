@@ -114,15 +114,20 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     _socket (socket_),
     _io_thread (io_thread_),
     _has_linger_timer (false),
-    _addr (addr_),
+    _addr (addr_)
+#ifdef ZMQ_HAVE_WSS
+    ,
     _wss_hostname (NULL)
+#endif
 {
+#ifdef ZMQ_HAVE_WSS
     if (options_.wss_hostname.length () > 0) {
         _wss_hostname =
           static_cast<char *> (malloc (options_.wss_hostname.length () + 1));
         assert (_wss_hostname);
         strcpy (_wss_hostname, options_.wss_hostname.c_str ());
     }
+#endif
 }
 
 const zmq::endpoint_uri_pair_t &zmq::session_base_t::get_endpoint () const
@@ -145,8 +150,10 @@ zmq::session_base_t::~session_base_t ()
     if (_engine)
         _engine->terminate ();
 
+#ifdef ZMQ_HAVE_WSS
     if (_wss_hostname)
         free (_wss_hostname);
+#endif
 
     LIBZMQ_DELETE (_addr);
 }
