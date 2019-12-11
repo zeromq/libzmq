@@ -751,6 +751,20 @@ AC_COMPILE_IFELSE(
 		AC_MSG_RESULT([no])
 ])
 
+# string.h doesn't seem to be included by default in Fedora 30
+AC_MSG_CHECKING([whether strlcpy is available])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <string.h>]],
+		[[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
+		    [strlcpy is available])
+	],[
+		AC_MSG_RESULT([no])
+])
+
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
 AC_COMPILE_IFELSE(
