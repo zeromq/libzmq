@@ -46,7 +46,7 @@ class wss_engine_t : public ws_engine_t
                   ws_address_t &address_,
                   bool client_,
                   void *tls_server_cred_,
-                  const char *hostname_);
+                  const std::string &hostname_);
     ~wss_engine_t ();
 
     void out_event ();

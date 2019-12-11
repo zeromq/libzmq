@@ -195,7 +195,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 #ifdef ZMQ_HAVE_WSS
     //  TLS handshake, we need to take a copy when the session is created,
     //  in order to maintain the value at the creation time
-    char *_wss_hostname;
+    const std::string _wss_hostname;
 #endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (session_base_t)
