@@ -118,14 +118,14 @@ zmq::ws_engine_t::~ws_engine_t ()
 void zmq::ws_engine_t::start_ws_handshake ()
 {
     if (_client) {
-        char protocol[21];
+        const char *protocol;
         if (_options.mechanism == ZMQ_NULL)
-            strcpy (protocol, "ZWS2.0/NULL,ZWS2.0");
+            protocol = "ZWS2.0/NULL,ZWS2.0";
         else if (_options.mechanism == ZMQ_PLAIN)
-            strcpy (protocol, "ZWS2.0/PLAIN");
+            protocol = "ZWS2.0/PLAIN";
 #ifdef ZMQ_HAVE_CURVE
         else if (_options.mechanism == ZMQ_CURVE)
-            strcpy (protocol, "ZWS2.0/CURVE");
+            protocol = "ZWS2.0/CURVE";
 #endif
         else
             assert (false);
