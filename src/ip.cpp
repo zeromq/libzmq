@@ -879,7 +879,7 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
 
     // We need room for tmp_path + trailing NUL
     std::vector<char> buffer (tmp_path.length () + 1);
-    strcpy (&buffer[0], tmp_path.c_str ());
+    memcpy (&buffer[0], tmp_path.c_str (), tmp_path.length () + 1);
 
 #if defined HAVE_MKDTEMP
     // Create the directory.  POSIX requires that mkdtemp() creates the
