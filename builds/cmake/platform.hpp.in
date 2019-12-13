@@ -48,6 +48,7 @@
 #cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_2
 #cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_3
 #cmakedefine ZMQ_HAVE_PTHREAD_SET_NAME
+#cmakedefine ZMQ_HAVE_PTHREAD_SET_AFFINITY
 #cmakedefine HAVE_ACCEPT4
 #cmakedefine HAVE_STRNLEN
 
