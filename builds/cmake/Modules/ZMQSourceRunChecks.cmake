@@ -273,7 +273,7 @@ int main(int argc, char *argv [])
     return 0;
 }
 "
-    ZMQ_HAVE_PTHREAD_SETAFFINITY)
+    ZMQ_HAVE_PTHREAD_SET_AFFINITY)
   set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
 endmacro()
 
