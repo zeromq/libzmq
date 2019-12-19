@@ -1,0 +1,36 @@
+# Define job order
+stages:
+  - build-lib
+  
+# Define library files
+.build-lib-files: &build-lib-files
+  only:
+    changes:
+      - ./**
+    refs:
+      - master
+
+# Create library for macos
+lib-macos-release-x64:
+  <<: *build-lib-files
+  stage: build-lib
+  tags:
+    - osx
+  script:
+    - git clean -xfd
+    - mkdir build
+    - mkdir deploy
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - make -C build
+    - make -C build DESTDIR=$PWD/deploy install
+    - make -C build DESTDIR=$HOME/builds/release/x64/ install
+    - cd deploy/usr/local/
+    - tar zcvf ../../../libzmq.tgz *
+    - cd ../../..
+  artifacts:
+    paths:
+      - libzmq.tgz
+    name: "lib-macos-release-x64"
+    expire_in: 1 day
+  dependencies: []
+
