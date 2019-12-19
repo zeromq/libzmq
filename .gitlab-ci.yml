@@ -20,7 +20,7 @@ lib-macos-release-x64:
     - git clean -xfd
     - mkdir build
     - mkdir deploy
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=$HOME/builds/release/x64/usr/local/
     - make -C build
     - make -C build DESTDIR=$PWD/deploy install
     - make -C build DESTDIR=$HOME/builds/release/x64/ install
