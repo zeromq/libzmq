@@ -333,5 +333,4 @@ int main (void)
     RUN_TEST (test_vanilla_socket);
     RUN_TEST (test_unauth_creds);
     return UNITY_END ();
-    return 0;
 }
