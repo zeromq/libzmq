@@ -171,9 +171,13 @@ void zmq::dist_t::distribute (msg_t *msg_)
     }
 
     if (msg_->is_vsm ()) {
-        for (pipes_t::size_type i = 0; i < _matching; ++i)
-            if (!write (_pipes[i], msg_))
-                --i; //  Retry last write because index will have been swapped
+        for (pipes_t::size_type i = 0; i < _matching;) {
+            if (!write (_pipes[i], msg_)) {
+                //  Use same index again because entry will have been removed.
+            } else {
+                ++i;
+            }
+        }
         int rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
@@ -187,11 +191,14 @@ void zmq::dist_t::distribute (msg_t *msg_)
 
     //  Push copy of the message to each matching pipe.
     int failed = 0;
-    for (pipes_t::size_type i = 0; i < _matching; ++i)
+    for (pipes_t::size_type i = 0; i < _matching;) {
         if (!write (_pipes[i], msg_)) {
             ++failed;
-            --i; //  Retry last write because index will have been swapped
+            //  Use same index again because entry will have been removed.
+        } else {
+            ++i;
         }
+    }
     if (unlikely (failed))
         msg_->rm_refs (failed);
 
