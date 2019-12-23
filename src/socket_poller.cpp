@@ -596,14 +596,11 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
               static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
 
         //  Wait for events.
-        while (true) {
-            int rc = poll (_pollfds, _pollset_size, timeout);
-            if (rc == -1 && errno == EINTR) {
-                return -1;
-            }
-            errno_assert (rc >= 0);
-            break;
+        int rc = poll (_pollfds, _pollset_size, timeout);
+        if (rc == -1 && errno == EINTR) {
+            return -1;
         }
+        errno_assert (rc >= 0);
 
         //  Receive the signal from pollfd
         if (_use_signaler && _pollfds[0].revents & POLLIN)
@@ -653,29 +650,26 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
         }
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
-        while (true) {
-            memcpy (inset.get (), _pollset_in.get (),
-                    valid_pollset_bytes (*_pollset_in.get ()));
-            memcpy (outset.get (), _pollset_out.get (),
-                    valid_pollset_bytes (*_pollset_out.get ()));
-            memcpy (errset.get (), _pollset_err.get (),
-                    valid_pollset_bytes (*_pollset_err.get ()));
-            const int rc = select (static_cast<int> (_max_fd + 1), inset.get (),
-                                   outset.get (), errset.get (), ptimeout);
+        memcpy (inset.get (), _pollset_in.get (),
+                valid_pollset_bytes (*_pollset_in.get ()));
+        memcpy (outset.get (), _pollset_out.get (),
+                valid_pollset_bytes (*_pollset_out.get ()));
+        memcpy (errset.get (), _pollset_err.get (),
+                valid_pollset_bytes (*_pollset_err.get ()));
+        const int rc = select (static_cast<int> (_max_fd + 1), inset.get (),
+                               outset.get (), errset.get (), ptimeout);
 #if defined ZMQ_HAVE_WINDOWS
-            if (unlikely (rc == SOCKET_ERROR)) {
-                errno = wsa_error_to_errno (WSAGetLastError ());
-                wsa_assert (errno == ENOTSOCK);
-                return -1;
-            }
-#else
-            if (unlikely (rc == -1)) {
-                errno_assert (errno == EINTR || errno == EBADF);
-                return -1;
-            }
-#endif
-            break;
+        if (unlikely (rc == SOCKET_ERROR)) {
+            errno = wsa_error_to_errno (WSAGetLastError ());
+            wsa_assert (errno == ENOTSOCK);
+            return -1;
         }
+#else
+        if (unlikely (rc == -1)) {
+            errno_assert (errno == EINTR || errno == EBADF);
+            return -1;
+        }
+#endif
 
         if (_use_signaler && FD_ISSET (_signaler->get_fd (), inset.get ()))
             _signaler->recv ();
