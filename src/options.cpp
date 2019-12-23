@@ -102,9 +102,9 @@ static int do_getsockopt_curve_key (void *const optval_,
 #endif
 
 template <typename T>
-int do_setsockopt (const void *const optval_,
-                   const size_t optvallen_,
-                   T *const out_value_)
+static int do_setsockopt (const void *const optval_,
+                          const size_t optvallen_,
+                          T *const out_value_)
 {
     if (optvallen_ == sizeof (T)) {
         memcpy (out_value_, optval_, sizeof (T));
@@ -176,9 +176,9 @@ do_setsockopt_string_allow_empty_relaxed (const void *const optval_,
 }
 
 template <typename T>
-int do_setsockopt_set (const void *const optval_,
-                       const size_t optvallen_,
-                       std::set<T> *const set_)
+static int do_setsockopt_set (const void *const optval_,
+                              const size_t optvallen_,
+                              std::set<T> *const set_)
 {
     if (optvallen_ == 0 && optval_ == NULL) {
         set_->clear ();
@@ -592,7 +592,7 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_ZAP_DOMAIN:
             return do_setsockopt_string_allow_empty_relaxed (
               optval_, optvallen_, &zap_domain, UCHAR_MAX);
-            
+
             //  If curve encryption isn't built, these options provoke EINVAL
 #ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:

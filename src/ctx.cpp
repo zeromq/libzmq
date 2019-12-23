@@ -63,7 +63,7 @@
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD 0xdeadbeef
 
-int clipped_maxsocket (int max_requested_)
+static int clipped_maxsocket (int max_requested_)
 {
     if (max_requested_ >= zmq::poller_t::max_fds ()
         && zmq::poller_t::max_fds () != -1)
