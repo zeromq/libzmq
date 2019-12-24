@@ -63,7 +63,7 @@ struct test_events_t : zmq::i_poll_events
         (void) _fd;
     }
 
-    virtual void in_event ()
+    void in_event () ZMQ_OVERRIDE
     {
         _poller.rm_fd (_handle);
         _handle = (zmq::poller_t::handle_t) NULL;
@@ -73,13 +73,13 @@ struct test_events_t : zmq::i_poll_events
     }
 
 
-    virtual void out_event ()
+    void out_event () ZMQ_OVERRIDE
     {
         // TODO
     }
 
 
-    virtual void timer_event (int id_)
+    void timer_event (int id_) ZMQ_OVERRIDE
     {
         LIBZMQ_UNUSED (id_);
         _poller.rm_fd (_handle);

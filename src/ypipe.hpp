@@ -43,7 +43,7 @@ namespace zmq
 //  N is granularity of the pipe, i.e. how many items are needed to
 //  perform next memory allocation.
 
-template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
+template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
 {
   public:
     //  Initialises the pipe.
@@ -71,7 +71,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  set to true the item is assumed to be continued by items
     //  subsequently written to the pipe. Incomplete items are never
     //  flushed down the stream.
-    inline void write (const T &value_, bool incomplete_)
+    inline void write (const T &value_, bool incomplete_) ZMQ_FINAL
     {
         //  Place the value to the queue, add new terminator element.
         _queue.back () = value_;
@@ -88,7 +88,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
 
     //  Pop an incomplete item from the pipe. Returns true if such
     //  item exists, false otherwise.
-    inline bool unwrite (T *value_)
+    inline bool unwrite (T *value_) ZMQ_FINAL
     {
         if (_f == &_queue.back ())
             return false;
@@ -100,7 +100,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  Flush all the completed items into the pipe. Returns false if
     //  the reader thread is sleeping. In that case, caller is obliged to
     //  wake the reader up before using the pipe again.
-    inline bool flush ()
+    inline bool flush () ZMQ_FINAL
     {
         //  If there are no un-flushed items, do nothing.
         if (_w == _f)
@@ -125,7 +125,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     }
 
     //  Check whether item is available for reading.
-    inline bool check_read ()
+    inline bool check_read () ZMQ_FINAL
     {
         //  Was the value prefetched already? If so, return.
         if (&_queue.front () != _r && _r)
@@ -150,7 +150,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
 
     //  Reads an item from the pipe. Returns false if there is no value.
     //  available.
-    inline bool read (T *value_)
+    inline bool read (T *value_) ZMQ_FINAL
     {
         //  Try to prefetch a value.
         if (!check_read ())
@@ -166,7 +166,7 @@ template <typename T, int N> class ypipe_t : public ypipe_base_t<T>
     //  Applies the function fn to the first elemenent in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
-    inline bool probe (bool (*fn_) (const T &))
+    inline bool probe (bool (*fn_) (const T &)) ZMQ_FINAL
     {
         bool rc = check_read ();
         zmq_assert (rc);

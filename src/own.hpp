@@ -90,12 +90,12 @@ class own_t : public object_t
     //  others to invoke the destructor. At the same time, it has to be
     //  virtual so that generic own_t deallocation mechanism destroys
     //  specific type of the owned object correctly.
-    virtual ~own_t ();
+    ~own_t () ZMQ_OVERRIDE;
 
     //  Term handler is protected rather than private so that it can
     //  be intercepted by the derived class. This is useful to add custom
     //  steps to the beginning of the termination process.
-    void process_term (int linger_);
+    void process_term (int linger_) ZMQ_OVERRIDE;
 
     //  A place to hook in when physical destruction of the object
     //  is to be delayed.
@@ -109,10 +109,10 @@ class own_t : public object_t
     void set_owner (own_t *owner_);
 
     //  Handlers for incoming commands.
-    void process_own (own_t *object_);
-    void process_term_req (own_t *object_);
-    void process_term_ack ();
-    void process_seqnum ();
+    void process_own (own_t *object_) ZMQ_OVERRIDE;
+    void process_term_req (own_t *object_) ZMQ_OVERRIDE;
+    void process_term_ack () ZMQ_OVERRIDE;
+    void process_seqnum () ZMQ_OVERRIDE;
 
     //  Check whether all the pending term acks were delivered.
     //  If so, deallocate this object.

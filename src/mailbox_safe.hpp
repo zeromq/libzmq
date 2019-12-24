@@ -44,14 +44,14 @@
 
 namespace zmq
 {
-class mailbox_safe_t : public i_mailbox
+class mailbox_safe_t ZMQ_FINAL : public i_mailbox
 {
   public:
     mailbox_safe_t (mutex_t *sync_);
-    ~mailbox_safe_t ();
+    ~mailbox_safe_t () ZMQ_FINAL;
 
-    void send (const command_t &cmd_);
-    int recv (command_t *cmd_, int timeout_);
+    void send (const command_t &cmd_) ZMQ_FINAL;
+    int recv (command_t *cmd_, int timeout_) ZMQ_FINAL;
 
     // Add signaler to mailbox which will be called when a message is ready
     void add_signaler (signaler_t *signaler_);
@@ -62,7 +62,7 @@ class mailbox_safe_t : public i_mailbox
     // close the file descriptors in the signaller. This is used in a forked
     // child process to close the file descriptors so that they do not interfere
     // with the context in the parent process.
-    void forked ()
+    void forked () ZMQ_FINAL
     {
         // TODO: call fork on the condition variable
     }

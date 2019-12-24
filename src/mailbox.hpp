@@ -42,15 +42,15 @@
 
 namespace zmq
 {
-class mailbox_t : public i_mailbox
+class mailbox_t ZMQ_FINAL : public i_mailbox
 {
   public:
     mailbox_t ();
-    ~mailbox_t ();
+    ~mailbox_t () ZMQ_FINAL;
 
     fd_t get_fd () const;
-    void send (const command_t &cmd_);
-    int recv (command_t *cmd_, int timeout_);
+    void send (const command_t &cmd_) ZMQ_FINAL;
+    int recv (command_t *cmd_, int timeout_) ZMQ_FINAL;
 
     bool valid () const;
 
@@ -58,7 +58,7 @@ class mailbox_t : public i_mailbox
     // close the file descriptors in the signaller. This is used in a forked
     // child process to close the file descriptors so that they do not interfere
     // with the context in the parent process.
-    void forked () { _signaler.forked (); }
+    void forked () ZMQ_FINAL { _signaler.forked (); }
 #endif
 
   private:

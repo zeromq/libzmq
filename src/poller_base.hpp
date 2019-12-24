@@ -114,7 +114,7 @@ struct i_poll_events;
 // a container that is being iterated by the poller.
 
 
-// A class that can be used as a base class for implementations of the poller
+// A class that can be used as abase class for implementations of the poller
 // concept.
 //
 // For documentation of the public methods, see the description of the poller_t
@@ -122,7 +122,7 @@ struct i_poll_events;
 class poller_base_t
 {
   public:
-    poller_base_t ();
+    poller_base_t () ZMQ_DEFAULT;
     virtual ~poller_base_t ();
 
     // Methods from the poller concept.

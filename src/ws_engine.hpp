@@ -124,7 +124,7 @@ typedef enum
     client_handshake_error = -1
 } ws_client_handshake_state_t;
 
-class ws_engine_t : public stream_engine_base_t
+class ws_engine_t ZMQ_FINAL : public stream_engine_base_t
 {
   public:
     ws_engine_t (fd_t fd_,
@@ -132,7 +132,7 @@ class ws_engine_t : public stream_engine_base_t
                  const endpoint_uri_pair_t &endpoint_uri_pair_,
                  ws_address_t &address_,
                  bool client_);
-    ~ws_engine_t ();
+    ~ws_engine_t () ZMQ_FINAL;
 
   protected:
     int decode_and_push (msg_t *msg_);

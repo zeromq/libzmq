@@ -56,7 +56,7 @@ struct i_poll_events;
 //  Implements socket polling mechanism using the POSIX.1-2001
 //  poll() system call.
 
-class poll_t : public worker_poller_base_t
+class poll_t ZMQ_FINAL : public worker_poller_base_t
 {
   public:
     typedef fd_t handle_t;
@@ -78,7 +78,7 @@ class poll_t : public worker_poller_base_t
 
   private:
     //  Main event loop.
-    virtual void loop ();
+    void loop () ZMQ_FINAL;
 
     void cleanup_retired ();
 

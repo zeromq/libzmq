@@ -83,12 +83,12 @@ class zap_client_common_handshake_t : public zap_client_t
                                    state_t zap_reply_ok_state_);
 
     //  methods from mechanism_t
-    status_t status () const;
-    int zap_msg_available ();
+    status_t status () const ZMQ_FINAL;
+    int zap_msg_available () ZMQ_FINAL;
 
     //  zap_client_t methods
-    int receive_and_process_zap_reply ();
-    void handle_zap_status_code ();
+    int receive_and_process_zap_reply () ZMQ_FINAL;
+    void handle_zap_status_code () ZMQ_FINAL;
 
     //  Current FSM state
     state_t state;

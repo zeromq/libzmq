@@ -71,10 +71,10 @@ struct i_pipe_events
 //  The array of inbound pipes (1), the array of outbound pipes (2) and
 //  the generic array of pipes to be deallocated (3).
 
-class pipe_t : public object_t,
-               public array_item_t<1>,
-               public array_item_t<2>,
-               public array_item_t<3>
+class pipe_t ZMQ_FINAL : public object_t,
+                         public array_item_t<1>,
+                         public array_item_t<2>,
+                         public array_item_t<3>
 {
     //  This allows pipepair to create pipe objects.
     friend int pipepair (zmq::object_t *parents_[2],
@@ -152,15 +152,16 @@ class pipe_t : public object_t,
     typedef ypipe_base_t<msg_t> upipe_t;
 
     //  Command handlers.
-    void process_activate_read ();
-    void process_activate_write (uint64_t msgs_read_);
-    void process_hiccup (void *pipe_);
-    void process_pipe_peer_stats (uint64_t queue_count_,
-                                  own_t *socket_base_,
-                                  endpoint_uri_pair_t *endpoint_pair_);
-    void process_pipe_term ();
-    void process_pipe_term_ack ();
-    void process_pipe_hwm (int inhwm_, int outhwm_);
+    void process_activate_read () ZMQ_OVERRIDE;
+    void process_activate_write (uint64_t msgs_read_) ZMQ_OVERRIDE;
+    void process_hiccup (void *pipe_) ZMQ_OVERRIDE;
+    void
+    process_pipe_peer_stats (uint64_t queue_count_,
+                             own_t *socket_base_,
+                             endpoint_uri_pair_t *endpoint_pair_) ZMQ_OVERRIDE;
+    void process_pipe_term () ZMQ_OVERRIDE;
+    void process_pipe_term_ack () ZMQ_OVERRIDE;
+    void process_pipe_hwm (int inhwm_, int outhwm_) ZMQ_OVERRIDE;
 
     //  Handler for delimiter read from the pipe.
     void process_delimiter ();
@@ -179,7 +180,7 @@ class pipe_t : public object_t,
     void set_peer (pipe_t *peer_);
 
     //  Destructor is private. Pipe objects destroy themselves.
-    ~pipe_t ();
+    ~pipe_t () ZMQ_OVERRIDE;
 
     //  Underlying pipes for both directions.
     upipe_t *_in_pipe;

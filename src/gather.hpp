@@ -39,21 +39,21 @@ class ctx_t;
 class pipe_t;
 class msg_t;
 
-class gather_t : public socket_base_t
+class gather_t ZMQ_FINAL : public socket_base_t
 {
   public:
     gather_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~gather_t ();
+    ~gather_t () ZMQ_FINAL;
 
   protected:
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_);
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+                       bool locally_initiated_) ZMQ_FINAL;
+    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_in () ZMQ_FINAL;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   private:
     //  Fair queueing object for inbound pipes.

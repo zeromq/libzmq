@@ -32,10 +32,6 @@
 #include "i_poll_events.hpp"
 #include "err.hpp"
 
-zmq::poller_base_t::poller_base_t ()
-{
-}
-
 zmq::poller_base_t::~poller_base_t ()
 {
     //  Make sure there is no more load on the shutdown.

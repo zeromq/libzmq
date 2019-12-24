@@ -90,7 +90,7 @@ class thread_ctx_t
 //  Context object encapsulates all the global state associated with
 //  the library.
 
-class ctx_t : public thread_ctx_t
+class ctx_t ZMQ_FINAL : public thread_ctx_t
 {
   public:
     //  Create the context object.
