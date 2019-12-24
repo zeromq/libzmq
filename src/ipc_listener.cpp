@@ -253,9 +253,10 @@ bool zmq::ipc_listener_t::filter (fd_t sock_)
 
     if (!(pw = getpwuid (cred.uid)))
         return false;
-    for (options_t::ipc_gid_accept_filters_t::const_iterator it =
-           options.ipc_gid_accept_filters.begin ();
-         it != options.ipc_gid_accept_filters.end (); it++) {
+    for (options_t::ipc_gid_accept_filters_t::const_iterator
+           it = options.ipc_gid_accept_filters.begin (),
+           end = options.ipc_gid_accept_filters.end ();
+         it != end; it++) {
         if (!(gr = getgrgid (*it)))
             continue;
         for (char **mem = gr->gr_mem; *mem; mem++) {

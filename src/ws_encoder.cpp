@@ -117,7 +117,8 @@ void zmq::ws_encoder_t::size_ready ()
           static_cast<unsigned char *> (_masked_msg.data ());
         unsigned char *src =
           static_cast<unsigned char *> (in_progress ()->data ());
-        for (size_t i = 0; i < in_progress ()->size (); ++i, mask_index++)
+        for (size_t i = 0, size = in_progress ()->size (); i < size;
+             ++i, mask_index++)
             dest[i] = src[i] ^ _mask[mask_index % 4];
 
         next_step (_masked_msg.data (), _masked_msg.size (),

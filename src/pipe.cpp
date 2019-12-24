@@ -188,7 +188,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
     if (unlikely (_state != active && _state != waiting_for_delimiter))
         return false;
 
-    for (bool payload_read = false; !payload_read;) {
+    while (true) {
         if (!_in_pipe->read (msg_)) {
             _in_active = false;
             return false;
@@ -198,8 +198,9 @@ bool zmq::pipe_t::read (msg_t *msg_)
         if (unlikely (msg_->is_credential ())) {
             const int rc = msg_->close ();
             zmq_assert (rc == 0);
-        } else
-            payload_read = true;
+        } else {
+            break;
+        }
     }
 
     //  If delimiter was read, start termination process of the pipe.

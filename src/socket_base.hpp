@@ -376,8 +376,9 @@ class routing_socket_base_t : public socket_base_t
     template <typename Func> bool any_of_out_pipes (Func func_)
     {
         bool res = false;
-        for (out_pipes_t::iterator it = _out_pipes.begin ();
-             it != _out_pipes.end () && !res; ++it) {
+        for (out_pipes_t::iterator it = _out_pipes.begin (),
+                                   end = _out_pipes.end ();
+             it != end && !res; ++it) {
             res |= func_ (*it->second.pipe);
         }
 

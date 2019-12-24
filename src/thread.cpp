@@ -355,8 +355,9 @@ void zmq::thread_t::
     if (!_thread_affinity_cpus.empty ()) {
         cpu_set_t cpuset;
         CPU_ZERO (&cpuset);
-        for (std::set<int>::const_iterator it = _thread_affinity_cpus.begin ();
-             it != _thread_affinity_cpus.end (); it++) {
+        for (std::set<int>::const_iterator it = _thread_affinity_cpus.begin (),
+                                           end = _thread_affinity_cpus.end ();
+             it != end; it++) {
             CPU_SET ((int) (*it), &cpuset);
         }
         rc =

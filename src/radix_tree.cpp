@@ -34,6 +34,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <iterator>
 #include <vector>
 
 node_t::node_t (unsigned char *data_) : _data (data_)
@@ -187,7 +188,7 @@ zmq::radix_tree_t::radix_tree_t () : _root (make_node (0, 0, 0)), _size (0)
 
 static void free_nodes (node_t node_)
 {
-    for (size_t i = 0; i < node_.edgecount (); ++i)
+    for (size_t i = 0, count = node_.edgecount (); i < count; ++i)
         free_nodes (node_.node_at (i));
     free (node_._data);
 }
@@ -234,18 +235,19 @@ match_result_t zmq::radix_tree_t::match (const unsigned char *key_,
     size_t parent_edge_index = 0;
 
     while (current_node.prefix_length () > 0 || current_node.edgecount () > 0) {
+        const unsigned char *const prefix = current_node.prefix ();
+        const size_t prefix_length = current_node.prefix_length ();
+
         for (prefix_byte_index = 0;
-             prefix_byte_index < current_node.prefix_length ()
-             && key_byte_index < key_size_;
+             prefix_byte_index < prefix_length && key_byte_index < key_size_;
              ++prefix_byte_index, ++key_byte_index) {
-            if (current_node.prefix ()[prefix_byte_index]
-                != key_[key_byte_index])
+            if (prefix[prefix_byte_index] != key_[key_byte_index])
                 break;
         }
 
         // Even if a prefix of the key matches and we're doing a
         // lookup, this means we've found a matching subscription.
-        if (is_lookup_ && prefix_byte_index == current_node.prefix_length ()
+        if (is_lookup_ && prefix_byte_index == prefix_length
             && current_node.refcount () > 0) {
             key_byte_index = key_size_;
             break;
@@ -253,14 +255,14 @@ match_result_t zmq::radix_tree_t::match (const unsigned char *key_,
 
         // There was a mismatch or we've matched the whole key, so
         // there's nothing more to do.
-        if (prefix_byte_index != current_node.prefix_length ()
-            || key_byte_index == key_size_)
+        if (prefix_byte_index != prefix_length || key_byte_index == key_size_)
             break;
 
         // We need to match the rest of the key. Check if there's an
         // outgoing edge from this node.
         node_t next_node = current_node;
-        for (size_t i = 0; i < current_node.edgecount (); ++i) {
+        for (size_t i = 0, edgecount = current_node.edgecount (); i < edgecount;
+             ++i) {
             if (current_node.first_byte_at (i) == key_[key_byte_index]) {
                 parent_edge_index = edge_index;
                 edge_index = i;
@@ -543,18 +545,20 @@ visit_keys (node_t node_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_)
 {
-    for (size_t i = 0; i < node_.prefix_length (); ++i)
-        buffer_.push_back (node_.prefix ()[i]);
+    const size_t prefix_length = node_.prefix_length ();
+    buffer_.reserve (buffer_.size () + prefix_length);
+    std::copy (node_.prefix (), node_.prefix () + prefix_length,
+               std::back_inserter (buffer_));
 
     if (node_.refcount () > 0) {
         zmq_assert (!buffer_.empty ());
         func_ (&buffer_[0], buffer_.size (), arg_);
     }
 
-    for (size_t i = 0; i < node_.edgecount (); ++i)
+    for (size_t i = 0, edgecount = node_.edgecount (); i < edgecount; ++i) {
         visit_keys (node_.node_at (i), buffer_, func_, arg_);
-    for (size_t i = 0; i < node_.prefix_length (); ++i)
-        buffer_.pop_back ();
+    }
+    buffer_.resize (buffer_.size () - prefix_length);
 }
 
 void zmq::radix_tree_t::apply (

@@ -117,12 +117,13 @@ zmq::ctx_t::~ctx_t ()
 
     //  Ask I/O threads to terminate. If stop signal wasn't sent to I/O
     //  thread subsequent invocation of destructor would hang-up.
-    for (io_threads_t::size_type i = 0; i != _io_threads.size (); i++) {
+    const io_threads_t::size_type io_threads_size = _io_threads.size ();
+    for (io_threads_t::size_type i = 0; i != io_threads_size; i++) {
         _io_threads[i]->stop ();
     }
 
     //  Wait till I/O threads actually terminate.
-    for (io_threads_t::size_type i = 0; i != _io_threads.size (); i++) {
+    for (io_threads_t::size_type i = 0; i != io_threads_size; i++) {
         LIBZMQ_DELETE (_io_threads[i]);
     }
 
@@ -176,9 +177,10 @@ int zmq::ctx_t::terminate ()
         if (_pid != getpid ()) {
             // we are a forked child process. Close all file descriptors
             // inherited from the parent.
-            for (sockets_t::size_type i = 0; i != _sockets.size (); i++)
+            for (sockets_t::size_type i = 0, size = _sockets.size (); i != size;
+                 i++) {
                 _sockets[i]->get_mailbox ()->forked ();
-
+            }
             _term_mailbox.forked ();
         }
 #endif
@@ -193,8 +195,10 @@ int zmq::ctx_t::terminate ()
             //  First send stop command to sockets so that any blocking calls
             //  can be interrupted. If there are no sockets we can ask reaper
             //  thread to stop.
-            for (sockets_t::size_type i = 0; i != _sockets.size (); i++)
+            for (sockets_t::size_type i = 0, size = _sockets.size (); i != size;
+                 i++) {
                 _sockets[i]->stop ();
+            }
             if (_sockets.empty ())
                 _reaper->stop ();
         }
@@ -239,8 +243,10 @@ int zmq::ctx_t::shutdown ()
             //  Send stop command to sockets so that any blocking calls
             //  can be interrupted. If there are no sockets we can ask reaper
             //  thread to stop.
-            for (sockets_t::size_type i = 0; i != _sockets.size (); i++)
+            for (sockets_t::size_type i = 0, size = _sockets.size (); i != size;
+                 i++) {
                 _sockets[i]->stop ();
+            }
             if (_sockets.empty ())
                 _reaper->stop ();
         }
@@ -666,9 +672,10 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
     //  Find the I/O thread with minimum load.
     int min_load = -1;
     io_thread_t *selected_io_thread = NULL;
-    for (io_threads_t::size_type i = 0; i != _io_threads.size (); i++) {
+    for (io_threads_t::size_type i = 0, size = _io_threads.size (); i != size;
+         i++) {
         if (!affinity_ || (affinity_ & (uint64_t (1) << i))) {
-            int load = _io_threads[i]->get_load ();
+            const int load = _io_threads[i]->get_load ();
             if (selected_io_thread == NULL || load < min_load) {
                 min_load = load;
                 selected_io_thread = _io_threads[i];

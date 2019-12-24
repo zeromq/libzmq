@@ -1469,8 +1469,9 @@ void zmq::socket_base_t::process_term (int linger_)
     unregister_endpoints (this);
 
     //  Ask all attached pipes to terminate.
-    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i)
+    for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
         _pipes[i]->terminate (false);
+    }
     register_term_acks (static_cast<int> (_pipes.size ()));
 
     //  Continue the termination process immediately.
@@ -1515,7 +1516,7 @@ int zmq::socket_base_t::query_pipes_stats ()
         errno = EAGAIN;
         return -1;
     }
-    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+    for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
         _pipes[i]->send_stats_to_peer (this);
     }
 
@@ -1525,7 +1526,7 @@ int zmq::socket_base_t::query_pipes_stats ()
 void zmq::socket_base_t::update_pipe_options (int option_)
 {
     if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) {
-        for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+        for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
             _pipes[i]->set_hwms (options.rcvhwm, options.sndhwm);
             _pipes[i]->send_hwms_to_peer (options.sndhwm, options.rcvhwm);
         }
