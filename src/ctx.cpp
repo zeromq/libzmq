@@ -105,7 +105,7 @@ zmq::ctx_t::ctx_t () :
 #endif
 }
 
-bool zmq::ctx_t::check_tag ()
+bool zmq::ctx_t::check_tag () const
 {
     return _tag == ZMQ_CTX_TAG_VALUE_GOOD;
 }
@@ -534,7 +534,7 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
         _reaper->stop ();
 }
 
-zmq::object_t *zmq::ctx_t::get_reaper ()
+zmq::object_t *zmq::ctx_t::get_reaper () const
 {
     return _reaper;
 }

@@ -268,7 +268,7 @@ struct curve_client_tools_t
                           size_t size_,
                           const uint64_t cn_nonce_,
                           const uint8_t *metadata_plaintext_,
-                          const size_t metadata_length_)
+                          const size_t metadata_length_) const
     {
         return produce_initiate (data_, size_, cn_nonce_, server_key,
                                  public_key, secret_key, cn_public, cn_secret,

@@ -81,12 +81,12 @@ zmq::socket_poller_t::~socket_poller_t ()
 #endif
 }
 
-bool zmq::socket_poller_t::check_tag ()
+bool zmq::socket_poller_t::check_tag () const
 {
     return _tag == 0xCAFEBABE;
 }
 
-int zmq::socket_poller_t::signaler_fd (fd_t *fd_)
+int zmq::socket_poller_t::signaler_fd (fd_t *fd_) const
 {
     if (_signaler) {
         *fd_ = _signaler->get_fd ();

@@ -81,17 +81,20 @@ class mechanism_t
 
     const blob_t &get_user_id () const;
 
-    const metadata_t::dict_t &get_zmtp_properties ()
+    const metadata_t::dict_t &get_zmtp_properties () const
     {
         return _zmtp_properties;
     }
 
-    const metadata_t::dict_t &get_zap_properties () { return _zap_properties; }
+    const metadata_t::dict_t &get_zap_properties () const
+    {
+        return _zap_properties;
+    }
 
   protected:
     //  Only used to identify the socket for the Socket-Type
     //  property in the wire protocol.
-    const char *socket_type_string (int socket_type_) const;
+    static const char *socket_type_string (int socket_type_);
 
     static size_t add_property (unsigned char *ptr_,
                                 size_t ptr_capacity_,

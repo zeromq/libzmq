@@ -67,13 +67,13 @@ class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
     void timer_event (int id_) ZMQ_FINAL;
 
     //  Used by io_objects to retrieve the associated poller object.
-    poller_t *get_poller ();
+    poller_t *get_poller () const;
 
     //  Command handlers.
     void process_stop () ZMQ_FINAL;
 
     //  Returns load experienced by the I/O thread.
-    int get_load ();
+    int get_load () const;
 
   private:
     //  I/O thread accesses incoming commands via this mailbox.

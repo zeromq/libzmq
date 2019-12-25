@@ -97,7 +97,7 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     ctx_t ();
 
     //  Returns false if object is not a context.
-    bool check_tag ();
+    bool check_tag () const;
 
     //  This function is called when user invokes zmq_ctx_term. If there are
     //  no more sockets open it'll cause all the infrastructure to be shut
@@ -132,7 +132,7 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     zmq::io_thread_t *choose_io_thread (uint64_t affinity_);
 
     //  Returns reaper thread object.
-    zmq::object_t *get_reaper ();
+    zmq::object_t *get_reaper () const;
 
     //  Management of inproc endpoints.
     int register_endpoint (const char *addr_, const endpoint_t &endpoint_);
@@ -253,7 +253,8 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
         connect_side,
         bind_side
     };
-    void
+
+    static void
     connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
                             const options_t &bind_options_,
                             const pending_connection_t &pending_connection_,

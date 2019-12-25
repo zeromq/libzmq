@@ -84,7 +84,7 @@ class own_t : public object_t
     void terminate ();
 
     //  Returns true if the object is in process of termination.
-    bool is_terminating ();
+    bool is_terminating () const;
 
     //  Derived object destroys own_t. There's no point in allowing
     //  others to invoke the destructor. At the same time, it has to be

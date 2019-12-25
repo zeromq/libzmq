@@ -73,7 +73,7 @@ class dist_t
     //  Send the message to all the outbound pipes.
     int send_to_all (zmq::msg_t *msg_);
 
-    bool has_out ();
+    static bool has_out ();
 
     // check HWM of all pipes matching
     bool check_hwm ();

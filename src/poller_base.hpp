@@ -172,7 +172,7 @@ class worker_poller_base_t : public poller_base_t
     //  via an assertion.
     //  Should be called by the add_fd, removed_fd, set_*, reset_* functions
     //  to ensure correct usage.
-    void check_thread ();
+    void check_thread () const;
 
     //  Stops the worker thread. Should be called from the destructor of the
     //  leaf class.

@@ -75,7 +75,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     virtual int push_msg (msg_t *msg_);
 
     int zap_connect ();
-    bool zap_enabled ();
+    bool zap_enabled () const;
 
     //  Fetches a message. Returns 0 if successful; -1 otherwise.
     //  The caller is responsible for freeing the message when no
@@ -92,7 +92,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     //  The function takes ownership of the message.
     int write_zap_msg (msg_t *msg_);
 
-    socket_base_t *get_socket ();
+    socket_base_t *get_socket () const;
     const endpoint_uri_pair_t &get_endpoint () const;
 
   protected:

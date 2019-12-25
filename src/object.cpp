@@ -53,7 +53,7 @@ zmq::object_t::~object_t ()
 {
 }
 
-uint32_t zmq::object_t::get_tid ()
+uint32_t zmq::object_t::get_tid () const
 {
     return _tid;
 }
@@ -63,7 +63,7 @@ void zmq::object_t::set_tid (uint32_t id_)
     _tid = id_;
 }
 
-zmq::ctx_t *zmq::object_t::get_ctx ()
+zmq::ctx_t *zmq::object_t::get_ctx () const
 {
     return _ctx;
 }
@@ -184,7 +184,7 @@ void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
     return _ctx->unregister_endpoints (socket_);
 }
 
-zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
+zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_) const
 {
     return _ctx->find_endpoint (addr_);
 }
@@ -207,7 +207,7 @@ void zmq::object_t::destroy_socket (socket_base_t *socket_)
     _ctx->destroy_socket (socket_);
 }
 
-zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
+zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_) const
 {
     return _ctx->choose_io_thread (affinity_);
 }

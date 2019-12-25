@@ -61,7 +61,7 @@ template <int ID = 0> class array_item_t
 
     inline void set_array_index (int index_) { _array_index = index_; }
 
-    inline int get_array_index () { return _array_index; }
+    inline int get_array_index () const { return _array_index; }
 
   private:
     int _array_index;
@@ -118,7 +118,7 @@ template <typename T, int ID = 0> class array_t
 
     inline void clear () { _items.clear (); }
 
-    inline size_type index (T *item_)
+    static inline size_type index (T *item_)
     {
         return (size_type) ((item_t *) item_)->get_array_index ();
     }

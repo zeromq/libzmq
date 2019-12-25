@@ -227,7 +227,7 @@ void zmq::signaler_t::send ()
 #endif
 }
 
-int zmq::signaler_t::wait (int timeout_)
+int zmq::signaler_t::wait (int timeout_) const
 {
 #ifdef HAVE_FORK
     if (unlikely (pid != getpid ())) {

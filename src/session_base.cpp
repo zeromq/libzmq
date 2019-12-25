@@ -325,7 +325,7 @@ void zmq::session_base_t::hiccuped (pipe_t *)
     zmq_assert (false);
 }
 
-zmq::socket_base_t *zmq::session_base_t::get_socket ()
+zmq::socket_base_t *zmq::session_base_t::get_socket () const
 {
     return _socket;
 }
@@ -385,7 +385,7 @@ int zmq::session_base_t::zap_connect ()
     return 0;
 }
 
-bool zmq::session_base_t::zap_enabled ()
+bool zmq::session_base_t::zap_enabled () const
 {
     return (options.mechanism != ZMQ_NULL || !options.zap_domain.empty ());
 }

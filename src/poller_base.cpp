@@ -123,7 +123,7 @@ void zmq::worker_poller_base_t::start (const char *name_)
     _ctx.start_thread (_worker, worker_routine, this, name_);
 }
 
-void zmq::worker_poller_base_t::check_thread ()
+void zmq::worker_poller_base_t::check_thread () const
 {
 #ifdef _DEBUG
     zmq_assert (!_worker.get_started () || _worker.is_current_thread ());

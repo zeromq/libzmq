@@ -88,13 +88,13 @@ class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
     //  Internal function to start the actual connection establishment.
     void start_connecting () ZMQ_FINAL;
 
-    int process_server_response (const socks_choice_t &response_);
-    int process_server_response (const socks_response_t &response_);
-    int process_server_response (const socks_auth_response_t &response_);
+    static int process_server_response (const socks_choice_t &response_);
+    static int process_server_response (const socks_response_t &response_);
+    static int process_server_response (const socks_auth_response_t &response_);
 
-    int parse_address (const std::string &address_,
-                       std::string &hostname_,
-                       uint16_t &port_);
+    static int parse_address (const std::string &address_,
+                              std::string &hostname_,
+                              uint16_t &port_);
 
     int connect_to_proxy ();
 
@@ -107,7 +107,7 @@ class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.
-    zmq::fd_t check_proxy_connection ();
+    zmq::fd_t check_proxy_connection () const;
 
     socks_greeting_encoder_t _greeting_encoder;
     socks_choice_decoder_t _choice_decoder;

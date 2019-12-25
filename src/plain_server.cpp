@@ -192,7 +192,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
-void zmq::plain_server_t::produce_welcome (msg_t *msg_) const
+void zmq::plain_server_t::produce_welcome (msg_t *msg_)
 {
     const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
