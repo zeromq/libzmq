@@ -74,7 +74,7 @@ zmq::ws_connecter_t::ws_connecter_t (class io_thread_t *io_thread_,
                                      address_t *addr_,
                                      bool delayed_start_,
                                      bool wss_,
-                                     const char *tls_hostname_) :
+                                     const std::string &tls_hostname_) :
     stream_connecter_base_t (
       io_thread_, session_, options_, addr_, delayed_start_),
     _connect_timer_started (false),

@@ -47,7 +47,7 @@ class ws_connecter_t : public stream_connecter_base_t
                     address_t *addr_,
                     bool delayed_start_,
                     bool wss_,
-                    const char *tls_hostname_);
+                    const std::string &tls_hostname_);
     ~ws_connecter_t ();
 
   protected:
@@ -89,7 +89,7 @@ class ws_connecter_t : public stream_connecter_base_t
     bool _connect_timer_started;
 
     bool _wss;
-    const char *_hostname;
+    const std::string &_hostname;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_connecter_t)
 };

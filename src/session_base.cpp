@@ -114,15 +114,12 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     _socket (socket_),
     _io_thread (io_thread_),
     _has_linger_timer (false),
-    _addr (addr_),
-    _wss_hostname (NULL)
+    _addr (addr_)
+#ifdef ZMQ_HAVE_WSS
+    ,
+    _wss_hostname (options_.wss_hostname)
+#endif
 {
-    if (options_.wss_hostname.length () > 0) {
-        _wss_hostname =
-          static_cast<char *> (malloc (options_.wss_hostname.length () + 1));
-        assert (_wss_hostname);
-        strcpy (_wss_hostname, options_.wss_hostname.c_str ());
-    }
 }
 
 const zmq::endpoint_uri_pair_t &zmq::session_base_t::get_endpoint () const
@@ -144,9 +141,6 @@ zmq::session_base_t::~session_base_t ()
     //  Close the engine.
     if (_engine)
         _engine->terminate ();
-
-    if (_wss_hostname)
-        free (_wss_hostname);
 
     LIBZMQ_DELETE (_addr);
 }
@@ -701,8 +695,8 @@ zmq::own_t *zmq::session_base_t::create_connecter_tcp (io_thread_t *io_thread_,
 zmq::own_t *zmq::session_base_t::create_connecter_ws (io_thread_t *io_thread_,
                                                       bool wait_)
 {
-    return new (std::nothrow)
-      ws_connecter_t (io_thread_, this, options, _addr, wait_, false, NULL);
+    return new (std::nothrow) ws_connecter_t (io_thread_, this, options, _addr,
+                                              wait_, false, std::string ());
 }
 #endif
 

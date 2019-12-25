@@ -785,6 +785,7 @@ int zmq::options_t::setsockopt (int option_,
             }
             break;
 
+#ifdef ZMQ_HAVE_WSS
         case ZMQ_WSS_KEY_PEM:
             // TODO: check if valid certificate
             wss_key_pem = std::string ((char *) optval_, optvallen_);
@@ -803,7 +804,7 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_WSS_TRUST_SYSTEM:
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &wss_trust_system);
-
+#endif
 #endif
 
         default:

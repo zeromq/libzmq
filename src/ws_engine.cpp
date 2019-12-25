@@ -52,6 +52,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #endif
 
+#include <cstring>
+
 #include "tcp.hpp"
 #include "ws_engine.hpp"
 #include "session_base.hpp"
@@ -71,6 +73,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
+#else
+#ifndef ZMQ_HAVE_STRLCPY
+static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
+{
+    size_t remain = dest_size_;
+    for (; remain && *src_; --remain, ++src_, ++dest_) {
+        *dest_ = *src_;
+    }
+    return dest_size_ - remain;
+}
+#endif
+template <size_t size>
+static int strcpy_s (char (&dest_)[size], const char *const src_)
+{
+    const size_t res = strlcpy (dest_, src_, size);
+    return res >= size ? ERANGE : 0;
+}
 #endif
 
 //  OSX uses a different name for this socket option
@@ -118,14 +137,14 @@ zmq::ws_engine_t::~ws_engine_t ()
 void zmq::ws_engine_t::start_ws_handshake ()
 {
     if (_client) {
-        char protocol[21];
+        const char *protocol;
         if (_options.mechanism == ZMQ_NULL)
-            strcpy (protocol, "ZWS2.0/NULL,ZWS2.0");
+            protocol = "ZWS2.0/NULL,ZWS2.0";
         else if (_options.mechanism == ZMQ_PLAIN)
-            strcpy (protocol, "ZWS2.0/PLAIN");
+            protocol = "ZWS2.0/PLAIN";
 #ifdef ZMQ_HAVE_CURVE
         else if (_options.mechanism == ZMQ_CURVE)
-            strcpy (protocol, "ZWS2.0/CURVE");
+            protocol = "ZWS2.0/CURVE";
 #endif
         else
             assert (false);
@@ -440,7 +459,7 @@ bool zmq::ws_engine_t::server_handshake ()
                           strcasecmp ("upgrade", _header_value) == 0;
                     else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
                              == 0)
-                        strcpy (_websocket_key, _header_value);
+                        strcpy_s (_websocket_key, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
                         // Currently only the ZWS2.0 is supported
@@ -453,7 +472,7 @@ bool zmq::ws_engine_t::server_handshake ()
                                     p++;
 
                                 if (select_protocol (p)) {
-                                    strcpy (_websocket_protocol, p);
+                                    strcpy_s (_websocket_protocol, p);
                                     break;
                                 }
 
@@ -820,11 +839,11 @@ bool zmq::ws_engine_t::client_handshake ()
                           strcasecmp ("upgrade", _header_value) == 0;
                     else if (strcasecmp ("Sec-WebSocket-Accept", _header_name)
                              == 0)
-                        strcpy (_websocket_accept, _header_value);
+                        strcpy_s (_websocket_accept, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
                         if (select_protocol (_header_value))
-                            strcpy (_websocket_protocol, _header_value);
+                            strcpy_s (_websocket_protocol, _header_value);
                     }
                     _client_handshake_state = client_header_field_cr;
                 } else if (_header_value_position + 1 > MAX_HEADER_VALUE_LENGTH)

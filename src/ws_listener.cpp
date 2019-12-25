@@ -294,8 +294,9 @@ void zmq::ws_listener_t::create_engine (fd_t fd_)
     i_engine *engine = NULL;
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
-        engine = new (std::nothrow) wss_engine_t (
-          fd_, options, endpoint_pair, _address, false, _tls_cred, NULL);
+        engine = new (std::nothrow)
+          wss_engine_t (fd_, options, endpoint_pair, _address, false, _tls_cred,
+                        std::string ());
 #else
         assert (false);
 #endif
