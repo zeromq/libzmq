@@ -884,11 +884,11 @@ encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_)
     static const unsigned char base64enc_tab[65] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    int ii, io;
-    uint32_t v;
-    int rem;
+    int io = 0;
+    uint32_t v = 0;
+    int rem = 0;
 
-    for (io = 0, ii = 0, v = 0, rem = 0; ii < in_len_; ii++) {
+    for (int ii = 0; ii < in_len_; ii++) {
         unsigned char ch;
         ch = in_[ii];
         v = (v << 8) | ch;

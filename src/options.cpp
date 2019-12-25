@@ -102,9 +102,9 @@ static int do_getsockopt_curve_key (void *const optval_,
 #endif
 
 template <typename T>
-int do_setsockopt (const void *const optval_,
-                   const size_t optvallen_,
-                   T *const out_value_)
+static int do_setsockopt (const void *const optval_,
+                          const size_t optvallen_,
+                          T *const out_value_)
 {
     if (optvallen_ == sizeof (T)) {
         memcpy (out_value_, optval_, sizeof (T));
@@ -176,9 +176,9 @@ do_setsockopt_string_allow_empty_relaxed (const void *const optval_,
 }
 
 template <typename T>
-int do_setsockopt_set (const void *const optval_,
-                       const size_t optvallen_,
-                       std::set<T> *const set_)
+static int do_setsockopt_set (const void *const optval_,
+                              const size_t optvallen_,
+                              std::set<T> *const set_)
 {
     if (optvallen_ == 0 && optval_ == NULL) {
         set_->clear ();
@@ -592,7 +592,6 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_ZAP_DOMAIN:
             return do_setsockopt_string_allow_empty_relaxed (
               optval_, optvallen_, &zap_domain, UCHAR_MAX);
-            break;
 
             //  If curve encryption isn't built, these options provoke EINVAL
 #ifdef ZMQ_HAVE_CURVE
@@ -869,7 +868,6 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_ROUTING_ID:
             return do_getsockopt (optval_, optvallen_, routing_id,
                                   routing_id_size);
-            break;
 
         case ZMQ_RATE:
             if (is_int) {
@@ -1014,15 +1012,12 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_SOCKS_PROXY:
             return do_getsockopt (optval_, optvallen_, socks_proxy_address);
-            break;
 
         case ZMQ_SOCKS_USERNAME:
             return do_getsockopt (optval_, optvallen_, socks_proxy_username);
-            break;
 
         case ZMQ_SOCKS_PASSWORD:
             return do_getsockopt (optval_, optvallen_, socks_proxy_password);
-            break;
 
         case ZMQ_TCP_KEEPALIVE:
             if (is_int) {
@@ -1068,15 +1063,12 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_PLAIN_USERNAME:
             return do_getsockopt (optval_, optvallen_, plain_username);
-            break;
 
         case ZMQ_PLAIN_PASSWORD:
             return do_getsockopt (optval_, optvallen_, plain_password);
-            break;
 
         case ZMQ_ZAP_DOMAIN:
             return do_getsockopt (optval_, optvallen_, zap_domain);
-            break;
 
             //  If curve encryption isn't built, these options provoke EINVAL
 #ifdef ZMQ_HAVE_CURVE
@@ -1090,17 +1082,14 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_CURVE_PUBLICKEY:
             return do_getsockopt_curve_key (optval_, optvallen_,
                                             curve_public_key);
-            break;
 
         case ZMQ_CURVE_SECRETKEY:
             return do_getsockopt_curve_key (optval_, optvallen_,
                                             curve_secret_key);
-            break;
 
         case ZMQ_CURVE_SERVERKEY:
             return do_getsockopt_curve_key (optval_, optvallen_,
                                             curve_server_key);
-            break;
 #endif
 
         case ZMQ_CONFLATE:
@@ -1121,11 +1110,9 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_GSSAPI_PRINCIPAL:
             return do_getsockopt (optval_, optvallen_, gss_principal);
-            break;
 
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL:
             return do_getsockopt (optval_, optvallen_, gss_service_principal);
-            break;
 
         case ZMQ_GSSAPI_PLAINTEXT:
             if (is_int) {
@@ -1193,7 +1180,6 @@ int zmq::options_t::getsockopt (int option_,
 
         case ZMQ_BINDTODEVICE:
             return do_getsockopt (optval_, optvallen_, bound_device);
-            break;
 
         case ZMQ_ZAP_ENFORCE_DOMAIN:
             if (is_int) {
