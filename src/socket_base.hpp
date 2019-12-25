@@ -214,7 +214,7 @@ class socket_base_t : public own_t,
 
     // Socket event data dispatch
     void monitor_event (uint64_t event_,
-                        uint64_t values_[],
+                        const uint64_t values_[],
                         uint64_t values_count_,
                         const endpoint_uri_pair_t &endpoint_uri_pair_) const;
 
@@ -237,7 +237,7 @@ class socket_base_t : public own_t,
       public:
         void emplace (const char *endpoint_uri_, pipe_t *pipe_);
         int erase_pipes (const std::string &endpoint_uri_str_);
-        void erase_pipe (pipe_t *pipe_);
+        void erase_pipe (const pipe_t *pipe_);
 
       private:
         typedef std::multimap<std::string, pipe_t *> map_t;
@@ -251,7 +251,7 @@ class socket_base_t : public own_t,
 
     //  Moves the flags from the message to local variables,
     //  to be later retrieved by getsockopt.
-    void extract_flags (msg_t *msg_);
+    void extract_flags (const msg_t *msg_);
 
     //  Used to check whether the object is a socket.
     uint32_t _tag;
@@ -371,7 +371,7 @@ class routing_socket_base_t : public socket_base_t
     bool has_out_pipe (const blob_t &routing_id_) const;
     out_pipe_t *lookup_out_pipe (const blob_t &routing_id_);
     const out_pipe_t *lookup_out_pipe (const blob_t &routing_id_) const;
-    void erase_out_pipe (pipe_t *pipe_);
+    void erase_out_pipe (const pipe_t *pipe_);
     out_pipe_t try_erase_out_pipe (const blob_t &routing_id_);
     template <typename Func> bool any_of_out_pipes (Func func_)
     {

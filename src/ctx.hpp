@@ -116,7 +116,7 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
 
     //  Set and get context properties.
     int set (int option_, const void *optval_, size_t optvallen_);
-    int get (int option_, void *optval_, size_t *optvallen_);
+    int get (int option_, void *optval_, const size_t *optvallen_);
     int get (int option_);
 
     //  Create and destroy a socket.
@@ -136,8 +136,9 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
 
     //  Management of inproc endpoints.
     int register_endpoint (const char *addr_, const endpoint_t &endpoint_);
-    int unregister_endpoint (const std::string &addr_, socket_base_t *socket_);
-    void unregister_endpoints (zmq::socket_base_t *socket_);
+    int unregister_endpoint (const std::string &addr_,
+                             const socket_base_t *socket_);
+    void unregister_endpoints (const zmq::socket_base_t *socket_);
     endpoint_t find_endpoint (const char *addr_);
     void pend_connection (const std::string &addr_,
                           const endpoint_t &endpoint_,
@@ -254,7 +255,7 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     };
     void
     connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
-                            options_t &bind_options_,
+                            const options_t &bind_options_,
                             const pending_connection_t &pending_connection_,
                             side side_);
 

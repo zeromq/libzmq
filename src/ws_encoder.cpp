@@ -82,7 +82,7 @@ void zmq::ws_encoder_t::message_ready ()
     }
 
     if (_must_mask) {
-        uint32_t random = generate_random ();
+        const uint32_t random = generate_random ();
         put_uint32 (_tmp_buf + offset, random);
         put_uint32 (_mask, random);
         offset += 4;
@@ -107,7 +107,7 @@ void zmq::ws_encoder_t::size_ready ()
 {
     if (_must_mask) {
         assert (in_progress () != &_masked_msg);
-        size_t size = in_progress ()->size ();
+        const size_t size = in_progress ()->size ();
 
         _masked_msg.close ();
         _masked_msg.init_size (size);

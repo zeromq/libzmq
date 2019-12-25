@@ -125,7 +125,7 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
     uint8_t message_nonce[crypto_box_NONCEBYTES];
     memcpy (message_nonce, decode_nonce_prefix, 16);
     memcpy (message_nonce + 16, message + 8, 8);
-    uint64_t nonce = get_uint64 (message + 8);
+    const uint64_t nonce = get_uint64 (message + 8);
     if (nonce <= cn_peer_nonce) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE);

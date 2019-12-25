@@ -294,7 +294,7 @@ int zmq::msg_t::copy (msg_t &src_)
         return -1;
     }
 
-    int rc = close ();
+    const int rc = close ();
     if (unlikely (rc < 0))
         return rc;
 

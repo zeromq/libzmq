@@ -200,7 +200,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         }
 
         addr = std::string (name_, delim - name_);
-        std::string port_str = std::string (delim + 1);
+        const std::string port_str = std::string (delim + 1);
 
         if (port_str == "*") {
             if (_options.bindable ()) {
@@ -229,7 +229,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     // Check if path is allowed in ip address, if allowed it must be truncated
     if (_options.allow_path ()) {
-        size_t pos = addr.find ('/');
+        const size_t pos = addr.find ('/');
         if (pos != std::string::npos)
             addr = addr.substr (0, pos);
     }
@@ -247,7 +247,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     //  Look for an interface name / zone_id in the address
     //  Reference: https://tools.ietf.org/html/rfc4007
-    std::size_t pos = addr.rfind ('%');
+    const std::size_t pos = addr.rfind ('%');
     uint32_t zone_id = 0;
 
     if (pos != std::string::npos) {
@@ -277,7 +277,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     if (!resolved && _options.allow_nic_name ()) {
         //  Try to resolve the string as a NIC name.
-        int rc = resolve_nic_name (ip_addr_, addr_str);
+        const int rc = resolve_nic_name (ip_addr_, addr_str);
 
         if (rc == 0) {
             resolved = true;
@@ -287,7 +287,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     }
 
     if (!resolved) {
-        int rc = resolve_getaddrinfo (ip_addr_, addr_str);
+        const int rc = resolve_getaddrinfo (ip_addr_, addr_str);
 
         if (rc != 0) {
             return rc;
@@ -597,7 +597,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src_, char **dest_) const
 {
     int rc;
-    int buffer_len =
+    const int buffer_len =
       WideCharToMultiByte (CP_UTF8, 0, src_, -1, NULL, 0, NULL, 0);
 
     char *buffer = static_cast<char *> (malloc (buffer_len));

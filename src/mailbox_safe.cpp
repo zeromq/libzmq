@@ -62,7 +62,7 @@ void zmq::mailbox_safe_t::remove_signaler (signaler_t *signaler_)
 {
     // TODO: make a copy of array and signal outside the lock
     const std::vector<zmq::signaler_t *>::iterator end = _signalers.end ();
-    std::vector<signaler_t *>::iterator it =
+    const std::vector<signaler_t *>::iterator it =
       std::find (_signalers.begin (), end, signaler_);
 
     if (it != end)
@@ -106,7 +106,7 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
         _sync->lock ();
     } else {
         //  Wait for signal from the command sender.
-        int rc = _cond_var.wait (_sync, timeout_);
+        const int rc = _cond_var.wait (_sync, timeout_);
         if (rc == -1) {
             errno_assert (errno == EAGAIN || errno == EINTR);
             return -1;

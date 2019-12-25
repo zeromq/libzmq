@@ -69,7 +69,7 @@ class socket_poller_t
     } event_t;
 
     int add (socket_base_t *socket_, void *user_data_, short events_);
-    int modify (socket_base_t *socket_, short events_);
+    int modify (const socket_base_t *socket_, short events_);
     int remove (socket_base_t *socket_);
 
     int add_fd (fd_t fd_, void *user_data_, short events_);

@@ -103,7 +103,7 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64 ()
     f_compatible_get_tick_count64 func = NULL;
 #if !defined ZMQ_HAVE_WINDOWS_UWP
 
-    HMODULE module = ::LoadLibraryA ("Kernel32.dll");
+    const HMODULE module = ::LoadLibraryA ("Kernel32.dll");
     if (module != NULL)
         func = reinterpret_cast<f_compatible_get_tick_count64> (
           ::GetProcAddress (module, "GetTickCount64"));
@@ -200,7 +200,7 @@ uint64_t zmq::clock_t::now_us ()
 
 uint64_t zmq::clock_t::now_ms ()
 {
-    uint64_t tsc = rdtsc ();
+    const uint64_t tsc = rdtsc ();
 
     //  If TSC is not supported, get precise time and chop off the microseconds.
     if (!tsc) {

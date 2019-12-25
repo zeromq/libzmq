@@ -36,7 +36,7 @@ zmq::metadata_t::metadata_t (const dict_t &dict_) : _ref_cnt (1), _dict (dict_)
 
 const char *zmq::metadata_t::get (const std::string &property_) const
 {
-    dict_t::const_iterator it = _dict.find (property_);
+    const dict_t::const_iterator it = _dict.find (property_);
     if (it == _dict.end ()) {
         /** \todo remove this when support for the deprecated name "Identity" is dropped */
         if (property_ == "Identity")

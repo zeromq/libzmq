@@ -38,10 +38,10 @@
 #include "ypipe.hpp"
 #include "ypipe_conflate.hpp"
 
-int zmq::pipepair (class object_t *parents_[2],
-                   class pipe_t *pipes_[2],
-                   int hwms_[2],
-                   bool conflate_[2])
+int zmq::pipepair (object_t *parents_[2],
+                   pipe_t *pipes_[2],
+                   const int hwms_[2],
+                   const bool conflate_[2])
 {
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
@@ -233,7 +233,7 @@ bool zmq::pipe_t::check_write ()
     return true;
 }
 
-bool zmq::pipe_t::write (msg_t *msg_)
+bool zmq::pipe_t::write (const msg_t *msg_)
 {
     if (unlikely (!check_write ()))
         return false;

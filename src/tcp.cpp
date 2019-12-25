@@ -60,8 +60,9 @@ int zmq::tune_tcp_socket (fd_t s_)
     //  so using Nagle wouldn't improve throughput in anyway, but it would
     //  hurt latency.
     int nodelay = 1;
-    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY,
-                         reinterpret_cast<char *> (&nodelay), sizeof (int));
+    const int rc =
+      setsockopt (s_, IPPROTO_TCP, TCP_NODELAY,
+                  reinterpret_cast<char *> (&nodelay), sizeof (int));
     assert_success_or_recoverable (s_, rc);
     if (rc != 0)
         return rc;
@@ -120,9 +121,9 @@ int zmq::tune_tcp_keepalives (fd_t s_,
         keepalive_opts.keepaliveinterval =
           keepalive_intvl_ != -1 ? keepalive_intvl_ * 1000 : 1000;
         DWORD num_bytes_returned;
-        int rc = WSAIoctl (s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
-                           sizeof (keepalive_opts), NULL, 0,
-                           &num_bytes_returned, NULL, NULL);
+        const int rc = WSAIoctl (s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
+                                 sizeof (keepalive_opts), NULL, 0,
+                                 &num_bytes_returned, NULL, NULL);
         assert_success_or_recoverable (s_, rc);
         if (rc == SOCKET_ERROR)
             return rc;
@@ -193,7 +194,7 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 #if defined(ZMQ_HAVE_WINDOWS) && defined(TCP_MAXRT)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000; // in seconds
-    int rc =
+    const int rc =
       setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT,
                   reinterpret_cast<char *> (&timeout_), sizeof (timeout_));
     assert_success_or_recoverable (sockfd_, rc);
@@ -213,7 +214,7 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
-    int nbytes = send (s_, (char *) data_, static_cast<int> (size_), 0);
+    const int nbytes = send (s_, (char *) data_, static_cast<int> (size_), 0);
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
@@ -322,12 +323,12 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
     int sio_loopback_fastpath = 1;
     DWORD number_of_bytes_returned = 0;
 
-    int rc = WSAIoctl (socket_, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
-                       sizeof sio_loopback_fastpath, NULL, 0,
-                       &number_of_bytes_returned, 0, 0);
+    const int rc = WSAIoctl (
+      socket_, SIO_LOOPBACK_FAST_PATH, &sio_loopback_fastpath,
+      sizeof sio_loopback_fastpath, NULL, 0, &number_of_bytes_returned, 0, 0);
 
     if (SOCKET_ERROR == rc) {
-        DWORD last_error = ::WSAGetLastError ();
+        const DWORD last_error = ::WSAGetLastError ();
 
         if (WSAEOPNOTSUPP == last_error) {
             // This system is not Windows 8 or Server 2012, and the call is not supported.

@@ -79,9 +79,9 @@ void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
     if (_welcome_msg.size () > 0) {
         msg_t copy;
         copy.init ();
-        int rc = copy.copy (_welcome_msg);
+        const int rc = copy.copy (_welcome_msg);
         errno_assert (rc == 0);
-        bool ok = pipe_->write (&copy);
+        const bool ok = pipe_->write (&copy);
         zmq_assert (ok);
         pipe_->flush ();
     }
@@ -103,7 +103,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         bool subscribe = false;
         bool is_subscribe_or_cancel = false;
 
-        bool first_part = !_more_recv;
+        const bool first_part = !_more_recv;
         _more_recv = (msg.flags () & msg_t::more) != 0;
 
         if (first_part || _process_subscribe) {
@@ -164,12 +164,12 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         } else {
             bool notify;
             if (!subscribe) {
-                mtrie_t::rm_result rm_result =
+                const mtrie_t::rm_result rm_result =
                   _subscriptions.rm (data, size, pipe_);
                 //  TODO reconsider what to do if rm_result == mtrie_t::not_found
                 notify = rm_result != mtrie_t::values_remain || _verbose_unsubs;
             } else {
-                bool first_added = _subscriptions.add (data, size, pipe_);
+                const bool first_added = _subscriptions.add (data, size, pipe_);
                 notify = first_added || _verbose_subs;
             }
 
@@ -239,7 +239,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
         _welcome_msg.close ();
 
         if (optvallen_ > 0) {
-            int rc = _welcome_msg.init_size (optvallen_);
+            const int rc = _welcome_msg.init_size (optvallen_);
             errno_assert (rc == 0);
 
             unsigned char *data =
@@ -294,7 +294,7 @@ void zmq::xpub_t::mark_last_pipe_as_matching (pipe_t *pipe_, xpub_t *self_)
 
 int zmq::xpub_t::xsend (msg_t *msg_)
 {
-    bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!_more_send) {

@@ -68,7 +68,7 @@ zmq::ctx_t *zmq::object_t::get_ctx ()
     return _ctx;
 }
 
-void zmq::object_t::process_command (command_t &cmd_)
+void zmq::object_t::process_command (const command_t &cmd_)
 {
     switch (cmd_.type) {
         case command_t::activate_read:
@@ -528,7 +528,7 @@ void zmq::object_t::process_seqnum ()
     zmq_assert (false);
 }
 
-void zmq::object_t::send_command (command_t &cmd_)
+void zmq::object_t::send_command (const command_t &cmd_)
 {
     _ctx->send_command (cmd_.destination->get_tid (), cmd_);
 }

@@ -80,7 +80,7 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
     //  Check whether item is available for reading.
     inline bool check_read () ZMQ_FINAL
     {
-        bool res = dbuffer.check_read ();
+        const bool res = dbuffer.check_read ();
         if (!res)
             reader_awake = false;
 

@@ -157,7 +157,7 @@ int zmq::ctx_t::terminate ()
 {
     _slot_sync.lock ();
 
-    bool save_terminating = _terminating;
+    const bool save_terminating = _terminating;
     _terminating = false;
 
     // Connect up any pending inproc connections, otherwise we will hang
@@ -187,7 +187,7 @@ int zmq::ctx_t::terminate ()
 
         //  Check whether termination was already underway, but interrupted and now
         //  restarted.
-        bool restarted = _terminating;
+        const bool restarted = _terminating;
         _terminating = true;
 
         //  First attempt to terminate the context.
@@ -206,7 +206,7 @@ int zmq::ctx_t::terminate ()
 
         //  Wait till reaper thread closes all the sockets.
         command_t cmd;
-        int rc = _term_mailbox.recv (&cmd, -1);
+        const int rc = _term_mailbox.recv (&cmd, -1);
         if (rc == -1 && errno == EINTR)
             return -1;
         errno_assert (rc == 0);
@@ -257,7 +257,7 @@ int zmq::ctx_t::shutdown ()
 
 int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));
@@ -320,7 +320,7 @@ int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
     return -1;
 }
 
-int zmq::ctx_t::get (int option_, void *optval_, size_t *optvallen_)
+int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 {
     const bool is_int = (*optvallen_ == sizeof (int));
     int *value = static_cast<int *> (optval_);
@@ -412,7 +412,7 @@ bool zmq::ctx_t::start ()
     const int mazmq = _max_sockets;
     const int ios = _io_thread_count;
     _opt_sync.unlock ();
-    int slot_count = mazmq + ios + term_and_reaper_threads_count;
+    const int slot_count = mazmq + ios + term_and_reaper_threads_count;
     try {
         _slots.reserve (slot_count);
         _empty_slots.reserve (slot_count - term_and_reaper_threads_count);
@@ -498,11 +498,11 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     }
 
     //  Choose a slot for the socket.
-    uint32_t slot = _empty_slots.back ();
+    const uint32_t slot = _empty_slots.back ();
     _empty_slots.pop_back ();
 
     //  Generate new unique socket ID.
-    int sid = (static_cast<int> (max_socket_id.add (1))) + 1;
+    const int sid = (static_cast<int> (max_socket_id.add (1))) + 1;
 
     //  Create the socket and register its mailbox.
     socket_base_t *s = socket_base_t::create (type_, this, slot, sid);
@@ -521,7 +521,7 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
     scoped_lock_t locker (_slot_sync);
 
     //  Free the associated thread slot.
-    uint32_t tid = socket_->get_tid ();
+    const uint32_t tid = socket_->get_tid ();
     _empty_slots.push_back (tid);
     _slots[tid] = NULL;
 
@@ -563,7 +563,7 @@ void zmq::thread_ctx_t::start_thread (thread_t &thread_,
 
 int zmq::thread_ctx_t::set (int option_, const void *optval_, size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));
@@ -701,7 +701,7 @@ int zmq::ctx_t::register_endpoint (const char *addr_,
 }
 
 int zmq::ctx_t::unregister_endpoint (const std::string &addr_,
-                                     socket_base_t *socket_)
+                                     const socket_base_t *const socket_)
 {
     scoped_lock_t locker (_endpoints_sync);
 
@@ -717,7 +717,7 @@ int zmq::ctx_t::unregister_endpoint (const std::string &addr_,
     return 0;
 }
 
-void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
+void zmq::ctx_t::unregister_endpoints (const socket_base_t *const socket_)
 {
     scoped_lock_t locker (_endpoints_sync);
 
@@ -765,7 +765,7 @@ void zmq::ctx_t::pend_connection (const std::string &addr_,
     const pending_connection_t pending_connection = {endpoint_, pipes_[0],
                                                      pipes_[1]};
 
-    endpoints_t::iterator it = _endpoints.find (addr_);
+    const endpoints_t::iterator it = _endpoints.find (addr_);
     if (it == _endpoints.end ()) {
         //  Still no bind.
         endpoint_.socket->inc_seqnum ();
@@ -783,7 +783,8 @@ void zmq::ctx_t::connect_pending (const char *addr_,
 {
     scoped_lock_t locker (_endpoints_sync);
 
-    std::pair<pending_connections_t::iterator, pending_connections_t::iterator>
+    const std::pair<pending_connections_t::iterator,
+                    pending_connections_t::iterator>
       pending = _pending_connections.equal_range (addr_);
     for (pending_connections_t::iterator p = pending.first; p != pending.second;
          ++p)
@@ -795,7 +796,7 @@ void zmq::ctx_t::connect_pending (const char *addr_,
 
 void zmq::ctx_t::connect_inproc_sockets (
   zmq::socket_base_t *bind_socket_,
-  options_t &bind_options_,
+  const options_t &bind_options_,
   const pending_connection_t &pending_connection_,
   side side_)
 {

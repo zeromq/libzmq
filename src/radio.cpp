@@ -157,8 +157,8 @@ int zmq::radio_t::xsend (msg_t *msg_)
 
     _dist.unmatch ();
 
-    std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
-      _subscriptions.equal_range (std::string (msg_->group ()));
+    const std::pair<subscriptions_t::iterator, subscriptions_t::iterator>
+      range = _subscriptions.equal_range (std::string (msg_->group ()));
 
     for (subscriptions_t::iterator it = range.first; it != range.second; ++it)
         _dist.match (it->second);
@@ -262,7 +262,7 @@ int zmq::radio_session_t::pull_msg (msg_t *msg_)
             return rc;
 
         const char *group = _pending_msg.group ();
-        int length = static_cast<int> (strlen (group));
+        const int length = static_cast<int> (strlen (group));
 
         //  First frame is the group
         rc = msg_->init_size (length);

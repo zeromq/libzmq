@@ -168,7 +168,7 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
     //  The pipe mustn't be empty or the function crashes.
     inline bool probe (bool (*fn_) (const T &)) ZMQ_FINAL
     {
-        bool rc = check_read ();
+        const bool rc = check_read ();
         zmq_assert (rc);
 
         return (*fn_) (_queue.front ());

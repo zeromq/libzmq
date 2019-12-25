@@ -54,8 +54,8 @@ class pipe_t;
 //  read (older messages are discarded)
 int pipepair (zmq::object_t *parents_[2],
               zmq::pipe_t *pipes_[2],
-              int hwms_[2],
-              bool conflate_[2]);
+              const int hwms_[2],
+              const bool conflate_[2]);
 
 struct i_pipe_events
 {
@@ -79,8 +79,8 @@ class pipe_t ZMQ_FINAL : public object_t,
     //  This allows pipepair to create pipe objects.
     friend int pipepair (zmq::object_t *parents_[2],
                          zmq::pipe_t *pipes_[2],
-                         int hwms_[2],
-                         bool conflate_[2]);
+                         const int hwms_[2],
+                         const bool conflate_[2]);
 
   public:
     //  Specifies the object to send events to.
@@ -108,7 +108,7 @@ class pipe_t ZMQ_FINAL : public object_t,
     //  Writes a message to the underlying pipe. Returns false if the
     //  message does not pass check_write. If false, the message object
     //  retains ownership of its message buffer.
-    bool write (msg_t *msg_);
+    bool write (const msg_t *msg_);
 
     //  Remove unfinished parts of the outbound message from the pipe.
     void rollback () const;

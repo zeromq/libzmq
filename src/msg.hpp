@@ -289,7 +289,7 @@ class msg_t
 inline int close_and_return (zmq::msg_t *msg_, int echo_)
 {
     // Since we abort on close failure we preserve errno for success case.
-    int err = errno;
+    const int err = errno;
     const int rc = msg_->close ();
     errno_assert (rc == 0);
     errno = err;

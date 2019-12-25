@@ -302,7 +302,7 @@ int zmq::options_t::setsockopt (int option_,
                                 const void *optval_,
                                 size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));
@@ -448,7 +448,7 @@ int zmq::options_t::setsockopt (int option_,
         /*  Deprecated in favor of ZMQ_IPV6  */
         case ZMQ_IPV4ONLY: {
             bool value;
-            int rc =
+            const int rc =
               do_setsockopt_int_as_bool_strict (optval_, optvallen_, &value);
             if (rc == 0)
                 ipv6 = !value;

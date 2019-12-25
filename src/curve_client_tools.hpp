@@ -70,7 +70,7 @@ struct curve_client_tools_t
         put_uint64 (hello_nonce + 16, cn_nonce_);
 
         //  Create Box [64 * %x0](C'->S)
-        int rc =
+        const int rc =
           crypto_box (hello_box, &hello_plaintext[0], hello_plaintext.size (),
                       hello_nonce, server_key_, cn_secret_);
         if (rc == -1)

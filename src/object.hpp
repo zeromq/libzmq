@@ -62,7 +62,7 @@ class object_t
     uint32_t get_tid ();
     void set_tid (uint32_t id_);
     ctx_t *get_ctx ();
-    void process_command (zmq::command_t &cmd_);
+    void process_command (const zmq::command_t &cmd_);
     void send_inproc_connected (zmq::socket_base_t *socket_);
     void send_bind (zmq::own_t *destination_,
                     zmq::pipe_t *pipe_,
@@ -157,7 +157,7 @@ class object_t
     //  Thread ID of the thread the object belongs to.
     uint32_t _tid;
 
-    void send_command (command_t &cmd_);
+    void send_command (const command_t &cmd_);
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (object_t)
 };

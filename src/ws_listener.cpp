@@ -99,7 +99,7 @@ zmq::ws_listener_t::~ws_listener_t ()
 
 void zmq::ws_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -193,7 +193,7 @@ int zmq::ws_listener_t::create_socket (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -206,7 +206,7 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
         //  socket was already created by the application
         _s = options.use_fd;
     } else {
-        int rc = _address.resolve (addr_, true, options.ipv6);
+        const int rc = _address.resolve (addr_, true, options.ipv6);
         if (rc != 0)
             return -1;
 
@@ -248,7 +248,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
     fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
                            &ss_len, SOCK_CLOEXEC);
 #else
-    fd_t sock =
+    const fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
@@ -275,7 +275,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);

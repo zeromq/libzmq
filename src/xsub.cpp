@@ -48,13 +48,13 @@ zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  subscription commands are sent to the wire.
     options.linger.store (0);
 
-    int rc = _message.init ();
+    const int rc = _message.init ();
     errno_assert (rc == 0);
 }
 
 zmq::xsub_t::~xsub_t ()
 {
-    int rc = _message.close ();
+    const int rc = _message.close ();
     errno_assert (rc == 0);
 }
 
@@ -119,7 +119,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     size_t size = msg_->size ();
     unsigned char *data = static_cast<unsigned char *> (msg_->data ());
 
-    bool first_part = !_more_send;
+    const bool first_part = !_more_send;
     _more_send = (msg_->flags () & msg_t::more) != 0;
 
     if (first_part) {
@@ -181,7 +181,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
     if (_has_message) {
-        int rc = msg_->move (_message);
+        const int rc = msg_->move (_message);
         errno_assert (rc == 0);
         _has_message = false;
         _more_recv = (msg_->flags () & msg_t::more) != 0;
@@ -257,7 +257,7 @@ bool zmq::xsub_t::xhas_in ()
 
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    bool matching = _subscriptions.check (
+    const bool matching = _subscriptions.check (
       static_cast<unsigned char *> (msg_->data ()), msg_->size ());
 
     return matching ^ options.invert_matching;
@@ -271,7 +271,7 @@ void zmq::xsub_t::send_subscription (unsigned char *data_,
 
     //  Create the subscription message.
     msg_t msg;
-    int rc = msg.init_size (size_ + 1);
+    const int rc = msg.init_size (size_ + 1);
     errno_assert (rc == 0);
     unsigned char *data = static_cast<unsigned char *> (msg.data ());
     data[0] = 1;
@@ -283,7 +283,7 @@ void zmq::xsub_t::send_subscription (unsigned char *data_,
     }
 
     //  Send it to the pipe.
-    bool sent = pipe->write (&msg);
+    const bool sent = pipe->write (&msg);
     //  If we reached the SNDHWM, and thus cannot send the subscription, drop
     //  the subscription message instead. This matches the behaviour of
     //  zmq_setsockopt(ZMQ_SUBSCRIBE, ...), which also drops subscriptions

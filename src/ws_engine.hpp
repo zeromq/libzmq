@@ -130,7 +130,7 @@ class ws_engine_t ZMQ_FINAL : public stream_engine_base_t
     ws_engine_t (fd_t fd_,
                  const options_t &options_,
                  const endpoint_uri_pair_t &endpoint_uri_pair_,
-                 ws_address_t &address_,
+                 const ws_address_t &address_,
                  bool client_);
     ~ws_engine_t () ZMQ_FINAL;
 
@@ -150,7 +150,7 @@ class ws_engine_t ZMQ_FINAL : public stream_engine_base_t
     int produce_no_msg_after_close (msg_t *msg_);
     int close_connection_after_close (msg_t *msg_);
 
-    bool select_protocol (char *protocol);
+    bool select_protocol (const char *protocol);
 
     bool client_handshake ();
     bool server_handshake ();

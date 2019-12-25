@@ -155,8 +155,8 @@ bool node_t::operator!= (node_t other_) const
 
 void node_t::resize (size_t prefix_length_, size_t edgecount_)
 {
-    size_t node_size = 3 * sizeof (uint32_t) + prefix_length_
-                       + edgecount_ * (1 + sizeof (void *));
+    const size_t node_size = 3 * sizeof (uint32_t) + prefix_length_
+                             + edgecount_ * (1 + sizeof (void *));
     unsigned char *new_data =
       static_cast<unsigned char *> (realloc (_data, node_size));
     zmq_assert (new_data);
@@ -167,8 +167,8 @@ void node_t::resize (size_t prefix_length_, size_t edgecount_)
 
 node_t make_node (size_t refcount_, size_t prefix_length_, size_t edgecount_)
 {
-    size_t node_size = 3 * sizeof (uint32_t) + prefix_length_
-                       + edgecount_ * (1 + sizeof (void *));
+    const size_t node_size = 3 * sizeof (uint32_t) + prefix_length_
+                             + edgecount_ * (1 + sizeof (void *));
 
     unsigned char *data = static_cast<unsigned char *> (malloc (node_size));
     zmq_assert (data);
@@ -285,10 +285,10 @@ match_result_t zmq::radix_tree_t::match (const unsigned char *key_,
 
 bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
 {
-    match_result_t match_result = match (key_, key_size_);
-    size_t key_bytes_matched = match_result._key_bytes_matched;
-    size_t prefix_bytes_matched = match_result._prefix_bytes_matched;
-    size_t edge_index = match_result._edge_index;
+    const match_result_t match_result = match (key_, key_size_);
+    const size_t key_bytes_matched = match_result._key_bytes_matched;
+    const size_t prefix_bytes_matched = match_result._prefix_bytes_matched;
+    const size_t edge_index = match_result._edge_index;
     node_t current_node = match_result._current_node;
     node_t parent_node = match_result._parent_node;
 
@@ -409,11 +409,11 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
 
 bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
 {
-    match_result_t match_result = match (key_, key_size_);
-    size_t key_bytes_matched = match_result._key_bytes_matched;
-    size_t prefix_bytes_matched = match_result._prefix_bytes_matched;
-    size_t edge_index = match_result._edge_index;
-    size_t parent_edge_index = match_result._parent_edge_index;
+    const match_result_t match_result = match (key_, key_size_);
+    const size_t key_bytes_matched = match_result._key_bytes_matched;
+    const size_t prefix_bytes_matched = match_result._prefix_bytes_matched;
+    const size_t edge_index = match_result._edge_index;
+    const size_t parent_edge_index = match_result._parent_edge_index;
     node_t current_node = match_result._current_node;
     node_t parent_node = match_result._parent_node;
     node_t grandparent_node = match_result._grandparent_node;
@@ -432,7 +432,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
     if (current_node == _root)
         return true;
 
-    size_t outgoing_edges = current_node.edgecount ();
+    const size_t outgoing_edges = current_node.edgecount ();
     if (outgoing_edges > 1)
         // This node can't be merged with any other node, so there's
         // nothing more to do.
@@ -445,7 +445,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         // Make room for the child node's prefix and edges. We need to
         // keep the old prefix length since resize() will overwrite
         // it.
-        uint32_t old_prefix_length = current_node.prefix_length ();
+        const uint32_t old_prefix_length = current_node.prefix_length ();
         current_node.resize (old_prefix_length + child.prefix_length (),
                              child.edgecount ());
 
@@ -474,7 +474,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         // Make room for the child node's prefix and edges. We need to
         // keep the old prefix length since resize() will overwrite
         // it.
-        uint32_t old_prefix_length = parent_node.prefix_length ();
+        const uint32_t old_prefix_length = parent_node.prefix_length ();
         parent_node.resize (old_prefix_length + other_child.prefix_length (),
                             other_child.edgecount ());
 
@@ -501,9 +501,9 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
     // Replace the edge to the current node with the last edge. An
     // edge consists of a byte and a pointer to the next node. First
     // replace the byte.
-    size_t last_index = parent_node.edgecount () - 1;
-    unsigned char last_byte = parent_node.first_byte_at (last_index);
-    node_t last_node = parent_node.node_at (last_index);
+    const size_t last_index = parent_node.edgecount () - 1;
+    const unsigned char last_byte = parent_node.first_byte_at (last_index);
+    const node_t last_node = parent_node.node_at (last_index);
     parent_node.set_edge_at (edge_index, last_byte, last_node);
 
     // Move the chunk of pointers one byte to the left, effectively

@@ -113,7 +113,7 @@ static void compute_accept_key (char *key_,
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,
                                const endpoint_uri_pair_t &endpoint_uri_pair_,
-                               ws_address_t &address_,
+                               const ws_address_t &address_,
                                bool client_) :
     stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
     _client (client_),
@@ -203,7 +203,7 @@ void zmq::ws_engine_t::plug_internal ()
 
 int zmq::ws_engine_t::routing_id_msg (msg_t *msg_)
 {
-    int rc = msg_->init_size (_options.routing_id_size);
+    const int rc = msg_->init_size (_options.routing_id_size);
     errno_assert (rc == 0);
     if (_options.routing_id_size > 0)
         memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
@@ -216,7 +216,7 @@ int zmq::ws_engine_t::process_routing_id_msg (msg_t *msg_)
 {
     if (_options.recv_routing_id) {
         msg_->set_flags (msg_t::routing_id);
-        int rc = session ()->push_msg (msg_);
+        const int rc = session ()->push_msg (msg_);
         errno_assert (rc == 0);
     } else {
         int rc = msg_->close ();
@@ -230,7 +230,7 @@ int zmq::ws_engine_t::process_routing_id_msg (msg_t *msg_)
     return 0;
 }
 
-bool zmq::ws_engine_t::select_protocol (char *protocol_)
+bool zmq::ws_engine_t::select_protocol (const char *protocol_)
 {
     if (_options.mechanism == ZMQ_NULL && (strcmp ("ZWS2.0", protocol_) == 0)) {
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
@@ -309,7 +309,7 @@ bool zmq::ws_engine_t::handshake ()
 
 bool zmq::ws_engine_t::server_handshake ()
 {
-    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    const int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
     if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
@@ -320,7 +320,7 @@ bool zmq::ws_engine_t::server_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = static_cast<char> (*_inpos);
+        const char c = static_cast<char> (*_inpos);
 
         switch (_server_handshake_state) {
             case handshake_initial:
@@ -529,13 +529,13 @@ bool zmq::ws_engine_t::server_handshake ()
                         unsigned char hash[SHA_DIGEST_LENGTH];
                         compute_accept_key (_websocket_key, hash);
 
-                        int accept_key_len = encode_base64 (
+                        const int accept_key_len = encode_base64 (
                           hash, SHA_DIGEST_LENGTH, _websocket_accept,
                           MAX_HEADER_VALUE_LENGTH);
                         assert (accept_key_len > 0);
                         _websocket_accept[accept_key_len] = '\0';
 
-                        int written =
+                        const int written =
                           snprintf (reinterpret_cast<char *> (_write_buffer),
                                     WS_BUFFER_SIZE,
                                     "HTTP/1.1 101 Switching Protocols\r\n"
@@ -580,7 +580,7 @@ bool zmq::ws_engine_t::server_handshake ()
 
 bool zmq::ws_engine_t::client_handshake ()
 {
-    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    const int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
     if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
@@ -591,7 +591,7 @@ bool zmq::ws_engine_t::client_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = static_cast<char> (*_inpos);
+        const char c = static_cast<char> (*_inpos);
 
         switch (_client_handshake_state) {
             case client_handshake_initial:

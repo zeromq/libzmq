@@ -55,7 +55,7 @@ zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_,
 
 zmq::v2_decoder_t::~v2_decoder_t ()
 {
-    int rc = _in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 

@@ -82,9 +82,9 @@ bool zmq::thread_t::is_current_thread () const
 void zmq::thread_t::stop ()
 {
     if (_started) {
-        DWORD rc = WaitForSingleObject (_descriptor, INFINITE);
+        const DWORD rc = WaitForSingleObject (_descriptor, INFINITE);
         win_assert (rc != WAIT_FAILED);
-        BOOL rc2 = CloseHandle (_descriptor);
+        const BOOL rc2 = CloseHandle (_descriptor);
         win_assert (rc2 != 0);
     }
 }
@@ -154,7 +154,7 @@ void zmq::thread_t::
 
     // push our handler, raise, and finally pop our handler
     tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *) &rec;
-    DWORD MS_VC_EXCEPTION = 0x406D1388;
+    const DWORD MS_VC_EXCEPTION = 0x406D1388;
     RaiseException (MS_VC_EXCEPTION, 0,
                     sizeof (thread_info) / sizeof (ULONG_PTR),
                     (ULONG_PTR *) &thread_info);
