@@ -213,8 +213,8 @@ int zmq::ws_decoder_t::size_ready (unsigned char const *read_pos_)
 
     shared_message_memory_allocator &allocator = get_allocator ();
     if (unlikely (!_zero_copy
-                  || _size > (size_t) (allocator.data () + allocator.size ()
-                                       - read_pos_))) {
+                  || _size > static_cast<size_t> (
+                       allocator.data () + allocator.size () - read_pos_))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
         rc = _in_progress.init_size (static_cast<size_t> (_size));

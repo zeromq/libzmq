@@ -259,7 +259,7 @@ void *zmq_socket (void *ctx_, int type_)
     }
     zmq::ctx_t *ctx = static_cast<zmq::ctx_t *> (ctx_);
     zmq::socket_base_t *s = ctx->create_socket (type_);
-    return (void *) s;
+    return static_cast<void *> (s);
 }
 
 int zmq_close (void *s_)

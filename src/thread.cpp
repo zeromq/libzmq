@@ -50,7 +50,7 @@ static DWORD thread_routine (LPVOID arg_)
 static unsigned int __stdcall thread_routine (void *arg_)
 #endif
 {
-    zmq::thread_t *self = (zmq::thread_t *) arg_;
+    zmq::thread_t *self = static_cast<zmq::thread_t *> (arg_);
     self->applyThreadName ();
     self->_tfn (self->_arg);
     return 0;

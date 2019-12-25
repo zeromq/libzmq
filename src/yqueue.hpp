@@ -187,7 +187,7 @@ template <typename T, int N> class yqueue_t
             return (chunk_t *) pv;
         return NULL;
 #else
-        return (chunk_t *) malloc (sizeof (chunk_t));
+        return static_cast<chunk_t *> (malloc (sizeof (chunk_t)));
 #endif
     }
 

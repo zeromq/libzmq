@@ -270,7 +270,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  Remove pipe without actually sending the message as it was taken
         //  care of by the manual call above. subscriptions is the real mtrie,
         //  so the pipe must be removed from there or it will be left over.
-        _subscriptions.rm (pipe_, stub, (void *) NULL, false);
+        _subscriptions.rm (pipe_, stub, static_cast<void *> (NULL), false);
     } else {
         //  Remove the pipe from the trie. If there are topics that nobody
         //  is interested in anymore, send corresponding unsubscriptions

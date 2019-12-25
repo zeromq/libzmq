@@ -63,7 +63,7 @@ void *zmq_stopwatch_start ()
     uint64_t *watch = static_cast<uint64_t *> (malloc (sizeof (uint64_t)));
     alloc_assert (watch);
     *watch = zmq::clock_t::now_us ();
-    return (void *) watch;
+    return static_cast<void *> (watch);
 }
 
 unsigned long zmq_stopwatch_intermediate (void *watch_)

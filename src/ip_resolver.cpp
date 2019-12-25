@@ -388,7 +388,7 @@ int zmq::ip_resolver_t::resolve_getaddrinfo (ip_addr_t *ip_addr_,
 
     //  Use the first result.
     zmq_assert (res != NULL);
-    zmq_assert ((size_t) res->ai_addrlen <= sizeof (*ip_addr_));
+    zmq_assert (static_cast<size_t> (res->ai_addrlen) <= sizeof (*ip_addr_));
     memcpy (ip_addr_, res->ai_addr, res->ai_addrlen);
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.

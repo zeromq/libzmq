@@ -110,7 +110,8 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type_)
 #endif
     };
     static const size_t names_count = sizeof (names) / sizeof (names[0]);
-    zmq_assert (socket_type_ >= 0 && socket_type_ < (int) names_count);
+    zmq_assert (socket_type_ >= 0
+                && socket_type_ < static_cast<int> (names_count));
     return names[socket_type_];
 }
 
