@@ -19,7 +19,7 @@ URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires:  autoconf automake libtool glib2-devel
+BuildRequires:  autoconf automake libtool glib2-devel libbsd-devel
 %if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
 BuildRequires:  e2fsprogs-devel
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)

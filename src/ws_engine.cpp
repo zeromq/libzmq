@@ -74,7 +74,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
 #else
-#ifndef ZMQ_HAVE_STRLCPY
+#ifdef ZMQ_HAVE_LIBBSD
+#include <bsd/string.h>
+#elif !defined(ZMQ_HAVE_STRLCPY)
 static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
 {
     size_t remain = dest_size_;
