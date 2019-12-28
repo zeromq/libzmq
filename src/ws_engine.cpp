@@ -148,8 +148,11 @@ void zmq::ws_engine_t::start_ws_handshake ()
         else if (_options.mechanism == ZMQ_CURVE)
             protocol = "ZWS2.0/CURVE";
 #endif
-        else
+        else {
+            // Avoid unitialized variable error breaking UWP build
+            protocol = "";
             assert (false);
+        }
 
         unsigned char nonce[16];
         int *p = reinterpret_cast<int *> (nonce);
