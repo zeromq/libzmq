@@ -92,6 +92,7 @@ matrix:
         - libpgm-dev
         - libsodium-dev
         - libnss3-dev
+        - libbsd-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
