@@ -576,6 +576,7 @@ AC_ARG_WITH([tls],
 if test "x$enable_ws" != "xno"; then
     if test "x$with_tls" = "xyes"; then
         PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE gnutls >= 3.1.4"
             ws_crypto_library="gnutls"
             AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
             AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
