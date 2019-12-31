@@ -100,7 +100,7 @@ template <typename T, int ID = 0> class array_t
 
     inline void erase (size_type index_)
     {
-        if (_items.empty())
+        if (_items.empty ())
             return;
         _items[index_] = _items.back ();
         ((item_t *) _items[index_])->set_array_index ((int) index_);
