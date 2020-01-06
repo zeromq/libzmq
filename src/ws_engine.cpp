@@ -74,7 +74,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
 #else
-#ifndef ZMQ_HAVE_STRLCPY
+#ifdef ZMQ_HAVE_LIBBSD
+#include <bsd/string.h>
+#elif !defined(ZMQ_HAVE_STRLCPY)
 static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
 {
     size_t remain = dest_size_;
@@ -146,8 +148,11 @@ void zmq::ws_engine_t::start_ws_handshake ()
         else if (_options.mechanism == ZMQ_CURVE)
             protocol = "ZWS2.0/CURVE";
 #endif
-        else
+        else {
+            // Avoid unitialized variable error breaking UWP build
+            protocol = "";
             assert (false);
+        }
 
         unsigned char nonce[16];
         int *p = reinterpret_cast<int *> (nonce);

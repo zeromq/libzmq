@@ -344,11 +344,11 @@ if HAVE_VSCRIPT_COMPLEX
 src_libzmq_la_LDFLAGS += $(VSCRIPT_LDFLAGS),$(srcdir)/src/libzmq.vers
 endif
 
-src_libzmq_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS) $(LIBUNWIND_CFLAGS)
-src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS) $(LIBUNWIND_CFLAGS)
+src_libzmq_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS) $(LIBUNWIND_CFLAGS) $(LIBBSD_CFLAGS)
+src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS) $(LIBUNWIND_CFLAGS) $(LIBBSD_CFLAGS)
 src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@ $(CODE_COVERAGE_CXXFLAGS) \
-	$(LIBUNWIND_CFLAGS)
-src_libzmq_la_LIBADD = $(CODE_COVERAGE_LDFLAGS) $(LIBUNWIND_LIBS)
+	$(LIBUNWIND_CFLAGS) $(LIBBSD_CFLAGS)
+src_libzmq_la_LIBADD = $(CODE_COVERAGE_LDFLAGS) $(LIBUNWIND_LIBS) $(LIBBSD_LIBS)
 
 if USE_NSS
 src_libzmq_la_CPPFLAGS += ${NSS3_CFLAGS}
@@ -841,10 +841,10 @@ tests_test_security_curve_SOURCES += \
 endif
 
 tests_test_security_curve_LDADD = \
-        ${TESTUTIL_LIBS} src/libzmq.la $(LIBUNWIND_LIBS)
+        ${TESTUTIL_LIBS} src/libzmq.la $(LIBUNWIND_LIBS) $(LIBBSD_LIBS)
 tests_test_security_curve_CPPFLAGS = \
         ${TESTUTIL_CPPFLAGS} \
-	${LIBUNWIND_CFLAGS}
+	${LIBUNWIND_CFLAGS}  ${LIBBSD_CFLAGS}
 
 if USE_LIBSODIUM
 tests_test_security_curve_CPPFLAGS += \

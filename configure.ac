@@ -576,6 +576,7 @@ AC_ARG_WITH([tls],
 if test "x$enable_ws" != "xno"; then
     if test "x$with_tls" = "xyes"; then
         PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE gnutls >= 3.1.4"
             ws_crypto_library="gnutls"
             AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
             AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
@@ -751,19 +752,44 @@ AC_COMPILE_IFELSE(
 		AC_MSG_RESULT([no])
 ])
 
-# string.h doesn't seem to be included by default in Fedora 30
-AC_MSG_CHECKING([whether strlcpy is available])
-AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <string.h>]],
-		[[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
-		    [strlcpy is available])
-	],[
-		AC_MSG_RESULT([no])
-])
+AC_ARG_ENABLE([libbsd],
+    [AS_HELP_STRING([--enable-libbsd],
+        [enable libbsd [default=auto]])],
+    [enable_libbsd=$enableval],
+    [enable_libbsd="auto"])
+
+if test "x$enable_libbsd" != "xno"; then
+    PKG_CHECK_MODULES(LIBBSD, [libbsd],
+        [
+            AC_DEFINE(ZMQ_HAVE_LIBBSD, 1, [The libbsd library is to be used])
+            AC_SUBST([LIBBSD_CFLAGS])
+            AC_SUBST([LIBBSD_LIBS])
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libbsd"
+            found_libbsd="yes"
+        ],
+        [
+            found_libbsd="no"
+            if test "x$enable_libbsd" = "xyes"; then
+                AC_MSG_ERROR([Cannot find libbsd])
+            else
+                AC_MSG_WARN([Cannot find libbsd])
+            fi
+        ])
+fi
+if test "x$found_libbsd" != "xyes"; then
+    AC_MSG_CHECKING([whether strlcpy is available])
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+            [[#include <string.h>]],
+            [[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
+        ],[
+            AC_MSG_RESULT([yes])
+            AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
+                [strlcpy is available])
+        ],[
+            AC_MSG_RESULT([no])
+    ])
+fi
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])

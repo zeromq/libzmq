@@ -52,6 +52,7 @@
 #cmakedefine HAVE_ACCEPT4
 #cmakedefine HAVE_STRNLEN
 #cmakedefine ZMQ_HAVE_STRLCPY
+#cmakedefine ZMQ_HAVE_LIBBSD
 
 #cmakedefine ZMQ_HAVE_IPC
 
