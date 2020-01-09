@@ -382,7 +382,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
         wchar_t mutex_name[MAX_PATH];
 #ifdef __MINGW32__
         _snwprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
-                    signaler_port);
+                    zmq::signaler_port);
 #else
         swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
                   zmq::signaler_port);
