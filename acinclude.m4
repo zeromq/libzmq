@@ -691,7 +691,7 @@ int main (int, char **)
             return t;
         }
         ])],
-        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
+        [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -latomic" ; $1],
         [AC_MSG_RESULT(no) ; libzmq_cv_has_atomic_instrisics="no" LIBS=$save_LIBS ; $2])
     fi
 }])
