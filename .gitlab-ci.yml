@@ -66,3 +66,28 @@ lib-build-windows:
     - copy /y "DebugX64\lib\Debug\libzmq*" "%DEPLOYMENT_WINDOWS_NET_SHARE%\Builds\Debug\x64\"
     - copy /y "ReleaseX64\bin\Release\libzmq*" "%DEPLOYMENT_WINDOWS_NET_SHARE%\Builds\Release\x64\"
     - copy /y "ReleaseX64\lib\Release\libzmq*" "%DEPLOYMENT_WINDOWS_NET_SHARE%\Builds\Release\x64\"
+
+# Create library for linux
+lib-build-linux:
+  <<: *lib-build-files
+  stage: lib-build
+  image: ingescape/debian-testing-compil
+  tags:
+    - docker
+  script:
+    - mkdir build
+    - mkdir release
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=$HOME/builds/release/linux_x64/usr/local/
+    - make -C build
+    - make -C build DESTDIR=$PWD/release install
+    - make -C build DESTDIR=$HOME/builds/release/linux_x64/ install
+    - cd release/usr/local/
+    - tar zcvf ../../../libzmq.tgz *
+    - cd ../../..
+  artifacts:
+    paths:
+      - libzmq.tgz
+    name: "lib-build-linux-x64"
+    expire_in: 1 day
+  dependencies: []
+
