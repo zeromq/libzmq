@@ -52,6 +52,24 @@ void test_roundtrip ()
     test_context_socket_close (sb);
 }
 
+void test_roundtrip_without_path ()
+{
+    char connect_address[MAX_SOCKET_STRING];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
 void test_short_message ()
 {
     char connect_address[MAX_SOCKET_STRING + strlen ("/short")];
@@ -168,6 +186,7 @@ int main ()
 
     UNITY_BEGIN ();
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_roundtrip_without_path);
     RUN_TEST (test_short_message);
     RUN_TEST (test_large_message);
 
