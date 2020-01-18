@@ -59,6 +59,8 @@ void zmq::ws_encoder_t::message_ready ()
         _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_ping;
     else if (in_progress ()->is_pong ())
         _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_pong;
+    else if (in_progress ()->is_close_cmd ())
+        _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_close;
     else
         _tmp_buf[offset++] = 0x82; // Final | binary
 

@@ -454,6 +454,11 @@ bool zmq::msg_t::is_pong () const
     return (_u.base.flags & CMD_TYPE_MASK) == pong;
 }
 
+bool zmq::msg_t::is_close_cmd () const
+{
+    return (_u.base.flags & CMD_TYPE_MASK) == close_cmd;
+}
+
 size_t zmq::msg_t::command_body_size () const
 {
     if (this->is_ping () || this->is_pong ())

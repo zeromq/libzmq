@@ -131,6 +131,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
+    _close_msg.init ();
 
     if (_options.heartbeat_interval > 0) {
         _heartbeat_timeout = _options.heartbeat_timeout;
@@ -141,6 +142,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 
 zmq::ws_engine_t::~ws_engine_t ()
 {
+    _close_msg.close ();
 }
 
 void zmq::ws_engine_t::start_ws_handshake ()
@@ -921,7 +923,7 @@ int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
     zmq_assert (_mechanism != NULL);
 
     //  with WS engine, ping and pong commands are control messages and should not go through any mechanism
-    if (msg_->is_ping () || msg_->is_pong ()) {
+    if (msg_->is_ping () || msg_->is_pong () || msg_->is_close_cmd ()) {
         if (process_command_message (msg_) == -1)
             return -1;
     } else if (_mechanism->decode (msg_) == -1)
@@ -933,7 +935,7 @@ int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
     }
 
     if (msg_->flags () & msg_t::command && !msg_->is_ping ()
-        && !msg_->is_pong ())
+        && !msg_->is_pong () && !msg_->is_close_cmd ())
         process_command_message (msg_);
 
     if (_metadata)
@@ -946,6 +948,32 @@ int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
     return 0;
 }
 
+int zmq::ws_engine_t::produce_close_message (msg_t *msg_)
+{
+    int rc = msg_->move (_close_msg);
+    errno_assert (rc == 0);
+
+    _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+      &ws_engine_t::produce_no_msg_after_close);
+
+    return rc;
+}
+
+int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
+{
+    _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+      &ws_engine_t::close_connection_after_close);
+
+    errno = EAGAIN;
+    return -1;
+}
+
+int zmq::ws_engine_t::close_connection_after_close (msg_t *msg_)
+{
+    error (connection_error);
+    errno = ECONNRESET;
+    return -1;
+}
 
 int zmq::ws_engine_t::produce_ping_message (msg_t *msg_)
 {
@@ -979,6 +1007,12 @@ int zmq::ws_engine_t::process_command_message (msg_t *msg_)
     if (msg_->is_ping ()) {
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::produce_pong_message);
+        out_event ();
+    } else if (msg_->is_close_cmd ()) {
+        int rc = _close_msg.copy (*msg_);
+        errno_assert (rc == 0);
+        _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+          &ws_engine_t::produce_close_message);
         out_event ();
     }
 
