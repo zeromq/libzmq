@@ -99,14 +99,17 @@ int zmq::ws_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     }
     _host = std::string (name_, delim - name_);
 
-    //  find the path part, which is optional
+    // find the path part, which is optional
     delim = strrchr (name_, '/');
-    if (delim)
+    std::string host_name;
+    if (delim) {
         _path = std::string (delim);
-    else
+        // remove the path, otherwise resolving the port will fail with wildcard
+        host_name = std::string (name_, delim - name_);
+    } else {
         _path = std::string ("/");
-    //  remove the path, otherwise resolving the port will fail with wildcard
-    std::string host_port = std::string (name_, delim - name_);
+        host_name = name_;
+    }
 
     ip_resolver_options_t resolver_opts;
     resolver_opts.bindable (local_)
@@ -118,7 +121,7 @@ int zmq::ws_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 
     ip_resolver_t resolver (resolver_opts);
 
-    return resolver.resolve (&_address, host_port.c_str ());
+    return resolver.resolve (&_address, host_name.c_str ());
 }
 
 int zmq::ws_address_t::to_string (std::string &addr_) const
