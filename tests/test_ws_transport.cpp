@@ -52,6 +52,40 @@ void test_roundtrip ()
     test_context_socket_close (sb);
 }
 
+void test_heartbeat ()
+{
+    char connect_address[MAX_SOCKET_STRING + strlen ("/heartbeat")];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/heartbeat"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+    strcat (connect_address, "/heartbeat");
+
+    void *sc = test_context_socket (ZMQ_REQ);
+
+    // Setting heartbeat settings
+    int ivl = 10;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_HEARTBEAT_IVL, &ivl, sizeof (ivl)));
+
+    // Disable reconnect, to make sure the ping-pong actually work
+    ivl = -1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &ivl, sizeof (ivl)));
+
+    // Connect to server
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    // Make sure some ping and pong going through
+    msleep (100);
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
 void test_short_message ()
 {
     char connect_address[MAX_SOCKET_STRING + strlen ("/short")];
@@ -170,6 +204,7 @@ int main ()
     RUN_TEST (test_roundtrip);
     RUN_TEST (test_short_message);
     RUN_TEST (test_large_message);
+    RUN_TEST (test_heartbeat);
 
     if (zmq_has ("curve"))
         RUN_TEST (test_curve);

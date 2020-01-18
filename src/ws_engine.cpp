@@ -122,7 +122,8 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
     _header_name_position (0),
     _header_value_position (0),
     _header_upgrade_websocket (false),
-    _header_connection_upgrade (false)
+    _header_connection_upgrade (false),
+    _heartbeat_timeout (0)
 {
     memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
     memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
@@ -130,6 +131,12 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
+
+    if (_options.heartbeat_interval > 0) {
+        _heartbeat_timeout = _options.heartbeat_timeout;
+        if (_heartbeat_timeout == -1)
+            _heartbeat_timeout = _options.heartbeat_interval;
+    }
 }
 
 zmq::ws_engine_t::~ws_engine_t ()
@@ -227,6 +234,13 @@ bool zmq::ws_engine_t::select_protocol (char *protocol_)
           &ws_engine_t::routing_id_msg);
         _process_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::process_routing_id_msg);
+
+        // No mechanism in place, enabling heartbeat
+        if (_options.heartbeat_interval > 0 && !_has_heartbeat_timer) {
+            add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
+            _has_heartbeat_timer = true;
+        }
+
         return true;
     }
     if (_options.mechanism == ZMQ_NULL
@@ -900,6 +914,75 @@ bool zmq::ws_engine_t::client_handshake ()
     }
 
     return false;
+}
+
+int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
+{
+    zmq_assert (_mechanism != NULL);
+
+    //  with WS engine, ping and pong commands are control messages and should not go through any mechanism
+    if (msg_->is_ping () || msg_->is_pong ()) {
+        if (process_command_message (msg_) == -1)
+            return -1;
+    } else if (_mechanism->decode (msg_) == -1)
+        return -1;
+
+    if (_has_timeout_timer) {
+        _has_timeout_timer = false;
+        cancel_timer (heartbeat_timeout_timer_id);
+    }
+
+    if (msg_->flags () & msg_t::command && !msg_->is_ping ()
+        && !msg_->is_pong ())
+        process_command_message (msg_);
+
+    if (_metadata)
+        msg_->set_metadata (_metadata);
+    if (session ()->push_msg (msg_) == -1) {
+        if (errno == EAGAIN)
+            _process_msg = &ws_engine_t::push_one_then_decode_and_push;
+        return -1;
+    }
+    return 0;
+}
+
+
+int zmq::ws_engine_t::produce_ping_message (msg_t *msg_)
+{
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
+    msg_->set_flags (msg_t::command | msg_t::ping);
+
+    _next_msg = &ws_engine_t::pull_and_encode;
+    if (!_has_timeout_timer && _heartbeat_timeout > 0) {
+        add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
+        _has_timeout_timer = true;
+    }
+
+    return rc;
+}
+
+
+int zmq::ws_engine_t::produce_pong_message (msg_t *msg_)
+{
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
+    msg_->set_flags (msg_t::command | msg_t::pong);
+
+    _next_msg = &ws_engine_t::pull_and_encode;
+    return rc;
+}
+
+
+int zmq::ws_engine_t::process_command_message (msg_t *msg_)
+{
+    if (msg_->is_ping ()) {
+        _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+          &ws_engine_t::produce_pong_message);
+        out_event ();
+    }
+
+    return 0;
 }
 
 static int

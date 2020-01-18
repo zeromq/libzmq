@@ -135,6 +135,10 @@ class ws_engine_t : public stream_engine_base_t
     ~ws_engine_t ();
 
   protected:
+    int decode_and_push (msg_t *msg_);
+    int process_command_message (msg_t *msg_);
+    int produce_pong_message (msg_t *msg_);
+    int produce_ping_message (msg_t *msg_);
     bool handshake ();
     void plug_internal ();
     void start_ws_handshake ();
@@ -166,6 +170,8 @@ class ws_engine_t : public stream_engine_base_t
     char _websocket_protocol[256];
     char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1];
     char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1];
+
+    int _heartbeat_timeout;
 };
 }
 
