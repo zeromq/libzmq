@@ -77,13 +77,13 @@ int zmq::ws_decoder_t::opcode_ready (unsigned char const *)
         case zmq::ws_protocol_t::opcode_binary:
             break;
         case zmq::ws_protocol_t::opcode_close:
-            _msg_flags = msg_t::command; // TODO: set the command name to CLOSE
+            _msg_flags = msg_t::command | msg_t::close_cmd;
             break;
         case zmq::ws_protocol_t::opcode_ping:
-            _msg_flags = msg_t::ping;
+            _msg_flags = msg_t::ping | msg_t::command;
             break;
         case zmq::ws_protocol_t::opcode_pong:
-            _msg_flags = msg_t::pong;
+            _msg_flags = msg_t::pong | msg_t::command;
             break;
         default:
             return -1;

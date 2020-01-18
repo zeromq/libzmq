@@ -55,8 +55,15 @@ void zmq::ws_encoder_t::message_ready ()
 {
     int offset = 0;
 
-    // TODO: it might be close/ping/pong, which should be different op code
-    _tmp_buf[offset++] = 0x82; // Final | binary
+    if (in_progress ()->is_ping ())
+        _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_ping;
+    else if (in_progress ()->is_pong ())
+        _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_pong;
+    else if (in_progress ()->is_close_cmd ())
+        _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_close;
+    else
+        _tmp_buf[offset++] = 0x82; // Final | binary
+
     _tmp_buf[offset] = _must_mask ? 0x80 : 0x00;
 
     size_t size = in_progress ()->size ();

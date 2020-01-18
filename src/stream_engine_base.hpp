@@ -87,7 +87,8 @@ class stream_engine_base_t : public io_object_t, public i_engine
     int push_msg_to_session (msg_t *msg_);
 
     int pull_and_encode (msg_t *msg_);
-    int decode_and_push (msg_t *msg_);
+    virtual int decode_and_push (msg_t *msg_);
+    int push_one_then_decode_and_push (msg_t *msg_);
 
     void set_handshake_timer ();
 
@@ -165,7 +166,6 @@ class stream_engine_base_t : public io_object_t, public i_engine
     void unplug ();
 
     int write_credential (msg_t *msg_);
-    int push_one_then_decode_and_push (msg_t *msg_);
 
     void mechanism_ready ();
 

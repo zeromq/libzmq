@@ -84,6 +84,7 @@ class msg_t
         pong = 8,
         subscribe = 12,
         cancel = 16,
+        close_cmd = 20,
         credential = 32,
         routing_id = 64,
         shared = 128
@@ -126,6 +127,7 @@ class msg_t
     bool is_leave () const;
     bool is_ping () const;
     bool is_pong () const;
+    bool is_close_cmd () const;
 
     //  These are called on each message received by the session_base class,
     //  so get them inlined to avoid the overhead of 2 function calls per msg

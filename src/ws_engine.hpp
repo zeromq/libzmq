@@ -135,6 +135,10 @@ class ws_engine_t : public stream_engine_base_t
     ~ws_engine_t ();
 
   protected:
+    int decode_and_push (msg_t *msg_);
+    int process_command_message (msg_t *msg_);
+    int produce_pong_message (msg_t *msg_);
+    int produce_ping_message (msg_t *msg_);
     bool handshake ();
     void plug_internal ();
     void start_ws_handshake ();
@@ -142,6 +146,9 @@ class ws_engine_t : public stream_engine_base_t
   private:
     int routing_id_msg (msg_t *msg_);
     int process_routing_id_msg (msg_t *msg_);
+    int produce_close_message (msg_t *msg_);
+    int produce_no_msg_after_close (msg_t *msg_);
+    int close_connection_after_close (msg_t *msg_);
 
     bool select_protocol (char *protocol);
 
@@ -166,6 +173,9 @@ class ws_engine_t : public stream_engine_base_t
     char _websocket_protocol[256];
     char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1];
     char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1];
+
+    int _heartbeat_timeout;
+    msg_t _close_msg;
 };
 }
 
