@@ -212,8 +212,14 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
 
         //  remove the path, otherwise resolving the port will fail with wildcard
         const char *delim = strrchr (addr_, '/');
-        std::string host_port = std::string (addr_, delim - addr_);
-        if (create_socket (host_port.c_str ()) == -1)
+        std::string host_address;
+        if (delim) {
+            host_address = std::string (addr_, delim - addr_);
+        } else {
+            host_address = addr_;
+        }
+
+        if (create_socket (host_address.c_str ()) == -1)
             return -1;
     }
 
