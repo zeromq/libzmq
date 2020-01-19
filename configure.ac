@@ -565,7 +565,9 @@ AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
 ws_crypto_library=""
 
 AC_ARG_ENABLE([ws],
-    [AS_HELP_STRING([--disable-ws], [Disable WebSocket transport [default=no]])])
+    [AS_HELP_STRING([--enable-ws], [Enable WebSocket transport [default=state of DRAFT]])],
+    [enable_ws=$enableval],
+    [enable_ws=$enable_drafts])
 
 AC_ARG_WITH([nss],
     [AS_HELP_STRING([--with-nss], [use nss instead of built-in sha1 [default=no]])])

@@ -27,7 +27,7 @@
   of WebSockets (and secure WebSockets via TLS) via the ZWS 2.0 protocol.
   WSS requires the GnuTLS library for TLS support. ZMQ_WSS_ specific socket
   options were added to support TLS.
-  WebSockets support can be disabled at build time with --disable-ws.
+  WebSockets support is disabled by default if DRAFT APIs are disabled.
 
 * Fixed #3566 - malformed CURVE message can cause memory leak
 

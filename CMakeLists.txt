@@ -98,11 +98,15 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif()
 
-# Disable webSocket transport
-option(DISABLE_WS "Disable WebSocket transport" OFF)
+# Enable webSocket transport
+if (ENABLE_DRAFTS)
+  option(ENABLE_WS "Enable WebSocket transport" ON)
+else()
+  option(ENABLE_WS "Enable WebSocket transport" OFF)
+endif()
 option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
 
-if (NOT DISABLE_WS)
+if (ENABLE_WS)
   list(APPEND sources
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp
