@@ -489,7 +489,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
                             char *rest;
-							char *p = strtok_r (_header_value, ",", &rest);
+                            char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
                                     p++;
