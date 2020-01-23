@@ -73,6 +73,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
+#define strtok_r strtok_s
 #else
 #ifdef ZMQ_HAVE_LIBBSD
 #include <bsd/string.h>
@@ -487,7 +488,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *p = strtok (_header_value, ",");
+                            char *rest;
+                            char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
                                     p++;
@@ -497,7 +499,7 @@ bool zmq::ws_engine_t::server_handshake ()
                                     break;
                                 }
 
-                                p = strtok (NULL, ",");
+                                p = strtok_r (NULL, ",", &rest);
                             }
                         }
                     }
