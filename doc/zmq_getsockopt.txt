@@ -786,8 +786,8 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_THREAD_SAFE: Retrieve socket thread safety
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_SAFE' option shall retrieve a boolean value indicating whether
-or not the socket is threadsafe. Currently 'ZMQ_CLIENT' and 'ZMQ_SERVER' sockets
-are threadsafe.
+or not the socket is threadsafe. See linkzmq:zmq_socket[3] for which sockets are
+thread-safe.
 
 [horizontal]
 Option value type:: boolean

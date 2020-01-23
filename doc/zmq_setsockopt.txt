@@ -1154,8 +1154,8 @@ Default value:: NULL
 Applicable socket types:: ZMQ_XPUB
 
 
-ZMQ_ONLY_FIRST_SUBSCRIBE: Process only fist subscribe/unsubscribe in a multipart message
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_ONLY_FIRST_SUBSCRIBE: Process only first subscribe/unsubscribe in a multipart message
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If set, only the first part of the multipart message is processed as
 a subscribe/unsubscribe message. The rest are forwarded as user data
 regardless of message contents.
