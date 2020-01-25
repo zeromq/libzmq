@@ -52,7 +52,10 @@ values defined below.
 ERRORS
 ------
 *EAGAIN*::
-Non-blocking mode was requested and no messages are available at the moment.
+Either the timeout set via the socket-option ZMQ_RCVTIMEO (see linkzmq:zmq_setsockopt[3])
+has been reached (flag ZMQ_DONTWAIT not set) without being able to read a message
+from the socket or there are no messages available at the moment (flag ZMQ_DONTWAIT set)
+and the operation would block.
 *ENOTSUP*::
 The _zmq_recvmsg()_ operation is not supported by this socket type.
 *EFSM*::
@@ -111,6 +114,7 @@ SEE ALSO
 linkzmq:zmq_recv[3]
 linkzmq:zmq_send[3]
 linkzmq:zmq_getsockopt[3]
+linkzmq:zmq_setsockopt[3]
 linkzmq:zmq_socket[7]
 linkzmq:zmq[7]
 
