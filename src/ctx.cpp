@@ -232,16 +232,18 @@ int zmq::ctx_t::shutdown ()
 {
     scoped_lock_t locker (_slot_sync);
 
-    if (!_starting && !_terminating) {
+    if (!_terminating) {
         _terminating = true;
 
-        //  Send stop command to sockets so that any blocking calls
-        //  can be interrupted. If there are no sockets we can ask reaper
-        //  thread to stop.
-        for (sockets_t::size_type i = 0; i != _sockets.size (); i++)
-            _sockets[i]->stop ();
-        if (_sockets.empty ())
-            _reaper->stop ();
+        if (!_starting) {
+            //  Send stop command to sockets so that any blocking calls
+            //  can be interrupted. If there are no sockets we can ask reaper
+            //  thread to stop.
+            for (sockets_t::size_type i = 0; i != _sockets.size (); i++)
+                _sockets[i]->stop ();
+            if (_sockets.empty ())
+                _reaper->stop ();
+        }
     }
 
     return 0;
@@ -471,15 +473,16 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
     scoped_lock_t locker (_slot_sync);
 
-    if (unlikely (_starting)) {
-        if (!start ())
-            return NULL;
-    }
-
-    //  Once zmq_ctx_term() was called, we can't create new sockets.
+    //  Once zmq_ctx_term() or zmq_ctx_shutdown() was called, we can't create
+    //  new sockets.
     if (_terminating) {
         errno = ETERM;
         return NULL;
+    }
+
+    if (unlikely (_starting)) {
+        if (!start ())
+            return NULL;
     }
 
     //  If max_sockets limit was reached, return error.

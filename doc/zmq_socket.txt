@@ -556,7 +556,7 @@ The provided 'context' is invalid.
 *EMFILE*::
 The limit on the total number of open 0MQ sockets has been reached.
 *ETERM*::
-The context specified was terminated.
+The context specified was shutdown or terminated.
 
 EXAMPLE
 -------
