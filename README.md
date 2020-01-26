@@ -15,6 +15,10 @@ protocols and more.
 
 ## Supported platforms <a name="#platforms"/>
 
+Libzmq is mainly written in C++98 with some optional C++11-fragments. For 
+configuration either autotools or CMake is employed. See below for some lists 
+of platforms, where libzmq has been successfully compiled on.
+
 ### Supported platforms with primary CI
 
 OS and version | Architecture | Compiler and version | Build system | Remarks
