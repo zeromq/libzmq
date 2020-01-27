@@ -175,7 +175,7 @@ int zmq::req_t::xrecv (msg_t *msg_)
         _message_begins = false;
     }
 
-    int rc = recv_reply_pipe (msg_);
+    const int rc = recv_reply_pipe (msg_);
     if (rc != 0)
         return rc;
 
@@ -210,7 +210,7 @@ int zmq::req_t::xsetsockopt (int option_,
                              const void *optval_,
                              size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));
@@ -248,7 +248,7 @@ int zmq::req_t::recv_reply_pipe (msg_t *msg_)
 {
     while (true) {
         pipe_t *pipe = NULL;
-        int rc = dealer_t::recvpipe (msg_, &pipe);
+        const int rc = dealer_t::recvpipe (msg_, &pipe);
         if (rc != 0)
             return rc;
         if (!_reply_pipe || pipe == _reply_pipe)

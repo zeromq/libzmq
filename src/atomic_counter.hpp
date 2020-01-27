@@ -156,7 +156,7 @@ class atomic_counter_t
           __atomic_sub_fetch (&_value, decrement_, __ATOMIC_ACQ_REL);
         return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_CXX11
-        integer_t old =
+        const integer_t old =
           _value.fetch_sub (decrement_, std::memory_order_acq_rel);
         return old - decrement_ != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H

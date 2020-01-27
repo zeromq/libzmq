@@ -179,7 +179,7 @@ template <typename T, int N> class yqueue_t
         chunk_t *next;
     };
 
-    inline chunk_t *allocate_chunk ()
+    static inline chunk_t *allocate_chunk ()
     {
 #ifdef HAVE_POSIX_MEMALIGN
         void *pv;
@@ -187,7 +187,7 @@ template <typename T, int N> class yqueue_t
             return (chunk_t *) pv;
         return NULL;
 #else
-        return (chunk_t *) malloc (sizeof (chunk_t));
+        return static_cast<chunk_t *> (malloc (sizeof (chunk_t)));
 #endif
     }
 

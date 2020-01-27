@@ -158,7 +158,7 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
 int zmq::curve_client_t::process_welcome (const uint8_t *msg_data_,
                                           size_t msg_size_)
 {
-    int rc = _tools.process_welcome (msg_data_, msg_size_, cn_precom);
+    const int rc = _tools.process_welcome (msg_data_, msg_size_, cn_precom);
 
     if (rc == -1) {
         session->get_socket ()->event_handshake_failed_protocol (

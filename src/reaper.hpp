@@ -40,11 +40,11 @@ namespace zmq
 class ctx_t;
 class socket_base_t;
 
-class reaper_t : public object_t, public i_poll_events
+class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
 {
   public:
     reaper_t (zmq::ctx_t *ctx_, uint32_t tid_);
-    ~reaper_t ();
+    ~reaper_t () ZMQ_FINAL;
 
     mailbox_t *get_mailbox ();
 
@@ -52,15 +52,15 @@ class reaper_t : public object_t, public i_poll_events
     void stop ();
 
     //  i_poll_events implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    void in_event () ZMQ_FINAL;
+    void out_event () ZMQ_FINAL;
+    void timer_event (int id_) ZMQ_FINAL;
 
   private:
     //  Command handlers.
-    void process_stop ();
-    void process_reap (zmq::socket_base_t *socket_);
-    void process_reaped ();
+    void process_stop () ZMQ_FINAL;
+    void process_reap (zmq::socket_base_t *socket_) ZMQ_FINAL;
+    void process_reaped () ZMQ_FINAL;
 
     //  Reaper thread accesses incoming commands via this mailbox.
     mailbox_t _mailbox;

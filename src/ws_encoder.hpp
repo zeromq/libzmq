@@ -36,11 +36,11 @@ namespace zmq
 {
 //  Encoder for web socket framing protocol. Converts messages into data stream.
 
-class ws_encoder_t : public encoder_base_t<ws_encoder_t>
+class ws_encoder_t ZMQ_FINAL : public encoder_base_t<ws_encoder_t>
 {
   public:
     ws_encoder_t (size_t bufsize_, bool must_mask_);
-    virtual ~ws_encoder_t ();
+    ~ws_encoder_t () ZMQ_FINAL;
 
   private:
     void size_ready ();

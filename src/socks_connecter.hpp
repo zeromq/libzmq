@@ -41,7 +41,7 @@ class io_thread_t;
 class session_base_t;
 struct address_t;
 
-class socks_connecter_t : public stream_connecter_base_t
+class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -52,7 +52,7 @@ class socks_connecter_t : public stream_connecter_base_t
                        address_t *addr_,
                        address_t *proxy_addr_,
                        bool delayed_start_);
-    ~socks_connecter_t ();
+    ~socks_connecter_t () ZMQ_FINAL;
 
     void set_auth_method_basic (const std::string &username,
                                 const std::string &password);
@@ -82,19 +82,19 @@ class socks_connecter_t : public stream_connecter_base_t
     };
 
     //  Handlers for I/O events.
-    virtual void in_event ();
-    virtual void out_event ();
+    void in_event () ZMQ_FINAL;
+    void out_event () ZMQ_FINAL;
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting ();
+    void start_connecting () ZMQ_FINAL;
 
-    int process_server_response (const socks_choice_t &response_);
-    int process_server_response (const socks_response_t &response_);
-    int process_server_response (const socks_auth_response_t &response_);
+    static int process_server_response (const socks_choice_t &response_);
+    static int process_server_response (const socks_response_t &response_);
+    static int process_server_response (const socks_auth_response_t &response_);
 
-    int parse_address (const std::string &address_,
-                       std::string &hostname_,
-                       uint16_t &port_);
+    static int parse_address (const std::string &address_,
+                              std::string &hostname_,
+                              uint16_t &port_);
 
     int connect_to_proxy ();
 
@@ -107,7 +107,7 @@ class socks_connecter_t : public stream_connecter_base_t
 
     //  Get the file descriptor of newly created connection. Returns
     //  retired_fd if the connection was unsuccessful.
-    zmq::fd_t check_proxy_connection ();
+    zmq::fd_t check_proxy_connection () const;
 
     socks_greeting_encoder_t _greeting_encoder;
     socks_choice_decoder_t _choice_decoder;

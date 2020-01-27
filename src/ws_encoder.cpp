@@ -82,7 +82,7 @@ void zmq::ws_encoder_t::message_ready ()
     }
 
     if (_must_mask) {
-        uint32_t random = generate_random ();
+        const uint32_t random = generate_random ();
         put_uint32 (_tmp_buf + offset, random);
         put_uint32 (_mask, random);
         offset += 4;
@@ -107,7 +107,7 @@ void zmq::ws_encoder_t::size_ready ()
 {
     if (_must_mask) {
         assert (in_progress () != &_masked_msg);
-        size_t size = in_progress ()->size ();
+        const size_t size = in_progress ()->size ();
 
         _masked_msg.close ();
         _masked_msg.init_size (size);
@@ -117,7 +117,8 @@ void zmq::ws_encoder_t::size_ready ()
           static_cast<unsigned char *> (_masked_msg.data ());
         unsigned char *src =
           static_cast<unsigned char *> (in_progress ()->data ());
-        for (size_t i = 0; i < in_progress ()->size (); ++i, mask_index++)
+        for (size_t i = 0, size = in_progress ()->size (); i < size;
+             ++i, mask_index++)
             dest[i] = src[i] ^ _mask[mask_index % 4];
 
         next_step (_masked_msg.data (), _masked_msg.size (),

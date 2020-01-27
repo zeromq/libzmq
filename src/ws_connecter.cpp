@@ -193,7 +193,7 @@ int zmq::ws_connecter_t::open ()
 #if defined ZMQ_HAVE_VXWORKS
     int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
-    int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
+    const int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0) {

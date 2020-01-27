@@ -40,7 +40,7 @@
 
 namespace zmq
 {
-class ws_listener_t : public stream_listener_base_t
+class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     ws_listener_t (zmq::io_thread_t *io_thread_,
@@ -48,18 +48,19 @@ class ws_listener_t : public stream_listener_base_t
                    const options_t &options_,
                    bool wss_);
 
-    ~ws_listener_t ();
+    ~ws_listener_t () ZMQ_FINAL;
 
     //  Set address to listen on.
     int set_local_address (const char *addr_);
 
   protected:
-    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
-    void create_engine (fd_t fd);
+    std::string get_socket_name (fd_t fd_,
+                                 socket_end_t socket_end_) const ZMQ_FINAL;
+    void create_engine (fd_t fd) ZMQ_FINAL;
 
   private:
     //  Handlers for I/O events.
-    void in_event ();
+    void in_event () ZMQ_FINAL;
 
     //  Accept the new connection. Returns the file descriptor of the
     //  newly created connection. The function may return retired_fd

@@ -36,7 +36,7 @@
 
 namespace zmq
 {
-class ws_connecter_t : public stream_connecter_base_t
+class ws_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -48,10 +48,10 @@ class ws_connecter_t : public stream_connecter_base_t
                     bool delayed_start_,
                     bool wss_,
                     const std::string &tls_hostname_);
-    ~ws_connecter_t ();
+    ~ws_connecter_t () ZMQ_FINAL;
 
   protected:
-    void create_engine (fd_t fd, const std::string &local_address_);
+    void create_engine (fd_t fd, const std::string &local_address_) ZMQ_FINAL;
 
   private:
     //  ID of the timer used to check the connect timeout, must be different from stream_connecter_base_t::reconnect_timer_id.
@@ -61,14 +61,14 @@ class ws_connecter_t : public stream_connecter_base_t
     };
 
     //  Handlers for incoming commands.
-    void process_term (int linger_);
+    void process_term (int linger_) ZMQ_FINAL;
 
     //  Handlers for I/O events.
-    void out_event ();
-    void timer_event (int id_);
+    void out_event () ZMQ_FINAL;
+    void timer_event (int id_) ZMQ_FINAL;
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting ();
+    void start_connecting () ZMQ_FINAL;
 
     //  Internal function to add a connect timer
     void add_connect_timer ();

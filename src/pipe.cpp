@@ -38,10 +38,10 @@
 #include "ypipe.hpp"
 #include "ypipe_conflate.hpp"
 
-int zmq::pipepair (class object_t *parents_[2],
-                   class pipe_t *pipes_[2],
-                   int hwms_[2],
-                   bool conflate_[2])
+int zmq::pipepair (object_t *parents_[2],
+                   pipe_t *pipes_[2],
+                   const int hwms_[2],
+                   const bool conflate_[2])
 {
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
@@ -188,7 +188,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
     if (unlikely (_state != active && _state != waiting_for_delimiter))
         return false;
 
-    for (bool payload_read = false; !payload_read;) {
+    while (true) {
         if (!_in_pipe->read (msg_)) {
             _in_active = false;
             return false;
@@ -198,8 +198,9 @@ bool zmq::pipe_t::read (msg_t *msg_)
         if (unlikely (msg_->is_credential ())) {
             const int rc = msg_->close ();
             zmq_assert (rc == 0);
-        } else
-            payload_read = true;
+        } else {
+            break;
+        }
     }
 
     //  If delimiter was read, start termination process of the pipe.
@@ -232,7 +233,7 @@ bool zmq::pipe_t::check_write ()
     return true;
 }
 
-bool zmq::pipe_t::write (msg_t *msg_)
+bool zmq::pipe_t::write (const msg_t *msg_)
 {
     if (unlikely (!check_write ()))
         return false;

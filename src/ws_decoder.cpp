@@ -59,13 +59,13 @@ zmq::ws_decoder_t::ws_decoder_t (size_t bufsize_,
 
 zmq::ws_decoder_t::~ws_decoder_t ()
 {
-    int rc = _in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 
 int zmq::ws_decoder_t::opcode_ready (unsigned char const *)
 {
-    bool final = (_tmpbuf[0] & 0x80) != 0; // final bit
+    const bool final = (_tmpbuf[0] & 0x80) != 0; // final bit
     if (!final)
         return -1; // non final messages are not supported
 
@@ -96,7 +96,7 @@ int zmq::ws_decoder_t::opcode_ready (unsigned char const *)
 
 int zmq::ws_decoder_t::size_first_byte_ready (unsigned char const *read_from_)
 {
-    bool is_masked = (_tmpbuf[0] & 0x80) != 0;
+    const bool is_masked = (_tmpbuf[0] & 0x80) != 0;
 
     if (is_masked != _must_mask) // wrong mask value
         return -1;
@@ -213,8 +213,8 @@ int zmq::ws_decoder_t::size_ready (unsigned char const *read_pos_)
 
     shared_message_memory_allocator &allocator = get_allocator ();
     if (unlikely (!_zero_copy
-                  || _size > (size_t) (allocator.data () + allocator.size ()
-                                       - read_pos_))) {
+                  || _size > static_cast<size_t> (
+                       allocator.data () + allocator.size () - read_pos_))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
         rc = _in_progress.init_size (static_cast<size_t> (_size));

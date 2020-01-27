@@ -48,20 +48,21 @@ class xpub_t : public socket_base_t
 {
   public:
     xpub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~xpub_t ();
+    ~xpub_t () ZMQ_OVERRIDE;
 
     //  Implementations of virtual functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_ = false,
-                       bool locally_initiated_ = false);
-    int xsend (zmq::msg_t *msg_);
-    bool xhas_out ();
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+                       bool locally_initiated_ = false) ZMQ_OVERRIDE;
+    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_out () ZMQ_FINAL;
+    int xrecv (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    bool xhas_in () ZMQ_OVERRIDE;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   private:
     //  Function to be applied to the trie to send all the subscriptions

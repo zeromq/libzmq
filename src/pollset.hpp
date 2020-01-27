@@ -50,13 +50,13 @@ struct i_poll_events;
 //  This class implements socket polling mechanism using the AIX-specific
 //  pollset mechanism.
 
-class pollset_t : public poller_base_t
+class pollset_t ZMQ_FINAL : public poller_base_t
 {
   public:
     typedef void *handle_t;
 
     pollset_t (const thread_ctx_t &ctx_);
-    ~pollset_t ();
+    ~pollset_t () ZMQ_FINAL;
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -75,7 +75,7 @@ class pollset_t : public poller_base_t
     static void worker_routine (void *arg_);
 
     //  Main event loop.
-    void loop ();
+    void loop () ZMQ_FINAL;
 
     // Reference to ZMQ context.
     const thread_ctx_t &ctx;

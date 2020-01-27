@@ -58,20 +58,21 @@ class stream_engine_base_t : public io_object_t, public i_engine
     stream_engine_base_t (fd_t fd_,
                           const options_t &options_,
                           const endpoint_uri_pair_t &endpoint_uri_pair_);
-    ~stream_engine_base_t ();
+    ~stream_engine_base_t () ZMQ_OVERRIDE;
 
     //  i_engine interface implementation.
-    void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
-    void terminate ();
-    bool restart_input ();
-    void restart_output ();
-    void zap_msg_available ();
-    const endpoint_uri_pair_t &get_endpoint () const;
+    void plug (zmq::io_thread_t *io_thread_,
+               zmq::session_base_t *session_) ZMQ_FINAL;
+    void terminate () ZMQ_FINAL;
+    bool restart_input () ZMQ_FINAL;
+    void restart_output () ZMQ_FINAL;
+    void zap_msg_available () ZMQ_FINAL;
+    const endpoint_uri_pair_t &get_endpoint () const ZMQ_FINAL;
 
     //  i_poll_events interface implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    void in_event () ZMQ_FINAL;
+    void out_event () ZMQ_FINAL;
+    void timer_event (int id_) ZMQ_FINAL;
 
   protected:
     typedef metadata_t::dict_t properties_t;

@@ -344,7 +344,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     return -1;
 }
 
-zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
+zmq::fd_t zmq::socks_connecter_t::check_proxy_connection () const
 {
     //  Async connect has finished. Check whether an error occurred
     int err = 0;

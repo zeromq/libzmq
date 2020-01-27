@@ -20,6 +20,22 @@
 #endif
 #endif
 
+#if !defined ZMQ_OVERRIDE
+#if defined ZMQ_HAVE_NOEXCEPT
+#define ZMQ_OVERRIDE override
+#else
+#define ZMQ_OVERRIDE
+#endif
+#endif
+
+#if !defined ZMQ_FINAL
+#if defined ZMQ_HAVE_NOEXCEPT
+#define ZMQ_FINAL final
+#else
+#define ZMQ_FINAL
+#endif
+#endif
+
 #if !defined ZMQ_DEFAULT
 #if defined ZMQ_HAVE_NOEXCEPT
 #define ZMQ_DEFAULT = default;

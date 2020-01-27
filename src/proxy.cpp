@@ -183,9 +183,9 @@ static int loop_and_send_multipart_stat (zmq::socket_base_t *control_,
     return rc;
 }
 
-static int reply_stats (class zmq::socket_base_t *control_,
-                        zmq_socket_stats_t *frontend_stats_,
-                        zmq_socket_stats_t *backend_stats_)
+static int reply_stats (zmq::socket_base_t *control_,
+                        const zmq_socket_stats_t *frontend_stats_,
+                        const zmq_socket_stats_t *backend_stats_)
 {
     // first part: frontend stats - the first send might fail due to HWM
     if (loop_and_send_multipart_stat (control_, frontend_stats_->msg_in, true,

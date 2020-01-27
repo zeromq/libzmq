@@ -35,7 +35,7 @@
 
 #include <limits.h>
 
-static bool is_thread_safe (zmq::socket_base_t &socket_)
+static bool is_thread_safe (const zmq::socket_base_t &socket_)
 {
     // do not use getsockopt here, since that would fail during context termination
     return socket_.is_thread_safe ();
@@ -81,12 +81,12 @@ zmq::socket_poller_t::~socket_poller_t ()
 #endif
 }
 
-bool zmq::socket_poller_t::check_tag ()
+bool zmq::socket_poller_t::check_tag () const
 {
     return _tag == 0xCAFEBABE;
 }
 
-int zmq::socket_poller_t::signaler_fd (fd_t *fd_)
+int zmq::socket_poller_t::signaler_fd (fd_t *fd_) const
 {
     if (_signaler) {
         *fd_ = _signaler->get_fd ();
@@ -127,7 +127,7 @@ int zmq::socket_poller_t::add (socket_base_t *socket_,
         socket_->add_signaler (_signaler);
     }
 
-    item_t item = {
+    const item_t item = {
         socket_,
         0,
         user_data_,
@@ -159,7 +159,7 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
         }
     }
 
-    item_t item = {
+    const item_t item = {
         NULL,
         fd_,
         user_data_,
@@ -181,7 +181,7 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
     return 0;
 }
 
-int zmq::socket_poller_t::modify (socket_base_t *socket_, short events_)
+int zmq::socket_poller_t::modify (const socket_base_t *socket_, short events_)
 {
     const items_t::iterator end = _items.end ();
     items_t::iterator it;
@@ -322,7 +322,7 @@ int zmq::socket_poller_t::rebuild ()
             if (it->socket) {
                 if (!is_thread_safe (*it->socket)) {
                     size_t fd_size = sizeof (zmq::fd_t);
-                    int rc = it->socket->getsockopt (
+                    const int rc = it->socket->getsockopt (
                       ZMQ_FD, &_pollfds[item_nbr].fd, &fd_size);
                     zmq_assert (rc == 0);
 
@@ -457,7 +457,7 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
         else {
 #if defined ZMQ_POLL_BASED_ON_POLL
 
-            short revents = _pollfds[it->pollfd_index].revents;
+            const short revents = _pollfds[it->pollfd_index].revents;
             short events = 0;
 
             if (revents & POLLIN)
@@ -542,7 +542,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
     }
 
     if (_need_rebuild) {
-        int rc = rebuild ();
+        const int rc = rebuild ();
         if (rc == -1)
             return -1;
     }
@@ -596,7 +596,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
               static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
 
         //  Wait for events.
-        int rc = poll (_pollfds, _pollset_size, timeout);
+        const int rc = poll (_pollfds, _pollset_size, timeout);
         if (rc == -1 && errno == EINTR) {
             return -1;
         }
@@ -607,7 +607,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
             _signaler->recv ();
 
         //  Check for the events.
-        int found = check_events (events_, n_events_);
+        const int found = check_events (events_, n_events_);
         if (found) {
             if (found > 0)
                 zero_trail_events (events_, n_events_, found);

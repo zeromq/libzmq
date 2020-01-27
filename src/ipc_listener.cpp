@@ -85,7 +85,7 @@ zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
 
 void zmq::ipc_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -134,7 +134,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     if (rc != 0) {
         if (!_tmp_socket_dirname.empty ()) {
             // We need to preserve errno to return to the user
-            int tmp_errno = errno;
+            const int tmp_errno = errno;
             ::rmdir (_tmp_socket_dirname.c_str ());
             _tmp_socket_dirname.clear ();
             errno = tmp_errno;
@@ -152,7 +152,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
         if (_s == retired_fd) {
             if (!_tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
-                int tmp_errno = errno;
+                const int tmp_errno = errno;
                 ::rmdir (_tmp_socket_dirname.c_str ());
                 _tmp_socket_dirname.clear ();
                 errno = tmp_errno;
@@ -180,7 +180,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -189,7 +189,7 @@ error:
 int zmq::ipc_listener_t::close ()
 {
     zmq_assert (_s != retired_fd);
-    fd_t fd_for_event = _s;
+    const fd_t fd_for_event = _s;
 #ifdef ZMQ_HAVE_WINDOWS
     int rc = closesocket (_s);
     wsa_assert (rc != SOCKET_ERROR);
@@ -253,9 +253,10 @@ bool zmq::ipc_listener_t::filter (fd_t sock_)
 
     if (!(pw = getpwuid (cred.uid)))
         return false;
-    for (options_t::ipc_gid_accept_filters_t::const_iterator it =
-           options.ipc_gid_accept_filters.begin ();
-         it != options.ipc_gid_accept_filters.end (); it++) {
+    for (options_t::ipc_gid_accept_filters_t::const_iterator
+           it = options.ipc_gid_accept_filters.begin (),
+           end = options.ipc_gid_accept_filters.end ();
+         it != end; it++) {
         if (!(gr = getgrgid (*it)))
             continue;
         for (char **mem = gr->gr_mem; *mem; mem++) {
@@ -312,7 +313,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     socklen_t ss_len = sizeof (ss);
 #endif
 
-    fd_t sock =
+    const fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
     if (sock == retired_fd) {
@@ -341,7 +342,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);

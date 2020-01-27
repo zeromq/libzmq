@@ -211,14 +211,14 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
 
 void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
-    DWORD errcode = GetLastError ();
+    const DWORD errcode = GetLastError ();
 #if defined _WIN32_WCE
     DWORD rc = FormatMessageW (
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode,
       MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) buffer_,
       buffer_size_ / sizeof (wchar_t), NULL);
 #else
-    DWORD rc = FormatMessageA (
+    const DWORD rc = FormatMessageA (
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode,
       MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), buffer_,
       static_cast<DWORD> (buffer_size_), NULL);

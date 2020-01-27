@@ -65,17 +65,17 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     void engine_error (zmq::i_engine::error_reason_t reason_);
 
     //  i_pipe_events interface implementation.
-    void read_activated (zmq::pipe_t *pipe_);
-    void write_activated (zmq::pipe_t *pipe_);
-    void hiccuped (zmq::pipe_t *pipe_);
-    void pipe_terminated (zmq::pipe_t *pipe_);
+    void read_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void write_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void hiccuped (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void pipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
     //  Delivers a message. Returns 0 if successful; -1 otherwise.
     //  The function takes ownership of the message.
     virtual int push_msg (msg_t *msg_);
 
     int zap_connect ();
-    bool zap_enabled ();
+    bool zap_enabled () const;
 
     //  Fetches a message. Returns 0 if successful; -1 otherwise.
     //  The caller is responsible for freeing the message when no
@@ -92,7 +92,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     //  The function takes ownership of the message.
     int write_zap_msg (msg_t *msg_);
 
-    socket_base_t *get_socket ();
+    socket_base_t *get_socket () const;
     const endpoint_uri_pair_t &get_endpoint () const;
 
   protected:
@@ -101,7 +101,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
                     zmq::socket_base_t *socket_,
                     const options_t &options_,
                     address_t *addr_);
-    virtual ~session_base_t ();
+    ~session_base_t () ZMQ_OVERRIDE;
 
   private:
     void start_connecting (bool wait_);
@@ -138,12 +138,12 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     void reconnect ();
 
     //  Handlers for incoming commands.
-    void process_plug ();
-    void process_attach (zmq::i_engine *engine_);
-    void process_term (int linger_);
+    void process_plug () ZMQ_FINAL;
+    void process_attach (zmq::i_engine *engine_) ZMQ_FINAL;
+    void process_term (int linger_) ZMQ_FINAL;
 
     //  i_poll_events handlers.
-    void timer_event (int id_);
+    void timer_event (int id_) ZMQ_FINAL;
 
     //  Remove any half processed messages. Flush unflushed messages.
     //  Call this function when engine disconnect to get rid of leftovers.

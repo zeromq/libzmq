@@ -45,24 +45,25 @@ class ctx_t;
 class pipe_t;
 class io_thread_t;
 
-class radio_t : public socket_base_t
+class radio_t ZMQ_FINAL : public socket_base_t
 {
   public:
     radio_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~radio_t ();
+    ~radio_t () ZMQ_FINAL;
 
     //  Implementations of virtual functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_ = false,
-                       bool locally_initiated_ = false);
-    int xsend (zmq::msg_t *msg_);
-    bool xhas_out ();
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+                       bool locally_initiated_ = false) ZMQ_FINAL;
+    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_out () ZMQ_FINAL;
+    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_in () ZMQ_FINAL;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   private:
     //  List of all subscriptions mapped to corresponding pipes.
@@ -82,7 +83,7 @@ class radio_t : public socket_base_t
     ZMQ_NON_COPYABLE_NOR_MOVABLE (radio_t)
 };
 
-class radio_session_t : public session_base_t
+class radio_session_t ZMQ_FINAL : public session_base_t
 {
   public:
     radio_session_t (zmq::io_thread_t *io_thread_,
@@ -90,12 +91,12 @@ class radio_session_t : public session_base_t
                      zmq::socket_base_t *socket_,
                      const options_t &options_,
                      address_t *addr_);
-    ~radio_session_t ();
+    ~radio_session_t () ZMQ_FINAL;
 
     //  Overrides of the functions from session_base_t.
-    int push_msg (msg_t *msg_);
-    int pull_msg (msg_t *msg_);
-    void reset ();
+    int push_msg (msg_t *msg_) ZMQ_FINAL;
+    int pull_msg (msg_t *msg_) ZMQ_FINAL;
+    void reset () ZMQ_FINAL;
 
   private:
     enum

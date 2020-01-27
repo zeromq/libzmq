@@ -50,7 +50,7 @@ void zmq::lb_t::attach (pipe_t *pipe_)
 
 void zmq::lb_t::pipe_terminated (pipe_t *pipe_)
 {
-    pipes_t::size_type index = _pipes.index (pipe_);
+    const pipes_t::size_type index = _pipes.index (pipe_);
 
     //  If we are in the middle of multipart message and current pipe
     //  have disconnected, we have to drop the remainder of the message.
@@ -151,7 +151,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     }
 
     //  Detach the message from the data buffer.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;

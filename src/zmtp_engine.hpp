@@ -59,24 +59,24 @@ class mechanism_t;
 //  This engine handles any socket with SOCK_STREAM semantics,
 //  e.g. TCP socket or an UNIX domain socket.
 
-class zmtp_engine_t : public stream_engine_base_t
+class zmtp_engine_t ZMQ_FINAL : public stream_engine_base_t
 {
   public:
     zmtp_engine_t (fd_t fd_,
                    const options_t &options_,
                    const endpoint_uri_pair_t &endpoint_uri_pair_);
-    ~zmtp_engine_t ();
+    ~zmtp_engine_t () ZMQ_FINAL;
 
   protected:
     //  Detects the protocol used by the peer.
-    bool handshake ();
+    bool handshake () ZMQ_FINAL;
 
-    void plug_internal ();
+    void plug_internal () ZMQ_FINAL;
 
-    int process_command_message (msg_t *msg_);
-    int produce_ping_message (msg_t *msg_);
-    int process_heartbeat_message (msg_t *msg_);
-    int produce_pong_message (msg_t *msg_);
+    int process_command_message (msg_t *msg_) ZMQ_FINAL;
+    int produce_ping_message (msg_t *msg_) ZMQ_FINAL;
+    int process_heartbeat_message (msg_t *msg_) ZMQ_FINAL;
+    int produce_pong_message (msg_t *msg_) ZMQ_FINAL;
 
   private:
     //  Receive the greeting from the peer.

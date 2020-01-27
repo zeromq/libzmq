@@ -40,19 +40,20 @@ class msg_t;
 class io_thread_t;
 class socket_base_t;
 
-class req_t : public dealer_t
+class req_t ZMQ_FINAL : public dealer_t
 {
   public:
     req_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~req_t ();
+    ~req_t () ZMQ_FINAL;
 
     //  Overrides of functions from socket_base_t.
-    int xsend (zmq::msg_t *msg_);
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    bool xhas_out ();
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
+    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_in () ZMQ_FINAL;
+    bool xhas_out () ZMQ_FINAL;
+    int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   protected:
     //  Receive only from the pipe the request was sent to, discarding
@@ -86,7 +87,7 @@ class req_t : public dealer_t
     ZMQ_NON_COPYABLE_NOR_MOVABLE (req_t)
 };
 
-class req_session_t : public session_base_t
+class req_session_t ZMQ_FINAL : public session_base_t
 {
   public:
     req_session_t (zmq::io_thread_t *io_thread_,
@@ -94,11 +95,11 @@ class req_session_t : public session_base_t
                    zmq::socket_base_t *socket_,
                    const options_t &options_,
                    address_t *addr_);
-    ~req_session_t ();
+    ~req_session_t () ZMQ_FINAL;
 
     //  Overrides of the functions from session_base_t.
-    int push_msg (msg_t *msg_);
-    void reset ();
+    int push_msg (msg_t *msg_) ZMQ_FINAL;
+    void reset () ZMQ_FINAL;
 
   private:
     enum

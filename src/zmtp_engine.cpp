@@ -92,7 +92,7 @@ zmq::zmtp_engine_t::zmtp_engine_t (
 
 zmq::zmtp_engine_t::~zmtp_engine_t ()
 {
-    int rc = _routing_id_msg.close ();
+    const int rc = _routing_id_msg.close ();
     errno_assert (rc == 0);
 }
 
@@ -410,7 +410,7 @@ bool zmq::zmtp_engine_t::handshake_v3_0 ()
 
 int zmq::zmtp_engine_t::routing_id_msg (msg_t *msg_)
 {
-    int rc = msg_->init_size (_options.routing_id_size);
+    const int rc = msg_->init_size (_options.routing_id_size);
     errno_assert (rc == 0);
     if (_options.routing_id_size > 0)
         memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
@@ -422,7 +422,7 @@ int zmq::zmtp_engine_t::process_routing_id_msg (msg_t *msg_)
 {
     if (_options.recv_routing_id) {
         msg_->set_flags (msg_t::routing_id);
-        int rc = session ()->push_msg (msg_);
+        const int rc = session ()->push_msg (msg_);
         errno_assert (rc == 0);
     } else {
         int rc = msg_->close ();

@@ -44,7 +44,7 @@ class mechanism_base_t : public mechanism_t
 
     session_base_t *const session;
 
-    int check_basic_command_structure (msg_t *msg_);
+    int check_basic_command_structure (msg_t *msg_) const;
 
     void handle_error_reason (const char *error_reason_,
                               size_t error_reason_len_);

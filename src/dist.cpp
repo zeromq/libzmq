@@ -81,7 +81,7 @@ void zmq::dist_t::match (pipe_t *pipe_)
 
 void zmq::dist_t::reverse_match ()
 {
-    pipes_t::size_type prev_matching = _matching;
+    const pipes_t::size_type prev_matching = _matching;
 
     // Reset matching to 0
     unmatch ();
@@ -145,7 +145,7 @@ int zmq::dist_t::send_to_all (msg_t *msg_)
 int zmq::dist_t::send_to_matching (msg_t *msg_)
 {
     //  Is this end of a multipart message?
-    bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  Push the message to matching pipes.
     distribute (msg_);
@@ -204,7 +204,7 @@ void zmq::dist_t::distribute (msg_t *msg_)
 
     //  Detach the original message from the data buffer. Note that we don't
     //  close the message. That's because we've already used all the references.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 }
 

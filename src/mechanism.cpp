@@ -95,7 +95,7 @@ const char socket_type_scatter[] = "SCATTER";
 const char socket_type_dgram[] = "DGRAM";
 #endif
 
-const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
+const char *zmq::mechanism_t::socket_type_string (int socket_type_)
 {
     // TODO the order must of the names must correspond to the values resp. order of ZMQ_* socket type definitions in zmq.h!
     static const char *names[] = {
@@ -110,7 +110,8 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
 #endif
     };
     static const size_t names_count = sizeof (names) / sizeof (names[0]);
-    zmq_assert (socket_type_ >= 0 && socket_type_ < (int) names_count);
+    zmq_assert (socket_type_ >= 0
+                && socket_type_ < static_cast<int> (names_count));
     return names[socket_type_];
 }
 

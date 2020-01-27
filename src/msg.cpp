@@ -294,7 +294,7 @@ int zmq::msg_t::copy (msg_t &src_)
         return -1;
     }
 
-    int rc = close ();
+    const int rc = close ();
     if (unlikely (rc < 0))
         return rc;
 
@@ -553,7 +553,7 @@ bool zmq::msg_t::rm_refs (int refs_)
     return true;
 }
 
-uint32_t zmq::msg_t::get_routing_id ()
+uint32_t zmq::msg_t::get_routing_id () const
 {
     return _u.base.routing_id;
 }
@@ -574,7 +574,7 @@ int zmq::msg_t::reset_routing_id ()
     return 0;
 }
 
-const char *zmq::msg_t::group ()
+const char *zmq::msg_t::group () const
 {
     return _u.base.group;
 }

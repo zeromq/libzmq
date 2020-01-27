@@ -37,7 +37,7 @@
 
 namespace zmq
 {
-class ipc_connecter_t : public stream_connecter_base_t
+class ipc_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -50,10 +50,10 @@ class ipc_connecter_t : public stream_connecter_base_t
 
   private:
     //  Handlers for I/O events.
-    void out_event ();
+    void out_event () ZMQ_FINAL;
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting ();
+    void start_connecting () ZMQ_FINAL;
 
     //  Open IPC connecting socket. Returns -1 in case of error,
     //  0 if connect was successful immediately. Returns -1 with

@@ -75,7 +75,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     // Test the ';' to know if we have a source address in name_
     const char *src_delimiter = strrchr (name_, ';');
     if (src_delimiter) {
-        std::string src_name (name_, src_delimiter - name_);
+        const std::string src_name (name_, src_delimiter - name_);
 
         ip_resolver_options_t src_resolver_opts;
 
