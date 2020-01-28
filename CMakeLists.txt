@@ -1646,3 +1646,12 @@ endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
 include(ClangFormat)
+
+# fixes https://github.com/zeromq/libzmq/issues/3776
+# The problem is, both libzmq-static libzmq try to use/generate precompiled.pch at the same time
+# Add a dependency, so they run in order and so they dont get in each others way
+# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp. 
+# builds involving this target will not be correct; continuing anyway [-w dupbuild=warn]"
+if (MSVC AND ENABLE_PRECOMPILED AND BUILD_SHARED AND BUILD_STATIC)
+    add_dependencies(libzmq-static libzmq)
+endif()
