@@ -64,18 +64,19 @@ class curve_encoding_t
     uint8_t *get_writable_precom_buffer () { return _cn_precom; }
     const uint8_t *get_precom_buffer () const { return _cn_precom; }
 
-    uint64_t get_and_inc_nonce () { return _cn_nonce++; }
-    void set_peer_nonce (uint64_t peer_nonce_)
-    {
-        _cn_peer_nonce = peer_nonce_;
-    };
+    typedef uint64_t nonce_t;
+
+    nonce_t get_and_inc_nonce () { return _cn_nonce++; }
+    void set_peer_nonce (nonce_t peer_nonce_) { _cn_peer_nonce = peer_nonce_; };
 
   private:
+    int check_validity (msg_t *msg_, int *error_event_code_);
+
     const char *_encode_nonce_prefix;
     const char *_decode_nonce_prefix;
 
-    uint64_t _cn_nonce;
-    uint64_t _cn_peer_nonce;
+    nonce_t _cn_nonce;
+    nonce_t _cn_peer_nonce;
 
     //  Intermediary buffer used to speed up boxing and unboxing.
     uint8_t _cn_precom[crypto_box_BEFORENMBYTES];

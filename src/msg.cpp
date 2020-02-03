@@ -361,6 +361,30 @@ size_t zmq::msg_t::size () const
     }
 }
 
+void zmq::msg_t::shrink (size_t new_size_)
+{
+    //  Check the validity of the message.
+    zmq_assert (check ());
+    zmq_assert (new_size_ <= size ());
+
+    switch (_u.base.type) {
+        case type_vsm:
+            _u.vsm.size = static_cast<unsigned char> (new_size_);
+            break;
+        case type_lmsg:
+            _u.lmsg.content->size = new_size_;
+            break;
+        case type_zclmsg:
+            _u.zclmsg.content->size = new_size_;
+            break;
+        case type_cmsg:
+            _u.cmsg.size = new_size_;
+            break;
+        default:
+            zmq_assert (false);
+    }
+}
+
 unsigned char zmq::msg_t::flags () const
 {
     return _u.base.flags;
