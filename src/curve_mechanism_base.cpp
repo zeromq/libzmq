@@ -42,10 +42,10 @@ zmq::curve_mechanism_base_t::curve_mechanism_base_t (
   const char *encode_nonce_prefix_,
   const char *decode_nonce_prefix_) :
     mechanism_base_t (session_, options_),
-    encode_nonce_prefix (encode_nonce_prefix_),
-    decode_nonce_prefix (decode_nonce_prefix_),
-    cn_nonce (1),
-    cn_peer_nonce (1)
+    _encode_nonce_prefix (encode_nonce_prefix_),
+    _decode_nonce_prefix (decode_nonce_prefix_),
+    _cn_nonce (1),
+    _cn_peer_nonce (1)
 {
 }
 
@@ -54,8 +54,8 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
 
     uint8_t message_nonce[crypto_box_NONCEBYTES];
-    memcpy (message_nonce, encode_nonce_prefix, 16);
-    put_uint64 (message_nonce + 16, cn_nonce);
+    memcpy (message_nonce, _encode_nonce_prefix, 16);
+    put_uint64 (message_nonce + 16, _cn_nonce);
 
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
@@ -77,7 +77,7 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     std::vector<uint8_t> message_box (mlen);
 
     int rc = crypto_box_afternm (&message_box[0], &message_plaintext[0], mlen,
-                                 message_nonce, cn_precom);
+                                 message_nonce, _cn_precom);
     zmq_assert (rc == 0);
 
     rc = msg_->close ();
@@ -93,7 +93,7 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     memcpy (message + 16, &message_box[crypto_box_BOXZEROBYTES],
             mlen - crypto_box_BOXZEROBYTES);
 
-    cn_nonce++;
+    _cn_nonce++;
 
     return 0;
 }
@@ -123,16 +123,16 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
     }
 
     uint8_t message_nonce[crypto_box_NONCEBYTES];
-    memcpy (message_nonce, decode_nonce_prefix, 16);
+    memcpy (message_nonce, _decode_nonce_prefix, 16);
     memcpy (message_nonce + 16, message + 8, 8);
     const uint64_t nonce = get_uint64 (message + 8);
-    if (nonce <= cn_peer_nonce) {
+    if (nonce <= _cn_peer_nonce) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE);
         errno = EPROTO;
         return -1;
     }
-    cn_peer_nonce = nonce;
+    _cn_peer_nonce = nonce;
 
     const size_t clen = crypto_box_BOXZEROBYTES + msg_->size () - 16;
 
@@ -145,7 +145,7 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
             msg_->size () - 16);
 
     rc = crypto_box_open_afternm (&message_plaintext[0], &message_box[0], clen,
-                                  message_nonce, cn_precom);
+                                  message_nonce, _cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
         zmq_assert (rc == 0);

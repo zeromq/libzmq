@@ -64,15 +64,16 @@ class curve_mechanism_base_t : public virtual mechanism_base_t
     int encode (msg_t *msg_) ZMQ_OVERRIDE;
     int decode (msg_t *msg_) ZMQ_OVERRIDE;
 
-  protected:
-    const char *encode_nonce_prefix;
-    const char *decode_nonce_prefix;
+  private:
+    const char *_encode_nonce_prefix;
+    const char *_decode_nonce_prefix;
 
-    uint64_t cn_nonce;
-    uint64_t cn_peer_nonce;
+  protected:
+    uint64_t _cn_nonce;
+    uint64_t _cn_peer_nonce;
 
     //  Intermediary buffer used to speed up boxing and unboxing.
-    uint8_t cn_precom[crypto_box_BEFORENMBYTES];
+    uint8_t _cn_precom[crypto_box_BEFORENMBYTES];
 };
 }
 
