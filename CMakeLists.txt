@@ -1488,16 +1488,6 @@ elseif(BUILD_SHARED OR BUILD_STATIC)
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
-# install(FILES ${public_headers}
-#   DESTINATION include
-#   COMPONENT SDK)
-
-#if(NOT ZMQ_BUILD_FRAMEWORK)
-#  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-#  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
-#    COMPONENT SourceCode)
-#endif()
-
 foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 

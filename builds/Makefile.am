@@ -25,8 +25,6 @@ EXTRA_DIST = \
 	valgrind/ci_build.sh \
 	valgrind/valgrind.supp \
 	valgrind/vg \
-	nuget/readme.nuget \
-	nuget/libzmq.autopkg \
 	android/Dockerfile \
 	android/README.md \
 	android/android_build_helper.sh \
