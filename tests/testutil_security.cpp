@@ -346,6 +346,7 @@ void shutdown_context_and_server_side (void *zap_thread_,
           zmq_unbind (zap_control_, "inproc://handler-control"));
     }
     test_context_socket_close (zap_control_);
+    zmq_socket_monitor (server_, NULL, 0);
     test_context_socket_close (server_mon_);
     test_context_socket_close (server_);
 

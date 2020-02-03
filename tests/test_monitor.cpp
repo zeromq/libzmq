@@ -116,6 +116,12 @@ void test_monitor_basic ()
     if (event != ZMQ_EVENT_DISCONNECTED) {
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
+    //  TODO: When not waiting until the monitor stopped, the I/O thread runs
+    //  into some deadlock. This must be fixed, but until it is fixed, we wait
+    //  here in order to have more reliable test execution.
+    while (event != ZMQ_EVENT_MONITOR_STOPPED) {
+        event = get_monitor_event (server_mon, NULL, NULL);
+    }
 
     //  Close down the sockets
     //  TODO why does this use zero_linger?
@@ -254,6 +260,12 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
+    }
+    //  TODO: When not waiting until the monitor stopped, the I/O thread runs
+    //  into some deadlock. This must be fixed, but until it is fixed, we wait
+    //  here in order to have more reliable test execution.
+    while (event != ZMQ_EVENT_MONITOR_STOPPED) {
+        event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     }
     free (client_local_address);
     free (client_remote_address);
