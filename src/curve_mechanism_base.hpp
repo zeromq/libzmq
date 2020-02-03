@@ -52,7 +52,39 @@
 
 namespace zmq
 {
-class curve_mechanism_base_t : public virtual mechanism_base_t
+class curve_encoding_t
+{
+  public:
+    curve_encoding_t (const char *encode_nonce_prefix_,
+                      const char *decode_nonce_prefix_);
+
+    int encode (msg_t *msg_);
+    int decode (msg_t *msg_, int *error_event_code_);
+
+    uint8_t *get_writable_precom_buffer () { return _cn_precom; }
+    const uint8_t *get_precom_buffer () const { return _cn_precom; }
+
+    uint64_t get_and_inc_nonce () { return _cn_nonce++; }
+    void set_peer_nonce (uint64_t peer_nonce_)
+    {
+        _cn_peer_nonce = peer_nonce_;
+    };
+
+  private:
+    const char *_encode_nonce_prefix;
+    const char *_decode_nonce_prefix;
+
+    uint64_t _cn_nonce;
+    uint64_t _cn_peer_nonce;
+
+    //  Intermediary buffer used to speed up boxing and unboxing.
+    uint8_t _cn_precom[crypto_box_BEFORENMBYTES];
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (curve_encoding_t)
+};
+
+class curve_mechanism_base_t : public virtual mechanism_base_t,
+                               public curve_encoding_t
 {
   public:
     curve_mechanism_base_t (session_base_t *session_,
@@ -63,17 +95,6 @@ class curve_mechanism_base_t : public virtual mechanism_base_t
     // mechanism implementation
     int encode (msg_t *msg_) ZMQ_OVERRIDE;
     int decode (msg_t *msg_) ZMQ_OVERRIDE;
-
-  private:
-    const char *_encode_nonce_prefix;
-    const char *_decode_nonce_prefix;
-
-  protected:
-    uint64_t _cn_nonce;
-    uint64_t _cn_peer_nonce;
-
-    //  Intermediary buffer used to speed up boxing and unboxing.
-    uint8_t _cn_precom[crypto_box_BEFORENMBYTES];
 };
 }
 

@@ -42,6 +42,33 @@ zmq::curve_mechanism_base_t::curve_mechanism_base_t (
   const char *encode_nonce_prefix_,
   const char *decode_nonce_prefix_) :
     mechanism_base_t (session_, options_),
+    curve_encoding_t (encode_nonce_prefix_, decode_nonce_prefix_)
+{
+}
+
+int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
+{
+    return curve_encoding_t::encode (msg_);
+}
+
+int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
+{
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+        return -1;
+
+    int error_event_code;
+    rc = curve_encoding_t::decode (msg_, &error_event_code);
+    if (-1 == rc) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), error_event_code);
+    }
+
+    return rc;
+}
+
+zmq::curve_encoding_t::curve_encoding_t (const char *encode_nonce_prefix_,
+                                         const char *decode_nonce_prefix_) :
     _encode_nonce_prefix (encode_nonce_prefix_),
     _decode_nonce_prefix (decode_nonce_prefix_),
     _cn_nonce (1),
@@ -49,7 +76,7 @@ zmq::curve_mechanism_base_t::curve_mechanism_base_t (
 {
 }
 
-int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
+int zmq::curve_encoding_t::encode (msg_t *msg_)
 {
     const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
 
@@ -98,26 +125,19 @@ int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
     return 0;
 }
 
-int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
+int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
 {
-    int rc = check_basic_command_structure (msg_);
-    if (rc == -1)
-        return -1;
-
     const size_t size = msg_->size ();
     const uint8_t *message = static_cast<uint8_t *> (msg_->data ());
 
-    if (size < 8 || memcmp (message, "\x07MESSAGE", 8)) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+    if (size < 8 || 0 != memcmp (message, "\x07MESSAGE", 8)) {
+        *error_event_code_ = ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND;
         errno = EPROTO;
         return -1;
     }
 
     if (size < 33) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
+        *error_event_code_ = ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE;
         errno = EPROTO;
         return -1;
     }
@@ -127,8 +147,7 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
     memcpy (message_nonce + 16, message + 8, 8);
     const uint64_t nonce = get_uint64 (message + 8);
     if (nonce <= _cn_peer_nonce) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE);
+        *error_event_code_ = ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE;
         errno = EPROTO;
         return -1;
     }
@@ -144,8 +163,8 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
     memcpy (&message_box[crypto_box_BOXZEROBYTES], message + 16,
             msg_->size () - 16);
 
-    rc = crypto_box_open_afternm (&message_plaintext[0], &message_box[0], clen,
-                                  message_nonce, _cn_precom);
+    int rc = crypto_box_open_afternm (&message_plaintext[0], &message_box[0],
+                                      clen, message_nonce, _cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
         zmq_assert (rc == 0);
@@ -166,8 +185,7 @@ int zmq::curve_mechanism_base_t::decode (msg_t *msg_)
                     msg_->size ());
     } else {
         // CURVE I : connection key used for MESSAGE is wrong
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+        *error_event_code_ = ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC;
         errno = EPROTO;
     }
 
