@@ -215,7 +215,7 @@ void close_zero_linger (void *socket_)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket_));
 }
 
-void setup_test_environment ()
+void setup_test_environment (int timeout_seconds_)
 {
 #if defined _WIN32
 #if defined _MSC_VER
@@ -228,10 +228,8 @@ void setup_test_environment ()
     // abort test after 121 seconds
     alarm (121);
 #else
-#if !defined ZMQ_DISABLE_TEST_TIMEOUT
-    // abort test after 60 seconds
-    alarm (60);
-#endif
+    // abort test after timeout_seconds_ seconds
+    alarm (timeout_seconds_);
 #endif
 #endif
 #if defined __MVS__
