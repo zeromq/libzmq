@@ -35,6 +35,16 @@
 #include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_CURVE
+
+#ifdef ZMQ_USE_LIBSODIUM
+//  libsodium added crypto_box_easy_afternm and crypto_box_open_easy_afternm with
+//  https: //github.com/jedisct1/libsodium/commit/aaf5fbf2e53a33b18d8ea9bdf2c6f73d7acc8c3e
+#if SODIUM_LIBRARY_VERSION_MAJOR > 7                                           \
+  || (SODIUM_LIBRARY_VERSION_MAJOR == 7 && SODIUM_LIBRARY_VERSION_MINOR >= 4)
+#define ZMQ_HAVE_CRYPTO_BOX_EASY_FNS 1
+#endif
+#endif
+
 zmq::curve_mechanism_base_t::curve_mechanism_base_t (
   session_base_t *session_,
   const options_t &options_,
@@ -127,7 +137,7 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
     memcpy (message_nonce, _encode_nonce_prefix, nonce_prefix_len);
     put_uint64 (message_nonce + nonce_prefix_len, get_and_inc_nonce ());
 
-#ifdef ZMQ_USE_LIBSODIUM
+#ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
     const size_t mlen = flags_len + msg_->size ();
     std::vector<uint8_t> message_plaintext (mlen);
 #else
@@ -148,7 +158,7 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
     if (msg_->size () > 0)
         memcpy (&message_plaintext[flags_len], msg_->data (), msg_->size ());
 
-#ifdef ZMQ_USE_LIBSODIUM
+#ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
     msg_t msg_box;
     int rc =
       msg_box.init_size (message_header_len + mlen + crypto_box_MACBYTES);
@@ -203,7 +213,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
     memcpy (message_nonce + nonce_prefix_len, message + message_command_len,
             sizeof (nonce_t));
 
-#ifdef ZMQ_USE_LIBSODIUM
+#ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
     const size_t clen = msg_->size () - message_header_len;
 
     uint8_t *const message_plaintext = message + message_header_len;
@@ -234,7 +244,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
     if (rc == 0) {
         const uint8_t flags = message_plaintext[0];
 
-#ifdef ZMQ_USE_LIBSODIUM
+#ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
         const size_t plaintext_size = clen - flags_len - crypto_box_MACBYTES;
 
         if (plaintext_size > 0) {
