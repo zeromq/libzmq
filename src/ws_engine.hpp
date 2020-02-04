@@ -132,7 +132,7 @@ class ws_engine_t ZMQ_FINAL : public stream_engine_base_t
                  const endpoint_uri_pair_t &endpoint_uri_pair_,
                  const ws_address_t &address_,
                  bool client_);
-    ~ws_engine_t () ZMQ_FINAL;
+    ~ws_engine_t ();
 
   protected:
     int decode_and_push (msg_t *msg_);

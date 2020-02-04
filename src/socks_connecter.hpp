@@ -52,7 +52,7 @@ class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
                        address_t *addr_,
                        address_t *proxy_addr_,
                        bool delayed_start_);
-    ~socks_connecter_t () ZMQ_FINAL;
+    ~socks_connecter_t ();
 
     void set_auth_method_basic (const std::string &username,
                                 const std::string &password);
@@ -82,11 +82,11 @@ class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
     };
 
     //  Handlers for I/O events.
-    void in_event () ZMQ_FINAL;
-    void out_event () ZMQ_FINAL;
+    void in_event ();
+    void out_event ();
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting () ZMQ_FINAL;
+    void start_connecting ();
 
     static int process_server_response (const socks_choice_t &response_);
     static int process_server_response (const socks_response_t &response_);

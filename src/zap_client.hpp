@@ -37,7 +37,7 @@ namespace zmq
 class zap_client_t : public virtual mechanism_base_t
 {
   public:
-    zap_client_t (session_base_t *const session_,
+    zap_client_t (session_base_t *session_,
                   const std::string &peer_address_,
                   const options_t &options_);
 
@@ -77,7 +77,7 @@ class zap_client_common_handshake_t : public zap_client_t
         ready
     };
 
-    zap_client_common_handshake_t (session_base_t *const session_,
+    zap_client_common_handshake_t (session_base_t *session_,
                                    const std::string &peer_address_,
                                    const options_t &options_,
                                    state_t zap_reply_ok_state_);

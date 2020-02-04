@@ -43,13 +43,12 @@ class sub_t ZMQ_FINAL : public xsub_t
 {
   public:
     sub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~sub_t () ZMQ_FINAL;
+    ~sub_t ();
 
   protected:
-    int
-    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
-    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
-    bool xhas_out () ZMQ_FINAL;
+    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    int xsend (zmq::msg_t *msg_);
+    bool xhas_out ();
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (sub_t)
 };

@@ -50,10 +50,10 @@ class ipc_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 
   private:
     //  Handlers for I/O events.
-    void out_event () ZMQ_FINAL;
+    void out_event ();
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting () ZMQ_FINAL;
+    void start_connecting ();
 
     //  Open IPC connecting socket. Returns -1 in case of error,
     //  0 if connect was successful immediately. Returns -1 with

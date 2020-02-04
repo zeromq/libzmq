@@ -44,20 +44,17 @@ namespace zmq
 class mutex_t
 {
   public:
-    inline mutex_t () { InitializeCriticalSection (&_cs); }
+    mutex_t () { InitializeCriticalSection (&_cs); }
 
-    inline ~mutex_t () { DeleteCriticalSection (&_cs); }
+    ~mutex_t () { DeleteCriticalSection (&_cs); }
 
-    inline void lock () { EnterCriticalSection (&_cs); }
+    void lock () { EnterCriticalSection (&_cs); }
 
-    inline bool try_lock ()
-    {
-        return (TryEnterCriticalSection (&_cs)) ? true : false;
-    }
+    bool try_lock () { return (TryEnterCriticalSection (&_cs)) ? true : false; }
 
-    inline void unlock () { LeaveCriticalSection (&_cs); }
+    void unlock () { LeaveCriticalSection (&_cs); }
 
-    inline CRITICAL_SECTION *get_cs () { return &_cs; }
+    CRITICAL_SECTION *get_cs () { return &_cs; }
 
   private:
     CRITICAL_SECTION _cs;

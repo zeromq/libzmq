@@ -87,8 +87,7 @@ class tcp_address_mask_t
 
     int mask () const;
 
-    bool match_address (const struct sockaddr *ss_,
-                        const socklen_t ss_len_) const;
+    bool match_address (const struct sockaddr *ss_, socklen_t ss_len_) const;
 
   private:
     ip_addr_t _network_address;

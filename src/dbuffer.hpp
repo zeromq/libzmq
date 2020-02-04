@@ -58,22 +58,19 @@ template <typename T> class dbuffer_t;
 template <> class dbuffer_t<msg_t>
 {
   public:
-    inline dbuffer_t () :
-        _back (&_storage[0]),
-        _front (&_storage[1]),
-        _has_msg (false)
+    dbuffer_t () : _back (&_storage[0]), _front (&_storage[1]), _has_msg (false)
     {
         _back->init ();
         _front->init ();
     }
 
-    inline ~dbuffer_t ()
+    ~dbuffer_t ()
     {
         _back->close ();
         _front->close ();
     }
 
-    inline void write (const msg_t &value_)
+    void write (const msg_t &value_)
     {
         msg_t &xvalue = const_cast<msg_t &> (value_);
 
@@ -90,7 +87,7 @@ template <> class dbuffer_t<msg_t>
         }
     }
 
-    inline bool read (msg_t *value_)
+    bool read (msg_t *value_)
     {
         if (!value_)
             return false;
@@ -111,14 +108,14 @@ template <> class dbuffer_t<msg_t>
     }
 
 
-    inline bool check_read ()
+    bool check_read ()
     {
         scoped_lock_t lock (_sync);
 
         return _has_msg;
     }
 
-    inline bool probe (bool (*fn_) (const msg_t &))
+    bool probe (bool (*fn_) (const msg_t &))
     {
         scoped_lock_t lock (_sync);
         return (*fn_) (*_front);

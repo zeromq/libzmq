@@ -50,7 +50,7 @@ class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
 
     //  Clean-up. If the thread was started, it's necessary to call 'stop'
     //  before invoking destructor. Otherwise the destructor would hang up.
-    ~io_thread_t () ZMQ_FINAL;
+    ~io_thread_t ();
 
     //  Launch the physical thread.
     void start ();
@@ -62,15 +62,15 @@ class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
     mailbox_t *get_mailbox ();
 
     //  i_poll_events implementation.
-    void in_event () ZMQ_FINAL;
-    void out_event () ZMQ_FINAL;
-    void timer_event (int id_) ZMQ_FINAL;
+    void in_event ();
+    void out_event ();
+    void timer_event (int id_);
 
     //  Used by io_objects to retrieve the associated poller object.
     poller_t *get_poller () const;
 
     //  Command handlers.
-    void process_stop () ZMQ_FINAL;
+    void process_stop ();
 
     //  Returns load experienced by the I/O thread.
     int get_load () const;

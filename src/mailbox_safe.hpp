@@ -48,10 +48,10 @@ class mailbox_safe_t ZMQ_FINAL : public i_mailbox
 {
   public:
     mailbox_safe_t (mutex_t *sync_);
-    ~mailbox_safe_t () ZMQ_FINAL;
+    ~mailbox_safe_t ();
 
-    void send (const command_t &cmd_) ZMQ_FINAL;
-    int recv (command_t *cmd_, int timeout_) ZMQ_FINAL;
+    void send (const command_t &cmd_);
+    int recv (command_t *cmd_, int timeout_);
 
     // Add signaler to mailbox which will be called when a message is ready
     void add_signaler (signaler_t *signaler_);

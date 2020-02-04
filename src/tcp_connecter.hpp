@@ -46,7 +46,7 @@ class tcp_connecter_t ZMQ_FINAL : public stream_connecter_base_t
                      const options_t &options_,
                      address_t *addr_,
                      bool delayed_start_);
-    ~tcp_connecter_t () ZMQ_FINAL;
+    ~tcp_connecter_t ();
 
   private:
     //  ID of the timer used to check the connect timeout, must be different from stream_connecter_base_t::reconnect_timer_id.
@@ -56,14 +56,14 @@ class tcp_connecter_t ZMQ_FINAL : public stream_connecter_base_t
     };
 
     //  Handlers for incoming commands.
-    void process_term (int linger_) ZMQ_FINAL;
+    void process_term (int linger_);
 
     //  Handlers for I/O events.
-    void out_event () ZMQ_FINAL;
-    void timer_event (int id_) ZMQ_FINAL;
+    void out_event ();
+    void timer_event (int id_);
 
     //  Internal function to start the actual connection establishment.
-    void start_connecting () ZMQ_FINAL;
+    void start_connecting ();
 
     //  Internal function to add a connect timer
     void add_connect_timer ();

@@ -40,7 +40,7 @@ class ws_encoder_t ZMQ_FINAL : public encoder_base_t<ws_encoder_t>
 {
   public:
     ws_encoder_t (size_t bufsize_, bool must_mask_);
-    ~ws_encoder_t () ZMQ_FINAL;
+    ~ws_encoder_t ();
 
   private:
     void size_ready ();

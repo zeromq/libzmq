@@ -131,11 +131,12 @@ class msg_t
 
     //  These are called on each message received by the session_base class,
     //  so get them inlined to avoid the overhead of 2 function calls per msg
-    inline bool is_subscribe () const
+    bool is_subscribe () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == subscribe;
     }
-    inline bool is_cancel () const
+
+    bool is_cancel () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == cancel;
     }

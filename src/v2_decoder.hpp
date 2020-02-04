@@ -43,10 +43,10 @@ class v2_decoder_t ZMQ_FINAL
 {
   public:
     v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_, bool zero_copy_);
-    ~v2_decoder_t () ZMQ_FINAL;
+    ~v2_decoder_t ();
 
     //  i_decoder interface.
-    msg_t *msg () ZMQ_FINAL { return &_in_progress; }
+    msg_t *msg () { return &_in_progress; }
 
   private:
     int flags_ready (unsigned char const *);

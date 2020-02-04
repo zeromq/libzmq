@@ -44,11 +44,11 @@ class plain_server_t ZMQ_FINAL : public zap_client_common_handshake_t
     plain_server_t (session_base_t *session_,
                     const std::string &peer_address_,
                     const options_t &options_);
-    ~plain_server_t () ZMQ_FINAL;
+    ~plain_server_t ();
 
     // mechanism implementation
-    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
 
   private:
     static void produce_welcome (msg_t *msg_);

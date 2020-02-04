@@ -91,16 +91,13 @@ class atomic_counter_t
   public:
     typedef uint32_t integer_t;
 
-    inline atomic_counter_t (integer_t value_ = 0) ZMQ_NOEXCEPT
-        : _value (value_)
-    {
-    }
+    atomic_counter_t (integer_t value_ = 0) ZMQ_NOEXCEPT : _value (value_) {}
 
     //  Set counter _value (not thread-safe).
-    inline void set (integer_t value_) ZMQ_NOEXCEPT { _value = value_; }
+    void set (integer_t value_) ZMQ_NOEXCEPT { _value = value_; }
 
     //  Atomic addition. Returns the old _value.
-    inline integer_t add (integer_t increment_) ZMQ_NOEXCEPT
+    integer_t add (integer_t increment_) ZMQ_NOEXCEPT
     {
         integer_t old_value;
 
@@ -145,7 +142,7 @@ class atomic_counter_t
     }
 
     //  Atomic subtraction. Returns false if the counter drops to zero.
-    inline bool sub (integer_t decrement_) ZMQ_NOEXCEPT
+    bool sub (integer_t decrement_) ZMQ_NOEXCEPT
     {
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
         LONG delta = -((LONG) decrement_);
@@ -200,7 +197,7 @@ class atomic_counter_t
 #endif
     }
 
-    inline integer_t get () const ZMQ_NOEXCEPT { return _value; }
+    integer_t get () const ZMQ_NOEXCEPT { return _value; }
 
   private:
 #if defined ZMQ_ATOMIC_COUNTER_CXX11

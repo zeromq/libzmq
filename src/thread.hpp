@@ -53,7 +53,7 @@ typedef void(thread_fn) (void *);
 class thread_t
 {
   public:
-    inline thread_t () :
+    thread_t () :
         _tfn (NULL),
         _arg (NULL),
         _started (false),

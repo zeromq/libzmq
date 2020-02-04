@@ -18,33 +18,32 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 {
   public:
     udp_engine_t (const options_t &options_);
-    ~udp_engine_t () ZMQ_FINAL;
+    ~udp_engine_t ();
 
     int init (address_t *address_, bool send_, bool recv_);
 
     //  i_engine interface implementation.
     //  Plug the engine to the session.
-    void plug (zmq::io_thread_t *io_thread_,
-               class session_base_t *session_) ZMQ_FINAL;
+    void plug (zmq::io_thread_t *io_thread_, class session_base_t *session_);
 
     //  Terminate and deallocate the engine. Note that 'detached'
     //  events are not fired on termination.
-    void terminate () ZMQ_FINAL;
+    void terminate ();
 
     //  This method is called by the session to signalise that more
     //  messages can be written to the pipe.
-    bool restart_input () ZMQ_FINAL;
+    bool restart_input ();
 
     //  This method is called by the session to signalise that there
     //  are messages to send available.
-    void restart_output () ZMQ_FINAL;
+    void restart_output ();
 
-    void zap_msg_available () ZMQ_FINAL{};
+    void zap_msg_available (){};
 
-    void in_event () ZMQ_FINAL;
-    void out_event () ZMQ_FINAL;
+    void in_event ();
+    void out_event ();
 
-    const endpoint_uri_pair_t &get_endpoint () const ZMQ_FINAL;
+    const endpoint_uri_pair_t &get_endpoint () const;
 
   private:
     int resolve_raw_address (const char *name_, size_t length_);

@@ -49,13 +49,13 @@ class curve_server_t ZMQ_FINAL : public zap_client_common_handshake_t,
     curve_server_t (session_base_t *session_,
                     const std::string &peer_address_,
                     const options_t &options_);
-    ~curve_server_t () ZMQ_FINAL;
+    ~curve_server_t ();
 
     // mechanism implementation
-    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int encode (msg_t *msg_) ZMQ_FINAL;
-    int decode (msg_t *msg_) ZMQ_FINAL;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    int encode (msg_t *msg_);
+    int decode (msg_t *msg_);
 
   private:
     //  Our secret key (s)
