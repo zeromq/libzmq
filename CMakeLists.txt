@@ -174,6 +174,7 @@ endif()
 # To disable curve, use --disable-curve
 
 option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" OFF)
+option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
 option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(NOT ENABLE_CURVE)
@@ -183,6 +184,9 @@ elseif(WITH_LIBSODIUM)
   if(SODIUM_FOUND)
     message(STATUS "Using libsodium for CURVE security")
     include_directories(${SODIUM_INCLUDE_DIRS})
+    if(WITH_LIBSODIUM_STATIC)
+      add_compile_definitions(SODIUM_STATIC)
+    endif()
     set(ZMQ_USE_LIBSODIUM 1)
     set(ZMQ_HAVE_CURVE 1)
   else()

@@ -1085,7 +1085,8 @@ test_apps += \
 	unittests/unittest_mtrie \
 	unittests/unittest_ip_resolver \
 	unittests/unittest_udp_address \
-	unittests/unittest_radix_tree
+	unittests/unittest_radix_tree \
+	unittests/unittest_curve_encoding
 
 unittests_unittest_poller_SOURCES = unittests/unittest_poller.cpp
 unittests_unittest_poller_CPPFLAGS = -I$(top_srcdir)/src ${TESTUTIL_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
@@ -1136,6 +1137,15 @@ unittests_unittest_radix_tree_SOURCES = unittests/unittest_radix_tree.cpp
 unittests_unittest_radix_tree_CPPFLAGS = -I$(top_srcdir)/src ${TESTUTIL_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
 unittests_unittest_radix_tree_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_radix_tree_LDADD =  \
+        ${TESTUTIL_LIBS} \
+        $(top_builddir)/src/.libs/libzmq.a \
+        ${src_libzmq_la_LIBADD} \
+        $(CODE_COVERAGE_LDFLAGS)
+
+unittests_unittest_curve_encoding_SOURCES = unittests/unittest_curve_encoding.cpp
+unittests_unittest_curve_encoding_CPPFLAGS = -I$(top_srcdir)/src ${TESTUTIL_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_curve_encoding_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
+unittests_unittest_curve_encoding_LDADD =  \
         ${TESTUTIL_LIBS} \
         $(top_builddir)/src/.libs/libzmq.a \
         ${src_libzmq_la_LIBADD} \

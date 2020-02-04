@@ -8,6 +8,7 @@ set(unittests
   unittest_ip_resolver
   unittest_udp_address
   unittest_radix_tree
+  unittest_curve_encoding
 )
 
 #if(ENABLE_DRAFTS)

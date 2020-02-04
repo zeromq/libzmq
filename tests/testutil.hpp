@@ -61,6 +61,10 @@
 
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX // Macros min(a,b) and max(a,b)
+#endif
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdexcept>

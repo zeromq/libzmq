@@ -161,6 +161,8 @@ class msg_t
     //  references drops to 0, the message is closed and false is returned.
     bool rm_refs (int refs_);
 
+    void shrink (size_t new_size_);
+
     //  Size in bytes of the largest message that is still copied around
     //  rather than being reference-counted.
     enum
