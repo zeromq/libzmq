@@ -32,10 +32,32 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int
+receive_monitor_address (void *monitor_, char **address_, bool expect_more_)
+{
+    zmq_msg_t msg;
+
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor_, 0) == -1)
+        return -1; //  Interrupted, presumably
+    TEST_ASSERT_EQUAL (expect_more_, zmq_msg_more (&msg));
+
+    if (address_) {
+        const uint8_t *const data =
+          static_cast<const uint8_t *> (zmq_msg_data (&msg));
+        const size_t size = zmq_msg_size (&msg);
+        *address_ = static_cast<char *> (malloc (size + 1));
+        memcpy (*address_, data, size);
+        (*address_)[size] = 0;
+    }
+    zmq_msg_close (&msg);
+
+    return 0;
+}
+
 //  Read one event off the monitor socket; return value and address
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
-
 static int get_monitor_event_internal (void *monitor_,
                                        int *value_,
                                        char **address_,
@@ -56,18 +78,9 @@ static int get_monitor_event_internal (void *monitor_,
         memcpy (value_, data + 2, sizeof (uint32_t));
 
     //  Second frame in message contains event address
-    zmq_msg_init (&msg);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
-    TEST_ASSERT_FALSE (zmq_msg_more (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      receive_monitor_address (monitor_, address_, false));
 
-    if (address_) {
-        const uint8_t *const data =
-          static_cast<const uint8_t *> (zmq_msg_data (&msg));
-        const size_t size = zmq_msg_size (&msg);
-        *address_ = static_cast<char *> (malloc (size + 1));
-        memcpy (*address_, data, size);
-        (*address_)[size] = 0;
-    }
     return event;
 }
 
@@ -242,34 +255,13 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     }
 
     //  Second-to-last frame in message contains local address
-    zmq_msg_init (&msg);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
-    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
-
-    if (local_address_) {
-        const uint8_t *const data =
-          static_cast<const uint8_t *> (zmq_msg_data (&msg));
-        const size_t size = zmq_msg_size (&msg);
-        *local_address_ = static_cast<char *> (malloc (size + 1));
-        memcpy (*local_address_, data, size);
-        (*local_address_)[size] = 0;
-    }
-    zmq_msg_close (&msg);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      receive_monitor_address (monitor_, local_address_, true));
 
     //  Last frame in message contains remote address
-    zmq_msg_init (&msg);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, monitor_, recv_flag_));
-    TEST_ASSERT_TRUE (!zmq_msg_more (&msg));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      receive_monitor_address (monitor_, remote_address_, false));
 
-    if (remote_address_) {
-        const uint8_t *data =
-          static_cast<const uint8_t *> (zmq_msg_data (&msg));
-        const size_t size = zmq_msg_size (&msg);
-        *remote_address_ = static_cast<char *> (malloc (size + 1));
-        memcpy (*remote_address_, data, size);
-        (*remote_address_)[size] = 0;
-    }
-    zmq_msg_close (&msg);
     return event;
 }
 
