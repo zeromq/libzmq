@@ -292,6 +292,8 @@ endif()
 
 set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
 
+set_tests_properties(test_reconnect_ivl PROPERTIES TIMEOUT 15)
+
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)
 file(GLOB ALL_TEST_SOURCES "test_*.cpp")
