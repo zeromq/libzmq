@@ -53,15 +53,15 @@ namespace zmq
 template <int ID = 0> class array_item_t
 {
   public:
-    inline array_item_t () : _array_index (-1) {}
+    array_item_t () : _array_index (-1) {}
 
     //  The destructor doesn't have to be virtual. It is made virtual
     //  just to keep ICC and code checking tools from complaining.
-    inline virtual ~array_item_t () ZMQ_DEFAULT;
+    virtual ~array_item_t () ZMQ_DEFAULT;
 
-    inline void set_array_index (int index_) { _array_index = index_; }
+    void set_array_index (int index_) { _array_index = index_; }
 
-    inline int get_array_index () const { return _array_index; }
+    int get_array_index () const { return _array_index; }
 
   private:
     int _array_index;
@@ -78,15 +78,15 @@ template <typename T, int ID = 0> class array_t
   public:
     typedef typename std::vector<T *>::size_type size_type;
 
-    inline array_t () ZMQ_DEFAULT;
+    array_t () ZMQ_DEFAULT;
 
-    inline size_type size () { return _items.size (); }
+    size_type size () { return _items.size (); }
 
-    inline bool empty () { return _items.empty (); }
+    bool empty () { return _items.empty (); }
 
-    inline T *&operator[] (size_type index_) { return _items[index_]; }
+    T *&operator[] (size_type index_) { return _items[index_]; }
 
-    inline void push_back (T *item_)
+    void push_back (T *item_)
     {
         if (item_)
             static_cast<item_t *> (item_)->set_array_index (
@@ -94,12 +94,12 @@ template <typename T, int ID = 0> class array_t
         _items.push_back (item_);
     }
 
-    inline void erase (T *item_)
+    void erase (T *item_)
     {
         erase (static_cast<item_t *> (item_)->get_array_index ());
     }
 
-    inline void erase (size_type index_)
+    void erase (size_type index_)
     {
         if (_items.empty ())
             return;
@@ -110,7 +110,7 @@ template <typename T, int ID = 0> class array_t
         _items.pop_back ();
     }
 
-    inline void swap (size_type index1_, size_type index2_)
+    void swap (size_type index1_, size_type index2_)
     {
         if (_items[index1_])
             static_cast<item_t *> (_items[index1_])
@@ -121,9 +121,9 @@ template <typename T, int ID = 0> class array_t
         std::swap (_items[index1_], _items[index2_]);
     }
 
-    inline void clear () { _items.clear (); }
+    void clear () { _items.clear (); }
 
-    static inline size_type index (T *item_)
+    static size_type index (T *item_)
     {
         return static_cast<size_type> (
           static_cast<item_t *> (item_)->get_array_index ());

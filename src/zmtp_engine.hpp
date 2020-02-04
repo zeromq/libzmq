@@ -65,18 +65,18 @@ class zmtp_engine_t ZMQ_FINAL : public stream_engine_base_t
     zmtp_engine_t (fd_t fd_,
                    const options_t &options_,
                    const endpoint_uri_pair_t &endpoint_uri_pair_);
-    ~zmtp_engine_t () ZMQ_FINAL;
+    ~zmtp_engine_t ();
 
   protected:
     //  Detects the protocol used by the peer.
-    bool handshake () ZMQ_FINAL;
+    bool handshake ();
 
-    void plug_internal () ZMQ_FINAL;
+    void plug_internal ();
 
-    int process_command_message (msg_t *msg_) ZMQ_FINAL;
-    int produce_ping_message (msg_t *msg_) ZMQ_FINAL;
-    int process_heartbeat_message (msg_t *msg_) ZMQ_FINAL;
-    int produce_pong_message (msg_t *msg_) ZMQ_FINAL;
+    int process_command_message (msg_t *msg_);
+    int produce_ping_message (msg_t *msg_);
+    int process_heartbeat_message (msg_t *msg_);
+    int produce_pong_message (msg_t *msg_);
 
   private:
     //  Receive the greeting from the peer.

@@ -50,12 +50,11 @@ class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
     int set_local_address (const char *addr_);
 
   protected:
-    std::string get_socket_name (fd_t fd_,
-                                 socket_end_t socket_end_) const ZMQ_FINAL;
+    std::string get_socket_name (fd_t fd_, socket_end_t socket_end_) const;
 
   private:
     //  Handlers for I/O events.
-    void in_event () ZMQ_FINAL;
+    void in_event ();
 
     //  Filter new connections if the OS provides a mechanism to get
     //  the credentials of the peer process.  Called from accept().
@@ -63,7 +62,7 @@ class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
     bool filter (fd_t sock_);
 #endif
 
-    int close () ZMQ_FINAL;
+    int close ();
 
     //  Accept the new connection. Returns the file descriptor of the
     //  newly created connection. The function may return retired_fd

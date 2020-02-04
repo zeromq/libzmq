@@ -43,13 +43,13 @@ class rep_t ZMQ_FINAL : public router_t
 {
   public:
     rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~rep_t () ZMQ_FINAL;
+    ~rep_t ();
 
     //  Overrides of functions from socket_base_t.
-    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
-    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
-    bool xhas_in () ZMQ_FINAL;
-    bool xhas_out () ZMQ_FINAL;
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
 
   private:
     //  If true, we are in process of sending the reply. If false we are

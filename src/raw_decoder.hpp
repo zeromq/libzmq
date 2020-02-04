@@ -43,19 +43,17 @@ class raw_decoder_t ZMQ_FINAL : public i_decoder
 {
   public:
     raw_decoder_t (size_t bufsize_);
-    ~raw_decoder_t () ZMQ_FINAL;
+    ~raw_decoder_t ();
 
     //  i_decoder interface.
 
-    void get_buffer (unsigned char **data_, size_t *size_) ZMQ_FINAL;
+    void get_buffer (unsigned char **data_, size_t *size_);
 
-    int decode (const unsigned char *data_,
-                size_t size_,
-                size_t &bytes_used_) ZMQ_FINAL;
+    int decode (const unsigned char *data_, size_t size_, size_t &bytes_used_);
 
-    msg_t *msg () ZMQ_FINAL { return &_in_progress; }
+    msg_t *msg () { return &_in_progress; }
 
-    void resize_buffer (size_t) ZMQ_FINAL {}
+    void resize_buffer (size_t) {}
 
   private:
     msg_t _in_progress;

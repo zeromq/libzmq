@@ -981,8 +981,9 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
             LIBZMQ_DELETE (paddr);
             return -1;
         }
-        sockaddr_tipc *saddr =
-          (sockaddr_tipc *) paddr->resolved.tipc_addr->addr ();
+        const sockaddr_tipc *const saddr =
+          reinterpret_cast<const sockaddr_tipc *> (
+            paddr->resolved.tipc_addr->addr ());
         // Cannot connect to random Port Identity
         if (saddr->addrtype == TIPC_ADDR_ID
             && paddr->resolved.tipc_addr->is_random ()) {

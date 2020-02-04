@@ -93,7 +93,8 @@ int zmq::tipc_listener_t::set_local_address (const char *addr_)
         return -1;
 
     // Cannot bind non-random Port Identity
-    struct sockaddr_tipc *a = (sockaddr_tipc *) _address.addr ();
+    const sockaddr_tipc *const a =
+      reinterpret_cast<const sockaddr_tipc *> (_address.addr ());
     if (!_address.is_random () && a->addrtype == TIPC_ADDR_ID) {
         errno = EINVAL;
         return -1;

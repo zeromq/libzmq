@@ -94,11 +94,12 @@ void test__zmq_z85_encode__zmq_z85_decode__roundtrip (
   const uint8_t (&test_data_)[SIZE])
 {
     char test_data_z85[SIZE * 5 / 4 + 1];
-    char *res1 = zmq_z85_encode (test_data_z85, test_data_, SIZE);
+    const char *const res1 = zmq_z85_encode (test_data_z85, test_data_, SIZE);
     TEST_ASSERT_NOT_NULL (res1);
 
     uint8_t test_data_decoded[SIZE];
-    uint8_t *res2 = zmq_z85_decode (test_data_decoded, test_data_z85);
+    const uint8_t *const res2 =
+      zmq_z85_decode (test_data_decoded, test_data_z85);
     TEST_ASSERT_NOT_NULL (res2);
 
     TEST_ASSERT_EQUAL_UINT8_ARRAY (test_data_, test_data_decoded, SIZE);
@@ -111,11 +112,11 @@ void test__zmq_z85_decode__zmq_z85_encode__roundtrip (
 {
     const size_t decoded_size = (SIZE - 1) * 4 / 5;
     uint8_t test_data_decoded[decoded_size];
-    uint8_t *res1 = zmq_z85_decode (test_data_decoded, test_data_);
+    const uint8_t *const res1 = zmq_z85_decode (test_data_decoded, test_data_);
     TEST_ASSERT_NOT_NULL (res1);
 
     char test_data_z85[SIZE];
-    char *res2 =
+    const char *const res2 =
       zmq_z85_encode (test_data_z85, test_data_decoded, decoded_size);
     TEST_ASSERT_NOT_NULL (res2);
 

@@ -105,10 +105,8 @@ template <typename T, size_t S> class resizable_fast_vector_t
 #if defined ZMQ_POLL_BASED_ON_POLL
 typedef int timeout_t;
 
-timeout_t compute_timeout (const bool first_pass_,
-                           const long timeout_,
-                           const uint64_t now_,
-                           const uint64_t end_);
+timeout_t
+compute_timeout (bool first_pass_, long timeout_, uint64_t now_, uint64_t end_);
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 inline size_t valid_pollset_bytes (const fd_set &pollset_)

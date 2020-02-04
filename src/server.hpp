@@ -49,19 +49,19 @@ class server_t ZMQ_FINAL : public socket_base_t
 {
   public:
     server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~server_t () ZMQ_FINAL;
+    ~server_t ();
 
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_) ZMQ_FINAL;
-    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
-    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
-    bool xhas_in () ZMQ_FINAL;
-    bool xhas_out () ZMQ_FINAL;
-    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
-    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
-    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+                       bool locally_initiated_);
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
     //  Fair queueing object for inbound pipes.

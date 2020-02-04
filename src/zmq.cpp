@@ -1135,8 +1135,8 @@ void *zmq_poller_new (void)
 int zmq_poller_destroy (void **poller_p_)
 {
     if (poller_p_) {
-        zmq::socket_poller_t *const poller =
-          static_cast<zmq::socket_poller_t *> (*poller_p_);
+        const zmq::socket_poller_t *const poller =
+          static_cast<const zmq::socket_poller_t *> (*poller_p_);
         if (poller && poller->check_tag ()) {
             delete poller;
             *poller_p_ = NULL;
@@ -1227,7 +1227,8 @@ int zmq_poller_modify (void *poller_, void *s_, short events_)
         || -1 == check_events (events_))
         return -1;
 
-    zmq::socket_base_t *socket = static_cast<zmq::socket_base_t *> (s_);
+    const zmq::socket_base_t *const socket =
+      static_cast<const zmq::socket_base_t *> (s_);
 
     return (static_cast<zmq::socket_poller_t *> (poller_))
       ->modify (socket, events_);

@@ -45,17 +45,17 @@ class scatter_t ZMQ_FINAL : public socket_base_t
 {
   public:
     scatter_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~scatter_t () ZMQ_FINAL;
+    ~scatter_t ();
 
   protected:
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_) ZMQ_FINAL;
-    int xsend (zmq::msg_t *msg_) ZMQ_FINAL;
-    bool xhas_out () ZMQ_FINAL;
-    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
-    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+                       bool locally_initiated_);
+    int xsend (zmq::msg_t *msg_);
+    bool xhas_out ();
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
     //  Load balancer managing the outbound pipes.

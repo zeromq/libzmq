@@ -46,11 +46,11 @@ class mailbox_t ZMQ_FINAL : public i_mailbox
 {
   public:
     mailbox_t ();
-    ~mailbox_t () ZMQ_FINAL;
+    ~mailbox_t ();
 
     fd_t get_fd () const;
-    void send (const command_t &cmd_) ZMQ_FINAL;
-    int recv (command_t *cmd_, int timeout_) ZMQ_FINAL;
+    void send (const command_t &cmd_);
+    int recv (command_t *cmd_, int timeout_);
 
     bool valid () const;
 

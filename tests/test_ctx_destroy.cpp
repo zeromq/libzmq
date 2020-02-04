@@ -162,8 +162,8 @@ struct poller_test_data_t
 
 void run_poller (void *data_)
 {
-    struct poller_test_data_t *poller_test_data =
-      static_cast<struct poller_test_data_t *> (data_);
+    const poller_test_data_t *const poller_test_data =
+      static_cast<const poller_test_data_t *> (data_);
 
     void *socket =
       zmq_socket (poller_test_data->ctx, poller_test_data->socket_type);

@@ -42,8 +42,7 @@ void tearDown ()
 //  tests all socket-related functions with a NULL socket argument
 void test_zmq_socket_null_context ()
 {
-    void *s = zmq_socket (NULL, ZMQ_PAIR);
-    TEST_ASSERT_NULL (s);
+    TEST_ASSERT_NULL (zmq_socket (NULL, ZMQ_PAIR));
     TEST_ASSERT_EQUAL_INT (EFAULT, errno); // TODO use EINVAL instead?
 }
 

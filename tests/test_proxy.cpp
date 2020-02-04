@@ -80,7 +80,7 @@ void *g_workers_pkts_out = NULL;
 
 static void client_task (void *db_)
 {
-    struct thread_data *databag = static_cast<struct thread_data *> (db_);
+    const thread_data *const databag = static_cast<const thread_data *> (db_);
     // Endpoint socket gets random port to avoid test failing when port in use
     void *endpoint = zmq_socket (get_test_context (), ZMQ_PAIR);
     TEST_ASSERT_NOT_NULL (endpoint);

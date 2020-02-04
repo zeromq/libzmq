@@ -487,7 +487,8 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
 
             //  Try to remove an existing routing id entry to allow the new
             //  connection to take the routing id.
-            out_pipe_t *existing_outpipe = lookup_out_pipe (routing_id);
+            const out_pipe_t *const existing_outpipe =
+              lookup_out_pipe (routing_id);
 
             if (existing_outpipe) {
                 if (!_handover)

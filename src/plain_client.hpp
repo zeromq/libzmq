@@ -40,13 +40,13 @@ class msg_t;
 class plain_client_t ZMQ_FINAL : public mechanism_base_t
 {
   public:
-    plain_client_t (session_base_t *const session_, const options_t &options_);
-    ~plain_client_t () ZMQ_FINAL;
+    plain_client_t (session_base_t *session_, const options_t &options_);
+    ~plain_client_t ();
 
     // mechanism implementation
-    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    status_t status () const ZMQ_FINAL;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    status_t status () const;
 
   private:
     enum state_t

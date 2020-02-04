@@ -859,7 +859,7 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
     // the socket directory there.
     const char **tmp_env = tmp_env_vars;
     while (tmp_path.empty () && *tmp_env != 0) {
-        char *tmpdir = getenv (*tmp_env);
+        const char *const tmpdir = getenv (*tmp_env);
         struct stat statbuf;
 
         // Confirm it is actually a directory before trying to use

@@ -40,7 +40,7 @@ class v2_encoder_t ZMQ_FINAL : public encoder_base_t<v2_encoder_t>
 {
   public:
     v2_encoder_t (size_t bufsize_);
-    ~v2_encoder_t () ZMQ_FINAL;
+    ~v2_encoder_t ();
 
   private:
     void size_ready ();

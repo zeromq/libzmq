@@ -43,14 +43,14 @@ class pub_t ZMQ_FINAL : public xpub_t
 {
   public:
     pub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~pub_t () ZMQ_FINAL;
+    ~pub_t ();
 
     //  Implementations of virtual functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_ = false,
-                       bool locally_initiated_ = false) ZMQ_FINAL;
-    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
-    bool xhas_in () ZMQ_FINAL;
+                       bool locally_initiated_ = false);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (pub_t)
 };

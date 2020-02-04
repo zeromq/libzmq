@@ -47,10 +47,10 @@ class ws_decoder_t ZMQ_FINAL
                   int64_t maxmsgsize_,
                   bool zero_copy_,
                   bool must_mask_);
-    ~ws_decoder_t () ZMQ_FINAL;
+    ~ws_decoder_t ();
 
     //  i_decoder interface.
-    msg_t *msg () ZMQ_FINAL { return &_in_progress; }
+    msg_t *msg () { return &_in_progress; }
 
   private:
     int opcode_ready (unsigned char const *);

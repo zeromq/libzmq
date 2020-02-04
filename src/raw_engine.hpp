@@ -60,12 +60,12 @@ class raw_engine_t ZMQ_FINAL : public stream_engine_base_t
     raw_engine_t (fd_t fd_,
                   const options_t &options_,
                   const endpoint_uri_pair_t &endpoint_uri_pair_);
-    ~raw_engine_t () ZMQ_FINAL;
+    ~raw_engine_t ();
 
   protected:
-    void error (error_reason_t reason_) ZMQ_FINAL;
-    void plug_internal () ZMQ_FINAL;
-    bool handshake () ZMQ_FINAL;
+    void error (error_reason_t reason_);
+    void plug_internal ();
+    bool handshake ();
 
   private:
     int push_raw_msg_to_session (msg_t *msg_);

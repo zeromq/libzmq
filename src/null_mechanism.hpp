@@ -45,13 +45,13 @@ class null_mechanism_t ZMQ_FINAL : public zap_client_t
     null_mechanism_t (session_base_t *session_,
                       const std::string &peer_address_,
                       const options_t &options_);
-    ~null_mechanism_t () ZMQ_FINAL;
+    ~null_mechanism_t ();
 
     // mechanism implementation
-    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int zap_msg_available () ZMQ_FINAL;
-    status_t status () const ZMQ_FINAL;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    int zap_msg_available ();
+    status_t status () const;
 
   private:
     bool _ready_command_sent;
