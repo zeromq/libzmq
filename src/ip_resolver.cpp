@@ -540,7 +540,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 
     //  Find the corresponding network interface.
     bool found = false;
-    for (ifaddrs *ifp = ifa; ifp != NULL; ifp = ifp->ifa_next) {
+    for (const ifaddrs *ifp = ifa; ifp != NULL; ifp = ifp->ifa_next) {
         if (ifp->ifa_addr == NULL)
             continue;
 

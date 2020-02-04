@@ -72,9 +72,7 @@ template <> class dbuffer_t<msg_t>
 
     void write (const msg_t &value_)
     {
-        msg_t &xvalue = const_cast<msg_t &> (value_);
-
-        zmq_assert (xvalue.check ());
+        zmq_assert (value_.check ());
         *_back = value_;
 
         zmq_assert (_back->check ());

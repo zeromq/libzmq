@@ -248,8 +248,8 @@ bool zmq::ipc_listener_t::filter (fd_t sock_)
              != options.ipc_pid_accept_filters.end ())
         return true;
 
-    struct passwd *pw;
-    struct group *gr;
+    const struct passwd *pw;
+    const struct group *gr;
 
     if (!(pw = getpwuid (cred.uid)))
         return false;

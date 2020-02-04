@@ -203,8 +203,9 @@ static int get_monitor_event (void *monitor_, int *value_, char **address_)
     TEST_ASSERT_FALSE (zmq_msg_more (&msg));
 
     if (address_) {
-        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
-        size_t size = zmq_msg_size (&msg);
+        const uint8_t *const data =
+          static_cast<const uint8_t *> (zmq_msg_data (&msg));
+        const size_t size = zmq_msg_size (&msg);
         *address_ = static_cast<char *> (malloc (size + 1));
         memcpy (*address_, data, size);
         *address_[size] = 0;

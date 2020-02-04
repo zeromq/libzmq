@@ -350,7 +350,7 @@ static bool is_multicast_available (int ipv6_)
 
     if (ipv6_) {
         struct ipv6_mreq mreq;
-        struct sockaddr_in6 *mcast_ipv6 = &mcast.ipv6;
+        const sockaddr_in6 *const mcast_ipv6 = &mcast.ipv6;
 
         mreq.ipv6mr_multiaddr = mcast_ipv6->sin6_addr;
         mreq.ipv6mr_interface = 0;
@@ -369,7 +369,7 @@ static bool is_multicast_available (int ipv6_)
         }
     } else {
         struct ip_mreq mreq;
-        struct sockaddr_in *mcast_ipv4 = &mcast.ipv4;
+        const sockaddr_in *const mcast_ipv4 = &mcast.ipv4;
 
         mreq.imr_multiaddr = mcast_ipv4->sin_addr;
         mreq.imr_interface.s_addr = htonl (INADDR_ANY);

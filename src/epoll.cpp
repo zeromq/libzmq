@@ -189,8 +189,8 @@ void zmq::epoll_t::loop ()
         }
 
         for (int i = 0; i < n; i++) {
-            poll_entry_t *pe =
-              (static_cast<poll_entry_t *> (ev_buf[i].data.ptr));
+            const poll_entry_t *const pe =
+              static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
 
             if (pe->fd == retired_fd)
                 continue;

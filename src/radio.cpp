@@ -218,7 +218,7 @@ int zmq::radio_session_t::push_msg (msg_t *msg_)
         const size_t data_size = msg_->size ();
 
         int group_length;
-        char *group;
+        const char *group;
 
         msg_t join_leave_msg;
         int rc;
