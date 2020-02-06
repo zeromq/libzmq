@@ -41,7 +41,6 @@ void test_roundtrip ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/roundtrip");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
@@ -79,7 +78,6 @@ void test_heartbeat ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/heartbeat"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/heartbeat");
 
     void *sc = test_context_socket (ZMQ_REQ);
 
@@ -113,7 +111,6 @@ void test_short_message ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/short"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
@@ -147,7 +144,6 @@ void test_large_message ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/large"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
@@ -197,8 +193,6 @@ void test_curve ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (server, ZMQ_LAST_ENDPOINT,
                                                connect_address, &addr_length));
-    strcat (connect_address, "/roundtrip");
-
 
     void *client = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -224,7 +218,6 @@ void test_mask_shared_msg ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/mask-shared"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/mask-shared");
 
     void *sc = test_context_socket (ZMQ_DEALER);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));

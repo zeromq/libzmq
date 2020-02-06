@@ -67,7 +67,7 @@ zmq::ws_address_t::ws_address_t (const sockaddr *sa_, socklen_t sa_len_)
              && sa_len_ >= static_cast<socklen_t> (sizeof (_address.ipv6)))
         memcpy (&_address.ipv6, sa_, sizeof (_address.ipv6));
 
-    _path = std::string ("/");
+    _path = std::string ("");
 
     char hbuf[NI_MAXHOST];
     const int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL,
@@ -130,7 +130,7 @@ int zmq::ws_address_t::to_string (std::string &addr_) const
 {
     std::ostringstream os;
     os << std::string ("ws://") << host () << std::string (":")
-       << _address.port ();
+       << _address.port () << _path;
     addr_ = os.str ();
 
     return 0;
