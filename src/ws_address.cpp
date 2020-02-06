@@ -72,8 +72,10 @@ zmq::ws_address_t::ws_address_t (const sockaddr *sa_, socklen_t sa_len_)
     char hbuf[NI_MAXHOST];
     const int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL,
                                 0, NI_NUMERICHOST);
-    if (rc != 0)
+    if (rc != 0) {
         _host = std::string ("localhost");
+        return;
+    }
 
     std::ostringstream os;
 
