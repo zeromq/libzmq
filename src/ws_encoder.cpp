@@ -55,19 +55,24 @@ void zmq::ws_encoder_t::message_ready ()
 {
     int offset = 0;
 
+    _is_binary = false;
+
     if (in_progress ()->is_ping ())
         _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_ping;
     else if (in_progress ()->is_pong ())
         _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_pong;
     else if (in_progress ()->is_close_cmd ())
         _tmp_buf[offset++] = 0x80 | zmq::ws_protocol_t::opcode_close;
-    else
+    else {
         _tmp_buf[offset++] = 0x82; // Final | binary
+        _is_binary = true;
+    }
 
     _tmp_buf[offset] = _must_mask ? 0x80 : 0x00;
 
     size_t size = in_progress ()->size ();
-    size++; // TODO: check if binary
+    if (_is_binary)
+        size++;
 
     if (size <= 125)
         _tmp_buf[offset++] |= static_cast<unsigned char> (size & 127);
@@ -88,17 +93,17 @@ void zmq::ws_encoder_t::message_ready ()
         offset += 4;
     }
 
-    // TODO: check if binary
+    if (_is_binary) {
+        //  Encode flags.
+        unsigned char protocol_flags = 0;
+        if (in_progress ()->flags () & msg_t::more)
+            protocol_flags |= ws_protocol_t::more_flag;
+        if (in_progress ()->flags () & msg_t::command)
+            protocol_flags |= ws_protocol_t::command_flag;
 
-    //  Encode flags.
-    unsigned char protocol_flags = 0;
-    if (in_progress ()->flags () & msg_t::more)
-        protocol_flags |= ws_protocol_t::more_flag;
-    if (in_progress ()->flags () & msg_t::command)
-        protocol_flags |= ws_protocol_t::command_flag;
-
-    _tmp_buf[offset++] =
-      _must_mask ? protocol_flags ^ _mask[0] : protocol_flags;
+        _tmp_buf[offset++] =
+          _must_mask ? protocol_flags ^ _mask[0] : protocol_flags;
+    }
 
     next_step (_tmp_buf, offset, &ws_encoder_t::size_ready, false);
 }
@@ -109,20 +114,23 @@ void zmq::ws_encoder_t::size_ready ()
         assert (in_progress () != &_masked_msg);
         const size_t size = in_progress ()->size ();
 
-        _masked_msg.close ();
-        _masked_msg.init_size (size);
-
-        int mask_index = 1; // TODO: check if binary message
-        unsigned char *dest =
-          static_cast<unsigned char *> (_masked_msg.data ());
         unsigned char *src =
           static_cast<unsigned char *> (in_progress ()->data ());
-        for (size_t i = 0, size = in_progress ()->size (); i < size;
-             ++i, mask_index++)
+        unsigned char *dest = src;
+
+        //  If msg is shared or data is constant we cannot mask in-place, allocate a new msg for it
+        if (in_progress ()->flags () & msg_t::shared
+            || in_progress ()->is_cmsg ()) {
+            _masked_msg.close ();
+            _masked_msg.init_size (size);
+            dest = static_cast<unsigned char *> (_masked_msg.data ());
+        }
+
+        int mask_index = _is_binary ? 1 : 0;
+        for (size_t i = 0; i < size; ++i, mask_index++)
             dest[i] = src[i] ^ _mask[mask_index % 4];
 
-        next_step (_masked_msg.data (), _masked_msg.size (),
-                   &ws_encoder_t::message_ready, true);
+        next_step (dest, size, &ws_encoder_t::message_ready, true);
     } else {
         next_step (in_progress ()->data (), in_progress ()->size (),
                    &ws_encoder_t::message_ready, true);
