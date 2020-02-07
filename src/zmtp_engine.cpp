@@ -47,6 +47,7 @@
 #include "v1_decoder.hpp"
 #include "v2_encoder.hpp"
 #include "v2_decoder.hpp"
+#include "v3_1_encoder.hpp"
 #include "null_mechanism.hpp"
 #include "plain_client.hpp"
 #include "plain_server.hpp"
@@ -115,8 +116,9 @@ void zmq::zmtp_engine_t::plug_internal ()
     in_event ();
 }
 
-//  Position of the revision field in the greeting.
+//  Position of the revision and minor fields in the greeting.
 const size_t revision_pos = 10;
+const size_t minor_pos = 11;
 
 bool zmq::zmtp_engine_t::handshake ()
 {
@@ -128,8 +130,8 @@ bool zmq::zmtp_engine_t::handshake ()
     const bool unversioned = rc != 0;
 
     if (!(this
-            ->*select_handshake_fun (unversioned,
-                                     _greeting_recv[revision_pos])) ())
+            ->*select_handshake_fun (unversioned, _greeting_recv[revision_pos],
+                                     _greeting_recv[minor_pos])) ())
         return false;
 
     // Start polling for output if necessary.
@@ -203,7 +205,7 @@ void zmq::zmtp_engine_t::receive_greeting_versioned ()
                 || _greeting_recv[revision_pos] == ZMTP_2_0)
                 _outpos[_outsize++] = _options.type;
             else {
-                _outpos[_outsize++] = 0; //  Minor version number
+                _outpos[_outsize++] = 1; //  Minor version number
                 memset (_outpos + _outsize, 0, 20);
 
                 zmq_assert (_options.mechanism == ZMQ_NULL
@@ -228,9 +230,8 @@ void zmq::zmtp_engine_t::receive_greeting_versioned ()
     }
 }
 
-zmq::zmtp_engine_t::handshake_fun_t
-zmq::zmtp_engine_t::select_handshake_fun (bool unversioned_,
-                                          unsigned char revision_)
+zmq::zmtp_engine_t::handshake_fun_t zmq::zmtp_engine_t::select_handshake_fun (
+  bool unversioned_, unsigned char revision_, unsigned char minor_)
 {
     //  Is the peer using ZMTP/1.0 with no revision number?
     if (unversioned_) {
@@ -241,8 +242,15 @@ zmq::zmtp_engine_t::select_handshake_fun (bool unversioned_,
             return &zmtp_engine_t::handshake_v1_0;
         case ZMTP_2_0:
             return &zmtp_engine_t::handshake_v2_0;
+        case ZMTP_3_x:
+            switch (minor_) {
+                case 0:
+                    return &zmtp_engine_t::handshake_v3_0;
+                default:
+                    return &zmtp_engine_t::handshake_v3_1;
+            }
         default:
-            return &zmtp_engine_t::handshake_v3_0;
+            return &zmtp_engine_t::handshake_v3_1;
     }
 }
 
@@ -339,15 +347,8 @@ bool zmq::zmtp_engine_t::handshake_v2_0 ()
     return true;
 }
 
-bool zmq::zmtp_engine_t::handshake_v3_0 ()
+bool zmq::zmtp_engine_t::handshake_v3_x ()
 {
-    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
-    alloc_assert (_encoder);
-
-    _decoder = new (std::nothrow) v2_decoder_t (
-      _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
-    alloc_assert (_decoder);
-
     if (_options.mechanism == ZMQ_NULL
         && memcmp (_greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
                    20)
@@ -406,6 +407,30 @@ bool zmq::zmtp_engine_t::handshake_v3_0 ()
     _process_msg = &zmtp_engine_t::process_handshake_command;
 
     return true;
+}
+
+bool zmq::zmtp_engine_t::handshake_v3_0 ()
+{
+    _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
+    alloc_assert (_encoder);
+
+    _decoder = new (std::nothrow) v2_decoder_t (
+      _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
+    alloc_assert (_decoder);
+
+    return zmq::zmtp_engine_t::handshake_v3_x ();
+}
+
+bool zmq::zmtp_engine_t::handshake_v3_1 ()
+{
+    _encoder = new (std::nothrow) v3_1_encoder_t (_options.out_batch_size);
+    alloc_assert (_encoder);
+
+    _decoder = new (std::nothrow) v2_decoder_t (
+      _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
+    alloc_assert (_decoder);
+
+    return zmq::zmtp_engine_t::handshake_v3_x ();
 }
 
 int zmq::zmtp_engine_t::routing_id_msg (msg_t *msg_)

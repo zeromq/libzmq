@@ -49,7 +49,8 @@ namespace zmq
 enum
 {
     ZMTP_1_0 = 0,
-    ZMTP_2_0 = 1
+    ZMTP_2_0 = 1,
+    ZMTP_3_x = 3
 };
 
 class io_thread_t;
@@ -85,12 +86,15 @@ class zmtp_engine_t ZMQ_FINAL : public stream_engine_base_t
 
     typedef bool (zmtp_engine_t::*handshake_fun_t) ();
     static handshake_fun_t select_handshake_fun (bool unversioned,
-                                                 unsigned char revision);
+                                                 unsigned char revision,
+                                                 unsigned char minor);
 
     bool handshake_v1_0_unversioned ();
     bool handshake_v1_0 ();
     bool handshake_v2_0 ();
+    bool handshake_v3_x ();
     bool handshake_v3_0 ();
+    bool handshake_v3_1 ();
 
     int routing_id_msg (msg_t *msg_);
     int process_routing_id_msg (msg_t *msg_);

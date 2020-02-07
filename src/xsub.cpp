@@ -135,10 +135,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         //  however this is alread done on the XPUB side and
         //  doing it here as well breaks ZMQ_XPUB_VERBOSE
         //  when there are forwarding devices involved.
-        if (msg_->is_subscribe ()) {
-            data = static_cast<unsigned char *> (msg_->command_body ());
-            size = msg_->command_body_size ();
-        } else {
+        if (!msg_->is_subscribe ()) {
             data = data + 1;
             size = size - 1;
         }
@@ -148,10 +145,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     }
     if (msg_->is_cancel () || (size > 0 && *data == 0)) {
         //  Process unsubscribe message
-        if (msg_->is_cancel ()) {
-            data = static_cast<unsigned char *> (msg_->command_body ());
-            size = msg_->command_body_size ();
-        } else {
+        if (!msg_->is_cancel ()) {
             data = data + 1;
             size = size - 1;
         }
@@ -271,16 +265,8 @@ void zmq::xsub_t::send_subscription (unsigned char *data_,
 
     //  Create the subscription message.
     msg_t msg;
-    const int rc = msg.init_size (size_ + 1);
+    const int rc = msg.init_subscribe (size_, data_);
     errno_assert (rc == 0);
-    unsigned char *data = static_cast<unsigned char *> (msg.data ());
-    data[0] = 1;
-
-    //  We explicitly allow a NULL subscription with size zero
-    if (size_) {
-        assert (data_);
-        memcpy (data + 1, data_, size_);
-    }
 
     //  Send it to the pipe.
     const bool sent = pipe->write (&msg);

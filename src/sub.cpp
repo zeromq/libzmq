@@ -56,15 +56,15 @@ int zmq::sub_t::xsetsockopt (int option_,
 
     //  Create the subscription message.
     msg_t msg;
-    int rc = msg.init_size (optvallen_ + 1);
-    errno_assert (rc == 0);
-    unsigned char *data = static_cast<unsigned char *> (msg.data ());
-    *data = (option_ == ZMQ_SUBSCRIBE);
-    //  We explicitly allow a NULL subscription with size zero
-    if (optvallen_) {
-        assert (optval_);
-        memcpy (data + 1, optval_, optvallen_);
+    int rc;
+    const unsigned char *data = static_cast<const unsigned char *> (optval_);
+    if (option_ == ZMQ_SUBSCRIBE) {
+        rc = msg.init_subscribe (optvallen_, data);
+    } else {
+        rc = msg.init_cancel (optvallen_, data);
     }
+    errno_assert (rc == 0);
+
     //  Pass it further on in the stack.
     rc = xsub_t::xsend (&msg);
     return close_and_return (&msg, rc);

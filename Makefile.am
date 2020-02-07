@@ -239,6 +239,8 @@ src_libzmq_la_SOURCES = \
 	src/v1_encoder.hpp \
 	src/v2_encoder.cpp \
 	src/v2_encoder.hpp \
+	src/v3_1_encoder.cpp \
+	src/v3_1_encoder.hpp \
 	src/v2_protocol.hpp \
 	src/vmci.cpp \
 	src/vmci.hpp \

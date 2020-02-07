@@ -865,6 +865,7 @@ set(cxx-sources
   v1_encoder.cpp
   v2_decoder.cpp
   v2_encoder.cpp
+  v3_1_encoder.cpp
   xpub.cpp
   xsub.cpp
   zmq.cpp
@@ -1007,6 +1008,7 @@ set(cxx-sources
   v1_encoder.hpp
   v2_decoder.hpp
   v2_encoder.hpp
+  v3_1_encoder.hpp
   v2_protocol.hpp
   vmci.hpp
   vmci_address.hpp
