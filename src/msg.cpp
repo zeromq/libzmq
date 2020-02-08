@@ -79,7 +79,8 @@ int zmq::msg_t::init ()
     _u.vsm.type = type_vsm;
     _u.vsm.flags = 0;
     _u.vsm.size = 0;
-    _u.vsm.group[0] = '\0';
+    _u.vsm.group.sgroup.group[0] = '\0';
+    _u.vsm.group.type = group_type_short;
     _u.vsm.routing_id = 0;
     return 0;
 }
@@ -91,13 +92,15 @@ int zmq::msg_t::init_size (size_t size_)
         _u.vsm.type = type_vsm;
         _u.vsm.flags = 0;
         _u.vsm.size = static_cast<unsigned char> (size_);
-        _u.vsm.group[0] = '\0';
+        _u.vsm.group.sgroup.group[0] = '\0';
+        _u.vsm.group.type = group_type_short;
         _u.vsm.routing_id = 0;
     } else {
         _u.lmsg.metadata = NULL;
         _u.lmsg.type = type_lmsg;
         _u.lmsg.flags = 0;
-        _u.lmsg.group[0] = '\0';
+        _u.lmsg.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
         _u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
@@ -129,7 +132,8 @@ int zmq::msg_t::init_external_storage (content_t *content_,
     _u.zclmsg.metadata = NULL;
     _u.zclmsg.type = type_zclmsg;
     _u.zclmsg.flags = 0;
-    _u.zclmsg.group[0] = '\0';
+    _u.zclmsg.group.sgroup.group[0] = '\0';
+    _u.zclmsg.group.type = group_type_short;
     _u.zclmsg.routing_id = 0;
 
     _u.zclmsg.content = content_;
@@ -158,13 +162,15 @@ int zmq::msg_t::init_data (void *data_,
         _u.cmsg.flags = 0;
         _u.cmsg.data = data_;
         _u.cmsg.size = size_;
-        _u.cmsg.group[0] = '\0';
+        _u.cmsg.group.sgroup.group[0] = '\0';
+        _u.cmsg.group.type = group_type_short;
         _u.cmsg.routing_id = 0;
     } else {
         _u.lmsg.metadata = NULL;
         _u.lmsg.type = type_lmsg;
         _u.lmsg.flags = 0;
-        _u.lmsg.group[0] = '\0';
+        _u.lmsg.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
         _u.lmsg.content =
           static_cast<content_t *> (malloc (sizeof (content_t)));
@@ -187,7 +193,8 @@ int zmq::msg_t::init_delimiter ()
     _u.delimiter.metadata = NULL;
     _u.delimiter.type = type_delimiter;
     _u.delimiter.flags = 0;
-    _u.delimiter.group[0] = '\0';
+    _u.delimiter.group.sgroup.group[0] = '\0';
+    _u.delimiter.group.type = group_type_short;
     _u.delimiter.routing_id = 0;
     return 0;
 }
@@ -197,7 +204,8 @@ int zmq::msg_t::init_join ()
     _u.base.metadata = NULL;
     _u.base.type = type_join;
     _u.base.flags = 0;
-    _u.base.group[0] = '\0';
+    _u.base.group.sgroup.group[0] = '\0';
+    _u.base.group.type = group_type_short;
     _u.base.routing_id = 0;
     return 0;
 }
@@ -207,7 +215,8 @@ int zmq::msg_t::init_leave ()
     _u.base.metadata = NULL;
     _u.base.type = type_leave;
     _u.base.flags = 0;
-    _u.base.group[0] = '\0';
+    _u.base.group.sgroup.group[0] = '\0';
+    _u.base.group.type = group_type_short;
     _u.base.routing_id = 0;
     return 0;
 }
@@ -257,6 +266,16 @@ int zmq::msg_t::close ()
             LIBZMQ_DELETE (_u.base.metadata);
         }
         _u.base.metadata = NULL;
+    }
+
+    if (_u.base.group.type == group_type_long) {
+        if (!_u.base.group.lgroup.content->refcnt.sub (1)) {
+            //  We used "placement new" operator to initialize the reference
+            //  counter so we call the destructor explicitly now.
+            _u.base.group.lgroup.content->refcnt.~atomic_counter_t ();
+
+            free (_u.base.group.lgroup.content);
+        }
     }
 
     //  Make the message invalid.
@@ -315,6 +334,9 @@ int zmq::msg_t::copy (msg_t &src_)
 
     if (src_._u.base.metadata != NULL)
         src_._u.base.metadata->add_ref ();
+
+    if (src_._u.base.group.type == group_type_long)
+        src_._u.base.group.lgroup.content->refcnt.add (1);
 
     *this = src_;
 
@@ -600,12 +622,16 @@ int zmq::msg_t::reset_routing_id ()
 
 const char *zmq::msg_t::group () const
 {
-    return _u.base.group;
+    if (_u.base.group.type == group_type_long)
+        return _u.base.group.lgroup.content->group;
+    return _u.base.group.sgroup.group;
 }
 
 int zmq::msg_t::set_group (const char *group_)
 {
-    return set_group (group_, ZMQ_GROUP_MAX_LENGTH);
+    size_t length = strnlen (group_, ZMQ_GROUP_MAX_LENGTH);
+
+    return set_group (group_, length);
 }
 
 int zmq::msg_t::set_group (const char *group_, size_t length_)
@@ -615,8 +641,19 @@ int zmq::msg_t::set_group (const char *group_, size_t length_)
         return -1;
     }
 
-    strncpy (_u.base.group, group_, length_);
-    _u.base.group[length_] = '\0';
+    if (length_ > 14) {
+        _u.base.group.lgroup.type = group_type_long;
+        _u.base.group.lgroup.content =
+          (long_group_t *) malloc (sizeof (long_group_t));
+        assert (_u.base.group.lgroup.content);
+        new (&_u.base.group.lgroup.content->refcnt) zmq::atomic_counter_t ();
+        _u.base.group.lgroup.content->refcnt.set (1);
+        strncpy (_u.base.group.lgroup.content->group, group_, length_);
+        _u.base.group.lgroup.content->group[length_] = '\0';
+    } else {
+        strncpy (_u.base.group.sgroup.group, group_, length_);
+        _u.base.group.sgroup.group[length_] = '\0';
+    }
 
     return 0;
 }

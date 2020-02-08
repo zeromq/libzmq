@@ -397,7 +397,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_GSSAPI 3
 
 /*  RADIO-DISH protocol                                                       */
-#define ZMQ_GROUP_MAX_LENGTH 15
+#define ZMQ_GROUP_MAX_LENGTH 255
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IDENTITY ZMQ_ROUTING_ID
