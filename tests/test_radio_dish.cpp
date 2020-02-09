@@ -96,6 +96,35 @@ void test_leave_unjoined_fails ()
     test_context_socket_close (dish);
 }
 
+void test_long_group ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *radio = test_context_socket (ZMQ_RADIO);
+    bind_loopback (radio, false, my_endpoint, len);
+
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    // Joining to a long group, over 14 chars
+    char group[19] = "0123456789ABCDEFGH";
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, group));
+
+    // Connecting
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dish, my_endpoint));
+
+    msleep (SETTLE_TIME);
+
+    //  This is going to be sent to the dish
+    msg_send_expect_success (radio, group, "HELLO");
+
+    //  Check the correct message arrived
+    msg_recv_cmp (dish, group, "HELLO");
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
 void test_join_too_long_fails ()
 {
     void *dish = test_context_socket (ZMQ_DISH);
@@ -505,6 +534,7 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_leave_unjoined_fails);
     RUN_TEST (test_join_too_long_fails);
+    RUN_TEST (test_long_group);
     RUN_TEST (test_join_twice_fails);
     RUN_TEST (test_radio_bind_fails_ipv4);
     RUN_TEST (test_radio_bind_fails_ipv6);

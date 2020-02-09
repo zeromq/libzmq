@@ -178,9 +178,7 @@ void zmq::dist_t::distribute (msg_t *msg_)
                 ++i;
             }
         }
-        int rc = msg_->close ();
-        errno_assert (rc == 0);
-        rc = msg_->init ();
+        int rc = msg_->init ();
         errno_assert (rc == 0);
         return;
     }

@@ -233,7 +233,6 @@ void zmq::dish_t::send_subscriptions (pipe_t *pipe_)
 
         //  Send it to the pipe.
         pipe_->write (&msg);
-        msg.close ();
     }
 
     pipe_->flush ();

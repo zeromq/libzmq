@@ -46,7 +46,7 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void(msg_free_fn) (void *data_, void *hint_);
+typedef void (msg_free_fn) (void *data_, void *hint_);
 }
 
 namespace zmq
@@ -215,6 +215,33 @@ class msg_t
         type_max = 107
     };
 
+    enum group_type_t
+    {
+        group_type_short,
+        group_type_long
+    };
+
+    struct long_group_t
+    {
+        char group[ZMQ_GROUP_MAX_LENGTH + 1];
+        atomic_counter_t refcnt;
+    };
+
+    union group_t
+    {
+        unsigned char type;
+        struct
+        {
+            unsigned char type;
+            char group[15];
+        } sgroup;
+        struct
+        {
+            unsigned char type;
+            long_group_t *content;
+        } lgroup;
+    };
+
     //  Note that fields shared between different message types are not
     //  moved to the parent class (msg_t). This way we get tighter packing
     //  of the data. Shared fields can be accessed via 'base' member of
@@ -224,13 +251,13 @@ class msg_t
         struct
         {
             metadata_t *metadata;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + 2
+                                    + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } base;
         struct
         {
@@ -239,57 +266,59 @@ class msg_t
             unsigned char size;
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } vsm;
         struct
         {
             metadata_t *metadata;
             content_t *content;
-            unsigned char unused[msg_t_size
-                                 - (sizeof (metadata_t *) + sizeof (content_t *)
-                                    + 2 + 16 + sizeof (uint32_t))];
+            unsigned char
+              unused[msg_t_size
+                     - (sizeof (metadata_t *) + sizeof (content_t *) + 2
+                        + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } lmsg;
         struct
         {
             metadata_t *metadata;
             content_t *content;
-            unsigned char unused[msg_t_size
-                                 - (sizeof (metadata_t *) + sizeof (content_t *)
-                                    + 2 + 16 + sizeof (uint32_t))];
+            unsigned char
+              unused[msg_t_size
+                     - (sizeof (metadata_t *) + sizeof (content_t *) + 2
+                        + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } zclmsg;
         struct
         {
             metadata_t *metadata;
             void *data;
             size_t size;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + sizeof (void *)
-                        + sizeof (size_t) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + sizeof (void *)
+                                    + sizeof (size_t) + 2 + sizeof (uint32_t)
+                                    + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } cmsg;
         struct
         {
             metadata_t *metadata;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + 2
+                                    + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } delimiter;
     } _u;
 };
