@@ -162,6 +162,7 @@ if(ENABLE_DRAFTS)
     test_app_meta
     test_router_notify
     test_xpub_manual_last_value
+    test_peer
   )
 endif()
 

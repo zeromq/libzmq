@@ -45,6 +45,7 @@
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+#define ZMQ_PEER 19
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93

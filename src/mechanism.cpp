@@ -93,6 +93,7 @@ const char socket_type_dish[] = "DISH";
 const char socket_type_gather[] = "GATHER";
 const char socket_type_scatter[] = "SCATTER";
 const char socket_type_dgram[] = "DGRAM";
+const char socket_type_peer[] = "PEER";
 #endif
 
 const char *zmq::mechanism_t::socket_type_string (int socket_type_)
@@ -106,7 +107,7 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type_)
 #ifdef ZMQ_BUILD_DRAFT_API
       socket_type_server, socket_type_client, socket_type_radio,
       socket_type_dish,   socket_type_gather, socket_type_scatter,
-      socket_type_dgram
+      socket_type_dgram,  socket_type_peer
 #endif
     };
     static const size_t names_count = sizeof (names) / sizeof (names[0]);
@@ -353,6 +354,8 @@ bool zmq::mechanism_t::check_socket_type (const char *type_,
             return strequals (type_, len_, socket_type_gather);
         case ZMQ_DGRAM:
             return strequals (type_, len_, socket_type_dgram);
+        case ZMQ_PEER:
+            return strequals (type_, len_, socket_type_peer);
 #endif
         default:
             break;

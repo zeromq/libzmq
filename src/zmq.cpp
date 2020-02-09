@@ -40,6 +40,7 @@
 
 #include "macros.hpp"
 #include "poller.hpp"
+#include "peer.hpp"
 
 #if !defined ZMQ_HAVE_POLLER
 //  On AIX platform, poll.h has to be included first to get consistent
@@ -335,6 +336,28 @@ int zmq_connect (void *s_, const char *addr_)
         return -1;
     return s->connect (addr_);
 }
+
+uint32_t zmq_connect_peer (void *s_, const char *addr_)
+{
+    zmq::peer_t *s = static_cast<zmq::peer_t *> (s_);
+    if (!s_ || !s->check_tag ()) {
+        errno = ENOTSOCK;
+        return 0;
+    }
+
+    int socket_type;
+    size_t socket_type_size = sizeof (socket_type);
+    if (s->getsockopt (ZMQ_TYPE, &socket_type, &socket_type_size) != 0)
+        return 0;
+
+    if (socket_type != ZMQ_PEER) {
+        errno = ENOTSUP;
+        return 0;
+    }
+
+    return s->connect_peer (addr_);
+}
+
 
 int zmq_unbind (void *s_, const char *addr_)
 {
