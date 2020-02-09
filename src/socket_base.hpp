@@ -205,6 +205,11 @@ class socket_base_t : public own_t,
     //  Delay actual destruction of the socket.
     void process_destroy () ZMQ_FINAL;
 
+    int connect_internal (const char *endpoint_uri_);
+
+    // Mutex for synchronize access to the socket in thread safe mode
+    mutex_t _sync;
+
   private:
     // test if event should be sent and then dispatch it
     void event (const endpoint_uri_pair_t &endpoint_uri_pair_,
@@ -335,9 +340,6 @@ class socket_base_t : public own_t,
 
     // Signaler to be used in the reaping stage
     signaler_t *_reaper_signaler;
-
-    // Mutex for synchronize access to the socket in thread safe mode
-    mutex_t _sync;
 
     // Mutex to synchronize access to the monitor Pair socket
     mutex_t _monitor_sync;

@@ -59,6 +59,7 @@ Following are the thread safe sockets:
 * ZMQ_RADIO
 * ZMQ_SCATTER
 * ZMQ_GATHER
+* ZMQ_PEER
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
@@ -432,6 +433,48 @@ Send/receive pattern:: Unrestricted
 Incoming routing strategy:: N/A
 Outgoing routing strategy:: N/A
 Action in mute state:: Block
+
+
+Peer-to-peer pattern
+~~~~~~~~~~~~~~~~~~~~~~
+
+The peer-to-peer pattern is used to connect a peer to multiple peers.
+Peer can both connect and bind and mix both of them with the same socket.
+The peer-to-peer pattern is useful to build peer-to-peer networks (e.g zyre, bitcoin, torrent)
+where a peer can both accept connections from other peers or connect to them.
+
+NOTE: Peer-to-peer is still in draft phase.
+
+ZMQ_PEER
+^^^^^^^^
+A 'ZMQ_PEER' socket talks to a set of 'ZMQ_PEER' sockets.
+
+To connect and fetch the 'routing_id' of the peer use linkzmq:zmq_connect_peer[3].
+
+Each received message has a 'routing_id' that is a 32-bit unsigned integer.
+The application can fetch this with linkzmq:zmq_msg_routing_id[3].
+
+To send a message to a given 'ZMQ_PEER' peer the application must set the peer's
+'routing_id' on the message, using linkzmq:zmq_msg_set_routing_id[3].
+
+If the 'routing_id' is not specified, or does not refer to a connected client
+peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
+the peer is full, the send call shall block, unless ZMQ_DONTWAIT is
+used in the send, in which case it shall fail with EAGAIN. The 'ZMQ_PEER'
+socket shall not drop messages in any case.
+
+NOTE: 'ZMQ_PEER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data.
+
+[horizontal]
+.Summary of ZMQ_PEER characteristics
+Compatible peer sockets:: 'ZMQ_PEER'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Return EAGAIN
 
 
 Native Pattern

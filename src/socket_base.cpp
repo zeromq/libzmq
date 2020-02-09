@@ -100,6 +100,7 @@
 #include "gather.hpp"
 #include "scatter.hpp"
 #include "dgram.hpp"
+#include "peer.hpp"
 
 void zmq::socket_base_t::inprocs_t::emplace (const char *endpoint_uri_,
                                              pipe_t *pipe_)
@@ -207,6 +208,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_,
         case ZMQ_DGRAM:
             s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
             break;
+        case ZMQ_PEER:
+            s = new (std::nothrow) peer_t (parent_, tid_, sid_);
+            break;
         default:
             errno = EINVAL;
             return NULL;
@@ -228,6 +232,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
                                    int sid_,
                                    bool thread_safe_) :
     own_t (parent_, tid_),
+    _sync (),
     _tag (0xbaddecaf),
     _ctx_terminated (false),
     _destroyed (false),
@@ -240,7 +245,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     _monitor_events (0),
     _thread_safe (thread_safe_),
     _reaper_signaler (NULL),
-    _sync (),
     _monitor_sync ()
 {
     options.socket_id = sid_;
@@ -740,7 +744,11 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
 int zmq::socket_base_t::connect (const char *endpoint_uri_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+    return connect_internal (endpoint_uri_);
+}
 
+int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
+{
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;

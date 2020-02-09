@@ -822,6 +822,7 @@ set(cxx-sources
   own.cpp
   null_mechanism.cpp
   pair.cpp
+  peer.cpp
   pgm_receiver.cpp
   pgm_sender.cpp
   pgm_socket.cpp
@@ -948,6 +949,7 @@ set(cxx-sources
   options.hpp
   own.hpp
   pair.hpp
+  peer.hpp
   pgm_receiver.hpp
   pgm_sender.hpp
   pgm_socket.hpp
