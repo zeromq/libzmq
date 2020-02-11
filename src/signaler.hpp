@@ -54,7 +54,7 @@ class signaler_t
     // May return retired_fd if the signaler could not be initialized.
     fd_t get_fd () const;
     void send ();
-    int wait (int timeout_);
+    int wait (int timeout_) const;
     void recv ();
     int recv_failable ();
 

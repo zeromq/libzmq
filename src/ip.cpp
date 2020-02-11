@@ -128,7 +128,7 @@ void zmq::unblock_socket (fd_t s_)
 {
 #if defined ZMQ_HAVE_WINDOWS
     u_long nonblock = 1;
-    int rc = ioctlsocket (s_, FIONBIO, &nonblock);
+    const int rc = ioctlsocket (s_, FIONBIO, &nonblock);
     wsa_assert (rc != SOCKET_ERROR);
 #elif defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
     int nonblock = 1;
@@ -154,8 +154,8 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #else
     int flag = 0;
 #endif
-    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY,
-                         reinterpret_cast<char *> (&flag), sizeof (flag));
+    const int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY,
+                               reinterpret_cast<char *> (&flag), sizeof (flag));
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -168,7 +168,7 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 {
     struct sockaddr_storage ss;
 
-    zmq_socklen_t addrlen =
+    const zmq_socklen_t addrlen =
       get_socket_address (sockfd_, socket_end_remote, &ss);
 
     if (addrlen == 0) {
@@ -186,8 +186,9 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     }
 
     char host[NI_MAXHOST];
-    int rc = getnameinfo (reinterpret_cast<struct sockaddr *> (&ss), addrlen,
-                          host, sizeof host, NULL, 0, NI_NUMERICHOST);
+    const int rc =
+      getnameinfo (reinterpret_cast<struct sockaddr *> (&ss), addrlen, host,
+                   sizeof host, NULL, 0, NI_NUMERICHOST);
     if (rc != 0)
         return 0;
 
@@ -297,9 +298,9 @@ bool zmq::initialize_network ()
     //  Intialise Windows sockets. Note that WSAStartup can be called multiple
     //  times given that WSACleanup will be called for each WSAStartup.
 
-    WORD version_requested = MAKEWORD (2, 2);
+    const WORD version_requested = MAKEWORD (2, 2);
     WSADATA wsa_data;
-    int rc = WSAStartup (version_requested, &wsa_data);
+    const int rc = WSAStartup (version_requested, &wsa_data);
     zmq_assert (rc == 0);
     zmq_assert (LOBYTE (wsa_data.wVersion) == 2
                 && HIBYTE (wsa_data.wVersion) == 2);
@@ -312,7 +313,7 @@ void zmq::shutdown_network ()
 {
 #ifdef ZMQ_HAVE_WINDOWS
     //  On Windows, uninitialise socket layer.
-    int rc = WSACleanup ();
+    const int rc = WSACleanup ();
     wsa_assert (rc != SOCKET_ERROR);
 #endif
 
@@ -327,7 +328,7 @@ void zmq::shutdown_network ()
 static void tune_socket (const SOCKET socket_)
 {
     BOOL tcp_nodelay = 1;
-    int rc =
+    const int rc =
       setsockopt (socket_, IPPROTO_TCP, TCP_NODELAY,
                   reinterpret_cast<char *> (&tcp_nodelay), sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
@@ -363,7 +364,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
     //  Create critical section only if using fixed signaler port
     //  Use problematic Event implementation for compatibility if using old port 5905.
     //  Otherwise use Mutex implementation.
-    int event_signaler_port = 5905;
+    const int event_signaler_port = 5905;
 
     if (zmq::signaler_port == event_signaler_port) {
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
@@ -382,7 +383,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
         wchar_t mutex_name[MAX_PATH];
 #ifdef __MINGW32__
         _snwprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
-                    signaler_port);
+                    zmq::signaler_port);
 #else
         swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d",
                   zmq::signaler_port);
@@ -431,7 +432,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
 
     if (sync != NULL) {
         //  Enter the critical section.
-        DWORD dwrc = WaitForSingleObject (sync, INFINITE);
+        const DWORD dwrc = WaitForSingleObject (sync, INFINITE);
         zmq_assert (dwrc == WAIT_OBJECT_0 || dwrc == WAIT_ABANDONED);
     }
 
@@ -468,7 +469,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
     //  Send/receive large chunk to work around TCP slow start
     //  This code is a workaround for #1608
     if (*r_ != INVALID_SOCKET) {
-        size_t dummy_size =
+        const size_t dummy_size =
           1024 * 1024; //  1M to overload default receive buffer
         unsigned char *dummy =
           static_cast<unsigned char *> (malloc (dummy_size));
@@ -561,7 +562,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     std::string dirname, filename;
 
     //  Create a listening socket.
-    SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
+    const SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
     if (listener == retired_fd) {
         //  This may happen if the library was built on a system supporting AF_UNIX, but the system running doesn't support it.
         goto try_tcpip;
@@ -801,8 +802,8 @@ void zmq::assert_success_or_recoverable (zmq::fd_t s_, int rc_)
     socklen_t len = sizeof err;
 #endif
 
-    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR,
-                         reinterpret_cast<char *> (&err), &len);
+    const int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR,
+                               reinterpret_cast<char *> (&err), &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.
@@ -858,7 +859,7 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
     // the socket directory there.
     const char **tmp_env = tmp_env_vars;
     while (tmp_path.empty () && *tmp_env != 0) {
-        char *tmpdir = getenv (*tmp_env);
+        const char *const tmpdir = getenv (*tmp_env);
         struct stat statbuf;
 
         // Confirm it is actually a directory before trying to use
@@ -879,7 +880,7 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
 
     // We need room for tmp_path + trailing NUL
     std::vector<char> buffer (tmp_path.length () + 1);
-    strcpy (&buffer[0], tmp_path.c_str ());
+    memcpy (&buffer[0], tmp_path.c_str (), tmp_path.length () + 1);
 
 #if defined HAVE_MKDTEMP
     // Create the directory.  POSIX requires that mkdtemp() creates the

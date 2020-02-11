@@ -19,7 +19,9 @@ The _zmq_ctx_shutdown()_ function shall shutdown the 0MQ context 'context'.
 Context shutdown will cause any blocking operations currently in progress on 
 sockets open within 'context' to return immediately with an error code of ETERM.
 With the exception of _zmq_close()_, any further operations on sockets open within
-'context' shall fail with an error code of ETERM.
+'context' shall fail with an error code of ETERM. No further sockets can be created
+using _zmq_socket()_ on a context for which _zmq_ctx_shutdown()_ has been called,
+it will return and set errno to ETERM.
 
 This function is optional, client code is still required to call the linkzmq:zmq_ctx_term[3]
 function to free all resources allocated by zeromq.

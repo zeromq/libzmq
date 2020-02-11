@@ -53,7 +53,7 @@ zmq::object_t::~object_t ()
 {
 }
 
-uint32_t zmq::object_t::get_tid ()
+uint32_t zmq::object_t::get_tid () const
 {
     return _tid;
 }
@@ -63,12 +63,12 @@ void zmq::object_t::set_tid (uint32_t id_)
     _tid = id_;
 }
 
-zmq::ctx_t *zmq::object_t::get_ctx ()
+zmq::ctx_t *zmq::object_t::get_ctx () const
 {
     return _ctx;
 }
 
-void zmq::object_t::process_command (command_t &cmd_)
+void zmq::object_t::process_command (const command_t &cmd_)
 {
     switch (cmd_.type) {
         case command_t::activate_read:
@@ -184,7 +184,7 @@ void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
     return _ctx->unregister_endpoints (socket_);
 }
 
-zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
+zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_) const
 {
     return _ctx->find_endpoint (addr_);
 }
@@ -207,7 +207,7 @@ void zmq::object_t::destroy_socket (socket_base_t *socket_)
     _ctx->destroy_socket (socket_);
 }
 
-zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
+zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_) const
 {
     return _ctx->choose_io_thread (affinity_);
 }
@@ -528,7 +528,7 @@ void zmq::object_t::process_seqnum ()
     zmq_assert (false);
 }
 
-void zmq::object_t::send_command (command_t &cmd_)
+void zmq::object_t::send_command (const command_t &cmd_)
 {
     _ctx->send_command (cmd_.destination->get_tid (), cmd_);
 }

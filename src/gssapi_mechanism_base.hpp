@@ -53,7 +53,7 @@ class gssapi_mechanism_base_t : public virtual mechanism_base_t
   public:
     gssapi_mechanism_base_t (session_base_t *session_,
                              const options_t &options_);
-    virtual ~gssapi_mechanism_base_t () = 0;
+    ~gssapi_mechanism_base_t () ZMQ_OVERRIDE = 0;
 
   protected:
     //  Produce a context-level GSSAPI token (INITIATE command)

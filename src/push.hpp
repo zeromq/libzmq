@@ -41,7 +41,7 @@ class pipe_t;
 class msg_t;
 class io_thread_t;
 
-class push_t : public socket_base_t
+class push_t ZMQ_FINAL : public socket_base_t
 {
   public:
     push_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);

@@ -43,7 +43,7 @@ zmq::timers_t::~timers_t ()
     _tag = 0xdeadbeef;
 }
 
-bool zmq::timers_t::check_tag ()
+bool zmq::timers_t::check_tag () const
 {
     return _tag == 0xCAFEDADA;
 }

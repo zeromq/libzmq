@@ -29,6 +29,8 @@ include(TestZMQVersion)
 include(ZMQSourceRunChecks)
 include(ZMQSupportMacros)
 
+find_package(PkgConfig)
+
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
@@ -96,11 +98,15 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif()
 
-# Disable webSocket transport
-option(DISABLE_WS "Disable WebSocket transport" OFF)
+# Enable webSocket transport
+if (ENABLE_DRAFTS)
+  option(ENABLE_WS "Enable WebSocket transport" ON)
+else()
+  option(ENABLE_WS "Enable WebSocket transport" OFF)
+endif()
 option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
 
-if (NOT DISABLE_WS)
+if (ENABLE_WS)
   list(APPEND sources
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp
@@ -120,21 +126,45 @@ if (NOT DISABLE_WS)
   set(ZMQ_HAVE_WS 1)
 
   if (WITH_NSS)
-    find_package("NSS3")
+    pkg_check_modules(NSS3 "nss")
     if (NSS3_FOUND)
-      message(STATUS "Using NSS")
-      include_directories(${NSS3_INCLUDE_DIRS})
-      set(pkg_config_names_private "${pkg_config_names_private} nss3")
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
-      set(ZMQ_USE_NSS 1)
+      set(pkg_config_names_private "${pkg_config_names_private} nss")
     else()
-      message(FATAL_ERROR
-              "nss is not installed. Install it, then run CMake again")
+      find_package("NSS3")
+      if (NSS3_FOUND)
+        set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
+      else()
+        message(FATAL_ERROR
+                "nss is not installed. Install it, then run CMake again")
+      endif()
     endif()
+    message(STATUS "Using NSS")
+    include_directories(${NSS3_INCLUDE_DIRS})
+    link_directories(${NSS3_LIBRARY_DIRS})
+    set(OPTIONAL_LIBRARIES ${NSS3_LIBRARIES})
+    set(ZMQ_USE_NSS 1)
   else()
     list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
     message("Using builtin sha1")
     set(ZMQ_USE_BUILTIN_SHA1 1)
+  endif()
+endif()
+
+if(NOT MSVC)
+  option(WITH_LIBBSD "Use libbsd instead of builtin strlcpy" ON)
+  if (WITH_LIBBSD)
+    pkg_check_modules(LIBBSD "libbsd")
+    if (LIBBSD_FOUND)
+      message(STATUS "Using libbsd")
+      include_directories(${LIBBSD_INCLUDE_DIRS})
+      set(pkg_config_names_private "${pkg_config_names_private} libbsd")
+      set(ZMQ_HAVE_LIBBSD 1)
+      link_directories(${LIBBSD_LIBRARY_DIRS})
+      set(OPTIONAL_LIBRARIES ${LIBBSD_LIBRARIES})
+    endif()
+  endif()
+  if (NOT WITH_LIBBSD OR NOT LIBBSD_FOUND)
+    check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
   endif()
 endif()
 
@@ -144,6 +174,7 @@ endif()
 # To disable curve, use --disable-curve
 
 option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" OFF)
+option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
 option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(NOT ENABLE_CURVE)
@@ -153,6 +184,9 @@ elseif(WITH_LIBSODIUM)
   if(SODIUM_FOUND)
     message(STATUS "Using libsodium for CURVE security")
     include_directories(${SODIUM_INCLUDE_DIRS})
+    if(WITH_LIBSODIUM_STATIC)
+      add_compile_definitions(SODIUM_STATIC)
+    endif()
     set(ZMQ_USE_LIBSODIUM 1)
     set(ZMQ_HAVE_CURVE 1)
   else()
@@ -660,7 +694,6 @@ else()
       "Name pkg-config shall use to find openpgm libraries and include paths"
       FORCE)
 
-    find_package(PkgConfig)
     pkg_check_modules(OPENPGM  ${OPENPGM_PKGCONFIG_NAME})
 
     if(OPENPGM_FOUND)
@@ -734,8 +767,8 @@ if(MSVC)
 
   # Compile the static lib with debug information included
   # note: we assume here that the default flags contain some /Z flag
-  string(REGEX REPLACE "/Z.[^:]" "/Z7" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-  string(REGEX REPLACE "/Z.[^:]" "/Z7" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
   # Optimization flags.
   # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
@@ -789,6 +822,7 @@ set(cxx-sources
   own.cpp
   null_mechanism.cpp
   pair.cpp
+  peer.cpp
   pgm_receiver.cpp
   pgm_sender.cpp
   pgm_socket.cpp
@@ -832,6 +866,7 @@ set(cxx-sources
   v1_encoder.cpp
   v2_decoder.cpp
   v2_encoder.cpp
+  v3_1_encoder.cpp
   xpub.cpp
   xsub.cpp
   zmq.cpp
@@ -914,6 +949,7 @@ set(cxx-sources
   options.hpp
   own.hpp
   pair.hpp
+  peer.hpp
   pgm_receiver.hpp
   pgm_sender.hpp
   pgm_socket.hpp
@@ -974,6 +1010,7 @@ set(cxx-sources
   v1_encoder.hpp
   v2_decoder.hpp
   v2_encoder.hpp
+  v3_1_encoder.hpp
   v2_protocol.hpp
   vmci.hpp
   vmci_address.hpp
@@ -1459,16 +1496,6 @@ elseif(BUILD_SHARED OR BUILD_STATIC)
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
-# install(FILES ${public_headers}
-#   DESTINATION include
-#   COMPONENT SDK)
-
-#if(NOT ZMQ_BUILD_FRAMEWORK)
-#  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-#  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
-#    COMPONENT SourceCode)
-#endif()
-
 foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
@@ -1617,3 +1644,12 @@ endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
 include(ClangFormat)
+
+# fixes https://github.com/zeromq/libzmq/issues/3776
+# The problem is, both libzmq-static libzmq try to use/generate precompiled.pch at the same time
+# Add a dependency, so they run in order and so they dont get in each others way
+# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp. 
+# builds involving this target will not be correct; continuing anyway [-w dupbuild=warn]"
+if (MSVC AND ENABLE_PRECOMPILED AND BUILD_SHARED AND BUILD_STATIC)
+    add_dependencies(libzmq-static libzmq)
+endif()

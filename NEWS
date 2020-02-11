@@ -5,6 +5,101 @@
   included in the source tree under external/sha1/ - it is licensed
   under BSD-3-Clause and thus it is fully compatible with libzmq's
   license.
+  It is only used if WebSockets support is enabled, and if neither GnuTLS nor
+  NSS are available.
+
+* Note for packagers: an internal reimplementation of strlcpy is now included,
+  for wider platform compatibility.
+  libbsd can be used and is enabled by default if available instead of the
+  internal implementation, for better security maintenance in distros.
+
+* New DRAFT (see NEWS for 4.2.0) socket option:
+  - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
+    message to be processed as a subscribe/unsubscribe message, and the rest
+    will be forwarded as user data to the application.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_ctx_get_ext/zmq_ctx_set_ext APIs were added
+  to allow enhancing the context options with variable data inputs.
+  See doc/zmq_ctx_get_ext.txt and doc/zmq_ctx_set_ext.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) transport options WS and WSS added for support
+  of WebSockets (and secure WebSockets via TLS) via the ZWS 2.0 protocol.
+  WSS requires the GnuTLS library for TLS support. ZMQ_WSS_ specific socket
+  options were added to support TLS.
+  WebSockets support is disabled by default if DRAFT APIs are disabled.
+
+* Fixed #3566 - malformed CURVE message can cause memory leak
+
+* Fixed #3567 - missing ZeroMQ_INCLUDE_DIR in ZeroMQConfig.cmake when only
+                static lib is built
+
+* Fixed #3576 - CURVE plaintext secrets now stored in libsodium's secure memory
+
+* Fixed #3588 - install debug libraries for debug msvc builds with CMake
+
+* Fixed #3591 - incorrect ZMQ_MAX_SOCKETS default value in doc
+
+* Fixed #3594 - fixed stream_engine use after free due to concurrent heartbeats
+
+* Fixed #3586 - error when compiling with MinGW due to usage of MS-specific
+                __except keyword
+
+* Fixed #3603 - fixed CMake build on SL6.9
+
+* Fixed #3607 - added scripts to ease performance graph generation
+
+* Fixed #3608 - fix for IPv4 mapping not supported in DragonFlyBSD
+
+* Fixed #3636 - added ENABLE_PRECOMPILED CMake option to fix build with Ninja
+
+* Fixed #2862 - UDP engine aborts on networking-related errors from socket
+                syscalls
+
+* Fixed #3656 - segfault on sending data from XSUB to XPUB
+
+* Fixed #3646 - static-only test run fails
+
+* Fixed #3668 - fixed CMAKE_CXX_FLAGS_* regexes on MSVC
+
+* Fixed #110  - do not include winsock2.h in public zmq.h header
+
+* Fixed #3683 - allow "configure --disable-maintainer-mode"
+
+* Fixed #3686 - fix documentation about sockets blocking on send operations
+
+* Fixed #3323 - fix behavior of ZMQ_CONFLATE on PUB sockets
+
+* Fixed #3698 - fix build on IBM i/PASE/os400
+
+* Fixed #3705 - zero-sized messages cause assertion when glibc assertion are on
+
+* Fixed #3713 - remove dependency on math library by avoiding std::ceil
+
+* Fixed #3694 - build targeting Windows XP is broken
+
+* Fixed #3691 - added support for IPC on Windows 10 via AF_UNIX
+
+* Fixed #3725 - disable by default test that requires sudo on CMake
+
+* Fixed #3727 - fix zmq_poller documentation example
+
+* Fixed #3729 - do not check for FD_OOB when using WSAEventSelect on Windows
+
+* Fixed #3738 - allow renaming the library in CMake
+
+* Fixed #1808 - use AF_UNIX instead of TCP for the internal socket on Windows 10
+
+* Fixed #3758 - fix pthread_set_affinity detection in CMake
+
+* Fixed #3769 - fix undefined behaviour in array.hpp
+
+* Fixed #3772 - fix compiling under msys2-mingw
+
+* Fixed #3775 - add -latomic to the private libs flag in pkg-config if needed
+
+* Fixed #3778 - fix documentation of zmq_poller's thread safety
+
 
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================

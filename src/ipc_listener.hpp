@@ -39,7 +39,7 @@
 
 namespace zmq
 {
-class ipc_listener_t : public stream_listener_base_t
+class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     ipc_listener_t (zmq::io_thread_t *io_thread_,

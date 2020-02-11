@@ -36,7 +36,7 @@
 
 namespace zmq
 {
-class tcp_connecter_t : public stream_connecter_base_t
+class tcp_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,

@@ -56,8 +56,7 @@ void test_system_max ()
 
     //  System is out of resources, further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {
-        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
-        TEST_ASSERT_NULL (socket);
+        TEST_ASSERT_NULL (zmq_socket (get_test_context (), ZMQ_PAIR));
     }
     // Clean up.
     for (unsigned int i = 0; i < sockets.size (); ++i)
@@ -80,8 +79,7 @@ void test_zmq_default_max ()
 
     //  Further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {
-        void *socket = zmq_socket (get_test_context (), ZMQ_PAIR);
-        TEST_ASSERT_NULL (socket);
+        TEST_ASSERT_NULL (zmq_socket (get_test_context (), ZMQ_PAIR));
     }
 
     //  Clean up

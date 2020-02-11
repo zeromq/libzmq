@@ -46,7 +46,7 @@ namespace zmq
 class io_thread_t;
 class session_base_t;
 
-class pgm_receiver_t : public io_object_t, public i_engine
+class pgm_receiver_t ZMQ_FINAL : public io_object_t, public i_engine
 {
   public:
     pgm_receiver_t (zmq::io_thread_t *parent_, const options_t &options_);

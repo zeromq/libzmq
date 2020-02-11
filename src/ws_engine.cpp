@@ -52,6 +52,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 #endif
 
+#include <cstring>
+
 #include "tcp.hpp"
 #include "ws_engine.hpp"
 #include "session_base.hpp"
@@ -71,6 +73,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #ifdef ZMQ_HAVE_WINDOWS
 #define strcasecmp _stricmp
+#define strtok_r strtok_s
+#else
+#ifdef ZMQ_HAVE_LIBBSD
+#include <bsd/string.h>
+#elif !defined(ZMQ_HAVE_STRLCPY)
+static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
+{
+    size_t remain = dest_size_;
+    for (; remain && *src_; --remain, ++src_, ++dest_) {
+        *dest_ = *src_;
+    }
+    return dest_size_ - remain;
+}
+#endif
+template <size_t size>
+static int strcpy_s (char (&dest_)[size], const char *const src_)
+{
+    const size_t res = strlcpy (dest_, src_, size);
+    return res >= size ? ERANGE : 0;
+}
 #endif
 
 //  OSX uses a different name for this socket option
@@ -91,7 +113,7 @@ static void compute_accept_key (char *key_,
 zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const options_t &options_,
                                const endpoint_uri_pair_t &endpoint_uri_pair_,
-                               ws_address_t &address_,
+                               const ws_address_t &address_,
                                bool client_) :
     stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
     _client (client_),
@@ -101,7 +123,8 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
     _header_name_position (0),
     _header_value_position (0),
     _header_upgrade_websocket (false),
-    _header_connection_upgrade (false)
+    _header_connection_upgrade (false),
+    _heartbeat_timeout (0)
 {
     memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
     memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
@@ -109,26 +132,37 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
+    _close_msg.init ();
+
+    if (_options.heartbeat_interval > 0) {
+        _heartbeat_timeout = _options.heartbeat_timeout;
+        if (_heartbeat_timeout == -1)
+            _heartbeat_timeout = _options.heartbeat_interval;
+    }
 }
 
 zmq::ws_engine_t::~ws_engine_t ()
 {
+    _close_msg.close ();
 }
 
 void zmq::ws_engine_t::start_ws_handshake ()
 {
     if (_client) {
-        char protocol[21];
+        const char *protocol;
         if (_options.mechanism == ZMQ_NULL)
-            strcpy (protocol, "ZWS2.0/NULL,ZWS2.0");
+            protocol = "ZWS2.0/NULL,ZWS2.0";
         else if (_options.mechanism == ZMQ_PLAIN)
-            strcpy (protocol, "ZWS2.0/PLAIN");
+            protocol = "ZWS2.0/PLAIN";
 #ifdef ZMQ_HAVE_CURVE
         else if (_options.mechanism == ZMQ_CURVE)
-            strcpy (protocol, "ZWS2.0/CURVE");
+            protocol = "ZWS2.0/CURVE";
 #endif
-        else
+        else {
+            // Avoid unitialized variable error breaking UWP build
+            protocol = "";
             assert (false);
+        }
 
         unsigned char nonce[16];
         int *p = reinterpret_cast<int *> (nonce);
@@ -169,7 +203,7 @@ void zmq::ws_engine_t::plug_internal ()
 
 int zmq::ws_engine_t::routing_id_msg (msg_t *msg_)
 {
-    int rc = msg_->init_size (_options.routing_id_size);
+    const int rc = msg_->init_size (_options.routing_id_size);
     errno_assert (rc == 0);
     if (_options.routing_id_size > 0)
         memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
@@ -182,7 +216,7 @@ int zmq::ws_engine_t::process_routing_id_msg (msg_t *msg_)
 {
     if (_options.recv_routing_id) {
         msg_->set_flags (msg_t::routing_id);
-        int rc = session ()->push_msg (msg_);
+        const int rc = session ()->push_msg (msg_);
         errno_assert (rc == 0);
     } else {
         int rc = msg_->close ();
@@ -196,13 +230,20 @@ int zmq::ws_engine_t::process_routing_id_msg (msg_t *msg_)
     return 0;
 }
 
-bool zmq::ws_engine_t::select_protocol (char *protocol_)
+bool zmq::ws_engine_t::select_protocol (const char *protocol_)
 {
     if (_options.mechanism == ZMQ_NULL && (strcmp ("ZWS2.0", protocol_) == 0)) {
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::routing_id_msg);
         _process_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &ws_engine_t::process_routing_id_msg);
+
+        // No mechanism in place, enabling heartbeat
+        if (_options.heartbeat_interval > 0 && !_has_heartbeat_timer) {
+            add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
+            _has_heartbeat_timer = true;
+        }
+
         return true;
     }
     if (_options.mechanism == ZMQ_NULL
@@ -268,7 +309,7 @@ bool zmq::ws_engine_t::handshake ()
 
 bool zmq::ws_engine_t::server_handshake ()
 {
-    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    const int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
     if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
@@ -279,7 +320,7 @@ bool zmq::ws_engine_t::server_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = static_cast<char> (*_inpos);
+        const char c = static_cast<char> (*_inpos);
 
         switch (_server_handshake_state) {
             case handshake_initial:
@@ -440,24 +481,25 @@ bool zmq::ws_engine_t::server_handshake ()
                           strcasecmp ("upgrade", _header_value) == 0;
                     else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
                              == 0)
-                        strcpy (_websocket_key, _header_value);
+                        strcpy_s (_websocket_key, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
                         // Currently only the ZWS2.0 is supported
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *p = strtok (_header_value, ",");
+                            char *rest;
+                            char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
                                     p++;
 
                                 if (select_protocol (p)) {
-                                    strcpy (_websocket_protocol, p);
+                                    strcpy_s (_websocket_protocol, p);
                                     break;
                                 }
 
-                                p = strtok (NULL, ",");
+                                p = strtok_r (NULL, ",", &rest);
                             }
                         }
                     }
@@ -487,13 +529,13 @@ bool zmq::ws_engine_t::server_handshake ()
                         unsigned char hash[SHA_DIGEST_LENGTH];
                         compute_accept_key (_websocket_key, hash);
 
-                        int accept_key_len = encode_base64 (
+                        const int accept_key_len = encode_base64 (
                           hash, SHA_DIGEST_LENGTH, _websocket_accept,
                           MAX_HEADER_VALUE_LENGTH);
                         assert (accept_key_len > 0);
                         _websocket_accept[accept_key_len] = '\0';
 
-                        int written =
+                        const int written =
                           snprintf (reinterpret_cast<char *> (_write_buffer),
                                     WS_BUFFER_SIZE,
                                     "HTTP/1.1 101 Switching Protocols\r\n"
@@ -538,7 +580,7 @@ bool zmq::ws_engine_t::server_handshake ()
 
 bool zmq::ws_engine_t::client_handshake ()
 {
-    int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
+    const int nbytes = read (_read_buffer, WS_BUFFER_SIZE);
     if (nbytes == -1) {
         if (errno != EAGAIN)
             error (zmq::i_engine::connection_error);
@@ -549,7 +591,7 @@ bool zmq::ws_engine_t::client_handshake ()
     _insize = nbytes;
 
     while (_insize > 0) {
-        char c = static_cast<char> (*_inpos);
+        const char c = static_cast<char> (*_inpos);
 
         switch (_client_handshake_state) {
             case client_handshake_initial:
@@ -820,11 +862,11 @@ bool zmq::ws_engine_t::client_handshake ()
                           strcasecmp ("upgrade", _header_value) == 0;
                     else if (strcasecmp ("Sec-WebSocket-Accept", _header_name)
                              == 0)
-                        strcpy (_websocket_accept, _header_value);
+                        strcpy_s (_websocket_accept, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
                         if (select_protocol (_header_value))
-                            strcpy (_websocket_protocol, _header_value);
+                            strcpy_s (_websocket_protocol, _header_value);
                     }
                     _client_handshake_state = client_header_field_cr;
                 } else if (_header_value_position + 1 > MAX_HEADER_VALUE_LENGTH)
@@ -878,17 +920,118 @@ bool zmq::ws_engine_t::client_handshake ()
     return false;
 }
 
+int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
+{
+    zmq_assert (_mechanism != NULL);
+
+    //  with WS engine, ping and pong commands are control messages and should not go through any mechanism
+    if (msg_->is_ping () || msg_->is_pong () || msg_->is_close_cmd ()) {
+        if (process_command_message (msg_) == -1)
+            return -1;
+    } else if (_mechanism->decode (msg_) == -1)
+        return -1;
+
+    if (_has_timeout_timer) {
+        _has_timeout_timer = false;
+        cancel_timer (heartbeat_timeout_timer_id);
+    }
+
+    if (msg_->flags () & msg_t::command && !msg_->is_ping ()
+        && !msg_->is_pong () && !msg_->is_close_cmd ())
+        process_command_message (msg_);
+
+    if (_metadata)
+        msg_->set_metadata (_metadata);
+    if (session ()->push_msg (msg_) == -1) {
+        if (errno == EAGAIN)
+            _process_msg = &ws_engine_t::push_one_then_decode_and_push;
+        return -1;
+    }
+    return 0;
+}
+
+int zmq::ws_engine_t::produce_close_message (msg_t *msg_)
+{
+    int rc = msg_->move (_close_msg);
+    errno_assert (rc == 0);
+
+    _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+      &ws_engine_t::produce_no_msg_after_close);
+
+    return rc;
+}
+
+int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
+{
+    _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+      &ws_engine_t::close_connection_after_close);
+
+    errno = EAGAIN;
+    return -1;
+}
+
+int zmq::ws_engine_t::close_connection_after_close (msg_t *msg_)
+{
+    error (connection_error);
+    errno = ECONNRESET;
+    return -1;
+}
+
+int zmq::ws_engine_t::produce_ping_message (msg_t *msg_)
+{
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
+    msg_->set_flags (msg_t::command | msg_t::ping);
+
+    _next_msg = &ws_engine_t::pull_and_encode;
+    if (!_has_timeout_timer && _heartbeat_timeout > 0) {
+        add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
+        _has_timeout_timer = true;
+    }
+
+    return rc;
+}
+
+
+int zmq::ws_engine_t::produce_pong_message (msg_t *msg_)
+{
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
+    msg_->set_flags (msg_t::command | msg_t::pong);
+
+    _next_msg = &ws_engine_t::pull_and_encode;
+    return rc;
+}
+
+
+int zmq::ws_engine_t::process_command_message (msg_t *msg_)
+{
+    if (msg_->is_ping ()) {
+        _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+          &ws_engine_t::produce_pong_message);
+        out_event ();
+    } else if (msg_->is_close_cmd ()) {
+        int rc = _close_msg.copy (*msg_);
+        errno_assert (rc == 0);
+        _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+          &ws_engine_t::produce_close_message);
+        out_event ();
+    }
+
+    return 0;
+}
+
 static int
 encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_)
 {
     static const unsigned char base64enc_tab[65] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    int ii, io;
-    uint32_t v;
-    int rem;
+    int io = 0;
+    uint32_t v = 0;
+    int rem = 0;
 
-    for (io = 0, ii = 0, v = 0, rem = 0; ii < in_len_; ii++) {
+    for (int ii = 0; ii < in_len_; ii++) {
         unsigned char ch;
         ch = in_[ii];
         v = (v << 8) | ch;

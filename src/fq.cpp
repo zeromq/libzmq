@@ -90,7 +90,7 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
     while (_active > 0) {
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
-        bool fetched = _pipes[_current]->read (msg_);
+        const bool fetched = _pipes[_current]->read (msg_);
 
         //  Note that when message is not fetched, current pipe is deactivated
         //  and replaced by another active pipe. Thus we don't have to increase

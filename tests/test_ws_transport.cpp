@@ -41,10 +41,61 @@ void test_roundtrip ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/roundtrip");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
+void test_roundtrip_without_path ()
+{
+    char connect_address[MAX_SOCKET_STRING];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+
+    void *sc = test_context_socket (ZMQ_REQ);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    bounce (sb, sc);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
+
+void test_heartbeat ()
+{
+    char connect_address[MAX_SOCKET_STRING + strlen ("/heartbeat")];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_REP);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/heartbeat"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+
+    void *sc = test_context_socket (ZMQ_REQ);
+
+    // Setting heartbeat settings
+    int ivl = 10;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_HEARTBEAT_IVL, &ivl, sizeof (ivl)));
+
+    // Disable reconnect, to make sure the ping-pong actually work
+    ivl = -1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &ivl, sizeof (ivl)));
+
+    // Connect to server
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    // Make sure some ping and pong going through
+    msleep (100);
 
     bounce (sb, sc);
 
@@ -60,7 +111,6 @@ void test_short_message ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/short"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
@@ -94,7 +144,6 @@ void test_large_message ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/large"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
-    strcat (connect_address, "/short");
 
     void *sc = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
@@ -144,8 +193,6 @@ void test_curve ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (server, ZMQ_LAST_ENDPOINT,
                                                connect_address, &addr_length));
-    strcat (connect_address, "/roundtrip");
-
 
     void *client = test_context_socket (ZMQ_REQ);
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -162,14 +209,71 @@ void test_curve ()
     test_context_socket_close (server);
 }
 
+
+void test_mask_shared_msg ()
+{
+    char connect_address[MAX_SOCKET_STRING + strlen ("/mask-shared")];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/mask-shared"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+
+    void *sc = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    zmq_msg_t msg;
+    zmq_msg_init_size (
+      &msg, 255); // Message have to be long enough so it won't fit inside msg
+    unsigned char *data = (unsigned char *) zmq_msg_data (&msg);
+    for (int i = 0; i < 255; i++)
+        data[i] = i;
+
+    //  Taking a copy to make the msg shared
+    zmq_msg_t copy;
+    zmq_msg_init (&copy);
+    zmq_msg_copy (&copy, &msg);
+
+    //  Sending the shared msg
+    int rc = zmq_msg_send (&msg, sc, 0);
+    TEST_ASSERT_EQUAL_INT (255, rc);
+
+    //  Recv the msg and check that it was masked correctly
+    rc = zmq_msg_recv (&msg, sb, 0);
+    TEST_ASSERT_EQUAL_INT (255, rc);
+    data = (unsigned char *) zmq_msg_data (&msg);
+    for (int i = 0; i < 255; i++)
+        TEST_ASSERT_EQUAL_INT (i, data[i]);
+
+    //  Testing that copy was not masked
+    data = (unsigned char *) zmq_msg_data (&copy);
+    for (int i = 0; i < 255; i++)
+        TEST_ASSERT_EQUAL_INT (i, data[i]);
+
+    //  Constant msg cannot be masked as well, as it is constant
+    rc = zmq_send_const (sc, "HELLO", 5, 0);
+    TEST_ASSERT_EQUAL_INT (5, rc);
+    recv_string_expect_success (sb, "HELLO", 0);
+
+    zmq_msg_close (&copy);
+    zmq_msg_close (&msg);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
+
 int main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_roundtrip_without_path);
     RUN_TEST (test_short_message);
     RUN_TEST (test_large_message);
+    RUN_TEST (test_heartbeat);
+    RUN_TEST (test_mask_shared_msg);
 
     if (zmq_has ("curve"))
         RUN_TEST (test_curve);

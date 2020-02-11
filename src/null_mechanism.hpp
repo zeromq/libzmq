@@ -39,19 +39,19 @@ namespace zmq
 class msg_t;
 class session_base_t;
 
-class null_mechanism_t : public zap_client_t
+class null_mechanism_t ZMQ_FINAL : public zap_client_t
 {
   public:
     null_mechanism_t (session_base_t *session_,
                       const std::string &peer_address_,
                       const options_t &options_);
-    virtual ~null_mechanism_t ();
+    ~null_mechanism_t ();
 
     // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
-    virtual int zap_msg_available ();
-    virtual status_t status () const;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    int zap_msg_available ();
+    status_t status () const;
 
   private:
     bool _ready_command_sent;

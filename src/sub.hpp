@@ -39,7 +39,7 @@ class msg_t;
 class io_thread_t;
 class socket_base_t;
 
-class sub_t : public xsub_t
+class sub_t ZMQ_FINAL : public xsub_t
 {
   public:
     sub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);

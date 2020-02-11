@@ -679,7 +679,7 @@ sv scalarmult(gf p[4],gf q[4],const u8 *s)
   set25519(p[2],gf1);
   set25519(p[3],gf0);
   for (i = 255;i >= 0;--i) {
-    u8 b = (s[i/8]>>(i&7))&1;
+      const u8 b = (s[i/8]>>(i&7))&1;
     cswap(p,q,b);
     add(q,p);
     add(p,p);

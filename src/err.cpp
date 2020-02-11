@@ -211,14 +211,14 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
 
 void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
-    DWORD errcode = GetLastError ();
+    const DWORD errcode = GetLastError ();
 #if defined _WIN32_WCE
     DWORD rc = FormatMessageW (
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode,
       MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR) buffer_,
       buffer_size_ / sizeof (wchar_t), NULL);
 #else
-    DWORD rc = FormatMessageA (
+    const DWORD rc = FormatMessageA (
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode,
       MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT), buffer_,
       static_cast<DWORD> (buffer_size_), NULL);
@@ -411,6 +411,7 @@ void zmq::print_backtrace (void)
     while (unw_step (&cursor) > 0) {
         unw_word_t offset;
         unw_proc_info_t p_info;
+        static const char unknown[] = "?";
         const char *file_name;
         char *demangled_name;
         char func_name[256] = "";
@@ -422,14 +423,14 @@ void zmq::print_backtrace (void)
 
         rc = unw_get_proc_name (&cursor, func_name, 256, &offset);
         if (rc == -UNW_ENOINFO)
-            strcpy (func_name, "?");
+            memcpy (func_name, unknown, sizeof unknown);
 
         addr = (void *) (p_info.start_ip + offset);
 
         if (dladdr (addr, &dl_info) && dl_info.dli_fname)
             file_name = dl_info.dli_fname;
         else
-            file_name = "?";
+            file_name = unknown;
 
         demangled_name = abi::__cxa_demangle (func_name, NULL, NULL, &rc);
 

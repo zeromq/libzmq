@@ -40,7 +40,7 @@
 
 namespace zmq
 {
-class ws_listener_t : public stream_listener_base_t
+class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     ws_listener_t (zmq::io_thread_t *io_thread_,

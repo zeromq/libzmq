@@ -45,6 +45,7 @@
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+#define ZMQ_PEER 19
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
@@ -57,6 +58,11 @@
 #define ZMQ_SOCKS_PASSWORD 100
 #define ZMQ_IN_BATCH_SIZE 101
 #define ZMQ_OUT_BATCH_SIZE 102
+#define ZMQ_WSS_KEY_PEM 103
+#define ZMQ_WSS_CERT_PEM 104
+#define ZMQ_WSS_TRUST_PEM 105
+#define ZMQ_WSS_HOSTNAME 106
+#define ZMQ_WSS_TRUST_SYSTEM 107
 #define ZMQ_ONLY_FIRST_SUBSCRIBE 108
 
 

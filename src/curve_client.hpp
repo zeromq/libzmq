@@ -41,18 +41,18 @@ namespace zmq
 class msg_t;
 class session_base_t;
 
-class curve_client_t : public curve_mechanism_base_t
+class curve_client_t ZMQ_FINAL : public curve_mechanism_base_t
 {
   public:
     curve_client_t (session_base_t *session_, const options_t &options_);
-    virtual ~curve_client_t ();
+    ~curve_client_t () ZMQ_FINAL;
 
     // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
-    virtual int encode (msg_t *msg_);
-    virtual int decode (msg_t *msg_);
-    virtual status_t status () const;
+    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
+    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
+    int encode (msg_t *msg_) ZMQ_FINAL;
+    int decode (msg_t *msg_) ZMQ_FINAL;
+    status_t status () const ZMQ_FINAL;
 
   private:
     enum state_t

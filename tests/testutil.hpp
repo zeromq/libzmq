@@ -61,6 +61,10 @@
 
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX // Macros min(a,b) and max(a,b)
+#endif
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <stdexcept>
@@ -140,7 +144,11 @@ void s_recv_seq (void *socket_, ...);
 //  Sets a zero linger period on a socket and closes it.
 void close_zero_linger (void *socket_);
 
-void setup_test_environment (void);
+//  Setups the test environment. Must be called at the beginning of each test
+//  executable. On POSIX systems, it sets an alarm to the specified number of
+//  seconds, after which the test will be killed. Set to 0 to disable this
+//  timeout.
+void setup_test_environment (int timeout_seconds_ = 60);
 
 //  Provide portable millisecond sleep
 //  http://www.cplusplus.com/forum/unices/60161/

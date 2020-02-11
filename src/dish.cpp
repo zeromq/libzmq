@@ -44,13 +44,13 @@ zmq::dish_t::dish_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  subscription commands are sent to the wire.
     options.linger.store (0);
 
-    int rc = _message.init ();
+    const int rc = _message.init ();
     errno_assert (rc == 0);
 }
 
 zmq::dish_t::~dish_t ()
 {
-    int rc = _message.close ();
+    const int rc = _message.close ();
     errno_assert (rc == 0);
 }
 
@@ -93,7 +93,7 @@ void zmq::dish_t::xhiccuped (pipe_t *pipe_)
 
 int zmq::dish_t::xjoin (const char *group_)
 {
-    std::string group = std::string (group_);
+    const std::string group = std::string (group_);
 
     if (group.length () > ZMQ_GROUP_MAX_LENGTH) {
         errno = EINVAL;
@@ -117,7 +117,7 @@ int zmq::dish_t::xjoin (const char *group_)
     rc = _dist.send_to_all (&msg);
     if (rc != 0)
         err = errno;
-    int rc2 = msg.close ();
+    const int rc2 = msg.close ();
     errno_assert (rc2 == 0);
     if (rc != 0)
         errno = err;
@@ -126,7 +126,7 @@ int zmq::dish_t::xjoin (const char *group_)
 
 int zmq::dish_t::xleave (const char *group_)
 {
-    std::string group = std::string (group_);
+    const std::string group = std::string (group_);
 
     if (group.length () > ZMQ_GROUP_MAX_LENGTH) {
         errno = EINVAL;
@@ -149,7 +149,7 @@ int zmq::dish_t::xleave (const char *group_)
     rc = _dist.send_to_all (&msg);
     if (rc != 0)
         err = errno;
-    int rc2 = msg.close ();
+    const int rc2 = msg.close ();
     errno_assert (rc2 == 0);
     if (rc != 0)
         errno = err;
@@ -233,7 +233,6 @@ void zmq::dish_t::send_subscriptions (pipe_t *pipe_)
 
         //  Send it to the pipe.
         pipe_->write (&msg);
-        msg.close ();
     }
 
     pipe_->flush ();
@@ -269,7 +268,7 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
         _group_msg = *msg_;
         _state = body;
 
-        int rc = msg_->init ();
+        const int rc = msg_->init ();
         errno_assert (rc == 0);
         return 0;
     }
@@ -312,7 +311,7 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
     if (!msg_->is_join () && !msg_->is_leave ())
         return rc;
 
-    int group_length = static_cast<int> (strlen (msg_->group ()));
+    const int group_length = static_cast<int> (strlen (msg_->group ()));
 
     msg_t command;
     int offset;

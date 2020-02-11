@@ -100,6 +100,7 @@
 #include "gather.hpp"
 #include "scatter.hpp"
 #include "dgram.hpp"
+#include "peer.hpp"
 
 void zmq::socket_base_t::inprocs_t::emplace (const char *endpoint_uri_,
                                              pipe_t *pipe_)
@@ -123,7 +124,7 @@ int zmq::socket_base_t::inprocs_t::erase_pipes (
     return 0;
 }
 
-void zmq::socket_base_t::inprocs_t::erase_pipe (pipe_t *pipe_)
+void zmq::socket_base_t::inprocs_t::erase_pipe (const pipe_t *pipe_)
 {
     for (map_t::iterator it = _inprocs.begin (), end = _inprocs.end ();
          it != end; ++it)
@@ -207,6 +208,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_,
         case ZMQ_DGRAM:
             s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
             break;
+        case ZMQ_PEER:
+            s = new (std::nothrow) peer_t (parent_, tid_, sid_);
+            break;
         default:
             errno = EINVAL;
             return NULL;
@@ -228,6 +232,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
                                    int sid_,
                                    bool thread_safe_) :
     own_t (parent_, tid_),
+    _sync (),
     _tag (0xbaddecaf),
     _ctx_terminated (false),
     _destroyed (false),
@@ -240,7 +245,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     _monitor_events (0),
     _thread_safe (thread_safe_),
     _reaper_signaler (NULL),
-    _sync (),
     _monitor_sync ()
 {
     options.socket_id = sid_;
@@ -311,7 +315,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
 {
     zmq_assert (uri_ != NULL);
 
-    std::string uri (uri_);
+    const std::string uri (uri_);
     const std::string::size_type pos = uri.find ("://");
     if (pos == std::string::npos) {
         errno = EINVAL;
@@ -740,7 +744,11 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
 int zmq::socket_base_t::connect (const char *endpoint_uri_)
 {
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+    return connect_internal (endpoint_uri_);
+}
 
+int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
+{
     if (unlikely (_ctx_terminated)) {
         errno = ETERM;
         return -1;
@@ -981,8 +989,9 @@ int zmq::socket_base_t::connect (const char *endpoint_uri_)
             LIBZMQ_DELETE (paddr);
             return -1;
         }
-        sockaddr_tipc *saddr =
-          (sockaddr_tipc *) paddr->resolved.tipc_addr->addr ();
+        const sockaddr_tipc *const saddr =
+          reinterpret_cast<const sockaddr_tipc *> (
+            paddr->resolved.tipc_addr->addr ());
         // Cannot connect to random Port Identity
         if (saddr->addrtype == TIPC_ADDR_ID
             && paddr->resolved.tipc_addr->is_random ()) {
@@ -1469,8 +1478,9 @@ void zmq::socket_base_t::process_term (int linger_)
     unregister_endpoints (this);
 
     //  Ask all attached pipes to terminate.
-    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i)
+    for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
         _pipes[i]->terminate (false);
+    }
     register_term_acks (static_cast<int> (_pipes.size ()));
 
     //  Continue the termination process immediately.
@@ -1515,7 +1525,7 @@ int zmq::socket_base_t::query_pipes_stats ()
         errno = EAGAIN;
         return -1;
     }
-    for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+    for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
         _pipes[i]->send_stats_to_peer (this);
     }
 
@@ -1525,7 +1535,7 @@ int zmq::socket_base_t::query_pipes_stats ()
 void zmq::socket_base_t::update_pipe_options (int option_)
 {
     if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) {
-        for (pipes_t::size_type i = 0; i != _pipes.size (); ++i) {
+        for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
             _pipes[i]->set_hwms (options.rcvhwm, options.sndhwm);
             _pipes[i]->send_hwms_to_peer (options.sndhwm, options.rcvhwm);
         }
@@ -1688,7 +1698,7 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
         unregister_term_ack ();
 }
 
-void zmq::socket_base_t::extract_flags (msg_t *msg_)
+void zmq::socket_base_t::extract_flags (const msg_t *msg_)
 {
     //  Test whether routing_id flag is valid for this socket type.
     if (unlikely (msg_->flags () & msg_t::routing_id))
@@ -1886,7 +1896,7 @@ void zmq::socket_base_t::event (const endpoint_uri_pair_t &endpoint_uri_pair_,
 //  Send a monitor event
 void zmq::socket_base_t::monitor_event (
   uint64_t event_,
-  uint64_t values_[],
+  const uint64_t values_[],
   uint64_t values_count_,
   const endpoint_uri_pair_t &endpoint_uri_pair_) const
 {
@@ -2066,7 +2076,7 @@ zmq::routing_socket_base_t::lookup_out_pipe (const blob_t &routing_id_) const
     return it == _out_pipes.end () ? NULL : &it->second;
 }
 
-void zmq::routing_socket_base_t::erase_out_pipe (pipe_t *pipe_)
+void zmq::routing_socket_base_t::erase_out_pipe (const pipe_t *pipe_)
 {
     const size_t erased = _out_pipes.erase (pipe_->get_routing_id ());
     zmq_assert (erased);

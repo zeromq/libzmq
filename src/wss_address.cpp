@@ -46,7 +46,7 @@ int zmq::wss_address_t::to_string (std::string &addr_) const
 {
     std::ostringstream os;
     os << std::string ("wss://") << host () << std::string (":")
-       << _address.port ();
+       << _address.port () << path ();
     addr_ = os.str ();
 
     return 0;

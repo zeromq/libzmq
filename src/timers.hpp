@@ -74,7 +74,7 @@ class timers_t
     int execute ();
 
     //  Return false if object is not a timers class.
-    bool check_tag ();
+    bool check_tag () const;
 
   private:
     //  Used to check whether the object is a timers class.

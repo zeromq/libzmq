@@ -41,7 +41,7 @@ class msg_t;
 class pipe_t;
 class io_thread_t;
 
-class client_t : public socket_base_t
+class client_t ZMQ_FINAL : public socket_base_t
 {
   public:
     client_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);

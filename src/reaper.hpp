@@ -40,7 +40,7 @@ namespace zmq
 class ctx_t;
 class socket_base_t;
 
-class reaper_t : public object_t, public i_poll_events
+class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
 {
   public:
     reaper_t (zmq::ctx_t *ctx_, uint32_t tid_);

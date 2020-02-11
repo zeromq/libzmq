@@ -81,7 +81,7 @@ void zmq::dist_t::match (pipe_t *pipe_)
 
 void zmq::dist_t::reverse_match ()
 {
-    pipes_t::size_type prev_matching = _matching;
+    const pipes_t::size_type prev_matching = _matching;
 
     // Reset matching to 0
     unmatch ();
@@ -145,7 +145,7 @@ int zmq::dist_t::send_to_all (msg_t *msg_)
 int zmq::dist_t::send_to_matching (msg_t *msg_)
 {
     //  Is this end of a multipart message?
-    bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  Push the message to matching pipes.
     distribute (msg_);
@@ -171,12 +171,14 @@ void zmq::dist_t::distribute (msg_t *msg_)
     }
 
     if (msg_->is_vsm ()) {
-        for (pipes_t::size_type i = 0; i < _matching; ++i)
-            if (!write (_pipes[i], msg_))
-                --i; //  Retry last write because index will have been swapped
-        int rc = msg_->close ();
-        errno_assert (rc == 0);
-        rc = msg_->init ();
+        for (pipes_t::size_type i = 0; i < _matching;) {
+            if (!write (_pipes[i], msg_)) {
+                //  Use same index again because entry will have been removed.
+            } else {
+                ++i;
+            }
+        }
+        int rc = msg_->init ();
         errno_assert (rc == 0);
         return;
     }
@@ -187,17 +189,20 @@ void zmq::dist_t::distribute (msg_t *msg_)
 
     //  Push copy of the message to each matching pipe.
     int failed = 0;
-    for (pipes_t::size_type i = 0; i < _matching; ++i)
+    for (pipes_t::size_type i = 0; i < _matching;) {
         if (!write (_pipes[i], msg_)) {
             ++failed;
-            --i; //  Retry last write because index will have been swapped
+            //  Use same index again because entry will have been removed.
+        } else {
+            ++i;
         }
+    }
     if (unlikely (failed))
         msg_->rm_refs (failed);
 
     //  Detach the original message from the data buffer. Note that we don't
     //  close the message. That's because we've already used all the references.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 }
 

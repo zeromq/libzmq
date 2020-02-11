@@ -101,9 +101,9 @@ namespace zmq
 class condition_variable_t
 {
   public:
-    inline condition_variable_t () ZMQ_DEFAULT;
+    condition_variable_t () ZMQ_DEFAULT;
 
-    inline int wait (mutex_t *mutex_, int timeout_)
+    int wait (mutex_t *mutex_, int timeout_)
     {
         // this assumes that the mutex mutex_ has been locked by the caller
         int res = 0;
@@ -119,7 +119,7 @@ class condition_variable_t
         return res;
     }
 
-    inline void broadcast ()
+    void broadcast ()
     {
         // this assumes that the mutex associated with _cv has been locked by the caller
         _cv.notify_all ();

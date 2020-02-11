@@ -52,7 +52,7 @@ zmq::v1_decoder_t::v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
 
 zmq::v1_decoder_t::~v1_decoder_t ()
 {
-    int rc = _in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 

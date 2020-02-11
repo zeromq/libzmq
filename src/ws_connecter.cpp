@@ -74,7 +74,7 @@ zmq::ws_connecter_t::ws_connecter_t (class io_thread_t *io_thread_,
                                      address_t *addr_,
                                      bool delayed_start_,
                                      bool wss_,
-                                     const char *tls_hostname_) :
+                                     const std::string &tls_hostname_) :
     stream_connecter_base_t (
       io_thread_, session_, options_, addr_, delayed_start_),
     _connect_timer_started (false),
@@ -193,7 +193,7 @@ int zmq::ws_connecter_t::open ()
 #if defined ZMQ_HAVE_VXWORKS
     int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
-    int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
+    const int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0) {

@@ -66,7 +66,7 @@ int tcp_write (fd_t s_, const void *data_, size_t size_);
 //  Zero indicates the peer has closed the connection.
 int tcp_read (fd_t s_, void *data_, size_t size_);
 
-void tcp_tune_loopback_fast_path (const fd_t socket_);
+void tcp_tune_loopback_fast_path (fd_t socket_);
 
 //  Resolves the given address_ string, opens a socket and sets socket options
 //  according to the passed options_. On success, returns the socket

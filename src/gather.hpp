@@ -39,7 +39,7 @@ class ctx_t;
 class pipe_t;
 class msg_t;
 
-class gather_t : public socket_base_t
+class gather_t ZMQ_FINAL : public socket_base_t
 {
   public:
     gather_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);

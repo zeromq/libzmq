@@ -236,11 +236,11 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
     return ret;
 }
 
-bool zmq::trie_t::check (unsigned char *data_, size_t size_)
+bool zmq::trie_t::check (const unsigned char *data_, size_t size_) const
 {
     //  This function is on critical path. It deliberately doesn't use
     //  recursion to get a bit better performance.
-    trie_t *current = this;
+    const trie_t *current = this;
     while (true) {
         //  We've found a corresponding subscription!
         if (current->_refcnt)

@@ -49,13 +49,13 @@ struct i_poll_events;
 //  Implements socket polling mechanism using the BSD-specific
 //  kqueue interface.
 
-class kqueue_t : public worker_poller_base_t
+class kqueue_t ZMQ_FINAL : public worker_poller_base_t
 {
   public:
     typedef void *handle_t;
 
     kqueue_t (const thread_ctx_t &ctx_);
-    ~kqueue_t ();
+    ~kqueue_t () ZMQ_FINAL;
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -70,7 +70,7 @@ class kqueue_t : public worker_poller_base_t
 
   private:
     //  Main event loop.
-    void loop ();
+    void loop () ZMQ_FINAL;
 
     //  File descriptor referring to the kernel event queue.
     fd_t kqueue_fd;

@@ -40,6 +40,7 @@
 
 #include "macros.hpp"
 #include "poller.hpp"
+#include "peer.hpp"
 
 #if !defined ZMQ_HAVE_POLLER
 //  On AIX platform, poll.h has to be included first to get consistent
@@ -153,8 +154,8 @@ int zmq_ctx_term (void *ctx_)
         return -1;
     }
 
-    int rc = (static_cast<zmq::ctx_t *> (ctx_))->terminate ();
-    int en = errno;
+    const int rc = (static_cast<zmq::ctx_t *> (ctx_))->terminate ();
+    const int en = errno;
 
     //  Shut down only if termination was not interrupted by a signal.
     if (!rc || en != EINTR) {
@@ -259,7 +260,7 @@ void *zmq_socket (void *ctx_, int type_)
     }
     zmq::ctx_t *ctx = static_cast<zmq::ctx_t *> (ctx_);
     zmq::socket_base_t *s = ctx->create_socket (type_);
-    return (void *) s;
+    return static_cast<void *> (s);
 }
 
 int zmq_close (void *s_)
@@ -336,6 +337,28 @@ int zmq_connect (void *s_, const char *addr_)
     return s->connect (addr_);
 }
 
+uint32_t zmq_connect_peer (void *s_, const char *addr_)
+{
+    zmq::peer_t *s = static_cast<zmq::peer_t *> (s_);
+    if (!s_ || !s->check_tag ()) {
+        errno = ENOTSOCK;
+        return 0;
+    }
+
+    int socket_type;
+    size_t socket_type_size = sizeof (socket_type);
+    if (s->getsockopt (ZMQ_TYPE, &socket_type, &socket_type_size) != 0)
+        return 0;
+
+    if (socket_type != ZMQ_PEER) {
+        errno = ENOTSUP;
+        return 0;
+    }
+
+    return s->connect_peer (addr_);
+}
+
+
 int zmq_unbind (void *s_, const char *addr_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
@@ -358,7 +381,7 @@ static inline int
 s_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
     size_t sz = zmq_msg_size (msg_);
-    int rc = s_->send (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
+    const int rc = s_->send (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
     if (unlikely (rc < 0))
         return -1;
 
@@ -390,10 +413,10 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
         assert (buf_);
         memcpy (zmq_msg_data (&msg), buf_, len_);
     }
-    int rc = s_sendmsg (s, &msg, flags_);
+    const int rc = s_sendmsg (s, &msg, flags_);
     if (unlikely (rc < 0)) {
-        int err = errno;
-        int rc2 = zmq_msg_close (&msg);
+        const int err = errno;
+        const int rc2 = zmq_msg_close (&msg);
         errno_assert (rc2 == 0);
         errno = err;
         return -1;
@@ -416,8 +439,8 @@ int zmq_send_const (void *s_, const void *buf_, size_t len_, int flags_)
 
     rc = s_sendmsg (s, &msg, flags_);
     if (unlikely (rc < 0)) {
-        int err = errno;
-        int rc2 = zmq_msg_close (&msg);
+        const int err = errno;
+        const int rc2 = zmq_msg_close (&msg);
         errno_assert (rc2 == 0);
         errno = err;
         return -1;
@@ -459,8 +482,8 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
             flags_ = flags_ & ~ZMQ_SNDMORE;
         rc = s_sendmsg (s, &msg, flags_);
         if (unlikely (rc < 0)) {
-            int err = errno;
-            int rc2 = zmq_msg_close (&msg);
+            const int err = errno;
+            const int rc2 = zmq_msg_close (&msg);
             errno_assert (rc2 == 0);
             errno = err;
             rc = -1;
@@ -474,12 +497,12 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
 
 static int s_recvmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
-    int rc = s_->recv (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
+    const int rc = s_->recv (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
     if (unlikely (rc < 0))
         return -1;
 
     //  Truncate returned size to INT_MAX to avoid overflow to negative values
-    size_t sz = zmq_msg_size (msg_);
+    const size_t sz = zmq_msg_size (msg_);
     return static_cast<int> (sz < INT_MAX ? sz : INT_MAX);
 }
 
@@ -499,9 +522,9 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     int rc = zmq_msg_init (&msg);
     errno_assert (rc == 0);
 
-    int nbytes = s_recvmsg (s, &msg, flags_);
+    const int nbytes = s_recvmsg (s, &msg, flags_);
     if (unlikely (nbytes < 0)) {
-        int err = errno;
+        const int err = errno;
         rc = zmq_msg_close (&msg);
         errno_assert (rc == 0);
         errno = err;
@@ -509,7 +532,7 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     }
 
     //  An oversized message is silently truncated.
-    size_t to_copy = size_t (nbytes) < len_ ? size_t (nbytes) : len_;
+    const size_t to_copy = size_t (nbytes) < len_ ? size_t (nbytes) : len_;
 
     //  We explicitly allow a null buffer argument if len is zero
     if (to_copy) {
@@ -548,7 +571,7 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         return -1;
     }
 
-    size_t count = *count_;
+    const size_t count = *count_;
     int nread = 0;
     bool recvmore = true;
 
@@ -559,9 +582,9 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         int rc = zmq_msg_init (&msg);
         errno_assert (rc == 0);
 
-        int nbytes = s_recvmsg (s, &msg, flags_);
+        const int nbytes = s_recvmsg (s, &msg, flags_);
         if (unlikely (nbytes < 0)) {
-            int err = errno;
+            const int err = errno;
             rc = zmq_msg_close (&msg);
             errno_assert (rc == 0);
             errno = err;
@@ -726,7 +749,7 @@ const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
 // Polling.
 
 #if defined ZMQ_HAVE_POLLER
-inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
+static int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
     // implement zmq_poll on top of zmq_poller
     int rc;
@@ -949,12 +972,12 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_POLL_BASED_ON_POLL
 
         //  Compute the timeout for the subsequent poll.
-        zmq::timeout_t timeout =
+        const zmq::timeout_t timeout =
           zmq::compute_timeout (first_pass, timeout_, now, end);
 
         //  Wait for events.
         {
-            int rc = poll (&pollfds[0], nitems_, timeout);
+            const int rc = poll (&pollfds[0], nitems_, timeout);
             if (rc == -1 && errno == EINTR) {
                 return -1;
             }
@@ -1135,8 +1158,8 @@ void *zmq_poller_new (void)
 int zmq_poller_destroy (void **poller_p_)
 {
     if (poller_p_) {
-        zmq::socket_poller_t *const poller =
-          static_cast<zmq::socket_poller_t *> (*poller_p_);
+        const zmq::socket_poller_t *const poller =
+          static_cast<const zmq::socket_poller_t *> (*poller_p_);
         if (poller && poller->check_tag ()) {
             delete poller;
             *poller_p_ = NULL;
@@ -1227,7 +1250,8 @@ int zmq_poller_modify (void *poller_, void *s_, short events_)
         || -1 == check_events (events_))
         return -1;
 
-    zmq::socket_base_t *socket = static_cast<zmq::socket_base_t *> (s_);
+    const zmq::socket_base_t *const socket =
+      static_cast<const zmq::socket_base_t *> (s_);
 
     return (static_cast<zmq::socket_poller_t *> (poller_))
       ->modify (socket, events_);
@@ -1263,7 +1287,7 @@ int zmq_poller_remove_fd (void *poller_, zmq::fd_t fd_)
 
 int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
 {
-    int rc = zmq_poller_wait_all (poller_, event_, 1, timeout_);
+    const int rc = zmq_poller_wait_all (poller_, event_, 1, timeout_);
 
     if (rc < 0 && event_) {
         // TODO this is not portable... zmq_poller_event_t contains pointers,
@@ -1291,7 +1315,7 @@ int zmq_poller_wait_all (void *poller_,
         return -1;
     }
 
-    int rc =
+    const int rc =
       (static_cast<zmq::socket_poller_t *> (poller_))
         ->wait (reinterpret_cast<zmq::socket_poller_t::event_t *> (events_),
                 n_events_, timeout_);

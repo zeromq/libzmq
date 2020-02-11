@@ -54,7 +54,7 @@ class mechanism_t;
 //  This engine handles any socket with SOCK_STREAM semantics,
 //  e.g. TCP socket or an UNIX domain socket.
 
-class raw_engine_t : public stream_engine_base_t
+class raw_engine_t ZMQ_FINAL : public stream_engine_base_t
 {
   public:
     raw_engine_t (fd_t fd_,

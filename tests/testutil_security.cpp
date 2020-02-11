@@ -109,8 +109,8 @@ void socket_config_curve_server (void *server_, void *server_secret_)
 
 void socket_config_curve_client (void *client_, void *data_)
 {
-    curve_client_data_t *curve_client_data =
-      static_cast<curve_client_data_t *> (data_);
+    const curve_client_data_t *const curve_client_data =
+      static_cast<const curve_client_data_t *> (data_);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       client_, ZMQ_CURVE_SERVERKEY, curve_client_data->server_public, 41));
@@ -346,6 +346,7 @@ void shutdown_context_and_server_side (void *zap_thread_,
           zmq_unbind (zap_control_, "inproc://handler-control"));
     }
     test_context_socket_close (zap_control_);
+    zmq_socket_monitor (server_, NULL, 0);
     test_context_socket_close (server_mon_);
     test_context_socket_close (server_);
 

@@ -162,6 +162,7 @@ if(ENABLE_DRAFTS)
     test_app_meta
     test_router_notify
     test_xpub_manual_last_value
+    test_peer
   )
 endif()
 
@@ -291,6 +292,8 @@ if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
 endif()
 
 set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
+
+set_tests_properties(test_reconnect_ivl PROPERTIES TIMEOUT 15)
 
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)

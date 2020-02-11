@@ -147,7 +147,7 @@ void zmq::own_t::terminate ()
     send_term_req (_owner, this);
 }
 
-bool zmq::own_t::is_terminating ()
+bool zmq::own_t::is_terminating () const
 {
     return _terminating;
 }

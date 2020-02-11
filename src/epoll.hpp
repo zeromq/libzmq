@@ -55,13 +55,13 @@ struct i_poll_events;
 //  This class implements socket polling mechanism using the Linux-specific
 //  epoll mechanism.
 
-class epoll_t : public worker_poller_base_t
+class epoll_t ZMQ_FINAL : public worker_poller_base_t
 {
   public:
     typedef void *handle_t;
 
     epoll_t (const thread_ctx_t &ctx_);
-    ~epoll_t ();
+    ~epoll_t () ZMQ_OVERRIDE;
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
