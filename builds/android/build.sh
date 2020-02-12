@@ -15,7 +15,6 @@ source ./android_build_helper.sh
 ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 
 BUILD_ARCH=$1
-
 if [ -z $BUILD_ARCH ]; then
     usage
     exit 1
@@ -41,41 +40,8 @@ export NDK_VERSION=${NDK_VERSION:-android-ndk-r20}
 # SDK version 21 is the minimum version for 64-bit builds.
 export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 
-# Set variables for each architecture
-HOST_ARM="arm-linux-androideabi"
-HOST_ARM64="aarch64-linux-android"
-HOST_X86="i686-linux-android"
-HOST_X86_64="x86_64-linux-android"
-
-COMP_ARM="armv7a-linux-androideabi${MIN_SDK_VERSION}"
-COMP_ARM64="aarch64-linux-android${MIN_SDK_VERSION}"
-COMP_X86="i686-linux-android${MIN_SDK_VERSION}"
-COMP_X86_64="x86_64-linux-android${MIN_SDK_VERSION}"
-
-CXXSTL_ARM="armeabi-v7a"
-CXXSTL_ARM64="arm64-v8a"
-CXXSTL_X86="x86"
-CXXSTL_X86_64="x86_64"
-
-ARCH_ARM="arm"
-ARCH_ARM64="arm64"
-ARCH_X86="x86"
-ARCH_X86_64="x86_64"
-
-if [ $BUILD_ARCH == "arm" ]; then
-    android_build_arch $HOST_ARM $COMP_ARM $CXXSTL_ARM $ARCH_ARM
-elif [ $BUILD_ARCH == "x86" ]; then
-    android_build_arch $HOST_X86 $COMP_X86 $CXXSTL_X86 $ARCH_X86
-elif [ $BUILD_ARCH == "arm64" ]; then
-    android_build_arch $HOST_ARM64 $COMP_ARM64 $CXXSTL_ARM64 $ARCH_ARM64
-elif [ $BUILD_ARCH == "x86_64" ]; then
-    android_build_arch $HOST_X86_64 $COMP_X86_64 $CXXSTL_X86_64 $ARCH_X86_64
-else
-    usage
-    exit 1
-fi
-
 # Set up android build environment and set ANDROID_BUILD_OPTS array
+android_build_set_env $BUILD_ARCH
 android_build_env
 android_build_opts
 
