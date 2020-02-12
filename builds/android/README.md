@@ -22,6 +22,10 @@ To specify the minimum sdk version set the environment variable below:
 
     export MIN_SDK_VERSION=21   # Default value if unset
 
+To specify the prefix directory set the environment variable below:
+
+    export ANDROID_BUILD_DIR=./builds/android/prefix/<android_arch> # Default value if unset
+
 ## Build
 
 In the android directory, run:

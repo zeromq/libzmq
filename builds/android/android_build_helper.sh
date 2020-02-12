@@ -2,21 +2,21 @@
 #
 # Copyright (c) 2014, Joe Eli McIlvain
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # 1. Redistributions of source code must retain the above copyright notice,
 #    this list of conditions and the following disclaimer.
-# 
+#
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
 #    and/or other materials provided with the distribution.
-# 
+#
 # 3. Neither the name of the copyright holder nor the names of its
 #    contributors may be used to endorse or promote products derived from
 #    this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -69,12 +69,36 @@ function android_build_check_fail {
     fi
 }
 
-function android_build_arch {
+function android_build_set_env {
+    BUILD_ARCH=$1
+
     export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/bin"
-    export TOOLCHAIN_HOST=$1
-    export TOOLCHAIN_COMP=$2
-    export TOOLCHAIN_CXXSTL=$3
-    export TOOLCHAIN_ARCH=$4
+
+    # Set variables for each architecture
+    if [ $BUILD_ARCH == "arm" ]; then
+        export TOOLCHAIN_HOST="arm-linux-androideabi"
+        export TOOLCHAIN_COMP="armv7a-linux-androideabi${MIN_SDK_VERSION}"
+        export TOOLCHAIN_ABI="armeabi-v7a"
+        export TOOLCHAIN_ARCH="arm"
+    elif [ $BUILD_ARCH == "x86" ]; then
+        export TOOLCHAIN_HOST="i686-linux-android"
+        export TOOLCHAIN_COMP="i686-linux-android${MIN_SDK_VERSION}"
+        export TOOLCHAIN_ABI="x86"
+        export TOOLCHAIN_ARCH="x86"
+    elif [ $BUILD_ARCH == "arm64" ]; then
+        export TOOLCHAIN_HOST="aarch64-linux-android"
+        export TOOLCHAIN_COMP="aarch64-linux-android${MIN_SDK_VERSION}"
+        export TOOLCHAIN_ABI="arm64-v8a"
+        export TOOLCHAIN_ARCH="arm64"
+    elif [ $BUILD_ARCH == "x86_64" ]; then
+        export TOOLCHAIN_HOST="x86_64-linux-android"
+        export TOOLCHAIN_COMP="x86_64-linux-android${MIN_SDK_VERSION}"
+        export TOOLCHAIN_ABI="x86_64"
+        export TOOLCHAIN_ARCH="x86_64"
+    fi
+
+    export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
+    export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 }
 
 function android_build_env {
@@ -101,9 +125,9 @@ function android_build_env {
         ANDROID_BUILD_FAIL+=("  (eg. \"armv7a-linux-androideabi\")")
     fi
 
-    if [ -z "$TOOLCHAIN_CXXSTL" ]; then
-        ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_CXXSTL environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"armeabi-v7abi\")")
+    if [ -z "$TOOLCHAIN_ABI" ]; then
+        ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_ABI environment variable")
+        ANDROID_BUILD_FAIL+=("  (eg. \"armeabi-v7a\")")
     fi
 
     if [ -z "$TOOLCHAIN_ARCH" ]; then
@@ -129,14 +153,10 @@ function android_build_env {
     ##
     # Set up some local variables and check them
 
-    ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
-
     if [ ! -d "$ANDROID_BUILD_SYSROOT" ]; then
         ANDROID_BUILD_FAIL+=("The ANDROID_BUILD_SYSROOT directory does not exist")
         ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_SYSROOT}")
     fi
-
-    ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 
     mkdir -p "$ANDROID_BUILD_PREFIX" || {
         ANDROID_BUILD_FAIL+=("Failed to make ANDROID_BUILD_PREFIX directory")
@@ -211,7 +231,7 @@ function android_build_opts {
 
     local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
-    LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_CXXSTL}"
+    LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
     CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
 
