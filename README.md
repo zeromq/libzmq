@@ -44,23 +44,23 @@ platform updates. For travis-ci, refer to https://changelog.travis-ci.com/ regar
 
 ### Supported platforms with secondary CI
 
-OS and version | Architecture | Compiler and version | Build system | Remarks
--------------- | ------------ | -------------------- | ------------ | -------
-CentOS 6 | x86, amd64 | ? | autotools |
-CentOS 7 | amd64 | ? | autotools |
-Debian 8.0 | x86, amd64 | ? | autotools |
-Debian 9.0 | ARM64, x86, amd64 | ? | autotools |
-Fedora 28 | ARM64, ARM32, amd64 | ? | autotools |
-Fedora 29 | ARM64, ARM32, amd64 | ? | autotools |
-Fedora Rawhide | ARM64, ARM32, amd64 | ? | autotools |
-RedHat Enterprise Linux 7 | amd64, ppc64 | ? | autotools |
-SuSE Linux Enterprise 12 SP4 | ARM64, amd64, ppc64, s390x | ? | autotools |
-SuSE Linux Enterprise 15 | amd64 | ? | autotools |
-xUbuntu 12.04 | x86, amd64 | ? | autotools |
-xUbuntu 14.04 | x86, amd64 | ? | autotools |
-xUbuntu 16.04 | x86, amd64 | ? | autotools |
-xUbuntu 18.04 | x86, amd64 | ? | autotools |
-xUbuntu 18.10 | x86, amd64 | ? | autotools |
+| OS and version               | Architecture               | Compiler and version | Build system | Remarks |
+|------------------------------|----------------------------|----------------------|--------------|---------|
+| CentOS 6                     | x86, amd64                 | ?                    | autotools    |         |
+| CentOS 7                     | amd64                      | ?                    | autotools    |         |
+| Debian 8.0                   | x86, amd64                 | ?                    | autotools    |         |
+| Debian 9.0                   | ARM64, x86, amd64          | ?                    | autotools    |         |
+| Fedora 28                    | ARM64, ARM32, amd64        | ?                    | autotools    |         |
+| Fedora 29                    | ARM64, ARM32, amd64        | ?                    | autotools    |         |
+| Fedora Rawhide               | ARM64, ARM32, amd64        | ?                    | autotools    |         |
+| RedHat Enterprise Linux 7    | amd64, ppc64               | ?                    | autotools    |         |
+| SuSE Linux Enterprise 12 SP4 | ARM64, amd64, ppc64, s390x | ?                    | autotools    |         |
+| SuSE Linux Enterprise 15     | amd64                      | ?                    | autotools    |         |
+| xUbuntu 12.04                | x86, amd64                 | ?                    | autotools    |         |
+| xUbuntu 14.04                | x86, amd64                 | ?                    | autotools    |         |
+| xUbuntu 16.04                | x86, amd64                 | ?                    | autotools    |         |
+| xUbuntu 18.04                | x86, amd64                 | ?                    | autotools    |         |
+| xUbuntu 18.10                | x86, amd64                 | ?                    | autotools    |         |
 
 ### Supported platforms with known active users
 
@@ -70,39 +70,39 @@ adding an entry or moving an entry from the section below.
 Under "last report", please name either the SHA1 in case of an unreleased version, or the version number in
 case of a released version.
 
-OS and version | Architecture | Compiler and version | Build system | Last report | Remarks
--------------- | ------------ | -------------------- | ------------ | ----------- | -------
-Solaris 10 | x86, amd64, sparc | GCC 8.1.0 | CMake | 2019/03/18 |
-DragonFly BSD | amd64 | gcc 8.3 | autotools | 2018/08/07 git-72854e63 |
-IBM i | ppc64 | gcc 6.3 | autotools | 2019/10/02 git-25320a3 |
+| OS and version | Architecture      | Compiler and version | Build system | Last report             | Remarks |
+|----------------|-------------------|----------------------|--------------|-------------------------|---------|
+| Solaris 10     | x86, amd64, sparc | GCC 8.1.0            | CMake        | 2019/03/18              |         |
+| DragonFly BSD  | amd64             | gcc 8.3              | autotools    | 2018/08/07 git-72854e63 |         |
+| IBM i          | ppc64             | gcc 6.3              | autotools    | 2019/10/02 git-25320a3  |         |
 
 
 ### Supported platforms without known active users
 
 Note: this list is incomplete and inaccurate and still needs some work.
 
-OS and version | Architecture | Compiler and version | Build system | Remarks
--------------- | ------------ | -------------------- | ------------ | -------
-Any Linux distribution | x86, amd64 | gcc ?+, clang ?+, icc ?+ | autotools, CMake |
-SunOS, Solaris | x86, amd64 | SunPro | autotools, CMake |
-GNU/kFreeBSD | ? | ? | autotools, CMake |
-FreeBSD | ? | ? | autotools, CMake |
-NetBSD | ? | ? | autotools, CMake |
-OpenBSD | ? | ? | autotools, CMake |
-DragonFly BSD | amd64 | gcc 8.3 | autotools, CMake |
-HP-UX | ? | ? | autotools, CMake |
-GNU/Hurd | ? | ? | autotools |
-VxWorks 6.8 | ? | ? | ? |
-Windows CE | ? | ? | ? |
-Windows UWP | ? | ? | ? |
-OpenVMS | ? | ? | ? |
+| OS and version         | Architecture | Compiler and version     | Build system     | Remarks |
+|------------------------|--------------|--------------------------|------------------|---------|
+| Any Linux distribution | x86, amd64   | gcc ?+, clang ?+, icc ?+ | autotools, CMake |         |
+| SunOS, Solaris         | x86, amd64   | SunPro                   | autotools, CMake |         |
+| GNU/kFreeBSD           | ?            | ?                        | autotools, CMake |         |
+| FreeBSD                | ?            | ?                        | autotools, CMake |         |
+| NetBSD                 | ?            | ?                        | autotools, CMake |         |
+| OpenBSD                | ?            | ?                        | autotools, CMake |         |
+| DragonFly BSD          | amd64        | gcc 8.3                  | autotools, CMake |         |
+| HP-UX                  | ?            | ?                        | autotools, CMake |         |
+| GNU/Hurd               | ?            | ?                        | autotools        |         |
+| VxWorks 6.8            | ?            | ?                        | ?                |         |
+| Windows CE             | ?            | ?                        | ?                |         |
+| Windows UWP            | ?            | ?                        | ?                |         |
+| OpenVMS                | ?            | ?                        | ?                |         |
 
 ### Unsupported platforms
 
-OS and version | Architecture | Compiler and version | Remarks
--------------- | ------------ | -------------------- | -------
-QNX 6.3 | ? | gcc 3.3.5 | see #3371, support was added by a user, but not contributed to upstream
-Windows 10 | ARM, ARM64 | Visual Studio 2017 | see #3366, probably only minor issues
+| OS and version | Architecture | Compiler and version | Remarks                                                                 |
+|----------------|--------------|----------------------|-------------------------------------------------------------------------|
+| QNX 6.3        | ?            | gcc 3.3.5            | see #3371, support was added by a user, but not contributed to upstream |
+| Windows 10     | ARM, ARM64   | Visual Studio 2017   | see #3366, probably only minor issues                                   |
 
 For more details, see [here](SupportedPlatforms.md).
 
