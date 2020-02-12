@@ -6,10 +6,10 @@ function usage {
 
 # Use directory of current script as the build directory and working directory
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-ANDROID_BUILD_DIR="$(pwd)"
+ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-`pwd`}"
 
 # Get access to android_build functions and variables
-source ${ANDROID_BUILD_DIR}/android_build_helper.sh
+source ./android_build_helper.sh
 
 # Choose a C++ standard library implementation from the ndk
 ANDROID_BUILD_CXXSTL="gnustl_shared_49"
