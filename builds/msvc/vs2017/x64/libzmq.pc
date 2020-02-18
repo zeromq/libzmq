@@ -1,0 +1,12 @@
+prefix=C:/Program Files/ZeroMQ
+exec_prefix=C:/Program Files/ZeroMQ
+libdir=C:/Program Files/ZeroMQ/lib
+includedir=C:/Program Files/ZeroMQ/include
+
+Name: libzmq
+Description: 0MQ c++ library
+Version: 4.3.3
+Libs: -L${libdir} -lzmq
+Libs.private: -lstdc++ 
+Requires.private: 
+Cflags: -I${includedir} -DZMQ_BUILD_DRAFT_API=1
