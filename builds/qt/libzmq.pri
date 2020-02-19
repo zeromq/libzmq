@@ -1,3 +1,5 @@
+DEFINES += ZMQ_HAVE_STRLCPY
+
 SOURCES += \
     $$PWD/../../src/address.cpp \
     $$PWD/../../src/client.cpp \
@@ -250,7 +252,6 @@ HEADERS += \
     $$PWD/../../src/vmci_address.hpp \
     $$PWD/../../src/vmci_connecter.hpp \
     $$PWD/../../src/vmci_listener.hpp \
-    $$PWD/../../src/windows.hpp \
     $$PWD/../../src/wire.hpp \
     $$PWD/../../src/ws_address.hpp \
     $$PWD/../../src/ws_connecter.hpp \
@@ -270,23 +271,36 @@ HEADERS += \
     $$PWD/../../src/zap_client.hpp \
     $$PWD/../../src/zmtp_engine.hpp
 
+win32 {
+    HEADERS += $$PWD/../../src/windows.hpp
+}
+
 INCLUDEPATH += \
-    $$PWD \
     $$PWD/../../include
 
+win32 {
+    INCLUDEPATH += \
+        $$PWD/windows
 
-## Externals
+    ## Externals
 
-# Sha1
-SOURCES += \
-#    $$PWD/../../external/sha1/sha1.c # Redefined in czmq
+    # Sha1
+    SOURCES += \
+    #    $$PWD/../../external/sha1/sha1.c # Redefined in czmq
 
-HEADERS += \
-    $$PWD/../../external/sha1/sha1.h
+    HEADERS += \
+        $$PWD/../../external/sha1/sha1.h
 
-# Wepoll
-SOURCES += \
-    $$PWD/../../external/wepoll/wepoll.c
+    # Wepoll
+    SOURCES += \
+        $$PWD/../../external/wepoll/wepoll.c
 
-HEADERS += \
-    $$PWD/../../external/wepoll/wepoll.h
+    HEADERS += \
+        $$PWD/../../external/wepoll/wepoll.h
+
+}
+
+unix {
+    INCLUDEPATH += \
+        $$PWD/macos
+}
