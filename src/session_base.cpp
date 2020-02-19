@@ -523,6 +523,13 @@ void zmq::session_base_t::timer_event (int id_)
     _pipe->terminate (false);
 }
 
+void zmq::session_base_t::process_conn_failed ()
+{
+    std::string *ep = new (std::string);
+    _addr->to_string (*ep);
+    send_term_endpoint (_socket, ep);
+}
+
 void zmq::session_base_t::reconnect ()
 {
     //  For delayed connect situations, terminate the pipe

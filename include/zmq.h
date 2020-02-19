@@ -381,6 +381,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 #define ZMQ_BINDTODEVICE 92
+#define ZMQ_RECONNECT_STOP 109
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -398,6 +399,10 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 
 /*  RADIO-DISH protocol                                                       */
 #define ZMQ_GROUP_MAX_LENGTH 255
+
+/*  ZMQ_RECONNECT_STOP options                                                */
+#define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
+#define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 0x2
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IDENTITY ZMQ_ROUTING_ID

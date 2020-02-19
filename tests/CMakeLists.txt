@@ -72,6 +72,7 @@ set(tests
   test_monitor
   test_socket_null
   test_reconnect_ivl
+  test_reconnect_options
   test_mock_pub_sub
 )
 
@@ -292,7 +293,6 @@ if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
 endif()
 
 set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
-
 set_tests_properties(test_reconnect_ivl PROPERTIES TIMEOUT 15)
 
 #Check whether all tests in the current folder are present

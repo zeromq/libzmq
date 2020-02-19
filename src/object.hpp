@@ -117,6 +117,8 @@ class object_t
     void send_reap (zmq::socket_base_t *socket_);
     void send_reaped ();
     void send_done ();
+    void send_conn_failed (zmq::session_base_t *destination_);
+
 
     //  These handlers can be overridden by the derived objects. They are
     //  called when command arrives from another thread.
@@ -144,6 +146,8 @@ class object_t
     virtual void process_term_endpoint (std::string *endpoint_);
     virtual void process_reap (zmq::socket_base_t *socket_);
     virtual void process_reaped ();
+    virtual void process_conn_failed ();
+
 
     //  Special handler called after a command that requires a seqnum
     //  was processed. The implementation should catch up with its counter

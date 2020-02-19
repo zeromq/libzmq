@@ -210,6 +210,7 @@ zmq::options_t::options_t () :
     linger (-1),
     connect_timeout (0),
     tcp_maxrt (0),
+    reconnect_stop (0),
     reconnect_ivl (100),
     reconnect_ivl_max (0),
     backlog (100),
@@ -389,6 +390,13 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_TCP_MAXRT:
             if (is_int && value >= 0) {
                 tcp_maxrt = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_RECONNECT_STOP:
+            if (is_int) {
+                reconnect_stop = value;
                 return 0;
             }
             break;
@@ -929,6 +937,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_TCP_MAXRT:
             if (is_int) {
                 *value = tcp_maxrt;
+                return 0;
+            }
+            break;
+
+        case ZMQ_RECONNECT_STOP:
+            if (is_int) {
+                *value = reconnect_stop;
                 return 0;
             }
             break;
