@@ -34,26 +34,6 @@
 
 #include <unity.h>
 
-// test that duplicate connection fails with EEXIST
-void duplicate_connect ()
-{
-    // setup pub socket
-    void *pub = test_context_socket (ZMQ_PUB);
-    //  Bind pub socket
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, ENDPOINT_0));
-
-    // setup sub socket
-    void *sub = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, ENDPOINT_0));
-    TEST_ASSERT_FAILURE_ERRNO (EEXIST, zmq_connect (sub, ENDPOINT_0));
-
-    //  Close sub
-    //  TODO why does this use zero_linger?
-    test_context_socket_close_zero_linger (sub);
-    test_context_socket_close_zero_linger (pub);
-}
-
-
 // test behavior with (mostly) default values
 void reconnect_default ()
 {
@@ -103,57 +83,6 @@ void reconnect_default ()
     test_context_socket_close_zero_linger (sub_mon);
 }
 
-// detect duplicate connection attempt while reconnect is active
-void reconnect_duplicate ()
-{
-    // setup pub socket
-    void *pub = test_context_socket (ZMQ_PUB);
-    //  Bind pub socket
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, ENDPOINT_0));
-
-    // setup sub socket
-    void *sub = test_context_socket (ZMQ_SUB);
-    //  Monitor all events on sub
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
-    //  Create socket for collecting monitor events
-    void *sub_mon = test_context_socket (ZMQ_PAIR);
-    //  Connect so they'll get events
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
-    // set reconnect interval so only a single reconnect is tried
-    int interval = 60 * 1000;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_IVL, &interval, sizeof (interval)));
-    // connect to pub
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, ENDPOINT_0));
-
-    //  confirm that we get following events
-    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
-    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
-    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
-
-    // close the pub socket
-    test_context_socket_close_zero_linger (pub);
-
-    //  confirm that we get following events
-    expect_monitor_event (sub_mon, ZMQ_EVENT_DISCONNECTED);
-    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_RETRIED);
-
-    // ZMQ_EVENT_CONNECT_RETRIED should be last event, because of timeout set above
-    int event;
-    char* event_address;
-    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address, 2 * 1000);
-    assert (rc == -1);
-
-    // check that another connect while reconnect is active is reported as a duplicate
-    TEST_ASSERT_FAILURE_ERRNO (EEXIST, zmq_connect (sub, ENDPOINT_0));
-
-    //  Close sub
-    //  TODO why does this use zero_linger?
-    test_context_socket_close_zero_linger (sub);
-
-    //  Close monitor
-    //  TODO why does this use zero_linger?
-    test_context_socket_close_zero_linger (sub_mon);
-}
 
 // test successful reconnect
 void reconnect_success ()
@@ -287,9 +216,7 @@ int main (void)
 
     UNITY_BEGIN ();
 
-    RUN_TEST (duplicate_connect);
     RUN_TEST (reconnect_default);
-    RUN_TEST (reconnect_duplicate);
     RUN_TEST (reconnect_success);
     RUN_TEST (reconnect_stop_on_refused);
 

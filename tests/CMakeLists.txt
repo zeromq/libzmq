@@ -72,7 +72,6 @@ set(tests
   test_monitor
   test_socket_null
   test_reconnect_ivl
-  test_reconnect_options
   test_mock_pub_sub
 )
 
@@ -164,6 +163,7 @@ if(ENABLE_DRAFTS)
     test_router_notify
     test_xpub_manual_last_value
     test_peer
+    test_reconnect_options
   )
 endif()
 
@@ -249,7 +249,7 @@ foreach(test ${tests})
       link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
-  
+
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
