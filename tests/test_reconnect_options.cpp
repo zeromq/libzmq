@@ -200,7 +200,10 @@ void reconnect_stop_on_refused ()
     char *event_address;
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
-    assert (rc == -1);
+    if (rc != -1) {
+        print_unexpected_event_stderr(event, rc, 0, -1);
+        assert(false);
+    }
 
     //  Close sub
     //  TODO why does this use zero_linger?
