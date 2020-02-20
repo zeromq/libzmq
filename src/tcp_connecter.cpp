@@ -104,7 +104,8 @@ void zmq::tcp_connecter_t::out_event ()
     const fd_t fd = connect ();
 
     if (fd == retired_fd
-        && ((options.reconnect_stop & ZMQ_RECONNECT_STOP_CONN_REFUSED) && errno == ECONNREFUSED)) {
+        && ((options.reconnect_stop & ZMQ_RECONNECT_STOP_CONN_REFUSED)
+            && errno == ECONNREFUSED)) {
         send_conn_failed (_session);
         close ();
         terminate ();

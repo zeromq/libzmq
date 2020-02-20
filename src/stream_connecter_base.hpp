@@ -116,10 +116,9 @@ class stream_connecter_base_t : public own_t, public io_object_t
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_connecter_base_t)
 
-protected:
+  protected:
     //  Reference to the session we belong to.
     zmq::session_base_t *const _session;
-
 };
 }
 

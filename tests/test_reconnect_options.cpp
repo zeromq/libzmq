@@ -45,14 +45,16 @@ void reconnect_default ()
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
     //  Monitor all events on sub
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
     //  Create socket for collecting monitor events
     void *sub_mon = test_context_socket (ZMQ_PAIR);
     //  Connect so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
     // set reconnect interval so only a single reconnect is tried
     int interval = 60 * 1000;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_IVL, &interval, sizeof (interval)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_RECONNECT_IVL, &interval, sizeof (interval)));
     // connect to pub
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, ENDPOINT_0));
 
@@ -70,8 +72,9 @@ void reconnect_default ()
 
     // ZMQ_EVENT_CONNECT_RETRIED should be last event, because of timeout set above
     int event;
-    char* event_address;
-    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address, 2 * 1000);
+    char *event_address;
+    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
+                                             2 * 1000);
     assert (rc == -1);
 
     //  Close sub
@@ -95,14 +98,16 @@ void reconnect_success ()
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
     //  Monitor all events on sub
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
     //  Create socket for collecting monitor events
     void *sub_mon = test_context_socket (ZMQ_PAIR);
     //  Connect so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
     // set reconnect interval so only a single reconnect is tried
     int interval = 1 * 1000;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_IVL, &interval, sizeof (interval)));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_RECONNECT_IVL, &interval, sizeof (interval)));
     // connect to pub
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, ENDPOINT_0));
 
@@ -120,14 +125,15 @@ void reconnect_success ()
 
     // ZMQ_EVENT_CONNECT_RETRIED should be last event, because of timeout set above
     int event;
-    char* event_address;
-    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address, SETTLE_TIME);
+    char *event_address;
+    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
+                                             SETTLE_TIME);
     assert (rc == -1);
 
     //  Now re-bind pub socket and wait for re-connect
     pub = test_context_socket (ZMQ_PUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, ENDPOINT_0));
-    msleep(SETTLE_TIME);
+    msleep (SETTLE_TIME);
 
     //  confirm that we get following events
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
@@ -135,7 +141,8 @@ void reconnect_success ()
     expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 
     // ZMQ_EVENT_HANDSHAKE_SUCCEEDED should be last event
-    rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address, SETTLE_TIME);
+    rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
+                                         SETTLE_TIME);
     assert (rc == -1);
 
     //  Close sub
@@ -160,14 +167,17 @@ void reconnect_stop_on_refused ()
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
     //  Monitor all events on sub
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
     //  Create socket for collecting monitor events
     void *sub_mon = test_context_socket (ZMQ_PAIR);
     //  Connect so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
     // set option to stop reconnecting on error
     int stopReconnectOnError = ZMQ_RECONNECT_STOP_CONN_REFUSED;
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt(sub, ZMQ_RECONNECT_STOP, &stopReconnectOnError, sizeof(stopReconnectOnError)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_STOP,
+                                               &stopReconnectOnError,
+                                               sizeof (stopReconnectOnError)));
     // connect to pub
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, ENDPOINT_0));
 
@@ -187,8 +197,9 @@ void reconnect_stop_on_refused ()
 
     // ZMQ_EVENT_CLOSED should be last event, because of ZMQ_RECONNECT_STOP set above
     int event;
-    char* event_address;
-    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address, 2 * 1000);
+    char *event_address;
+    int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
+                                             2 * 1000);
     assert (rc == -1);
 
     //  Close sub
