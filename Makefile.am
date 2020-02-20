@@ -126,6 +126,8 @@ src_libzmq_la_SOURCES = \
 	src/own.hpp \
 	src/pair.cpp \
 	src/pair.hpp \
+	src/peer.cpp \
+	src/peer.hpp \
 	src/pgm_receiver.cpp \
 	src/pgm_receiver.hpp \
 	src/pgm_sender.cpp \
@@ -239,6 +241,8 @@ src_libzmq_la_SOURCES = \
 	src/v1_encoder.hpp \
 	src/v2_encoder.cpp \
 	src/v2_encoder.hpp \
+	src/v3_1_encoder.cpp \
+	src/v3_1_encoder.hpp \
 	src/v2_protocol.hpp \
 	src/vmci.cpp \
 	src/vmci.hpp \
@@ -1035,6 +1039,7 @@ test_apps += tests/test_poller \
 	tests/test_app_meta \
 	tests/test_xpub_manual_last_value \
 	tests/test_router_notify \
+	tests/test_peer \
 	tests/test_reconnect_options
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
@@ -1076,6 +1081,10 @@ tests_test_app_meta_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_router_notify_SOURCES = tests/test_router_notify.cpp
 tests_test_router_notify_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_router_notify_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_peer_SOURCES = tests/test_peer.cpp
+tests_test_peer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_peer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reconnect_options_SOURCES = tests/test_reconnect_options.cpp
 tests_test_reconnect_options_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
