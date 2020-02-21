@@ -196,13 +196,15 @@ void reconnect_stop_on_refused ()
     expect_monitor_event (sub_mon, ZMQ_EVENT_CLOSED);
 
     // ZMQ_EVENT_CLOSED should be last event, because of ZMQ_RECONNECT_STOP set above
-    int event;
+    int event = 0;
     char *event_address;
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
-    if (rc != -1) {
+    int limit = 0;
+    while ((rc != -1)  && (++limit < 1000)) {
         print_unexpected_event_stderr(event, rc, 0, -1);
-        assert(false);
+        rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
+                                             2 * 1000);
     }
 
     //  Close sub
