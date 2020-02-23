@@ -17,6 +17,10 @@
   - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
     message to be processed as a subscribe/unsubscribe message, and the rest
     will be forwarded as user data to the application.
+  - ZMQ_RECONNECT_STOP will cause a connecting socket to stop trying to
+    reconnect in specific circumstances. In this release, this can be set to
+    ECONNREFUSED errors, which implies the other end is not listening on the
+    requested port.
   See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
 
 * New DRAFT (see NEWS for 4.2.0) zmq_ctx_get_ext/zmq_ctx_set_ext APIs were added
