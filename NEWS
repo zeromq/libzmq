@@ -33,6 +33,13 @@
   options were added to support TLS.
   WebSockets support is disabled by default if DRAFT APIs are disabled.
 
+* New DRAFT (see NEWS for 4.2.0) socket type, PEER, which is thread safe and a
+  related zmq_connect_peer function which atomically and thread-safely connects
+  and returns a routing-id.
+
+* ZMTP 3.1 is now fully implemented, and 3.1 peers will receive subscribe/cancel
+  on PUB/SUB via commands rather than using the first byte of the payload.
+
 * Fixed #3566 - malformed CURVE message can cause memory leak
 
 * Fixed #3567 - missing ZeroMQ_INCLUDE_DIR in ZeroMQConfig.cmake when only
@@ -104,6 +111,11 @@
 
 * Fixed #3778 - fix documentation of zmq_poller's thread safety
 
+* Fixed #3792 - do not allow creation of new sockets after zmq_ctx_shutdown
+
+* Fixed #3805 - improve performance of CURVE by reducing copies
+
+* Fixed #3814 - send subscribe/cancel as commands to ZMTP 3.1 peers
 
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================
