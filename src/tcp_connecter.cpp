@@ -274,6 +274,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         if (err == WSAEBADF || err == WSAENOPROTOOPT || err == WSAENOTSOCK
             || err == WSAENOBUFS) {
             wsa_assert_no (err);
+            errno = wsa_error_to_errno (err);
         }
         return retired_fd;
     }
