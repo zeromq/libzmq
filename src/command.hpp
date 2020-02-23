@@ -74,6 +74,7 @@ __declspec(align (64))
         reap,
         reaped,
         inproc_connected,
+        conn_failed,
         pipe_peer_stats,
         pipe_stats_publish,
         done

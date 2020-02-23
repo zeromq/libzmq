@@ -87,30 +87,30 @@ Default value:: not set
 Applicable socket types:: all, when using TCP or UDP transports.
 
 
-ZMQ_CONNECT_RID: Assign the next outbound connection id 
+ZMQ_CONNECT_RID: Assign the next outbound connection id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This option name is now deprecated. Use ZMQ_CONNECT_ROUTING_ID instead. 
-ZMQ_CONNECT_RID remains as an alias for now. 
+This option name is now deprecated. Use ZMQ_CONNECT_ROUTING_ID instead.
+ZMQ_CONNECT_RID remains as an alias for now.
 
 
-ZMQ_CONNECT_ROUTING_ID: Assign the next outbound routing id 
+ZMQ_CONNECT_ROUTING_ID: Assign the next outbound routing id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_CONNECT_ROUTING_ID' option sets the peer id of the peer connected 
-via the next zmq_connect() call, such that that connection is immediately ready for 
+The 'ZMQ_CONNECT_ROUTING_ID' option sets the peer id of the peer connected
+via the next zmq_connect() call, such that that connection is immediately ready for
 data transfer with the given routing id.  This option applies only to the first
-subsequent call to zmq_connect(), zmq_connect() calls thereafter use the default 
-connection behaviour. 
+subsequent call to zmq_connect(), zmq_connect() calls thereafter use the default
+connection behaviour.
 
-Typical use is to set this socket option ahead of each zmq_connect() call. 
-Each connection MUST be assigned a unique routing id. Assigning a 
-routing id that is already in use is not allowed. 
+Typical use is to set this socket option ahead of each zmq_connect() call.
+Each connection MUST be assigned a unique routing id. Assigning a
+routing id that is already in use is not allowed.
 
-Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it 
-allows for immediate sending to peers. Outbound routing id framing requirements 
+Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it
+allows for immediate sending to peers. Outbound routing id framing requirements
 for ROUTER and STREAM sockets apply.
 
-The routing id must be from 1 to 255 bytes long and MAY NOT start with 
-a zero byte (such routing ids are reserved for internal use by the 0MQ 
+The routing id must be from 1 to 255 bytes long and MAY NOT start with
+a zero byte (such routing ids are reserved for internal use by the 0MQ
 infrastructure).
 
 [horizontal]
@@ -371,8 +371,8 @@ Applicable socket types:: all, when using connection-oriented transports
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This option name is now deprecated. Use ZMQ_ROUTING_ID instead. 
-ZMQ_IDENTITY remains as an alias for now. 
+This option name is now deprecated. Use ZMQ_ROUTING_ID instead.
+ZMQ_IDENTITY remains as an alias for now.
 
 
 ZMQ_IMMEDIATE: Queue messages only to completed connections
@@ -701,6 +701,23 @@ Default value:: 0 (only use ZMQ_RECONNECT_IVL)
 Applicable socket types:: all, only for connection-oriented transports
 
 
+ZMQ_RECONNECT_STOP: Set condition where reconnection will stop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_STOP' option shall set the conditions under which automatic
+reconnection will stop.  This can be useful when a process binds to a
+wild-card port, where the OS supplies an ephemeral port.
+
+The 'ZMQ_RECONNECT_STOP_CONN_REFUSED' option will stop reconnection when 0MQ
+receives the ECONNREFUSED return code from the connect.  This indicates that
+there is no code bound to the specified endpoint.
+
+[horizontal]
+Option value type:: int
+Option value unit:: ZMQ_RECONNECT_STOP_CONN_REFUSED
+Default value:: 0
+Applicable socket types:: all, only for connection-oriented transports
+
+
 ZMQ_RECOVERY_IVL: Set multicast recovery interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECOVERY_IVL' option shall set the recovery interval for multicast
@@ -813,7 +830,7 @@ Applicable socket types:: ZMQ_ROUTER
 ZMQ_ROUTING_ID: Set socket routing id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_ROUTING_ID' option shall set the routing id of the specified 'socket'
-when connecting to a ROUTER socket. 
+when connecting to a ROUTER socket.
 
 A routing id must be at least one byte and at most 255 bytes long. Identities
 starting with a zero byte are reserved for use by the 0MQ infrastructure.
@@ -1094,7 +1111,7 @@ ZMQ_XPUB_MANUAL: change the subscription handling to manual
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the 'XPUB' socket subscription handling mode manual/automatic.
 A value of '0' is the default and subscription requests will be handled automatically.
-A value of '1' will change the subscription requests handling to manual, 
+A value of '1' will change the subscription requests handling to manual,
 with manual mode subscription requests are not added to the subscription list.
 To add subscription the user need to call setsockopt with ZMQ_SUBSCRIBE on XPUB socket.
 
@@ -1125,7 +1142,7 @@ Applicable socket types:: ZMQ_XPUB
 ZMQ_XPUB_NODROP: do not silently drop messages if SENDHWM is reached
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the 'XPUB' socket behaviour to return error EAGAIN if SENDHWM is
-reached and the message could not be send. 
+reached and the message could not be send.
 
 A value of `0` is the default and drops the message silently when the peers
 SNDHWM is reached.  A value of `1` returns an 'EAGAIN' error code if the
@@ -1172,8 +1189,8 @@ Applicable socket types:: ZMQ_XSUB, ZMQ_XPUB
 
 ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the domain for ZAP (ZMQ RFC 27) authentication. A ZAP domain must be 
-specified to enable authentication. When the ZAP domain is empty, which is 
+Sets the domain for ZAP (ZMQ RFC 27) authentication. A ZAP domain must be
+specified to enable authentication. When the ZAP domain is empty, which is
 the default, ZAP authentication is disabled. This is not compatible with
 previous versions of libzmq, so it can be controlled by ZMQ_ZAP_ENFORCE_DOMAIN
 which for now is disabled by default.

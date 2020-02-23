@@ -116,6 +116,10 @@ struct options_t
     //  Default 0 (unused)
     int tcp_maxrt;
 
+    //  Disable reconnect under certain conditions
+    //  Default 0
+    int reconnect_stop;
+
     //  Minimum interval between attempts to reconnect, in milliseconds.
     //  Default 100ms
     int reconnect_ivl;

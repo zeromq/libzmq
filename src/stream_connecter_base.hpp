@@ -91,9 +91,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
     // Socket
     zmq::socket_base_t *const _socket;
 
-    //  Reference to the session we belong to.
-    zmq::session_base_t *const _session;
-
   private:
     //  ID of the timer used to delay the reconnection.
     enum
@@ -118,6 +115,10 @@ class stream_connecter_base_t : public own_t, public io_object_t
     int _current_reconnect_ivl;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_connecter_base_t)
+
+  protected:
+    //  Reference to the session we belong to.
+    zmq::session_base_t *const _session;
 };
 }
 

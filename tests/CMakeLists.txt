@@ -163,6 +163,7 @@ if(ENABLE_DRAFTS)
     test_router_notify
     test_xpub_manual_last_value
     test_peer
+    test_reconnect_options
   )
 endif()
 
@@ -248,7 +249,7 @@ foreach(test ${tests})
       link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
-  
+
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
@@ -292,7 +293,6 @@ if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
 endif()
 
 set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
-
 set_tests_properties(test_reconnect_ivl PROPERTIES TIMEOUT 15)
 
 #Check whether all tests in the current folder are present
