@@ -77,9 +77,12 @@
 // This macro is used to avoid-variable warning. If used with an expression,
 // the sizeof is not evaluated to avoid polluting the assembly code.
 #ifdef NDEBUG
-#define ASSERT_EXPR_SAFE(x) do { (void)sizeof(x);} while (0)
+#define ASSERT_EXPR_SAFE(x)                                                    \
+    do {                                                                       \
+        (void) sizeof (x);                                                     \
+    } while (0)
 #else
-#define ASSERT_EXPR_SAFE(x) assert(x)
+#define ASSERT_EXPR_SAFE(x) assert (x)
 #endif
 
 

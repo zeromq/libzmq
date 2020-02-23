@@ -201,8 +201,8 @@ void reconnect_stop_on_refused ()
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
     int limit = 0;
-    while ((rc != -1)  && (++limit < 1000)) {
-        print_unexpected_event_stderr(event, rc, 0, -1);
+    while ((rc != -1) && (++limit < 1000)) {
+        print_unexpected_event_stderr (event, rc, 0, -1);
         rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
     }

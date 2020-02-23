@@ -17,6 +17,10 @@
   - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
     message to be processed as a subscribe/unsubscribe message, and the rest
     will be forwarded as user data to the application.
+  - ZMQ_RECONNECT_STOP will cause a connecting socket to stop trying to
+    reconnect in specific circumstances. In this release, this can be set to
+    ECONNREFUSED errors, which implies the other end is not listening on the
+    requested port.
   See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
 
 * New DRAFT (see NEWS for 4.2.0) zmq_ctx_get_ext/zmq_ctx_set_ext APIs were added
@@ -28,6 +32,13 @@
   WSS requires the GnuTLS library for TLS support. ZMQ_WSS_ specific socket
   options were added to support TLS.
   WebSockets support is disabled by default if DRAFT APIs are disabled.
+
+* New DRAFT (see NEWS for 4.2.0) socket type, PEER, which is thread safe and a
+  related zmq_connect_peer function which atomically and thread-safely connects
+  and returns a routing-id.
+
+* ZMTP 3.1 is now fully implemented, and 3.1 peers will receive subscribe/cancel
+  on PUB/SUB via commands rather than using the first byte of the payload.
 
 * Fixed #3566 - malformed CURVE message can cause memory leak
 
@@ -100,6 +111,11 @@
 
 * Fixed #3778 - fix documentation of zmq_poller's thread safety
 
+* Fixed #3792 - do not allow creation of new sockets after zmq_ctx_shutdown
+
+* Fixed #3805 - improve performance of CURVE by reducing copies
+
+* Fixed #3814 - send subscribe/cancel as commands to ZMTP 3.1 peers
 
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================
