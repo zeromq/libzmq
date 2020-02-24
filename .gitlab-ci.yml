@@ -42,16 +42,16 @@ lib-build-windows:
     - mkdir build
     - cd build
     - $env:PATH="$env:INITIAL_PATH;$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\Debug\x86"
-    - cmake -S .. -B DebugX86 -G"Visual Studio %VS_VERSION_NUM% %VS_VERSION_YEAR%" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
+    - cmake -S .. -B DebugX86 -G"Visual Studio $env:VS_VERSION_NUM $env:VS_VERSION_YEAR" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
     - cmake --build DebugX86 --target ALL_BUILD --config Debug
     - $env:PATH="$env:INITIAL_PATH;$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\Release\x86"
-    - cmake -S .. -B ReleaseX86 -G"Visual Studio %VS_VERSION_NUM% %VS_VERSION_YEAR%" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
+    - cmake -S .. -B ReleaseX86 -G"Visual Studio $env:VS_VERSION_NUM $env:VS_VERSION_YEAR" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
     - cmake --build ReleaseX86 --target ALL_BUILD --config Release
     - $env:PATH="$env:INITIAL_PATH;$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\Debug\x64"
-    - cmake -S .. -B DebugX64 -G"Visual Studio %VS_VERSION_NUM% %VS_VERSION_YEAR% Win64" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
+    - cmake -S .. -B DebugX64 -G"Visual Studio $env:VS_VERSION_NUM $env:VS_VERSION_YEAR Win64" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
     - cmake --build DebugX64 --target ALL_BUILD --config Debug
     - $env:PATH="$env:INITIAL_PATH;$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\Release\x64"
-    - cmake -S .. -B ReleaseX64 -G"Visual Studio %VS_VERSION_NUM% %VS_VERSION_YEAR% Win64" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
+    - cmake -S .. -B ReleaseX64 -G"Visual Studio $env:VS_VERSION_NUM $env:VS_VERSION_YEAR Win64" -DBUILD_TESTS=OFF -DWITH_LIBSODIUM=ON -DBUILD_STATIC=OFF
     - cmake --build ReleaseX64 --target ALL_BUILD --config Release
     - copy ..\include\*.h "$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\include\" -Force
     - copy "DebugX86\bin\Debug\libzmq*" "$env:DEPLOYMENT_WINDOWS_NET_SHARE\Builds\Debug\x86\" -Force
