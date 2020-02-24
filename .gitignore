@@ -208,3 +208,4 @@ build
 test-suite.log
 .idea/
 cmake-build-debug/
+builds/xcode/*
