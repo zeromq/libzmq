@@ -1,6 +1,6 @@
 # Permission to Relicense under MPLv2 or any other OSI approved license chosen by the current ZeroMQ BDFL
 
-This is a statement by Simon Giesecke that grants permission to
+This is a statement by Mark Jan van Kampen that grants permission to
 relicense its copyrights in the libzmq C++ library (ZeroMQ) under the
 Mozilla Public License v2 (MPLv2) or any other Open Source Initiative
 approved license chosen by the current ZeroMQ BDFL (Benevolent
