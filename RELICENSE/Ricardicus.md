@@ -3,4 +3,4 @@ This is a statement by Rickard Hallerbäck that grants permission to relicense i
 
 A portion of the commits made by the Github handle "Ricardicus", with commit author "Rickard Hallerbäck", are copyright of Sébastien Rombauts. This document hereby grants the libzmq project team to relicense libzmq, including all past, present and future contributions of the author listed above.
 
-Ricardicus 2020/02/28
+Rickard Hallerbäck 2020/02/28
