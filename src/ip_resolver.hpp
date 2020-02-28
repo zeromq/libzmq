@@ -90,6 +90,7 @@ class ip_resolver_t
 {
   public:
     ip_resolver_t (ip_resolver_options_t opts_);
+    virtual ~ip_resolver_t (){};
 
     int resolve (ip_addr_t *ip_addr_, const char *name_);
 
