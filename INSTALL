@@ -137,6 +137,17 @@ The simplest way to compile this package is:
   6. Often, you can also type `make uninstall' to remove the installed
      files again.
 
+OS X Builds - Documentation
+===========================
+
+Basic installation on OS X may fail in `Making all in doc' step. This
+error can be resolved by adding environment variable for shell.
+
+export XML_CATALOG_FILES=/usr/local/etc/xml/catalog 
+
+Write comamnd above in shell for instant resolve, or append command into
+shell profile file and reload for permanent resolve.
+
 Compilers and Options
 =====================
 
