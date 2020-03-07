@@ -221,7 +221,7 @@ int zmq::msg_t::init_leave ()
     return 0;
 }
 
-int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
+int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -229,14 +229,14 @@ int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
 
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
-            assert (topic);
-            memcpy (data (), topic, size_);
+            assert (topic_);
+            memcpy (data (), topic_, size_);
         }
     }
     return rc;
 }
 
-int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
+int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -244,8 +244,8 @@ int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
 
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
-            assert (topic);
-            memcpy (data (), topic, size_);
+            assert (topic_);
+            memcpy (data (), topic_, size_);
         }
     }
     return rc;
