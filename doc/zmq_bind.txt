@@ -34,8 +34,9 @@ Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
 linkzmq:zmq_socket[3].
 
-The 'ipc', 'tcp' and 'vmci' transports accept wildcard addresses: see linkzmq:zmq_ipc[7],
-linkzmq:zmq_tcp[7] and linkzmq:zmq_vmci[7] for details.
+The 'ipc', 'tcp', 'vmci' and 'udp' transports accept wildcard addresses: see
+linkzmq:zmq_ipc[7], linkzmq:zmq_tcp[7], linkzmq:zmq_vmci[7] and
+linkzmq:zmq_udp[7] for details.
 
 NOTE: the address syntax may be different for _zmq_bind()_ and _zmq_connect()_
 especially for the 'tcp', 'pgm' and 'epgm' transports.
