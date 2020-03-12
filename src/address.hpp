@@ -62,6 +62,9 @@ namespace protocol_name
 static const char inproc[] = "inproc";
 static const char tcp[] = "tcp";
 static const char udp[] = "udp";
+static const char pgm[] = "pgm";
+static const char epgm[] = "epgm";
+static const char norm[] = "norm";
 #ifdef ZMQ_HAVE_WS
 static const char ws[] = "ws";
 #endif

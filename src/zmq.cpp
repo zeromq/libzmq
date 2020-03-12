@@ -1477,7 +1477,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_OPENPGM)
-    if (strcmp (capability_, "pgm") == 0)
+    if (strcmp (capability_, zmq::protocol_name::pgm) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_TIPC)
@@ -1485,7 +1485,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_NORM)
-    if (strcmp (capability_, "norm") == 0)
+    if (strcmp (capability_, zmq::protocol_name::norm) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_CURVE)
