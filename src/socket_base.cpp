@@ -347,15 +347,15 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #endif
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
-        && protocol_ != "pgm"
-        && protocol_ != "epgm"
+        && protocol_ != protocol_name::pgm
+        && protocol_ != protocol_name::epgm
 #endif
 #if defined ZMQ_HAVE_TIPC
         // TIPC transport is only available on Linux.
         && protocol_ != protocol_name::tipc
 #endif
 #if defined ZMQ_HAVE_NORM
-        && protocol_ != "norm"
+        && protocol_ != protocol_name::norm
 #endif
 #if defined ZMQ_HAVE_VMCI
         && protocol_ != protocol_name::vmci
@@ -369,7 +369,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
-    if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    if ((protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm
+         || protocol_ == protocol_name::norm)
+#elif defined ZMQ_HAVE_OPENPGM
+    if ((protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm)
+#else // defined ZMQ_HAVE_NORM
+    if (protocol_ == protocol_name::norm
+#endif
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
         && options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
@@ -546,7 +553,15 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
+#if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm
+        || protocol == protocol_name::norm) {
+#elif defined ZMQ_HAVE_OPENPGM
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm) {
+#else // defined ZMQ_HAVE_NORM
+    if (protocol == protocol_name::norm) {
+#endif
         //  For convenience's sake, bind can be used interchangeable with
         //  connect for PGM, EPGM, NORM transports.
         rc = connect (endpoint_uri_);
@@ -554,6 +569,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
             options.connected = true;
         return rc;
     }
+#endif
 
     if (protocol == protocol_name::udp) {
         if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
@@ -968,7 +984,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
     // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
-    if (protocol == "pgm" || protocol == "epgm") {
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm) {
         struct pgm_addrinfo_t *res = NULL;
         uint16_t port_number = 0;
         int rc =
@@ -1021,9 +1037,20 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
-    const bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
-                                  || protocol == "norm"
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    const bool subscribe_to_all =
+      protocol == protocol_name::pgm || protocol == protocol_name::epgm
+      || protocol == protocol_name::norm || protocol == protocol_name::udp;
+#elif defined ZMQ_HAVE_OPENPGM
+    const bool subscribe_to_all = protocol == protocol_name::pgm
+                                  || protocol == protocol_name::epgm
                                   || protocol == protocol_name::udp;
+#elif defined ZMQ_HAVE_NORM
+    const bool subscribe_to_all =
+      protocol == protocol_name::norm || protocol == protocol_name::udp;
+#else
+    const bool subscribe_to_all = protocol == protocol_name::udp;
+#endif
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
