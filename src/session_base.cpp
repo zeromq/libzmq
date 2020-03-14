@@ -534,10 +534,14 @@ void zmq::session_base_t::reconnect ()
 {
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (_pipe && options.immediate == 1 
+    if (_pipe && options.immediate == 1
+#ifdef ZMQ_HAVE_OPENPGM
         && _addr->protocol != protocol_name::pgm
         && _addr->protocol != protocol_name::epgm
+#endif
+#ifdef ZMQ_HAVE_NORM
         && _addr->protocol != protocol_name::norm
+#endif
         && _addr->protocol != protocol_name::udp) {
         _pipe->hiccup ();
         _pipe->terminate (false);

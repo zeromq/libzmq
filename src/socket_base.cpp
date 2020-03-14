@@ -369,8 +369,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
-    if ((protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm
-         || protocol_ == protocol_name::norm)
+    if ((false
+#ifdef ZMQ_HAVE_OPENPGM
+         || protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm
+#endif
+#ifdef ZMQ_HAVE_NORM
+         || protocol_ == protocol_name::norm
+#endif
+         || false)
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
         && options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
@@ -547,8 +553,14 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return rc;
     }
 
-    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm
-        || protocol == protocol_name::norm) {
+    if (false
+#ifdef ZMQ_HAVE_OPENPGM
+        || protocol == protocol_name::pgm || protocol == protocol_name::epgm
+#endif
+#ifdef ZMQ_HAVE_NORM
+        || protocol == protocol_name::norm
+#endif
+        || false) {
         //  For convenience's sake, bind can be used interchangeable with
         //  connect for PGM, EPGM, NORM transports.
         rc = connect (endpoint_uri_);
@@ -1023,9 +1035,14 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
-    const bool subscribe_to_all = protocol == protocol_name::pgm 
+    const bool subscribe_to_all = false
+#ifdef ZMQ_HAVE_OPENPGM
+                                  || protocol == protocol_name::pgm
                                   || protocol == protocol_name::epgm
+#endif
+#ifdef ZMQ_HAVE_NORM
                                   || protocol == protocol_name::norm
+#endif
                                   || protocol == protocol_name::udp;
     pipe_t *newpipe = NULL;
 
