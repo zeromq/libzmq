@@ -1513,8 +1513,9 @@ endif()
 if(WIN32)
   set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for ZeroMQConfig.cmake")
 else()
-  # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
-  set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
+  # CMake search path wants either "share" (AKA GNUInstallDirs DATAROOTDIR)
+  # for arch-independent, or LIBDIR for arch-dependent, plus "cmake" as prefix
+  set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
 endif()
 
 if((NOT CMAKE_VERSION VERSION_LESS 3.0) AND (BUILD_SHARED OR BUILD_STATIC))
