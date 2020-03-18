@@ -65,8 +65,8 @@ src/libzmq.pc
 ## Executable binaries are ignored
 tools/curve_keygen
 ## Executable source files must be tracked
-tools/*.[ch]
-tools/*.[ch]pp
+!tools/*.[ch]
+!tools/*.[ch]pp
 
 # /tests
 ## Test binaries and logs are ignored
