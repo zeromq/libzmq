@@ -806,7 +806,8 @@ or not the socket is threadsafe. See linkzmq:zmq_socket[3] for which sockets are
 thread-safe.
 
 [horizontal]
-Option value type:: boolean
+Option value type:: int
+Option value unit:: boolean
 Applicable socket types:: all
 
 
