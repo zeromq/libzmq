@@ -40,6 +40,30 @@ if(ENABLE_ASAN)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
 endif()
 
+option(ENABLE_TSAN "Build with thread sanitizer" OFF)
+if(ENABLE_TSAN)
+  message(STATUS "Instrumenting with Thread Sanitizer")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=thread -fPIE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -fPIE")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=thread")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread -pie")
+endif()
+
+option(ENABLE_UBSAN "Build with undefined behavior sanitizer" OFF)
+if(ENABLE_UBSAN)
+  message(STATUS "Instrumenting with Undefined Behavior Sanitizer")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fno-omit-frame-pointer")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=undefined")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-conversion")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-integer-truncation")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=integer")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=nullability")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=vptr")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UBSAN_FLAGS}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${UBSAN_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${UBSAN_FLAGS}")
+endif()
+
 option (ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
 if (ENABLE_INTRINSICS)
    message(STATUS "Using compiler intrinsics for atomic ops")
@@ -231,7 +255,7 @@ set(API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid 
 
 set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
-  
+
 if (WIN32)
     if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
         set(ZMQ_HAVE_WINDOWS_UWP ON)
@@ -1649,7 +1673,7 @@ include(ClangFormat)
 # fixes https://github.com/zeromq/libzmq/issues/3776
 # The problem is, both libzmq-static libzmq try to use/generate precompiled.pch at the same time
 # Add a dependency, so they run in order and so they dont get in each others way
-# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp. 
+# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp.
 # builds involving this target will not be correct; continuing anyway [-w dupbuild=warn]"
 if (MSVC AND ENABLE_PRECOMPILED AND BUILD_SHARED AND BUILD_STATIC)
     add_dependencies(libzmq-static libzmq)

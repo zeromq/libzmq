@@ -678,6 +678,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_WSS_TRUST_SYSTEM 107
 #define ZMQ_ONLY_FIRST_SUBSCRIBE 108
 #define ZMQ_RECONNECT_STOP 109
+#define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 110
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
