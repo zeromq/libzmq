@@ -26,7 +26,7 @@ License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#ifdef ZMQ_HAVE_WSS
 #include "precompiled.hpp"
 #include "wss_engine.hpp"
 
@@ -234,3 +234,4 @@ int zmq::wss_engine_t::write (const void *data_, size_t size_)
     // TODO: change return type to ssize_t (signed)
     return rc;
 }
+#endif

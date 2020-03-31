@@ -29,7 +29,7 @@
 
 #ifndef __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 #define __ZMQ_WSS_ENGINE_HPP_INCLUDED__
-
+#ifdef ZMQ_HAVE_WSS
 #include <gnutls/gnutls.h>
 #include "ws_engine.hpp"
 
@@ -64,5 +64,5 @@ class wss_engine_t : public ws_engine_t
     gnutls_session_t _tls_session;
 };
 }
-
+#endif
 #endif
