@@ -287,8 +287,12 @@ void zmq::ws_connecter_t::create_engine (fd_t fd_,
         assert (false);
 #endif
     else
+#ifdef ZMQ_HAVE_WS
         engine = new (std::nothrow) ws_engine_t (
           fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true);
+#else
+        assert (false);
+#endif
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.

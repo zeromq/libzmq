@@ -30,6 +30,8 @@
 #ifndef __ZMQ_WS_ENGINE_HPP_INCLUDED__
 #define __ZMQ_WS_ENGINE_HPP_INCLUDED__
 
+#ifdef ZMQ_HAVE_WS
+
 #include "io_object.hpp"
 #include "address.hpp"
 #include "msg.hpp"
@@ -179,4 +181,5 @@ class ws_engine_t ZMQ_FINAL : public stream_engine_base_t
 };
 }
 
+#endif
 #endif

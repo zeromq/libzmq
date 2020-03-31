@@ -26,6 +26,7 @@ License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifdef ZMQ_HAVE_WS
 
 #include "precompiled.hpp"
 
@@ -1092,3 +1093,4 @@ static void compute_accept_key (char *key_, unsigned char *hash_)
 #error "No sha1 implementation set"
 #endif
 }
+#endif
