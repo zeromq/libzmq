@@ -34,7 +34,7 @@
 #include "ws_address.hpp"
 #include "stream_listener_base.hpp"
 
-#if ZMQ_USE_GNUTLS
+#ifdef ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
 #endif
 

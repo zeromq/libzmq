@@ -73,6 +73,7 @@ set(tests
   test_socket_null
   test_reconnect_ivl
   test_mock_pub_sub
+  test_socks
 )
 
 if(NOT WIN32)
@@ -164,6 +165,18 @@ if(ENABLE_DRAFTS)
     test_xpub_manual_last_value
     test_peer
     test_reconnect_options
+    )
+endif()
+
+if (WS_ENABLE)
+  list(APPEND tests
+    test_ws_transport
+  )
+endif()
+
+if (WSS_ENABLE)
+  list(APPEND tests
+    test_wss_transport
   )
 endif()
 

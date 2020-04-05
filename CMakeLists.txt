@@ -98,13 +98,28 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif()
 
-# Enable webSocket transport
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  message(STATUS "Build and install draft classes and methods")
+  option(ENABLE_DRAFTS "Build and install draft classes and methods" ON)
+else()
+  message(STATUS "Not building draft classes and methods")
+  option(ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
+endif()
+
+# Enable WebSocket transport and RadixTree
 if (ENABLE_DRAFTS)
+  set(ZMQ_BUILD_DRAFT_API)
   option(ENABLE_WS "Enable WebSocket transport" ON)
+  option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
 else()
   option(ENABLE_WS "Enable WebSocket transport" OFF)
+  option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" OFF)
 endif()
-option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
+
+if (ENABLE_RADIX_TREE)
+   message(STATUS "Using radix tree implementation to manage subscriptions")
+   set(ZMQ_USE_RADIX_TREE)
+endif()
 
 if (ENABLE_WS)
   list(APPEND sources
@@ -125,28 +140,46 @@ if (ENABLE_WS)
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_protocol.hpp)
   set(ZMQ_HAVE_WS 1)
 
-  if (WITH_NSS)
-    pkg_check_modules(NSS3 "nss")
-    if (NSS3_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} nss")
+  message(STATUS "Enable WebSocket transport")
+
+  option(WITH_TLS "Use TLS for WSS support" ON)
+  option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
+
+  if (WITH_TLS)
+      find_package("GnuTLS" 3.1.4)
+    if (GNUTLS_FOUND)
+      set(OPTIONAL_LIBRARIES ${GNUTLS_LIBRARIES})
+      set(pkg_config_names_private "${pkg_config_names_private} gnutls")
     else()
-      find_package("NSS3")
-      if (NSS3_FOUND)
-        set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
-      else()
-        message(FATAL_ERROR
-                "nss is not installed. Install it, then run CMake again")
-      endif()
-    endif()
-    message(STATUS "Using NSS")
-    include_directories(${NSS3_INCLUDE_DIRS})
-    link_directories(${NSS3_LIBRARY_DIRS})
-    set(OPTIONAL_LIBRARIES ${NSS3_LIBRARIES})
-    set(ZMQ_USE_NSS 1)
+      message(FATAL_ERROR "gnutls 3.1.4 or higher is not installed. Install it, then run CMake again")
+		endif()
+
+    message(STATUS "Enable WSS transport")
+    set(ZMQ_USE_GNUTLS 1)
+
   else()
-    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
-    message("Using builtin sha1")
-    set(ZMQ_USE_BUILTIN_SHA1 1)
+    if (WITH_NSS)
+      pkg_check_modules(NSS3 "nss")
+      if (NSS3_FOUND)
+        set(pkg_config_names_private "${pkg_config_names_private} nss")
+      else()
+        find_package("NSS3")
+        if (NSS3_FOUND)
+          set(pkg_config_libs_private "${pkg_config_libs_private} -lnss3")
+        else()
+          message(FATAL_ERROR "nss is not installed. Install it, then run CMake again")
+        endif()
+      endif()
+      message(STATUS "Using NSS")
+      include_directories(${NSS3_INCLUDE_DIRS})
+      link_directories(${NSS3_LIBRARY_DIRS})
+      set(OPTIONAL_LIBRARIES ${NSS3_LIBRARIES})
+      set(ZMQ_USE_NSS 1)
+    else()
+      list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
+      message("Using builtin sha1")
+      set(ZMQ_USE_BUILTIN_SHA1 1)
+    endif()
   endif()
 endif()
 
@@ -173,14 +206,14 @@ endif()
 # To use libsodium instead, use --with-libsodium(must be installed)
 # To disable curve, use --disable-curve
 
-option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" OFF)
+option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" ON)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
 option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(NOT ENABLE_CURVE)
   message(STATUS "CURVE security is disabled")
 elseif(WITH_LIBSODIUM)
-  find_package(Sodium)
+  find_package(sodium)
   if(SODIUM_FOUND)
     message(STATUS "Using libsodium for CURVE security")
     include_directories(${SODIUM_INCLUDE_DIRS})
@@ -202,24 +235,6 @@ endif()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-if(EXISTS "${SOURCE_DIR}/.git")
-  option(ENABLE_DRAFTS "Build and install draft classes and methods" ON)
-else()
-  option(ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
-endif()
-if(ENABLE_DRAFTS)
-  option (ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
-  add_definitions(-DZMQ_BUILD_DRAFT_API)
-  set(pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
-else()
-  option (ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" OFF)
-  set(pkg_config_defines "")
-endif()
-
-if (ENABLE_RADIX_TREE)
-   message(STATUS "Using radix tree implementation to manage subscriptions")
-   add_definitions(-DZMQ_USE_RADIX_TREE)
-endif()
 
 option(WITH_MILITANT "Enable militant assertions" OFF)
 if(WITH_MILITANT)
@@ -231,7 +246,7 @@ set(API_POLLER "" CACHE STRING "Choose polling system for zmq_poll(er)_*. valid 
 
 set(POLLER "" CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
-  
+
 if (WIN32)
     if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
         set(ZMQ_HAVE_WINDOWS_UWP ON)
@@ -1357,11 +1372,11 @@ if(BUILD_STATIC)
   target_link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
   if(NSS3_FOUND)
-    target_link_libraries(libzmq-static ${NSS3_LIBRARIES})
+      target_link_libraries(libzmq-static ${NSS3_LIBRARIES} ${OPTIONAL_LIBARIES})
   endif()
 
   if(SODIUM_FOUND)
-    target_link_libraries(libzmq-static ${SODIUM_LIBRARIES})
+      target_link_libraries(libzmq-static ${SODIUM_LIBRARIES} ${OPTIONAL_LIBRARIES})
     # On Solaris, libsodium depends on libssp
     if(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
       target_link_libraries(libzmq-static ssp)
@@ -1410,7 +1425,7 @@ if(BUILD_SHARED)
   if(WITH_PERF_TOOL)
     foreach(perf-tool ${perf-tools})
       add_executable(${perf-tool} perf/${perf-tool}.cpp)
-      target_link_libraries(${perf-tool} libzmq)
+      target_link_libraries(${perf-tool} libzmq {$GNUTLS_LIBRARIES})
 
       if(ZMQ_BUILD_FRAMEWORK)
         # Copy perf-tools binaries into Framework
@@ -1649,7 +1664,7 @@ include(ClangFormat)
 # fixes https://github.com/zeromq/libzmq/issues/3776
 # The problem is, both libzmq-static libzmq try to use/generate precompiled.pch at the same time
 # Add a dependency, so they run in order and so they dont get in each others way
-# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp. 
+# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp.
 # builds involving this target will not be correct; continuing anyway [-w dupbuild=warn]"
 if (MSVC AND ENABLE_PRECOMPILED AND BUILD_SHARED AND BUILD_STATIC)
     add_dependencies(libzmq-static libzmq)

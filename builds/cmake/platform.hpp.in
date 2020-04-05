@@ -67,6 +67,10 @@
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
 #cmakedefine SODIUM_STATIC
+#cmakedefine ZMQ_USE_GNUTLS
+
+#cmakedefine ZMQ_USE_RADIX_TREE
+#cmakedefine ZMQ_BUILD_DRAFT_API
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX
