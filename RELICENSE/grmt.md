@@ -9,5 +9,5 @@ commit author "grmt", are copyright of grmt.
 This document hereby grants the libzmq project team to relicense libzmq, 
 including all past, present and future contributions of the author listed above.
 
-grmt
+grmt (garmt.noname@gmail.com)
 2020/05/04
