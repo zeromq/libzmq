@@ -168,11 +168,11 @@ if(ENABLE_DRAFTS)
     )
 endif()
 
-if (ENABLE_WS)
+if (ZMQ_HAVE_WS)
   list(APPEND tests
     test_ws_transport
   )
-  if (WITH_TLS)
+  if (ZMQ_HAVE_WSS)
     list(APPEND tests
       test_wss_transport
     )

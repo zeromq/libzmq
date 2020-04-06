@@ -38,13 +38,15 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "address.hpp"
+#ifdef ZMQ_HAVE_WS
 #include "ws_address.hpp"
-#include "wss_address.hpp"
-#include "session_base.hpp"
 #include "ws_engine.hpp"
+#endif
+#include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
 #include "wss_engine.hpp"
+#include "wss_address.hpp"
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -118,14 +120,17 @@ void zmq::ws_connecter_t::out_event ()
         add_reconnect_timer ();
         return;
     }
-
+#ifdef ZMQ_HAVE_WS
+#ifdef ZMQ_HAVE_WSS
     if (_wss)
         create_engine (fd,
                        get_socket_name<wss_address_t> (fd, socket_end_local));
     else
+#endif
         create_engine (fd,
                        get_socket_name<ws_address_t> (fd, socket_end_local));
 }
+#endif
 
 void zmq::ws_connecter_t::timer_event (int id_)
 {

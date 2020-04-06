@@ -54,8 +54,9 @@
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
+#ifdef ZMQ_HAVE_WS
 #include "ws_address.hpp"
-#include "wss_address.hpp"
+#endif
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -72,6 +73,9 @@
 #include "mailbox.hpp"
 #include "mailbox_safe.hpp"
 
+#ifdef ZMQ_HAVE_WSS
+#include "wss_address.hpp"
+#endif
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
 #include "vmci_listener.hpp"
