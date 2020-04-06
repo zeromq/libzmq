@@ -71,7 +71,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
 
     //  i_poll_events interface implementation.
     void in_event () ZMQ_FINAL;
-    void out_event () ZMQ_FINAL;
+    void out_event ();
     void timer_event (int id_) ZMQ_FINAL;
 
   protected:

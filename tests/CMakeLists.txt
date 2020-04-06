@@ -168,17 +168,17 @@ if(ENABLE_DRAFTS)
     )
 endif()
 
-if (WS_ENABLE)
+if (ENABLE_WS)
   list(APPEND tests
     test_ws_transport
   )
+  if (WITH_TLS)
+    list(APPEND tests
+      test_wss_transport
+    )
+  endif()
 endif()
 
-if (WSS_ENABLE)
-  list(APPEND tests
-    test_wss_transport
-  )
-endif()
 
 # add location of platform.hpp for Windows builds
 if(WIN32)

@@ -108,7 +108,7 @@ endif()
 
 # Enable WebSocket transport and RadixTree
 if (ENABLE_DRAFTS)
-  set(ZMQ_BUILD_DRAFT_API)
+  set(ZMQ_BUILD_DRAFT_API 1)
   option(ENABLE_WS "Enable WebSocket transport" ON)
   option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
 else()
@@ -118,20 +118,18 @@ endif()
 
 if (ENABLE_RADIX_TREE)
    message(STATUS "Using radix tree implementation to manage subscriptions")
-   set(ZMQ_USE_RADIX_TREE)
+   set(ZMQ_USE_RADIX_TREE 1)
 endif()
 
 if (ENABLE_WS)
   list(APPEND sources
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
-          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.cpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.hpp
-          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.hpp
@@ -148,15 +146,21 @@ if (ENABLE_WS)
   if (WITH_TLS)
       find_package("GnuTLS" 3.1.4)
     if (GNUTLS_FOUND)
-      set(OPTIONAL_LIBRARIES ${GNUTLS_LIBRARIES})
       set(pkg_config_names_private "${pkg_config_names_private} gnutls")
     else()
       message(FATAL_ERROR "gnutls 3.1.4 or higher is not installed. Install it, then run CMake again")
 		endif()
 
+    list(APPEND sources
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp
+          )
+
     message(STATUS "Enable WSS transport")
     set(ZMQ_USE_GNUTLS 1)
-
+    set(ZMQ_HAVE_WSS 1)
   else()
     if (WITH_NSS)
       pkg_check_modules(NSS3 "nss")
@@ -171,13 +175,10 @@ if (ENABLE_WS)
         endif()
       endif()
       message(STATUS "Using NSS")
-      include_directories(${NSS3_INCLUDE_DIRS})
-      link_directories(${NSS3_LIBRARY_DIRS})
-      set(OPTIONAL_LIBRARIES ${NSS3_LIBRARIES})
       set(ZMQ_USE_NSS 1)
     else()
       list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
-      message("Using builtin sha1")
+      message(STATUS "Using builtin sha1")
       set(ZMQ_USE_BUILTIN_SHA1 1)
     endif()
   endif()
@@ -189,11 +190,8 @@ if(NOT MSVC)
     pkg_check_modules(LIBBSD "libbsd")
     if (LIBBSD_FOUND)
       message(STATUS "Using libbsd")
-      include_directories(${LIBBSD_INCLUDE_DIRS})
       set(pkg_config_names_private "${pkg_config_names_private} libbsd")
       set(ZMQ_HAVE_LIBBSD 1)
-      link_directories(${LIBBSD_LIBRARY_DIRS})
-      set(OPTIONAL_LIBRARIES ${LIBBSD_LIBRARIES})
     endif()
   endif()
   if (NOT WITH_LIBBSD OR NOT LIBBSD_FOUND)
@@ -213,18 +211,16 @@ option(ENABLE_CURVE "Enable CURVE security" ON)
 if(NOT ENABLE_CURVE)
   message(STATUS "CURVE security is disabled")
 elseif(WITH_LIBSODIUM)
-  find_package(sodium)
+  find_package("Sodium")
   if(SODIUM_FOUND)
     message(STATUS "Using libsodium for CURVE security")
-    include_directories(${SODIUM_INCLUDE_DIRS})
     if(WITH_LIBSODIUM_STATIC)
       add_compile_definitions(SODIUM_STATIC)
     endif()
     set(ZMQ_USE_LIBSODIUM 1)
     set(ZMQ_HAVE_CURVE 1)
   else()
-    message(FATAL_ERROR
-      "libsodium is not installed. Install it, then run CMake again")
+    message(FATAL_ERROR "libsodium is not installed. Install it, then run CMake again")
   endif()
 else()
   message(STATUS "Using tweetnacl for CURVE security")
@@ -234,7 +230,6 @@ else()
 endif()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
 
 option(WITH_MILITANT "Enable militant assertions" OFF)
 if(WITH_MILITANT)
@@ -357,8 +352,7 @@ if(POLLER STREQUAL "")
   if(HAVE_SELECT)
     set(POLLER "select")
   else()
-    message(FATAL_ERROR
-      "Could not autodetect polling method")
+    message(FATAL_ERROR "Could not autodetect polling method")
   endif()
 endif()
 
@@ -1209,16 +1203,6 @@ endif()
 option(BUILD_SHARED "Whether or not to build the shared object"  ON)
 option(BUILD_STATIC "Whether or not to build the static archive" ON)
 
-list(APPEND target_outputs "")
-
-if(BUILD_SHARED)
-  list(APPEND target_outputs "libzmq")
-endif()
-
-if(BUILD_STATIC)
-  list(APPEND target_outputs "libzmq-static")
-endif()
-
 if(MSVC)
   # Suppress linker warnings caused by #ifdef omission
   # of file content.
@@ -1322,8 +1306,17 @@ else()
 endif()
 
 if(BUILD_STATIC)
-  target_compile_definitions(libzmq-static
-    PUBLIC ZMQ_STATIC)
+  target_compile_definitions(libzmq-static PUBLIC ZMQ_STATIC)
+endif()
+
+list(APPEND target_outputs "")
+
+if(BUILD_SHARED)
+  list(APPEND target_outputs "libzmq")
+endif()
+
+if(BUILD_STATIC)
+  list(APPEND target_outputs "libzmq-static")
 endif()
 
 foreach(target ${target_outputs})
@@ -1335,14 +1328,21 @@ foreach(target ${target_outputs})
 endforeach()
 
 if(BUILD_SHARED)
-  target_link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+  if(GNUTLS_FOUND)
+      target_link_libraries(libzmq ${GNUTLS_LIBRARIES})
+  endif()
 
   if(NSS3_FOUND)
     target_link_libraries(libzmq ${NSS3_LIBRARIES})
   endif()
 
+  if(LIBBSD_FOUND)
+      target_link_libraries(libzmq ${LIBBSD_LIBRARIES})
+  endif()
+
   if(SODIUM_FOUND)
-    target_link_libraries(libzmq ${SODIUM_LIBRARIES})
+      target_link_libraries(libzmq ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
     if(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
       target_link_libraries(libzmq ssp)
@@ -1369,14 +1369,21 @@ if(BUILD_SHARED)
 endif()
 
 if(BUILD_STATIC)
-  target_link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(libzmq-static ${CMAKE_THREAD_LIBS_INIT})
+  if(GNUTLS_FOUND)
+      target_link_libraries(libzmq-static ${GNUTLS_LIBRARIES})
+  endif()
+
+  if(LIBBSD_FOUND)
+      target_link_libraries(libzmq-static ${LIBBSD_LIBRARIES})
+  endif()
 
   if(NSS3_FOUND)
-      target_link_libraries(libzmq-static ${NSS3_LIBRARIES} ${OPTIONAL_LIBARIES})
+      target_link_libraries(libzmq-static ${NSS3_LIBRARIES})
   endif()
 
   if(SODIUM_FOUND)
-      target_link_libraries(libzmq-static ${SODIUM_LIBRARIES} ${OPTIONAL_LIBRARIES})
+      target_link_libraries(libzmq-static ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
     if(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
       target_link_libraries(libzmq-static ssp)
@@ -1425,7 +1432,23 @@ if(BUILD_SHARED)
   if(WITH_PERF_TOOL)
     foreach(perf-tool ${perf-tools})
       add_executable(${perf-tool} perf/${perf-tool}.cpp)
-      target_link_libraries(${perf-tool} libzmq {$GNUTLS_LIBRARIES})
+      target_link_libraries(${perf-tool} libzmq )
+
+      if (GNUTLS_FOUND)
+        target_link_libraries(${perf-tool} ${GNUTLS_LIBRARIES})
+      endif()
+
+      if(LIBBSD_FOUND)
+        target_link_libraries(${perf-tool} ${LIBBSD_LIBRARIES})
+      endif()
+
+      if(NSS3_FOUND)
+        target_link_libraries(${perf-tool} ${NSS3_LIBRARIES})
+      endif()
+
+      if(SODIUM_FOUND)
+        target_link_libraries(${perf-tool} ${SODIUM_LIBRARIES})
+      endif()
 
       if(ZMQ_BUILD_FRAMEWORK)
         # Copy perf-tools binaries into Framework
@@ -1437,29 +1460,24 @@ if(BUILD_SHARED)
           VERBATIM
           COMMENT "Perf tools")
       else()
-        install(TARGETS ${perf-tool}
-          RUNTIME DESTINATION bin
-          COMPONENT PerfTools)
+        install(TARGETS ${perf-tool} RUNTIME DESTINATION bin COMPONENT PerfTools)
       endif()
-	  if(ZMQ_HAVE_WINDOWS_UWP)
+	    if(ZMQ_HAVE_WINDOWS_UWP)
 	      set_target_properties(${perf-tool} PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
-	  endif()
+	    endif()
     endforeach()
 
     if(BUILD_STATIC)
       add_executable(benchmark_radix_tree perf/benchmark_radix_tree.cpp)
       target_link_libraries(benchmark_radix_tree libzmq-static)
-      target_include_directories(benchmark_radix_tree
-        PUBLIC
-        "${CMAKE_CURRENT_LIST_DIR}/src")
-	  if(ZMQ_HAVE_WINDOWS_UWP)
+      target_include_directories(benchmark_radix_tree PUBLIC "${CMAKE_CURRENT_LIST_DIR}/src")
+	    if(ZMQ_HAVE_WINDOWS_UWP)
 	      set_target_properties(benchmark_radix_tree PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
-	  endif()
+	    endif()
     endif()
-
+  elseif(WITH_PERF_TOOL)
+    message(FATAL_ERROR "Shared library disabled - perf-tools unavailable.")
   endif()
-elseif(WITH_PERF_TOOL)
-  message(FATAL_ERROR "Shared library disabled - perf-tools unavailable.")
 endif()
 
 #-----------------------------------------------------------------------------

@@ -73,7 +73,7 @@ class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
     ws_address_t _address;
 
     bool _wss;
-#if ZMQ_HAVE_WSS
+#ifdef ZMQ_HAVE_WSS
     gnutls_certificate_credentials_t _tls_cred;
 #endif
 
