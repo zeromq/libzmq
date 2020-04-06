@@ -1104,7 +1104,6 @@ if(WITH_VMCI)
 endif()
 
 if(ZMQ_HAVE_TIPC)
-  add_definitions(-DZMQ_HAVE_TIPC)
   list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
 endif()
 

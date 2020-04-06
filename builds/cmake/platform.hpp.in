@@ -60,6 +60,7 @@
 #cmakedefine ZMQ_USE_NSS
 #cmakedefine ZMQ_HAVE_WS
 #cmakedefine ZMQ_HAVE_WSS
+#cmakedefine ZMQ_HAVE_TIPC
 
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
