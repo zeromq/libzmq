@@ -235,7 +235,7 @@ if(ENABLE_CURVE)
     set(ZMQ_USE_TWEETNACL 1)
     set(ZMQ_HAVE_CURVE 1)
   endif()
-else
+else()
   message(STATUS "CURVE security is disabled")
 endif()
 
