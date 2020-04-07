@@ -623,6 +623,11 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_size (size_);
 }
 
+int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))->init_buffer (buf_, size_);
+}
+
 int zmq_msg_init_data (
   zmq_msg_t *msg_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_)
 {
