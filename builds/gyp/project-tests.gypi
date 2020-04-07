@@ -122,10 +122,10 @@
       ],
     },
     {
-      'target_name': 'test_msg_ffn',
+      'target_name': 'test_msg_init',
       'type': 'executable',
       'sources': [
-        '../../tests/test_msg_ffn.cpp',
+        '../../tests/test_msg_init.cpp',
         '../../tests/testutil.hpp'
       ],
       'dependencies': [

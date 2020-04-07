@@ -17,7 +17,7 @@ set(tests
   test_sub_forward
   test_invalid_rep
   test_msg_flags
-  test_msg_ffn
+  test_msg_init
   test_connect_resolve
   test_immediate
   test_last_endpoint
