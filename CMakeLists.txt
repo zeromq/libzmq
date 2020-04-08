@@ -144,7 +144,7 @@ if (ENABLE_WS)
   option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
 
   if (WITH_TLS)
-      find_package("GnuTLS" 3.1.4)
+      find_package("GnuTLS" 3.6.7)
     if (GNUTLS_FOUND)
       set(pkg_config_names_private "${pkg_config_names_private} gnutls")
       list(APPEND sources
