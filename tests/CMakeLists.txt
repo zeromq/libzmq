@@ -77,9 +77,9 @@ set(tests
 
 if(NOT WIN32)
   list(APPEND tests
-    test_security_gssapi)
-    test_socks
-    endif()
+    test_security_gssapi
+    test_socks)
+endif()
 
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests
