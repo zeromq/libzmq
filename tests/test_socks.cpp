@@ -109,8 +109,9 @@ void *setup_socks_server (char *socks_server_address,
     TEST_ASSERT_NOT_EQUAL (-1, server_fd);
     int flag = 1;
     int res;
-#ifdef _WIN32   
-    res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&flag, sizeof (int));
+#ifdef _WIN32
+    res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, (const char *) &flag,
+                      sizeof (int));
 #else
     res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
 #endif
