@@ -35,7 +35,7 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_roundtrip ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/roundtrip"));
@@ -72,7 +72,7 @@ void test_roundtrip_without_path ()
 
 void test_heartbeat ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/heartbeat")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/heartbeat"));
@@ -105,7 +105,7 @@ void test_heartbeat ()
 
 void test_short_message ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/short")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/short"));
@@ -138,7 +138,7 @@ void test_short_message ()
 
 void test_large_message ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/large")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/large"));
@@ -172,7 +172,7 @@ void test_large_message ()
 
 void test_curve ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     char client_public[41];
     char client_secret[41];
@@ -212,7 +212,7 @@ void test_curve ()
 
 void test_mask_shared_msg ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/mask-shared")];
+    char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_DEALER);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/mask-shared"));
