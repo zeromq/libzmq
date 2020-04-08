@@ -120,9 +120,8 @@ void zmq::ws_connecter_t::out_event ()
         add_reconnect_timer ();
         return;
     }
-#ifdef ZMQ_HAVE_WS
-#ifdef ZMQ_HAVE_WSS
     if (_wss)
+#ifdef ZMQ_HAVE_WSS
         create_engine (fd,
                        get_socket_name<wss_address_t> (fd, socket_end_local));
     else
@@ -130,7 +129,6 @@ void zmq::ws_connecter_t::out_event ()
         create_engine (fd,
                        get_socket_name<ws_address_t> (fd, socket_end_local));
 }
-#endif
 
 void zmq::ws_connecter_t::timer_event (int id_)
 {
@@ -195,7 +193,7 @@ int zmq::ws_connecter_t::open ()
     unblock_socket (_s);
 
     //  Connect to the remote peer.
-#if defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_VXWORKS
     int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
     const int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
