@@ -73,13 +73,13 @@ set(tests
   test_socket_null
   test_reconnect_ivl
   test_mock_pub_sub
-  test_socks
 )
 
 if(NOT WIN32)
   list(APPEND tests
     test_security_gssapi)
-endif()
+    test_socks
+    endif()
 
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests
