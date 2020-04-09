@@ -405,15 +405,11 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     if (!s)
         return -1;
     zmq_msg_t msg;
-    if (zmq_msg_init_size (&msg, len_))
+    int rc = zmq_msg_init_buffer (&msg, buf_, len_);
+    if (unlikely (rc < 0))
         return -1;
 
-    //  We explicitly allow a send from NULL, size zero
-    if (len_) {
-        assert (buf_);
-        memcpy (zmq_msg_data (&msg), buf_, len_);
-    }
-    const int rc = s_sendmsg (s, &msg, flags_);
+    rc = s_sendmsg (s, &msg, flags_);
     if (unlikely (rc < 0)) {
         const int err = errno;
         const int rc2 = zmq_msg_close (&msg);
@@ -621,6 +617,11 @@ int zmq_msg_init (zmq_msg_t *msg_)
 int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_size (size_);
+}
+
+int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))->init_buffer (buf_, size_);
 }
 
 int zmq_msg_init_data (

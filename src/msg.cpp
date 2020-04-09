@@ -120,6 +120,20 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
+int zmq::msg_t::init_buffer (const void *buf_, size_t size_)
+{
+    const int rc = init_size (size_);
+    if (unlikely (rc < 0)) {
+        return -1;
+    }
+    if (size_) {
+        // NULL and zero size is allowed
+        assert (NULL != buf_);
+        memcpy (data (), buf_, size_);
+    }
+    return 0;
+}
+
 int zmq::msg_t::init_external_storage (content_t *content_,
                                        void *data_,
                                        size_t size_,

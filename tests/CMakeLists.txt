@@ -164,6 +164,7 @@ if(ENABLE_DRAFTS)
     test_xpub_manual_last_value
     test_peer
     test_reconnect_options
+    test_msg_init
   )
 endif()
 

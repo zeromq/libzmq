@@ -91,6 +91,7 @@ int zmq_msg_set_routing_id (zmq_msg_t *msg_, uint32_t routing_id_);
 uint32_t zmq_msg_routing_id (zmq_msg_t *msg_);
 int zmq_msg_set_group (zmq_msg_t *msg_, const char *group_);
 const char *zmq_msg_group (zmq_msg_t *msg_);
+int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
