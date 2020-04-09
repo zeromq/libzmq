@@ -38,10 +38,8 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "address.hpp"
-#ifdef ZMQ_HAVE_WS
 #include "ws_address.hpp"
 #include "ws_engine.hpp"
-#endif
 #include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
