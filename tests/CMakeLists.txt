@@ -18,7 +18,6 @@ set(tests
   test_invalid_rep
   test_msg_flags
   test_msg_ffn
-  test_msg_init
   test_connect_resolve
   test_immediate
   test_last_endpoint
@@ -165,6 +164,7 @@ if(ENABLE_DRAFTS)
     test_xpub_manual_last_value
     test_peer
     test_reconnect_options
+    test_msg_init
   )
 endif()
 
