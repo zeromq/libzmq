@@ -46,16 +46,14 @@ void test_msg_init_size ()
 {
     const char *data = "foobar";
     zmq_msg_t msg;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_size (&msg, 6));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 6));
     TEST_ASSERT_EQUAL_INT (6, zmq_msg_size (&msg));
-    memcpy(zmq_msg_data (&msg), data, 6);
+    memcpy (zmq_msg_data (&msg), data, 6);
     TEST_ASSERT_EQUAL_STRING_LEN (data, zmq_msg_data (&msg), 6);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
     zmq_msg_t msg2;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_size (&msg2, 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg2, 0));
     TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
 }
@@ -64,16 +62,14 @@ void test_msg_init_buffer ()
 {
     const char *data = "foobar";
     zmq_msg_t msg;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_buffer (&msg, data, 6));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_buffer (&msg, data, 6));
     TEST_ASSERT_EQUAL_INT (6, zmq_msg_size (&msg));
     TEST_ASSERT (data != zmq_msg_data (&msg));
     TEST_ASSERT_EQUAL_STRING_LEN (data, zmq_msg_data (&msg), 6);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
     zmq_msg_t msg2;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_buffer (&msg2, NULL, 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_buffer (&msg2, NULL, 0));
     TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
 }

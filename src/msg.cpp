@@ -129,7 +129,7 @@ int zmq::msg_t::init_buffer (const void *buf_, size_t size_)
     if (size_) {
         // NULL and zero size is allowed
         assert (NULL != buf_);
-        memcpy(data (), buf_, size_);
+        memcpy (data (), buf_, size_);
     }
     return 0;
 }
