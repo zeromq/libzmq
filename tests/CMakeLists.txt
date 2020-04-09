@@ -168,7 +168,7 @@ if(ENABLE_DRAFTS)
     )
 endif()
 
-if (ZMQ_HAVE_WS AND HAVE_GNUTLS)
+if (ZMQ_HAVE_WS)
   list(APPEND tests test_ws_transport)
   if (ZMQ_HAVE_WSS)
       list(APPEND tests test_wss_transport)

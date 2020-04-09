@@ -163,7 +163,7 @@ if (ENABLE_WS)
   endif()
 endif()
 
-if (NOT ZMQ_HAVE_GNUTLS)
+if (NOT ZMQ_USE_GNUTLS)
   if (WITH_NSS)
     pkg_check_modules(NSS3 "nss")
     if (NSS3_FOUND)
