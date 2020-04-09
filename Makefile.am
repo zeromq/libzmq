@@ -450,6 +450,7 @@ test_apps = \
 	tests/test_sub_forward \
 	tests/test_invalid_rep \
 	tests/test_msg_flags \
+	tests/test_msg_ffn \
 	tests/test_msg_init \
 	tests/test_connect_resolve \
 	tests/test_immediate \
@@ -579,6 +580,10 @@ tests_test_invalid_rep_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
 tests_test_msg_flags_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_msg_flags_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
+tests_test_msg_ffn_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_msg_ffn_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_msg_init_SOURCES = tests/test_msg_init.cpp
 tests_test_msg_init_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

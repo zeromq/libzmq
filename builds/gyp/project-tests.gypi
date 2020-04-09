@@ -122,6 +122,17 @@
       ],
     },
     {
+      'target_name': 'test_msg_ffn',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_msg_ffn.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    },
+    {
       'target_name': 'test_msg_init',
       'type': 'executable',
       'sources': [

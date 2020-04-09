@@ -10,6 +10,7 @@
     <test name = "test_sub_forward" />
     <test name = "test_invalid_rep" />
     <test name = "test_msg_flags" />
+    <test name = "test_msg_ffn" />
     <test name = "test_msg_init" />
     <test name = "test_connect_resolve" />
     <test name = "test_immediate" />
