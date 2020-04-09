@@ -168,16 +168,10 @@ if(ENABLE_DRAFTS)
     )
 endif()
 
-if (NOT WIN32)
-  if (ZMQ_HAVE_WS)
-    list(APPEND tests
-      test_ws_transport
-    )
-    if (ZMQ_HAVE_WSS)
-      list(APPEND tests
-        test_wss_transport
-      )
-    endif()
+if (ZMQ_HAVE_WS AND HAVE_GNUTLS)
+  list(APPEND tests test_ws_transport)
+  if (ZMQ_HAVE_WSS)
+      list(APPEND tests test_wss_transport)
   endif()
 endif()
 
