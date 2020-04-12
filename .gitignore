@@ -26,6 +26,8 @@ build/
 builds/android/prefix
 ## IntelliJ
 .idea/
+## Visual Code
+.vscode/
 ## other results-like folders
 bin/
 lib/

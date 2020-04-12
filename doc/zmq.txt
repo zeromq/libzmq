@@ -82,6 +82,7 @@ The following functions are provided to work with messages:
 Initialise a message::
     linkzmq:zmq_msg_init[3]
     linkzmq:zmq_msg_init_size[3]
+    linkzmq:zmq_msg_init_buffer[3]
     linkzmq:zmq_msg_init_data[3]
 
 Sending and receiving a message::

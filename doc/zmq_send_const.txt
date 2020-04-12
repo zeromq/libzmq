@@ -9,7 +9,7 @@ zmq_send_const - send a constant-memory message part on a socket
 
 SYNOPSIS
 --------
-*int zmq_send_const (void '*socket', void '*buf', size_t 'len', int 'flags');*
+*int zmq_send_const (void '*socket', const void '*buf', size_t 'len', int 'flags');*
 
 
 DESCRIPTION
