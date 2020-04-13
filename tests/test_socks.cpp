@@ -27,10 +27,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+#include "../src/windows.hpp"
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -104,7 +109,12 @@ void *setup_socks_server (char *socks_server_address,
     TEST_ASSERT_NOT_EQUAL (-1, server_fd);
     int flag = 1;
     int res;
+#ifdef _WIN32
+    res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, (const char *) &flag,
+                      sizeof (int));
+#else
     res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+#endif
     TEST_ASSERT_SUCCESS_RAW_ERRNO (res);
     struct sockaddr_in saddr = bind_bsd_socket (server_fd);
     int nbytes = snprintf (socks_server_address, socks_server_address_len,

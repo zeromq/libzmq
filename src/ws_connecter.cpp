@@ -39,12 +39,12 @@
 #include "tcp.hpp"
 #include "address.hpp"
 #include "ws_address.hpp"
-#include "wss_address.hpp"
-#include "session_base.hpp"
 #include "ws_engine.hpp"
+#include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
 #include "wss_engine.hpp"
+#include "wss_address.hpp"
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -120,8 +120,12 @@ void zmq::ws_connecter_t::out_event ()
     }
 
     if (_wss)
+#ifdef ZMQ_HAVE_WSS
         create_engine (fd,
                        get_socket_name<wss_address_t> (fd, socket_end_local));
+#else
+        assert (false);
+#endif
     else
         create_engine (fd,
                        get_socket_name<ws_address_t> (fd, socket_end_local));
@@ -190,7 +194,7 @@ int zmq::ws_connecter_t::open ()
     unblock_socket (_s);
 
     //  Connect to the remote peer.
-#if defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_VXWORKS
     int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
     const int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());

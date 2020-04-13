@@ -59,14 +59,19 @@
 #cmakedefine ZMQ_USE_BUILTIN_SHA1
 #cmakedefine ZMQ_USE_NSS
 #cmakedefine ZMQ_HAVE_WS
+#cmakedefine ZMQ_HAVE_WSS
+#cmakedefine ZMQ_HAVE_TIPC
 
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
+#cmakedefine ZMQ_BUILD_DRAFT_API
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
 #cmakedefine SODIUM_STATIC
+#cmakedefine ZMQ_USE_GNUTLS
+#cmakedefine ZMQ_USE_RADIX_TREE
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX

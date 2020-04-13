@@ -128,7 +128,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 {
     memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
     memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
-    memset (_websocket_protocol, 0, MAX_HEADER_VALUE_LENGTH + 1);
+    memset (_websocket_protocol, 0, 256);
 
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
@@ -488,7 +488,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *rest;
+                            char *rest = 0;
                             char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
