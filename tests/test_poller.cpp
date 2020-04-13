@@ -512,6 +512,17 @@ void call_poller_wait_all_empty_with_timeout_fails (void *poller_,
                                zmq_poller_wait_all (poller_, &event, 0, -1));
 }
 
+void call_poller_wait_all_inf_disabled_fails (void *poller_, void *socket_)
+{
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_add (poller_, socket_, NULL, 0));
+
+    zmq_poller_event_t events[1];
+    TEST_ASSERT_FAILURE_ERRNO (EAGAIN,
+                               zmq_poller_wait_all (poller_, events, 1, 0));
+    TEST_ASSERT_FAILURE_ERRNO (EFAULT,
+                               zmq_poller_wait_all (poller_, events, 1, -1));
+}
+
 TEST_CASE_FUNC_PARAM (call_poller_wait_empty_with_timeout_fails,
                       test_with_empty_poller)
 TEST_CASE_FUNC_PARAM (call_poller_wait_empty_without_timeout_fails,
@@ -521,6 +532,8 @@ TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_negative_count_fails,
 TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_without_timeout_fails,
                       test_with_empty_poller)
 TEST_CASE_FUNC_PARAM (call_poller_wait_all_empty_with_timeout_fails,
+                      test_with_empty_poller)
+TEST_CASE_FUNC_PARAM (call_poller_wait_all_inf_disabled_fails,
                       test_with_empty_poller)
 
 void test_poll_basic ()
@@ -695,6 +708,7 @@ int main (void)
     RUN_TEST (test_call_poller_wait_all_empty_negative_count_fails);
     RUN_TEST (test_call_poller_wait_all_empty_without_timeout_fails);
     RUN_TEST (test_call_poller_wait_all_empty_with_timeout_fails);
+    RUN_TEST (test_call_poller_wait_all_inf_disabled_fails);
 
     RUN_TEST (test_call_poller_fd_no_signaler);
     RUN_TEST (test_call_poller_fd);

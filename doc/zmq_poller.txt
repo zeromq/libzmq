@@ -256,7 +256,8 @@ At least one of the registered objects is a 'socket' whose associated 0MQ
 'context' was terminated.
 *EFAULT*::
 The provided 'events' was NULL, or 'poller' did not point to a valid poller,
-or there are no registered objects and 'timeout' was negative.
+or there are no registered objects or all event subscriptions are disabled
+and 'timeout' was negative.
 *EINTR*::
 The operation was interrupted by delivery of a signal before any events were
 available.
