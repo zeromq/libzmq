@@ -447,6 +447,7 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 
             if (it->events & events) {
                 events_[found].socket = it->socket;
+                events_[found].fd = 0;
                 events_[found].user_data = it->user_data;
                 events_[found].events = it->events & events;
                 ++found;
@@ -483,8 +484,8 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 
             if (events) {
                 events_[found].socket = NULL;
-                events_[found].user_data = it->user_data;
                 events_[found].fd = it->fd;
+                events_[found].user_data = it->user_data;
                 events_[found].events = events;
                 ++found;
             }
