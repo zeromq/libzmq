@@ -124,7 +124,7 @@ void zmq::ws_connecter_t::out_event ()
         create_engine (fd,
                        get_socket_name<wss_address_t> (fd, socket_end_local));
 #else
-    assert(false);
+        assert (false);
 #endif
     else
         create_engine (fd,
