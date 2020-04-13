@@ -315,6 +315,7 @@ void zmq::ws_listener_t::create_engine (fd_t fd_)
     else
         engine = new (std::nothrow)
           ws_engine_t (fd_, options, endpoint_pair, _address, false);
+
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

@@ -118,12 +118,15 @@ void zmq::ws_connecter_t::out_event ()
         add_reconnect_timer ();
         return;
     }
+
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
         create_engine (fd,
                        get_socket_name<wss_address_t> (fd, socket_end_local));
-    else
+#else
+    assert(false);
 #endif
+    else
         create_engine (fd,
                        get_socket_name<ws_address_t> (fd, socket_end_local));
 }

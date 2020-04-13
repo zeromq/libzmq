@@ -35,17 +35,28 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_roundtrip ()
 {
+    char bind_address[MAX_SOCKET_STRING];
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
+
     void *sb = test_context_socket (ZMQ_REP);
+    void* sc = test_context_socket(ZMQ_REQ);
+
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
 
-    void *sc = test_context_socket (ZMQ_REQ);
+    //  Apparently Windows can't connect to 0.0.0.0
+#ifdef ZMQ_HAVE_WINDOWS
+    sprintf(connect_address, "ws://127.0.0.1%s", strrchr(bind_address, ':'));
+#endif
+
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
     bounce (sb, sc);
+
+    TEST_ASSERT_SUCCESS_ERRNO(zmq_disconnect(sc, connect_address));
+    TEST_ASSERT_SUCCESS_ERRNO(zmq_unbind(sb, bind_address));
 
     test_context_socket_close (sc);
     test_context_socket_close (sb);
@@ -56,7 +67,7 @@ void test_roundtrip_without_path ()
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
 
@@ -75,7 +86,7 @@ void test_heartbeat ()
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/heartbeat"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*/heartbeat"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
 
@@ -108,7 +119,7 @@ void test_short_message ()
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/short"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*/short"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
 
@@ -141,7 +152,7 @@ void test_large_message ()
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/large"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*/large"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
 
@@ -190,7 +201,7 @@ void test_curve ()
       zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://*:*/roundtrip"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, "ws://127.0.0.1:*/roundtrip"));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (server, ZMQ_LAST_ENDPOINT,
                                                connect_address, &addr_length));
 
@@ -215,7 +226,7 @@ void test_mask_shared_msg ()
     char connect_address[MAX_SOCKET_STRING];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_DEALER);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://*:*/mask-shared"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*/mask-shared"));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
 
@@ -268,8 +279,8 @@ int main ()
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_roundtrip);
     RUN_TEST (test_roundtrip_without_path);
+    RUN_TEST (test_roundtrip);
     RUN_TEST (test_short_message);
     RUN_TEST (test_large_message);
     RUN_TEST (test_heartbeat);
