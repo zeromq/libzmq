@@ -46,10 +46,8 @@ void test_roundtrip ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
 
-    //  Apparently Windows can't connect to 0.0.0.0
-#ifdef ZMQ_HAVE_WINDOWS
+    // Windows can't connect to 0.0.0.0
     sprintf(connect_address, "ws://127.0.0.1%s", strrchr(bind_address, ':'));
-#endif
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
 
