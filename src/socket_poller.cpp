@@ -549,6 +549,11 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
     }
 
     if (unlikely (_pollset_size == 0)) {
+        if (timeout_ < 0) {
+            // Fail instead of trying to sleep forever
+            errno = EFAULT;
+            return -1;
+        }
         // We'll report an error (timed out) as if the list was non-empty and
         // no event occurred within the specified timeout. Otherwise the caller
         // needs to check the return value AND the event to avoid using the
