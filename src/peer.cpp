@@ -41,6 +41,7 @@ zmq::peer_t::peer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 {
     options.type = ZMQ_PEER;
     options.can_send_hello_msg = true;
+    options.can_recv_disconnect_msg = true;
 }
 
 uint32_t zmq::peer_t::connect_peer (const char *endpoint_uri_)

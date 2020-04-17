@@ -344,7 +344,7 @@ int zmq::udp_engine_t::add_membership (fd_t s_, const udp_address_t *addr_)
 void zmq::udp_engine_t::error (error_reason_t reason_)
 {
     zmq_assert (_session);
-    _session->engine_error (reason_);
+    _session->engine_error (false, reason_);
     terminate ();
 }
 

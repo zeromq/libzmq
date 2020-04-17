@@ -685,7 +685,11 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
 
     _socket->event_disconnected (_endpoint_uri_pair, _s);
     _session->flush ();
-    _session->engine_error (reason_);
+    _session->engine_error (
+      !_handshaking
+        && (_mechanism == NULL
+            || _mechanism->status () != mechanism_t::handshaking),
+      reason_);
     unplug ();
     delete this;
 }
