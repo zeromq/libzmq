@@ -261,6 +261,8 @@ class pipe_t ZMQ_FINAL : public object_t,
 };
 
 void send_routing_id (pipe_t *pipe_, const options_t &options_);
+
+void send_hello_msg (pipe_t *pipe_, const options_t &options_);
 }
 
 #endif

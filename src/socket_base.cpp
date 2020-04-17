@@ -833,6 +833,13 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
             //  the peer doesn't expect it.
             send_routing_id (new_pipes[0], options);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+            //  If set, send the hello msg of the local socket to the peer.
+            if (options.can_send_hello_msg && options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[0], options);
+            }
+#endif
+
             const endpoint_t endpoint = {this, options};
             pend_connection (std::string (endpoint_uri_), endpoint, new_pipes);
         } else {
@@ -845,6 +852,19 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
             if (options.recv_routing_id) {
                 send_routing_id (new_pipes[1], peer.options);
             }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+            //  If set, send the hello msg of the local socket to the peer.
+            if (options.can_send_hello_msg && options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[0], options);
+            }
+
+            //  If set, send the hello msg of the peer to the local socket.
+            if (options.can_send_hello_msg
+                && peer.options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[1], peer.options);
+            }
+#endif
 
             //  Attach remote end of the pipe to the peer socket. Note that peer's
             //  seqnum was incremented in find_endpoint function. We don't need it

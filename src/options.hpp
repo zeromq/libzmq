@@ -297,6 +297,10 @@ struct options_t
     std::string wss_trust_pem;
     std::string wss_hostname;
     bool wss_trust_system;
+
+    //  Hello msg
+    std::vector<unsigned char> hello_msg;
+    bool can_send_hello_msg;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

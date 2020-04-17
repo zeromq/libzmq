@@ -201,6 +201,26 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (session_base_t)
 };
+
+class hello_msg_session_t ZMQ_FINAL : public session_base_t
+{
+  public:
+    hello_msg_session_t (zmq::io_thread_t *io_thread_,
+                         bool connect_,
+                         zmq::socket_base_t *socket_,
+                         const options_t &options_,
+                         address_t *addr_);
+    ~hello_msg_session_t ();
+
+    //  Overrides of the functions from session_base_t.
+    int pull_msg (msg_t *msg_);
+    void reset ();
+
+  private:
+    bool _new_pipe;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (hello_msg_session_t)
+};
 }
 
 #endif

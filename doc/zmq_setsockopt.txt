@@ -322,6 +322,18 @@ Option value unit:: milliseconds
 Default value:: 30000
 Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
 
+ZMQ_HELLO_MSG: set an hello message that will be sent when a new peer connect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set, the socket will automatically send an hello message when a new connection is made or accepted.
+You may set this on DEALER, ROUTER, CLIENT, SERVER and PEER sockets.
+The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols,
+as now heartbeat and sending the hello message can be left out of protocols and be handled by zeromq.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_ROUTER, ZMQ_DEALER, ZMQ_CLIENT, ZMQ_SERVER and ZMQ_PEER
 
 ZMQ_HEARTBEAT_IVL: Set interval between sending ZMTP heartbeats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
