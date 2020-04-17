@@ -848,6 +848,14 @@ void zmq::ctx_t::connect_inproc_sockets (
         && pending_connection_.endpoint.socket->check_tag ()) {
         send_routing_id (pending_connection_.bind_pipe, bind_options_);
     }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  If set, send the hello msg of the bind socket to the pending connection.
+    if (bind_options_.can_send_hello_msg
+        && bind_options_.hello_msg.size () > 0) {
+        send_hello_msg (pending_connection_.bind_pipe, bind_options_);
+    }
+#endif
 }
 
 #ifdef ZMQ_HAVE_VMCI

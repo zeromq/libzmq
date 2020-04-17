@@ -249,7 +249,9 @@ zmq::options_t::options_t () :
     zero_copy (true),
     router_notify (0),
     monitor_event_version (1),
-    wss_trust_system (false)
+    wss_trust_system (false),
+    hello_msg (),
+    can_send_hello_msg (false)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
@@ -813,6 +815,19 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &wss_trust_system);
 #endif
+
+        case ZMQ_HELLO_MSG:
+            if (optvallen_ > 0) {
+                unsigned char *bytes = (unsigned char *) optval_;
+                hello_msg =
+                  std::vector<unsigned char> (bytes, bytes + optvallen_);
+            } else {
+                hello_msg = std::vector<unsigned char> ();
+            }
+
+
+            return 0;
+
 #endif
 
         default:

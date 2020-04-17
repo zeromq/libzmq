@@ -88,6 +88,17 @@ void zmq::send_routing_id (pipe_t *pipe_, const options_t &options_)
     pipe_->flush ();
 }
 
+void zmq::send_hello_msg (pipe_t *pipe_, const options_t &options_)
+{
+    zmq::msg_t hello;
+    const int rc =
+      hello.init_buffer (&options_.hello_msg[0], options_.hello_msg.size ());
+    errno_assert (rc == 0);
+    const bool written = pipe_->write (&hello);
+    zmq_assert (written);
+    pipe_->flush ();
+}
+
 zmq::pipe_t::pipe_t (object_t *parent_,
                      upipe_t *inpipe_,
                      upipe_t *outpipe_,
