@@ -1219,6 +1219,14 @@ static int check_poller_fd_registration_args (void *const poller_,
     return 0;
 }
 
+int zmq_poller_size (void *poller_)
+{
+    if (-1 == check_poller (poller_))
+        return -1;
+
+    return (static_cast<zmq::socket_poller_t *> (poller_))->size ();
+}
+
 int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
 {
     if (-1 == check_poller_registration_args (poller_, s_)
