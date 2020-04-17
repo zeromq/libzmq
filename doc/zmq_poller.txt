@@ -14,6 +14,8 @@ SYNOPSIS
 
 *int zmq_poller_destroy (void ****'poller_p');*
 
+*int zmq_poller_size (void *'poller');*
+
 *int zmq_poller_add (void *'poller', void *'socket', void *'user_data', short 'events');*
 
 *int zmq_poller_modify (void *'poller', void *'socket', short 'events');*
@@ -50,6 +52,11 @@ _zmq_poller_destroy_ may not be called multiple times for the same poller
 instance. _zmq_poller_destroy_ sets the passed pointer to NULL in case of a
 successful execution. _zmq_poller_destroy_ implicitly unregisters all
 registered sockets and file descriptors.
+
+_zmq_poller_size_ queries the number of sockets or file descriptors registered
+with a poller. The initial size of a poller is 0, a successful add operation
+increases the size by 1 and a successful remove operation decreases the size
+by 1. The size is unaffected by the events specified.
 
 _zmq_poller_add_, _zmq_poller_modify_ and _zmq_poller_remove_ manage the 0MQ
 sockets registered with a poller.
@@ -129,7 +136,8 @@ registered objects. Otherwise, a livelock situation may result: If more than
 'n_events' registered objects have an active event on each call to 
 _zmq_poller_wait_all_, it might happen that the same subset of registered 
 objects is always returned, and the caller never notices the events on the 
-others.
+others. The number of objects registered can be queried with
+_zmq_poller_size_.
 
 _zmq_poller_wait_all_ returns the number of valid elements. The valid elements
 are placed in positions '0' to 'n_events - 1' in the 'events' array. All
@@ -219,6 +227,12 @@ On _zmq_poller_destroy_:
 _poller_p_ did not point to a valid poller. Note that passing an invalid pointer (e.g.
 pointer to deallocated memory) may cause undefined behaviour (e.g. an access violation).
 
+On _zmq_poller_size_:
+*EFAULT*::
+_poller_ did not point to a valid poller. Note that passing an
+invalid pointer (e.g. pointer to deallocated memory) may cause undefined
+behaviour (e.g. an access violation).
+
 On _zmq_poller_add_, _zmq_poller_modify_ and _zmq_poller_remove_:
 *EFAULT*::
 _poller_ did not point to a valid poller. Note that passing an
@@ -264,7 +278,7 @@ available.
 *EAGAIN*::
 No registered event was signalled before the timeout was reached.
 
-On _zmq_poller_fd:
+On _zmq_poller_fd_:
 *EINVAL*::
 The poller has no associated file descriptor.
 *EFAULT*::

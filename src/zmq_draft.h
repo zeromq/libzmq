@@ -124,6 +124,7 @@ typedef struct zmq_poller_event_t
 
 void *zmq_poller_new (void);
 int zmq_poller_destroy (void **poller_p_);
+int zmq_poller_size (void *poller_);
 int zmq_poller_add (void *poller_,
                     void *socket_,
                     void *user_data_,

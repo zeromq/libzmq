@@ -735,6 +735,7 @@ typedef struct zmq_poller_event_t
 
 ZMQ_EXPORT void *zmq_poller_new (void);
 ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int zmq_poller_size (void *poller);
 ZMQ_EXPORT int
 zmq_poller_add (void *poller, void *socket, void *user_data, short events);
 ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);
