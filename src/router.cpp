@@ -56,6 +56,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     options.recv_routing_id = true;
     options.raw_socket = false;
     options.can_send_hello_msg = true;
+    options.can_recv_disconnect_msg = true;
 
     _prefetched_id.init ();
     _prefetched_msg.init ();

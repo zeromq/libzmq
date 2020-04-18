@@ -442,14 +442,25 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
     _engine->plug (_io_thread, this);
 }
 
-void zmq::session_base_t::engine_error (zmq::i_engine::error_reason_t reason_)
+void zmq::session_base_t::engine_error (bool handshaked_,
+                                        zmq::i_engine::error_reason_t reason_)
 {
     //  Engine is dead. Let's forget about it.
     _engine = NULL;
 
     //  Remove any half-done messages from the pipes.
-    if (_pipe)
+    if (_pipe) {
         clean_pipes ();
+
+#ifdef ZMQ_BUILD_DRAFT_API
+        //  Only send disconnect message if socket was accepted and handshake was completed
+        if (!_active && handshaked_ && options.can_recv_disconnect_msg
+            && !options.disconnect_msg.empty ()) {
+            _pipe->set_disconnect_msg (options.disconnect_msg);
+            _pipe->send_disconnect_msg ();
+        }
+#endif
+    }
 
     zmq_assert (reason_ == i_engine::connection_error
                 || reason_ == i_engine::timeout_error

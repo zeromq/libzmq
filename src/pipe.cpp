@@ -124,10 +124,12 @@ zmq::pipe_t::pipe_t (object_t *parent_,
     _server_socket_routing_id (0),
     _conflate (conflate_)
 {
+    _disconnect_msg.init ();
 }
 
 zmq::pipe_t::~pipe_t ()
 {
+    _disconnect_msg.close ();
 }
 
 void zmq::pipe_t::set_peer (pipe_t *peer_)
@@ -590,4 +592,25 @@ void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
 {
     send_pipe_stats_publish (socket_base_, queue_count_,
                              _msgs_written - _peers_msgs_read, endpoint_pair_);
+}
+
+void zmq::pipe_t::send_disconnect_msg ()
+{
+    if (_disconnect_msg.size () > 0) {
+        // Rollback any incomplete message in the pipe, and push the disconnect message.
+        rollback ();
+
+        _out_pipe->write (_disconnect_msg, false);
+        flush ();
+        _disconnect_msg.init ();
+    }
+}
+
+void zmq::pipe_t::set_disconnect_msg (
+  const std::vector<unsigned char> &disconnect_)
+{
+    _disconnect_msg.close ();
+    const int rc =
+      _disconnect_msg.init_buffer (&disconnect_[0], disconnect_.size ());
+    errno_assert (rc == 0);
 }

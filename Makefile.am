@@ -1042,7 +1042,8 @@ test_apps += tests/test_poller \
 	tests/test_peer \
 	tests/test_reconnect_options \
 	tests/test_msg_init \
-	tests/test_hello_msg
+	tests/test_hello_msg \
+	tests/test_disconnect_msg
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1099,6 +1100,10 @@ tests_test_msg_init_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_hello_msg_SOURCES = tests/test_hello_msg.cpp
 tests_test_hello_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_hello_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_disconnect_msg_SOURCES = tests/test_disconnect_msg.cpp
+tests_test_disconnect_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_disconnect_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
 if ENABLE_STATIC

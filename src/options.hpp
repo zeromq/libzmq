@@ -301,6 +301,10 @@ struct options_t
     //  Hello msg
     std::vector<unsigned char> hello_msg;
     bool can_send_hello_msg;
+
+    //  Disconnect msg
+    std::vector<unsigned char> disconnect_msg;
+    bool can_recv_disconnect_msg;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

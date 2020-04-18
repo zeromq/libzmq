@@ -828,6 +828,13 @@ void zmq::ctx_t::connect_inproc_sockets (
         pending_connection_.bind_pipe->set_hwms (-1, -1);
     }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    if (bind_options_.can_recv_disconnect_msg
+        && !bind_options_.disconnect_msg.empty ())
+        pending_connection_.connect_pipe->set_disconnect_msg (
+          bind_options_.disconnect_msg);
+#endif
+
     if (side_ == bind_side) {
         command_t cmd;
         cmd.type = command_t::bind;
