@@ -103,6 +103,7 @@ void wait_in_events (test_events_t &events_)
 {
     void *watch = zmq_stopwatch_start ();
     while (events_.in_events.get () < 1) {
+        msleep (1);
 #ifdef ZMQ_BUILD_DRAFT
         TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (SETTLE_TIME,
                                            zmq_stopwatch_intermediate (watch),
@@ -116,6 +117,7 @@ void wait_timer_events (test_events_t &events_)
 {
     void *watch = zmq_stopwatch_start ();
     while (events_.timer_events.get () < 1) {
+        msleep (1);
 #ifdef ZMQ_BUILD_DRAFT
         TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (SETTLE_TIME,
                                            zmq_stopwatch_intermediate (watch),
