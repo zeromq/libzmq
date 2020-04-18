@@ -46,6 +46,7 @@ matrix:
     dist: precise
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
+    dist: xenial
     addons:
       apt:
         packages:
