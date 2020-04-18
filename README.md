@@ -160,7 +160,7 @@ To build from sources, see the INSTALL file included with the distribution.
 
 ### Android
 
-To build from source, see [REAMDE](./builds/android/README.md) file in the
+To build from source, see [README](./builds/android/README.md) file in the
 android build directory.
 
 ## Resources
