@@ -862,7 +862,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
             }
 
             //  If set, send the hello msg of the peer to the local socket.
-            if (options.can_send_hello_msg
+            if (peer.options.can_send_hello_msg
                 && peer.options.hello_msg.size () > 0) {
                 send_hello_msg (new_pipes[1], peer.options);
             }
