@@ -443,9 +443,9 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
         }
         //  Else, the poll item is a raw file descriptor, simply convert
         //  the events to zmq_pollitem_t-style format.
-        else {
+        else if (it->events) {
 #if defined ZMQ_POLL_BASED_ON_POLL
-
+            zmq_assert (it->pollfd_index >= 0);
             const short revents = _pollfds[it->pollfd_index].revents;
             short events = 0;
 
