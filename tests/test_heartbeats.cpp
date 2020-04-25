@@ -226,21 +226,7 @@ static void test_heartbeat_timeout (int server_type_, int mock_ping_)
     prep_server_socket (!mock_ping_, 0, &server, &server_mon, my_endpoint,
                         MAX_SOCKET_STRING, server_type_);
 
-    struct sockaddr_in ip4addr;
-    raw_socket s;
-
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (atoi (strrchr (my_endpoint, ':') + 1));
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-      connect (s, (struct sockaddr *) &ip4addr, sizeof ip4addr));
-    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
+    fd_t s = connect_socket (my_endpoint);
 
     // Mock a ZMTP 3 client so we can forcibly time out a connection
     mock_handshake (s, mock_ping_);

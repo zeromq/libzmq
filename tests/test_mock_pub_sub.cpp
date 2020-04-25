@@ -19,17 +19,6 @@
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
-typedef SOCKET raw_socket;
-#else
-#include <arpa/inet.h>
-#include <unistd.h>
-typedef int raw_socket;
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,7 +56,7 @@ static int get_monitor_event (void *monitor_)
     return -1;
 }
 
-static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
+static void recv_with_retry (fd_t fd_, char *buffer_, int bytes_)
 {
     int received = 0;
     while (true) {
@@ -81,7 +70,7 @@ static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
     }
 }
 
-static void mock_handshake (raw_socket fd_, bool sub_command, bool mock_pub)
+static void mock_handshake (fd_t fd_, bool sub_command, bool mock_pub)
 {
     const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
                                        0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
@@ -158,21 +147,7 @@ static void test_mock_pub_sub (bool sub_command_, bool mock_pub_)
     prep_server_socket (&server, &server_mon, my_endpoint, MAX_SOCKET_STRING,
                         mock_pub_ ? ZMQ_SUB : ZMQ_XPUB);
 
-    struct sockaddr_in ip4addr;
-    raw_socket s;
-
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (atoi (strrchr (my_endpoint, ':') + 1));
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-      connect (s, (struct sockaddr *) &ip4addr, sizeof ip4addr));
-    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
+    fd_t s = connect_socket (my_endpoint);
 
     // Mock a ZMTP 3 client so we can forcibly try sub commands
     mock_handshake (s, sub_command_, mock_pub_);

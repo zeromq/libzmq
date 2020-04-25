@@ -38,6 +38,14 @@
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
 
+//  For AF_INET and IPPROTO_TCP
+#if defined _WIN32
+#include "../src/windows.hpp"
+#else
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
+
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
@@ -171,5 +179,21 @@ int test_inet_pton (int af_, const char *src_, void *dst_);
 
 //  Binds an ipv4 BSD socket to an ephemeral port, returns the compiled sockaddr
 struct sockaddr_in bind_bsd_socket (int socket);
+
+//  Connects a BSD socket to the ZMQ endpoint. Works with ipv4/ipv6/unix.
+fd_t connect_socket (const char *endpoint_,
+                     const int af_ = AF_INET,
+                     const int protocol_ = IPPROTO_TCP);
+
+//  Binds a BSD socket to an ephemeral port, returns the file descriptor.
+//  The resulting ZMQ endpoint will be stored in my_endpoint, including the protocol
+//  prefix, so ensure it is writable and of appropriate size.
+//  Works with ipv4/ipv6/unix. With unix sockets address_/port_ can be empty and
+//  my_endpoint_ will contain a random path.
+fd_t bind_socket_resolve_port (const char *address_,
+                               const char *port_,
+                               char *my_endpoint_,
+                               const int af_ = AF_INET,
+                               const int protocol_ = IPPROTO_TCP);
 
 #endif

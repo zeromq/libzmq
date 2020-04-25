@@ -35,6 +35,10 @@
 #if defined _WIN32
 #include "../src/windows.hpp"
 #if defined _MSC_VER
+#if defined ZMQ_HAVE_IPC
+#include <direct.h>
+#include <afunix.h>
+#endif
 #include <crtdbg.h>
 #pragma warning(disable : 4996)
 // iphlpapi is needed for if_nametoindex (not on Windows XP)
@@ -55,6 +59,7 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <netdb.h>
+#include <sys/un.h>
 #if defined(ZMQ_HAVE_AIX)
 #include <sys/types.h>
 #include <sys/socketvar.h>
@@ -363,6 +368,147 @@ sockaddr_in bind_bsd_socket (int socket_)
 #endif
 
     return saddr;
+}
+
+fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
+{
+    struct sockaddr_storage addr;
+    //  OSX is very opinionated and wants the size to match the AF family type
+    socklen_t addr_len = sizeof (addr);
+    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+
+    if (af_ == AF_INET || af_ == AF_INET6) {
+        const char *port = strrchr (endpoint_, ':') + 1;
+        char address[MAX_SOCKET_STRING];
+        // getaddrinfo does not like [x:y::z]
+        if (*strchr (endpoint_, '/') + 2 == '[') {
+            strcpy (address, strchr (endpoint_, '[') + 1);
+            address[strlen (address) - strlen (port) - 2] = '\0';
+        } else {
+            strcpy (address, strchr (endpoint_, '/') + 2);
+            address[strlen (address) - strlen (port) - 1] = '\0';
+        }
+
+        struct addrinfo *in, hint;
+        hint.ai_flags = AI_NUMERICSERV;
+        hint.ai_family = af_;
+        hint.ai_socktype = SOCK_STREAM;
+        hint.ai_protocol = protocol_;
+        hint.ai_addrlen = 0;
+        hint.ai_canonname = NULL;
+        hint.ai_addr = NULL;
+        hint.ai_next = NULL;
+
+        TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
+          getaddrinfo (address, port, &hint, &in));
+        TEST_ASSERT_NOT_NULL (in);
+        memcpy (&addr, in->ai_addr, in->ai_addrlen);
+        addr_len = (socklen_t) in->ai_addrlen;
+        freeaddrinfo (in);
+    }
+#if defined(ZMQ_HAVE_IPC)
+    else {
+        struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
+        addr_len = sizeof (struct sockaddr_un);
+        un_addr->sun_family = AF_UNIX;
+        strcpy (un_addr->sun_path, endpoint_);
+    }
+#endif
+
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      connect (s_pre, (struct sockaddr *) &addr, addr_len));
+
+    return s_pre;
+}
+
+fd_t bind_socket_resolve_port (const char *address_,
+                               const char *port_,
+                               char *my_endpoint_,
+                               const int af_,
+                               const int protocol_)
+{
+    struct sockaddr_storage addr;
+    //  OSX is very opinionated and wants the size to match the AF family type
+    socklen_t addr_len = sizeof (addr);
+    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+
+    if (af_ == AF_INET || af_ == AF_INET6) {
+#ifdef ZMQ_HAVE_WINDOWS
+        const char flag = '\1';
+#elif defined ZMQ_HAVE_VXWORKS
+        char flag = '\1';
+#else
+        int flag = 1;
+#endif
+        struct addrinfo *in, hint;
+        hint.ai_flags = AI_NUMERICSERV;
+        hint.ai_family = af_;
+        hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
+        hint.ai_protocol = protocol_;
+        hint.ai_addrlen = 0;
+        hint.ai_canonname = NULL;
+        hint.ai_addr = NULL;
+        hint.ai_next = NULL;
+
+        TEST_ASSERT_SUCCESS_RAW_ERRNO (
+          setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
+        TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
+          getaddrinfo (address_, port_, &hint, &in));
+        TEST_ASSERT_NOT_NULL (in);
+        memcpy (&addr, in->ai_addr, in->ai_addrlen);
+        addr_len = (socklen_t) in->ai_addrlen;
+        freeaddrinfo (in);
+    }
+#if defined(ZMQ_HAVE_IPC)
+    else {
+        struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
+        addr_len = sizeof (struct sockaddr_un);
+        un_addr->sun_family = AF_UNIX;
+#if defined ZMQ_HAVE_WINDOWS
+        char buffer[MAX_PATH] = "";
+
+        TEST_ASSERT_SUCCESS_RAW_ERRNO (tmpnam_s (buffer));
+        TEST_ASSERT_SUCCESS_RAW_ERRNO (_mkdir (buffer));
+        strcat (buffer, "/ipc");
+#else
+        char buffer[PATH_MAX] = "";
+        strcpy (buffer, "tmpXXXXXX");
+#ifdef HAVE_MKDTEMP
+        TEST_ASSERT_TRUE (mkdtemp (buffer));
+        strcat (buffer, "/socket");
+#else
+        int fd = mkstemp (buffer);
+        TEST_ASSERT_TRUE (fd != -1);
+        close (fd);
+#endif
+#endif
+        strcpy (un_addr->sun_path, buffer);
+        memcpy (my_endpoint_, "ipc://", 7);
+        strcat (my_endpoint_, buffer);
+
+        // TODO check return value of unlink
+        unlink (buffer);
+    }
+#endif
+
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      bind (s_pre, (struct sockaddr *) &addr, addr_len));
+    TEST_ASSERT_SUCCESS_RAW_ERRNO (listen (s_pre, SOMAXCONN));
+
+    if (af_ == AF_INET || af_ == AF_INET6) {
+        addr_len = sizeof (struct sockaddr_storage);
+        TEST_ASSERT_SUCCESS_RAW_ERRNO (
+          getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
+        sprintf (my_endpoint_, "%s://%s:%u",
+                 protocol_ == IPPROTO_TCP ? "tcp" : "udp", address_,
+                 af_ == AF_INET
+                   ? ntohs (((struct sockaddr_in *) &addr)->sin_port)
+                   : ntohs (((struct sockaddr_in6 *) &addr)->sin6_port));
+    }
+
+    return s_pre;
 }
 
 bool streq (const char *lhs_, const char *rhs_)

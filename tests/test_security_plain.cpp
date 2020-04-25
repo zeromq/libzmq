@@ -30,18 +30,6 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -195,25 +183,7 @@ void test_plain_wrong_credentials_fails ()
 void test_plain_vanilla_socket ()
 {
     // Unauthenticated messages from a vanilla socket shouldn't be received
-    struct sockaddr_in ip4addr;
-    fd_t s;
-
-    unsigned short int port;
-    int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (port);
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, reinterpret_cast<struct sockaddr *> (&ip4addr),
-                  sizeof (ip4addr));
-    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
+    fd_t s = connect_socket (my_endpoint);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
