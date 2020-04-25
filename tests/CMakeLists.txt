@@ -75,7 +75,7 @@ set(tests
     test_mock_pub_sub)
 
 if(NOT WIN32)
-  list(APPEND tests test_security_gssapi test_socks)
+  list(APPEND tests test_security_gssapi test_socks test_connect_null_fuzzer test_bind_null_fuzzer)
 endif()
 
 if(ZMQ_HAVE_CURVE)

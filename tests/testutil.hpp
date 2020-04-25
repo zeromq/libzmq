@@ -88,6 +88,10 @@ const uint8_t zmtp_ready_sub[27] = {
 
 #undef NDEBUG
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
 #ifndef NOMINMAX
