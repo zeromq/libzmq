@@ -80,6 +80,9 @@ endif()
 
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests test_security_curve)
+  if(NOT WIN32)
+    list(APPEND tests test_connect_curve_fuzzer test_bind_curve_fuzzer)
+  endif()
 endif()
 
 option(ENABLE_CAPSH "Run tests that require sudo and capsh (for cap_net_admin)" OFF)
