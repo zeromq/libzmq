@@ -242,21 +242,16 @@ template <size_t N> void send (fd_t fd_, const char (&data_)[N])
     send_all (fd_, data_, N - 1);
 }
 
-void send_greeting (fd_t s_)
+template <size_t N> void send (fd_t fd_, const uint8_t (&data_)[N])
 {
-    send (s_, "\xff\0\0\0\0\0\0\0\0\x7f");            // signature
-    send (s_, "\x03\x00");                            // version 3.0
-    send (s_, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s_, "\0");                                  // as-server == false
-    send (s_, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    send_all (fd_, reinterpret_cast<const char *> (&data_), N);
 }
 
 void test_curve_security_invalid_hello_wrong_length ()
 {
     fd_t s = connect_socket (my_endpoint);
 
-    // send GREETING
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     // send CURVE HELLO of wrong size
     send (s, "\x04\x06\x05HELLO");
@@ -322,7 +317,7 @@ void test_curve_security_invalid_hello_command_name ()
 {
     fd_t s = connect_socket (my_endpoint);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
@@ -344,7 +339,7 @@ void test_curve_security_invalid_hello_version ()
 {
     fd_t s = connect_socket (my_endpoint);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
@@ -396,7 +391,7 @@ fd_t connect_exchange_greeting_and_send_hello (
 {
     fd_t s = connect_socket (my_endpoint_);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
     recv_greeting (s);
 
     // send valid CURVE HELLO

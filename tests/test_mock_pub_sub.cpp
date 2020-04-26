@@ -72,11 +72,9 @@ static void recv_with_retry (fd_t fd_, char *buffer_, int bytes_)
 
 static void mock_handshake (fd_t fd_, bool sub_command, bool mock_pub)
 {
-    const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
-                                       0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
     char buffer[128];
     memset (buffer, 0, sizeof (buffer));
-    memcpy (buffer, zmtp_greeting, sizeof (zmtp_greeting));
+    memcpy (buffer, zmtp_greeting_null, sizeof (zmtp_greeting_null));
 
     //  Mock ZMTP 3.1 which uses commands
     if (sub_command) {
@@ -88,24 +86,20 @@ static void mock_handshake (fd_t fd_, bool sub_command, bool mock_pub)
     recv_with_retry (fd_, buffer, 64);
 
     if (!mock_pub) {
-        const uint8_t zmtp_ready[27] = {
-          4,   25,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
-          't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  3,   'S', 'U', 'B'};
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-          send (fd_, (const char *) zmtp_ready, 27, 0));
-        TEST_ASSERT_EQUAL_INT (27, rc);
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (
+          fd_, (const char *) zmtp_ready_sub, sizeof (zmtp_ready_sub), 0));
+        TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_sub), rc);
     } else {
-        const uint8_t zmtp_ready[28] = {
-          4,   26,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
-          't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  4,   'X', 'P', 'U', 'B'};
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-          send (fd_, (const char *) zmtp_ready, 28, 0));
-        TEST_ASSERT_EQUAL_INT (28, rc);
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (
+          fd_, (const char *) zmtp_ready_xpub, sizeof (zmtp_ready_xpub), 0));
+        TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_xpub), rc);
     }
 
     //  greeting - XPUB has one extra byte
     memset (buffer, 0, sizeof (buffer));
-    recv_with_retry (fd_, buffer, mock_pub ? 27 : 28);
+    recv_with_retry (fd_, buffer,
+                     mock_pub ? sizeof (zmtp_ready_sub)
+                              : sizeof (zmtp_ready_xpub));
 }
 
 static void prep_server_socket (void **server_out_,

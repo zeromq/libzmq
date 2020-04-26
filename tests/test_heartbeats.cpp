@@ -91,29 +91,24 @@ static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
 
 static void mock_handshake (raw_socket fd_, int mock_ping_)
 {
-    const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
-                                       0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
     char buffer[128];
     memset (buffer, 0, sizeof (buffer));
-    memcpy (buffer, zmtp_greeting, sizeof (zmtp_greeting));
+    memcpy (buffer, zmtp_greeting_null, sizeof (zmtp_greeting_null));
 
-    int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 64, 0));
-    TEST_ASSERT_EQUAL_INT (64, rc);
+    int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      send (fd_, buffer, sizeof (zmtp_greeting_null), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_greeting_null), rc);
 
-    recv_with_retry (fd_, buffer, 64);
-
-    const uint8_t zmtp_ready[43] = {
-      4,   41,  5,   'R', 'E', 'A', 'D', 'Y', 11,  'S', 'o', 'c', 'k', 'e', 't',
-      '-', 'T', 'y', 'p', 'e', 0,   0,   0,   6,   'D', 'E', 'A', 'L', 'E', 'R',
-      8,   'I', 'd', 'e', 'n', 't', 'i', 't', 'y', 0,   0,   0,   0};
+    recv_with_retry (fd_, buffer, sizeof (zmtp_greeting_null));
 
     memset (buffer, 0, sizeof (buffer));
-    memcpy (buffer, zmtp_ready, 43);
-    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd_, buffer, 43, 0));
-    TEST_ASSERT_EQUAL_INT (43, rc);
+    memcpy (buffer, zmtp_ready_dealer, sizeof (zmtp_ready_dealer));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      send (fd_, buffer, sizeof (zmtp_ready_dealer), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_dealer), rc);
 
     //  greeting
-    recv_with_retry (fd_, buffer, 43);
+    recv_with_retry (fd_, buffer, sizeof (zmtp_ready_dealer));
 
     if (mock_ping_) {
         //  test PING context - should be replicated in the PONG
