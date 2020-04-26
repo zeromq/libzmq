@@ -89,3 +89,8 @@ jobs:
       shell: cmd      
       working-directory: build_libzmq
       run: ctest -C "%Configuration%"
+    - name: artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: libzmq
+        path: bin
