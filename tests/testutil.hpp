@@ -30,11 +30,7 @@
 #ifndef __TESTUTIL_HPP_INCLUDED__
 #define __TESTUTIL_HPP_INCLUDED__
 
-#if defined ZMQ_CUSTOM_PLATFORM_HPP
 #include "platform.hpp"
-#else
-#include "../src/platform.hpp"
-#endif
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
 
