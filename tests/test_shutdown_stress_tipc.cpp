@@ -43,12 +43,13 @@ void tearDown ()
 #define THREAD_COUNT 100
 
 extern "C" {
-static void *worker (void *s_)
+static void *worker (void *ctx)
 {
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s_, "tipc://{5560,0}@0.0.0"));
+    void *s = zmq_socket (ctx, ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s, "tipc://{5560,0}@0.0.0"));
 
     //  Start closing the socket while the connecting process is underway.
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (s_));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (s));
 
     return NULL;
 }
@@ -57,7 +58,6 @@ static void *worker (void *s_)
 void test_shutdown_stress_tipc ()
 {
     void *s1;
-    void *s2;
     int i;
     int j;
     pthread_t threads[THREAD_COUNT];
@@ -72,9 +72,8 @@ void test_shutdown_stress_tipc ()
         TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s1, "tipc://{5560,0,0}"));
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            s2 = zmq_socket (get_test_context (), ZMQ_SUB);
             TEST_ASSERT_SUCCESS_RAW_ERRNO (
-              pthread_create (&threads[i], NULL, worker, s2));
+              pthread_create (&threads[i], NULL, worker, get_test_context ()));
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {
