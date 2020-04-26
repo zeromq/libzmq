@@ -94,7 +94,6 @@ jobs:
       with:
         name: libzmq
         path: C:\Program Files (x86)\ZeroMQ
-          - name: artifact install
     - name: artifact bin
       uses: actions/upload-artifact@v1
       with:
