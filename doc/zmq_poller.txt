@@ -104,11 +104,7 @@ The *zmq_poller_event_t* structure is defined as follows:
 typedef struct
 {
     void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    zmq_fd_t fd;
     void *user_data;
     short events;
 } zmq_poller_event_t;
@@ -142,6 +138,9 @@ _zmq_poller_size_.
 _zmq_poller_wait_all_ returns the number of valid elements. The valid elements
 are placed in positions '0' to 'n_events - 1' in the 'events' array. All
 members of a valid element are set to valid values by _zmq_poller_wait_all_.
+For socket events 'socket' is non-null and 'fd' is an operating system
+specific value for an invalid socket (-1 or INVALID_SOCKET). For fd events
+'socket' is NULL and 'fd' is a valid file descriptor.
 The client does therefore not need to initialize the contents of the events
 array before a call to _zmq_poller_wait_all_. It is unspecified whether the
 the remaining elements of 'events' are written to by _zmq_poller_wait_all_.
