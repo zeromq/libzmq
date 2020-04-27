@@ -92,10 +92,20 @@ jobs:
     - name: artifact bin
       uses: actions/upload-artifact@v1
       with:
-        name: bin_${env:MSVCVERSION}
+        name: bin-x64-windows-shared-${{ matrix.MSVCVERSION }
         path: build_libzmq\bin
-    - name: artifact install
+    - name: artifact install v141
+      if: matrix.os == 'windows-2016'
       uses: actions/upload-artifact@v1
       with:
-        name: libzmq_${env:MSVCVERSION}
-        path: "%ProgramFiles%"\ZeroMQ
+        # TODO use ARTIFACT_NAME
+        # TODO use PREFIX with cmake
+        name: libzmq-x64-windows-shared-v141
+        path: C:\Program Files\ZeroMQ
+    - name: artifact install v142
+      if: matrix.os == 'windows-2019'
+      uses: actions/upload-artifact@v1
+      with:
+        name: libzmq-x64-windows-shared-v142
+        # TODO - x86 !?
+        path: C:\Program Files(x86)\ZeroMQ
