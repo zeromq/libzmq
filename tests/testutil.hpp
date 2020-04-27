@@ -74,26 +74,32 @@ inline const char *as_setsockopt_opt_t (const void *opt)
 {
     return static_cast<const char *> (opt);
 }
-#if defined _MSC_VER && _MSC_VER <= 1400
-typedef UINT_PTR fd_t;
-enum
-{
-    retired_fd = (fd_t) (~0)
-};
-#else
-typedef SOCKET fd_t;
-enum
-{
-    retired_fd = (fd_t) INVALID_SOCKET
-};
-#endif
 #else
 typedef size_t socket_size_t;
 inline const void *as_setsockopt_opt_t (const void *opt_)
 {
     return opt_;
 }
-typedef int fd_t;
+#endif
+
+// duplicated from fd.hpp
+typedef zmq_fd_t fd_t;
+#ifdef ZMQ_HAVE_WINDOWS
+#if defined _MSC_VER && _MSC_VER <= 1400
+enum
+{
+    retired_fd = (zmq_fd_t) (~0)
+};
+#else
+enum
+#if _MSC_VER >= 1800
+  : zmq_fd_t
+#endif
+{
+    retired_fd = INVALID_SOCKET
+};
+#endif
+#else
 enum
 {
     retired_fd = -1
