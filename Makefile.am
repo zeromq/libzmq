@@ -1106,6 +1106,117 @@ tests_test_disconnect_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_disconnect_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
+if FUZZING_ENGINE_LIB
+fuzzer_apps = tests/test_bind_null_fuzzer \
+	tests/test_connect_null_fuzzer \
+	tests/test_bind_fuzzer \
+	tests/test_connect_fuzzer
+
+tests_test_bind_null_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_bind_null_fuzzer_SOURCES = tests/test_bind_null_fuzzer.cpp
+tests_test_bind_null_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_bind_null_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_bind_null_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_connect_null_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_connect_null_fuzzer_SOURCES = tests/test_connect_null_fuzzer.cpp
+tests_test_connect_null_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_connect_null_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_connect_null_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_bind_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_bind_fuzzer_SOURCES = tests/test_bind_fuzzer.cpp
+tests_test_bind_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_bind_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_bind_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_connect_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_connect_fuzzer_SOURCES = tests/test_connect_fuzzer.cpp
+tests_test_connect_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_connect_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_connect_fuzzer_CXXFLAGS = -std=c++11
+
+if HAVE_CURVE
+fuzzer_apps += tests/test_bind_curve_fuzzer \
+	tests/test_connect_curve_fuzzer \
+	tests/test_z85_decode_fuzzer
+
+tests_test_bind_curve_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_bind_curve_fuzzer_SOURCES = tests/test_bind_curve_fuzzer.cpp
+tests_test_bind_curve_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_bind_curve_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_bind_curve_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_connect_curve_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_connect_curve_fuzzer_SOURCES = tests/test_connect_curve_fuzzer.cpp
+tests_test_connect_curve_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_connect_curve_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_connect_curve_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_z85_decode_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_z85_decode_fuzzer_SOURCES = tests/test_z85_decode_fuzzer.cpp
+tests_test_z85_decode_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_z85_decode_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_z85_decode_fuzzer_CXXFLAGS = -std=c++11
+endif
+
+FUZZINGdir = ${prefix}/${FUZZING_INSTALLDIR}
+FUZZING_PROGRAMS = ${fuzzer_apps}
+else
+test_apps += tests/test_bind_null_fuzzer \
+	tests/test_connect_null_fuzzer \
+	tests/test_bind_fuzzer \
+	tests/test_connect_fuzzer
+
+tests_test_bind_null_fuzzer_SOURCES = tests/test_bind_null_fuzzer.cpp
+tests_test_bind_null_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_bind_null_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_connect_null_fuzzer_SOURCES = tests/test_connect_null_fuzzer.cpp
+tests_test_connect_null_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_connect_null_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_bind_fuzzer_SOURCES = tests/test_bind_fuzzer.cpp
+tests_test_bind_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_bind_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_connect_fuzzer_SOURCES = tests/test_connect_fuzzer.cpp
+tests_test_connect_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_connect_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+if HAVE_CURVE
+test_apps += tests/test_bind_curve_fuzzer \
+	tests/test_connect_curve_fuzzer \
+	tests/test_z85_decode_fuzzer
+
+tests_test_bind_curve_fuzzer_SOURCES = tests/test_bind_curve_fuzzer.cpp
+tests_test_bind_curve_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_bind_curve_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_connect_curve_fuzzer_SOURCES = tests/test_connect_curve_fuzzer.cpp
+tests_test_connect_curve_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_connect_curve_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_z85_decode_fuzzer_SOURCES = tests/test_z85_decode_fuzzer.cpp
+tests_test_z85_decode_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_z85_decode_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
+endif
+
 if ENABLE_STATIC
 # unit tests - these include individual source files and test the internal functions
 test_apps += \

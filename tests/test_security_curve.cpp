@@ -47,17 +47,6 @@
 
 #include "testutil.hpp"
 #include "testutil_security.hpp"
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#endif
 #include <unity.h>
 
 #include "../src/tweetnacl.h"
@@ -223,34 +212,10 @@ void test_curve_security_with_plain_client_credentials ()
     expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
 
-fd_t connect_vanilla_socket (char *my_endpoint_)
-{
-    fd_t s;
-    struct sockaddr_in ip4addr;
-
-    unsigned short int port;
-    int rc = sscanf (my_endpoint_, "tcp://127.0.0.1:%hu", &port);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (port);
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, reinterpret_cast<struct sockaddr *> (&ip4addr),
-                  sizeof (ip4addr));
-    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
-    return s;
-}
-
 void test_curve_security_unauthenticated_message ()
 {
     // Unauthenticated messages from a vanilla socket shouldn't be received
-    fd_t s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_socket (my_endpoint);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
@@ -277,21 +242,16 @@ template <size_t N> void send (fd_t fd_, const char (&data_)[N])
     send_all (fd_, data_, N - 1);
 }
 
-void send_greeting (fd_t s_)
+template <size_t N> void send (fd_t fd_, const uint8_t (&data_)[N])
 {
-    send (s_, "\xff\0\0\0\0\0\0\0\0\x7f");            // signature
-    send (s_, "\x03\x00");                            // version 3.0
-    send (s_, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s_, "\0");                                  // as-server == false
-    send (s_, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    send_all (fd_, reinterpret_cast<const char *> (&data_), N);
 }
 
 void test_curve_security_invalid_hello_wrong_length ()
 {
-    fd_t s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_socket (my_endpoint);
 
-    // send GREETING
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     // send CURVE HELLO of wrong size
     send (s, "\x04\x06\x05HELLO");
@@ -355,9 +315,9 @@ template <size_t N> void send_command (fd_t s_, char (&command_)[N])
 
 void test_curve_security_invalid_hello_command_name ()
 {
-    fd_t s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_socket (my_endpoint);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
@@ -377,9 +337,9 @@ void test_curve_security_invalid_hello_command_name ()
 
 void test_curve_security_invalid_hello_version ()
 {
-    fd_t s = connect_vanilla_socket (my_endpoint);
+    fd_t s = connect_socket (my_endpoint);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
 
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
@@ -429,9 +389,9 @@ void recv_greeting (fd_t fd_)
 fd_t connect_exchange_greeting_and_send_hello (
   char *my_endpoint_, zmq::curve_client_tools_t &tools_)
 {
-    fd_t s = connect_vanilla_socket (my_endpoint_);
+    fd_t s = connect_socket (my_endpoint_);
 
-    send_greeting (s);
+    send (s, zmtp_greeting_curve);
     recv_greeting (s);
 
     // send valid CURVE HELLO

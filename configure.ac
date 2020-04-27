@@ -1005,6 +1005,25 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 # unittests will not build without the static libzmq.a
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
 
+# build using a fuzzing engine - fuzzers will be built separately and statically
+AC_ARG_WITH([fuzzing-engine], [AS_HELP_STRING([--with-fuzzing-engine],
+    [build libzmq with an exernal fuzzing engine [default=no]])],
+    [have_fuzzing_engine_ext=$withval],
+    [have_fuzzing_engine_ext=no])
+AC_ARG_WITH([fuzzing-installdir],
+    AS_HELP_STRING([--with-fuzzing-installdir=PATH],
+        [Path where to install fuzzer binaries]),
+    [fuzzing_installdir="$withval"])
+
+if test "x$have_fuzzing_engine_ext" != "xno" && test "x$fuzzing_installdir" != "x" && test "x$enable_static" = "xyes"; then
+    FUZZING_ENGINE_LIB="${have_fuzzing_engine_ext}"
+    FUZZING_INSTALLDIR="${fuzzing_installdir}"
+    AC_SUBST(FUZZING_ENGINE_LIB)
+    AC_SUBST(FUZZING_INSTALLDIR)
+    AC_DEFINE(ZMQ_USE_FUZZING_ENGINE, 1, [fuzz tests will be built with fuzzing engine])
+fi
+AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
+
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],

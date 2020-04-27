@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2020 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,73 +27,50 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ZMQ_USE_FUZZING_ENGINE
+#include <fuzzer/FuzzedDataProvider.h>
+#endif
+
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <pthread.h>
-
-void setUp ()
+// Test that the ZMTP engine handles invalid handshake when binding
+// https://rfc.zeromq.org/spec/37/
+extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
+    setup_test_context ();
+    char my_endpoint[MAX_SOCKET_STRING];
+    void *server = test_context_socket (ZMQ_PUB);
+    bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
+    fd_t client = connect_socket (my_endpoint);
+
+    for (ssize_t sent = 0; size > 0 && (sent != -1 || errno == EINTR);
+         size -= sent > 0 ? sent : 0, data += sent > 0 ? sent : 0)
+        sent = send (client, (const char *) data, size, MSG_NOSIGNAL);
+    msleep (250);
+
+    close (client);
+
+    test_context_socket_close_zero_linger (server);
+    teardown_test_context ();
+
+    return 0;
 }
 
-void tearDown ()
+#ifndef ZMQ_USE_FUZZING_ENGINE
+void test_bind_null_fuzzer ()
 {
+    TEST_ASSERT_SUCCESS_ERRNO (
+      LLVMFuzzerTestOneInput (zmtp_greeting_null, sizeof (zmtp_greeting_null)));
 }
 
-#define THREAD_COUNT 100
-
-extern "C" {
-static void *worker (void *ctx)
+int main (int argc, char **argv)
 {
-    void *s = zmq_socket (ctx, ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (s, "tipc://{5560,0}@0.0.0"));
-
-    //  Start closing the socket while the connecting process is underway.
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (s));
-
-    return NULL;
-}
-}
-
-void test_shutdown_stress_tipc ()
-{
-    void *s1;
-    int i;
-    int j;
-    pthread_t threads[THREAD_COUNT];
-
-    for (j = 0; j != 10; j++) {
-        //  Check the shutdown with many parallel I/O threads.
-        setup_test_context ();
-        zmq_ctx_set (get_test_context (), ZMQ_IO_THREADS, 7);
-
-        s1 = test_context_socket (ZMQ_PUB);
-
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (s1, "tipc://{5560,0,0}"));
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            TEST_ASSERT_SUCCESS_RAW_ERRNO (
-              pthread_create (&threads[i], NULL, worker, get_test_context ()));
-        }
-
-        for (i = 0; i != THREAD_COUNT; i++) {
-            TEST_ASSERT_SUCCESS_RAW_ERRNO (pthread_join (threads[i], NULL));
-        }
-
-        test_context_socket_close (s1);
-
-        teardown_test_context ();
-    }
-}
-
-int main ()
-{
-    if (!is_tipc_available ()) {
-        printf ("TIPC environment unavailable, skipping test\n");
-        return 77;
-    }
+    setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_shutdown_stress_tipc);
+    RUN_TEST (test_bind_null_fuzzer);
+
     return UNITY_END ();
 }
+#endif
