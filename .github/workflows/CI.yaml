@@ -92,7 +92,7 @@ jobs:
     - name: artifact bin
       uses: actions/upload-artifact@v1
       with:
-        name: bin-x64-windows-shared-${{ matrix.MSVCVERSION }
+        name: bin-x64-windows-shared-${{ matrix.MSVCVERSION }}
         path: build_libzmq\bin
     - name: artifact install v141
       if: matrix.os == 'windows-2016'
