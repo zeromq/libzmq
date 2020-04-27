@@ -374,7 +374,7 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
 {
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
-    socklen_t addr_len = sizeof (addr);
+    socklen_t addr_len;
     const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
@@ -406,15 +406,16 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         memcpy (&addr, in->ai_addr, in->ai_addrlen);
         addr_len = (socklen_t) in->ai_addrlen;
         freeaddrinfo (in);
-    }
+    } else {
 #if defined(ZMQ_HAVE_IPC)
-    else {
         struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
         addr_len = sizeof (struct sockaddr_un);
         un_addr->sun_family = AF_UNIX;
         strcpy (un_addr->sun_path, endpoint_);
-    }
+#else
+        return retired_fd;
 #endif
+    }
 
     TEST_ASSERT_SUCCESS_RAW_ERRNO (
       connect (s_pre, (struct sockaddr *) &addr, addr_len));
@@ -430,7 +431,7 @@ fd_t bind_socket_resolve_port (const char *address_,
 {
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
-    socklen_t addr_len = sizeof (addr);
+    socklen_t addr_len;
     const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
@@ -460,9 +461,8 @@ fd_t bind_socket_resolve_port (const char *address_,
         memcpy (&addr, in->ai_addr, in->ai_addrlen);
         addr_len = (socklen_t) in->ai_addrlen;
         freeaddrinfo (in);
-    }
+    } else {
 #if defined(ZMQ_HAVE_IPC)
-    else {
         struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
         addr_len = sizeof (struct sockaddr_un);
         un_addr->sun_family = AF_UNIX;
@@ -490,8 +490,10 @@ fd_t bind_socket_resolve_port (const char *address_,
 
         // TODO check return value of unlink
         unlink (buffer);
-    }
+#else
+        return retired_fd;
 #endif
+    }
 
     TEST_ASSERT_SUCCESS_RAW_ERRNO (
       bind (s_pre, (struct sockaddr *) &addr, addr_len));
