@@ -408,10 +408,10 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         freeaddrinfo (in);
     } else {
 #if defined(ZMQ_HAVE_IPC)
-        struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
+        //  Cannot cast addr as gcc 4.4 will fail with strict aliasing errors
+        (*(struct sockaddr_un *) &addr).sun_family = AF_UNIX;
+        strcpy ((*(struct sockaddr_un *) &addr).sun_path, endpoint_);
         addr_len = sizeof (struct sockaddr_un);
-        un_addr->sun_family = AF_UNIX;
-        strcpy (un_addr->sun_path, endpoint_);
 #else
         return retired_fd;
 #endif
@@ -463,9 +463,9 @@ fd_t bind_socket_resolve_port (const char *address_,
         freeaddrinfo (in);
     } else {
 #if defined(ZMQ_HAVE_IPC)
-        struct sockaddr_un *un_addr = (struct sockaddr_un *) &addr;
+        //  Cannot cast addr as gcc 4.4 will fail with strict aliasing errors
+        (*(struct sockaddr_un *) &addr).sun_family = AF_UNIX;
         addr_len = sizeof (struct sockaddr_un);
-        un_addr->sun_family = AF_UNIX;
 #if defined ZMQ_HAVE_WINDOWS
         char buffer[MAX_PATH] = "";
 
@@ -484,7 +484,7 @@ fd_t bind_socket_resolve_port (const char *address_,
         close (fd);
 #endif
 #endif
-        strcpy (un_addr->sun_path, buffer);
+        strcpy ((*(struct sockaddr_un *) &addr).sun_path, buffer);
         memcpy (my_endpoint_, "ipc://", 7);
         strcat (my_endpoint_, buffer);
 
@@ -506,8 +506,8 @@ fd_t bind_socket_resolve_port (const char *address_,
         sprintf (my_endpoint_, "%s://%s:%u",
                  protocol_ == IPPROTO_TCP ? "tcp" : "udp", address_,
                  af_ == AF_INET
-                   ? ntohs (((struct sockaddr_in *) &addr)->sin_port)
-                   : ntohs (((struct sockaddr_in6 *) &addr)->sin6_port));
+                   ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
+                   : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
     }
 
     return s_pre;
