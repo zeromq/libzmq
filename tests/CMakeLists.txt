@@ -72,8 +72,7 @@ set(tests
     test_monitor
     test_socket_null
     test_reconnect_ivl
-    test_mock_pub_sub
-    test_hello_msg)
+    test_mock_pub_sub)
 
 if(NOT WIN32)
   list(APPEND tests test_security_gssapi test_socks)
@@ -155,6 +154,7 @@ if(ENABLE_DRAFTS)
     test_peer
     test_reconnect_options
     test_msg_init
+    test_hello_msg
     test_disconnect_msg)
 endif()
 
