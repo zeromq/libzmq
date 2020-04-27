@@ -165,9 +165,7 @@ if(ZMQ_HAVE_WS)
   endif()
 endif()
 
-# add location of platform.hpp for Windows builds
 if(WIN32)
-  add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
   add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
   # Same name on 64bit systems
   link_libraries(ws2_32.lib)

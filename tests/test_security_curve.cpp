@@ -32,11 +32,7 @@
 //  To define SIZE_MAX with older compilers
 #define __STDC_LIMIT_MACROS
 
-#if defined ZMQ_CUSTOM_PLATFORM_HPP
 #include "platform.hpp"
-#else
-#include "../src/platform.hpp"
-#endif
 
 #ifndef ZMQ_USE_TWEETNACL
 #define ZMQ_USE_TWEETNACL
