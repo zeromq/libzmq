@@ -107,5 +107,5 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: libzmq-x64-windows-shared-v142
-        # TODO - x86 !?
-        path: C:\Program Files(x86)\ZeroMQ
+        # TODO - (x86) !?
+        path: C:\Program Files (x86)\ZeroMQ
