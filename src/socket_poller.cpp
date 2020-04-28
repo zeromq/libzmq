@@ -403,7 +403,7 @@ void zmq::socket_poller_t::zero_trail_events (
 {
     for (int i = found_; i < n_events_; ++i) {
         events_[i].socket = NULL;
-        events_[i].fd = 0;
+        events_[i].fd = zmq::retired_fd;
         events_[i].user_data = NULL;
         events_[i].events = 0;
     }
@@ -435,7 +435,7 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
 
             if (it->events & events) {
                 events_[found].socket = it->socket;
-                events_[found].fd = 0;
+                events_[found].fd = zmq::retired_fd;
                 events_[found].user_data = it->user_data;
                 events_[found].events = it->events & events;
                 ++found;

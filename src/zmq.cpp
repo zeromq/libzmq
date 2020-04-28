@@ -1299,9 +1299,10 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
     const int rc = zmq_poller_wait_all (poller_, event_, 1, timeout_);
 
     if (rc < 0 && event_) {
-        // TODO this is not portable... zmq_poller_event_t contains pointers,
-        // for which nullptr does not need to be represented by all-zeroes
-        memset (event_, 0, sizeof (zmq_poller_event_t));
+        event_->socket = NULL;
+        event_->fd = zmq::retired_fd;
+        event_->user_data = NULL;
+        event_->events = 0;
     }
     // wait_all returns number of events, but we return 0 for any success
     return rc >= 0 ? 0 : rc;

@@ -686,6 +686,9 @@ void test_poll_client_server ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_wait (poller, &event, 500));
     TEST_ASSERT_EQUAL_PTR (server, event.socket);
     TEST_ASSERT_NULL (event.user_data);
+#ifndef _WIN32
+    TEST_ASSERT (event.fd == -1);
+#endif
     recv_string_expect_success (server, client_server_msg, 0);
 
     //  Polling on pollout
@@ -694,6 +697,9 @@ void test_poll_client_server ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_poller_wait (poller, &event, 0));
     TEST_ASSERT_EQUAL_PTR (server, event.socket);
     TEST_ASSERT_NULL (event.user_data);
+#ifndef _WIN32
+    TEST_ASSERT (event.fd == -1);
+#endif
     TEST_ASSERT_EQUAL_INT (ZMQ_POLLOUT, event.events);
 
     //  Stop polling server
