@@ -102,7 +102,7 @@ int zmq::tipc_listener_t::set_local_address (const char *addr_)
 
     //  Create a listening socket.
     _s = open_socket (AF_TIPC, SOCK_STREAM, 0);
-    if (_s == -1)
+    if (_s == retired_fd)
         return -1;
 
     // If random Port Identity, update address object to reflect the assigned address
