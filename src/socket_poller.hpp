@@ -60,13 +60,7 @@ class socket_poller_t
     socket_poller_t ();
     ~socket_poller_t ();
 
-    typedef struct event_t
-    {
-        socket_base_t *socket;
-        fd_t fd;
-        void *user_data;
-        short events;
-    } event_t;
+    typedef zmq_poller_event_t event_t;
 
     int add (socket_base_t *socket_, void *user_data_, short events_);
     int modify (const socket_base_t *socket_, short events_);
