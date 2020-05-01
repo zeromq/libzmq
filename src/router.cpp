@@ -434,7 +434,7 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
     // TODO remove the const_cast, see comment in lookup_out_pipe
     const blob_t routing_id_blob (
       static_cast<unsigned char *> (const_cast<void *> (routing_id_)),
-      routing_id_size_);
+      routing_id_size_, reference_tag_t ());
     const out_pipe_t *out_pipe = lookup_out_pipe (routing_id_blob);
     if (!out_pipe) {
         errno = EHOSTUNREACH;
