@@ -844,6 +844,7 @@ endif()
 set(cxx-sources
     precompiled.cpp
     address.cpp
+    allocator.cpp
     client.cpp
     clock.cpp
     ctx.cpp
@@ -943,6 +944,7 @@ set(cxx-sources
     zmtp_engine.cpp
     # at least for VS, the header files must also be listed
     address.hpp
+    allocator.hpp
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
@@ -950,6 +952,7 @@ set(cxx-sources
     client.hpp
     clock.hpp
     command.hpp
+    concurrentqueue.h
     condition_variable.hpp
     config.hpp
     ctx.hpp
