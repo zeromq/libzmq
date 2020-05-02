@@ -38,6 +38,8 @@
 // FIXME: we need to grow dynamically the mempool
 #define MAX_ACTIVE_MESSAGES (16384)
 
+#define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE 256
+
 namespace zmq
 {
 class global_memory_pool_t
@@ -61,62 +63,23 @@ class global_memory_pool_t
         MsgBlock_NumSizeClasses
     } MsgBlock_e;
 
-    inline size_t MsgBlockToBytes (MsgBlock_e block_class)
+    inline size_t MsgBlockToBytes (size_t block)
     {
-        switch (block_class) {
-            case MsgBlock_SizeClass_256:
-                return 256;
-            case MsgBlock_SizeClass_512:
-                return 512;
-            case MsgBlock_SizeClass_1024:
-                return 1024;
-            case MsgBlock_SizeClass_2048:
-                return 2048;
-            case MsgBlock_SizeClass_4096:
-                return 4096;
-            case MsgBlock_SizeClass_8192:
-                return 8192;
-            default:
-                return 0;
-        }
+        return ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE * 2 ^ block;
     }
-    inline MsgBlock_e BytesToMsgBlock (size_t n)
-    {
-        if (n < 256)
-            return MsgBlock_SizeClass_256;
-        else if (n < 512)
-            return MsgBlock_SizeClass_512;
-        else if (n < 1024)
-            return MsgBlock_SizeClass_1024;
-        else if (n < 2048)
-            return MsgBlock_SizeClass_2048;
-        else if (n < 4096)
-            return MsgBlock_SizeClass_4096;
-        else if (n < 8192)
-            return MsgBlock_SizeClass_8192;
 
-        // size too big
-        return MsgBlock_NumSizeClasses;
+    inline size_t BytesToMsgBlock (size_t n)
+    {
+        return (size_t) floor (log2 (n)
+                               - log2 (ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE));
     }
 
   public:
-    global_memory_pool_t ()
+    global_memory_pool_t (size_t initialMaximumBlockSize = 8092)
     {
-        // enqueue all available blocks in the free list:
-        for (int i = 0; i < MsgBlock_NumSizeClasses; i++) {
-            size_t msg_size = MsgBlockToBytes ((MsgBlock_e) i);
-
-            m_storage[i].num_msgs = MAX_ACTIVE_MESSAGES;
-            m_storage[i].raw_data =
-              (uint8_t *) malloc (MAX_ACTIVE_MESSAGES * msg_size);
-
-            uint8_t *msg_memory = m_storage[i].raw_data;
-            for (int j = 0; j < MAX_ACTIVE_MESSAGES; j++) {
-                m_free_list[i].enqueue (msg_memory);
-                msg_memory += msg_size;
-            }
-        }
+        allocate_block (BytesToMsgBlock (initialMaximumBlockSize));
     }
+
     ~global_memory_pool_t ()
     {
         // deallocate all message classes
@@ -126,10 +89,34 @@ class global_memory_pool_t
         }
     }
 
+    void allocate_block (size_t bl)
+    {
+        size_t maxBlock = m_storage.size () - 1;
+        if (maxBlock < bl) {
+            m_storage.resize (bl + 1);
+            m_free_list.resize (bl + 1);
+            for (auto i = maxBlock; i < bl; i++) {
+                size_t msg_size = MsgBlockToBytes (i);
+                m_storage[i].num_msgs = MAX_ACTIVE_MESSAGES;
+                m_storage[i].raw_data =
+                  (uint8_t *) malloc (MAX_ACTIVE_MESSAGES * msg_size);
+
+                uint8_t *msg_memory = m_storage[i].raw_data;
+                for (int j = 0; j < MAX_ACTIVE_MESSAGES; j++) {
+                    m_free_list[i].enqueue (msg_memory);
+                    msg_memory += msg_size;
+                }
+            }
+        }
+    }
+
     void *allocate_msg (size_t len) // consumer thread: user app thread
     {
-        MsgBlock_e bl = BytesToMsgBlock (len);
-        assert (bl != MsgBlock_NumSizeClasses);
+        size_t bl = BytesToMsgBlock (len);
+
+        if (m_storage.size () <= bl) {
+            allocate_block (bl);
+        }
 
         // consume 1 block from the list of free msg
         uint8_t *next_avail = nullptr;
@@ -146,8 +133,7 @@ class global_memory_pool_t
     deallocate_msg (void *data_,
                     size_t len) // producer thread: ZMQ background IO thread
     {
-        MsgBlock_e bl = BytesToMsgBlock (len);
-        assert (bl != MsgBlock_NumSizeClasses);
+        size_t bl = BytesToMsgBlock (len);
 
         // produce a new free msg:
         m_free_list[bl].enqueue ((uint8_t *) data_);
@@ -162,8 +148,8 @@ class global_memory_pool_t
     }
 
   private:
-    msg_block_t m_storage[MsgBlock_NumSizeClasses];
-    moodycamel::ConcurrentQueue<uint8_t *> m_free_list[MsgBlock_NumSizeClasses];
+    std::vector<msg_block_t> m_storage;
+    std::vector<moodycamel::ConcurrentQueue<uint8_t *> > m_free_list;
 };
 
 class allocator_global_pool_t : public allocator_base_t
