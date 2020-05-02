@@ -35,10 +35,9 @@
 #include "msg.hpp"
 #include "concurrentqueue.h"
 
-// FIXME: we need to grow dynamically the mempool
-#define MAX_ACTIVE_MESSAGES (16384)
+#define ZMG_GLOBAL_POOL_START_MESSAGES (100)
 
-#define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE 256
+#define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE (256)
 
 namespace zmq
 {
@@ -48,20 +47,8 @@ class global_memory_pool_t
     {
         size_t num_msgs;
         // actual user data
-        uint8_t *raw_data;
+        std::vector<uint8_t *> raw_data;
     } msg_block_t;
-
-    typedef enum
-    {
-        MsgBlock_SizeClass_256 = 0, // for messages up to 256B long
-        MsgBlock_SizeClass_512,
-        MsgBlock_SizeClass_1024,
-        MsgBlock_SizeClass_2048,
-        MsgBlock_SizeClass_4096,
-        MsgBlock_SizeClass_8192,
-
-        MsgBlock_NumSizeClasses
-    } MsgBlock_e;
 
     inline size_t MsgBlockToBytes (size_t block)
     {
@@ -83,9 +70,11 @@ class global_memory_pool_t
     ~global_memory_pool_t ()
     {
         // deallocate all message classes
-        for (int i = 0; i < MsgBlock_NumSizeClasses; i++) {
-            free (m_storage[i].raw_data);
-            m_storage[i].raw_data = NULL;
+        for (size_t i = 0; i < m_storage.size (); i++) {
+            for (size_t j = 0; j < m_storage[i].raw_data.size (); i++) {
+                free (m_storage[i].raw_data[j]);
+                m_storage[i].raw_data[j] = NULL;
+            }
         }
     }
 
@@ -97,16 +86,32 @@ class global_memory_pool_t
             m_free_list.resize (bl + 1);
             for (auto i = maxBlock; i < bl; i++) {
                 size_t msg_size = MsgBlockToBytes (i);
-                m_storage[i].num_msgs = MAX_ACTIVE_MESSAGES;
-                m_storage[i].raw_data =
-                  (uint8_t *) malloc (MAX_ACTIVE_MESSAGES * msg_size);
+                m_storage[i].num_msgs = ZMG_GLOBAL_POOL_START_MESSAGES;
+                m_storage[i].raw_data.push_back ((uint8_t *) malloc (
+                  ZMG_GLOBAL_POOL_START_MESSAGES * msg_size));
 
-                uint8_t *msg_memory = m_storage[i].raw_data;
-                for (int j = 0; j < MAX_ACTIVE_MESSAGES; j++) {
+                uint8_t *msg_memory = m_storage[i].raw_data[0];
+                for (int j = 0; j < ZMG_GLOBAL_POOL_START_MESSAGES; j++) {
                     m_free_list[i].enqueue (msg_memory);
                     msg_memory += msg_size;
                 }
             }
+        }
+    }
+
+    // TODO have a look if realloc is possible, probably not as not thread safe?
+    void expand_block (size_t bl)
+    {
+        size_t msg_size = MsgBlockToBytes (bl);
+        size_t messagesToAdd = m_storage[bl].num_msgs;
+        m_storage[bl].num_msgs += messagesToAdd;
+        m_storage[bl].raw_data.push_back (
+          (uint8_t *) malloc (messagesToAdd * msg_size));
+
+        uint8_t *msg_memory = *m_storage[bl].raw_data.end ();
+        for (int j = 0; j < messagesToAdd; j++) {
+            m_free_list[bl].enqueue (msg_memory);
+            msg_memory += msg_size;
         }
     }
 
@@ -121,8 +126,10 @@ class global_memory_pool_t
         // consume 1 block from the list of free msg
         uint8_t *next_avail = nullptr;
         if (!m_free_list[bl].try_dequeue (next_avail)) {
-            assert (0); // I want to find out if this ever happens
-            return NULL;
+            expand_block (bl);
+            if (!m_free_list[bl].try_dequeue (next_avail)) {
+                return NULL;
+            }
         }
 
         assert (next_avail);
@@ -142,7 +149,7 @@ class global_memory_pool_t
     size_t size () const
     {
         size_t acc = 0;
-        for (int i = 0; i < MsgBlock_NumSizeClasses; i++)
+        for (int i = 0; i < m_free_list.size (); i++)
             acc += m_free_list[i].size_approx ();
         return acc;
     }
