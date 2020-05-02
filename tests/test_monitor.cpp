@@ -116,6 +116,12 @@ void test_monitor_basic ()
     if (event != ZMQ_EVENT_DISCONNECTED) {
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
     }
+    //  TODO: When not waiting until the monitor stopped, the I/O thread runs
+    //  into some deadlock. This must be fixed, but until it is fixed, we wait
+    //  here in order to have more reliable test execution.
+    while (event != ZMQ_EVENT_MONITOR_STOPPED) {
+        event = get_monitor_event (server_mon, NULL, NULL);
+    }
 
     //  Close down the sockets
     //  TODO why does this use zero_linger?
@@ -196,12 +202,12 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     //  Now do a basic ping test
     bind_function_ (server, server_endpoint, sizeof server_endpoint);
 
-    int ipv6_;
-    size_t ipv6_size_ = sizeof (ipv6_);
+    int ipv6;
+    size_t ipv6_size = sizeof (ipv6);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (server, ZMQ_IPV6, &ipv6_, &ipv6_size_));
+      zmq_getsockopt (server, ZMQ_IPV6, &ipv6, &ipv6_size));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (client, ZMQ_IPV6, &ipv6_, sizeof (int)));
+      zmq_setsockopt (client, ZMQ_IPV6, &ipv6, sizeof (int)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, server_endpoint));
     bounce (server, client);
 
@@ -254,6 +260,12 @@ void test_monitor_versioned_basic (bind_function_t bind_function_,
     }
     if (event != ZMQ_EVENT_DISCONNECTED) {
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_MONITOR_STOPPED, event);
+    }
+    //  TODO: When not waiting until the monitor stopped, the I/O thread runs
+    //  into some deadlock. This must be fixed, but until it is fixed, we wait
+    //  here in order to have more reliable test execution.
+    while (event != ZMQ_EVENT_MONITOR_STOPPED) {
+        event = get_monitor_event_v2 (server_mon, NULL, NULL, NULL);
     }
     free (client_local_address);
     free (client_remote_address);
@@ -327,14 +339,14 @@ void test_monitor_versioned_stats (bind_function_t bind_function_,
       push, ZMQ_SNDBUF, &tcp_buffer_size, sizeof (tcp_buffer_size)));
     bind_function_ (push, server_endpoint, sizeof (server_endpoint));
 
-    int ipv6_;
-    size_t ipv6_size_ = sizeof (ipv6_);
+    int ipv6;
+    size_t ipv6_size = sizeof (ipv6);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (push, ZMQ_IPV6, &ipv6_, &ipv6_size_));
+      zmq_getsockopt (push, ZMQ_IPV6, &ipv6, &ipv6_size));
     for (int i = 0; i < pulls_count; ++i) {
         pulls[i] = test_context_socket (ZMQ_PULL);
         TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (pulls[i], ZMQ_IPV6, &ipv6_, sizeof (int)));
+          zmq_setsockopt (pulls[i], ZMQ_IPV6, &ipv6, sizeof (int)));
         int timeout_ms = 10;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           pulls[i], ZMQ_RCVTIMEO, &timeout_ms, sizeof (timeout_ms)));

@@ -74,6 +74,17 @@
 #define TEST_ASSERT_SUCCESS_ERRNO(expr)                                        \
     test_assert_success_message_errno_helper (expr, NULL, #expr)
 
+// This macro is used to avoid-variable warning. If used with an expression,
+// the sizeof is not evaluated to avoid polluting the assembly code.
+#ifdef NDEBUG
+#define ASSERT_EXPR_SAFE(x)                                                    \
+    do {                                                                       \
+        (void) sizeof (x);                                                     \
+    } while (0)
+#else
+#define ASSERT_EXPR_SAFE(x) assert (x)
+#endif
+
 
 static uint64_t message_count = 0;
 static size_t message_size = 0;
@@ -238,7 +249,7 @@ static void proxy_thread_main (void *pvoid)
         if (ep != NULL) {
             assert (strlen (ep) > 5);
             rc = zmq_bind (frontend_xsub, ep);
-            assert (rc == 0);
+            ASSERT_EXPR_SAFE (rc == 0);
         }
     }
 
@@ -252,7 +263,7 @@ static void proxy_thread_main (void *pvoid)
     int optval = 1;
     rc =
       zmq_setsockopt (backend_xpub, ZMQ_XPUB_NODROP, &optval, sizeof (optval));
-    assert (rc == 0);
+    ASSERT_EXPR_SAFE (rc == 0);
 
     set_hwm (backend_xpub);
 
@@ -262,7 +273,7 @@ static void proxy_thread_main (void *pvoid)
         if (ep != NULL) {
             assert (strlen (ep) > 5);
             rc = zmq_bind (backend_xpub, ep);
-            assert (rc == 0);
+            ASSERT_EXPR_SAFE (rc == 0);
         }
     }
 
@@ -275,7 +286,7 @@ static void proxy_thread_main (void *pvoid)
 
     //  Bind CONTROL
     rc = zmq_bind (control_rep, cfg->control_endpoint);
-    assert (rc == 0);
+    ASSERT_EXPR_SAFE (rc == 0);
 
     //  Start proxying!
 
@@ -298,12 +309,12 @@ void terminate_proxy (const proxy_hwm_cfg_t *cfg)
 
     //  Connect CONTROL-REQ: a socket to which send commands
     int rc = zmq_connect (control_req, cfg->control_endpoint);
-    assert (rc == 0);
+    ASSERT_EXPR_SAFE (rc == 0);
 
     //  Ask the proxy to exit: the subscriber has received all messages
 
     rc = zmq_send (control_req, "TERMINATE", 9, 0);
-    assert (rc == 9);
+    ASSERT_EXPR_SAFE (rc == 9);
 
     zmq_close (control_req);
 }
@@ -327,7 +338,7 @@ int main (int argc, char *argv[])
     assert (context);
 
     int rv = zmq_ctx_set (context, ZMQ_IO_THREADS, 4);
-    assert (rv == 0);
+    ASSERT_EXPR_SAFE (rv == 0);
 
     //  START ALL SECONDARY THREADS
 
@@ -395,7 +406,7 @@ int main (int argc, char *argv[])
     zmq_threadclose (proxy);
 
     int rc = zmq_ctx_term (context);
-    assert (rc == 0);
+    ASSERT_EXPR_SAFE (rc == 0);
 
     return 0;
 }

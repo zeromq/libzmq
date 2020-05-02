@@ -43,7 +43,7 @@ class ctx_t;
 //  Generic part of the I/O thread. Polling-mechanism-specific features
 //  are implemented in separate "polling objects".
 
-class io_thread_t : public object_t, public i_poll_events
+class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
 {
   public:
     io_thread_t (zmq::ctx_t *ctx_, uint32_t tid_);
@@ -67,13 +67,13 @@ class io_thread_t : public object_t, public i_poll_events
     void timer_event (int id_);
 
     //  Used by io_objects to retrieve the associated poller object.
-    poller_t *get_poller ();
+    poller_t *get_poller () const;
 
     //  Command handlers.
     void process_stop ();
 
     //  Returns load experienced by the I/O thread.
-    int get_load ();
+    int get_load () const;
 
   private:
     //  I/O thread accesses incoming commands via this mailbox.
@@ -85,8 +85,7 @@ class io_thread_t : public object_t, public i_poll_events
     //  I/O multiplexing is performed using a poller object.
     poller_t *_poller;
 
-    io_thread_t (const io_thread_t &);
-    const io_thread_t &operator= (const io_thread_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (io_thread_t)
 };
 }
 

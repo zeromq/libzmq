@@ -42,7 +42,7 @@
 
 namespace zmq
 {
-class mailbox_t : public i_mailbox
+class mailbox_t ZMQ_FINAL : public i_mailbox
 {
   public:
     mailbox_t ();
@@ -58,7 +58,7 @@ class mailbox_t : public i_mailbox
     // close the file descriptors in the signaller. This is used in a forked
     // child process to close the file descriptors so that they do not interfere
     // with the context in the parent process.
-    void forked () { _signaler.forked (); }
+    void forked () ZMQ_FINAL { _signaler.forked (); }
 #endif
 
   private:
@@ -79,9 +79,7 @@ class mailbox_t : public i_mailbox
     //  read commands from it.
     bool _active;
 
-    //  Disable copying of mailbox_t object.
-    mailbox_t (const mailbox_t &);
-    const mailbox_t &operator= (const mailbox_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_t)
 };
 }
 

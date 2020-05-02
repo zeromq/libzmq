@@ -49,7 +49,7 @@ class stream_listener_base_t : public own_t, public io_object_t
     stream_listener_base_t (zmq::io_thread_t *io_thread_,
                             zmq::socket_base_t *socket_,
                             const options_t &options_);
-    ~stream_listener_base_t ();
+    ~stream_listener_base_t () ZMQ_OVERRIDE;
 
     // Get the bound address for use with wildcards
     int get_local_address (std::string &addr_) const;
@@ -60,8 +60,8 @@ class stream_listener_base_t : public own_t, public io_object_t
 
   private:
     //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
+    void process_plug () ZMQ_FINAL;
+    void process_term (int linger_) ZMQ_FINAL;
 
   protected:
     //  Close the listening socket.
@@ -81,9 +81,7 @@ class stream_listener_base_t : public own_t, public io_object_t
     // String representation of endpoint to bind to
     std::string _endpoint;
 
-  private:
-    stream_listener_base_t (const stream_listener_base_t &);
-    const stream_listener_base_t &operator= (const stream_listener_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_listener_base_t)
 };
 }
 

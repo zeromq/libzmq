@@ -93,7 +93,8 @@ int zmq::tipc_listener_t::set_local_address (const char *addr_)
         return -1;
 
     // Cannot bind non-random Port Identity
-    struct sockaddr_tipc *a = (sockaddr_tipc *) _address.addr ();
+    const sockaddr_tipc *const a =
+      reinterpret_cast<const sockaddr_tipc *> (_address.addr ());
     if (!_address.is_random () && a->addrtype == TIPC_ADDR_ID) {
         errno = EINVAL;
         return -1;
@@ -101,7 +102,7 @@ int zmq::tipc_listener_t::set_local_address (const char *addr_)
 
     //  Create a listening socket.
     _s = open_socket (AF_TIPC, SOCK_STREAM, 0);
-    if (_s == -1)
+    if (_s == retired_fd)
         return -1;
 
     // If random Port Identity, update address object to reflect the assigned address
@@ -111,7 +112,8 @@ int zmq::tipc_listener_t::set_local_address (const char *addr_)
         if (sl == 0)
             goto error;
 
-        _address = tipc_address_t ((struct sockaddr *) &ss, sl);
+        _address =
+          tipc_address_t (reinterpret_cast<struct sockaddr *> (&ss), sl);
     }
 
 
@@ -156,7 +158,8 @@ zmq::fd_t zmq::tipc_listener_t::accept ()
 #ifdef ZMQ_HAVE_VXWORKS
     fd_t sock = ::accept (_s, (struct sockaddr *) &ss, (int *) &ss_len);
 #else
-    fd_t sock = ::accept (_s, (struct sockaddr *) &ss, &ss_len);
+    fd_t sock =
+      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK

@@ -427,13 +427,14 @@ void zmq::generic_mtrie_t<T>::match (prefix_t data_,
                                      void (*func_) (value_t *pipe_, Arg arg_),
                                      Arg arg_)
 {
-    generic_mtrie_t *current = this;
-    while (true) {
+    for (generic_mtrie_t *current = this; current; data_++, size_--) {
         //  Signal the pipes attached to this node.
         if (current->_pipes) {
-            for (typename pipes_t::iterator it = current->_pipes->begin ();
-                 it != current->_pipes->end (); ++it)
+            for (typename pipes_t::iterator it = current->_pipes->begin (),
+                                            end = current->_pipes->end ();
+                 it != end; ++it) {
                 func_ (*it, arg_);
+            }
         }
 
         //  If we are at the end of the message, there's nothing more to match.
@@ -444,25 +445,20 @@ void zmq::generic_mtrie_t<T>::match (prefix_t data_,
         if (current->_count == 0)
             break;
 
-        //  If there's one subnode (optimisation).
         if (current->_count == 1) {
-            if (data_[0] != current->_min)
+            //  If there's one subnode (optimisation).
+            if (data_[0] != current->_min) {
                 break;
+            }
             current = current->_next.node;
-            data_++;
-            size_--;
-            continue;
+        } else {
+            //  If there are multiple subnodes.
+            if (data_[0] < current->_min
+                || data_[0] >= current->_min + current->_count) {
+                break;
+            }
+            current = current->_next.table[data_[0] - current->_min];
         }
-
-        //  If there are multiple subnodes.
-        if (data_[0] < current->_min
-            || data_[0] >= current->_min + current->_count)
-            break;
-        if (!current->_next.table[data_[0] - current->_min])
-            break;
-        current = current->_next.table[data_[0] - current->_min];
-        data_++;
-        size_--;
     }
 }
 

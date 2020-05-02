@@ -70,7 +70,7 @@ struct curve_client_tools_t
         put_uint64 (hello_nonce + 16, cn_nonce_);
 
         //  Create Box [64 * %x0](C'->S)
-        int rc =
+        const int rc =
           crypto_box (hello_box, &hello_plaintext[0], hello_plaintext.size (),
                       hello_nonce, server_key_, cn_secret_);
         if (rc == -1)
@@ -268,7 +268,7 @@ struct curve_client_tools_t
                           size_t size_,
                           const uint64_t cn_nonce_,
                           const uint8_t *metadata_plaintext_,
-                          const size_t metadata_length_)
+                          const size_t metadata_length_) const
     {
         return produce_initiate (data_, size_, cn_nonce_, server_key,
                                  public_key, secret_key, cn_public, cn_secret,

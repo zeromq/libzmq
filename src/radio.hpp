@@ -45,7 +45,7 @@ class ctx_t;
 class pipe_t;
 class io_thread_t;
 
-class radio_t : public socket_base_t
+class radio_t ZMQ_FINAL : public socket_base_t
 {
   public:
     radio_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -79,11 +79,10 @@ class radio_t : public socket_base_t
     //  Drop messages if HWM reached, otherwise return with EAGAIN
     bool _lossy;
 
-    radio_t (const radio_t &);
-    const radio_t &operator= (const radio_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (radio_t)
 };
 
-class radio_session_t : public session_base_t
+class radio_session_t ZMQ_FINAL : public session_base_t
 {
   public:
     radio_session_t (zmq::io_thread_t *io_thread_,
@@ -107,8 +106,7 @@ class radio_session_t : public session_base_t
 
     msg_t _pending_msg;
 
-    radio_session_t (const radio_session_t &);
-    const radio_session_t &operator= (const radio_session_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (radio_session_t)
 };
 }
 

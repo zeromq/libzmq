@@ -30,8 +30,7 @@
 #include "precompiled.hpp"
 #include "ipc_listener.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include <new>
 
@@ -45,11 +44,23 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 
+#ifdef _MSC_VER
+#ifdef ZMQ_IOTHREAD_POLLER_USE_SELECT
+#error On Windows, IPC does not work with POLLER=select, use POLLER=epoll instead, or disable IPC transport
+#endif
+
+#include <afunix.h>
+#include <direct.h>
+
+#define rmdir _rmdir
+#define unlink _unlink
+
+#else
 #include <unistd.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/un.h>
-#include <sys/stat.h>
+#endif
 
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED
 #include <sys/types.h>
@@ -64,70 +75,6 @@
 #endif
 #endif
 
-const char *zmq::ipc_listener_t::tmp_env_vars[] = {
-  "TMPDIR", "TEMPDIR", "TMP",
-  0 // Sentinel
-};
-
-
-int zmq::ipc_listener_t::create_wildcard_address (std::string &path_,
-                                                  std::string &file_)
-{
-    std::string tmp_path;
-
-    // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
-    // the socket directory there.
-    const char **tmp_env = tmp_env_vars;
-    while (tmp_path.empty () && *tmp_env != 0) {
-        char *tmpdir = getenv (*tmp_env);
-        struct stat statbuf;
-
-        // Confirm it is actually a directory before trying to use
-        if (tmpdir != 0 && ::stat (tmpdir, &statbuf) == 0
-            && S_ISDIR (statbuf.st_mode)) {
-            tmp_path.assign (tmpdir);
-            if (*(tmp_path.rbegin ()) != '/') {
-                tmp_path.push_back ('/');
-            }
-        }
-
-        // Try the next environment variable
-        ++tmp_env;
-    }
-
-    // Append a directory name
-    tmp_path.append ("tmpXXXXXX");
-
-    // We need room for tmp_path + trailing NUL
-    std::vector<char> buffer (tmp_path.length () + 1);
-    strcpy (&buffer[0], tmp_path.c_str ());
-
-#ifdef HAVE_MKDTEMP
-    // Create the directory.  POSIX requires that mkdtemp() creates the
-    // directory with 0700 permissions, meaning the only possible race
-    // with socket creation could be the same user.  However, since
-    // each socket is created in a directory created by mkdtemp(), and
-    // mkdtemp() guarantees a unique directory name, there will be no
-    // collision.
-    if (mkdtemp (&buffer[0]) == 0) {
-        return -1;
-    }
-
-    path_.assign (&buffer[0]);
-    file_ = path_ + "/socket";
-#else
-    LIBZMQ_UNUSED (path_);
-    int fd = mkstemp (&buffer[0]);
-    if (fd == -1)
-        return -1;
-    ::close (fd);
-
-    file_.assign (&buffer[0]);
-#endif
-
-    return 0;
-}
-
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
                                      const options_t &options_) :
@@ -138,7 +85,7 @@ zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
 
 void zmq::ipc_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -166,7 +113,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
 
     //  Allow wildcard file
     if (options.use_fd == -1 && addr[0] == '*') {
-        if (create_wildcard_address (_tmp_socket_dirname, addr) < 0) {
+        if (create_ipc_wildcard_address (_tmp_socket_dirname, addr) < 0) {
             return -1;
         }
     }
@@ -187,7 +134,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     if (rc != 0) {
         if (!_tmp_socket_dirname.empty ()) {
             // We need to preserve errno to return to the user
-            int tmp_errno = errno;
+            const int tmp_errno = errno;
             ::rmdir (_tmp_socket_dirname.c_str ());
             _tmp_socket_dirname.clear ();
             errno = tmp_errno;
@@ -202,10 +149,10 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     } else {
         //  Create a listening socket.
         _s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-        if (_s == -1) {
+        if (_s == retired_fd) {
             if (!_tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
-                int tmp_errno = errno;
+                const int tmp_errno = errno;
                 ::rmdir (_tmp_socket_dirname.c_str ());
                 _tmp_socket_dirname.clear ();
                 errno = tmp_errno;
@@ -233,7 +180,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -242,9 +189,14 @@ error:
 int zmq::ipc_listener_t::close ()
 {
     zmq_assert (_s != retired_fd);
-    int fd_for_event = _s;
+    const fd_t fd_for_event = _s;
+#ifdef ZMQ_HAVE_WINDOWS
+    int rc = closesocket (_s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
     int rc = ::close (_s);
     errno_assert (rc == 0);
+#endif
 
     _s = retired_fd;
 
@@ -296,14 +248,15 @@ bool zmq::ipc_listener_t::filter (fd_t sock_)
              != options.ipc_pid_accept_filters.end ())
         return true;
 
-    struct passwd *pw;
-    struct group *gr;
+    const struct passwd *pw;
+    const struct group *gr;
 
     if (!(pw = getpwuid (cred.uid)))
         return false;
-    for (options_t::ipc_gid_accept_filters_t::const_iterator it =
-           options.ipc_gid_accept_filters.begin ();
-         it != options.ipc_gid_accept_filters.end (); it++) {
+    for (options_t::ipc_gid_accept_filters_t::const_iterator
+           it = options.ipc_gid_accept_filters.begin (),
+           end = options.ipc_gid_accept_filters.end ();
+         it != end; it++) {
         if (!(gr = getgrgid (*it)))
             continue;
         for (char **mem = gr->gr_mem; *mem; mem++) {
@@ -352,12 +305,27 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
     fd_t sock = ::accept4 (_s, NULL, NULL, SOCK_CLOEXEC);
 #else
-    fd_t sock = ::accept (_s, NULL, NULL);
+    struct sockaddr_storage ss;
+    memset (&ss, 0, sizeof (ss));
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_VXWORKS
+    int ss_len = sizeof (ss);
+#else
+    socklen_t ss_len = sizeof (ss);
 #endif
-    if (sock == -1) {
+
+    const fd_t sock =
+      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+#endif
+    if (sock == retired_fd) {
+#if defined ZMQ_HAVE_WINDOWS
+        const int last_error = WSAGetLastError ();
+        wsa_assert (last_error == WSAEWOULDBLOCK || last_error == WSAECONNRESET
+                    || last_error == WSAEMFILE || last_error == WSAENOBUFS);
+#else
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
                       || errno == ECONNABORTED || errno == EPROTO
                       || errno == ENFILE);
+#endif
         return retired_fd;
     }
 
@@ -374,7 +342,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);

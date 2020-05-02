@@ -130,7 +130,7 @@ zmq::stream_engine_base_t::stream_engine_base_t (
     _session (NULL),
     _socket (NULL)
 {
-    int rc = _tx_msg.init ();
+    const int rc = _tx_msg.init ();
     errno_assert (rc == 0);
 
     //  Put the socket into non-blocking mode.
@@ -143,7 +143,7 @@ zmq::stream_engine_base_t::~stream_engine_base_t ()
 
     if (_s != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (_s);
+        const int rc = closesocket (_s);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = close (_s);
@@ -158,7 +158,7 @@ zmq::stream_engine_base_t::~stream_engine_base_t ()
         _s = retired_fd;
     }
 
-    int rc = _tx_msg.close ();
+    const int rc = _tx_msg.close ();
     errno_assert (rc == 0);
 
     //  Drop reference to metadata and destroy it if we are
@@ -275,14 +275,8 @@ bool zmq::stream_engine_base_t::in_event_internal ()
         size_t bufsize = 0;
         _decoder->get_buffer (&_inpos, &bufsize);
 
-        const int rc = tcp_read (_inpos, bufsize);
+        const int rc = read (_inpos, bufsize);
 
-        if (rc == 0) {
-            // connection closed by peer
-            errno = EPIPE;
-            error (connection_error);
-            return false;
-        }
         if (rc == -1) {
             if (errno != EAGAIN) {
                 error (connection_error);
@@ -349,7 +343,7 @@ void zmq::stream_engine_base_t::out_event ()
                 break;
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
-            size_t n =
+            const size_t n =
               _encoder->encode (&bufptr, _options.out_batch_size - _outsize);
             zmq_assert (n > 0);
             if (_outpos == NULL)
@@ -360,7 +354,7 @@ void zmq::stream_engine_base_t::out_event ()
         //  If there is no data to send, stop polling for output.
         if (_outsize == 0) {
             _output_stopped = true;
-            reset_pollout (_handle);
+            reset_pollout ();
             return;
         }
     }
@@ -370,13 +364,13 @@ void zmq::stream_engine_base_t::out_event ()
     //  arbitrarily large. However, we assume that underlying TCP layer has
     //  limited transmission buffer and thus the actual number of bytes
     //  written should be reasonably modest.
-    const int nbytes = tcp_write (_s, _outpos, _outsize);
+    const int nbytes = write (_outpos, _outsize);
 
     //  IO error has occurred. We stop waiting for output events.
     //  The engine is not terminated until we detect input error;
     //  this is necessary to prevent losing incoming messages.
     if (nbytes == -1) {
-        reset_pollout (_handle);
+        reset_pollout ();
         return;
     }
 
@@ -387,7 +381,7 @@ void zmq::stream_engine_base_t::out_event ()
     //  to send, stop polling for output.
     if (unlikely (_handshaking))
         if (_outsize == 0)
-            reset_pollout (_handle);
+            reset_pollout ();
 }
 
 void zmq::stream_engine_base_t::restart_output ()
@@ -471,14 +465,13 @@ int zmq::stream_engine_base_t::next_handshake_command (msg_t *msg_)
     if (_mechanism->status () == mechanism_t::error) {
         errno = EPROTO;
         return -1;
-    } else {
-        const int rc = _mechanism->next_handshake_command (msg_);
-
-        if (rc == 0)
-            msg_->set_flags (msg_t::command);
-
-        return rc;
     }
+    const int rc = _mechanism->next_handshake_command (msg_);
+
+    if (rc == 0)
+        msg_->set_flags (msg_t::command);
+
+    return rc;
 }
 
 int zmq::stream_engine_base_t::process_handshake_command (msg_t *msg_)
@@ -686,13 +679,17 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
     if (reason_ != protocol_error
         && (_mechanism == NULL
             || _mechanism->status () == mechanism_t::handshaking)) {
-        int err = errno;
+        const int err = errno;
         _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
     }
 
     _socket->event_disconnected (_endpoint_uri_pair, _s);
     _session->flush ();
-    _session->engine_error (reason_);
+    _session->engine_error (
+      !_handshaking
+        && (_mechanism == NULL
+            || _mechanism->status () != mechanism_t::handshaking),
+      reason_);
     unplug ();
     delete this;
 }
@@ -744,7 +741,20 @@ void zmq::stream_engine_base_t::timer_event (int id_)
         assert (false);
 }
 
-int zmq::stream_engine_base_t::tcp_read (void *data_, size_t size_)
+int zmq::stream_engine_base_t::read (void *data_, size_t size_)
 {
-    return zmq::tcp_read (_s, data_, size_);
+    const int rc = zmq::tcp_read (_s, data_, size_);
+
+    if (rc == 0) {
+        // connection closed by peer
+        errno = EPIPE;
+        return -1;
+    }
+
+    return rc;
+}
+
+int zmq::stream_engine_base_t::write (const void *data_, size_t size_)
+{
+    return zmq::tcp_write (_s, data_, size_);
 }

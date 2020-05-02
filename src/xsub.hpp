@@ -50,21 +50,24 @@ class xsub_t : public socket_base_t
 {
   public:
     xsub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~xsub_t ();
+    ~xsub_t () ZMQ_OVERRIDE;
 
   protected:
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_);
-    int xsend (zmq::msg_t *msg_);
-    bool xhas_out ();
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
-    void xhiccuped (pipe_t *pipe_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+                       bool locally_initiated_) ZMQ_FINAL;
+    int xsetsockopt (int option_,
+                     const void *optval_,
+                     size_t optvallen_) ZMQ_OVERRIDE;
+    int xsend (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    bool xhas_out () ZMQ_OVERRIDE;
+    int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
+    bool xhas_in () ZMQ_FINAL;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xhiccuped (pipe_t *pipe_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   private:
     //  Check whether the message matches at least one subscription.
@@ -93,12 +96,24 @@ class xsub_t : public socket_base_t
     bool _has_message;
     msg_t _message;
 
+    //  If true, part of a multipart message was already sent, but
+    //  there are following parts still waiting.
+    bool _more_send;
+
     //  If true, part of a multipart message was already received, but
     //  there are following parts still waiting.
-    bool _more;
+    bool _more_recv;
 
-    xsub_t (const xsub_t &);
-    const xsub_t &operator= (const xsub_t &);
+    //  If true, subscribe and cancel messages are processed for the rest
+    //  of multipart message.
+    bool _process_subscribe;
+
+    //  This option is enabled with ZMQ_ONLY_FIRST_SUBSCRIBE.
+    //  If true, messages following subscribe/unsubscribe in a multipart
+    //  message are treated as user data regardless of the first byte.
+    bool _only_first_subscribe;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (xsub_t)
 };
 }
 

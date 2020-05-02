@@ -41,7 +41,7 @@ class msg_t;
 class pipe_t;
 class io_thread_t;
 
-class dgram_t : public socket_base_t
+class dgram_t ZMQ_FINAL : public socket_base_t
 {
   public:
     dgram_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -67,8 +67,7 @@ class dgram_t : public socket_base_t
     //  If true, more outgoing message parts are expected.
     bool _more_out;
 
-    dgram_t (const dgram_t &);
-    const dgram_t &operator= (const dgram_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dgram_t)
 };
 }
 

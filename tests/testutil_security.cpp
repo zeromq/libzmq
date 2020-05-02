@@ -44,7 +44,7 @@ void socket_config_null_server (void *server_, void *server_secret_)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    int required = server_secret_ ? *(int *) server_secret_ : 0;
+    int required = server_secret_ ? *static_cast<int *> (server_secret_) : 0;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN,
                                                &required, sizeof (int)));
 #else
@@ -109,8 +109,8 @@ void socket_config_curve_server (void *server_, void *server_secret_)
 
 void socket_config_curve_client (void *client_, void *data_)
 {
-    curve_client_data_t *curve_client_data =
-      static_cast<curve_client_data_t *> (data_);
+    const curve_client_data_t *const curve_client_data =
+      static_cast<const curve_client_data_t *> (data_);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       client_, ZMQ_CURVE_SERVERKEY, curve_client_data->server_public, 41));
@@ -346,6 +346,7 @@ void shutdown_context_and_server_side (void *zap_thread_,
           zmq_unbind (zap_control_, "inproc://handler-control"));
     }
     test_context_socket_close (zap_control_);
+    zmq_socket_monitor (server_, NULL, 0);
     test_context_socket_close (server_mon_);
     test_context_socket_close (server_);
 
@@ -383,7 +384,7 @@ void expect_new_client_bounce_fail (char *my_endpoint_,
                                     int expected_client_event_,
                                     int expected_client_value_)
 {
-    void *my_client_mon;
+    void *my_client_mon = NULL;
     TEST_ASSERT_TRUE (client_mon_ == NULL || expected_client_event_ == 0);
     if (expected_client_event_ != 0)
         client_mon_ = &my_client_mon;

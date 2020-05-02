@@ -68,7 +68,8 @@ void test_disconnect_inproc ()
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
                 TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pub_socket, 0));
-                char *buffer = (char *) zmq_msg_data (&msg);
+                const char *const buffer =
+                  static_cast<const char *> (zmq_msg_data (&msg));
 
                 if (buffer[0] == 0) {
                     TEST_ASSERT_TRUE (isSubscribed);

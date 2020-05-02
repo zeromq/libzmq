@@ -47,7 +47,7 @@ class udp_address_t
     udp_address_t ();
     virtual ~udp_address_t ();
 
-    int resolve (const char *name_, bool receiver_, bool ipv6_);
+    int resolve (const char *name_, bool bind_, bool ipv6_);
 
     //  The opposite to resolve()
     virtual int to_string (std::string &addr_);

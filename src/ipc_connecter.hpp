@@ -30,15 +30,14 @@
 #ifndef __IPC_CONNECTER_HPP_INCLUDED__
 #define __IPC_CONNECTER_HPP_INCLUDED__
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include "fd.hpp"
 #include "stream_connecter_base.hpp"
 
 namespace zmq
 {
-class ipc_connecter_t : public stream_connecter_base_t
+class ipc_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -65,8 +64,7 @@ class ipc_connecter_t : public stream_connecter_base_t
     //  retired_fd if the connection was unsuccessful.
     fd_t connect ();
 
-    ipc_connecter_t (const ipc_connecter_t &);
-    const ipc_connecter_t &operator= (const ipc_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_connecter_t)
 };
 }
 

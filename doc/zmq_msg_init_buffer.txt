@@ -1,0 +1,59 @@
+zmq_msg_init_buffer(3)
+======================
+
+
+NAME
+----
+zmq_msg_init_buffer - initialise 0MQ message with buffer copy
+
+
+SYNOPSIS
+--------
+*int zmq_msg_init_buffer (zmq_msg_t '*msg', const void '*buf', size_t 'size');*
+
+
+DESCRIPTION
+-----------
+The _zmq_msg_init_buffer()_ function shall allocate any resources required to
+store a message 'size' bytes long and initialise the message object referenced
+by 'msg' to represent a copy of the buffer referenced by the 'buf' and
+'size' arguments.
+
+The implementation shall choose whether to store message content on the stack
+(small messages) or on the heap (large messages).
+
+CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
+_zmq_msg_ family of functions.
+
+CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_,
+_zmq_msg_init_buffer()_ and _zmq_msg_init_buffer()_ are mutually exclusive.
+Never initialise the same 'zmq_msg_t' twice.
+
+
+RETURN VALUE
+------------
+The _zmq_msg_init_buffer()_ function shall return zero if successful. Otherwise
+it shall return `-1` and set 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*ENOMEM*::
+Insufficient storage space is available.
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_close[3]
+linkzmq:zmq_msg_data[3]
+linkzmq:zmq_msg_size[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

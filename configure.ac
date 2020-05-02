@@ -12,6 +12,8 @@ AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
+# Allow "configure --disable-maintainer-mode" to disable timestamp checking 
+AM_MAINTAINER_MODE([enable])
 
 m4_pattern_allow([AC_PROG_CC_C99])
 m4_include([m4/ax_check_compile_flag.m4])
@@ -140,6 +142,15 @@ AC_ARG_WITH([militant],
 if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
+
+# IPC is available on all platforms supported by autotools build at the moment except OpenVMS and VxWorks.
+case "${host_os}" in
+    *vxworks*|*openvms*)
+        ;;
+    *)
+        AC_DEFINE(ZMQ_HAVE_IPC, 1, [Have AF_UNIX sockets for ipc transport])
+        ;;
+esac
 
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
@@ -283,7 +294,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         AC_CHECK_LIB(socket, socket)
         ;;
-    *aix*)
+    *aix*|*os400*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
@@ -548,8 +559,57 @@ AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_ena
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
-
 AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
+
+# Check requiring packages for WebSocket
+ws_crypto_library=""
+
+AC_ARG_ENABLE([ws],
+    [AS_HELP_STRING([--enable-ws], [Enable WebSocket transport [default=state of DRAFT]])],
+    [enable_ws=$enableval],
+    [enable_ws=$enable_drafts])
+
+AC_ARG_WITH([nss],
+    [AS_HELP_STRING([--with-nss], [use nss instead of built-in sha1 [default=no]])])
+
+AC_ARG_WITH([tls],
+    [AS_HELP_STRING([--with-tls], [Enable TLS (WSS transport) [default=no]])])
+
+if test "x$enable_ws" != "xno"; then
+    if test "x$with_tls" = "xyes"; then
+        PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE gnutls >= 3.1.4"
+            ws_crypto_library="gnutls"
+            AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
+            AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+            AC_DEFINE(ZMQ_HAVE_WSS, [1], [WSS enabled])
+            AC_MSG_NOTICE(Using gnutls)
+        ],[
+          AC_MSG_ERROR([GnuTLS is not installed. Install it, then run configure again])
+        ])
+    elif test "x$with_nss" = "xyes"; then
+        PKG_CHECK_MODULES([NSS3], [nss], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE nss"
+            AC_DEFINE(ZMQ_USE_NSS, [1], [Using NSS])
+            AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+            ws_crypto_library="nss"
+            AC_MSG_NOTICE(Using NSS)
+        ], [
+            AC_MSG_ERROR([nss is not installed. Install it, then run configure again])
+        ])
+    else
+        AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
+        AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
+        AC_MSG_NOTICE(Using builting SHA1)
+        ws_crypto_library="builtin"
+    fi
+fi
+
+AM_CONDITIONAL(HAVE_WS, test "x$ws_crypto_library" != "x")
+AM_CONDITIONAL(USE_NSS, test "x$ws_crypto_library" = "xnss")
+AM_CONDITIONAL(USE_BUILTIN_SHA1, test "x$ws_crypto_library" = "xbuiltin")
+AM_CONDITIONAL(USE_GNUTLS, test "x$ws_crypto_library" = "xgnutls")
+AM_CONDITIONAL(HAVE_WSS, test "x$ws_crypto_library" = "xgnutls")
 
 # build using pgm
 have_pgm_library="no"
@@ -693,6 +753,45 @@ AC_COMPILE_IFELSE(
 	],[
 		AC_MSG_RESULT([no])
 ])
+
+AC_ARG_ENABLE([libbsd],
+    [AS_HELP_STRING([--enable-libbsd],
+        [enable libbsd [default=auto]])],
+    [enable_libbsd=$enableval],
+    [enable_libbsd="auto"])
+
+if test "x$enable_libbsd" != "xno"; then
+    PKG_CHECK_MODULES(LIBBSD, [libbsd],
+        [
+            AC_DEFINE(ZMQ_HAVE_LIBBSD, 1, [The libbsd library is to be used])
+            AC_SUBST([LIBBSD_CFLAGS])
+            AC_SUBST([LIBBSD_LIBS])
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libbsd"
+            found_libbsd="yes"
+        ],
+        [
+            found_libbsd="no"
+            if test "x$enable_libbsd" = "xyes"; then
+                AC_MSG_ERROR([Cannot find libbsd])
+            else
+                AC_MSG_WARN([Cannot find libbsd])
+            fi
+        ])
+fi
+if test "x$found_libbsd" != "xyes"; then
+    AC_MSG_CHECKING([whether strlcpy is available])
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+            [[#include <string.h>]],
+            [[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
+        ],[
+            AC_MSG_RESULT([yes])
+            AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
+                [strlcpy is available])
+        ],[
+            AC_MSG_RESULT([no])
+    ])
+fi
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
@@ -906,6 +1005,25 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 # unittests will not build without the static libzmq.a
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
 
+# build using a fuzzing engine - fuzzers will be built separately and statically
+AC_ARG_WITH([fuzzing-engine], [AS_HELP_STRING([--with-fuzzing-engine],
+    [build libzmq with an exernal fuzzing engine [default=no]])],
+    [have_fuzzing_engine_ext=$withval],
+    [have_fuzzing_engine_ext=no])
+AC_ARG_WITH([fuzzing-installdir],
+    AS_HELP_STRING([--with-fuzzing-installdir=PATH],
+        [Path where to install fuzzer binaries]),
+    [fuzzing_installdir="$withval"])
+
+if test "x$have_fuzzing_engine_ext" != "xno" && test "x$fuzzing_installdir" != "x" && test "x$enable_static" = "xyes"; then
+    FUZZING_ENGINE_LIB="${have_fuzzing_engine_ext}"
+    FUZZING_INSTALLDIR="${fuzzing_installdir}"
+    AC_SUBST(FUZZING_ENGINE_LIB)
+    AC_SUBST(FUZZING_INSTALLDIR)
+    AC_DEFINE(ZMQ_USE_FUZZING_ENGINE, 1, [fuzz tests will be built with fuzzing engine])
+fi
+AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
+
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
@@ -915,6 +1033,20 @@ AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
     [CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [],
+    [-Werror])
+
+# LTO is enabled by default on SUSE Tumbleweed and RPM lint generates an error if
+# the flag is not used to compile archives:
+# E: lto-no-text-in-archive
+AC_LANG_PUSH([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CFLAGS+=" -ffat-lto-objects"],
+    [],
+    [-Werror])
+AC_LANG_POP([C])
+AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
+    [CXXFLAGS+=" -ffat-lto-objects"],
     [],
     [-Werror])
 

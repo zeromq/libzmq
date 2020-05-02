@@ -49,20 +49,22 @@ class router_t : public routing_socket_base_t
 {
   public:
     router_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~router_t ();
+    ~router_t () ZMQ_OVERRIDE;
 
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    int xsend (zmq::msg_t *msg_);
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    bool xhas_out ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
-    int get_peer_state (const void *routing_id_, size_t routing_id_size_) const;
+                       bool locally_initiated_) ZMQ_FINAL;
+    int
+    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    int xsend (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    int xrecv (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    bool xhas_in () ZMQ_OVERRIDE;
+    bool xhas_out () ZMQ_OVERRIDE;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    int get_peer_state (const void *routing_id_,
+                        size_t routing_id_size_) const ZMQ_FINAL;
 
   protected:
     //  Rollback any message parts that were sent but not yet flushed.
@@ -123,8 +125,7 @@ class router_t : public routing_socket_base_t
     // will be terminated.
     bool _handover;
 
-    router_t (const router_t &);
-    const router_t &operator= (const router_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (router_t)
 };
 }
 

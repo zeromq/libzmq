@@ -58,39 +58,34 @@ template <typename T> class dbuffer_t;
 template <> class dbuffer_t<msg_t>
 {
   public:
-    inline dbuffer_t () :
-        _back (&_storage[0]),
-        _front (&_storage[1]),
-        _has_msg (false)
+    dbuffer_t () : _back (&_storage[0]), _front (&_storage[1]), _has_msg (false)
     {
         _back->init ();
         _front->init ();
     }
 
-    inline ~dbuffer_t ()
+    ~dbuffer_t ()
     {
         _back->close ();
         _front->close ();
     }
 
-    inline void write (const msg_t &value_)
+    void write (const msg_t &value_)
     {
-        msg_t &xvalue = const_cast<msg_t &> (value_);
-
-        zmq_assert (xvalue.check ());
-        _back->move (xvalue); // cannot just overwrite, might leak
+        zmq_assert (value_.check ());
+        *_back = value_;
 
         zmq_assert (_back->check ());
 
         if (_sync.try_lock ()) {
-            std::swap (_back, _front);
+            _front->move (*_back);
             _has_msg = true;
 
             _sync.unlock ();
         }
     }
 
-    inline bool read (msg_t *value_)
+    bool read (msg_t *value_)
     {
         if (!value_)
             return false;
@@ -111,14 +106,14 @@ template <> class dbuffer_t<msg_t>
     }
 
 
-    inline bool check_read ()
+    bool check_read ()
     {
         scoped_lock_t lock (_sync);
 
         return _has_msg;
     }
 
-    inline bool probe (bool (*fn_) (const msg_t &))
+    bool probe (bool (*fn_) (const msg_t &))
     {
         scoped_lock_t lock (_sync);
         return (*fn_) (*_front);
@@ -132,9 +127,7 @@ template <> class dbuffer_t<msg_t>
     mutex_t _sync;
     bool _has_msg;
 
-    //  Disable copying of dbuffer.
-    dbuffer_t (const dbuffer_t &);
-    const dbuffer_t &operator= (const dbuffer_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dbuffer_t)
 };
 }
 

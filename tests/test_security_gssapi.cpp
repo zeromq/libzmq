@@ -28,18 +28,8 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_monitoring.hpp"
 #include "testutil_unity.hpp"
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -178,42 +168,6 @@ void tearDown ()
         zmq_threadclose (zap_thread);
 }
 
-//  Read one event off the monitor socket; return value and address
-//  by reference, if not null, and event number by value. Returns -1
-//  in case of error.
-static int get_monitor_event (void *monitor_, int *value_, char **address_)
-{
-    //  First frame in message contains event number and value
-    zmq_msg_t msg;
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor_, 0) == -1)
-        return -1; //  Interruped, presumably
-    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
-
-    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-    uint16_t event = *(uint16_t *) (data);
-    if (value_)
-        *value_ = *(uint32_t *) (data + 2);
-    zmq_msg_close (&msg);
-
-    //  Second frame in message contains event address
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor_, 0) == -1)
-        return -1; //  Interruped, presumably
-    TEST_ASSERT_FALSE (zmq_msg_more (&msg));
-
-    if (address_) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        size_t size = zmq_msg_size (&msg);
-        *address_ = (char *) malloc (size + 1);
-        memcpy (*address_, data, size);
-        *address_[size] = 0;
-    }
-    zmq_msg_close (&msg);
-
-    return event;
-}
-
 void test_valid_creds ()
 {
     void *client = test_context_socket (ZMQ_DEALER);
@@ -288,22 +242,7 @@ void test_plain_creds ()
 // Unauthenticated messages from a vanilla socket shouldn't be received
 void test_vanilla_socket ()
 {
-    struct sockaddr_in ip4addr;
-    int s;
-    unsigned short int port;
-    int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
-    TEST_ASSERT_EQUAL_INT (1, rc);
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (port);
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
-    TEST_ASSERT_GREATER_THAN (-1, rc);
+    fd_t s = connect_socket (my_endpoint);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
@@ -332,5 +271,4 @@ int main (void)
     RUN_TEST (test_vanilla_socket);
     RUN_TEST (test_unauth_creds);
     return UNITY_END ();
-    return 0;
 }

@@ -18,7 +18,7 @@ please send a GPG encrypted email with the details to the maintainers:
 
 | Maintainer | Email address   | GPG fingerprint |
 | ---------- | --------------- | --------------- |
-| Doron Somech | somdoron@gmail.gom | E0B0 E3D1 55DD 6ED6 71FB  2B79 D0B9 CC44 867D 8F3D |
+| Doron Somech | somdoron@gmail.com | E0B0 E3D1 55DD 6ED6 71FB  2B79 D0B9 CC44 867D 8F3D |
 | Luca Boccassi | luca.boccassi@gmail.com | A9EA 9081 724F FAE0 484C 35A1 A81C EA22 BC8C 7E2E |
 
 ### Public keys

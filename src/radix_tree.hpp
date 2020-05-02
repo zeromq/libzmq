@@ -67,24 +67,23 @@ struct node_t
     bool operator== (node_t other_) const;
     bool operator!= (node_t other_) const;
 
-    inline uint32_t refcount ();
-    inline uint32_t prefix_length ();
-    inline uint32_t edgecount ();
-    inline unsigned char *prefix ();
-    inline unsigned char *first_bytes ();
-    inline unsigned char first_byte_at (size_t index_);
-    inline unsigned char *node_pointers ();
-    inline node_t node_at (size_t index_);
-    inline void set_refcount (uint32_t value_);
-    inline void set_prefix_length (uint32_t value_);
-    inline void set_edgecount (uint32_t value_);
-    inline void set_prefix (const unsigned char *prefix_);
-    inline void set_first_bytes (const unsigned char *bytes_);
-    inline void set_first_byte_at (size_t index_, unsigned char byte_);
-    inline void set_node_pointers (const unsigned char *pointers_);
-    inline void set_node_at (size_t index_, node_t node_);
-    inline void
-    set_edge_at (size_t index_, unsigned char first_byte_, node_t node_);
+    uint32_t refcount ();
+    uint32_t prefix_length ();
+    uint32_t edgecount ();
+    unsigned char *prefix ();
+    unsigned char *first_bytes ();
+    unsigned char first_byte_at (size_t index_);
+    unsigned char *node_pointers ();
+    node_t node_at (size_t index_);
+    void set_refcount (uint32_t value_);
+    void set_prefix_length (uint32_t value_);
+    void set_edgecount (uint32_t value_);
+    void set_prefix (const unsigned char *bytes_);
+    void set_first_bytes (const unsigned char *bytes_);
+    void set_first_byte_at (size_t index_, unsigned char byte_);
+    void set_node_pointers (const unsigned char *pointers_);
+    void set_node_at (size_t index_, node_t node_);
+    void set_edge_at (size_t index_, unsigned char first_byte_, node_t node_);
     void resize (size_t prefix_length_, size_t edgecount_);
 
     unsigned char *_data;
@@ -137,7 +136,7 @@ class radix_tree_t
     size_t size () const;
 
   private:
-    inline match_result_t
+    match_result_t
     match (const unsigned char *key_, size_t key_size_, bool is_lookup_) const;
 
     node_t _root;

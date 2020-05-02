@@ -107,15 +107,15 @@ class socket_base_t : public own_t,
 
     //  i_poll_events implementation. This interface is used when socket
     //  is handled by the poller in the reaper thread.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    void in_event () ZMQ_FINAL;
+    void out_event () ZMQ_FINAL;
+    void timer_event (int id_) ZMQ_FINAL;
 
     //  i_pipe_events interface implementation.
-    void read_activated (pipe_t *pipe_);
-    void write_activated (pipe_t *pipe_);
-    void hiccuped (pipe_t *pipe_);
-    void pipe_terminated (pipe_t *pipe_);
+    void read_activated (pipe_t *pipe_) ZMQ_FINAL;
+    void write_activated (pipe_t *pipe_) ZMQ_FINAL;
+    void hiccuped (pipe_t *pipe_) ZMQ_FINAL;
+    void pipe_terminated (pipe_t *pipe_) ZMQ_FINAL;
     void lock ();
     void unlock ();
 
@@ -170,7 +170,7 @@ class socket_base_t : public own_t,
                    uint32_t tid_,
                    int sid_,
                    bool thread_safe_ = false);
-    virtual ~socket_base_t ();
+    ~socket_base_t () ZMQ_OVERRIDE;
 
     //  Concrete algorithms for the x- methods are to be defined by
     //  individual socket types.
@@ -179,7 +179,7 @@ class socket_base_t : public own_t,
                                bool locally_initiated_ = false) = 0;
 
     //  The default implementation assumes there are no specific socket
-    //  options for the particular socket type. If not so, override this
+    //  options for the particular socket type. If not so, ZMQ_FINAL this
     //  method.
     virtual int
     xsetsockopt (int option_, const void *optval_, size_t optvallen_);
@@ -203,7 +203,12 @@ class socket_base_t : public own_t,
     virtual int xleave (const char *group_);
 
     //  Delay actual destruction of the socket.
-    void process_destroy ();
+    void process_destroy () ZMQ_FINAL;
+
+    int connect_internal (const char *endpoint_uri_);
+
+    // Mutex for synchronize access to the socket in thread safe mode
+    mutex_t _sync;
 
   private:
     // test if event should be sent and then dispatch it
@@ -214,7 +219,7 @@ class socket_base_t : public own_t,
 
     // Socket event data dispatch
     void monitor_event (uint64_t event_,
-                        uint64_t values_[],
+                        const uint64_t values_[],
                         uint64_t values_count_,
                         const endpoint_uri_pair_t &endpoint_uri_pair_) const;
 
@@ -237,7 +242,7 @@ class socket_base_t : public own_t,
       public:
         void emplace (const char *endpoint_uri_, pipe_t *pipe_);
         int erase_pipes (const std::string &endpoint_uri_str_);
-        void erase_pipe (pipe_t *pipe_);
+        void erase_pipe (const pipe_t *pipe_);
 
       private:
         typedef std::multimap<std::string, pipe_t *> map_t;
@@ -251,7 +256,7 @@ class socket_base_t : public own_t,
 
     //  Moves the flags from the message to local variables,
     //  to be later retrieved by getsockopt.
-    void extract_flags (msg_t *msg_);
+    void extract_flags (const msg_t *msg_);
 
     //  Used to check whether the object is a socket.
     uint32_t _tag;
@@ -284,13 +289,14 @@ class socket_base_t : public own_t,
     int process_commands (int timeout_, bool throttle_);
 
     //  Handlers for incoming commands.
-    void process_stop ();
-    void process_bind (zmq::pipe_t *pipe_);
-    void process_pipe_stats_publish (uint64_t outbound_queue_count_,
-                                     uint64_t inbound_queue_count_,
-                                     endpoint_uri_pair_t *endpoint_pair_);
-    void process_term (int linger_);
-    void process_term_endpoint (std::string *endpoint_);
+    void process_stop () ZMQ_FINAL;
+    void process_bind (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void
+    process_pipe_stats_publish (uint64_t outbound_queue_count_,
+                                uint64_t inbound_queue_count_,
+                                endpoint_uri_pair_t *endpoint_pair_) ZMQ_FINAL;
+    void process_term (int linger_) ZMQ_FINAL;
+    void process_term_endpoint (std::string *endpoint_) ZMQ_FINAL;
 
     void update_pipe_options (int option_);
 
@@ -335,26 +341,23 @@ class socket_base_t : public own_t,
     // Signaler to be used in the reaping stage
     signaler_t *_reaper_signaler;
 
-    // Mutex for synchronize access to the socket in thread safe mode
-    mutex_t _sync;
-
     // Mutex to synchronize access to the monitor Pair socket
     mutex_t _monitor_sync;
 
-    socket_base_t (const socket_base_t &);
-    const socket_base_t &operator= (const socket_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (socket_base_t)
 };
 
 class routing_socket_base_t : public socket_base_t
 {
   protected:
     routing_socket_base_t (class ctx_t *parent_, uint32_t tid_, int sid_);
-    ~routing_socket_base_t ();
+    ~routing_socket_base_t () ZMQ_OVERRIDE;
 
     // methods from socket_base_t
-    virtual int
-    xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    virtual void xwrite_activated (pipe_t *pipe_);
+    int xsetsockopt (int option_,
+                     const void *optval_,
+                     size_t optvallen_) ZMQ_OVERRIDE;
+    void xwrite_activated (pipe_t *pipe_) ZMQ_FINAL;
 
     // own methods
     std::string extract_connect_routing_id ();
@@ -370,13 +373,14 @@ class routing_socket_base_t : public socket_base_t
     bool has_out_pipe (const blob_t &routing_id_) const;
     out_pipe_t *lookup_out_pipe (const blob_t &routing_id_);
     const out_pipe_t *lookup_out_pipe (const blob_t &routing_id_) const;
-    void erase_out_pipe (pipe_t *pipe_);
+    void erase_out_pipe (const pipe_t *pipe_);
     out_pipe_t try_erase_out_pipe (const blob_t &routing_id_);
     template <typename Func> bool any_of_out_pipes (Func func_)
     {
         bool res = false;
-        for (out_pipes_t::iterator it = _out_pipes.begin ();
-             it != _out_pipes.end () && !res; ++it) {
+        for (out_pipes_t::iterator it = _out_pipes.begin (),
+                                   end = _out_pipes.end ();
+             it != end && !res; ++it) {
             res |= func_ (*it->second.pipe);
         }
 

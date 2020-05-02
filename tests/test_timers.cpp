@@ -42,7 +42,7 @@ void tearDown ()
 void handler (int timer_id_, void *arg_)
 {
     (void) timer_id_; //  Stop 'unused' compiler warnings
-    *((bool *) arg_) = true;
+    *(static_cast<bool *> (arg_)) = true;
 }
 
 int sleep_and_execute (void *timers_)

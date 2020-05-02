@@ -97,7 +97,8 @@ zmq::ip_resolver_options_t::ip_resolver_options_t () :
     _nic_name_allowed (false),
     _ipv6_wanted (false),
     _port_expected (false),
-    _dns_allowed (false)
+    _dns_allowed (false),
+    _path_allowed (false)
 {
 }
 
@@ -141,6 +142,13 @@ zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::allow_dns (bool allow_)
     return *this;
 }
 
+zmq::ip_resolver_options_t &zmq::ip_resolver_options_t::allow_path (bool allow_)
+{
+    _path_allowed = allow_;
+
+    return *this;
+}
+
 bool zmq::ip_resolver_options_t::bindable ()
 {
     return _bindable_wanted;
@@ -166,6 +174,11 @@ bool zmq::ip_resolver_options_t::allow_dns ()
     return _dns_allowed;
 }
 
+bool zmq::ip_resolver_options_t::allow_path ()
+{
+    return _path_allowed;
+}
+
 zmq::ip_resolver_t::ip_resolver_t (ip_resolver_options_t opts_) :
     _options (opts_)
 {
@@ -187,7 +200,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         }
 
         addr = std::string (name_, delim - name_);
-        std::string port_str = std::string (delim + 1);
+        const std::string port_str = std::string (delim + 1);
 
         if (port_str == "*") {
             if (_options.bindable ()) {
@@ -214,6 +227,13 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
         port = 0;
     }
 
+    // Check if path is allowed in ip address, if allowed it must be truncated
+    if (_options.allow_path ()) {
+        const size_t pos = addr.find ('/');
+        if (pos != std::string::npos)
+            addr = addr.substr (0, pos);
+    }
+
     //  Trim any square brackets surrounding the address. Used for
     //  IPv6 addresses to remove the confusion with the port
     //  delimiter.
@@ -227,7 +247,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     //  Look for an interface name / zone_id in the address
     //  Reference: https://tools.ietf.org/html/rfc4007
-    std::size_t pos = addr.rfind ('%');
+    const std::size_t pos = addr.rfind ('%');
     uint32_t zone_id = 0;
 
     if (pos != std::string::npos) {
@@ -257,7 +277,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     if (!resolved && _options.allow_nic_name ()) {
         //  Try to resolve the string as a NIC name.
-        int rc = resolve_nic_name (ip_addr_, addr_str);
+        const int rc = resolve_nic_name (ip_addr_, addr_str);
 
         if (rc == 0) {
             resolved = true;
@@ -267,7 +287,7 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
     }
 
     if (!resolved) {
-        int rc = resolve_getaddrinfo (ip_addr_, addr_str);
+        const int rc = resolve_getaddrinfo (ip_addr_, addr_str);
 
         if (rc != 0) {
             return rc;
@@ -368,7 +388,7 @@ int zmq::ip_resolver_t::resolve_getaddrinfo (ip_addr_t *ip_addr_,
 
     //  Use the first result.
     zmq_assert (res != NULL);
-    zmq_assert ((size_t) res->ai_addrlen <= sizeof (*ip_addr_));
+    zmq_assert (static_cast<size_t> (res->ai_addrlen) <= sizeof (*ip_addr_));
     memcpy (ip_addr_, res->ai_addr, res->ai_addrlen);
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.
@@ -520,7 +540,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 
     //  Find the corresponding network interface.
     bool found = false;
-    for (ifaddrs *ifp = ifa; ifp != NULL; ifp = ifp->ifa_next) {
+    for (const ifaddrs *ifp = ifa; ifp != NULL; ifp = ifp->ifa_next) {
         if (ifp->ifa_addr == NULL)
             continue;
 
@@ -561,7 +581,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 
     char *if_name_result = NULL;
 
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP
     if_name_result = if_indextoname (index_, buffer);
 #endif
 
@@ -577,7 +597,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src_, char **dest_) const
 {
     int rc;
-    int buffer_len =
+    const int buffer_len =
       WideCharToMultiByte (CP_UTF8, 0, src_, -1, NULL, 0, NULL, 0);
 
     char *buffer = static_cast<char *> (malloc (buffer_len));
@@ -704,7 +724,7 @@ void zmq::ip_resolver_t::do_freeaddrinfo (struct addrinfo *res_)
 
 unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
 {
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP       \
+#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP         \
   && !defined ZMQ_HAVE_VXWORKS
     return if_nametoindex (ifname_);
 #else

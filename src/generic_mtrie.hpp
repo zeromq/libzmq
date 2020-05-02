@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stddef.h>
 #include <set>
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -118,9 +119,7 @@ template <typename T> class generic_mtrie_t
         class generic_mtrie_t<value_t> **table;
     } _next;
 
-    generic_mtrie_t (const generic_mtrie_t<value_t> &);
-    const generic_mtrie_t<value_t> &
-    operator= (const generic_mtrie_t<value_t> &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (generic_mtrie_t)
 };
 }
 

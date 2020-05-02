@@ -39,30 +39,28 @@ namespace zmq
 {
 //  Decoder for 0MQ v1 framing protocol. Converts data stream into messages.
 
-class raw_decoder_t : public i_decoder
+class raw_decoder_t ZMQ_FINAL : public i_decoder
 {
   public:
     raw_decoder_t (size_t bufsize_);
-    virtual ~raw_decoder_t ();
+    ~raw_decoder_t ();
 
     //  i_decoder interface.
 
-    virtual void get_buffer (unsigned char **data_, size_t *size_);
+    void get_buffer (unsigned char **data_, size_t *size_);
 
-    virtual int
-    decode (const unsigned char *data_, size_t size_, size_t &bytes_used_);
+    int decode (const unsigned char *data_, size_t size_, size_t &bytes_used_);
 
-    virtual msg_t *msg () { return &_in_progress; }
+    msg_t *msg () { return &_in_progress; }
 
-    virtual void resize_buffer (size_t) {}
+    void resize_buffer (size_t) {}
 
   private:
     msg_t _in_progress;
 
     shared_message_memory_allocator _allocator;
 
-    raw_decoder_t (const raw_decoder_t &);
-    void operator= (const raw_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (raw_decoder_t)
 };
 }
 

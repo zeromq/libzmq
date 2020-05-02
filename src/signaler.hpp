@@ -35,6 +35,7 @@
 #endif
 
 #include "fd.hpp"
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -53,7 +54,7 @@ class signaler_t
     // May return retired_fd if the signaler could not be initialized.
     fd_t get_fd () const;
     void send ();
-    int wait (int timeout_);
+    int wait (int timeout_) const;
     void recv ();
     int recv_failable ();
 
@@ -72,10 +73,6 @@ class signaler_t
     fd_t _w;
     fd_t _r;
 
-    //  Disable copying of signaler_t object.
-    signaler_t (const signaler_t &);
-    const signaler_t &operator= (const signaler_t &);
-
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.
     pid_t pid;
@@ -83,6 +80,8 @@ class signaler_t
     // and forked().
     void close_internal ();
 #endif
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (signaler_t)
 };
 }
 

@@ -41,7 +41,7 @@ class msg_t;
 class pipe_t;
 class io_thread_t;
 
-class client_t : public socket_base_t
+class client_t ZMQ_FINAL : public socket_base_t
 {
   public:
     client_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -66,8 +66,7 @@ class client_t : public socket_base_t
     fq_t _fq;
     lb_t _lb;
 
-    client_t (const client_t &);
-    const client_t &operator= (const client_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (client_t)
 };
 }
 

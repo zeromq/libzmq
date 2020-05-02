@@ -28,46 +28,13 @@
 */
 
 #include "testutil.hpp"
+#include "testutil_monitoring.hpp"
 #include "testutil_unity.hpp"
 
 #include <stdlib.h>
 #include <string.h>
 
 SETUP_TEARDOWN_TESTCONTEXT
-
-//  Read one event off the monitor socket; return value and address
-//  by reference, if not null, and event number by value. Returns -1
-//  in case of error.
-
-static int get_monitor_event (void *monitor_, int *value_, char **address_)
-{
-    //  First frame in message contains event number and value
-    zmq_msg_t msg;
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor_, 0) == -1)
-        return -1; //  Interruped, presumably
-    TEST_ASSERT_TRUE (zmq_msg_more (&msg));
-
-    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-    uint16_t event = *(uint16_t *) (data);
-    if (value_)
-        *value_ = *(uint32_t *) (data + 2);
-
-    //  Second frame in message contains event address
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor_, 0) == -1)
-        return -1; //  Interruped, presumably
-    TEST_ASSERT_TRUE (!zmq_msg_more (&msg));
-
-    if (address_) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        size_t size = zmq_msg_size (&msg);
-        *address_ = (char *) malloc (size + 1);
-        memcpy (*address_, data, size);
-        *address_[size] = 0;
-    }
-    return event;
-}
 
 static void test_stream_handshake_timeout_accept ()
 {

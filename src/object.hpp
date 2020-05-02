@@ -31,8 +31,10 @@
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
 #include <string>
-#include "stdint.hpp"
+
 #include "endpoint.hpp"
+#include "macros.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -57,10 +59,10 @@ class object_t
     object_t (object_t *parent_);
     virtual ~object_t ();
 
-    uint32_t get_tid ();
+    uint32_t get_tid () const;
     void set_tid (uint32_t id_);
-    ctx_t *get_ctx ();
-    void process_command (zmq::command_t &cmd_);
+    ctx_t *get_ctx () const;
+    void process_command (const zmq::command_t &cmd_);
     void send_inproc_connected (zmq::socket_base_t *socket_);
     void send_bind (zmq::own_t *destination_,
                     zmq::pipe_t *pipe_,
@@ -72,7 +74,7 @@ class object_t
     int register_endpoint (const char *addr_, const zmq::endpoint_t &endpoint_);
     int unregister_endpoint (const std::string &addr_, socket_base_t *socket_);
     void unregister_endpoints (zmq::socket_base_t *socket_);
-    zmq::endpoint_t find_endpoint (const char *addr_);
+    zmq::endpoint_t find_endpoint (const char *addr_) const;
     void pend_connection (const std::string &addr_,
                           const endpoint_t &endpoint_,
                           pipe_t **pipes_);
@@ -84,7 +86,7 @@ class object_t
     void log (const char *format_, ...);
 
     //  Chooses least loaded I/O thread.
-    zmq::io_thread_t *choose_io_thread (uint64_t affinity_);
+    zmq::io_thread_t *choose_io_thread (uint64_t affinity_) const;
 
     //  Derived object can use these functions to send commands
     //  to other objects.
@@ -115,6 +117,8 @@ class object_t
     void send_reap (zmq::socket_base_t *socket_);
     void send_reaped ();
     void send_done ();
+    void send_conn_failed (zmq::session_base_t *destination_);
+
 
     //  These handlers can be overridden by the derived objects. They are
     //  called when command arrives from another thread.
@@ -142,6 +146,8 @@ class object_t
     virtual void process_term_endpoint (std::string *endpoint_);
     virtual void process_reap (zmq::socket_base_t *socket_);
     virtual void process_reaped ();
+    virtual void process_conn_failed ();
+
 
     //  Special handler called after a command that requires a seqnum
     //  was processed. The implementation should catch up with its counter
@@ -155,10 +161,9 @@ class object_t
     //  Thread ID of the thread the object belongs to.
     uint32_t _tid;
 
-    void send_command (command_t &cmd_);
+    void send_command (const command_t &cmd_);
 
-    object_t (const object_t &);
-    const object_t &operator= (const object_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (object_t)
 };
 }
 

@@ -79,12 +79,12 @@ void zmq::socks_connecter_t::set_auth_method_none ()
     _auth_password.clear ();
 }
 
-void zmq::socks_connecter_t::set_auth_method_basic (const std::string username,
-                                                    const std::string password)
+void zmq::socks_connecter_t::set_auth_method_basic (
+  const std::string &username_, const std::string &password_)
 {
     _auth_method = socks_basic_auth;
-    _auth_username = username;
-    _auth_password = password;
+    _auth_username = username_;
+    _auth_password = password_;
 }
 
 void zmq::socks_connecter_t::in_event ()
@@ -344,7 +344,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     return -1;
 }
 
-zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
+zmq::fd_t zmq::socks_connecter_t::check_proxy_connection () const
 {
     //  Async connect has finished. Check whether an error occurred
     int err = 0;
@@ -387,8 +387,8 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     rc = tune_tcp_socket (_s);
     rc = rc
          | tune_tcp_keepalives (
-             _s, options.tcp_keepalive, options.tcp_keepalive_cnt,
-             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+           _s, options.tcp_keepalive, options.tcp_keepalive_cnt,
+           options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     if (rc != 0)
         return -1;
 

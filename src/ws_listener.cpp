@@ -44,6 +44,11 @@
 #include "ws_engine.hpp"
 #include "session_base.hpp"
 
+#ifdef ZMQ_HAVE_WSS
+#include "wss_engine.hpp"
+#include "wss_address.hpp"
+#endif
+
 #ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/socket.h>
@@ -63,14 +68,38 @@
 
 zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
                                    socket_base_t *socket_,
-                                   const options_t &options_) :
-    stream_listener_base_t (io_thread_, socket_, options_)
+                                   const options_t &options_,
+                                   bool wss_) :
+    stream_listener_base_t (io_thread_, socket_, options_),
+    _wss (wss_)
 {
+#ifdef ZMQ_HAVE_WSS
+    if (_wss) {
+        int rc = gnutls_certificate_allocate_credentials (&_tls_cred);
+        assert (rc == GNUTLS_E_SUCCESS);
+
+        gnutls_datum_t cert = {(unsigned char *) options_.wss_cert_pem.c_str (),
+                               (unsigned int) options_.wss_cert_pem.length ()};
+        gnutls_datum_t key = {(unsigned char *) options_.wss_key_pem.c_str (),
+                              (unsigned int) options_.wss_key_pem.length ()};
+        rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
+                                                  GNUTLS_X509_FMT_PEM);
+        assert (rc == GNUTLS_E_SUCCESS);
+    }
+#endif
+}
+
+zmq::ws_listener_t::~ws_listener_t ()
+{
+#ifdef ZMQ_HAVE_WSS
+    if (_wss)
+        gnutls_certificate_free_credentials (_tls_cred);
+#endif
 }
 
 void zmq::ws_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -95,12 +124,22 @@ void zmq::ws_listener_t::in_event ()
 std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
                                                  socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
+    std::string socket_name;
+
+#ifdef ZMQ_HAVE_WSS
+    if (_wss)
+        socket_name = zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
+    else
+#endif
+        socket_name = zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
+
+    return socket_name + _address.path ();
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
 {
-    _s = tcp_open_socket (addr_, options, true, true, &_address);
+    tcp_address_t address;
+    _s = tcp_open_socket (addr_, options, true, true, &address);
     if (_s == retired_fd) {
         return -1;
     }
@@ -133,7 +172,7 @@ int zmq::ws_listener_t::create_socket (const char *addr_)
 #if defined ZMQ_HAVE_VXWORKS
     rc = bind (_s, (sockaddr *) _address.addr (), _address.addrlen ());
 #else
-    rc = bind (_s, _address.addr (), _address.addrlen ());
+    rc = bind (_s, address.addr (), address.addrlen ());
 #endif
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -160,7 +199,7 @@ int zmq::ws_listener_t::create_socket (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -173,7 +212,20 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
         //  socket was already created by the application
         _s = options.use_fd;
     } else {
-        if (create_socket (addr_) == -1)
+        const int rc = _address.resolve (addr_, true, options.ipv6);
+        if (rc != 0)
+            return -1;
+
+        //  remove the path, otherwise resolving the port will fail with wildcard
+        const char *delim = strrchr (addr_, '/');
+        std::string host_address;
+        if (delim) {
+            host_address = std::string (addr_, delim - addr_);
+        } else {
+            host_address = addr_;
+        }
+
+        if (create_socket (host_address.c_str ()) == -1)
             return -1;
     }
 
@@ -202,7 +254,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
     fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
                            &ss_len, SOCK_CLOEXEC);
 #else
-    fd_t sock =
+    const fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
@@ -229,7 +281,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);
@@ -245,14 +297,25 @@ zmq::fd_t zmq::ws_listener_t::accept ()
     return sock;
 }
 
-void zmq::ws_listener_t::create_engine (fd_t fd)
+void zmq::ws_listener_t::create_engine (fd_t fd_)
 {
     const endpoint_uri_pair_t endpoint_pair (
-      get_socket_name (fd, socket_end_local),
-      get_socket_name (fd, socket_end_remote), endpoint_type_bind);
+      get_socket_name (fd_, socket_end_local),
+      get_socket_name (fd_, socket_end_remote), endpoint_type_bind);
 
-    ws_engine_t *engine =
-      new (std::nothrow) ws_engine_t (fd, options, endpoint_pair, false);
+    i_engine *engine = NULL;
+    if (_wss)
+#ifdef ZMQ_HAVE_WSS
+        engine = new (std::nothrow)
+          wss_engine_t (fd_, options, endpoint_pair, _address, false, _tls_cred,
+                        std::string ());
+#else
+        assert (false);
+#endif
+    else
+        engine = new (std::nothrow)
+          ws_engine_t (fd_, options, endpoint_pair, _address, false);
+
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -268,5 +331,5 @@ void zmq::ws_listener_t::create_engine (fd_t fd)
     launch_child (session);
     send_attach (session, engine, false);
 
-    _socket->event_accepted (endpoint_pair, fd);
+    _socket->event_accepted (endpoint_pair, fd_);
 }

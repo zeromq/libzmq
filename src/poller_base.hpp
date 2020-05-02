@@ -114,7 +114,7 @@ struct i_poll_events;
 // a container that is being iterated by the poller.
 
 
-// A class that can be used as a base class for implementations of the poller
+// A class that can be used as abase class for implementations of the poller
 // concept.
 //
 // For documentation of the public methods, see the description of the poller_t
@@ -122,7 +122,7 @@ struct i_poll_events;
 class poller_base_t
 {
   public:
-    poller_base_t ();
+    poller_base_t () ZMQ_DEFAULT;
     virtual ~poller_base_t ();
 
     // Methods from the poller concept.
@@ -155,8 +155,7 @@ class poller_base_t
     //  registered.
     atomic_counter_t _load;
 
-    poller_base_t (const poller_base_t &);
-    const poller_base_t &operator= (const poller_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (poller_base_t)
 };
 
 //  Base class for a poller with a single worker thread.
@@ -173,7 +172,7 @@ class worker_poller_base_t : public poller_base_t
     //  via an assertion.
     //  Should be called by the add_fd, removed_fd, set_*, reset_* functions
     //  to ensure correct usage.
-    void check_thread ();
+    void check_thread () const;
 
     //  Stops the worker thread. Should be called from the destructor of the
     //  leaf class.

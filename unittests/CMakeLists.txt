@@ -2,18 +2,15 @@
 cmake_minimum_required(VERSION "2.8.1")
 
 set(unittests
-  unittest_ypipe
-  unittest_poller
-  unittest_mtrie
-  unittest_ip_resolver
-  unittest_udp_address
-  unittest_radix_tree
-)
+    unittest_ypipe
+    unittest_poller
+    unittest_mtrie
+    unittest_ip_resolver
+    unittest_udp_address
+    unittest_radix_tree
+    unittest_curve_encoding)
 
-#if(ENABLE_DRAFTS)
-#  list(APPEND tests
-#  )
-#endif(ENABLE_DRAFTS)
+# if(ENABLE_DRAFTS) list(APPEND tests ) endif(ENABLE_DRAFTS)
 
 # add location of platform.hpp for Windows builds
 if(WIN32)
@@ -47,7 +44,10 @@ foreach(test ${unittests})
   endif()
 
   if(WIN32)
-    add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
+    add_test(
+      NAME ${test}
+      WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}
+      COMMAND ${test})
   else()
     add_test(NAME ${test} COMMAND ${test})
   endif()
@@ -60,8 +60,8 @@ foreach(test ${unittests})
   set_target_properties(${test} PROPERTIES LINK_LIBRARIES "${LIBS}")
 endforeach()
 
-#Check whether all tests in the current folder are present
-#TODO duplicated with tests/CMakeLists.txt, define as a function?
+# Check whether all tests in the current folder are present TODO duplicated with tests/CMakeLists.txt, define as a
+# function?
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)
 file(GLOB ALL_TEST_SOURCES "test_*.cpp")
 foreach(TEST_SOURCE ${ALL_TEST_SOURCES})

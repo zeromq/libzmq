@@ -30,8 +30,7 @@
 #include "precompiled.hpp"
 #include "ipc_address.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include "err.hpp"
 
@@ -86,7 +85,8 @@ int zmq::ipc_address_t::resolve (const char *path_)
     if (path_[0] == '@')
         *_address.sun_path = '\0';
 
-    _addrlen = offsetof (sockaddr_un, sun_path) + path_len;
+    _addrlen =
+      static_cast<socklen_t> (offsetof (sockaddr_un, sun_path) + path_len);
     return 0;
 }
 

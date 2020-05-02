@@ -146,17 +146,17 @@ int zmq::stream_t::xsend (msg_t *msg_)
             _current_out = NULL;
             return 0;
         }
-        bool ok = _current_out->write (msg_);
+        const bool ok = _current_out->write (msg_);
         if (likely (ok))
             _current_out->flush ();
         _current_out = NULL;
     } else {
-        int rc = msg_->close ();
+        const int rc = msg_->close ();
         errno_assert (rc == 0);
     }
 
     //  Detach the message from the data buffer.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;
@@ -181,11 +181,11 @@ int zmq::stream_t::xrecv (msg_t *msg_)
 {
     if (_prefetched) {
         if (!_routing_id_sent) {
-            int rc = msg_->move (_prefetched_routing_id);
+            const int rc = msg_->move (_prefetched_routing_id);
             errno_assert (rc == 0);
             _routing_id_sent = true;
         } else {
-            int rc = msg_->move (_prefetched_msg);
+            const int rc = msg_->move (_prefetched_msg);
             errno_assert (rc == 0);
             _prefetched = false;
         }

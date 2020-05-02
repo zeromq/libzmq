@@ -52,10 +52,10 @@ int zmq::rep_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    bool more = (msg_->flags () & msg_t::more) != 0;
+    const bool more = (msg_->flags () & msg_t::more) != 0;
 
     //  Push message to the reply pipe.
-    int rc = router_t::xsend (msg_);
+    const int rc = router_t::xsend (msg_);
     if (rc != 0)
         return rc;
 
@@ -84,7 +84,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
 
             if ((msg_->flags () & msg_t::more)) {
                 //  Empty message part delimits the traceback stack.
-                bool bottom = (msg_->size () == 0);
+                const bool bottom = (msg_->size () == 0);
 
                 //  Push it to the reply pipe.
                 rc = router_t::xsend (msg_);
@@ -103,7 +103,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
     }
 
     //  Get next message part to return to the user.
-    int rc = router_t::xrecv (msg_);
+    const int rc = router_t::xrecv (msg_);
     if (rc != 0)
         return rc;
 

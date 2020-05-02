@@ -30,6 +30,7 @@ CMAKE_OPTS+=("-DCMAKE_INSTALL_PREFIX:PATH=${BUILD_PREFIX}")
 CMAKE_OPTS+=("-DCMAKE_PREFIX_PATH:PATH=${BUILD_PREFIX}")
 CMAKE_OPTS+=("-DCMAKE_LIBRARY_PATH:PATH=${BUILD_PREFIX}/lib")
 CMAKE_OPTS+=("-DCMAKE_INCLUDE_PATH:PATH=${BUILD_PREFIX}/include")
+CMAKE_OPTS+=("-DENABLE_CAPSH=ON")
 
 if [ "$CLANG_FORMAT" != "" ] ; then
     CMAKE_OPTS+=("-DCLANG_FORMAT=${CLANG_FORMAT}")
@@ -59,8 +60,8 @@ if [ -n "$CLANG_TIDY" ] ; then
         MAKE_PREFIXES+=("${TRAVIS_BUILD_DIR}/bw-output")
         
     fi
-    CMAKE_PREFIXES+=("scan-build-6.0")
-    MAKE_PREFIXES+=("scan-build-6.0")
+    CMAKE_PREFIXES+=("scan-build-8")
+    MAKE_PREFIXES+=("scan-build-8")
     MAKE_PREFIXES+=("-plist-html")
     SCAN_BUILD_OUTPUT="$(pwd)/scan-build-report"
     MAKE_PREFIXES+=("-o ${SCAN_BUILD_OUTPUT}")

@@ -64,8 +64,7 @@ class c_single_allocator
     std::size_t _buf_size;
     unsigned char *_buf;
 
-    c_single_allocator (c_single_allocator const &);
-    c_single_allocator &operator= (c_single_allocator const &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (c_single_allocator)
 };
 
 // This allocator allocates a reference counted buffer which is used by v2_decoder_t
@@ -103,7 +102,7 @@ class shared_message_memory_allocator
 
     void inc_ref ();
 
-    static void call_dec_ref (void *, void *buffer_);
+    static void call_dec_ref (void *, void *hint_);
 
     std::size_t size () const;
 

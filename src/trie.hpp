@@ -32,6 +32,7 @@
 
 #include <stddef.h>
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -51,7 +52,7 @@ class trie_t
     bool rm (unsigned char *prefix_, size_t size_);
 
     //  Check whether particular key is in the trie.
-    bool check (unsigned char *data_, size_t size_);
+    bool check (const unsigned char *data_, size_t size_) const;
 
     //  Apply the function supplied to each subscription in the trie.
     void apply (void (*func_) (unsigned char *data_, size_t size_, void *arg_),
@@ -77,8 +78,7 @@ class trie_t
         class trie_t **table;
     } _next;
 
-    trie_t (const trie_t &);
-    const trie_t &operator= (const trie_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (trie_t)
 };
 }
 

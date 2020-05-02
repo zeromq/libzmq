@@ -71,7 +71,6 @@ extern "C" {
 #error You need at least Windows XP target
 #endif
 #endif
-#include <winsock2.h>
 #endif
 
 /*  Handle DSO symbol visibility                                             */
@@ -400,7 +399,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_GSSAPI 3
 
 /*  RADIO-DISH protocol                                                       */
-#define ZMQ_GROUP_MAX_LENGTH 15
+#define ZMQ_GROUP_MAX_LENGTH 255
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IDENTITY ZMQ_ROUTING_ID
@@ -500,7 +499,12 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s_, const char *addr_, int events_);
 /******************************************************************************/
 
 #if defined _WIN32
-typedef SOCKET zmq_fd_t;
+// Windows uses a pointer-sized unsigned integer to store the socket fd.
+#if defined _WIN64
+typedef unsigned __int64 zmq_fd_t;
+#else
+typedef unsigned int zmq_fd_t;
+#endif
 #else
 typedef int zmq_fd_t;
 #endif
@@ -656,6 +660,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+#define ZMQ_PEER 19
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
@@ -668,6 +673,18 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_SOCKS_PASSWORD 100
 #define ZMQ_IN_BATCH_SIZE 101
 #define ZMQ_OUT_BATCH_SIZE 102
+#define ZMQ_WSS_KEY_PEM 103
+#define ZMQ_WSS_CERT_PEM 104
+#define ZMQ_WSS_TRUST_PEM 105
+#define ZMQ_WSS_HOSTNAME 106
+#define ZMQ_WSS_TRUST_SYSTEM 107
+#define ZMQ_ONLY_FIRST_SUBSCRIBE 108
+#define ZMQ_RECONNECT_STOP 109
+#define ZMQ_HELLO_MSG 110
+#define ZMQ_DISCONNECT_MSG 111
+
+/*  DRAFT ZMQ_RECONNECT_STOP options                                          */
+#define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
@@ -697,12 +714,15 @@ ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
 ZMQ_EXPORT int zmq_leave (void *s, const char *group);
+ZMQ_EXPORT uint32_t zmq_connect_peer (void *s_, const char *addr_);
 
 /*  DRAFT Msg methods.                                                        */
 ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
 ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
+ZMQ_EXPORT int
+zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -730,6 +750,7 @@ typedef struct zmq_poller_event_t
 
 ZMQ_EXPORT void *zmq_poller_new (void);
 ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int zmq_poller_size (void *poller);
 ZMQ_EXPORT int
 zmq_poller_add (void *poller, void *socket, void *user_data, short events);
 ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);

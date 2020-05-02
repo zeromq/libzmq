@@ -54,7 +54,7 @@ namespace zmq
 template <typename T> class encoder_base_t : public i_encoder
 {
   public:
-    inline explicit encoder_base_t (size_t bufsize_) :
+    explicit encoder_base_t (size_t bufsize_) :
         _write_pos (0),
         _to_write (0),
         _next (NULL),
@@ -66,17 +66,15 @@ template <typename T> class encoder_base_t : public i_encoder
         alloc_assert (_buf);
     }
 
-    //  The destructor doesn't have to be virtual. It is made virtual
-    //  just to keep ICC and code checking tools from complaining.
-    inline virtual ~encoder_base_t () { free (_buf); }
+    ~encoder_base_t () ZMQ_OVERRIDE { free (_buf); }
 
     //  The function returns a batch of binary data. The data
     //  are filled to a supplied buffer. If no buffer is supplied (data_
     //  points to NULL) decoder object will provide buffer of its own.
-    inline size_t encode (unsigned char **data_, size_t size_)
+    size_t encode (unsigned char **data_, size_t size_) ZMQ_FINAL
     {
         unsigned char *buffer = !*data_ ? _buf : *data_;
-        size_t buffersize = !*data_ ? _buf_size : size_;
+        const size_t buffersize = !*data_ ? _buf_size : size_;
 
         if (in_progress () == NULL)
             return 0;
@@ -117,7 +115,7 @@ template <typename T> class encoder_base_t : public i_encoder
             }
 
             //  Copy data to the buffer. If the buffer is full, return.
-            size_t to_copy = std::min (_to_write, buffersize - pos);
+            const size_t to_copy = std::min (_to_write, buffersize - pos);
             memcpy (buffer + pos, _write_pos, to_copy);
             pos += to_copy;
             _write_pos += to_copy;
@@ -128,7 +126,7 @@ template <typename T> class encoder_base_t : public i_encoder
         return pos;
     }
 
-    void load_msg (msg_t *msg_)
+    void load_msg (msg_t *msg_) ZMQ_FINAL
     {
         zmq_assert (in_progress () == NULL);
         _in_progress = msg_;
@@ -141,10 +139,10 @@ template <typename T> class encoder_base_t : public i_encoder
 
     //  This function should be called from derived class to write the data
     //  to the buffer and schedule next state machine action.
-    inline void next_step (void *write_pos_,
-                           size_t to_write_,
-                           step_t next_,
-                           bool new_msg_flag_)
+    void next_step (void *write_pos_,
+                    size_t to_write_,
+                    step_t next_,
+                    bool new_msg_flag_)
     {
         _write_pos = static_cast<unsigned char *> (write_pos_);
         _to_write = to_write_;
@@ -171,10 +169,9 @@ template <typename T> class encoder_base_t : public i_encoder
     const size_t _buf_size;
     unsigned char *const _buf;
 
-    encoder_base_t (const encoder_base_t &);
-    void operator= (const encoder_base_t &);
-
     msg_t *_in_progress;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (encoder_base_t)
 };
 }
 

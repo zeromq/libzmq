@@ -45,7 +45,11 @@ namespace zmq
 class ctx_t;
 class tcp_address_t;
 class udp_address_t;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+class ws_address_t;
+#ifdef ZMQ_HAVE_WSS
+class wss_address_t;
+#endif
+#if defined ZMQ_HAVE_IPC
 class ipc_address_t;
 #endif
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS
@@ -60,9 +64,20 @@ namespace protocol_name
 static const char inproc[] = "inproc";
 static const char tcp[] = "tcp";
 static const char udp[] = "udp";
+#ifdef ZMQ_HAVE_OPENPGM
+static const char pgm[] = "pgm";
+static const char epgm[] = "epgm";
+#endif
+#ifdef ZMQ_HAVE_NORM
+static const char norm[] = "norm";
+#endif
+#ifdef ZMQ_HAVE_WS
 static const char ws[] = "ws";
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#endif
+#ifdef ZMQ_HAVE_WSS
+static const char wss[] = "wss";
+#endif
+#if defined ZMQ_HAVE_IPC
 static const char ipc[] = "ipc";
 #endif
 #if defined ZMQ_HAVE_TIPC
@@ -92,8 +107,13 @@ struct address_t
         void *dummy;
         tcp_address_t *tcp_addr;
         udp_address_t *udp_addr;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_WS
+        ws_address_t *ws_addr;
+#endif
+#ifdef ZMQ_HAVE_WSS
+        wss_address_t *wss_addr;
+#endif
+#if defined ZMQ_HAVE_IPC
         ipc_address_t *ipc_addr;
 #endif
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_VXWORKS

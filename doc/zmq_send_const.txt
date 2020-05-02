@@ -9,7 +9,7 @@ zmq_send_const - send a constant-memory message part on a socket
 
 SYNOPSIS
 --------
-*int zmq_send_const (void '*socket', void '*buf', size_t 'len', int 'flags');*
+*int zmq_send_const (void '*socket', const void '*buf', size_t 'len', int 'flags');*
 
 
 DESCRIPTION
@@ -20,10 +20,11 @@ to be constant-memory and will therefore not be copied or deallocated
 in any way. The 'flags' argument is a combination of the flags defined below:
 
 *ZMQ_DONTWAIT*::
-For socket types (DEALER, PUSH) that block when there are no available peers 
-(or all peers have full high-water mark), specifies that the operation should 
-be performed in non-blocking mode. If the message cannot be queued on the 
-'socket', the _zmq_send_const()_ function shall fail with 'errno' set to EAGAIN.
+For socket types (DEALER, PUSH) that block (either with ZMQ_IMMEDIATE option set
+and no peer available, or all peers having full high-water mark), specifies that
+the operation should be performed in non-blocking mode. If the message cannot be
+queued on the 'socket', the _zmq_send_const()_ function shall fail with 'errno' set
+to EAGAIN.
 
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further

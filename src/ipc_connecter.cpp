@@ -30,8 +30,7 @@
 #include "precompiled.hpp"
 #include "ipc_connecter.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS                     \
-  && !defined ZMQ_HAVE_VXWORKS
+#if defined ZMQ_HAVE_IPC
 
 #include <new>
 #include <string>
@@ -44,11 +43,14 @@
 #include "ipc_address.hpp"
 #include "session_base.hpp"
 
+#ifdef _MSC_VER
+#include <afunix.h>
+#else
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-
+#endif
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
                                        class session_base_t *session_,
@@ -63,7 +65,7 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
 
 void zmq::ipc_connecter_t::out_event ()
 {
-    fd_t fd = connect ();
+    const fd_t fd = connect ();
     rm_handle ();
 
     //  Handle the error condition by attempt to reconnect.
@@ -79,7 +81,7 @@ void zmq::ipc_connecter_t::out_event ()
 void zmq::ipc_connecter_t::start_connecting ()
 {
     //  Open the connecting socket.
-    int rc = open ();
+    const int rc = open ();
 
     //  Connect may succeed in synchronous manner.
     if (rc == 0) {
@@ -113,26 +115,33 @@ int zmq::ipc_connecter_t::open ()
 
     //  Create the socket.
     _s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-    if (_s == -1)
+    if (_s == retired_fd)
         return -1;
 
     //  Set the non-blocking flag.
     unblock_socket (_s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (_s, _addr->resolved.ipc_addr->addr (),
-                        _addr->resolved.ipc_addr->addrlen ());
+    const int rc = ::connect (_s, _addr->resolved.ipc_addr->addr (),
+                              _addr->resolved.ipc_addr->addrlen ());
 
     //  Connect was successful immediately.
     if (rc == 0)
         return 0;
 
-    //  Translate other error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
+        //  Translate other error codes indicating asynchronous connect has been
+        //  launched to a uniform EINPROGRESS.
+#ifdef ZMQ_HAVE_WINDOWS
+    const int last_error = WSAGetLastError ();
+    if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
+        errno = EINPROGRESS;
+    else
+        errno = wsa_error_to_errno (last_error);
+#else
     if (rc == -1 && errno == EINTR) {
         errno = EINPROGRESS;
-        return -1;
     }
+#endif
 
     //  Forward the error.
     return -1;
@@ -144,8 +153,8 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
     //  implementations and Solaris.
     int err = 0;
     zmq_socklen_t len = static_cast<zmq_socklen_t> (sizeof (err));
-    int rc = getsockopt (_s, SOL_SOCKET, SO_ERROR,
-                         reinterpret_cast<char *> (&err), &len);
+    const int rc = getsockopt (_s, SOL_SOCKET, SO_ERROR,
+                               reinterpret_cast<char *> (&err), &len);
     if (rc == -1) {
         if (errno == ENOPROTOOPT)
             errno = 0;
@@ -162,7 +171,7 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
         return retired_fd;
     }
 
-    fd_t result = _s;
+    const fd_t result = _s;
     _s = retired_fd;
     return result;
 }

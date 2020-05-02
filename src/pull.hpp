@@ -41,7 +41,7 @@ class pipe_t;
 class msg_t;
 class io_thread_t;
 
-class pull_t : public socket_base_t
+class pull_t ZMQ_FINAL : public socket_base_t
 {
   public:
     pull_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -61,8 +61,7 @@ class pull_t : public socket_base_t
     //  Fair queueing object for inbound pipes.
     fq_t _fq;
 
-    pull_t (const pull_t &);
-    const pull_t &operator= (const pull_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pull_t)
 };
 }
 

@@ -31,17 +31,24 @@
 #define __ZMQ_WS_LISTENER_HPP_INCLUDED__
 
 #include "fd.hpp"
-#include "tcp_address.hpp"
+#include "ws_address.hpp"
 #include "stream_listener_base.hpp"
+
+#ifdef ZMQ_USE_GNUTLS
+#include <gnutls/gnutls.h>
+#endif
 
 namespace zmq
 {
-class ws_listener_t : public stream_listener_base_t
+class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     ws_listener_t (zmq::io_thread_t *io_thread_,
                    zmq::socket_base_t *socket_,
-                   const options_t &options_);
+                   const options_t &options_,
+                   bool wss_);
+
+    ~ws_listener_t ();
 
     //  Set address to listen on.
     int set_local_address (const char *addr_);
@@ -63,10 +70,14 @@ class ws_listener_t : public stream_listener_base_t
     int create_socket (const char *addr_);
 
     //  Address to listen on.
-    tcp_address_t _address;
+    ws_address_t _address;
 
-    ws_listener_t (const ws_listener_t &);
-    const ws_listener_t &operator= (const ws_listener_t &);
+    bool _wss;
+#ifdef ZMQ_HAVE_WSS
+    gnutls_certificate_credentials_t _tls_cred;
+#endif
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_listener_t)
 };
 }
 

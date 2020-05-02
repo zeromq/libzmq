@@ -30,6 +30,7 @@
 #ifndef __ZMQ_I_MAILBOX_HPP_INCLUDED__
 #define __ZMQ_I_MAILBOX_HPP_INCLUDED__
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -39,7 +40,7 @@ namespace zmq
 class i_mailbox
 {
   public:
-    virtual ~i_mailbox () {}
+    virtual ~i_mailbox () ZMQ_DEFAULT;
 
     virtual void send (const command_t &cmd_) = 0;
     virtual int recv (command_t *cmd_, int timeout_) = 0;

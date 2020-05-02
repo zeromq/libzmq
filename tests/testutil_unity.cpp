@@ -31,14 +31,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <unistd.h>
 #endif
 
 int test_assert_success_message_errno_helper (int rc_,
                                               const char *msg_,
                                               const char *expr_,
-                                              int line)
+                                              int line_)
 {
     if (rc_ == -1) {
         char buffer[512];
@@ -48,17 +50,15 @@ int test_assert_success_message_errno_helper (int rc_,
                   "%s failed%s%s%s, errno = %i (%s)", expr_,
                   msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
                   msg_ ? ")" : "", zmq_errno (), zmq_strerror (zmq_errno ()));
-        UNITY_TEST_FAIL (line, buffer);
+        UNITY_TEST_FAIL (line_, buffer);
     }
     return rc_;
 }
 
-int test_assert_success_message_raw_errno_helper (int rc_,
-                                                  const char *msg_,
-                                                  const char *expr_,
-                                                  int line)
+int test_assert_success_message_raw_errno_helper (
+  int rc_, const char *msg_, const char *expr_, int line_, bool zero)
 {
-    if (rc_ == -1) {
+    if (rc_ == -1 || (zero && rc_ != 0)) {
 #if defined ZMQ_HAVE_WINDOWS
         int current_errno = WSAGetLastError ();
 #else
@@ -68,16 +68,26 @@ int test_assert_success_message_raw_errno_helper (int rc_,
         char buffer[512];
         buffer[sizeof (buffer) - 1] =
           0; // to ensure defined behavior with VC++ <= 2013
-        snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
-                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
-                  msg_ ? ")" : "", current_errno);
-        UNITY_TEST_FAIL (line, buffer);
+        snprintf (
+          buffer, sizeof (buffer) - 1, "%s failed%s%s%s with %d, errno = %i/%s",
+          expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
+          msg_ ? ")" : "", rc_, current_errno, strerror (current_errno));
+        UNITY_TEST_FAIL (line_, buffer);
     }
     return rc_;
 }
 
+int test_assert_success_message_raw_zero_errno_helper (int rc_,
+                                                       const char *msg_,
+                                                       const char *expr_,
+                                                       int line_)
+{
+    return test_assert_success_message_raw_errno_helper (rc_, msg_, expr_,
+                                                         line_, true);
+}
+
 int test_assert_failure_message_raw_errno_helper (
-  int rc_, int expected_errno_, const char *msg_, const char *expr_, int line)
+  int rc_, int expected_errno_, const char *msg_, const char *expr_, int line_)
 {
     char buffer[512];
     buffer[sizeof (buffer) - 1] =
@@ -88,7 +98,7 @@ int test_assert_failure_message_raw_errno_helper (
                   "errno = %i, actual return value = %i",
                   expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
                   msg_ ? ")" : "", expected_errno_, rc_);
-        UNITY_TEST_FAIL (line, buffer);
+        UNITY_TEST_FAIL (line_, buffer);
     } else {
 #if defined ZMQ_HAVE_WINDOWS
         int current_errno = WSAGetLastError ();
@@ -102,7 +112,7 @@ int test_assert_failure_message_raw_errno_helper (
                       expr_, msg_ ? " (additional info: " : "",
                       msg_ ? msg_ : "", msg_ ? ")" : "", expected_errno_,
                       current_errno);
-            UNITY_TEST_FAIL (line, buffer);
+            UNITY_TEST_FAIL (line_, buffer);
         }
     }
     return rc_;
@@ -163,7 +173,7 @@ static void internal_manage_test_sockets (void *socket_, bool add_)
             fprintf (stderr,
                      "WARNING: Forced closure of %i sockets, this is an "
                      "implementation error unless the test case failed\n",
-                     (int) test_socket_count);
+                     static_cast<int> (test_socket_count));
             test_socket_count = 0;
         }
     } else {
@@ -288,9 +298,24 @@ void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
     test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
 }
 
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
+#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_GNU)
 void make_random_ipc_endpoint (char *out_endpoint_)
 {
+#ifdef ZMQ_HAVE_WINDOWS
+    char random_file[MAX_PATH];
+
+    {
+        const errno_t rc = tmpnam_s (random_file);
+        TEST_ASSERT_EQUAL (0, rc);
+    }
+
+    // TODO or use CreateDirectoryA and specify permissions?
+    const int rc = _mkdir (random_file);
+    TEST_ASSERT_EQUAL (0, rc);
+
+    strcat (random_file, "/ipc");
+
+#else
     char random_file[16];
     strcpy (random_file, "tmpXXXXXX");
 
@@ -301,6 +326,7 @@ void make_random_ipc_endpoint (char *out_endpoint_)
     int fd = mkstemp (random_file);
     TEST_ASSERT_TRUE (fd != -1);
     close (fd);
+#endif
 #endif
 
     strcpy (out_endpoint_, "ipc://");

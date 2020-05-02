@@ -1,19 +1,47 @@
 syntax: glob # for hg-git users
+
+# Generated build scripts and IDE generating files
+## autotools
 /Makefile
 builds/Makefile
 builds/deprecated-msvc/Makefile
-configure
 doc/Makefile
-Makefile.in
-configure
 libtool
-libtestutil.a
-libunity.a
+### automake
+Makefile.in
+.deps/
+.dirstamp
+### autoconf
+autom4te.cache
+aclocal.m4
 config
 config.status
 config.log
-aclocal.m4
-autom4te.cache
+configure
+stamp-h1
+## CMake
+cmake-build-debug/
+build/
+## Android
+builds/android/prefix
+## IntelliJ
+.idea/
+## Visual Code
+.vscode/
+## other results-like folders
+bin/
+lib/
+obj/
+## Doxygen
+doxygen/
+## Packaging 
+packaging/nuget/*.nupkg
+
+# Test related build files
+libtestutil.a
+libunity.a
+
+# Some build outputs and temporal files
 *.o
 *.gcno
 *.gcda
@@ -28,170 +56,67 @@ autom4te.cache
 *.ps
 *~
 .*~
-.deps
-.dirstamp
 .libs
-curve_keygen
-test_ancillaries
-test_heartbeats
-test_msg_ffn
-test_sockopt_hwm
-test_resource
-test_ipc_wildcard
-test_stream_empty
-test_stream_timeout
-test_issue_566
-test_ctx_destroy
-test_term_endpoint
-test_system
-test_monitor
-test_last_endpoint
-test_pair_inproc
-test_pair_ipc
-test_pair_tcp
-test_rebind_ipc
-test_reqrep_inproc
-test_reqrep_ipc
-test_reqrep_tcp
-test_shutdown_stress
-test_hwm
-test_timeo
-test_reqrep_device
-test_reqrep_drop
-test_sub_forward
-test_invalid_rep
-test_msg_flags
-test_ts_context
-test_connect_resolve
-test_immediate
-test_term_endpoint
-test_router_mandatory
-test_disconnect_inproc
-test_unbind_inproc
-test_unbind_wildcard
-test_raw_sock
-test_disconnect_inproc
-test_ctx_options
-test_iov
-test_security
-test_security_curve
-test_security_no_zap_handler
-test_probe_router
-test_stream
-test_spec_dealer
-test_spec_pushpull
-test_spec_rep
-test_spec_req
-test_spec_router
-test_req_correlate
-test_req_relaxed
-test_fork
-test_conflate
-test_inproc_connect
-test_linger
-test_security_null
-test_security_plain
-test_proxy
-test_proxy_single_socket
-test_proxy_terminate
-test_abstract_ipc
-test_filter_ipc
-test_connect_delay_tipc
-test_pair_tipc
-test_reqrep_device_tipc
-test_reqrep_tipc
-test_router_handover
-test_router_mandatory_tipc
-test_router_notify
-test_shutdown_stress_tipc
-test_sub_forward_tipc
-test_term_endpoint_tipc
-test_many_sockets
-test_diffserv
-test_connect_rid
-test_srcfd
-test_stream_disconnect
-test_proxy_chain
-test_bind_src_address
-test_metadata
-test_id2fd
-test_capabilities
-test_hwm_pubsub
-test_router_mandatory_hwm
-test_xpub_nodrop
-test_xpub_manual
-test_xpub_welcome_msg
-test_atomics
-test_client_drop_more
-test_client_server
-test_server_drop_more
-test_thread_safe
-test_thread_safe_polling
-test_getsockopt_memset
-test_setsockopt
-test_stream_exceeds_buffer
-test_poller
-test_timers
-test_radio_dish
-test_udp
-test_scatter_gather
-test_socketopt_hwm
-test_use_fd
-test_pub_invert_matching
-test_dgram
-test_base85
-test_bind_after_connect_tcp
-test_sodium
-test_zmq_poll_fd
-test_reconnect_ivl
-test_address_tipc
-test_app_meta
-test_security_gssapi
-test_security_zap
-test_socket_null
-test_xpub_verbose
-test_mock_pub_sub
-test_proxy_hwm
-test_ws_transport
-unittest_ip_resolver
-unittest_mtrie
-unittest_poller
-unittest_radix_tree
-unittest_udp_address
-unittest_ypipe
+
+# /src
+## Ignore generated files in configuration process
+src/platform.hpp*
+src/libzmq.pc
+
+# /tools
+## Executable binaries are ignored
+tools/curve_keygen
+## Executable source files must be tracked
+!tools/*.[ch]
+!tools/*.[ch]pp
+
+# /tests
+## Test binaries and logs are ignored
+tests/test*
 tests/test*.log
 tests/test*.trs
+## Test source files must be tracked
+!tests/test*.[ch]
+!tests/test*.[ch]pp
+## Build script and documentations must be tracked
+!tests/CMakeLists.txt
+!tests/README.md
+
+# /unittests
+## Unit test binaries and logs are ignored
+unittests/unittest_*
 unittests/unittest*.log
 unittests/unittest*.trs
-src/platform.hpp*
-src/stamp-h1
-local_lat
-local_thr
-remote_lat
-remote_thr
-inproc_lat
-inproc_thr
-proxy_thr
-benchmark_radix_tree
-!local_lat/
-!local_thr/
-!remote_lat/
-!remote_thr/
-!inproc_lat/
-!inproc_thr/
-!benchmark_radix_tree/
-doc/*.1
-doc/*.3
-doc/*.7
+## Unit test source files must be tracked
+!unittests/unittest*.[ch]
+!unittests/unittest*.[ch]pp
+## Build script and documentations must be tracked
+!unittests/CMakeLists.txt
+!unittests/README.md
+
+# check test log files
+test-suite*.log
+
+# /perf
+## Benchmarking binaries and result files are ignored
+perf/*_lat
+perf/*_thr
+perf/benchmark_*
+perf/results
+## Benchmarking source files must be tracked
+!perf/*.[ch]
+!perf/*.[ch]pp
+## Benchmarking tool scripts must be tracked
+!perf/*.py
+!perf/*.sh
+
+# /doc
+## Generated document files 
+doc/*.[137]
 doc/*.html
 doc/*.xml
-doxygen/
-src/libzmq.pc
-bin/
-lib/
-obj/
-builds/android/prefix/
-packaging/nuget/*.nupkg
+
+# external libraries and release archive files
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz
@@ -199,5 +124,4 @@ foreign/openpgm/*
 zeromq-*.tar.gz
 zeromq-*.zip
 core
-build
-test-suite.log
+

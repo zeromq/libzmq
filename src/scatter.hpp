@@ -41,7 +41,7 @@ class pipe_t;
 class msg_t;
 class io_thread_t;
 
-class scatter_t : public socket_base_t
+class scatter_t ZMQ_FINAL : public socket_base_t
 {
   public:
     scatter_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -61,8 +61,7 @@ class scatter_t : public socket_base_t
     //  Load balancer managing the outbound pipes.
     lb_t _lb;
 
-    scatter_t (const scatter_t &);
-    const scatter_t &operator= (const scatter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (scatter_t)
 };
 }
 

@@ -97,7 +97,7 @@ int zmq::pair_t::xsend (msg_t *msg_)
         _pipe->flush ();
 
     //  Detach the original message from the data buffer.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;

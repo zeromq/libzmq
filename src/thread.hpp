@@ -53,7 +53,7 @@ typedef void(thread_fn) (void *);
 class thread_t
 {
   public:
-    inline thread_t () :
+    thread_t () :
         _tfn (NULL),
         _arg (NULL),
         _started (false),
@@ -107,6 +107,11 @@ class thread_t
 
 #ifdef ZMQ_HAVE_WINDOWS
     HANDLE _descriptor;
+#if defined _WIN32_WCE
+    DWORD _thread_id;
+#else
+    unsigned int _thread_id;
+#endif
 #elif defined ZMQ_HAVE_VXWORKS
     int _descriptor;
     enum
@@ -124,8 +129,7 @@ class thread_t
     int _thread_sched_policy;
     std::set<int> _thread_affinity_cpus;
 
-    thread_t (const thread_t &);
-    const thread_t &operator= (const thread_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (thread_t)
 };
 }
 

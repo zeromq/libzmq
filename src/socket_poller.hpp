@@ -60,57 +60,26 @@ class socket_poller_t
     socket_poller_t ();
     ~socket_poller_t ();
 
-    typedef struct event_t
-    {
-        socket_base_t *socket;
-        fd_t fd;
-        void *user_data;
-        short events;
-    } event_t;
+    typedef zmq_poller_event_t event_t;
 
     int add (socket_base_t *socket_, void *user_data_, short events_);
-    int modify (socket_base_t *socket_, short events_);
+    int modify (const socket_base_t *socket_, short events_);
     int remove (socket_base_t *socket_);
 
     int add_fd (fd_t fd_, void *user_data_, short events_);
     int modify_fd (fd_t fd_, short events_);
     int remove_fd (fd_t fd_);
     // Returns the signaler's fd if there is one, otherwise errors.
-    int signaler_fd (fd_t *fd_);
+    int signaler_fd (fd_t *fd_) const;
 
-    int wait (event_t *event_, int n_events_, long timeout_);
+    int wait (event_t *events_, int n_events_, long timeout_);
 
-    inline int size () { return static_cast<int> (_items.size ()); };
+    int size () const { return static_cast<int> (_items.size ()); };
 
     //  Return false if object is not a socket.
-    bool check_tag ();
+    bool check_tag () const;
 
   private:
-    void zero_trail_events (zmq::socket_poller_t::event_t *events_,
-                            int n_events_,
-                            int found_);
-#if defined ZMQ_POLL_BASED_ON_POLL
-    int check_events (zmq::socket_poller_t::event_t *events_, int n_events_);
-#elif defined ZMQ_POLL_BASED_ON_SELECT
-    int check_events (zmq::socket_poller_t::event_t *events_,
-                      int n_events_,
-                      fd_set &inset_,
-                      fd_set &outset_,
-                      fd_set &errset_);
-#endif
-    int adjust_timeout (zmq::clock_t &clock_,
-                        long timeout_,
-                        uint64_t &now_,
-                        uint64_t &end_,
-                        bool &first_pass_);
-    int rebuild ();
-
-    //  Used to check whether the object is a socket_poller.
-    uint32_t _tag;
-
-    //  Signaler used for thread safe sockets polling
-    signaler_t *_signaler;
-
     typedef struct item_t
     {
         socket_base_t *socket;
@@ -121,6 +90,40 @@ class socket_poller_t
         int pollfd_index;
 #endif
     } item_t;
+
+    static void zero_trail_events (zmq::socket_poller_t::event_t *events_,
+                                   int n_events_,
+                                   int found_);
+#if defined ZMQ_POLL_BASED_ON_POLL
+    int check_events (zmq::socket_poller_t::event_t *events_, int n_events_);
+#elif defined ZMQ_POLL_BASED_ON_SELECT
+    int check_events (zmq::socket_poller_t::event_t *events_,
+                      int n_events_,
+                      fd_set &inset_,
+                      fd_set &outset_,
+                      fd_set &errset_);
+#endif
+    static int adjust_timeout (zmq::clock_t &clock_,
+                               long timeout_,
+                               uint64_t &now_,
+                               uint64_t &end_,
+                               bool &first_pass_);
+    static bool is_socket (const item_t &item, const socket_base_t *socket_)
+    {
+        return item.socket == socket_;
+    }
+    static bool is_fd (const item_t &item, fd_t fd_)
+    {
+        return !item.socket && item.fd == fd_;
+    }
+
+    int rebuild ();
+
+    //  Used to check whether the object is a socket_poller.
+    uint32_t _tag;
+
+    //  Signaler used for thread safe sockets polling
+    signaler_t *_signaler;
 
     //  List of sockets
     typedef std::vector<item_t> items_t;
@@ -144,8 +147,7 @@ class socket_poller_t
     zmq::fd_t _max_fd;
 #endif
 
-    socket_poller_t (const socket_poller_t &);
-    const socket_poller_t &operator= (const socket_poller_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (socket_poller_t)
 };
 }
 

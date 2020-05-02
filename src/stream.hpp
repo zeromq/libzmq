@@ -39,7 +39,7 @@ namespace zmq
 class ctx_t;
 class pipe_t;
 
-class stream_t : public routing_socket_base_t
+class stream_t ZMQ_FINAL : public routing_socket_base_t
 {
   public:
     stream_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -87,8 +87,7 @@ class stream_t : public routing_socket_base_t
     //  algorithm. This value is the next ID to use (if not used already).
     uint32_t _next_integral_routing_id;
 
-    stream_t (const stream_t &);
-    const stream_t &operator= (const stream_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_t)
 };
 }
 

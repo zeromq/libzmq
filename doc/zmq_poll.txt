@@ -80,6 +80,16 @@ NOTE: The _zmq_poll()_ function may be implemented or emulated using operating
 system interfaces other than _poll()_, and as such may be subject to the limits
 of those interfaces in ways not defined in this documentation.
 
+THREAD SAFETY
+-------------
+The *zmq_pollitem_t* array must only be used by the thread which 
+will/is calling _zmq_poll_.
+
+If a socket is contained in multiple *zmq_pollitem_t* arrays, each owned by a
+different thread, the socket itself needs to be thead-safe (Server, Client, ...).
+Otherwise, behaviour is undefined.
+
+
 RETURN VALUE
 ------------
 Upon successful completion, the _zmq_poll()_ function shall return the number
