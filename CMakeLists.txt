@@ -209,9 +209,9 @@ endif()
 # Select curve encryption library, defaults to tweetnacl To use libsodium instead, use --with-libsodium(must be
 # installed) To disable curve, use --disable-curve
 
-option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" ON)
+option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" OFF)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
-option(ENABLE_CURVE "Enable CURVE security" ON)
+option(ENABLE_CURVE "Enable CURVE security" OFF)
 
 if(ENABLE_CURVE)
   if(WITH_LIBSODIUM)
@@ -844,7 +844,8 @@ endif()
 set(cxx-sources
     precompiled.cpp
     address.cpp
-    allocator.cpp
+    allocator_base.cpp
+    allocator_global_pool.cpp
     client.cpp
     clock.cpp
     ctx.cpp
@@ -944,7 +945,8 @@ set(cxx-sources
     zmtp_engine.cpp
     # at least for VS, the header files must also be listed
     address.hpp
-    allocator.hpp
+    allocator_base.hpp
+    allocator_global_pool.cpp
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
@@ -1215,7 +1217,7 @@ if(ZMQ_BUILD_FRAMEWORK)
     COMMENT "Perf tools")
 endif()
 
-option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" ON)
+option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" OFF)
 if(MSVC AND ENABLE_PRECOMPILED)
   # default for all sources is to use precompiled headers
   foreach(source ${sources})

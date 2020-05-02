@@ -39,7 +39,7 @@
 #include "likely.hpp"
 #include "metadata.hpp"
 #include "err.hpp"
-#include "allocator.hpp"
+#include "allocator_base.hpp"
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
 //  and private representation of the message (zmq::msg_t) match.
@@ -206,7 +206,8 @@ int zmq::msg_t::init_data (void *data_,
     return 0;
 }
 
-int zmq::msg_t::init_from_allocator (size_t size_, zmq::allocator_t *alloc_)
+int zmq::msg_t::init_from_allocator (size_t size_,
+                                     zmq::allocator_base_t *alloc_)
 {
     zmq_assert (alloc_ != NULL && size_ != 0);
 

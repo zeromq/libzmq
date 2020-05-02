@@ -30,6 +30,7 @@
 #ifndef __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 #define __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 
+#include "allocator_base.hpp"
 #include <vector>
 #include "msg.hpp"
 #include "concurrentqueue.h"
@@ -165,31 +166,18 @@ class global_memory_pool_t
     moodycamel::ConcurrentQueue<uint8_t *> m_free_list[MsgBlock_NumSizeClasses];
 };
 
-class allocator_t
+class allocator_global_pool_t : public allocator_base_t
 {
   public:
-    allocator_t ();
-    ~allocator_t ()
-    {
-        //  Mark this instance as dead
-        _tag = 0xdeadbeef;
-    }
-
-    void init (int type_) { _type = type_; }
-
     // allocate() typically gets called by the consumer thread: the user app thread(s)
-    void *allocate (size_t len);
+    void *allocate (size_t len) final;
 
     // deallocate_msg() typically gets called by the producer thread: the ZMQ background IO thread(s)
-    static void deallocate_msg (void *data_, void *hint_);
+    void deallocate (void *data_) final;
 
     size_t size () const;
-    bool check_tag () const { return _tag == 0xCAFEEBEB; }
-
 
   private:
-    int _type;
-    uint32_t _tag;
     global_memory_pool_t _global_pool;
 };
 }
