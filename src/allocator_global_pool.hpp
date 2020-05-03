@@ -42,14 +42,35 @@
 
 namespace zmq
 {
-class global_memory_pool_t
+class allocator_global_pool_t : public allocator_base_t
 {
+  public:
+    allocator_global_pool_t (size_t initialMaximumBlockSize = 8192);
+    ~allocator_global_pool_t ();
+
+    void allocate_block (size_t bl);
+
+    // TODO have a look if realloc is possible, probably not as not thread safe as messages might still be in-flight?
+    void expand_block (size_t bl);
+
+    void *allocate (size_t len) final; // consumer thread: user app thread
+
+    void
+    deallocate (void *data_) final; // producer thread: ZMQ background IO thread
+
+    size_t size () const;
+
+  private:
     typedef struct
     {
         size_t num_msgs;
         // actual user data
         std::vector<uint8_t *> raw_data;
     } msg_block_t;
+
+    std::vector<msg_block_t> m_storage;
+    std::vector<moodycamel::ConcurrentQueue<uint8_t *> > m_free_list;
+    mutex_t _storage_mutex;
 
     inline size_t MsgBlockToBytes (size_t block)
     {
@@ -83,121 +104,8 @@ class global_memory_pool_t
         }
         return uint64_log2 (n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE);
     }
-
-  public:
-    global_memory_pool_t (size_t initialMaximumBlockSize = 8192)
-    {
-        allocate_block (BytesToMsgBlock (initialMaximumBlockSize));
-    }
-
-    ~global_memory_pool_t ()
-    {
-        // deallocate all message classes
-        for (size_t i = 0; i < m_storage.size (); i++) {
-            for (size_t j = 0; j < m_storage[i].raw_data.size (); i++) {
-                free (m_storage[i].raw_data[j]);
-                m_storage[i].raw_data[j] = NULL;
-            }
-        }
-    }
-
-    void allocate_block (size_t bl)
-    {
-        _storage_mutex.lock ();
-        size_t oldSize = m_storage.size ();
-        if (oldSize <= bl) {
-            m_storage.resize (bl + 1);
-            m_free_list.resize (bl + 1);
-            for (auto i = oldSize; i <= bl; i++) {
-                size_t msg_size = MsgBlockToBytes (i);
-                m_storage[i].num_msgs = ZMG_GLOBAL_POOL_START_MESSAGES;
-                m_storage[i].raw_data.push_back ((uint8_t *) malloc (
-                  ZMG_GLOBAL_POOL_START_MESSAGES * msg_size));
-
-                uint8_t *msg_memory = m_storage[i].raw_data[0];
-                for (int j = 0; j < ZMG_GLOBAL_POOL_START_MESSAGES; j++) {
-                    m_free_list[i].enqueue (msg_memory);
-                    msg_memory += msg_size;
-                }
-            }
-        }
-        _storage_mutex.unlock ();
-    }
-
-    // TODO have a look if realloc is possible, probably not as not thread safe as messages might still be in-flight?
-    void expand_block (size_t bl)
-    {
-        size_t msg_size = MsgBlockToBytes (bl);
-        _storage_mutex.lock ();
-        size_t messagesToAdd = m_storage[bl].num_msgs;
-        m_storage[bl].num_msgs += messagesToAdd;
-        m_storage[bl].raw_data.push_back (
-          (uint8_t *) malloc (messagesToAdd * msg_size));
-
-        uint8_t *msg_memory = m_storage[bl].raw_data.back ();
-        _storage_mutex.unlock ();
-        for (int j = 0; j < messagesToAdd; j++) {
-            m_free_list[bl].enqueue (msg_memory);
-            msg_memory += msg_size;
-        }
-    }
-
-    void *allocate_msg (size_t len) // consumer thread: user app thread
-    {
-        size_t bl = BytesToMsgBlock (len);
-
-        if (m_storage.size () <= bl) {
-            allocate_block (bl);
-        }
-
-        // consume 1 block from the list of free msg
-        uint8_t *next_avail = nullptr;
-        while (!m_free_list[bl].try_dequeue (next_avail)) {
-            expand_block (bl);
-        }
-
-        assert (next_avail);
-        return next_avail;
-    }
-
-    void
-    deallocate_msg (void *data_,
-                    size_t len) // producer thread: ZMQ background IO thread
-    {
-        size_t bl = BytesToMsgBlock (len);
-
-        // produce a new free msg:
-        m_free_list[bl].enqueue ((uint8_t *) data_);
-    }
-
-    size_t size () const
-    {
-        size_t acc = 0;
-        for (int i = 0; i < m_free_list.size (); i++)
-            acc += m_free_list[i].size_approx ();
-        return acc;
-    }
-
-  private:
-    std::vector<msg_block_t> m_storage;
-    std::vector<moodycamel::ConcurrentQueue<uint8_t *> > m_free_list;
-    mutex_t _storage_mutex;
 };
 
-class allocator_global_pool_t : public allocator_base_t
-{
-  public:
-    // allocate() typically gets called by the consumer thread: the user app thread(s)
-    void *allocate (size_t len) final;
-
-    // deallocate_msg() typically gets called by the producer thread: the ZMQ background IO thread(s)
-    void deallocate (void *data_) final;
-
-    size_t size () const;
-
-  private:
-    global_memory_pool_t _global_pool;
-};
 }
 
 #endif
