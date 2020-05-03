@@ -34,8 +34,9 @@
 #include <vector>
 #include "msg.hpp"
 #include "concurrentqueue.h"
+#include "mutex.hpp"
 
-#define ZMG_GLOBAL_POOL_START_MESSAGES (100)
+#define ZMG_GLOBAL_POOL_START_MESSAGES (1024)
 
 #define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE (256)
 
@@ -55,14 +56,36 @@ class global_memory_pool_t
         return ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE * 2 ^ block;
     }
 
+    // by Todd Lehman https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
+    inline int uint64_log2 (uint64_t n)
+    {
+#define S(k)                                                                   \
+    if (n >= (UINT64_C (1) << k)) {                                            \
+        i += k;                                                                \
+        n >>= k;                                                               \
+    }
+        assert (n != 0);
+        int i = 0;
+        S (32);
+        S (16);
+        S (8);
+        S (4);
+        S (2);
+        S (1);
+        return i;
+
+#undef S
+    }
     inline size_t BytesToMsgBlock (size_t n)
     {
-        return (size_t) floor (log2 (n)
-                               - log2 (ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE));
+        if (n <= ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE) {
+            return 0;
+        }
+        return uint64_log2 (n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE);
     }
 
   public:
-    global_memory_pool_t (size_t initialMaximumBlockSize = 8092)
+    global_memory_pool_t (size_t initialMaximumBlockSize = 8192)
     {
         allocate_block (BytesToMsgBlock (initialMaximumBlockSize));
     }
@@ -80,11 +103,12 @@ class global_memory_pool_t
 
     void allocate_block (size_t bl)
     {
-        size_t maxBlock = m_storage.size () - 1;
-        if (maxBlock < bl) {
+        _storage_mutex.lock ();
+        size_t oldSize = m_storage.size ();
+        if (oldSize <= bl) {
             m_storage.resize (bl + 1);
             m_free_list.resize (bl + 1);
-            for (auto i = maxBlock; i < bl; i++) {
+            for (auto i = oldSize; i <= bl; i++) {
                 size_t msg_size = MsgBlockToBytes (i);
                 m_storage[i].num_msgs = ZMG_GLOBAL_POOL_START_MESSAGES;
                 m_storage[i].raw_data.push_back ((uint8_t *) malloc (
@@ -97,18 +121,21 @@ class global_memory_pool_t
                 }
             }
         }
+        _storage_mutex.unlock ();
     }
 
-    // TODO have a look if realloc is possible, probably not as not thread safe?
+    // TODO have a look if realloc is possible, probably not as not thread safe as messages might still be in-flight?
     void expand_block (size_t bl)
     {
         size_t msg_size = MsgBlockToBytes (bl);
+        _storage_mutex.lock ();
         size_t messagesToAdd = m_storage[bl].num_msgs;
         m_storage[bl].num_msgs += messagesToAdd;
         m_storage[bl].raw_data.push_back (
           (uint8_t *) malloc (messagesToAdd * msg_size));
 
-        uint8_t *msg_memory = *m_storage[bl].raw_data.end ();
+        uint8_t *msg_memory = m_storage[bl].raw_data.back ();
+        _storage_mutex.unlock ();
         for (int j = 0; j < messagesToAdd; j++) {
             m_free_list[bl].enqueue (msg_memory);
             msg_memory += msg_size;
@@ -125,11 +152,8 @@ class global_memory_pool_t
 
         // consume 1 block from the list of free msg
         uint8_t *next_avail = nullptr;
-        if (!m_free_list[bl].try_dequeue (next_avail)) {
+        while (!m_free_list[bl].try_dequeue (next_avail)) {
             expand_block (bl);
-            if (!m_free_list[bl].try_dequeue (next_avail)) {
-                return NULL;
-            }
         }
 
         assert (next_avail);
@@ -157,6 +181,7 @@ class global_memory_pool_t
   private:
     std::vector<msg_block_t> m_storage;
     std::vector<moodycamel::ConcurrentQueue<uint8_t *> > m_free_list;
+    mutex_t _storage_mutex;
 };
 
 class allocator_global_pool_t : public allocator_base_t
