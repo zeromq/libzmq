@@ -268,10 +268,10 @@ bool zmq::ws_engine_t::select_protocol (const char *protocol_)
              && strcmp ("ZWS2.0/CURVE", protocol_) == 0) {
         if (_options.as_server)
             _mechanism = new (std::nothrow)
-              curve_server_t (session (), _peer_address, _options);
+              curve_server_t (session (), _peer_address, _options, false);
         else
             _mechanism =
-              new (std::nothrow) curve_client_t (session (), _options);
+              new (std::nothrow) curve_client_t (session (), _options, false);
         alloc_assert (_mechanism);
         return true;
     }

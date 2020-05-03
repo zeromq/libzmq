@@ -41,10 +41,14 @@
 #include "secure_allocator.hpp"
 
 zmq::curve_client_t::curve_client_t (session_base_t *session_,
-                                     const options_t &options_) :
+                                     const options_t &options_,
+                                     const bool downgrade_sub_) :
     mechanism_base_t (session_, options_),
-    curve_mechanism_base_t (
-      session_, options_, "CurveZMQMESSAGEC", "CurveZMQMESSAGES"),
+    curve_mechanism_base_t (session_,
+                            options_,
+                            "CurveZMQMESSAGEC",
+                            "CurveZMQMESSAGES",
+                            downgrade_sub_),
     _state (send_hello),
     _tools (options_.curve_public_key,
             options_.curve_secret_key,

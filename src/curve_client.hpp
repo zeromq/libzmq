@@ -44,7 +44,9 @@ class session_base_t;
 class curve_client_t ZMQ_FINAL : public curve_mechanism_base_t
 {
   public:
-    curve_client_t (session_base_t *session_, const options_t &options_);
+    curve_client_t (session_base_t *session_,
+                    const options_t &options_,
+                    const bool downgrade_sub_);
     ~curve_client_t () ZMQ_FINAL;
 
     // mechanism implementation
