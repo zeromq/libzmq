@@ -1176,6 +1176,33 @@ endif
 
 FUZZINGdir = ${prefix}/${FUZZING_INSTALLDIR}
 FUZZING_PROGRAMS = ${fuzzer_apps}
+FUZZING_DATA = tests/fuzzer_corpora/endpoint.dict tests/fuzzer_corpora/zmtp.dict \
+	tests/fuzzer_corpora/test_bind_curve_fuzzer.txt tests/fuzzer_corpora/test_bind_null_fuzzer.txt \
+	tests/fuzzer_corpora/test_connect_curve_fuzzer.txt tests/fuzzer_corpora/test_connect_null_fuzzer.txt
+install-data-hook:
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/endpoint.dict $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.dict
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/endpoint.dict $(DESTDIR)/$(FUZZINGdir)/test_connect_fuzzer.dict
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.dict
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.dict
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.dict
+	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.dict
+	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed; \
+		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed | sha1sum | awk '{print $$1}'); \
+		mv $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
+	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed; \
+		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed | sha1sum | awk '{print $$1}'); \
+		mv $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
+	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed; \
+		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed | sha1sum | awk '{print $$1}'); \
+		mv $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
+	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed; \
+		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed | sha1sum | awk '{print $$1}'); \
+		mv $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
+	rm -f $(DESTDIR)/$(FUZZINGdir)/*.txt
 else
 test_apps += tests/test_bind_null_fuzzer \
 	tests/test_connect_null_fuzzer \
