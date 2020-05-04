@@ -44,6 +44,16 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
     fd_t client = connect_socket (my_endpoint);
 
+    //  If there is not enough data for a full greeting, just send what we can
+    //  Otherwise send greeting first, as expected by the protocol
+    uint8_t buf[64];
+    if (size >= 64) {
+        send (client, (void *) data, 64, MSG_NOSIGNAL);
+        data += 64;
+        size -= 64;
+    }
+    recv (client, buf, 64, 0);
+    msleep (250);
     for (ssize_t sent = 0; size > 0 && (sent != -1 || errno == EINTR);
          size -= sent > 0 ? sent : 0, data += sent > 0 ? sent : 0)
         sent = send (client, (const char *) data, size, MSG_NOSIGNAL);
@@ -60,8 +70,16 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 #ifndef ZMQ_USE_FUZZING_ENGINE
 void test_bind_null_fuzzer ()
 {
-    TEST_ASSERT_SUCCESS_ERRNO (
-      LLVMFuzzerTestOneInput (zmtp_greeting_null, sizeof (zmtp_greeting_null)));
+    uint8_t *data;
+    size_t len;
+    if (fuzzer_corpus_encode ("tests/fuzzer_corpora/test_bind_null_fuzzer.txt",
+                              &data, &len)
+        != 0)
+        exit (77);
+
+    TEST_ASSERT_SUCCESS_ERRNO (LLVMFuzzerTestOneInput (data, len));
+
+    free (data);
 }
 
 int main (int argc, char **argv)
