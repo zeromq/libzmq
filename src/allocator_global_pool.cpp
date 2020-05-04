@@ -27,8 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cstdlib>
+
 #include "precompiled.hpp"
 #include "allocator_global_pool.hpp"
+
 
 zmq::allocator_global_pool_t::allocator_global_pool_t (
   size_t initialMaximumBlockSize)
