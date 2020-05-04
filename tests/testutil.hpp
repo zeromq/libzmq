@@ -228,6 +228,9 @@ fd_t bind_socket_resolve_port (const char *address_,
                                const int af_ = AF_INET,
                                const int protocol_ = IPPROTO_TCP);
 
-int fuzzer_corpus_encode (const char *filename, uint8_t **data, size_t *len);
+int fuzzer_corpus_encode (const char *filename,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases);
 
 #endif

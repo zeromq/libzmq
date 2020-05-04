@@ -1186,22 +1186,30 @@ install-data-hook:
 	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.dict
 	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.dict
 	$(LN_S) -r -f $(DESTDIR)/$(FUZZINGdir)/zmtp.dict $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.dict
-	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed; \
+	$(shell while read -r test; do \
+		echo -n $$test | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed; \
 		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed | sha1sum | awk '{print $$1}'); \
 		mv $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
-		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
-	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed; \
+		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		done < $(DESTDIR)/$(FUZZINGdir)/test_bind_curve_fuzzer.txt)
+	$(shell while read -r test; do \
+		echo -n $$test | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed; \
 		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed | sha1sum | awk '{print $$1}'); \
 		mv $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
-		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
-	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed; \
+		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		done < $(DESTDIR)/$(FUZZINGdir)/test_bind_null_fuzzer.txt)
+	$(shell while read -r test; do \
+		echo -n $$test | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed; \
 		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed | sha1sum | awk '{print $$1}'); \
 		mv $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
-		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
-	$(shell cat $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.txt | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed; \
+		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		done < $(DESTDIR)/$(FUZZINGdir)/test_connect_curve_fuzzer.txt)
+	$(shell while read -r test; do \
+		echo -n $$test | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed; \
 		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed | sha1sum | awk '{print $$1}'); \
 		mv $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
-		zip -j -m --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn)
+		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		done < $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.txt)
 	rm -f $(DESTDIR)/$(FUZZINGdir)/*.txt
 else
 test_apps += tests/test_bind_null_fuzzer \
@@ -1353,6 +1361,9 @@ EXTRA_DIST = \
 	src/version.rc.in \
 	tests/CMakeLists.txt \
         tests/test_pair_tcp_cap_net_admin.cpp \
+	tests/fuzzer_corpora/endpoint.dict tests/fuzzer_corpora/zmtp.dict \
+	tests/fuzzer_corpora/test_bind_curve_fuzzer.txt tests/fuzzer_corpora/test_bind_null_fuzzer.txt \
+	tests/fuzzer_corpora/test_connect_curve_fuzzer.txt tests/fuzzer_corpora/test_connect_null_fuzzer.txt \
 	unittests/CMakeLists.txt \
         tools/curve_keygen.cpp
 

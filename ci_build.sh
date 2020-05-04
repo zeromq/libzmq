@@ -14,6 +14,7 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
+    CHECK="distcheck"
 
     if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
         CONFIG_OPTS+=("--enable-address-sanitizer=yes")
@@ -22,6 +23,8 @@ if [ $BUILD_TYPE == "default" ]; then
         # workaround for linker problem with ASAN options in GCC
         # http://stackoverflow.com/questions/37603238/fsanitize-not-using-gold-linker-in-gcc-6-1
         CONFIG_OPTS+=("LDFLAGS=-fuse-ld=gold")
+        # distcheck does an out-of-tree build, and the fuzzer tests use a hard-coded relative path for simplicity
+        CHECK="check"
     fi
 
     if [ $USE_NSS == "yes" ]; then
@@ -79,7 +82,7 @@ if [ $BUILD_TYPE == "default" ]; then
         ./autogen.sh &&
         ./configure "${CONFIG_OPTS[@]}" &&
         export DISTCHECK_CONFIGURE_FLAGS="${CONFIG_OPTS[@]}" &&
-        make VERBOSE=1 -j5 distcheck
+        make VERBOSE=1 -j5 ${CHECK}
     ) || exit 1
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
