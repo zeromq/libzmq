@@ -41,6 +41,11 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     setup_test_context ();
     char my_endpoint[MAX_SOCKET_STRING];
     void *server = test_context_socket (ZMQ_PUB);
+    //  As per API by default there's no limit to the size of a message,
+    //  but the sanitizer allocator will barf over a gig or so
+    int64_t max_msg_size = 64 * 1024 * 1024;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (server, ZMQ_MAXMSGSIZE, &max_msg_size, sizeof (int64_t)));
     bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
     fd_t client = connect_socket (my_endpoint);
 
