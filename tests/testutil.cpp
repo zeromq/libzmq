@@ -522,3 +522,34 @@ bool strneq (const char *lhs_, const char *rhs_)
 {
     return strcmp (lhs_, rhs_) != 0;
 }
+
+int fuzzer_corpus_encode (const char *filename, uint8_t **data, size_t *len)
+{
+    TEST_ASSERT_NOT_NULL (filename);
+    TEST_ASSERT_NOT_NULL (data);
+    TEST_ASSERT_NOT_NULL (len);
+    FILE *f = fopen (filename, "r");
+    if (!f)
+        return -1;
+    fseek (f, 0, SEEK_END);
+    size_t text_len = ftell (f);
+    fseek (f, 0, SEEK_SET);
+    char *buf = (char *) malloc (text_len);
+    TEST_ASSERT_NOT_NULL (buf);
+    size_t read = fread (buf, 1, text_len, f);
+    fclose (f);
+    TEST_ASSERT_EQUAL_INT (read, text_len);
+
+    //  Convert to binary format, corpus is stored in ascii (hex)
+    *len = text_len / 2;
+    *data = (unsigned char *) malloc (*len);
+    TEST_ASSERT_NOT_NULL (*data);
+    const char *pos = buf;
+    for (size_t count = 0; count < *len; ++count, pos += 2) {
+        char tmp[3] = {pos[0], pos[1], 0};
+        (*data)[count] = (uint8_t) strtol (tmp, NULL, 16);
+    }
+    free (buf);
+
+    return 0;
+}

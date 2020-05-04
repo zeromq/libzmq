@@ -92,7 +92,7 @@ class zmtp_engine_t ZMQ_FINAL : public stream_engine_base_t
     bool handshake_v1_0_unversioned ();
     bool handshake_v1_0 ();
     bool handshake_v2_0 ();
-    bool handshake_v3_x ();
+    bool handshake_v3_x (bool downgrade_sub);
     bool handshake_v3_0 ();
     bool handshake_v3_1 ();
 

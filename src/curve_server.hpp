@@ -48,7 +48,8 @@ class curve_server_t ZMQ_FINAL : public zap_client_common_handshake_t,
   public:
     curve_server_t (session_base_t *session_,
                     const std::string &peer_address_,
-                    const options_t &options_);
+                    const options_t &options_,
+                    const bool downgrade_sub_);
     ~curve_server_t ();
 
     // mechanism implementation
