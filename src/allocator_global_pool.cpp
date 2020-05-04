@@ -39,8 +39,8 @@ zmq::allocator_global_pool_t::allocator_global_pool_t (
 zmq::allocator_global_pool_t::~allocator_global_pool_t ()
 {
     // deallocate all message classes
-    for (size_t i = 0; i < m_storage.size (); i++) {
-        for (size_t j = 0; j < m_storage[i].raw_data.size (); i++) {
+    for (size_t i = 0U; i < m_storage.size (); i++) {
+        for (size_t j = 0U; j < m_storage[i].raw_data.size (); i++) {
             free (m_storage[i].raw_data[j]);
             m_storage[i].raw_data[j] = NULL;
         }
@@ -61,7 +61,7 @@ void zmq::allocator_global_pool_t::allocate_block (size_t bl)
               (uint8_t *) malloc (ZMG_GLOBAL_POOL_START_MESSAGES * msg_size));
 
             uint8_t *msg_memory = m_storage[i].raw_data[0];
-            for (int j = 0; j < ZMG_GLOBAL_POOL_START_MESSAGES; j++) {
+            for (size_t j = 0U; j < ZMG_GLOBAL_POOL_START_MESSAGES; j++) {
                 m_free_list[i].enqueue (msg_memory);
                 msg_memory += msg_size;
             }
@@ -81,7 +81,7 @@ void zmq::allocator_global_pool_t::expand_block (size_t bl)
 
     uint8_t *msg_memory = m_storage[bl].raw_data.back ();
     _storage_mutex.unlock ();
-    for (int j = 0; j < messagesToAdd; j++) {
+    for (size_t j = 0; j < messagesToAdd; j++) {
         m_free_list[bl].enqueue (msg_memory);
         msg_memory += msg_size;
     }
@@ -116,8 +116,8 @@ void zmq::allocator_global_pool_t::deallocate (void *data_)
 
 size_t zmq::allocator_global_pool_t::size () const
 {
-    size_t acc = 0;
-    for (int i = 0; i < m_free_list.size (); i++)
+    size_t acc = 0U;
+    for (size_t i = 0U; i < m_free_list.size (); i++)
         acc += m_free_list[i].size_approx ();
     return acc;
 }
