@@ -111,7 +111,7 @@ int main (int argc, char *argv[])
     }
 
     for (i = 0; i != message_count; i++) {
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
         rc = zmq_msg_init_allocator (&msg, message_size, allocator);
 #else
         rc = zmq_msg_init_size (&msg, message_size);
@@ -144,7 +144,7 @@ int main (int argc, char *argv[])
         return -1;
     }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
     // IMPORTANT: destroy the allocator only after zmq_ctx_term() since otherwise
     // some zmq_msg_t may still be "in fly"
     zmq_msg_allocator_destroy (&allocator);

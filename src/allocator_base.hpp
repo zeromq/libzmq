@@ -35,6 +35,8 @@ namespace zmq
 class allocator_base_t
 {
   public:
+    allocator_base_t ();
+
     virtual ~allocator_base_t ();
 
     // allocate() typically gets called by the consumer thread: the user app thread(s)
