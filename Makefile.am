@@ -736,10 +736,6 @@ tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
 tests_test_getsockopt_memset_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_getsockopt_memset_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
-tests_test_many_sockets_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_many_sockets_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_diffserv_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
@@ -998,7 +994,6 @@ endif
 
 if ON_LINUX
 test_apps += tests/test_abstract_ipc \
-	tests/test_many_sockets \
 	tests/test_socks
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
@@ -1008,6 +1003,15 @@ tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_socks_SOURCES = tests/test_socks.cpp
 tests_test_socks_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+# TODO: enable when https://github.com/zeromq/libzmq/issues/3898 is fixed
+if !ENABLE_ASAN
+test_apps += tests/test_many_sockets
+
+tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
+tests_test_many_sockets_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_many_sockets_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 endif
 
