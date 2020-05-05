@@ -705,8 +705,11 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
 #define ZMQ_MSG_ALLOCATOR_DEFAULT 0
 // using internally a SPSC queue (cannot be used with inproc maybe?) or perhaps an MPMC queue anyway
 #define ZMQ_MSG_ALLOCATOR_PER_THREAD_POOL 1
-// using internally a MPMC queue
+
+#if (defined __cplusplus && __cplusplus >= 201103L)
+// using internally a MPMC queue, C++11 required
 #define ZMQ_MSG_ALLOCATOR_GLOBAL_POOL 2
+#endif
 
 ZMQ_EXPORT void *zmq_msg_allocator_new (int type_);
 ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);

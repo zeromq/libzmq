@@ -26,7 +26,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#if (defined __cplusplus && __cplusplus >= 201103L)
 #include <cstdlib>
 
 #include "precompiled.hpp"
@@ -126,3 +126,4 @@ size_t zmq::allocator_global_pool_t::size () const
         acc += m_free_list[i].size_approx ();
     return acc;
 }
+#endif

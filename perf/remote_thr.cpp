@@ -68,7 +68,7 @@ int main (int argc, char *argv[])
         return -1;
     }
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
     // EXPERIMENTAL ALLOCATOR FOR MSG_T
     void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
 #endif
