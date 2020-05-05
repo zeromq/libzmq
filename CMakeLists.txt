@@ -566,6 +566,8 @@ if(MSVC)
 
     zmq_check_cxx_flag_prepend("/analyze")
 
+    zmq_check_cxx_flag_prepend("/Zc:__cplusplus") # enables right reporting of __cplusplus, ref. https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+
     # C++11/14/17-specific, but maybe possible via conditional defines
     zmq_check_cxx_flag_prepend("/wd26440") # Function '...' can be declared 'noexcept'
     zmq_check_cxx_flag_prepend("/wd26432") # If you define or delete any default operation in the type '...', define or
