@@ -1132,12 +1132,11 @@ endif()
 
 if(WITH_NORM)
   find_package(norm)
-    if(NORM_FOUND)
-      set(pkg_config_libs_private "${pkg_config_libs_private} -lnorm")
+    if(norm_FOUND)
       message(STATUS "Building with norm")
       add_definitions(-DZMQ_HAVE_NORM)
     else()
-      message(WARNING "No NORM installed, if you want to use NORM install it")
+      message(FATAL_ERROR "No NORM installed, if you want to use NORM install it")
     endif()
 endif()
 
@@ -1403,6 +1402,10 @@ if(BUILD_SHARED)
   if(RT_LIBRARY)
     target_link_libraries(libzmq -lrt)
   endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq norm::norm)
+  endif()
 endif()
 
 if(BUILD_STATIC)
@@ -1447,6 +1450,10 @@ if(BUILD_STATIC)
 
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
     add_definitions(-DUNITY_EXCLUDE_MATH_H)
+  endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq norm::norm)
   endif()
 endif()
 
