@@ -32,6 +32,12 @@
 #include "precompiled.hpp"
 #include "allocator_base.hpp"
 
+zmq::allocator_base_t::allocator_base_t ()
+{
+    _tag = 0xCAFEEBEB;
+}
+
+
 zmq::allocator_base_t::~allocator_base_t ()
 {
     //  Mark this instance as dead

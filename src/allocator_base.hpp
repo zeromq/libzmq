@@ -49,7 +49,7 @@ class allocator_base_t
 
   private:
     //  Used to check whether the object is a socket.
-    uint32_t _tag = 0xCAFEEBEB;
+    uint32_t _tag;
 };
 }
 
