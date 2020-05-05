@@ -523,7 +523,10 @@ bool strneq (const char *lhs_, const char *rhs_)
     return strcmp (lhs_, rhs_) != 0;
 }
 
-int fuzzer_corpus_encode (const char *filename, uint8_t **data, size_t *len)
+int fuzzer_corpus_encode (const char *filename,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases)
 {
     TEST_ASSERT_NOT_NULL (filename);
     TEST_ASSERT_NOT_NULL (data);
@@ -532,24 +535,38 @@ int fuzzer_corpus_encode (const char *filename, uint8_t **data, size_t *len)
     if (!f)
         return -1;
     fseek (f, 0, SEEK_END);
-    size_t text_len = ftell (f);
+    size_t text_len = ftell (f) + 1;
     fseek (f, 0, SEEK_SET);
     char *buf = (char *) malloc (text_len);
     TEST_ASSERT_NOT_NULL (buf);
-    size_t read = fread (buf, 1, text_len, f);
-    fclose (f);
-    TEST_ASSERT_EQUAL_INT (read, text_len);
 
+    *len = NULL;
+    *data = NULL;
+    *num_cases = 0;
     //  Convert to binary format, corpus is stored in ascii (hex)
-    *len = text_len / 2;
-    *data = (unsigned char *) malloc (*len);
-    TEST_ASSERT_NOT_NULL (*data);
-    const char *pos = buf;
-    for (size_t count = 0; count < *len; ++count, pos += 2) {
-        char tmp[3] = {pos[0], pos[1], 0};
-        (*data)[count] = (uint8_t) strtol (tmp, NULL, 16);
+    while (fgets (buf, (int) text_len, f)) {
+        *len = (size_t *) realloc (*len, (*num_cases + 1) * sizeof (size_t));
+        TEST_ASSERT_NOT_NULL (*len);
+        *(*len + *num_cases) = strlen (buf) / 2;
+        *data =
+          (uint8_t **) realloc (*data, (*num_cases + 1) * sizeof (uint8_t *));
+        TEST_ASSERT_NOT_NULL (*data);
+        *(*data + *num_cases) =
+          (uint8_t *) malloc (*(*len + *num_cases) * sizeof (uint8_t));
+        TEST_ASSERT_NOT_NULL (*(*data + *num_cases));
+
+        const char *pos = buf;
+        for (size_t count = 0; count < *(*len + *num_cases);
+             ++count, pos += 2) {
+            char tmp[3] = {pos[0], pos[1], 0};
+            *(*(*data + *num_cases) + count) = (uint8_t) strtol (tmp, NULL, 16);
+        }
+        (*num_cases)++;
     }
+
+
     free (buf);
+    fclose (f);
 
     return 0;
 }
