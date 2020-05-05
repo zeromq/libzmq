@@ -43,6 +43,11 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint);
 
     void *client = test_context_socket (ZMQ_SUB);
+    //  As per API by default there's no limit to the size of a message,
+    //  but the sanitizer allocator will barf over a gig or so
+    int64_t max_msg_size = 64 * 1024 * 1024;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_MAXMSGSIZE, &max_msg_size, sizeof (int64_t)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (client, ZMQ_SUBSCRIBE, "", 0));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
@@ -81,16 +86,22 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 #ifndef ZMQ_USE_FUZZING_ENGINE
 void test_connect_null_fuzzer ()
 {
-    uint8_t *data;
-    size_t len;
+    uint8_t **data;
+    size_t *len, num_cases = 0;
     if (fuzzer_corpus_encode (
-          "tests/fuzzer_corpora/test_connect_null_fuzzer.txt", &data, &len)
+          "tests/fuzzer_corpora/test_connect_null_fuzzer.txt", &data, &len,
+          &num_cases)
         != 0)
         exit (77);
 
-    TEST_ASSERT_SUCCESS_ERRNO (LLVMFuzzerTestOneInput (data, len));
+    while (num_cases-- > 0) {
+        TEST_ASSERT_SUCCESS_ERRNO (
+          LLVMFuzzerTestOneInput (data[num_cases], len[num_cases]));
+        free (data[num_cases]);
+    }
 
     free (data);
+    free (len);
 }
 
 int main (int argc, char **argv)

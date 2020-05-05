@@ -82,16 +82,21 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 #ifndef ZMQ_USE_FUZZING_ENGINE
 void test_bind_curve_fuzzer ()
 {
-    uint8_t *data;
-    size_t len;
+    uint8_t **data;
+    size_t *len, num_cases = 0;
     if (fuzzer_corpus_encode ("tests/fuzzer_corpora/test_bind_curve_fuzzer.txt",
-                              &data, &len)
+                              &data, &len, &num_cases)
         != 0)
         exit (77);
 
-    TEST_ASSERT_SUCCESS_ERRNO (LLVMFuzzerTestOneInput (data, len));
+    while (num_cases-- > 0) {
+        TEST_ASSERT_SUCCESS_ERRNO (
+          LLVMFuzzerTestOneInput (data[num_cases], len[num_cases]));
+        free (data[num_cases]);
+    }
 
     free (data);
+    free (len);
 }
 
 int main (int argc, char **argv)

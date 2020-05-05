@@ -159,8 +159,8 @@ AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes
                   [ZMQ_ASAN="$enableval"])
 
 if test "x${ZMQ_ASAN}" = "xyes"; then
-    CFLAGS="${CFLAGS} -fsanitize=address"
-    CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+    CFLAGS="${CFLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all"
+    CXXFLAGS="${CXXFLAGS} -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all"
 
     AM_CONDITIONAL(ENABLE_ASAN, true)
     AC_MSG_RESULT([yes])
