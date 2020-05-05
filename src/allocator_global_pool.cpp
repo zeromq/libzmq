@@ -32,6 +32,7 @@
 #include "precompiled.hpp"
 #include "allocator_global_pool.hpp"
 
+#define ZMG_GLOBAL_POOL_INITIAL_BLOCK_SIZE (1024 * 256)
 
 zmq::allocator_global_pool_t::allocator_global_pool_t (
   size_t initialMaximumBlockSize)
@@ -59,12 +60,13 @@ void zmq::allocator_global_pool_t::allocate_block (size_t bl)
         m_free_list.resize (bl + 1);
         for (auto i = oldSize; i <= bl; i++) {
             size_t msg_size = MsgBlockToBytes (i);
-            m_storage[i].num_msgs = ZMG_GLOBAL_POOL_START_MESSAGES;
+            m_storage[i].num_msgs =
+              ZMG_GLOBAL_POOL_INITIAL_BLOCK_SIZE / msg_size;
             m_storage[i].raw_data.push_back (
-              (uint8_t *) malloc (ZMG_GLOBAL_POOL_START_MESSAGES * msg_size));
+              (uint8_t *) malloc (m_storage[i].num_msgs * msg_size));
 
             uint8_t *msg_memory = m_storage[i].raw_data[0];
-            for (size_t j = 0U; j < ZMG_GLOBAL_POOL_START_MESSAGES; j++) {
+            for (size_t j = 0U; j < m_storage[i].num_msgs; j++) {
                 m_free_list[i].enqueue (msg_memory);
                 msg_memory += msg_size;
             }

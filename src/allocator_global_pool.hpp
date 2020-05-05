@@ -36,8 +36,6 @@
 #include "concurrentqueue.h"
 #include "mutex.hpp"
 
-#define ZMG_GLOBAL_POOL_START_MESSAGES (1024)
-
 #define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE (256)
 
 namespace zmq
