@@ -1,6 +1,7 @@
 # CMake build script for ZeroMQ
 project(ZeroMQ)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "C:/Program Files (x86)/norm/lib/cmake/norm")
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   cmake_minimum_required(VERSION 3.0.2)
 else()
@@ -95,6 +96,7 @@ set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
+option(WITH_NORM "Build with support for NORM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if(APPLE)
@@ -1126,6 +1128,17 @@ if(WITH_OPENPGM)
   include_directories(${OPENPGM_INCLUDE_DIRS})
   link_directories(${OPENPGM_LIBRARY_DIRS})
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
+endif()
+
+if(WITH_NORM)
+  find_package("norm")
+    if(NSS3_FOUND)
+      set(pkg_config_libs_private "${pkg_config_libs_private} -lnorm")
+      message(STATUS "Building with norm")
+      add_definitions(-DZMQ_HAVE_NORM)
+    else()
+      message(WARNING "No NORM installed, if you want to use NORM install it")
+    endif()
 endif()
 
 if(WITH_VMCI)
