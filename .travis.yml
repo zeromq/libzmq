@@ -96,8 +96,12 @@ matrix:
         - libbsd-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
-  - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
+    addons:
+      apt:
+        packages:
+        - libsodium-dev
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
