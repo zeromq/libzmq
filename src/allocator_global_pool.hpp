@@ -29,6 +29,7 @@
 
 #ifndef __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 #define __ZMQ_MEMORYPOOL_HPP_INCLUDED__
+#if (defined __cplusplus && __cplusplus >= 201103L)
 
 #include "allocator_base.hpp"
 #include <vector>
@@ -106,4 +107,5 @@ class allocator_global_pool_t : public allocator_base_t
 
 }
 
+#endif
 #endif
