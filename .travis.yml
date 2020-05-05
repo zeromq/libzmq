@@ -6,7 +6,7 @@ os:
 - linux
 - osx
 
-dist: trusty
+dist: bionic
 
 cache: ccache
 
@@ -98,14 +98,6 @@ matrix:
     os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
-    dist: trusty
-    addons:
-      apt:
-        sources:
-        - sourceline: 'ppa:ubuntu-toolchain-r/test'
-        packages:
-        - g++-6
-        - gcc-6
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
@@ -113,9 +105,6 @@ matrix:
     os: linux
     addons:
       apt:
-        sources:
-        - llvm-toolchain-trusty-8
-        - ubuntu-toolchain-r-test
         packages:
         - clang-format-8
   - env: BUILD_TYPE=default POLLER=poll
