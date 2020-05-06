@@ -391,14 +391,11 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         }
 
         struct addrinfo *in, hint;
+        memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = SOCK_STREAM;
         hint.ai_protocol = protocol_;
-        hint.ai_addrlen = 0;
-        hint.ai_canonname = NULL;
-        hint.ai_addr = NULL;
-        hint.ai_next = NULL;
 
         TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
           getaddrinfo (address, port, &hint, &in));
@@ -444,14 +441,11 @@ fd_t bind_socket_resolve_port (const char *address_,
         int flag = 1;
 #endif
         struct addrinfo *in, hint;
+        memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
         hint.ai_protocol = protocol_;
-        hint.ai_addrlen = 0;
-        hint.ai_canonname = NULL;
-        hint.ai_addr = NULL;
-        hint.ai_next = NULL;
 
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
