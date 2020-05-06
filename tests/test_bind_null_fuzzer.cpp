@@ -94,7 +94,7 @@ void test_bind_null_fuzzer ()
 
 int main (int argc, char **argv)
 {
-    setup_test_environment (0);
+    setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_bind_null_fuzzer);
