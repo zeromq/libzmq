@@ -71,8 +71,10 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 
     zmq_msg_t msg;
     zmq_msg_init (&msg);
-    while (-1 != zmq_msg_recv (&msg, client, ZMQ_DONTWAIT))
+    while (-1 != zmq_msg_recv (&msg, client, ZMQ_DONTWAIT)) {
         zmq_msg_close (&msg);
+        zmq_msg_init (&msg);
+    }
 
     close (server_accept);
     close (server);
@@ -106,7 +108,7 @@ void test_connect_null_fuzzer ()
 
 int main (int argc, char **argv)
 {
-    setup_test_environment (0);
+    setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_connect_null_fuzzer);
