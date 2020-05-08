@@ -725,7 +725,7 @@ void zmq::ctx_t::unregister_endpoints (const socket_base_t *const socket_)
                                end = _endpoints.end ();
          it != end;) {
         if (it->second.socket == socket_)
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1700)
             it = _endpoints.erase (it);
 #else
             _endpoints.erase (it++);
