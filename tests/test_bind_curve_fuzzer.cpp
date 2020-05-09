@@ -71,14 +71,14 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
         send (client, (void *) data, 202, MSG_NOSIGNAL);
         data += 202;
         size -= 202;
-        recv (client, buf, 170, 0);
+        recv (client, buf, 170, MSG_DONTWAIT);
     }
     // Then send READY and expect INITIATE if there's enough data
     if (size >= 301) {
         send (client, (void *) data, 301, MSG_NOSIGNAL);
         data += 301;
         size -= 301;
-        recv (client, buf, 512, 0);
+        recv (client, buf, 512, MSG_DONTWAIT);
     }
     msleep (250);
     for (ssize_t sent = 0; size > 0 && (sent != -1 || errno == EINTR);
