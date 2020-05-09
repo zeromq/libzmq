@@ -41,7 +41,7 @@ the event that a peer is unavailable to receive them.
 
 Conventional sockets allow only strict one-to-one (two peers), many-to-one
 (many clients, one server), or in some cases one-to-many (multicast)
-relationships. With the exception of 'ZMQ_PAIR', 0MQ sockets may be connected
+relationships. With the exception of 'ZMQ_PAIR' and 'ZMQ_CHANNEL', 0MQ sockets may be connected
 *to multiple endpoints* using _zmq_connect()_, while simultaneously accepting
 incoming connections *from multiple endpoints* bound to the socket using
 _zmq_bind()_, thus allowing many-to-many relationships.
@@ -60,6 +60,7 @@ Following are the thread safe sockets:
 * ZMQ_SCATTER
 * ZMQ_GATHER
 * ZMQ_PEER
+* ZMQ_CHANNEL
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
@@ -476,6 +477,47 @@ Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
 Action in mute state:: Return EAGAIN
 
+Channel pattern
+~~~~~~~~~~~~~~~~~~~~~~
+The channel pattern is the thread-safe version of the exclusive pair pattern.
+The channel pattern is used to connect a peer to precisely one other
+peer. This pattern is used for inter-thread communication across the inproc
+transport.
+
+NOTE: Channel is still in draft phase.
+
+ZMQ_CHANNEL
+^^^^^^^^
+A socket of type 'ZMQ_CHANNEL' can only be connected to a single peer at any one
+time.  No message routing or filtering is performed on messages sent over a
+'ZMQ_CHANNEL' socket.
+
+When a 'ZMQ_CHANNEL' socket enters the 'mute' state due to having reached the
+high water mark for the connected peer, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there is no connected peer, then
+any linkzmq:zmq_send[3] operations on the socket shall block until the peer
+becomes available for sending; messages are not discarded.
+
+While 'ZMQ_CHANNEL' sockets can be used over transports other than linkzmq:zmq_inproc[7],
+their inability to auto-reconnect coupled with the fact new incoming connections will
+be terminated while any previous connections (including ones in a closing state)
+exist makes them unsuitable for TCP in most cases.
+
+NOTE: 'ZMQ_CHANNEL' sockets are designed for inter-thread communication across
+the linkzmq:zmq_inproc[7] transport and do not implement functionality such
+as auto-reconnection.
+
+NOTE: 'ZMQ_CHANNEL' sockets are threadsafe. They do not accept ZMQ_RCVMORE on receives.
+This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_CHANNEL characteristics
+Compatible peer sockets:: 'ZMQ_CHANNEL'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Incoming routing strategy:: N/A
+Outgoing routing strategy:: N/A
+Action in mute state:: Block
 
 Native Pattern
 ~~~~~~~~~~~~~~
