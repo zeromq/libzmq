@@ -88,6 +88,7 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         case ZMQ_SCATTER:
         case ZMQ_DGRAM:
         case ZMQ_PEER:
+        case ZMQ_CHANNEL:
 #ifdef ZMQ_BUILD_DRAFT_API
             if (options_.can_send_hello_msg && options_.hello_msg.size () > 0)
                 s = new (std::nothrow) hello_msg_session_t (

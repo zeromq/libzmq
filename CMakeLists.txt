@@ -844,6 +844,7 @@ endif()
 set(cxx-sources
     precompiled.cpp
     address.cpp
+    channel.cpp
     client.cpp
     clock.cpp
     ctx.cpp
@@ -947,6 +948,7 @@ set(cxx-sources
     atomic_counter.hpp
     atomic_ptr.hpp
     blob.hpp
+    channel.hpp
     client.hpp
     clock.hpp
     command.hpp

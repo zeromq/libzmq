@@ -105,6 +105,7 @@
 #include "scatter.hpp"
 #include "dgram.hpp"
 #include "peer.hpp"
+#include "channel.hpp"
 
 void zmq::socket_base_t::inprocs_t::emplace (const char *endpoint_uri_,
                                              pipe_t *pipe_)
@@ -216,6 +217,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_,
             break;
         case ZMQ_PEER:
             s = new (std::nothrow) peer_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_CHANNEL:
+            s = new (std::nothrow) channel_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
