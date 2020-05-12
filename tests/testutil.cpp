@@ -233,8 +233,10 @@ void setup_test_environment (int timeout_seconds_)
     // abort test after 121 seconds
     alarm (121);
 #else
+#if !defined ZMQ_DISABLE_TEST_TIMEOUT
     // abort test after timeout_seconds_ seconds
     alarm (timeout_seconds_);
+#endif
 #endif
 #endif
 #if defined __MVS__
@@ -391,14 +393,11 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         }
 
         struct addrinfo *in, hint;
+        memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = SOCK_STREAM;
         hint.ai_protocol = protocol_;
-        hint.ai_addrlen = 0;
-        hint.ai_canonname = NULL;
-        hint.ai_addr = NULL;
-        hint.ai_next = NULL;
 
         TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
           getaddrinfo (address, port, &hint, &in));
@@ -444,14 +443,11 @@ fd_t bind_socket_resolve_port (const char *address_,
         int flag = 1;
 #endif
         struct addrinfo *in, hint;
+        memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
         hint.ai_protocol = protocol_;
-        hint.ai_addrlen = 0;
-        hint.ai_canonname = NULL;
-        hint.ai_addr = NULL;
-        hint.ai_next = NULL;
 
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
@@ -521,4 +517,52 @@ bool streq (const char *lhs_, const char *rhs_)
 bool strneq (const char *lhs_, const char *rhs_)
 {
     return strcmp (lhs_, rhs_) != 0;
+}
+
+int fuzzer_corpus_encode (const char *filename,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases)
+{
+    TEST_ASSERT_NOT_NULL (filename);
+    TEST_ASSERT_NOT_NULL (data);
+    TEST_ASSERT_NOT_NULL (len);
+    FILE *f = fopen (filename, "r");
+    if (!f)
+        return -1;
+    fseek (f, 0, SEEK_END);
+    size_t text_len = ftell (f) + 1;
+    fseek (f, 0, SEEK_SET);
+    char *buf = (char *) malloc (text_len);
+    TEST_ASSERT_NOT_NULL (buf);
+
+    *len = NULL;
+    *data = NULL;
+    *num_cases = 0;
+    //  Convert to binary format, corpus is stored in ascii (hex)
+    while (fgets (buf, (int) text_len, f)) {
+        *len = (size_t *) realloc (*len, (*num_cases + 1) * sizeof (size_t));
+        TEST_ASSERT_NOT_NULL (*len);
+        *(*len + *num_cases) = strlen (buf) / 2;
+        *data =
+          (uint8_t **) realloc (*data, (*num_cases + 1) * sizeof (uint8_t *));
+        TEST_ASSERT_NOT_NULL (*data);
+        *(*data + *num_cases) =
+          (uint8_t *) malloc (*(*len + *num_cases) * sizeof (uint8_t));
+        TEST_ASSERT_NOT_NULL (*(*data + *num_cases));
+
+        const char *pos = buf;
+        for (size_t count = 0; count < *(*len + *num_cases);
+             ++count, pos += 2) {
+            char tmp[3] = {pos[0], pos[1], 0};
+            *(*(*data + *num_cases) + count) = (uint8_t) strtol (tmp, NULL, 16);
+        }
+        (*num_cases)++;
+    }
+
+
+    free (buf);
+    fclose (f);
+
+    return 0;
 }

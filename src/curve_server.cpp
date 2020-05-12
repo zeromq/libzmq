@@ -41,12 +41,16 @@
 
 zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
-                                     const options_t &options_) :
+                                     const options_t &options_,
+                                     const bool downgrade_sub_) :
     mechanism_base_t (session_, options_),
     zap_client_common_handshake_t (
       session_, peer_address_, options_, sending_ready),
-    curve_mechanism_base_t (
-      session_, options_, "CurveZMQMESSAGES", "CurveZMQMESSAGEC")
+    curve_mechanism_base_t (session_,
+                            options_,
+                            "CurveZMQMESSAGES",
+                            "CurveZMQMESSAGEC",
+                            downgrade_sub_)
 {
     int rc;
     //  Fetch our secret key from socket options

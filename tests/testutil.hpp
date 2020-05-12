@@ -44,6 +44,7 @@
 #else
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdlib.h>
 #endif
 
 //  This defines the settle time used in tests; raise this if we
@@ -226,5 +227,10 @@ fd_t bind_socket_resolve_port (const char *address_,
                                char *my_endpoint_,
                                const int af_ = AF_INET,
                                const int protocol_ = IPPROTO_TCP);
+
+int fuzzer_corpus_encode (const char *filename,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases);
 
 #endif

@@ -36,16 +36,17 @@ void test (const char *address)
 {
     //  Create a router
     void *router = test_context_socket (ZMQ_ROUTER);
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  set router socket options
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (router, ZMQ_HELLO_MSG, "H", 1));
 
     //  bind router
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, address));
+    test_bind (router, address, my_endpoint, MAX_SOCKET_STRING);
 
     //  Create a dealer
     void *dealer = test_context_socket (ZMQ_DEALER);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, address));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, my_endpoint));
 
     // Receive the hello message
     recv_string_expect_success (dealer, "H", 0);
@@ -57,7 +58,7 @@ void test (const char *address)
 
 void test_tcp ()
 {
-    test ("tcp://127.0.0.1:5569");
+    test ("tcp://127.0.0.1:*");
 }
 
 void test_inproc ()

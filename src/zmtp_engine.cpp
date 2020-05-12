@@ -347,7 +347,7 @@ bool zmq::zmtp_engine_t::handshake_v2_0 ()
     return true;
 }
 
-bool zmq::zmtp_engine_t::handshake_v3_x ()
+bool zmq::zmtp_engine_t::handshake_v3_x (const bool downgrade_sub_)
 {
     if (_options.mechanism == ZMQ_NULL
         && memcmp (_greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0",
@@ -374,11 +374,11 @@ bool zmq::zmtp_engine_t::handshake_v3_x ()
                         "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20)
                   == 0) {
         if (_options.as_server)
-            _mechanism = new (std::nothrow)
-              curve_server_t (session (), _peer_address, _options);
+            _mechanism = new (std::nothrow) curve_server_t (
+              session (), _peer_address, _options, downgrade_sub_);
         else
-            _mechanism =
-              new (std::nothrow) curve_client_t (session (), _options);
+            _mechanism = new (std::nothrow)
+              curve_client_t (session (), _options, downgrade_sub_);
         alloc_assert (_mechanism);
     }
 #endif
@@ -418,7 +418,7 @@ bool zmq::zmtp_engine_t::handshake_v3_0 ()
       _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
     alloc_assert (_decoder);
 
-    return zmq::zmtp_engine_t::handshake_v3_x ();
+    return zmq::zmtp_engine_t::handshake_v3_x (true);
 }
 
 bool zmq::zmtp_engine_t::handshake_v3_1 ()
@@ -430,7 +430,7 @@ bool zmq::zmtp_engine_t::handshake_v3_1 ()
       _options.in_batch_size, _options.maxmsgsize, _options.zero_copy);
     alloc_assert (_decoder);
 
-    return zmq::zmtp_engine_t::handshake_v3_x ();
+    return zmq::zmtp_engine_t::handshake_v3_x (false);
 }
 
 int zmq::zmtp_engine_t::routing_id_msg (msg_t *msg_)

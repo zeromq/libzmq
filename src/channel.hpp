@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2020 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,60 +27,43 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
-#define __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
+#ifndef __ZMQ_CHANNEL_HPP_INCLUDED__
+#define __ZMQ_CHANNEL_HPP_INCLUDED__
 
-#ifdef ZMQ_HAVE_CURVE
-
-#include "curve_mechanism_base.hpp"
-#include "options.hpp"
-#include "curve_client_tools.hpp"
+#include "blob.hpp"
+#include "socket_base.hpp"
+#include "session_base.hpp"
 
 namespace zmq
 {
+class ctx_t;
 class msg_t;
-class session_base_t;
+class pipe_t;
+class io_thread_t;
 
-class curve_client_t ZMQ_FINAL : public curve_mechanism_base_t
+class channel_t ZMQ_FINAL : public socket_base_t
 {
   public:
-    curve_client_t (session_base_t *session_,
-                    const options_t &options_,
-                    const bool downgrade_sub_);
-    ~curve_client_t () ZMQ_FINAL;
+    channel_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+    ~channel_t ();
 
-    // mechanism implementation
-    int next_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int process_handshake_command (msg_t *msg_) ZMQ_FINAL;
-    int encode (msg_t *msg_) ZMQ_FINAL;
-    int decode (msg_t *msg_) ZMQ_FINAL;
-    status_t status () const ZMQ_FINAL;
+    //  Overrides of functions from socket_base_t.
+    void xattach_pipe (zmq::pipe_t *pipe_,
+                       bool subscribe_to_all_,
+                       bool locally_initiated_);
+    int xsend (zmq::msg_t *msg_);
+    int xrecv (zmq::msg_t *msg_);
+    bool xhas_in ();
+    bool xhas_out ();
+    void xread_activated (zmq::pipe_t *pipe_);
+    void xwrite_activated (zmq::pipe_t *pipe_);
+    void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
-    enum state_t
-    {
-        send_hello,
-        expect_welcome,
-        send_initiate,
-        expect_ready,
-        error_received,
-        connected
-    };
+    zmq::pipe_t *_pipe;
 
-    //  Current FSM state
-    state_t _state;
-
-    //  CURVE protocol tools
-    curve_client_tools_t _tools;
-
-    int produce_hello (msg_t *msg_);
-    int process_welcome (const uint8_t *msg_data_, size_t msg_size_);
-    int produce_initiate (msg_t *msg_);
-    int process_ready (const uint8_t *msg_data_, size_t msg_size_);
-    int process_error (const uint8_t *msg_data_, size_t msg_size_);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (channel_t)
 };
 }
-
-#endif
 
 #endif

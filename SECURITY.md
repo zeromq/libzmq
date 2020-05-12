@@ -6,6 +6,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 4.3.x   | :white_check_mark: |
 | 4.2.x   | :white_check_mark: |
 | 4.1.x   | :white_check_mark: |
 | 4.0.x   | :white_check_mark: |
@@ -20,6 +21,29 @@ please send a GPG encrypted email with the details to the maintainers:
 | ---------- | --------------- | --------------- |
 | Doron Somech | somdoron@gmail.com | E0B0 E3D1 55DD 6ED6 71FB  2B79 D0B9 CC44 867D 8F3D |
 | Luca Boccassi | luca.boccassi@gmail.com | A9EA 9081 724F FAE0 484C 35A1 A81C EA22 BC8C 7E2E |
+
+## Internal severity classification
+
+We will attempt to follow this general policy when assigning a severity to
+security issues. These are guidelines more than rules, and as such end
+results might vary.
+
+
+| Severity | Definition |
+| -------- | ---------- |
+| CRITICAL | endpoints using STRONG authentication are SILENTLY affected |
+| HIGH | endpoints using STRONG authentication are VISIBLY affected |
+| MODERATE | endpoints NOT using STRONG authentication are SILENTLY affected |
+| LOW | endpoints NOT using STRONG authentication are VISIBLY affected |
+
+STRONG authentication means transports that use cryptography, for example CURVE
+and TLS.
+
+VISIBLY affected means that platform owners are likely to immediately notice
+misbehaviours, like crashes or loss of connectivity for legitimate peers.
+
+SILENTLY affected means that without close inspection, platform owners are
+unlikely to notice misbehaviours, like remote code executions or data exfiltration.
 
 ### Public keys
 <details>

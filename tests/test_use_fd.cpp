@@ -197,7 +197,7 @@ void test_client_server_ipc ()
 
 int main ()
 {
-    setup_test_environment (0);
+    setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_req_rep_tcp);

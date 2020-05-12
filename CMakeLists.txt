@@ -68,15 +68,20 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 endif()
 
 if (NOT MSVC)
-  check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
-  if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  if(NOT CMAKE_CXX_FLAGS MATCHES "-std=")
+    # use C++11 by default if supported
+    check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
+    if(COMPILER_SUPPORTS_CXX11)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    endif()
   endif()
-  check_c_compiler_flag("-std=gnu11" COMPILER_SUPPORTS_C11)
-  if(COMPILER_SUPPORTS_C11)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
-  else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+  if(NOT CMAKE_C_FLAGS MATCHES "-std=")
+    check_c_compiler_flag("-std=gnu11" COMPILER_SUPPORTS_C11)
+    if(COMPILER_SUPPORTS_C11)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+    else()
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+    endif()
   endif()
 
   # clang 6 has a warning that does not make sense on multi-platform code
@@ -848,6 +853,7 @@ set(cxx-sources
     address.cpp
     allocator_base.cpp
     allocator_global_pool.cpp
+    channel.cpp
     client.cpp
     clock.cpp
     ctx.cpp
@@ -953,6 +959,7 @@ set(cxx-sources
     atomic_counter.hpp
     atomic_ptr.hpp
     blob.hpp
+    channel.hpp
     client.hpp
     clock.hpp
     command.hpp
