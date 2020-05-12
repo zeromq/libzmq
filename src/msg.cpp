@@ -209,7 +209,7 @@ int zmq::msg_t::init_data (void *data_,
 int zmq::msg_t::init_from_allocator (size_t size_,
                                      zmq::allocator_base_t *alloc_)
 {
-    zmq_assert (alloc_ != NULL && size_ != 0);
+    zmq_assert (alloc_ != NULL);
 
     if (size_ <= max_vsm_size) {
         // in case we can fit the message data inside the msg_t itself, this option will always

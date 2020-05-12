@@ -94,6 +94,11 @@ void zmq::allocator_global_pool_t::expand_block (size_t bl)
 
 void *zmq::allocator_global_pool_t::allocate (size_t len)
 {
+    if(len == 0U)
+    {
+        return nullptr;
+    }
+
     size_t bl = BytesToMsgBlock (len);
 
     if (m_storage.size () <= bl) {
@@ -112,11 +117,14 @@ void *zmq::allocator_global_pool_t::allocate (size_t len)
 
 void zmq::allocator_global_pool_t::deallocate (void *data_)
 {
-    zmq::msg_t::content_t *msg_content = (zmq::msg_t::content_t *) data_;
-    size_t bl = BytesToMsgBlock (msg_content->size);
+    if(data_ != nullptr)
+    {
+        zmq::msg_t::content_t *msg_content = (zmq::msg_t::content_t *) data_;
+        size_t bl = BytesToMsgBlock (msg_content->size);
 
-    // produce a new free msg:
-    m_free_list[bl].enqueue ((uint8_t *) msg_content);
+        // produce a new free msg:
+        m_free_list[bl].enqueue ((uint8_t *) msg_content);
+    }
 }
 
 size_t zmq::allocator_global_pool_t::size () const

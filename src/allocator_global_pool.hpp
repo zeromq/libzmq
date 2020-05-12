@@ -34,7 +34,7 @@
 #include "allocator_base.hpp"
 #include <vector>
 #include "msg.hpp"
-#include "concurrentqueue.h"
+#include "../external/mpmcqueue/concurrentqueue.h"
 #include "mutex.hpp"
 
 #define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE (256)

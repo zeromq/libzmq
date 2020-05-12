@@ -956,7 +956,6 @@ set(cxx-sources
     client.hpp
     clock.hpp
     command.hpp
-    concurrentqueue.h
     condition_variable.hpp
     config.hpp
     ctx.hpp
@@ -1090,6 +1089,8 @@ set(cxx-sources
     yqueue.hpp
     zap_client.hpp
     zmtp_engine.hpp)
+
+list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/mpmcqueue/concurrentqueue.h)
 
 if(MINGW)
   # Generate the right type when using -m32 or -m64

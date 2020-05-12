@@ -35,7 +35,7 @@ src_libzmq_la_SOURCES = \
 	src/clock.cpp \
 	src/clock.hpp \
 	src/command.hpp \
-	src/concurrentqueue.h \
+	src/external/mpmpcqueue/concurrentqueue.h \
 	src/condition_variable.hpp \
 	src/config.hpp \
 	src/ctx.cpp \
