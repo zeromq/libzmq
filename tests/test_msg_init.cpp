@@ -74,9 +74,10 @@ void test_msg_init_buffer ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
 }
 
-void test_msg_init_allocator()
+void test_msg_init_allocator ()
 {
-#if defined(ZMQ_BUILD_DRAFT_API) && (defined __cplusplus && __cplusplus >= 201103L)
+#if defined(ZMQ_BUILD_DRAFT_API)                                               \
+  && (defined __cplusplus && __cplusplus >= 201103L)
     const char *data = "foobar";
     zmq_msg_t msg;
     void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
