@@ -100,7 +100,7 @@ void test_msg_init_allocator ()
     memcpy (zmq_msg_data (&msg3), data3, 1024);
     TEST_ASSERT_EQUAL_MEMORY (data3, zmq_msg_data (&msg3), 1024);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg3));
-
+    free (data3);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_allocator_destroy (&allocator));
 #else
     TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
