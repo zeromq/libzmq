@@ -297,11 +297,6 @@ void test_missing_subscriptions ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub1, my_endpoint_backend));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic1, 1));
 
-    // second subscriber
-    void *sub2 = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, my_endpoint_backend));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1));
-
     // wait
     msleep (SETTLE_TIME);
 
@@ -311,6 +306,14 @@ void test_missing_subscriptions ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic1, 1));
     send_array_expect_success (xsub_proxy, subscription1, 0);
+
+    // second subscriber
+    void *sub2 = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, my_endpoint_backend));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1));
+
+    // wait
+    msleep (SETTLE_TIME);
 
     const uint8_t subscription2[] = {1, static_cast<uint8_t> (topic2[0])};
     recv_array_expect_success (xpub_proxy, subscription2, ZMQ_DONTWAIT);
