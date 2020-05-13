@@ -26,6 +26,8 @@ namespace zmq
             // create NORM instance, session, etc
             int init(const char* network_, bool send, bool recv);
             void shutdown();
+
+            bool has_handshake_stage () { return false; };
             
             //  i_engine interface implementation.
             //  Plug the engine to the session.

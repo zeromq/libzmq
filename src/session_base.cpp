@@ -352,7 +352,18 @@ bool zmq::session_base_t::zap_enabled ()
 void zmq::session_base_t::process_attach (i_engine *engine_)
 {
     zmq_assert (engine_ != NULL);
+    zmq_assert (!engine);
+    engine = engine_;
 
+    if (!engine_->has_handshake_stage ())
+        engine_ready ();
+
+    //  Plug in the engine.
+    engine->plug (io_thread, this);
+}
+
+void zmq::session_base_t::engine_ready ()
+{
     //  Create the pipe if it does not exist yet.
     if (!pipe && !is_terminating ()) {
         object_t *parents [2] = {this, socket};
@@ -381,11 +392,6 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
     }
-
-    //  Plug in the engine.
-    zmq_assert (!engine);
-    engine = engine_;
-    engine->plug (io_thread, this);
 }
 
 void zmq::session_base_t::engine_error (
