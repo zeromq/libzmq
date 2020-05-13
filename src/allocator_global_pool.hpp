@@ -112,7 +112,6 @@ class allocator_global_pool_t : public allocator_base_t
         return uint64_log2 (n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE);
     }
 };
-
 }
 
 #endif
