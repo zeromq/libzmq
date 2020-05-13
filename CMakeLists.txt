@@ -851,7 +851,7 @@ endif()
 set(cxx-sources
     precompiled.cpp
     address.cpp
-    allocator_base.cpp
+    allocator_default.cpp
     allocator_global_pool.cpp
     channel.cpp
     client.cpp
@@ -953,7 +953,7 @@ set(cxx-sources
     zmtp_engine.cpp
     # at least for VS, the header files must also be listed
     address.hpp
-    allocator_base.hpp
+    allocator_default.hpp
     allocator_global_pool.cpp
     array.hpp
     atomic_counter.hpp

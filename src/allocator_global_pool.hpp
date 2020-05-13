@@ -30,9 +30,9 @@
 #ifndef __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 #define __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 
-#include "allocator_base.hpp"
-#include <vector>
+#include "zmq.h"
 #include "msg.hpp"
+#include <vector>
 
 #if (defined __cplusplus && __cplusplus >= 201103L)
 #include "../external/mpmcqueue/concurrentqueue.h"
@@ -45,9 +45,27 @@
 
 namespace zmq
 {
-class allocator_global_pool_t : public allocator_base_t
+class allocator_global_pool_t
 {
   public:
+    static void *allocate_fn (void *allocator_, size_t len_)
+    {
+        return static_cast<allocator_global_pool_t *> (allocator_)
+          ->allocate (len_);
+    }
+
+    static void deallocate_fn (void *allocator_, void *data_)
+    {
+        return static_cast<allocator_global_pool_t *> (allocator_)
+          ->deallocate (data_);
+    }
+
+    static bool check_tag_fn (void *allocator_)
+    {
+        return static_cast<allocator_global_pool_t *> (allocator_)
+          ->check_tag ();
+    }
+
     allocator_global_pool_t (size_t initialMaximumBlockSize = 8192);
     ~allocator_global_pool_t ();
 
@@ -56,14 +74,17 @@ class allocator_global_pool_t : public allocator_base_t
     // TODO have a look if realloc is possible, probably not as not thread safe as messages might still be in-flight?
     void expand_block (size_t bl);
 
-    void *allocate (size_t len) final; // consumer thread: user app thread
+    void *allocate (size_t len); // consumer thread: user app thread
 
-    void
-    deallocate (void *data_) final; // producer thread: ZMQ background IO thread
+    void deallocate (void *data_); // producer thread: ZMQ background IO thread
 
     size_t size () const;
 
+    bool check_tag () const;
+
   private:
+    uint32_t _tag;
+
     typedef struct
     {
         size_t num_msgs;

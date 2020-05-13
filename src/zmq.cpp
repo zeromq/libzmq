@@ -96,7 +96,7 @@ struct iovec
 #include "timers.hpp"
 #include "ip.hpp"
 #include "address.hpp"
-#include "allocator_base.hpp"
+#include "allocator_default.hpp"
 #include "allocator_global_pool.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
@@ -222,17 +222,28 @@ int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
 
 void *zmq_msg_allocator_new (int type_)
 {
-    zmq::allocator_base_t *allocator = NULL;
+    zmq_allocator_t *allocator = new (std::nothrow) zmq_allocator_t;
+    zmq::allocator_default_t *allocator_default = NULL;
+    zmq::allocator_global_pool_t *allocator_global = NULL;
     switch (type_) {
         case ZMQ_MSG_ALLOCATOR_DEFAULT:
-            allocator = new (std::nothrow) zmq::allocator_base_t;
+            allocator_default = new (std::nothrow) zmq::allocator_default_t;
+            allocator->allocate_fn = &allocator_default->allocate_fn;
+            allocator->deallocate_fn = &allocator_default->deallocate_fn;
+            allocator->check_tag_fn = &allocator_default->check_tag_fn;
+            allocator->allocator = allocator_default;
             break;
         case ZMQ_MSG_ALLOCATOR_GLOBAL_POOL:
-            allocator = new (std::nothrow) zmq::allocator_global_pool_t;
+            allocator_global = new (std::nothrow) zmq::allocator_global_pool_t;
+            allocator->allocate_fn = &allocator_global->allocate_fn;
+            allocator->deallocate_fn = &allocator_global->deallocate_fn;
+            allocator->check_tag_fn = &allocator_global->check_tag_fn;
+            allocator->allocator = allocator_global;
         default:
             break;
     }
-    if (!allocator) {
+
+    if (!allocator || !allocator->allocator) {
         errno = ENOMEM;
         return NULL;
     }
@@ -242,9 +253,11 @@ void *zmq_msg_allocator_new (int type_)
 int zmq_msg_allocator_destroy (void **allocator_)
 {
     if (allocator_) {
-        zmq::allocator_base_t *const allocator =
-          static_cast<zmq::allocator_base_t *> (*allocator_);
-        if (allocator && allocator->check_tag ()) {
+        zmq_allocator_t *const allocator =
+          static_cast<zmq_allocator_t *> (*allocator_);
+        if (allocator && allocator->check_tag_fn (allocator->allocator)) {
+            delete allocator->allocator;
+            allocator->allocator = NULL;
             delete allocator;
             *allocator_ = NULL;
             return 0;
@@ -661,8 +674,8 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 int zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))
-      ->init_from_allocator (
-        size_, reinterpret_cast<zmq::allocator_base_t *> (allocator_));
+      ->init_from_allocator (size_,
+                             reinterpret_cast<zmq_allocator_t *> (allocator_));
 }
 
 int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_)

@@ -46,13 +46,12 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void(msg_free_fn) (void *data_, void *hint_);
+typedef void (msg_free_fn) (void *data_, void *hint_);
+struct zmq_allocator_t;
 }
 
 namespace zmq
 {
-class allocator_base_t;
-
 //  Note that this structure needs to be explicitly constructed
 //  (init functions) and destructed (close function).
 
@@ -112,7 +111,7 @@ class msg_t
                                size_t size_,
                                msg_free_fn *ffn_,
                                void *hint_);
-    int init_from_allocator (size_t size_, zmq::allocator_base_t *alloc_);
+    int init_from_allocator (size_t size_, zmq_allocator_t *alloc_);
     int init_delimiter ();
     int init_join ();
     int init_leave ();

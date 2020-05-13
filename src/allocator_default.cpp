@@ -27,32 +27,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
-#define __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
+#include <cstdlib>
 
-namespace zmq
+#include "precompiled.hpp"
+#include "allocator_default.hpp"
+
+zmq::allocator_default_t::allocator_default_t ()
 {
-class allocator_base_t
-{
-  public:
-    allocator_base_t ();
-
-    virtual ~allocator_base_t ();
-
-    // allocate() typically gets called by the consumer thread: the user app thread(s)
-    virtual void *allocate (size_t len);
-
-    // deallocate_msg() typically gets called by the producer thread: the ZMQ background IO thread(s)
-    static void deallocate_msg (void *data_, void *hint_);
-
-    virtual void deallocate (void *data_);
-
-    bool check_tag () const;
-
-  private:
-    //  Used to check whether the object is a socket.
-    uint32_t _tag;
-};
+    _tag = 0xCAFEEBEB;
 }
 
-#endif
+
+zmq::allocator_default_t::~allocator_default_t ()
+{
+    //  Mark this instance as dead
+    _tag = 0xdeadbeef;
+}
+
+void *zmq::allocator_default_t::allocate (size_t len_)
+{
+    return malloc (len_);
+}
+
+void zmq::allocator_default_t::deallocate (void *data_)
+{
+    free (data_);
+}
+
+bool zmq::allocator_default_t::check_tag () const
+{
+    return _tag == 0xCAFEEBEB;
+}

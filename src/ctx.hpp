@@ -35,7 +35,7 @@
 #include <string>
 #include <stdarg.h>
 
-//#include "allocator_base.hpp"
+//#include "allocator_default.hpp"
 #include "mailbox.hpp"
 #include "array.hpp"
 #include "config.hpp"

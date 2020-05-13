@@ -39,7 +39,7 @@
 #include "likely.hpp"
 #include "metadata.hpp"
 #include "err.hpp"
-#include "allocator_base.hpp"
+#include "allocator_default.hpp"
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
 //  and private representation of the message (zmq::msg_t) match.
@@ -206,8 +206,13 @@ int zmq::msg_t::init_data (void *data_,
     return 0;
 }
 
-int zmq::msg_t::init_from_allocator (size_t size_,
-                                     zmq::allocator_base_t *alloc_)
+void allocator_free (void *data_, void *hint_)
+{
+    zmq_allocator_t *allocator = reinterpret_cast<zmq_allocator_t *> (hint_);
+    allocator->deallocate_fn (allocator->allocator, data_);
+}
+
+int zmq::msg_t::init_from_allocator (size_t size_, zmq_allocator_t *alloc_)
 {
     zmq_assert (alloc_ != NULL);
 
@@ -228,7 +233,7 @@ int zmq::msg_t::init_from_allocator (size_t size_,
         _u.lmsg.group.sgroup.group[0] = '\0';
         _u.lmsg.routing_id = 0;
         _u.lmsg.content = reinterpret_cast<content_t *> (
-          alloc_->allocate (size_ + sizeof (content_t)));
+          alloc_->allocate_fn (alloc_->allocator, size_ + sizeof (content_t)));
 
         if (!_u.lmsg.content) {
             errno = ENOMEM;
@@ -237,7 +242,8 @@ int zmq::msg_t::init_from_allocator (size_t size_,
 
         _u.lmsg.content->data = _u.lmsg.content + 1;
         _u.lmsg.content->size = size_;
-        _u.lmsg.content->ffn = (zmq_free_fn *) alloc_->deallocate_msg;
+        _u.lmsg.content->ffn =
+          reinterpret_cast<zmq_free_fn *> (&allocator_free);
         _u.lmsg.content->hint = alloc_;
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }

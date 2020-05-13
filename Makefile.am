@@ -23,8 +23,8 @@ src_libzmq_la_SOURCES = \
 	external/mpmcqueue/concurrentqueue.h \
 	src/address.cpp \
 	src/address.hpp \
-	src/allocator_base.cpp \
-	src/allocator_base.hpp \
+	src/allocator_default.cpp \
+	src/allocator_default.hpp \
 	src/allocator_global_pool.cpp \
 	src/allocator_global_pool.hpp \
 	src/array.hpp \

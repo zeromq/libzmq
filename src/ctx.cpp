@@ -47,7 +47,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "random.hpp"
-#include "allocator_base.hpp"
+#include "allocator_default.hpp"
 
 #ifdef ZMQ_HAVE_VMCI
 #include <vmci_sockets.h>

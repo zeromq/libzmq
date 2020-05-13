@@ -36,6 +36,7 @@
 zmq::allocator_global_pool_t::allocator_global_pool_t (
   size_t initialMaximumBlockSize)
 {
+    _tag = 0xCAFEEBEC;
     allocate_block (BytesToMsgBlock (initialMaximumBlockSize));
 }
 
@@ -48,6 +49,12 @@ zmq::allocator_global_pool_t::~allocator_global_pool_t ()
             _storage[i].raw_data[j] = NULL;
         }
     }
+    _tag = 0xdeadbeef;
+}
+
+bool zmq::allocator_global_pool_t::check_tag () const
+{
+    return _tag == 0xCAFEEBEC;
 }
 
 void zmq::allocator_global_pool_t::allocate_block (size_t bl)

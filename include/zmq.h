@@ -701,7 +701,7 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
                                 void *optval_,
                                 size_t *optvallen_);
 
-/* ZMQ-provided message-pool implementations.                                 */
+// ZMQ-provided message-pool implementations.                                 */
 // default allocator using malloc/free
 #define ZMQ_MSG_ALLOCATOR_DEFAULT 0
 // using internally a SPSC queue (cannot be used with inproc maybe?) or perhaps an MPMC queue anyway
@@ -711,6 +711,20 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
 
 ZMQ_EXPORT void *zmq_msg_allocator_new (int type_);
 ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);
+
+struct zmq_allocator_t
+{
+    // Allocate a chunk of memory of size len and return the pointer
+    void *(*allocate_fn) (void *allocator, size_t len);
+
+    // Deallocate the memory chunk pointed to by data_
+    void (*deallocate_fn) (void *allocator, void *data_);
+
+    // Return true if this is an allocator and alive, otherwise false
+    bool (*check_tag_fn) (void *allocator);
+
+    void *allocator;
+};
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);

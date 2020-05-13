@@ -27,40 +27,47 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cstdlib>
+#ifndef __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
+#define __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
 
-#include "precompiled.hpp"
-#include "allocator_base.hpp"
+#include "zmq.h"
 
-zmq::allocator_base_t::allocator_base_t ()
+namespace zmq
 {
-    _tag = 0xCAFEEBEB;
+class allocator_default_t
+{
+  public:
+    allocator_default_t ();
+
+    ~allocator_default_t ();
+
+    static void *allocate_fn (void *allocator_, size_t len_)
+    {
+        return static_cast<allocator_default_t *> (allocator_)->allocate (len_);
+    }
+
+    static void deallocate_fn (void *allocator_, void *data_)
+    {
+        return static_cast<allocator_default_t *> (allocator_)
+          ->deallocate (data_);
+    }
+
+    static bool check_tag_fn (void *allocator_)
+    {
+        return static_cast<allocator_default_t *> (allocator_)->check_tag ();
+    }
+
+    // allocate() typically gets called by the consumer thread: the user app thread(s)
+    void *allocate (size_t len_);
+
+    void deallocate (void *data_);
+
+    bool check_tag () const;
+
+  private:
+    //  Used to check whether the object is a socket.
+    uint32_t _tag;
+};
 }
 
-
-zmq::allocator_base_t::~allocator_base_t ()
-{
-    //  Mark this instance as dead
-    _tag = 0xdeadbeef;
-}
-
-void *zmq::allocator_base_t::allocate (size_t len)
-{
-    return malloc (len);
-}
-
-void zmq::allocator_base_t::deallocate_msg (void *data_, void *hint_)
-{
-    allocator_base_t *alloc = reinterpret_cast<allocator_base_t *> (hint_);
-    alloc->deallocate (data_);
-}
-
-void zmq::allocator_base_t::deallocate (void *data_)
-{
-    free (data_);
-}
-
-bool zmq::allocator_base_t::check_tag () const
-{
-    return _tag == 0xCAFEEBEB;
-}
+#endif
