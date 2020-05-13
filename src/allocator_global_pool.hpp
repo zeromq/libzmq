@@ -72,7 +72,7 @@ class allocator_global_pool_t : public allocator_base_t
     } msg_block_t;
 
     std::vector<msg_block_t> _storage;
-#if (defined __cplusplus && __cplusplus >= 201103L && false)
+#if (defined __cplusplus && __cplusplus >= 201103L)
     std::vector<moodycamel::ConcurrentQueue<uint8_t *> > _free_list;
 #else
     std::vector<basic_concurrent_queue_t<uint8_t *> > _free_list;
