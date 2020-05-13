@@ -102,7 +102,8 @@ static std::string get_peer_address (zmq::fd_t s_)
 zmq::stream_engine_base_t::stream_engine_base_t (
   fd_t fd_,
   const options_t &options_,
-  const endpoint_uri_pair_t &endpoint_uri_pair_) :
+  const endpoint_uri_pair_t &endpoint_uri_pair_,
+  bool has_handshake_stage_) :
     _options (options_),
     _inpos (NULL),
     _insize (0),
@@ -128,7 +129,8 @@ zmq::stream_engine_base_t::stream_engine_base_t (
     _handshaking (true),
     _io_error (false),
     _session (NULL),
-    _socket (NULL)
+    _socket (NULL),
+    _has_handshake_stage (has_handshake_stage_)
 {
     const int rc = _tx_msg.init ();
     errno_assert (rc == 0);
@@ -252,6 +254,9 @@ bool zmq::stream_engine_base_t::in_event_internal ()
             //  Handshaking was successful.
             //  Switch into the normal message flow.
             _handshaking = false;
+
+            if (_mechanism == NULL && _has_handshake_stage)
+                _session->engine_ready ();
         } else
             return false;
     }
@@ -519,6 +524,9 @@ void zmq::stream_engine_base_t::mechanism_ready ()
         add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
         _has_heartbeat_timer = true;
     }
+
+    if (_has_handshake_stage)
+        _session->engine_ready ();
 
     bool flush_session = false;
 
