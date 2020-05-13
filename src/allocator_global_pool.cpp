@@ -44,7 +44,7 @@ zmq::allocator_global_pool_t::~allocator_global_pool_t ()
 {
     // deallocate all message classes
     for (size_t i = 0U; i < m_storage.size (); i++) {
-        for (size_t j = 0U; j < m_storage[i].raw_data.size (); i++) {
+        for (size_t j = 0U; j < m_storage[i].raw_data.size (); j++) {
             free (m_storage[i].raw_data[j]);
             m_storage[i].raw_data[j] = NULL;
         }
