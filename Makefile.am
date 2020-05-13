@@ -30,6 +30,7 @@ src_libzmq_la_SOURCES = \
 	src/array.hpp \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \
+	src/basic_concurrent_queue.hpp \
 	src/blob.hpp \
 	src/channel.cpp \
 	src/channel.hpp \

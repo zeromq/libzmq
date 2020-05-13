@@ -88,10 +88,9 @@ int zmq_ctx_get_ext (void *context_,
 /* ZMQ-provided message-pool implementations.                                 */
 // default allocator using malloc/free
 #define ZMQ_MSG_ALLOCATOR_DEFAULT 0
-#if (defined __cplusplus && __cplusplus >= 201103L)
 // using internally a MPMC queue
 #define ZMQ_MSG_ALLOCATOR_GLOBAL_POOL 1
-#endif
+
 void *zmq_msg_allocator_new (int type_);
 int zmq_msg_allocator_destroy (void **allocator_);
 

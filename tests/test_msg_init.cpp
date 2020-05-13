@@ -76,8 +76,7 @@ void test_msg_init_buffer ()
 
 void test_msg_init_allocator ()
 {
-#if defined(ZMQ_BUILD_DRAFT_API)                                               \
-  && (defined __cplusplus && __cplusplus >= 201103L)
+#if defined(ZMQ_BUILD_DRAFT_API)
     const char *data = "foobar";
     zmq_msg_t msg;
     void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
@@ -92,6 +91,15 @@ void test_msg_init_allocator ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg2, 0, allocator));
     TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
+
+    void *data3 = malloc (1024);
+    memset (data3, 1, 1024);
+    zmq_msg_t msg3;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg3, 1024, allocator));
+    TEST_ASSERT_EQUAL_INT (1024, zmq_msg_size (&msg3));
+    memcpy (zmq_msg_data (&msg3), data3, 1024);
+    TEST_ASSERT_EQUAL_MEMORY (data3, zmq_msg_data (&msg3), 1024);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg3));
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_allocator_destroy (&allocator));
 #else

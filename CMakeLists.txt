@@ -958,6 +958,7 @@ set(cxx-sources
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
+    basic_concurrent_queue.hpp
     blob.hpp
     channel.hpp
     client.hpp

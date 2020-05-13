@@ -29,12 +29,16 @@
 
 #ifndef __ZMQ_MEMORYPOOL_HPP_INCLUDED__
 #define __ZMQ_MEMORYPOOL_HPP_INCLUDED__
-#if (defined __cplusplus && __cplusplus >= 201103L)
 
 #include "allocator_base.hpp"
 #include <vector>
 #include "msg.hpp"
+
+#if (defined __cplusplus && __cplusplus >= 201103L)
 #include "../external/mpmcqueue/concurrentqueue.h"
+#else
+#include "basic_concurrent_queue.hpp"
+#endif
 #include "mutex.hpp"
 
 #define ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE (256)
@@ -67,8 +71,12 @@ class allocator_global_pool_t : public allocator_base_t
         std::vector<uint8_t *> raw_data;
     } msg_block_t;
 
-    std::vector<msg_block_t> m_storage;
-    std::vector<moodycamel::ConcurrentQueue<uint8_t *> > m_free_list;
+    std::vector<msg_block_t> _storage;
+#if (defined __cplusplus && __cplusplus >= 201103L && false)
+    std::vector<moodycamel::ConcurrentQueue<uint8_t *> > _free_list;
+#else
+    std::vector<basic_concurrent_queue_t<uint8_t *> > _free_list;
+#endif
     mutex_t _storage_mutex;
 
     inline size_t MsgBlockToBytes (size_t block)
@@ -107,5 +115,4 @@ class allocator_global_pool_t : public allocator_base_t
 
 }
 
-#endif
 #endif

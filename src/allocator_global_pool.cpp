@@ -26,7 +26,6 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#if (defined __cplusplus && __cplusplus >= 201103L)
 #include <cstdlib>
 
 #include "precompiled.hpp"
@@ -43,10 +42,10 @@ zmq::allocator_global_pool_t::allocator_global_pool_t (
 zmq::allocator_global_pool_t::~allocator_global_pool_t ()
 {
     // deallocate all message classes
-    for (size_t i = 0U; i < m_storage.size (); i++) {
-        for (size_t j = 0U; j < m_storage[i].raw_data.size (); j++) {
-            free (m_storage[i].raw_data[j]);
-            m_storage[i].raw_data[j] = NULL;
+    for (size_t i = 0U; i < _storage.size (); i++) {
+        for (size_t j = 0U; j < _storage[i].raw_data.size (); j++) {
+            free (_storage[i].raw_data[j]);
+            _storage[i].raw_data[j] = NULL;
         }
     }
 }
@@ -54,20 +53,20 @@ zmq::allocator_global_pool_t::~allocator_global_pool_t ()
 void zmq::allocator_global_pool_t::allocate_block (size_t bl)
 {
     _storage_mutex.lock ();
-    size_t oldSize = m_storage.size ();
+    size_t oldSize = _storage.size ();
     if (oldSize <= bl) {
-        m_storage.resize (bl + 1);
-        m_free_list.resize (bl + 1);
+        _storage.resize (bl + 1);
+        _free_list.resize (bl + 1);
         for (auto i = oldSize; i <= bl; i++) {
             size_t msg_size = MsgBlockToBytes (i);
-            m_storage[i].num_msgs =
+            _storage[i].num_msgs =
               ZMG_GLOBAL_POOL_INITIAL_BLOCK_SIZE / msg_size;
-            m_storage[i].raw_data.push_back (
-              (uint8_t *) malloc (m_storage[i].num_msgs * msg_size));
+            _storage[i].raw_data.push_back (
+              (uint8_t *) malloc (_storage[i].num_msgs * msg_size));
 
-            uint8_t *msg_memory = m_storage[i].raw_data[0];
-            for (size_t j = 0U; j < m_storage[i].num_msgs; j++) {
-                m_free_list[i].enqueue (msg_memory);
+            uint8_t *msg_memory = _storage[i].raw_data[0];
+            for (size_t j = 0U; j < _storage[i].num_msgs; j++) {
+                _free_list[i].enqueue (msg_memory);
                 msg_memory += msg_size;
             }
         }
@@ -79,15 +78,15 @@ void zmq::allocator_global_pool_t::expand_block (size_t bl)
 {
     size_t msg_size = MsgBlockToBytes (bl);
     _storage_mutex.lock ();
-    size_t messagesToAdd = m_storage[bl].num_msgs;
-    m_storage[bl].num_msgs += messagesToAdd;
-    m_storage[bl].raw_data.push_back (
+    size_t messagesToAdd = _storage[bl].num_msgs;
+    _storage[bl].num_msgs += messagesToAdd;
+    _storage[bl].raw_data.push_back (
       (uint8_t *) malloc (messagesToAdd * msg_size));
 
-    uint8_t *msg_memory = m_storage[bl].raw_data.back ();
+    uint8_t *msg_memory = _storage[bl].raw_data.back ();
     _storage_mutex.unlock ();
     for (size_t j = 0; j < messagesToAdd; j++) {
-        m_free_list[bl].enqueue (msg_memory);
+        _free_list[bl].enqueue (msg_memory);
         msg_memory += msg_size;
     }
 }
@@ -100,13 +99,13 @@ void *zmq::allocator_global_pool_t::allocate (size_t len)
 
     size_t bl = BytesToMsgBlock (len);
 
-    if (m_storage.size () <= bl) {
+    if (_storage.size () <= bl) {
         allocate_block (bl);
     }
 
     // consume 1 block from the list of free msg
     uint8_t *next_avail = nullptr;
-    while (!m_free_list[bl].try_dequeue (next_avail)) {
+    while (!_free_list[bl].try_dequeue (next_avail)) {
         expand_block (bl);
     }
 
@@ -121,15 +120,14 @@ void zmq::allocator_global_pool_t::deallocate (void *data_)
         size_t bl = BytesToMsgBlock (msg_content->size);
 
         // produce a new free msg:
-        m_free_list[bl].enqueue ((uint8_t *) msg_content);
+        _free_list[bl].enqueue ((uint8_t *) msg_content);
     }
 }
 
 size_t zmq::allocator_global_pool_t::size () const
 {
     size_t acc = 0U;
-    for (size_t i = 0U; i < m_free_list.size (); i++)
-        acc += m_free_list[i].size_approx ();
+    for (size_t i = 0U; i < _free_list.size (); i++)
+        acc += _free_list[i].size_approx ();
     return acc;
 }
-#endif

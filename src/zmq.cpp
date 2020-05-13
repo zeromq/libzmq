@@ -227,10 +227,8 @@ void *zmq_msg_allocator_new (int type_)
         case ZMQ_MSG_ALLOCATOR_DEFAULT:
             allocator = new (std::nothrow) zmq::allocator_base_t;
             break;
-#ifdef ZMQ_MSG_ALLOCATOR_GLOBAL_POOL
         case ZMQ_MSG_ALLOCATOR_GLOBAL_POOL:
             allocator = new (std::nothrow) zmq::allocator_global_pool_t;
-#endif
         default:
             break;
     }
