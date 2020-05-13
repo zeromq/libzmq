@@ -92,6 +92,8 @@ void test_msg_init_allocator ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg2, 0, allocator));
     TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_allocator_destroy (&allocator));
 #else
     TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
 #endif
