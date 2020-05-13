@@ -54,7 +54,8 @@
 #include "wire.hpp"
 
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, 
-                                       const std::string &endpoint_) :
+                                       const std::string &endpoint_,
+                                       bool has_handshake_stage_) :
     s (fd_),
     inpos (NULL),
     insize (0),
@@ -66,6 +67,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     greeting_size (v2_greeting_size),
     greeting_bytes_read (0),
     session (NULL),
+    _has_handshake_stage (has_handshake_stage_),
     options (options_),
     endpoint (endpoint_),
     plugged (false),
@@ -192,9 +194,12 @@ void zmq::stream_engine_t::in_event ()
     assert (!io_error);
 
     //  If still handshaking, receive and process the greeting message.
-    if (unlikely (handshaking))
+    if (unlikely (handshaking)) {
         if (!handshake ())
             return;
+        else if (mechanism == NULL && _has_handshake_stage)
+            session->engine_ready ();
+    }
 
     zmq_assert (decoder);
 
@@ -667,6 +672,9 @@ void zmq::stream_engine_t::zap_msg_available ()
 
 void zmq::stream_engine_t::mechanism_ready ()
 {
+    if (_has_handshake_stage)
+        session->engine_ready ();
+
     if (options.recv_identity) {
         msg_t identity;
         mechanism->peer_identity (&identity);

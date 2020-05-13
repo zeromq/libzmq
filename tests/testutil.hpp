@@ -140,8 +140,12 @@ expect_bounce_fail (void *server, void *client)
 
     //  Send message from server to client to test other direction
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
+    if (rc == -1 && zmq_errno () == EAGAIN)
+        return;
     assert (rc == 32);
     rc = zmq_send (server, content, 32, 0);
+    if (rc == -1 && zmq_errno () == EAGAIN)
+        return;
     assert (rc == 32);
 
     //  Receive message at client side (should not succeed)

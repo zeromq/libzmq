@@ -56,6 +56,7 @@ namespace zmq
         virtual void reset ();
         void flush ();
         void detach ();
+        void engine_ready ();
 
         //  i_pipe_events interface implementation.
         void read_activated (zmq::pipe_t *pipe_);

@@ -53,6 +53,7 @@ namespace zmq
         int init (bool udp_encapsulation_, const char *network_);
 
         //  i_engine interface implementation.
+        bool has_handshake_stage () { return false; };
         void plug (zmq::io_thread_t *io_thread_,
             zmq::session_base_t *session_);
         void terminate ();
