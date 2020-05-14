@@ -115,7 +115,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const endpoint_uri_pair_t &endpoint_uri_pair_,
                                const ws_address_t &address_,
                                bool client_) :
-    stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
+    stream_engine_base_t (fd_, options_, endpoint_uri_pair_, true),
     _client (client_),
     _address (address_),
     _client_handshake_state (client_handshake_initial),

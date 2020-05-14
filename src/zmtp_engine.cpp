@@ -67,7 +67,7 @@ zmq::zmtp_engine_t::zmtp_engine_t (
   fd_t fd_,
   const options_t &options_,
   const endpoint_uri_pair_t &endpoint_uri_pair_) :
-    stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
+    stream_engine_base_t (fd_, options_, endpoint_uri_pair_, true),
     _greeting_size (v2_greeting_size),
     _greeting_bytes_read (0),
     _subscription_required (false),

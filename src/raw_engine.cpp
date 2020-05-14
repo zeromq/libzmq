@@ -67,7 +67,7 @@ zmq::raw_engine_t::raw_engine_t (
   fd_t fd_,
   const options_t &options_,
   const endpoint_uri_pair_t &endpoint_uri_pair_) :
-    stream_engine_base_t (fd_, options_, endpoint_uri_pair_)
+    stream_engine_base_t (fd_, options_, endpoint_uri_pair_, false)
 {
 }
 
