@@ -49,6 +49,11 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     bind_loopback_ipv4 (server, my_endpoint, sizeof (my_endpoint));
     fd_t client = connect_socket (my_endpoint);
 
+    void *client_good = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client_good, ZMQ_SUBSCRIBE, "", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client_good, my_endpoint));
+
     //  If there is not enough data for a full greeting, just send what we can
     //  Otherwise send greeting first, as expected by the protocol
     uint8_t buf[64];
@@ -64,8 +69,11 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
         sent = send (client, (const char *) data, size, MSG_NOSIGNAL);
     msleep (250);
 
-    close (client);
+    TEST_ASSERT_EQUAL_INT (6, zmq_send_const (server, "HELLO", 6, 0));
+    TEST_ASSERT_EQUAL_INT (6, zmq_recv (client_good, buf, 6, 0));
 
+    close (client);
+    test_context_socket_close_zero_linger (client_good);
     test_context_socket_close_zero_linger (server);
     teardown_test_context ();
 
