@@ -506,6 +506,7 @@ void zmq::pipe_t::process_delimiter ()
     if (_state == active)
         _state = delimiter_received;
     else {
+        rollback ();
         _out_pipe = NULL;
         send_pipe_term_ack (_peer);
         _state = term_ack_sent;
