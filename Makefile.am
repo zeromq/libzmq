@@ -1221,6 +1221,12 @@ install-data-hook:
 		mv $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
 		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer_seed_corpus.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
 		done < $(DESTDIR)/$(FUZZINGdir)/test_connect_null_fuzzer.txt)
+	$(shell while read -r test; do \
+		echo -n $$test | perl -e 'print pack "H*", <STDIN>' > $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.seed; \
+		export fn=$$(cat $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.seed | sha1sum | awk '{print $$1}'); \
+		mv $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.seed $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		zip -j -m -g --quiet $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.zip $(DESTDIR)/$(FUZZINGdir)/$$fn; \
+		done < $(DESTDIR)/$(FUZZINGdir)/test_bind_fuzzer.txt)
 	rm -f $(DESTDIR)/$(FUZZINGdir)/*.txt
 else
 test_apps += tests/test_bind_null_fuzzer \
