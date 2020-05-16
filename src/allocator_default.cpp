@@ -44,12 +44,12 @@ zmq::allocator_default_t::~allocator_default_t ()
 
 void *zmq::allocator_default_t::allocate (size_t len_)
 {
-    return malloc (len_);
+    return operator new (len_, std::nothrow);
 }
 
 void zmq::allocator_default_t::deallocate (void *data_)
 {
-    free (data_);
+    operator delete (data_);
 }
 
 bool zmq::allocator_default_t::check_tag () const
