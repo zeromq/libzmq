@@ -597,7 +597,7 @@ ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p_);
 
 #define ZMQ_HAVE_TIMERS
 
-typedef void (zmq_timer_fn) (int timer_id, void *arg);
+typedef void(zmq_timer_fn) (int timer_id, void *arg);
 
 ZMQ_EXPORT void *zmq_timers_new (void);
 ZMQ_EXPORT int zmq_timers_destroy (void **timers_p);
@@ -634,7 +634,7 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 /*  Sleeps for specified number of seconds.                                   */
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
-typedef void (zmq_thread_fn) (void *);
+typedef void(zmq_thread_fn) (void *);
 
 /* Start a thread. Returns a handle to the thread.                            */
 ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn *func_, void *arg_);
@@ -687,7 +687,6 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
-//#define ZMQ_MSG_ALLOCATOR 11
 
 /*  DRAFT Context methods.                                                    */
 ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,
@@ -715,13 +714,13 @@ zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_);
 struct zmq_allocator_t
 {
     // Allocate a chunk of memory of size len and return the pointer
-    void *(*allocate_fn) (void *allocator, size_t len);
+    void*(*allocate_fn) (void *allocator, size_t len);
 
     // Deallocate the memory chunk pointed to by data_
-    void (*deallocate_fn) (void *allocator, void *data_);
+    void(*deallocate_fn) (void *allocator, void *data_);
 
     // Return true if this is an allocator and alive, otherwise false
-    bool (*check_tag_fn) (void *allocator);
+    bool(*check_tag_fn) (void *allocator);
 
     void *allocator;
 };
