@@ -252,6 +252,10 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     if (pos != std::string::npos) {
         std::string if_str = addr.substr (pos + 1);
+        if (if_str.empty ()) {
+            errno = EINVAL;
+            return -1;
+        }
         addr = addr.substr (0, pos);
 
         if (isalpha (if_str.at (0))) {
