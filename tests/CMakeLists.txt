@@ -156,7 +156,11 @@ if(ENABLE_DRAFTS)
     test_xpub_manual_last_value
     test_peer
     test_reconnect_options
-    test_msg_init)
+    test_msg_init
+    test_channel
+    test_hello_msg
+    test_disconnect_msg
+  )
 endif()
 
 if(ZMQ_HAVE_WS)

@@ -26,6 +26,8 @@ src_libzmq_la_SOURCES = \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \
 	src/blob.hpp \
+	src/channel.cpp \
+	src/channel.hpp \
 	src/client.cpp \
 	src/client.hpp \
 	src/clock.cpp \
@@ -736,10 +738,6 @@ tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
 tests_test_getsockopt_memset_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_getsockopt_memset_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
-tests_test_many_sockets_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_many_sockets_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_diffserv_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
@@ -998,7 +996,6 @@ endif
 
 if ON_LINUX
 test_apps += tests/test_abstract_ipc \
-	tests/test_many_sockets \
 	tests/test_socks
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
@@ -1008,6 +1005,15 @@ tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_socks_SOURCES = tests/test_socks.cpp
 tests_test_socks_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+# TODO: enable when https://github.com/zeromq/libzmq/issues/3898 is fixed
+if !ENABLE_ASAN
+test_apps += tests/test_many_sockets
+
+tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
+tests_test_many_sockets_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_many_sockets_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 endif
 
@@ -1043,7 +1049,8 @@ test_apps += tests/test_poller \
 	tests/test_reconnect_options \
 	tests/test_msg_init \
 	tests/test_hello_msg \
-	tests/test_disconnect_msg
+	tests/test_disconnect_msg \
+	tests/test_channel
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1104,6 +1111,10 @@ tests_test_hello_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_disconnect_msg_SOURCES = tests/test_disconnect_msg.cpp
 tests_test_disconnect_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_disconnect_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_channel_SOURCES = tests/test_channel.cpp
+tests_test_channel_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_channel_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
 if FUZZING_ENGINE_LIB

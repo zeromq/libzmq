@@ -25,14 +25,17 @@ function print_abi_api_breakages() {
    exit 1
 }
 
+git fetch --unshallow
+git fetch --all --tags
+LATEST_VERSION=$(git describe --abbrev=0 --tags)
+
 ./autogen.sh
 ./configure "${CONFIG_OPTS[@]}"
 make VERBOSE=1 -j5
 abi-dumper src/.libs/libzmq.so -o ${BUILD_PREFIX}/libzmq.head.dump -lver HEAD
 
-git clone --depth 1 -b latest_release https://github.com/zeromq/libzmq.git latest_release
+git clone --depth 1 -b ${LATEST_VERSION} https://github.com/zeromq/libzmq.git latest_release
 cd latest_release
-LATEST_VERSION=$(git describe --abbrev=0 --tags)
 ./autogen.sh
 ./configure "${CONFIG_OPTS[@]}"
 make VERBOSe=1 -j5

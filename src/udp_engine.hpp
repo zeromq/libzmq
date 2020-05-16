@@ -22,6 +22,8 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 
     int init (address_t *address_, bool send_, bool recv_);
 
+    bool has_handshake_stage () ZMQ_FINAL { return false; };
+
     //  i_engine interface implementation.
     //  Plug the engine to the session.
     void plug (zmq::io_thread_t *io_thread_, class session_base_t *session_);

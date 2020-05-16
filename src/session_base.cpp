@@ -88,6 +88,7 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         case ZMQ_SCATTER:
         case ZMQ_DGRAM:
         case ZMQ_PEER:
+        case ZMQ_CHANNEL:
 #ifdef ZMQ_BUILD_DRAFT_API
             if (options_.can_send_hello_msg && options_.hello_msg.size () > 0)
                 s = new (std::nothrow) hello_msg_session_t (
@@ -406,7 +407,18 @@ bool zmq::session_base_t::zap_enabled () const
 void zmq::session_base_t::process_attach (i_engine *engine_)
 {
     zmq_assert (engine_ != NULL);
+    zmq_assert (!_engine);
+    _engine = engine_;
 
+    if (!engine_->has_handshake_stage ())
+        engine_ready ();
+
+    //  Plug in the engine.
+    _engine->plug (_io_thread, this);
+}
+
+void zmq::session_base_t::engine_ready ()
+{
     //  Create the pipe if it does not exist yet.
     if (!_pipe && !is_terminating ()) {
         object_t *parents[2] = {this, _socket};
@@ -429,17 +441,12 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 
         //  The endpoints strings are not set on bind, set them here so that
         //  events can use them.
-        pipes[0]->set_endpoint_pair (engine_->get_endpoint ());
-        pipes[1]->set_endpoint_pair (engine_->get_endpoint ());
+        pipes[0]->set_endpoint_pair (_engine->get_endpoint ());
+        pipes[1]->set_endpoint_pair (_engine->get_endpoint ());
 
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (_socket, pipes[1]);
     }
-
-    //  Plug in the engine.
-    zmq_assert (!_engine);
-    _engine = engine_;
-    _engine->plug (_io_thread, this);
 }
 
 void zmq::session_base_t::engine_error (bool handshaked_,
