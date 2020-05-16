@@ -214,9 +214,9 @@ endif()
 # Select curve encryption library, defaults to tweetnacl To use libsodium instead, use --with-libsodium(must be
 # installed) To disable curve, use --disable-curve
 
-option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" OFF)
+option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" ON)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
-option(ENABLE_CURVE "Enable CURVE security" OFF)
+option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(ENABLE_CURVE)
   if(WITH_LIBSODIUM)
@@ -1228,7 +1228,7 @@ if(ZMQ_BUILD_FRAMEWORK)
     COMMENT "Perf tools")
 endif()
 
-option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" OFF)
+option(ENABLE_PRECOMPILED "Enable precompiled headers, if possible" ON)
 if(MSVC AND ENABLE_PRECOMPILED)
   # default for all sources is to use precompiled headers
   foreach(source ${sources})
