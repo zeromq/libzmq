@@ -30,8 +30,6 @@
 #ifndef __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
 #define __ZMQ_I_ALLOCATOR_HPP_INCLUDED__
 
-#include "zmq.h"
-
 namespace zmq
 {
 class allocator_default_t
