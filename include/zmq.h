@@ -267,8 +267,6 @@ typedef void (zmq_free_fn) (void *data_, void *hint_);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
-ZMQ_EXPORT int
-zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_);
 ZMQ_EXPORT int zmq_msg_init_data (
   zmq_msg_t *msg_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_);
 ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_);
@@ -711,6 +709,8 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
 
 ZMQ_EXPORT void *zmq_msg_allocator_new (int type_);
 ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);
+ZMQ_EXPORT int
+zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_);
 
 struct zmq_allocator_t
 {
