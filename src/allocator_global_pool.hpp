@@ -104,32 +104,18 @@ class allocator_global_pool_t
         return ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE * 2 ^ block;
     }
 
-    // by Todd Lehman https://stackoverflow.com/questions/994593/how-to-do-an-integer-log2-in-c
-    inline int uint64_log2 (uint64_t n)
-    {
-#define S(k)                                                                   \
-    if (n >= (UINT64_C (1) << k)) {                                            \
-        i += k;                                                                \
-        n >>= k;                                                               \
-    }
-        assert (n != 0);
-        int i = 0;
-        S (32);
-        S (16);
-        S (8);
-        S (4);
-        S (2);
-        S (1);
-        return i;
 
-#undef S
-    }
     inline size_t BytesToMsgBlock (size_t n)
     {
+        size_t block = 0;
         if (n <= ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE) {
-            return 0;
+            n = n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE;
+            while (n > 0) {
+                block++;
+                n >>= 1;
+            }
         }
-        return uint64_log2 (n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE);
+        return block;
     }
 };
 }
