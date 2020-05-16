@@ -263,7 +263,7 @@ typedef struct zmq_msg_t
 #endif
 } zmq_msg_t;
 
-typedef void (zmq_free_fn) (void *data_, void *hint_);
+typedef void(zmq_free_fn) (void *data_, void *hint_);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
