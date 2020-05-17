@@ -40,8 +40,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "macros.hpp"
 #include "generic_mtrie.hpp"
 
+namespace zmq
+{
 template <typename T>
-zmq::generic_mtrie_t<T>::generic_mtrie_t () :
+generic_mtrie_t<T>::generic_mtrie_t () :
     _pipes (0),
     _min (0),
     _count (0),
@@ -49,7 +51,7 @@ zmq::generic_mtrie_t<T>::generic_mtrie_t () :
 {
 }
 
-template <typename T> zmq::generic_mtrie_t<T>::~generic_mtrie_t ()
+template <typename T> generic_mtrie_t<T>::~generic_mtrie_t ()
 {
     LIBZMQ_DELETE (_pipes);
 
@@ -65,17 +67,15 @@ template <typename T> zmq::generic_mtrie_t<T>::~generic_mtrie_t ()
 }
 
 template <typename T>
-bool zmq::generic_mtrie_t<T>::add (prefix_t prefix_,
-                                   size_t size_,
-                                   value_t *pipe_)
+bool generic_mtrie_t<T>::add (prefix_t prefix_, size_t size_, value_t *pipe_)
 {
     return add_helper (prefix_, size_, pipe_);
 }
 
 template <typename T>
-bool zmq::generic_mtrie_t<T>::add_helper (prefix_t prefix_,
-                                          size_t size_,
-                                          value_t *pipe_)
+bool generic_mtrie_t<T>::add_helper (prefix_t prefix_,
+                                     size_t size_,
+                                     value_t *pipe_)
 {
     //  We are at the node corresponding to the prefix. We are done.
     if (!size_) {
@@ -151,12 +151,12 @@ bool zmq::generic_mtrie_t<T>::add_helper (prefix_t prefix_,
 
 template <typename T>
 template <typename Arg>
-void zmq::generic_mtrie_t<T>::rm (value_t *pipe_,
-                                  void (*func_) (prefix_t data_,
-                                                 size_t size_,
-                                                 Arg arg_),
-                                  Arg arg_,
-                                  bool call_on_uniq_)
+void generic_mtrie_t<T>::rm (value_t *pipe_,
+                             void (*func_) (prefix_t data_,
+                                            size_t size_,
+                                            Arg arg_),
+                             Arg arg_,
+                             bool call_on_uniq_)
 {
     unsigned char *buff = NULL;
     rm_helper (pipe_, &buff, 0, 0, func_, arg_, call_on_uniq_);
@@ -165,15 +165,15 @@ void zmq::generic_mtrie_t<T>::rm (value_t *pipe_,
 
 template <typename T>
 template <typename Arg>
-void zmq::generic_mtrie_t<T>::rm_helper (value_t *pipe_,
-                                         unsigned char **buff_,
-                                         size_t buffsize_,
-                                         size_t maxbuffsize_,
-                                         void (*func_) (prefix_t data_,
-                                                        size_t size_,
-                                                        Arg arg_),
-                                         Arg arg_,
-                                         bool call_on_uniq_)
+void generic_mtrie_t<T>::rm_helper (value_t *pipe_,
+                                    unsigned char **buff_,
+                                    size_t buffsize_,
+                                    size_t maxbuffsize_,
+                                    void (*func_) (prefix_t data_,
+                                                   size_t size_,
+                                                   Arg arg_),
+                                    Arg arg_,
+                                    bool call_on_uniq_)
 {
     //  Remove the subscription from this node.
     if (_pipes && _pipes->erase (pipe_)) {
@@ -223,7 +223,7 @@ void zmq::generic_mtrie_t<T>::rm_helper (value_t *pipe_,
 
 template <typename T>
 template <typename Arg>
-void zmq::generic_mtrie_t<T>::rm_helper_multiple_subnodes (
+void generic_mtrie_t<T>::rm_helper_multiple_subnodes (
   unsigned char **buff_,
   size_t buffsize_,
   size_t maxbuffsize_,
@@ -315,15 +315,15 @@ void zmq::generic_mtrie_t<T>::rm_helper_multiple_subnodes (
     }
 }
 template <typename T>
-typename zmq::generic_mtrie_t<T>::rm_result
-zmq::generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
+typename generic_mtrie_t<T>::rm_result
+generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
 {
     return rm_helper (prefix_, size_, pipe_);
 }
 
 template <typename T>
-typename zmq::generic_mtrie_t<T>::rm_result zmq::generic_mtrie_t<T>::rm_helper (
-  prefix_t prefix_, size_t size_, value_t *pipe_)
+typename generic_mtrie_t<T>::rm_result
+generic_mtrie_t<T>::rm_helper (prefix_t prefix_, size_t size_, value_t *pipe_)
 {
     if (!size_) {
         if (!_pipes)
@@ -422,10 +422,10 @@ typename zmq::generic_mtrie_t<T>::rm_result zmq::generic_mtrie_t<T>::rm_helper (
 
 template <typename T>
 template <typename Arg>
-void zmq::generic_mtrie_t<T>::match (prefix_t data_,
-                                     size_t size_,
-                                     void (*func_) (value_t *pipe_, Arg arg_),
-                                     Arg arg_)
+void generic_mtrie_t<T>::match (prefix_t data_,
+                                size_t size_,
+                                void (*func_) (value_t *pipe_, Arg arg_),
+                                Arg arg_)
 {
     for (generic_mtrie_t *current = this; current; data_++, size_--) {
         //  Signal the pipes attached to this node.
@@ -462,9 +462,10 @@ void zmq::generic_mtrie_t<T>::match (prefix_t data_,
     }
 }
 
-template <typename T> bool zmq::generic_mtrie_t<T>::is_redundant () const
+template <typename T> bool generic_mtrie_t<T>::is_redundant () const
 {
     return !_pipes && _live_nodes == 0;
+}
 }
 
 
