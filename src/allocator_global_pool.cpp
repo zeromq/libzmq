@@ -36,6 +36,7 @@ zmq::allocator_global_pool_t::allocator_global_pool_t (
   size_t initialMaximumBlockSize)
 {
     _tag = 0xCAFEEBEC;
+    _free_list_size = _free_list.size ();
     allocate_block (BytesToMsgBlock (initialMaximumBlockSize));
 }
 
@@ -59,23 +60,25 @@ bool zmq::allocator_global_pool_t::check_tag () const
 void zmq::allocator_global_pool_t::allocate_block (size_t bl)
 {
     _storage_mutex.lock ();
-    size_t oldSize = _storage.size ();
-    if (oldSize <= bl) {
+    if (_free_list_size <= bl) {
         _storage.resize (bl + 1);
         _free_list.resize (bl + 1);
-        for (auto i = oldSize; i <= bl; i++) {
+        for (auto i = _free_list_size; i <= bl; i++) {
             size_t msg_size = MsgBlockToBytes (i);
             _storage[i].num_msgs =
               ZMG_GLOBAL_POOL_INITIAL_BLOCK_SIZE / msg_size;
-            _storage[i].raw_data.push_back (
-              (uint8_t *) operator new (_storage[i].num_msgs *msg_size));
-
-            uint8_t *msg_memory = _storage[i].raw_data[0];
+            if (_storage[i].num_msgs == 0U) {
+                _storage[i].num_msgs = 1U;
+            }
+            uint8_t *msg_memory =
+              (uint8_t *) operator new (_storage[i].num_msgs *msg_size);
+            _storage[i].raw_data.push_back (msg_memory);
             for (size_t j = 0U; j < _storage[i].num_msgs; j++) {
                 _free_list[i].enqueue (msg_memory);
                 msg_memory += msg_size;
             }
         }
+        _free_list_size = _free_list.size ();
     }
     _storage_mutex.unlock ();
 }
@@ -84,12 +87,14 @@ void zmq::allocator_global_pool_t::expand_block (size_t bl)
 {
     size_t msg_size = MsgBlockToBytes (bl);
     _storage_mutex.lock ();
+    if (_free_list[bl].size_approx () > 0U) {
+        _storage_mutex.unlock ();
+        return;
+    }
     size_t messagesToAdd = _storage[bl].num_msgs;
     _storage[bl].num_msgs += messagesToAdd;
-    _storage[bl].raw_data.push_back (
-      (uint8_t *) operator new (messagesToAdd *msg_size));
-
-    uint8_t *msg_memory = _storage[bl].raw_data.back ();
+    uint8_t *msg_memory = (uint8_t *) operator new (messagesToAdd *msg_size);
+    _storage[bl].raw_data.push_back (msg_memory);
     _storage_mutex.unlock ();
     for (size_t j = 0; j < messagesToAdd; j++) {
         _free_list[bl].enqueue (msg_memory);
@@ -105,7 +110,7 @@ void *zmq::allocator_global_pool_t::allocate (size_t len)
 
     size_t bl = BytesToMsgBlock (len);
 
-    if (_storage.size () <= bl) {
+    if (_free_list_size <= bl) {
         allocate_block (bl);
     }
 

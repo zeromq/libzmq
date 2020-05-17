@@ -92,6 +92,7 @@ class allocator_global_pool_t
     } msg_block_t;
 
     std::vector<msg_block_t> _storage;
+    size_t _free_list_size;
 #if (defined __cplusplus && __cplusplus >= 201103L)
     std::vector<moodycamel::ConcurrentQueue<uint8_t *> > _free_list;
 #else
@@ -101,19 +102,17 @@ class allocator_global_pool_t
 
     inline size_t MsgBlockToBytes (size_t block)
     {
-        return ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE * 2 ^ block;
+        return ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE * (1 << block);
     }
 
 
     inline size_t BytesToMsgBlock (size_t n)
     {
         size_t block = 0;
-        if (n <= ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE) {
-            n = n / ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE;
-            while (n > 0) {
-                block++;
-                n >>= 1;
-            }
+        n /= ZMQ_GLOBAL_POOL_FIRST_BLOCK_SIZE;
+        while (n > 0) {
+            block++;
+            n >>= 1;
         }
         return block;
     }
