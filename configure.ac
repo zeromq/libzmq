@@ -152,6 +152,33 @@ case "${host_os}" in
         ;;
 esac
 
+# Data race/deadlock detection
+# NOTE: Running libzmq under TSAN doesn't make much sense -- synchronization in libzmq is to some extent
+# handled by the code "knowing" what threads are allowed to do, rather than by enforcing those
+# restrictions, so TSAN generates a lot of (presumably) false positives from libzmq.
+# The settings below are intended to enable libzmq to be built with minimal support for TSAN
+# such that it can be used along with other code that is also built with TSAN.
+AC_MSG_CHECKING([whether to enable TSan])
+AC_ARG_ENABLE(thread-sanitizer, [AS_HELP_STRING([--enable-thread-sanitizer=yes/no],
+                  [Build with clang Thread Sanitizer instrumentation])],
+                  [ZMQ_TSAN="$enableval"])
+
+if test "x${ZMQ_TSAN}" = "xyes"; then
+    TSAN_FLAGS="-fno-omit-frame-pointer -fsanitize=thread"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1"
+    CFLAGS="${CFLAGS} ${TSAN_FLAGS}"
+    CXXFLAGS="${CXXFLAGS} ${TSAN_FLAGS}"
+    LDFLAGS="${LDFLAGS} -pie"
+
+    AM_CONDITIONAL(ENABLE_TSAN, true)
+    AC_MSG_RESULT([yes])
+else
+    AM_CONDITIONAL(ENABLE_TSAN, false)
+    AC_MSG_RESULT([no])
+fi
+
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
 AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],
