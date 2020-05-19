@@ -168,9 +168,9 @@ if test "x${ZMQ_TSAN}" = "xyes"; then
     TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0"
     TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0"
     TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1"
-    CFLAGS="${CFLAGS} ${TSAN_FLAGS}"
-    CXXFLAGS="${CXXFLAGS} ${TSAN_FLAGS}"
-    LDFLAGS="${LDFLAGS} -pie"
+    CFLAGS="${CFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    CXXFLAGS="${CXXFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    LDFLAGS="${LDFLAGS} ${TSAN_FLAGS} -pie"
 
     AM_CONDITIONAL(ENABLE_TSAN, true)
     AC_MSG_RESULT([yes])
