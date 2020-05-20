@@ -41,6 +41,25 @@ if(ENABLE_ASAN)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
 endif()
 
+# NOTE: Running libzmq under TSAN doesn't make much sense -- synchronization in libzmq is to some extent
+# handled by the code "knowing" what threads are allowed to do, rather than by enforcing those
+# restrictions, so TSAN generates a lot of (presumably) false positives from libzmq.
+# The settings below are intended to enable libzmq to be built with minimal support for TSAN
+# such that it can be used along with other code that is also built with TSAN.
+option(ENABLE_TSAN "Build with thread sanitizer" OFF)
+if(ENABLE_TSAN)
+  message(STATUS "Instrumenting with Thread Sanitizer")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+  set(TSAN_FLAGS "-fno-omit-frame-pointer -fsanitize=thread")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS} -fPIE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS} -fPIE")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${TSAN_FLAGS} -pie -Qunused-arguments")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${TSAN_FLAGS} -pie -Qunused-arguments")
+endif()
+
 option(ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
 if(ENABLE_INTRINSICS)
   message(STATUS "Using compiler intrinsics for atomic ops")
