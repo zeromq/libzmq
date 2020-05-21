@@ -41,6 +41,9 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
     uint8_t *secret_key;
 
+    if (size < 5)
+        return 0;
+
     // As per API definition, input must be divisible by 5, so truncate it if it's not
     size -= size % 5;
     // As per API definition, the destination must be at least 0.8 times the input data
