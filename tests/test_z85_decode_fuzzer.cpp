@@ -58,7 +58,7 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 }
 
 #ifndef ZMQ_USE_FUZZING_ENGINE
-void test_bind_null_fuzzer ()
+void test_z85_decode_fuzzer ()
 {
     uint8_t **data;
     size_t *len, num_cases = 0;
@@ -82,7 +82,7 @@ int main (int argc, char **argv)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_bind_null_fuzzer);
+    RUN_TEST (test_z85_decode_fuzzer);
 
     return UNITY_END ();
 }
