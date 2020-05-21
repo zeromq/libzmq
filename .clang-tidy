@@ -9,21 +9,28 @@ Checks:        "*,\
 -fuchsia-default-arguments,\
 -google-readability-todo,\
 -google-runtime-int,\
+-cppcoreguidelines-avoid-goto,\
 -cppcoreguidelines-pro-type-member-init,\
 -cppcoreguidelines-pro-type-static-cast-downcast,\
 # not applicable\
+-fuchsia-default-argument-calls,\
 -fuchsia-overloaded-operator,\
+-fuchsia-statically-constructed-objects,\
 # not currently a coding convention, C++11-specific, but conceivable,\
 -modernize-use-nullptr,\
 -modernize-use-equals-default,\
 -modernize-deprecated-headers,\
 # not currently a coding convention, C++11-specific and hard to implement,\
 -hicpp-no-malloc,\
+-hicpp-avoid-c-arrays,\
+-modernize-avoid-c-arrays,\
 -modernize-pass-by-value,\
 -modernize-loop-convert,\
 -modernize-use-auto,\
+-modernize-use-trailing-return-type,\
 -modernize-use-using,\
 -modernize-return-braced-init-list,\
+-cppcoreguidelines-avoid-c-arrays,\
 -cppcoreguidelines-no-malloc,\
 -cppcoreguidelines-owning-memory,\
 -cppcoreguidelines-pro-type-union-access,\
@@ -37,6 +44,7 @@ Checks:        "*,\
 # duplicates,\
 -google-readability-braces-around-statements,\
 -cppcoreguidelines-pro-type-cstyle-cast,\
+-cppcoreguidelines-avoid-magic-numbers,\
 -hicpp-braces-around-statements,\
 -hicpp-use-equals-default,\
 -hicpp-deprecated-headers,\
@@ -412,3 +420,7 @@ CheckOptions:
     # value:           '0'
   # - key:             readability-simplify-boolean-expr.ChainedConditionalReturn
     # value:           '0'
+   - key:             modernize-use-override.OverrideSpelling
+     value:           'ZMQ_OVERRIDE'
+   - key:             modernize-use-override.FinalSpelling
+     value:           'ZMQ_FINAL'

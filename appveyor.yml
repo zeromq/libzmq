@@ -10,6 +10,15 @@ environment:
   MSVCYEAR: "vs2013"
   ENABLE_DRAFTS: ON
   matrix:
+    - platform: x64
+      configuration: Release
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      CMAKE_GENERATOR: "Visual Studio 16 2019"
+      MSVCVERSION: "v142"
+      MSVCYEAR: "vs2019"
+      ARTIFACT_NAME: v142-x64
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: OFF # unavailable build files for VS2008
@@ -110,6 +119,30 @@ environment:
       ENABLE_CURVE: ON
       CMAKE_GENERATOR: "MSYS Makefiles"
       ARTIFACT_NAME: mingw64
+    - platform: Win32-uwp
+      configuration: Debug
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      MSVCVERSION: "v141"
+      MSVCYEAR: "vs2017"
+      ARTIFACT_NAME: v141-gd-uwp
+      CMAKE_SYSTEM_NAME: WindowsStore
+      CMAKE_SYSTEM_VERSION: 10.0.18362
+      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DBUILD_TESTS=OFF
+    - platform: Win32-uwp
+      configuration: Release
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      MSVCVERSION: "v141"
+      MSVCYEAR: "vs2017"
+      ARTIFACT_NAME: v141-uwp
+      CMAKE_SYSTEM_NAME: WindowsStore
+      CMAKE_SYSTEM_VERSION: 10.0.18362
+      EXTRA_FLAGS: -DCMAKE_SYSTEM_NAME=%CMAKE_SYSTEM_NAME% -DCMAKE_SYSTEM_VERSION=%CMAKE_SYSTEM_VERSION% -DBUILD_TESTS=OFF
 
 matrix:
   fast_finish: false
@@ -138,7 +171,7 @@ install:
   - cmd: if "%Platform%"=="cygwin64" set PATH=C:\cygwin64\bin;%PATH%
   - cmd: if "%Platform%"=="mingw64" C:\msys64\usr\bin\bash -lc "pacman -Qg"
   - cmd: if "%Platform%"=="mingw64" set PATH=C:\msys64\usr\bin;%PATH%
-  - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
+  - cmd: if "%Platform%"=="x64" (if not "%MSVCVERSION%"=="v142" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64")
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
@@ -180,7 +213,7 @@ build_script:
   - cmd: if "%MSVCYEAR%"=="vs2008" set verbosity=Normal
   - cmd: if "%MSVCYEAR%"=="vs2008" set path=C:\Windows\Microsoft.NET\Framework\v3.5;%path% 
   - cmd: cd "%LIBZMQ_BUILDDIR%"
-  - cmd: if "%PLATFORM%" == "Win32" (
+  - cmd: if "%PLATFORM:~0,5%" == "Win32" (
             if "%MSVCYEAR%"=="vs2008" (
                 cmake --build %LIBZMQ_BUILDDIR% --config %configuration% --target install
             ) else (

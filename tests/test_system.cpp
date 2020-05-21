@@ -85,7 +85,7 @@ void test_max_sockets ()
     int count;
     for (count = 0; count < MAX_SOCKETS; count++) {
         handle[count] = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (handle[count] == -1) {
+        if (handle[count] == retired_fd) {
             printf ("W: Only able to create %d sockets on this box\n", count);
             const char msg[] =
               "I: Tune your system to increase maximum allowed file handles\n"

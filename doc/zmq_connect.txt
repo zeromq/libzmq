@@ -28,8 +28,9 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 'vmci':: virtual machine communications interface (VMCI), see linkzmq:zmq_vmci[7]
+'udp':: unreliable unicast and multicast using UDP, see linkzmq:zmq_udp[7]
 
-Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
+Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
 linkzmq:zmq_socket[3].
 
@@ -38,7 +39,7 @@ immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
 does not mean that the connection was or could actually be established.
 Because of this, for most transports and socket types the order in which
 a 'server' socket is bound and a 'client' socket is connected to it does not
-matter. The _ZMQ_PAIR_ sockets are an exception, as they do not automatically
+matter. The _ZMQ_PAIR_ and _ZMQ_CHANNEL_ sockets are an exception, as they do not automatically
 reconnect to endpoints.
 
 NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,

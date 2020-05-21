@@ -67,13 +67,15 @@ zmq::ws_address_t::ws_address_t (const sockaddr *sa_, socklen_t sa_len_)
              && sa_len_ >= static_cast<socklen_t> (sizeof (_address.ipv6)))
         memcpy (&_address.ipv6, sa_, sizeof (_address.ipv6));
 
-    _path = std::string ("/");
+    _path = std::string ("");
 
     char hbuf[NI_MAXHOST];
     const int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL,
                                 0, NI_NUMERICHOST);
-    if (rc != 0)
+    if (rc != 0) {
         _host = std::string ("localhost");
+        return;
+    }
 
     std::ostringstream os;
 
@@ -99,12 +101,17 @@ int zmq::ws_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     }
     _host = std::string (name_, delim - name_);
 
-    //  find the path part, which is optional
+    // find the path part, which is optional
     delim = strrchr (name_, '/');
-    if (delim)
+    std::string host_name;
+    if (delim) {
         _path = std::string (delim);
-    else
+        // remove the path, otherwise resolving the port will fail with wildcard
+        host_name = std::string (name_, delim - name_);
+    } else {
         _path = std::string ("/");
+        host_name = name_;
+    }
 
     ip_resolver_options_t resolver_opts;
     resolver_opts.bindable (local_)
@@ -116,14 +123,14 @@ int zmq::ws_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 
     ip_resolver_t resolver (resolver_opts);
 
-    return resolver.resolve (&_address, name_);
+    return resolver.resolve (&_address, host_name.c_str ());
 }
 
 int zmq::ws_address_t::to_string (std::string &addr_) const
 {
     std::ostringstream os;
     os << std::string ("ws://") << host () << std::string (":")
-       << _address.port ();
+       << _address.port () << _path;
     addr_ = os.str ();
 
     return 0;

@@ -116,7 +116,7 @@ int zmq::tipc_connecter_t::open ()
     }
     //  Create the socket.
     _s = open_socket (AF_TIPC, SOCK_STREAM, 0);
-    if (_s == -1)
+    if (_s == retired_fd)
         return -1;
 
     //  Set the non-blocking flag.
@@ -153,7 +153,8 @@ zmq::fd_t zmq::tipc_connecter_t::connect ()
 #else
     socklen_t len = sizeof (err);
 #endif
-    int rc = getsockopt (_s, SOL_SOCKET, SO_ERROR, (char *) &err, &len);
+    int rc = getsockopt (_s, SOL_SOCKET, SO_ERROR,
+                         reinterpret_cast<char *> (&err), &len);
     if (rc == -1)
         err = errno;
     if (err != 0) {

@@ -61,8 +61,8 @@ class vmci_address_t
     ctx_t *parent;
 
     vmci_address_t ();
-    vmci_address_t (const vmci_address_t &);
-    const vmci_address_t &operator= (const vmci_address_t &);
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (vmci_address_t)
 };
 }
 

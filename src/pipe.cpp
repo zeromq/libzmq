@@ -38,10 +38,10 @@
 #include "ypipe.hpp"
 #include "ypipe_conflate.hpp"
 
-int zmq::pipepair (class object_t *parents_[2],
-                   class pipe_t *pipes_[2],
-                   int hwms_[2],
-                   bool conflate_[2])
+int zmq::pipepair (object_t *parents_[2],
+                   pipe_t *pipes_[2],
+                   const int hwms_[2],
+                   const bool conflate_[2])
 {
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
@@ -88,6 +88,17 @@ void zmq::send_routing_id (pipe_t *pipe_, const options_t &options_)
     pipe_->flush ();
 }
 
+void zmq::send_hello_msg (pipe_t *pipe_, const options_t &options_)
+{
+    zmq::msg_t hello;
+    const int rc =
+      hello.init_buffer (&options_.hello_msg[0], options_.hello_msg.size ());
+    errno_assert (rc == 0);
+    const bool written = pipe_->write (&hello);
+    zmq_assert (written);
+    pipe_->flush ();
+}
+
 zmq::pipe_t::pipe_t (object_t *parent_,
                      upipe_t *inpipe_,
                      upipe_t *outpipe_,
@@ -113,10 +124,12 @@ zmq::pipe_t::pipe_t (object_t *parent_,
     _server_socket_routing_id (0),
     _conflate (conflate_)
 {
+    _disconnect_msg.init ();
 }
 
 zmq::pipe_t::~pipe_t ()
 {
+    _disconnect_msg.close ();
 }
 
 void zmq::pipe_t::set_peer (pipe_t *peer_)
@@ -188,7 +201,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
     if (unlikely (_state != active && _state != waiting_for_delimiter))
         return false;
 
-    for (bool payload_read = false; !payload_read;) {
+    while (true) {
         if (!_in_pipe->read (msg_)) {
             _in_active = false;
             return false;
@@ -198,8 +211,9 @@ bool zmq::pipe_t::read (msg_t *msg_)
         if (unlikely (msg_->is_credential ())) {
             const int rc = msg_->close ();
             zmq_assert (rc == 0);
-        } else
-            payload_read = true;
+        } else {
+            break;
+        }
     }
 
     //  If delimiter was read, start termination process of the pipe.
@@ -232,7 +246,7 @@ bool zmq::pipe_t::check_write ()
     return true;
 }
 
-bool zmq::pipe_t::write (msg_t *msg_)
+bool zmq::pipe_t::write (const msg_t *msg_)
 {
     if (unlikely (!check_write ()))
         return false;
@@ -492,6 +506,7 @@ void zmq::pipe_t::process_delimiter ()
     if (_state == active)
         _state = delimiter_received;
     else {
+        rollback ();
         _out_pipe = NULL;
         send_pipe_term_ack (_peer);
         _state = term_ack_sent;
@@ -578,4 +593,25 @@ void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
 {
     send_pipe_stats_publish (socket_base_, queue_count_,
                              _msgs_written - _peers_msgs_read, endpoint_pair_);
+}
+
+void zmq::pipe_t::send_disconnect_msg ()
+{
+    if (_disconnect_msg.size () > 0) {
+        // Rollback any incomplete message in the pipe, and push the disconnect message.
+        rollback ();
+
+        _out_pipe->write (_disconnect_msg, false);
+        flush ();
+        _disconnect_msg.init ();
+    }
+}
+
+void zmq::pipe_t::set_disconnect_msg (
+  const std::vector<unsigned char> &disconnect_)
+{
+    _disconnect_msg.close ();
+    const int rc =
+      _disconnect_msg.init_buffer (&disconnect_[0], disconnect_.size ());
+    errno_assert (rc == 0);
 }

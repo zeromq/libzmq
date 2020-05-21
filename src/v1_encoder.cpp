@@ -55,11 +55,16 @@ void zmq::v1_encoder_t::size_ready ()
 
 void zmq::v1_encoder_t::message_ready ()
 {
+    size_t header_size = 2; // flags byte + size byte
     //  Get the message size.
     size_t size = in_progress ()->size ();
 
     //  Account for the 'flags' byte.
     size++;
+
+    //  Account for the subscribe/cancel byte.
+    if (in_progress ()->is_subscribe () || in_progress ()->is_cancel ())
+        size++;
 
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte
@@ -67,11 +72,24 @@ void zmq::v1_encoder_t::message_ready ()
     if (size < UCHAR_MAX) {
         _tmpbuf[0] = static_cast<unsigned char> (size);
         _tmpbuf[1] = (in_progress ()->flags () & msg_t::more);
-        next_step (_tmpbuf, 2, &v1_encoder_t::size_ready, false);
     } else {
         _tmpbuf[0] = UCHAR_MAX;
         put_uint64 (_tmpbuf + 1, size);
         _tmpbuf[9] = (in_progress ()->flags () & msg_t::more);
-        next_step (_tmpbuf, 10, &v1_encoder_t::size_ready, false);
+        header_size = 10;
     }
+
+    //  Encode the subscribe/cancel byte. This is done in the encoder as
+    //  opposed to when the subscribe message is created to allow different
+    //  protocol behaviour on the wire in the v3.1 and legacy encoders.
+    //  It results in the work being done multiple times in case the sub
+    //  is sending the subscription/cancel to multiple pubs, but it cannot
+    //  be avoided. This processing can be moved to xsub once support for
+    //  ZMTP < 3.1 is dropped.
+    if (in_progress ()->is_subscribe ())
+        _tmpbuf[header_size++] = 1;
+    else if (in_progress ()->is_cancel ())
+        _tmpbuf[header_size++] = 0;
+
+    next_step (_tmpbuf, header_size, &v1_encoder_t::size_ready, false);
 }

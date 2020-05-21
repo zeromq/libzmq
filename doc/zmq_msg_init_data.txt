@@ -35,9 +35,9 @@ CAUTION: If the deallocation function is not provided, the allocated memory
 will not be freed, and this may cause a memory leak.
 
 
-CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_ and
-_zmq_msg_init_size()_ are mutually exclusive. Never initialise the same
-'zmq_msg_t' twice.
+CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_,
+_zmq_msg_init_size()_ and _zmq_msg_init_buffer()_ are mutually exclusive.
+Never initialise the same 'zmq_msg_t' twice.
 
 
 RETURN VALUE
@@ -76,6 +76,7 @@ assert (rc == 0);
 SEE ALSO
 --------
 linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_buffer[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_close[3]
 linkzmq:zmq_msg_data[3]

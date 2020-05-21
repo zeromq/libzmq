@@ -44,13 +44,13 @@ zmq::tipc_address_t::tipc_address_t ()
     _random = false;
 }
 
-zmq::tipc_address_t::tipc_address_t (const sockaddr *sa, socklen_t sa_len)
+zmq::tipc_address_t::tipc_address_t (const sockaddr *sa_, socklen_t sa_len_)
 {
-    zmq_assert (sa && sa_len > 0);
+    zmq_assert (sa_ && sa_len_ > 0);
 
     memset (&address, 0, sizeof address);
-    if (sa->sa_family == AF_TIPC)
-        memcpy (&address, sa, sa_len);
+    if (sa_->sa_family == AF_TIPC)
+        memcpy (&address, sa_, sa_len_);
 
     _random = false;
 }
@@ -70,7 +70,7 @@ bool zmq::tipc_address_t::is_service () const
 
     return true;
 }
-int zmq::tipc_address_t::resolve (const char *name)
+int zmq::tipc_address_t::resolve (const char *name_)
 {
     unsigned int type = 0;
     unsigned int lower = 0;
@@ -82,7 +82,7 @@ int zmq::tipc_address_t::resolve (const char *name)
     int res;
 
 
-    if (strncmp (name, "<*>", 3) == 0) {
+    if (strncmp (name_, "<*>", 3) == 0) {
         set_random ();
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_ID;
@@ -92,9 +92,9 @@ int zmq::tipc_address_t::resolve (const char *name)
         return 0;
     }
 
-    res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
+    res = sscanf (name_, "{%u,%u,%u}", &type, &lower, &upper);
     /* Fetch optional domain suffix. */
-    if ((domain = strchr (name, '@'))) {
+    if ((domain = strchr (name_, '@'))) {
         if (sscanf (domain, "@%u.%u.%u%c", &z, &c, &n, &eof) != 3)
             return EINVAL;
     }
@@ -108,7 +108,8 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.addr.nameseq.upper = upper;
         address.scope = TIPC_ZONE_SCOPE;
         return 0;
-    } else if (res == 2 && type > TIPC_RESERVED_TYPES) {
+    }
+    if (res == 2 && type > TIPC_RESERVED_TYPES) {
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
@@ -117,7 +118,7 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.scope = 0;
         return 0;
     } else if (res == 0) {
-        res = sscanf (name, "<%u.%u.%u:%u>", &z, &c, &n, &ref);
+        res = sscanf (name_, "<%u.%u.%u:%u>", &z, &c, &n, &ref);
         if (res == 4) {
             address.family = AF_TIPC;
             address.addrtype = TIPC_ADDR_ID;
@@ -165,7 +166,7 @@ const sockaddr *zmq::tipc_address_t::addr () const
 
 socklen_t zmq::tipc_address_t::addrlen () const
 {
-    return (socklen_t) sizeof address;
+    return static_cast<socklen_t> (sizeof address);
 }
 
 #endif

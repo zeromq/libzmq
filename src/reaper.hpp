@@ -40,7 +40,7 @@ namespace zmq
 class ctx_t;
 class socket_base_t;
 
-class reaper_t : public object_t, public i_poll_events
+class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
 {
   public:
     reaper_t (zmq::ctx_t *ctx_, uint32_t tid_);
@@ -77,13 +77,12 @@ class reaper_t : public object_t, public i_poll_events
     //  If true, we were already asked to terminate.
     bool _terminating;
 
-    reaper_t (const reaper_t &);
-    const reaper_t &operator= (const reaper_t &);
-
 #ifdef HAVE_FORK
     // the process that created this context. Used to detect forking.
     pid_t _pid;
 #endif
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (reaper_t)
 };
 }
 

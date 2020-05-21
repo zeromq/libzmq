@@ -46,6 +46,7 @@
 
 #ifdef ZMQ_HAVE_WSS
 #include "wss_engine.hpp"
+#include "wss_address.hpp"
 #endif
 
 #ifndef ZMQ_HAVE_WINDOWS
@@ -98,7 +99,7 @@ zmq::ws_listener_t::~ws_listener_t ()
 
 void zmq::ws_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -123,7 +124,16 @@ void zmq::ws_listener_t::in_event ()
 std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
                                                  socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<tcp_address_t> (fd_, socket_end_);
+    std::string socket_name;
+
+#ifdef ZMQ_HAVE_WSS
+    if (_wss)
+        socket_name = zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
+    else
+#endif
+        socket_name = zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
+
+    return socket_name + _address.path ();
 }
 
 int zmq::ws_listener_t::create_socket (const char *addr_)
@@ -189,7 +199,7 @@ int zmq::ws_listener_t::create_socket (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -202,11 +212,20 @@ int zmq::ws_listener_t::set_local_address (const char *addr_)
         //  socket was already created by the application
         _s = options.use_fd;
     } else {
-        int rc = _address.resolve (addr_, true, options.ipv6);
+        const int rc = _address.resolve (addr_, true, options.ipv6);
         if (rc != 0)
             return -1;
 
-        if (create_socket (addr_) == -1)
+        //  remove the path, otherwise resolving the port will fail with wildcard
+        const char *delim = strrchr (addr_, '/');
+        std::string host_address;
+        if (delim) {
+            host_address = std::string (addr_, delim - addr_);
+        } else {
+            host_address = addr_;
+        }
+
+        if (create_socket (host_address.c_str ()) == -1)
             return -1;
     }
 
@@ -235,7 +254,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
     fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
                            &ss_len, SOCK_CLOEXEC);
 #else
-    fd_t sock =
+    const fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
@@ -262,7 +281,7 @@ zmq::fd_t zmq::ws_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);
@@ -278,23 +297,25 @@ zmq::fd_t zmq::ws_listener_t::accept ()
     return sock;
 }
 
-void zmq::ws_listener_t::create_engine (fd_t fd)
+void zmq::ws_listener_t::create_engine (fd_t fd_)
 {
     const endpoint_uri_pair_t endpoint_pair (
-      get_socket_name (fd, socket_end_local),
-      get_socket_name (fd, socket_end_remote), endpoint_type_bind);
+      get_socket_name (fd_, socket_end_local),
+      get_socket_name (fd_, socket_end_remote), endpoint_type_bind);
 
     i_engine *engine = NULL;
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
-        engine = new (std::nothrow) wss_engine_t (
-          fd, options, endpoint_pair, _address, false, _tls_cred, NULL);
+        engine = new (std::nothrow)
+          wss_engine_t (fd_, options, endpoint_pair, _address, false, _tls_cred,
+                        std::string ());
 #else
         assert (false);
 #endif
     else
         engine = new (std::nothrow)
-          ws_engine_t (fd, options, endpoint_pair, _address, false);
+          ws_engine_t (fd_, options, endpoint_pair, _address, false);
+
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -310,5 +331,5 @@ void zmq::ws_listener_t::create_engine (fd_t fd)
     launch_child (session);
     send_attach (session, engine, false);
 
-    _socket->event_accepted (endpoint_pair, fd);
+    _socket->event_accepted (endpoint_pair, fd_);
 }

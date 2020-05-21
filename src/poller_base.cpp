@@ -32,10 +32,6 @@
 #include "i_poll_events.hpp"
 #include "err.hpp"
 
-zmq::poller_base_t::poller_base_t ()
-{
-}
-
 zmq::poller_base_t::~poller_base_t ()
 {
     //  Make sure there is no more load on the shutdown.
@@ -72,8 +68,14 @@ void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
             return;
         }
 
-    //  Timer not found.
-    zmq_assert (false);
+    //  We should generally never get here. Calling 'cancel_timer ()' on
+    //  an already expired or canceled timer (or even worse - on a timer which
+    //  never existed, supplying bad sink_ and/or id_ values) does not make any
+    //  sense.
+    //  But in some edge cases this might happen. As described in issue #3645
+    //  `timer_event ()` call from `execute_timers ()` might call `cancel_timer ()`
+    //  on already canceled (deleted) timer.
+    //  As soon as that is resolved an 'assert (false)' should be put here.
 }
 
 uint64_t zmq::poller_base_t::execute_timers ()
@@ -85,26 +87,31 @@ uint64_t zmq::poller_base_t::execute_timers ()
     //  Get the current time.
     const uint64_t current = _clock.now_ms ();
 
-    //   Execute the timers that are already due.
-    const timers_t::iterator begin = _timers.begin ();
-    const timers_t::iterator end = _timers.end ();
+    //  Execute the timers that are already due.
     uint64_t res = 0;
-    timers_t::iterator it = begin;
-    for (; it != end; ++it) {
-        //  If we have to wait to execute the item, same will be true about
-        //  all the following items (multimap is sorted). Thus we can stop
-        //  checking the subsequent timers.
+    timer_info_t timer_temp;
+    timers_t::iterator it;
+
+    do {
+        it = _timers.begin ();
+
+        //  If we have to wait to execute the item, same will be true for
+        //  all the following items because multimap is sorted. Thus we can
+        //  stop checking the subsequent timers.
         if (it->first > current) {
             res = it->first - current;
             break;
         }
 
-        //  Trigger the timer.
-        it->second.sink->timer_event (it->second.id);
-    }
+        //  Save and remove the timer because timer_event() call might delete
+        //  exactly this timer and then the iterator will be invalid.
+        timer_temp = it->second;
+        _timers.erase (it);
 
-    //  Remove them from the list of active timers.
-    _timers.erase (begin, it);
+        //  Trigger the timer.
+        timer_temp.sink->timer_event (timer_temp.id);
+
+    } while (!_timers.empty ());
 
     //  Return the time to wait for the next timer (at least 1ms), or 0, if
     //  there are no more timers.
@@ -127,7 +134,7 @@ void zmq::worker_poller_base_t::start (const char *name_)
     _ctx.start_thread (_worker, worker_routine, this, name_);
 }
 
-void zmq::worker_poller_base_t::check_thread ()
+void zmq::worker_poller_base_t::check_thread () const
 {
 #ifdef _DEBUG
     zmq_assert (!_worker.get_started () || _worker.is_current_thread ());

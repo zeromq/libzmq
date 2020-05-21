@@ -47,7 +47,7 @@ class io_thread_t;
 class socket_base_t;
 
 //  TODO consider refactoring this to derive from stream_listener_base_t
-class vmci_listener_t : public own_t, public io_object_t
+class vmci_listener_t ZMQ_FINAL : public own_t, public io_object_t
 {
   public:
     vmci_listener_t (zmq::io_thread_t *io_thread_,
@@ -89,8 +89,7 @@ class vmci_listener_t : public own_t, public io_object_t
     // String representation of endpoint to bind to
     std::string endpoint;
 
-    vmci_listener_t (const vmci_listener_t &);
-    const vmci_listener_t &operator= (const vmci_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (vmci_listener_t)
 };
 }
 

@@ -37,7 +37,7 @@
 
 namespace zmq
 {
-class ipc_connecter_t : public stream_connecter_base_t
+class ipc_connecter_t ZMQ_FINAL : public stream_connecter_base_t
 {
   public:
     //  If 'delayed_start' is true connecter first waits for a while,
@@ -64,8 +64,7 @@ class ipc_connecter_t : public stream_connecter_base_t
     //  retired_fd if the connection was unsuccessful.
     fd_t connect ();
 
-    ipc_connecter_t (const ipc_connecter_t &);
-    const ipc_connecter_t &operator= (const ipc_connecter_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_connecter_t)
 };
 }
 

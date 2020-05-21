@@ -77,8 +77,7 @@ class fq_t
     //  there are following parts still waiting in the current pipe.
     bool _more;
 
-    fq_t (const fq_t &);
-    const fq_t &operator= (const fq_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (fq_t)
 };
 }
 

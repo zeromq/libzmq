@@ -58,7 +58,7 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
                                  ws_address_t &address_,
                                  bool client_,
                                  void *tls_server_cred_,
-                                 const char *hostname_) :
+                                 const std::string &hostname_) :
     ws_engine_t (fd_, options_, endpoint_uri_pair_, address_, client_),
     _established (false),
     _tls_client_cred (NULL)
@@ -88,11 +88,13 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
         rc = gnutls_init (&_tls_session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
         assert (rc == GNUTLS_E_SUCCESS);
 
-        if (hostname_)
-            gnutls_server_name_set (_tls_session, GNUTLS_NAME_DNS, hostname_,
-                                    strlen (hostname_));
+        if (!hostname_.empty ())
+            gnutls_server_name_set (_tls_session, GNUTLS_NAME_DNS,
+                                    hostname_.c_str (), hostname_.size ());
 
-        gnutls_session_set_ptr (_tls_session, (void *) hostname_);
+        gnutls_session_set_ptr (
+          _tls_session,
+          hostname_.empty () ? NULL : const_cast<char *> (hostname_.c_str ()));
 
         rc = gnutls_credentials_set (_tls_session, GNUTLS_CRD_CERTIFICATE,
                                      _tls_client_cred);

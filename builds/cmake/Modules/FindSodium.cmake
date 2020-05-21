@@ -4,7 +4,7 @@
 ################################################################################
 
 if (NOT MSVC)
-include(FindPkgConfig)
+find_package(PkgConfig REQUIRED) 
 pkg_check_modules(PC_SODIUM "libsodium")
 if (PC_SODIUM_FOUND)
   set(pkg_config_names_private "${pkg_config_names_private} libsodium")
@@ -39,7 +39,7 @@ find_library(
 )
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SODIUM DEFAULT_MSG SODIUM_LIBRARIES SODIUM_INCLUDE_DIRS)
+find_package_handle_standard_args(sodium DEFAULT_MSG SODIUM_LIBRARIES SODIUM_INCLUDE_DIRS)
 mark_as_advanced(SODIUM_FOUND SODIUM_LIBRARIES SODIUM_INCLUDE_DIRS)
 
 ################################################################################

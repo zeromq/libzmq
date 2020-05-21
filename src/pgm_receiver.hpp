@@ -46,7 +46,7 @@ namespace zmq
 class io_thread_t;
 class session_base_t;
 
-class pgm_receiver_t : public io_object_t, public i_engine
+class pgm_receiver_t ZMQ_FINAL : public io_object_t, public i_engine
 {
   public:
     pgm_receiver_t (zmq::io_thread_t *parent_, const options_t &options_);
@@ -55,6 +55,7 @@ class pgm_receiver_t : public io_object_t, public i_engine
     int init (bool udp_encapsulation_, const char *network_);
 
     //  i_engine interface implementation.
+    bool has_handshake_stage () { return false; };
     void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
     void terminate ();
     bool restart_input ();
@@ -135,8 +136,7 @@ class pgm_receiver_t : public io_object_t, public i_engine
     //  Poll handle associated with engine PGM waiting pipe.
     handle_t pipe_handle;
 
-    pgm_receiver_t (const pgm_receiver_t &);
-    const pgm_receiver_t &operator= (const pgm_receiver_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (pgm_receiver_t)
 };
 }
 

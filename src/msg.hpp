@@ -54,6 +54,9 @@ namespace zmq
 //  Note that this structure needs to be explicitly constructed
 //  (init functions) and destructed (close function).
 
+static const char cancel_cmd_name[] = "\6CANCEL";
+static const char sub_cmd_name[] = "\x9SUBSCRIBE";
+
 class msg_t
 {
   public:
@@ -84,6 +87,7 @@ class msg_t
         pong = 8,
         subscribe = 12,
         cancel = 16,
+        close_cmd = 20,
         credential = 32,
         routing_id = 64,
         shared = 128
@@ -99,6 +103,7 @@ class msg_t
               content_t *content_ = NULL);
 
     int init_size (size_t size_);
+    int init_buffer (const void *buf_, size_t size_);
     int init_data (void *data_, size_t size_, msg_free_fn *ffn_, void *hint_);
     int init_external_storage (content_t *content_,
                                void *data_,
@@ -108,6 +113,8 @@ class msg_t
     int init_delimiter ();
     int init_join ();
     int init_leave ();
+    int init_subscribe (const size_t size_, const unsigned char *topic);
+    int init_cancel (const size_t size_, const unsigned char *topic);
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
@@ -126,14 +133,16 @@ class msg_t
     bool is_leave () const;
     bool is_ping () const;
     bool is_pong () const;
+    bool is_close_cmd () const;
 
     //  These are called on each message received by the session_base class,
     //  so get them inlined to avoid the overhead of 2 function calls per msg
-    inline bool is_subscribe () const
+    bool is_subscribe () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == subscribe;
     }
-    inline bool is_cancel () const
+
+    bool is_cancel () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == cancel;
     }
@@ -144,10 +153,10 @@ class msg_t
     bool is_cmsg () const;
     bool is_lmsg () const;
     bool is_zcmsg () const;
-    uint32_t get_routing_id ();
+    uint32_t get_routing_id () const;
     int set_routing_id (uint32_t routing_id_);
     int reset_routing_id ();
-    const char *group ();
+    const char *group () const;
     int set_group (const char *group_);
     int set_group (const char *, size_t length_);
 
@@ -158,6 +167,8 @@ class msg_t
     //  Removes references previously added by add_refs. If the number of
     //  references drops to 0, the message is closed and false is returned.
     bool rm_refs (int refs_);
+
+    void shrink (size_t new_size_);
 
     //  Size in bytes of the largest message that is still copied around
     //  rather than being reference-counted.
@@ -205,6 +216,33 @@ class msg_t
         type_max = 107
     };
 
+    enum group_type_t
+    {
+        group_type_short,
+        group_type_long
+    };
+
+    struct long_group_t
+    {
+        char group[ZMQ_GROUP_MAX_LENGTH + 1];
+        atomic_counter_t refcnt;
+    };
+
+    union group_t
+    {
+        unsigned char type;
+        struct
+        {
+            unsigned char type;
+            char group[15];
+        } sgroup;
+        struct
+        {
+            unsigned char type;
+            long_group_t *content;
+        } lgroup;
+    };
+
     //  Note that fields shared between different message types are not
     //  moved to the parent class (msg_t). This way we get tighter packing
     //  of the data. Shared fields can be accessed via 'base' member of
@@ -214,13 +252,13 @@ class msg_t
         struct
         {
             metadata_t *metadata;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + 2
+                                    + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } base;
         struct
         {
@@ -229,57 +267,59 @@ class msg_t
             unsigned char size;
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } vsm;
         struct
         {
             metadata_t *metadata;
             content_t *content;
-            unsigned char unused[msg_t_size
-                                 - (sizeof (metadata_t *) + sizeof (content_t *)
-                                    + 2 + 16 + sizeof (uint32_t))];
+            unsigned char
+              unused[msg_t_size
+                     - (sizeof (metadata_t *) + sizeof (content_t *) + 2
+                        + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } lmsg;
         struct
         {
             metadata_t *metadata;
             content_t *content;
-            unsigned char unused[msg_t_size
-                                 - (sizeof (metadata_t *) + sizeof (content_t *)
-                                    + 2 + 16 + sizeof (uint32_t))];
+            unsigned char
+              unused[msg_t_size
+                     - (sizeof (metadata_t *) + sizeof (content_t *) + 2
+                        + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } zclmsg;
         struct
         {
             metadata_t *metadata;
             void *data;
             size_t size;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + sizeof (void *)
-                        + sizeof (size_t) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + sizeof (void *)
+                                    + sizeof (size_t) + 2 + sizeof (uint32_t)
+                                    + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } cmsg;
         struct
         {
             metadata_t *metadata;
-            unsigned char
-              unused[msg_t_size
-                     - (sizeof (metadata_t *) + 2 + 16 + sizeof (uint32_t))];
+            unsigned char unused[msg_t_size
+                                 - (sizeof (metadata_t *) + 2
+                                    + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
-            char group[16];
             uint32_t routing_id;
+            group_t group;
         } delimiter;
     } _u;
 };
@@ -287,7 +327,7 @@ class msg_t
 inline int close_and_return (zmq::msg_t *msg_, int echo_)
 {
     // Since we abort on close failure we preserve errno for success case.
-    int err = errno;
+    const int err = errno;
     const int rc = msg_->close ();
     errno_assert (rc == 0);
     errno = err;

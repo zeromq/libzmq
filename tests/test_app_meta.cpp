@@ -109,7 +109,7 @@ void test_app_meta_reqrep ()
     rc = zmq_msg_init_size (&msg, 1);
     TEST_ASSERT_EQUAL_INT (0, rc);
 
-    char *data = (char *) zmq_msg_data (&msg);
+    char *data = static_cast<char *> (zmq_msg_data (&msg));
     data[0] = 1;
 
     rc = zmq_msg_send (&msg, req_sock, 0);
@@ -123,10 +123,10 @@ void test_app_meta_reqrep ()
 
     TEST_ASSERT_EQUAL_STRING ("hello", zmq_msg_gets (&msg, "X-hello"));
     TEST_ASSERT_EQUAL_STRING ("primary", zmq_msg_gets (&msg, "X-connection"));
-    char *bindata = (char *) zmq_msg_gets (&msg, "X-bin");
+    const char *const bindata = zmq_msg_gets (&msg, "X-bin");
     TEST_ASSERT_NOT_NULL (bindata);
     uint8_t rawdata[4];
-    void *ret = zmq_z85_decode (rawdata, bindata);
+    const uint8_t *const ret = zmq_z85_decode (rawdata, bindata);
     TEST_ASSERT_NOT_NULL (ret);
     TEST_ASSERT_EQUAL_UINT8 (0, rawdata[0]);
     TEST_ASSERT_EQUAL_UINT8 (1, rawdata[1]);

@@ -44,7 +44,7 @@ class ctx_t;
 class pipe_t;
 class io_thread_t;
 
-class dish_t : public socket_base_t
+class dish_t ZMQ_FINAL : public socket_base_t
 {
   public:
     dish_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -87,11 +87,10 @@ class dish_t : public socket_base_t
     bool _has_message;
     msg_t _message;
 
-    dish_t (const dish_t &);
-    const dish_t &operator= (const dish_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dish_t)
 };
 
-class dish_session_t : public session_base_t
+class dish_session_t ZMQ_FINAL : public session_base_t
 {
   public:
     dish_session_t (zmq::io_thread_t *io_thread_,
@@ -115,8 +114,7 @@ class dish_session_t : public session_base_t
 
     msg_t _group_msg;
 
-    dish_session_t (const dish_session_t &);
-    const dish_session_t &operator= (const dish_session_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dish_session_t)
 };
 }
 

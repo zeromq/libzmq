@@ -73,16 +73,16 @@ void test ()
         if (rc == -1) {
             TEST_ASSERT_EQUAL_INT (EAGAIN, errno);
             break;
-        } else {
-            TEST_ASSERT_EQUAL_INT (0, rc);
-            recv_count++;
-
-            if (recv_count == 1) {
-                const int sub_rcvtimeo = 250;
-                TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
-                  sub, ZMQ_RCVTIMEO, &sub_rcvtimeo, sizeof (sub_rcvtimeo)));
-            }
         }
+        TEST_ASSERT_EQUAL_INT (0, rc);
+        recv_count++;
+
+        if (recv_count == 1) {
+            const int sub_rcvtimeo = 250;
+            TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+              sub, ZMQ_RCVTIMEO, &sub_rcvtimeo, sizeof (sub_rcvtimeo)));
+        }
+
     } while (true);
 
     TEST_ASSERT_EQUAL_INT (send_count, recv_count);

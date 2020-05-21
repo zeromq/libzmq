@@ -79,7 +79,8 @@ int zmq::msg_t::init ()
     _u.vsm.type = type_vsm;
     _u.vsm.flags = 0;
     _u.vsm.size = 0;
-    _u.vsm.group[0] = '\0';
+    _u.vsm.group.sgroup.group[0] = '\0';
+    _u.vsm.group.type = group_type_short;
     _u.vsm.routing_id = 0;
     return 0;
 }
@@ -91,13 +92,15 @@ int zmq::msg_t::init_size (size_t size_)
         _u.vsm.type = type_vsm;
         _u.vsm.flags = 0;
         _u.vsm.size = static_cast<unsigned char> (size_);
-        _u.vsm.group[0] = '\0';
+        _u.vsm.group.sgroup.group[0] = '\0';
+        _u.vsm.group.type = group_type_short;
         _u.vsm.routing_id = 0;
     } else {
         _u.lmsg.metadata = NULL;
         _u.lmsg.type = type_lmsg;
         _u.lmsg.flags = 0;
-        _u.lmsg.group[0] = '\0';
+        _u.lmsg.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
         _u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
@@ -117,6 +120,20 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
+int zmq::msg_t::init_buffer (const void *buf_, size_t size_)
+{
+    const int rc = init_size (size_);
+    if (unlikely (rc < 0)) {
+        return -1;
+    }
+    if (size_) {
+        // NULL and zero size is allowed
+        assert (NULL != buf_);
+        memcpy (data (), buf_, size_);
+    }
+    return 0;
+}
+
 int zmq::msg_t::init_external_storage (content_t *content_,
                                        void *data_,
                                        size_t size_,
@@ -129,7 +146,8 @@ int zmq::msg_t::init_external_storage (content_t *content_,
     _u.zclmsg.metadata = NULL;
     _u.zclmsg.type = type_zclmsg;
     _u.zclmsg.flags = 0;
-    _u.zclmsg.group[0] = '\0';
+    _u.zclmsg.group.sgroup.group[0] = '\0';
+    _u.zclmsg.group.type = group_type_short;
     _u.zclmsg.routing_id = 0;
 
     _u.zclmsg.content = content_;
@@ -158,13 +176,15 @@ int zmq::msg_t::init_data (void *data_,
         _u.cmsg.flags = 0;
         _u.cmsg.data = data_;
         _u.cmsg.size = size_;
-        _u.cmsg.group[0] = '\0';
+        _u.cmsg.group.sgroup.group[0] = '\0';
+        _u.cmsg.group.type = group_type_short;
         _u.cmsg.routing_id = 0;
     } else {
         _u.lmsg.metadata = NULL;
         _u.lmsg.type = type_lmsg;
         _u.lmsg.flags = 0;
-        _u.lmsg.group[0] = '\0';
+        _u.lmsg.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
         _u.lmsg.content =
           static_cast<content_t *> (malloc (sizeof (content_t)));
@@ -187,7 +207,8 @@ int zmq::msg_t::init_delimiter ()
     _u.delimiter.metadata = NULL;
     _u.delimiter.type = type_delimiter;
     _u.delimiter.flags = 0;
-    _u.delimiter.group[0] = '\0';
+    _u.delimiter.group.sgroup.group[0] = '\0';
+    _u.delimiter.group.type = group_type_short;
     _u.delimiter.routing_id = 0;
     return 0;
 }
@@ -197,7 +218,8 @@ int zmq::msg_t::init_join ()
     _u.base.metadata = NULL;
     _u.base.type = type_join;
     _u.base.flags = 0;
-    _u.base.group[0] = '\0';
+    _u.base.group.sgroup.group[0] = '\0';
+    _u.base.group.type = group_type_short;
     _u.base.routing_id = 0;
     return 0;
 }
@@ -207,9 +229,40 @@ int zmq::msg_t::init_leave ()
     _u.base.metadata = NULL;
     _u.base.type = type_leave;
     _u.base.flags = 0;
-    _u.base.group[0] = '\0';
+    _u.base.group.sgroup.group[0] = '\0';
+    _u.base.group.type = group_type_short;
     _u.base.routing_id = 0;
     return 0;
+}
+
+int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic_)
+{
+    int rc = init_size (size_);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::subscribe);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic_);
+            memcpy (data (), topic_, size_);
+        }
+    }
+    return rc;
+}
+
+int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic_)
+{
+    int rc = init_size (size_);
+    if (rc == 0) {
+        set_flags (zmq::msg_t::cancel);
+
+        //  We explicitly allow a NULL subscription with size zero
+        if (size_) {
+            assert (topic_);
+            memcpy (data (), topic_, size_);
+        }
+    }
+    return rc;
 }
 
 int zmq::msg_t::close ()
@@ -259,6 +312,16 @@ int zmq::msg_t::close ()
         _u.base.metadata = NULL;
     }
 
+    if (_u.base.group.type == group_type_long) {
+        if (!_u.base.group.lgroup.content->refcnt.sub (1)) {
+            //  We used "placement new" operator to initialize the reference
+            //  counter so we call the destructor explicitly now.
+            _u.base.group.lgroup.content->refcnt.~atomic_counter_t ();
+
+            free (_u.base.group.lgroup.content);
+        }
+    }
+
     //  Make the message invalid.
     _u.base.type = 0;
 
@@ -294,7 +357,7 @@ int zmq::msg_t::copy (msg_t &src_)
         return -1;
     }
 
-    int rc = close ();
+    const int rc = close ();
     if (unlikely (rc < 0))
         return rc;
 
@@ -315,6 +378,9 @@ int zmq::msg_t::copy (msg_t &src_)
 
     if (src_._u.base.metadata != NULL)
         src_._u.base.metadata->add_ref ();
+
+    if (src_._u.base.group.type == group_type_long)
+        src_._u.base.group.lgroup.content->refcnt.add (1);
 
     *this = src_;
 
@@ -358,6 +424,30 @@ size_t zmq::msg_t::size () const
         default:
             zmq_assert (false);
             return 0;
+    }
+}
+
+void zmq::msg_t::shrink (size_t new_size_)
+{
+    //  Check the validity of the message.
+    zmq_assert (check ());
+    zmq_assert (new_size_ <= size ());
+
+    switch (_u.base.type) {
+        case type_vsm:
+            _u.vsm.size = static_cast<unsigned char> (new_size_);
+            break;
+        case type_lmsg:
+            _u.lmsg.content->size = new_size_;
+            break;
+        case type_zclmsg:
+            _u.zclmsg.content->size = new_size_;
+            break;
+        case type_cmsg:
+            _u.cmsg.size = new_size_;
+            break;
+        default:
+            zmq_assert (false);
     }
 }
 
@@ -454,13 +544,21 @@ bool zmq::msg_t::is_pong () const
     return (_u.base.flags & CMD_TYPE_MASK) == pong;
 }
 
+bool zmq::msg_t::is_close_cmd () const
+{
+    return (_u.base.flags & CMD_TYPE_MASK) == close_cmd;
+}
+
 size_t zmq::msg_t::command_body_size () const
 {
     if (this->is_ping () || this->is_pong ())
         return this->size () - ping_cmd_name_size;
-    if (this->is_subscribe ())
+    else if (!(this->flags () & msg_t::command)
+             && (this->is_subscribe () || this->is_cancel ()))
+        return this->size ();
+    else if (this->is_subscribe ())
         return this->size () - sub_cmd_name_size;
-    if (this->is_cancel ())
+    else if (this->is_cancel ())
         return this->size () - cancel_cmd_name_size;
 
     return 0;
@@ -469,12 +567,17 @@ size_t zmq::msg_t::command_body_size () const
 void *zmq::msg_t::command_body ()
 {
     unsigned char *data = NULL;
+
     if (this->is_ping () || this->is_pong ())
         data =
           static_cast<unsigned char *> (this->data ()) + ping_cmd_name_size;
-    if (this->is_subscribe ())
+    //  With inproc, command flag is not set for sub/cancel
+    else if (!(this->flags () & msg_t::command)
+             && (this->is_subscribe () || this->is_cancel ()))
+        data = static_cast<unsigned char *> (this->data ());
+    else if (this->is_subscribe ())
         data = static_cast<unsigned char *> (this->data ()) + sub_cmd_name_size;
-    if (this->is_cancel ())
+    else if (this->is_cancel ())
         data =
           static_cast<unsigned char *> (this->data ()) + cancel_cmd_name_size;
 
@@ -548,7 +651,7 @@ bool zmq::msg_t::rm_refs (int refs_)
     return true;
 }
 
-uint32_t zmq::msg_t::get_routing_id ()
+uint32_t zmq::msg_t::get_routing_id () const
 {
     return _u.base.routing_id;
 }
@@ -569,14 +672,18 @@ int zmq::msg_t::reset_routing_id ()
     return 0;
 }
 
-const char *zmq::msg_t::group ()
+const char *zmq::msg_t::group () const
 {
-    return _u.base.group;
+    if (_u.base.group.type == group_type_long)
+        return _u.base.group.lgroup.content->group;
+    return _u.base.group.sgroup.group;
 }
 
 int zmq::msg_t::set_group (const char *group_)
 {
-    return set_group (group_, ZMQ_GROUP_MAX_LENGTH);
+    size_t length = strnlen (group_, ZMQ_GROUP_MAX_LENGTH);
+
+    return set_group (group_, length);
 }
 
 int zmq::msg_t::set_group (const char *group_, size_t length_)
@@ -586,8 +693,19 @@ int zmq::msg_t::set_group (const char *group_, size_t length_)
         return -1;
     }
 
-    strncpy (_u.base.group, group_, length_);
-    _u.base.group[length_] = '\0';
+    if (length_ > 14) {
+        _u.base.group.lgroup.type = group_type_long;
+        _u.base.group.lgroup.content =
+          (long_group_t *) malloc (sizeof (long_group_t));
+        assert (_u.base.group.lgroup.content);
+        new (&_u.base.group.lgroup.content->refcnt) zmq::atomic_counter_t ();
+        _u.base.group.lgroup.content->refcnt.set (1);
+        strncpy (_u.base.group.lgroup.content->group, group_, length_);
+        _u.base.group.lgroup.content->group[length_] = '\0';
+    } else {
+        strncpy (_u.base.group.sgroup.group, group_, length_);
+        _u.base.group.sgroup.group[length_] = '\0';
+    }
 
     return 0;
 }

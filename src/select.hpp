@@ -57,13 +57,13 @@ struct i_poll_events;
 //  Implements socket polling mechanism using POSIX.1-2001 select()
 //  function.
 
-class select_t : public worker_poller_base_t
+class select_t ZMQ_FINAL : public worker_poller_base_t
 {
   public:
     typedef fd_t handle_t;
 
     select_t (const thread_ctx_t &ctx_);
-    ~select_t ();
+    ~select_t () ZMQ_FINAL;
 
     //  "poller" concept.
     handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
@@ -78,7 +78,7 @@ class select_t : public worker_poller_base_t
 
   private:
     //  Main event loop.
-    void loop ();
+    void loop () ZMQ_FINAL;
 
     //  Internal state.
     struct fds_set_t
@@ -160,8 +160,7 @@ class select_t : public worker_poller_base_t
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries_, handle_t handle_);
 
-    select_t (const select_t &);
-    const select_t &operator= (const select_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (select_t)
 };
 
 typedef select_t poller_t;

@@ -222,13 +222,13 @@ void test_size ()
     TEST_ASSERT_TRUE (tree.size () == 0);
 }
 
-void return_key (unsigned char *data, size_t size, void *arg)
+void return_key (unsigned char *data_, size_t size_, void *arg_)
 {
     std::vector<std::string> *vec =
-      reinterpret_cast<std::vector<std::string> *> (arg);
+      reinterpret_cast<std::vector<std::string> *> (arg_);
     std::string key;
-    for (size_t i = 0; i < size; ++i)
-        key.push_back (static_cast<char> (data[i]));
+    for (size_t i = 0; i < size_; ++i)
+        key.push_back (static_cast<char> (data_[i]));
     vec->push_back (key);
 }
 

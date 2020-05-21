@@ -1,0 +1,4 @@
+ipc="ipc://"
+inproc="inproc://"
+tcp="tcp://"
+udp="udp://"

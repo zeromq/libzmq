@@ -38,20 +38,20 @@ namespace zmq
 class msg_t;
 class session_base_t;
 
-class plain_server_t : public zap_client_common_handshake_t
+class plain_server_t ZMQ_FINAL : public zap_client_common_handshake_t
 {
   public:
     plain_server_t (session_base_t *session_,
                     const std::string &peer_address_,
                     const options_t &options_);
-    virtual ~plain_server_t ();
+    ~plain_server_t ();
 
     // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
 
   private:
-    void produce_welcome (msg_t *msg_) const;
+    static void produce_welcome (msg_t *msg_);
     void produce_ready (msg_t *msg_) const;
     void produce_error (msg_t *msg_) const;
 

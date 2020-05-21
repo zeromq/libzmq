@@ -55,7 +55,7 @@ zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_,
 
 zmq::v2_decoder_t::~v2_decoder_t ()
 {
-    int rc = _in_progress.close ();
+    const int rc = _in_progress.close ();
     errno_assert (rc == 0);
 }
 
@@ -115,8 +115,8 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size_,
 
     shared_message_memory_allocator &allocator = get_allocator ();
     if (unlikely (!_zero_copy
-                  || msg_size_ > (size_t) (allocator.data () + allocator.size ()
-                                           - read_pos_))) {
+                  || msg_size_ > static_cast<size_t> (
+                       allocator.data () + allocator.size () - read_pos_))) {
         // a new message has started, but the size would exceed the pre-allocated arena
         // this happens every time when a message does not fit completely into the buffer
         rc = _in_progress.init_size (static_cast<size_t> (msg_size_));

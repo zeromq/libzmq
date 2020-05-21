@@ -44,7 +44,7 @@ void socket_config_null_server (void *server_, void *server_secret_)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       server_, ZMQ_ZAP_DOMAIN, test_zap_domain, strlen (test_zap_domain)));
 #ifdef ZMQ_ZAP_ENFORCE_DOMAIN
-    int required = server_secret_ ? *(int *) server_secret_ : 0;
+    int required = server_secret_ ? *static_cast<int *> (server_secret_) : 0;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server_, ZMQ_ZAP_ENFORCE_DOMAIN,
                                                &required, sizeof (int)));
 #else
@@ -109,8 +109,8 @@ void socket_config_curve_server (void *server_, void *server_secret_)
 
 void socket_config_curve_client (void *client_, void *data_)
 {
-    curve_client_data_t *curve_client_data =
-      static_cast<curve_client_data_t *> (data_);
+    const curve_client_data_t *const curve_client_data =
+      static_cast<const curve_client_data_t *> (data_);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       client_, ZMQ_CURVE_SERVERKEY, curve_client_data->server_public, 41));
@@ -320,6 +320,11 @@ void setup_context_and_server_side (void **zap_control_,
     *server_ = test_context_socket (ZMQ_DEALER);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (*server_, ZMQ_LINGER, &linger, sizeof (linger)));
+    //  As per API by default there's no limit to the size of a message,
+    //  but the sanitizer allocator will barf over a gig or so
+    int64_t max_msg_size = 64 * 1024 * 1024;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      *server_, ZMQ_MAXMSGSIZE, &max_msg_size, sizeof (int64_t)));
 
     socket_config_ (*server_, socket_config_data_);
 
@@ -346,6 +351,7 @@ void shutdown_context_and_server_side (void *zap_thread_,
           zmq_unbind (zap_control_, "inproc://handler-control"));
     }
     test_context_socket_close (zap_control_);
+    zmq_socket_monitor (server_, NULL, 0);
     test_context_socket_close (server_mon_);
     test_context_socket_close (server_);
 
@@ -362,6 +368,11 @@ void *create_and_connect_client (char *my_endpoint_,
                                  void **client_mon_)
 {
     void *client = test_context_socket (ZMQ_DEALER);
+    //  As per API by default there's no limit to the size of a message,
+    //  but the sanitizer allocator will barf over a gig or so
+    int64_t max_msg_size = 64 * 1024 * 1024;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_MAXMSGSIZE, &max_msg_size, sizeof (int64_t)));
 
     socket_config_ (client, socket_config_data_);
 
@@ -383,7 +394,7 @@ void expect_new_client_bounce_fail (char *my_endpoint_,
                                     int expected_client_event_,
                                     int expected_client_value_)
 {
-    void *my_client_mon;
+    void *my_client_mon = NULL;
     TEST_ASSERT_TRUE (client_mon_ == NULL || expected_client_event_ == 0);
     if (expected_client_event_ != 0)
         client_mon_ = &my_client_mon;

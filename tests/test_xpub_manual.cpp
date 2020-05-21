@@ -297,11 +297,6 @@ void test_missing_subscriptions ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub1, my_endpoint_backend));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic1, 1));
 
-    // second subscriber
-    void *sub2 = test_context_socket (ZMQ_SUB);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, my_endpoint_backend));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1));
-
     // wait
     msleep (SETTLE_TIME);
 
@@ -311,6 +306,14 @@ void test_missing_subscriptions ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic1, 1));
     send_array_expect_success (xsub_proxy, subscription1, 0);
+
+    // second subscriber
+    void *sub2 = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub2, my_endpoint_backend));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1));
+
+    // wait
+    msleep (SETTLE_TIME);
 
     const uint8_t subscription2[] = {1, static_cast<uint8_t> (topic2[0])};
     recv_array_expect_success (xpub_proxy, subscription2, ZMQ_DONTWAIT);
@@ -456,6 +459,67 @@ void test_user_message ()
     test_context_socket_close (sub);
 }
 
+#ifdef ZMQ_ONLY_FIRST_SUBSCRIBE
+void test_user_message_multi ()
+{
+    const int only_first_subscribe = 1;
+
+    //  Create a publisher
+    void *pub = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (pub, "inproc://soname"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (pub, ZMQ_ONLY_FIRST_SUBSCRIBE,
+                                               &only_first_subscribe,
+                                               sizeof (only_first_subscribe)));
+
+    //  Create a subscriber
+    void *sub = test_context_socket (ZMQ_XSUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "inproc://soname"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_ONLY_FIRST_SUBSCRIBE,
+                                               &only_first_subscribe,
+                                               sizeof (only_first_subscribe)));
+
+    //  Send some data that is neither sub nor unsub
+    const uint8_t msg_common[] = {'A', 'B', 'C'};
+    //  Message starts with 0 but should still treated as user
+    const uint8_t msg_0a[] = {0, 'B', 'C'};
+    const uint8_t msg_0b[] = {0, 'C', 'D'};
+    //  Message starts with 1 but should still treated as user
+    const uint8_t msg_1a[] = {1, 'B', 'C'};
+    const uint8_t msg_1b[] = {1, 'C', 'D'};
+
+    // Test second message starting with 0
+    send_array_expect_success (sub, msg_common, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_0a, 0);
+
+    // Receive messages from subscriber
+    recv_array_expect_success (pub, msg_common, 0);
+    recv_array_expect_success (pub, msg_0a, 0);
+
+    // Test second message starting with 1
+    send_array_expect_success (sub, msg_common, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_1a, 0);
+
+    // Receive messages from subscriber
+    recv_array_expect_success (pub, msg_common, 0);
+    recv_array_expect_success (pub, msg_1a, 0);
+
+    // Test first message starting with 1
+    send_array_expect_success (sub, msg_1a, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_1b, 0);
+    recv_array_expect_success (pub, msg_1a, 0);
+    recv_array_expect_success (pub, msg_1b, 0);
+
+    send_array_expect_success (sub, msg_0a, ZMQ_SNDMORE);
+    send_array_expect_success (sub, msg_0b, 0);
+    recv_array_expect_success (pub, msg_0a, 0);
+    recv_array_expect_success (pub, msg_0b, 0);
+
+    //  Clean up.
+    test_context_socket_close (pub);
+    test_context_socket_close (sub);
+}
+#endif
+
 int main ()
 {
     setup_test_environment ();
@@ -467,6 +531,9 @@ int main ()
     RUN_TEST (test_missing_subscriptions);
     RUN_TEST (test_unsubscribe_cleanup);
     RUN_TEST (test_user_message);
+#ifdef ZMQ_ONLY_FIRST_SUBSCRIBE
+    RUN_TEST (test_user_message_multi);
+#endif
 
     return UNITY_END ();
 }

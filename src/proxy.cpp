@@ -89,9 +89,8 @@ typedef struct
 
 // Utility functions
 
-int capture (class zmq::socket_base_t *capture_,
-             zmq::msg_t *msg_,
-             int more_ = 0)
+static int
+capture (class zmq::socket_base_t *capture_, zmq::msg_t *msg_, int more_ = 0)
 {
     //  Copy message to capture socket if any
     if (capture_) {
@@ -109,12 +108,12 @@ int capture (class zmq::socket_base_t *capture_,
     return 0;
 }
 
-int forward (class zmq::socket_base_t *from_,
-             zmq_socket_stats_t *from_stats_,
-             class zmq::socket_base_t *to_,
-             zmq_socket_stats_t *to_stats_,
-             class zmq::socket_base_t *capture_,
-             zmq::msg_t *msg_)
+static int forward (class zmq::socket_base_t *from_,
+                    zmq_socket_stats_t *from_stats_,
+                    class zmq::socket_base_t *to_,
+                    zmq_socket_stats_t *to_stats_,
+                    class zmq::socket_base_t *capture_,
+                    zmq::msg_t *msg_)
 {
     // Forward a burst of messages
     for (unsigned int i = 0; i < zmq::proxy_burst_size; i++) {
@@ -128,8 +127,8 @@ int forward (class zmq::socket_base_t *from_,
             if (rc < 0) {
                 if (likely (errno == EAGAIN && i > 0))
                     return 0; // End of burst
-                else
-                    return -1;
+
+                return -1;
             }
 
             complete_msg_size += msg_->size ();
@@ -184,9 +183,9 @@ static int loop_and_send_multipart_stat (zmq::socket_base_t *control_,
     return rc;
 }
 
-int reply_stats (class zmq::socket_base_t *control_,
-                 zmq_socket_stats_t *frontend_stats_,
-                 zmq_socket_stats_t *backend_stats_)
+static int reply_stats (zmq::socket_base_t *control_,
+                        const zmq_socket_stats_t *frontend_stats_,
+                        const zmq_socket_stats_t *backend_stats_)
 {
     // first part: frontend stats - the first send might fail due to HWM
     if (loop_and_send_multipart_stat (control_, frontend_stats_->msg_in, true,

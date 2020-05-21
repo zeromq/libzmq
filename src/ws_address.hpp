@@ -65,8 +65,10 @@ class ws_address_t
     const char *host () const;
     const char *path () const;
 
-  private:
+  protected:
     ip_addr_t _address;
+
+  private:
     std::string _host;
     std::string _path;
 };

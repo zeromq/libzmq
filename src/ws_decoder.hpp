@@ -39,7 +39,7 @@ namespace zmq
 //  Decoder for Web socket framing protocol. Converts data stream into messages.
 //  The class has to inherit from shared_message_memory_allocator because
 //  the base class calls allocate in its constructor.
-class ws_decoder_t
+class ws_decoder_t ZMQ_FINAL
     : public decoder_base_t<ws_decoder_t, shared_message_memory_allocator>
 {
   public:
@@ -47,10 +47,10 @@ class ws_decoder_t
                   int64_t maxmsgsize_,
                   bool zero_copy_,
                   bool must_mask_);
-    virtual ~ws_decoder_t ();
+    ~ws_decoder_t ();
 
     //  i_decoder interface.
-    virtual msg_t *msg () { return &_in_progress; }
+    msg_t *msg () { return &_in_progress; }
 
   private:
     int opcode_ready (unsigned char const *);
@@ -74,8 +74,7 @@ class ws_decoder_t
     zmq::ws_protocol_t::opcode_t _opcode;
     unsigned char _mask[4];
 
-    ws_decoder_t (const ws_decoder_t &);
-    void operator= (const ws_decoder_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_decoder_t)
 };
 }
 

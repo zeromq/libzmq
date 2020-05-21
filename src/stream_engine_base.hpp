@@ -57,21 +57,24 @@ class stream_engine_base_t : public io_object_t, public i_engine
   public:
     stream_engine_base_t (fd_t fd_,
                           const options_t &options_,
-                          const endpoint_uri_pair_t &endpoint_uri_pair_);
-    ~stream_engine_base_t ();
+                          const endpoint_uri_pair_t &endpoint_uri_pair_,
+                          bool has_handshake_stage_);
+    ~stream_engine_base_t () ZMQ_OVERRIDE;
 
     //  i_engine interface implementation.
-    void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
-    void terminate ();
-    bool restart_input ();
-    void restart_output ();
-    void zap_msg_available ();
-    const endpoint_uri_pair_t &get_endpoint () const;
+    bool has_handshake_stage () ZMQ_FINAL { return _has_handshake_stage; };
+    void plug (zmq::io_thread_t *io_thread_,
+               zmq::session_base_t *session_) ZMQ_FINAL;
+    void terminate () ZMQ_FINAL;
+    bool restart_input () ZMQ_FINAL;
+    void restart_output () ZMQ_FINAL;
+    void zap_msg_available () ZMQ_FINAL;
+    const endpoint_uri_pair_t &get_endpoint () const ZMQ_FINAL;
 
     //  i_poll_events interface implementation.
-    void in_event ();
+    void in_event () ZMQ_FINAL;
     void out_event ();
-    void timer_event (int id_);
+    void timer_event (int id_) ZMQ_FINAL;
 
   protected:
     typedef metadata_t::dict_t properties_t;
@@ -87,7 +90,8 @@ class stream_engine_base_t : public io_object_t, public i_engine
     int push_msg_to_session (msg_t *msg_);
 
     int pull_and_encode (msg_t *msg_);
-    int decode_and_push (msg_t *msg_);
+    virtual int decode_and_push (msg_t *msg_);
+    int push_one_then_decode_and_push (msg_t *msg_);
 
     void set_handshake_timer ();
 
@@ -165,7 +169,6 @@ class stream_engine_base_t : public io_object_t, public i_engine
     void unplug ();
 
     int write_credential (msg_t *msg_);
-    int push_one_then_decode_and_push (msg_t *msg_);
 
     void mechanism_ready ();
 
@@ -188,11 +191,14 @@ class stream_engine_base_t : public io_object_t, public i_engine
     //  The session this engine is attached to.
     zmq::session_base_t *_session;
 
-    // Socket
+    //  Socket
     zmq::socket_base_t *_socket;
 
-    stream_engine_base_t (const stream_engine_base_t &);
-    const stream_engine_base_t &operator= (const stream_engine_base_t &);
+    //  Indicate if engine has an handshake stage, if it does, engine must call session.engine_ready
+    //  when handshake is completed.
+    bool _has_handshake_stage;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_engine_base_t)
 };
 }
 

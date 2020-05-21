@@ -37,16 +37,16 @@ namespace zmq
 {
 class msg_t;
 
-class plain_client_t : public mechanism_base_t
+class plain_client_t ZMQ_FINAL : public mechanism_base_t
 {
   public:
-    plain_client_t (session_base_t *const session_, const options_t &options_);
-    virtual ~plain_client_t ();
+    plain_client_t (session_base_t *session_, const options_t &options_);
+    ~plain_client_t ();
 
     // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
-    virtual status_t status () const;
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    status_t status () const;
 
   private:
     enum state_t

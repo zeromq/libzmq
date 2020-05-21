@@ -34,9 +34,9 @@ void tearDown ()
 {
 }
 
-int getlen (const zmq::generic_mtrie_t<int>::prefix_t &data)
+int getlen (const zmq::generic_mtrie_t<int>::prefix_t &data_)
 {
-    return (int) strlen (reinterpret_cast<const char *> (data));
+    return static_cast<int> (strlen (reinterpret_cast<const char *> (data_)));
 }
 
 void test_create ()
@@ -44,10 +44,10 @@ void test_create ()
     zmq::generic_mtrie_t<int> mtrie;
 }
 
-void mtrie_count (int *pipe, int *count)
+void mtrie_count (int *pipe_, int *count_)
 {
-    LIBZMQ_UNUSED (pipe);
-    ++*count;
+    LIBZMQ_UNUSED (pipe_);
+    ++*count_;
 }
 
 void test_check_empty_match_nonempty_data ()
@@ -187,14 +187,14 @@ void test_rm_nonexistent_empty ()
     TEST_ASSERT_EQUAL_INT (0, count);
 }
 
-void test_add_and_rm_other (const char *add_name, const char *rm_name)
+void test_add_and_rm_other (const char *add_name_, const char *rm_name_)
 {
     int addpipe, rmpipe;
     zmq::generic_mtrie_t<int> mtrie;
     const zmq::generic_mtrie_t<int>::prefix_t add_name_data =
-      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (add_name);
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (add_name_);
     const zmq::generic_mtrie_t<int>::prefix_t rm_name_data =
-      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (rm_name);
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (rm_name_);
 
     mtrie.add (add_name_data, getlen (add_name_data), &addpipe);
 
@@ -209,8 +209,8 @@ void test_add_and_rm_other (const char *add_name, const char *rm_name)
         TEST_ASSERT_EQUAL_INT (1, count);
     }
 
-    if (strncmp (add_name, rm_name,
-                 std::min (strlen (add_name), strlen (rm_name) + 1))
+    if (strncmp (add_name_, rm_name_,
+                 std::min (strlen (add_name_), strlen (rm_name_) + 1))
         != 0) {
         int count = 0;
         mtrie.match (rm_name_data, getlen (rm_name_data), mtrie_count, &count);
@@ -240,15 +240,15 @@ void test_rm_nonexistent_nonempty_prefixed ()
     test_add_and_rm_other ("foo", "foobar");
 }
 
-void add_indexed_expect_unique (zmq::generic_mtrie_t<int> &mtrie,
-                                int *pipes,
-                                const char **names,
-                                size_t i)
+void add_indexed_expect_unique (zmq::generic_mtrie_t<int> &mtrie_,
+                                int *pipes_,
+                                const char **names_,
+                                size_t i_)
 {
     const zmq::generic_mtrie_t<int>::prefix_t name_data =
-      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+      reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names_[i_]);
 
-    bool res = mtrie.add (name_data, getlen (name_data), &pipes[i]);
+    bool res = mtrie_.add (name_data, getlen (name_data), &pipes_[i_]);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
 }
 
@@ -270,12 +270,12 @@ void test_rm_nonexistent_between ()
 }
 
 template <size_t N>
-void add_entries (zmq::generic_mtrie_t<int> &mtrie,
-                  int (&pipes)[N],
-                  const char *(&names)[N])
+void add_entries (zmq::generic_mtrie_t<int> &mtrie_,
+                  int (&pipes_)[N],
+                  const char *(&names_)[N])
 {
     for (size_t i = 0; i < N; ++i) {
-        add_indexed_expect_unique (mtrie, pipes, names, i);
+        add_indexed_expect_unique (mtrie_, pipes_, names_, i);
     }
 }
 
@@ -303,7 +303,8 @@ void test_add_multiple_reverse ()
 
     zmq::generic_mtrie_t<int> mtrie;
     for (int i = 2; i >= 0; --i) {
-        add_indexed_expect_unique (mtrie, pipes, names, (size_t) i);
+        add_indexed_expect_unique (mtrie, pipes, names,
+                                   static_cast<size_t> (i));
     }
 
     for (size_t i = 0; i < 3; ++i) {
@@ -315,15 +316,15 @@ void test_add_multiple_reverse ()
     }
 }
 
-template <size_t N> void add_and_rm_entries (const char *(&names)[N])
+template <size_t N> void add_and_rm_entries (const char *(&names_)[N])
 {
     int pipes[N];
     zmq::generic_mtrie_t<int> mtrie;
-    add_entries (mtrie, pipes, names);
+    add_entries (mtrie, pipes, names_);
 
     for (size_t i = 0; i < N; ++i) {
         const zmq::generic_mtrie_t<int>::prefix_t name_data =
-          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[i]);
+          reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names_[i]);
 
         zmq::generic_mtrie_t<int>::rm_result res =
           mtrie.rm (name_data, getlen (name_data), &pipes[i]);
@@ -351,14 +352,14 @@ void check_name (zmq::generic_mtrie_t<int>::prefix_t data_,
     TEST_ASSERT_EQUAL_STRING_LEN (name_, data_, len_);
 }
 
-template <size_t N> void add_entries_rm_pipes_unique (const char *(&names)[N])
+template <size_t N> void add_entries_rm_pipes_unique (const char *(&names_)[N])
 {
     int pipes[N];
     zmq::generic_mtrie_t<int> mtrie;
-    add_entries (mtrie, pipes, names);
+    add_entries (mtrie, pipes, names_);
 
     for (size_t i = 0; i < N; ++i) {
-        mtrie.rm (&pipes[i], check_name, names[i], false);
+        mtrie.rm (&pipes[i], check_name, names_[i], false);
     }
 }
 
@@ -384,16 +385,16 @@ void check_count (zmq::generic_mtrie_t<int>::prefix_t data_,
     TEST_ASSERT_GREATER_OR_EQUAL (0, *count_);
 }
 
-void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie, int (&pipes)[2])
+void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie_, int (&pipes_)[2])
 {
     const char *name = "foo";
 
     const zmq::generic_mtrie_t<int>::prefix_t name_data =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (name);
 
-    bool res = mtrie.add (name_data, getlen (name_data), &pipes[0]);
+    bool res = mtrie_.add (name_data, getlen (name_data), &pipes_[0]);
     TEST_ASSERT_TRUE (res);
-    res = mtrie.add (name_data, getlen (name_data), &pipes[1]);
+    res = mtrie_.add (name_data, getlen (name_data), &pipes_[1]);
     TEST_ASSERT_FALSE (res);
 }
 

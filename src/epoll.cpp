@@ -96,7 +96,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
     pe->ev.data.ptr = pe;
     pe->events = events_;
 
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_ADD, fd_, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_ADD, fd_, &pe->ev);
     errno_assert (rc != -1);
 
     //  Increase the load metric of the thread.
@@ -109,7 +109,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 {
     check_thread ();
     poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
     _retired.push_back (pe);
@@ -123,7 +123,7 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events |= EPOLLIN;
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -132,7 +132,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events &= ~(static_cast<short> (EPOLLIN));
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -141,7 +141,7 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events |= EPOLLOUT;
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -150,7 +150,7 @@ void zmq::epoll_t::reset_pollout (handle_t handle_)
     check_thread ();
     poll_entry_t *pe = static_cast<poll_entry_t *> (handle_);
     pe->ev.events &= ~(static_cast<short> (EPOLLOUT));
-    int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
+    const int rc = epoll_ctl (_epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
 }
 
@@ -170,7 +170,7 @@ void zmq::epoll_t::loop ()
 
     while (true) {
         //  Execute any due timers.
-        int timeout = static_cast<int> (execute_timers ());
+        const int timeout = static_cast<int> (execute_timers ());
 
         if (get_load () == 0) {
             if (timeout == 0)
@@ -181,16 +181,16 @@ void zmq::epoll_t::loop ()
         }
 
         //  Wait for events.
-        int n = epoll_wait (_epoll_fd, &ev_buf[0], max_io_events,
-                            timeout ? timeout : -1);
+        const int n = epoll_wait (_epoll_fd, &ev_buf[0], max_io_events,
+                                  timeout ? timeout : -1);
         if (n == -1) {
             errno_assert (errno == EINTR);
             continue;
         }
 
         for (int i = 0; i < n; i++) {
-            poll_entry_t *pe =
-              (static_cast<poll_entry_t *> (ev_buf[i].data.ptr));
+            const poll_entry_t *const pe =
+              static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
 
             if (pe->fd == retired_fd)
                 continue;

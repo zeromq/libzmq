@@ -93,24 +93,30 @@ const char socket_type_dish[] = "DISH";
 const char socket_type_gather[] = "GATHER";
 const char socket_type_scatter[] = "SCATTER";
 const char socket_type_dgram[] = "DGRAM";
+const char socket_type_peer[] = "PEER";
+const char socket_type_channel[] = "CHANNEL";
 #endif
 
-const char *zmq::mechanism_t::socket_type_string (int socket_type_) const
+const char *zmq::mechanism_t::socket_type_string (int socket_type_)
 {
     // TODO the order must of the names must correspond to the values resp. order of ZMQ_* socket type definitions in zmq.h!
-    static const char *names[] = {
-      socket_type_pair,   socket_type_pub,    socket_type_sub,
-      socket_type_req,    socket_type_rep,    socket_type_dealer,
-      socket_type_router, socket_type_pull,   socket_type_push,
-      socket_type_xpub,   socket_type_xsub,   socket_type_stream,
+    static const char *names[] = {socket_type_pair,   socket_type_pub,
+                                  socket_type_sub,    socket_type_req,
+                                  socket_type_rep,    socket_type_dealer,
+                                  socket_type_router, socket_type_pull,
+                                  socket_type_push,   socket_type_xpub,
+                                  socket_type_xsub,   socket_type_stream,
 #ifdef ZMQ_BUILD_DRAFT_API
-      socket_type_server, socket_type_client, socket_type_radio,
-      socket_type_dish,   socket_type_gather, socket_type_scatter,
-      socket_type_dgram
+                                  socket_type_server, socket_type_client,
+                                  socket_type_radio,  socket_type_dish,
+                                  socket_type_gather, socket_type_scatter,
+                                  socket_type_dgram,  socket_type_peer,
+                                  socket_type_channel
 #endif
     };
     static const size_t names_count = sizeof (names) / sizeof (names[0]);
-    zmq_assert (socket_type_ >= 0 && socket_type_ < (int) names_count);
+    zmq_assert (socket_type_ >= 0
+                && socket_type_ < static_cast<int> (names_count));
     return names[socket_type_];
 }
 
@@ -352,6 +358,10 @@ bool zmq::mechanism_t::check_socket_type (const char *type_,
             return strequals (type_, len_, socket_type_gather);
         case ZMQ_DGRAM:
             return strequals (type_, len_, socket_type_dgram);
+        case ZMQ_PEER:
+            return strequals (type_, len_, socket_type_peer);
+        case ZMQ_CHANNEL:
+            return strequals (type_, len_, socket_type_channel);
 #endif
         default:
             break;

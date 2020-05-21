@@ -39,7 +39,7 @@
 
 namespace zmq
 {
-class ipc_listener_t : public stream_listener_base_t
+class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     ipc_listener_t (zmq::io_thread_t *io_thread_,
@@ -55,9 +55,6 @@ class ipc_listener_t : public stream_listener_base_t
   private:
     //  Handlers for I/O events.
     void in_event ();
-
-    // Create wildcard path address
-    static int create_wildcard_address (std::string &path_, std::string &file_);
 
     //  Filter new connections if the OS provides a mechanism to get
     //  the credentials of the peer process.  Called from accept().
@@ -82,11 +79,7 @@ class ipc_listener_t : public stream_listener_base_t
     //  Name of the file associated with the UNIX domain address.
     std::string _filename;
 
-    // Acceptable temporary directory environment variables
-    static const char *tmp_env_vars[];
-
-    ipc_listener_t (const ipc_listener_t &);
-    const ipc_listener_t &operator= (const ipc_listener_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_listener_t)
 };
 }
 

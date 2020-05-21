@@ -39,7 +39,7 @@ zmq::mechanism_base_t::mechanism_base_t (session_base_t *const session_,
 {
 }
 
-int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_)
+int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_) const
 {
     if (msg_->size () <= 1
         || msg_->size () <= (static_cast<uint8_t *> (msg_->data ()))[0]) {

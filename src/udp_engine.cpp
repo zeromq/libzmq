@@ -73,7 +73,7 @@ zmq::udp_engine_t::~udp_engine_t ()
 
     if (_fd != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (_fd);
+        const int rc = closesocket (_fd);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = close (_fd);
@@ -135,7 +135,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
             _out_address_len = out->sockaddr_len ();
 
             if (out->is_multicast ()) {
-                bool is_ipv6 = (out->family () == AF_INET6);
+                const bool is_ipv6 = (out->family () == AF_INET6);
                 rc = rc
                      | set_udp_multicast_loop (_fd, is_ipv6,
                                                _options.multicast_loop);
@@ -163,7 +163,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         ip_addr_t any = ip_addr_t::any (bind_addr->family ());
         const ip_addr_t *real_bind_addr;
 
-        bool multicast = udp_addr->is_mcast ();
+        const bool multicast = udp_addr->is_mcast ();
 
         if (multicast) {
             //  Multicast addresses should be allowed to bind to more than
@@ -236,8 +236,8 @@ int zmq::udp_engine_t::set_udp_multicast_loop (fd_t s_,
     }
 
     int loop = loop_ ? 1 : 0;
-    int rc = setsockopt (s_, level, optname, reinterpret_cast<char *> (&loop),
-                         sizeof (loop));
+    const int rc = setsockopt (s_, level, optname,
+                               reinterpret_cast<char *> (&loop), sizeof (loop));
     assert_success_or_recoverable (s_, rc);
     return rc;
 }
@@ -252,8 +252,9 @@ int zmq::udp_engine_t::set_udp_multicast_ttl (fd_t s_, bool is_ipv6_, int hops_)
         level = IPPROTO_IP;
     }
 
-    int rc = setsockopt (s_, level, IP_MULTICAST_TTL,
-                         reinterpret_cast<char *> (&hops_), sizeof (hops_));
+    const int rc =
+      setsockopt (s_, level, IP_MULTICAST_TTL,
+                  reinterpret_cast<char *> (&hops_), sizeof (hops_));
     assert_success_or_recoverable (s_, rc);
     return rc;
 }
@@ -291,8 +292,8 @@ int zmq::udp_engine_t::set_udp_multicast_iface (fd_t s_,
 int zmq::udp_engine_t::set_udp_reuse_address (fd_t s_, bool on_)
 {
     int on = on_ ? 1 : 0;
-    int rc = setsockopt (s_, SOL_SOCKET, SO_REUSEADDR,
-                         reinterpret_cast<char *> (&on), sizeof (on));
+    const int rc = setsockopt (s_, SOL_SOCKET, SO_REUSEADDR,
+                               reinterpret_cast<char *> (&on), sizeof (on));
     assert_success_or_recoverable (s_, rc);
     return rc;
 }
@@ -325,7 +326,7 @@ int zmq::udp_engine_t::add_membership (fd_t s_, const udp_address_t *addr_)
 
     } else if (mcast_addr->family () == AF_INET6) {
         struct ipv6_mreq mreq;
-        int iface = addr_->bind_if ();
+        const int iface = addr_->bind_if ();
 
         zmq_assert (iface >= -1);
 
@@ -343,7 +344,7 @@ int zmq::udp_engine_t::add_membership (fd_t s_, const udp_address_t *addr_)
 void zmq::udp_engine_t::error (error_reason_t reason_)
 {
     zmq_assert (_session);
-    _session->engine_error (reason_);
+    _session->engine_error (false, reason_);
     terminate ();
 }
 
@@ -360,7 +361,8 @@ void zmq::udp_engine_t::terminate ()
     delete this;
 }
 
-void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_)
+void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
+                                         const sockaddr_in *addr_)
 {
     const char *const name = inet_ntoa (addr_->sin_addr);
 
@@ -387,7 +389,7 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_, sockaddr_in *addr_)
     *address = 0;
 }
 
-int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
+int zmq::udp_engine_t::resolve_raw_address (const char *name_, size_t length_)
 {
     memset (&_raw_address, 0, sizeof _raw_address);
 
@@ -396,7 +398,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
     // Find delimiter, cannot use memrchr as it is not supported on windows
     if (length_ != 0) {
         int chars_left = static_cast<int> (length_);
-        char *current_char = name_ + length_;
+        const char *current_char = name_ + length_;
         do {
             if (*(--current_char) == ':') {
                 delimiter = current_char;
@@ -410,11 +412,11 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
         return -1;
     }
 
-    std::string addr_str (name_, delimiter - name_);
-    std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
+    const std::string addr_str (name_, delimiter - name_);
+    const std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
 
     //  Parse the port number (0 is not a valid port).
-    uint16_t port = static_cast<uint16_t> (atoi (port_str.c_str ()));
+    const uint16_t port = static_cast<uint16_t> (atoi (port_str.c_str ()));
     if (port == 0) {
         errno = EINVAL;
         return -1;

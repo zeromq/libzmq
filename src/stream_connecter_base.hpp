@@ -51,16 +51,16 @@ class stream_connecter_base_t : public own_t, public io_object_t
                              address_t *addr_,
                              bool delayed_start_);
 
-    ~stream_connecter_base_t ();
+    ~stream_connecter_base_t () ZMQ_OVERRIDE;
 
   protected:
     //  Handlers for incoming commands.
-    void process_plug ();
-    void process_term (int linger_);
+    void process_plug () ZMQ_FINAL;
+    void process_term (int linger_) ZMQ_OVERRIDE;
 
     //  Handlers for I/O events.
-    void in_event ();
-    void timer_event (int id_);
+    void in_event () ZMQ_OVERRIDE;
+    void timer_event (int id_) ZMQ_OVERRIDE;
 
     //  Internal function to create the engine after connection was established.
     virtual void create_engine (fd_t fd, const std::string &local_address_);
@@ -91,9 +91,6 @@ class stream_connecter_base_t : public own_t, public io_object_t
     // Socket
     zmq::socket_base_t *const _socket;
 
-    //  Reference to the session we belong to.
-    zmq::session_base_t *const _session;
-
   private:
     //  ID of the timer used to delay the reconnection.
     enum
@@ -117,8 +114,11 @@ class stream_connecter_base_t : public own_t, public io_object_t
     //  Current reconnect ivl, updated for backoff strategy
     int _current_reconnect_ivl;
 
-    stream_connecter_base_t (const stream_connecter_base_t &);
-    const stream_connecter_base_t &operator= (const stream_connecter_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_connecter_base_t)
+
+  protected:
+    //  Reference to the session we belong to.
+    zmq::session_base_t *const _session;
 };
 }
 

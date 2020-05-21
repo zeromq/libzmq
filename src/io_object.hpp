@@ -48,7 +48,7 @@ class io_object_t : public i_poll_events
 {
   public:
     io_object_t (zmq::io_thread_t *io_thread_ = NULL);
-    ~io_object_t ();
+    ~io_object_t () ZMQ_OVERRIDE;
 
     //  When migrating an object from one I/O thread to another, first
     //  unplug it, then migrate it, then plug it to the new thread.
@@ -69,15 +69,14 @@ class io_object_t : public i_poll_events
     void cancel_timer (int id_);
 
     //  i_poll_events interface implementation.
-    void in_event ();
-    void out_event ();
-    void timer_event (int id_);
+    void in_event () ZMQ_OVERRIDE;
+    void out_event () ZMQ_OVERRIDE;
+    void timer_event (int id_) ZMQ_OVERRIDE;
 
   private:
     poller_t *_poller;
 
-    io_object_t (const io_object_t &);
-    const io_object_t &operator= (const io_object_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (io_object_t)
 };
 }
 

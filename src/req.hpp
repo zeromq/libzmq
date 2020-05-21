@@ -40,7 +40,7 @@ class msg_t;
 class io_thread_t;
 class socket_base_t;
 
-class req_t : public dealer_t
+class req_t ZMQ_FINAL : public dealer_t
 {
   public:
     req_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -83,11 +83,10 @@ class req_t : public dealer_t
     //  still pending.
     bool _strict;
 
-    req_t (const req_t &);
-    const req_t &operator= (const req_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (req_t)
 };
 
-class req_session_t : public session_base_t
+class req_session_t ZMQ_FINAL : public session_base_t
 {
   public:
     req_session_t (zmq::io_thread_t *io_thread_,
@@ -109,8 +108,7 @@ class req_session_t : public session_base_t
         body
     } _state;
 
-    req_session_t (const req_session_t &);
-    const req_session_t &operator= (const req_session_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (req_session_t)
 };
 }
 

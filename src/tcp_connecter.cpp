@@ -103,6 +103,15 @@ void zmq::tcp_connecter_t::out_event ()
 
     const fd_t fd = connect ();
 
+    if (fd == retired_fd
+        && ((options.reconnect_stop & ZMQ_RECONNECT_STOP_CONN_REFUSED)
+            && errno == ECONNREFUSED)) {
+        send_conn_failed (_session);
+        close ();
+        terminate ();
+        return;
+    }
+
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd || !tune_socket (fd)) {
         close ();
@@ -266,6 +275,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             || err == WSAENOBUFS) {
             wsa_assert_no (err);
         }
+        errno = wsa_error_to_errno (err);
         return retired_fd;
     }
 #else
@@ -296,8 +306,8 @@ bool zmq::tcp_connecter_t::tune_socket (const fd_t fd_)
 {
     const int rc = tune_tcp_socket (fd_)
                    | tune_tcp_keepalives (
-                       fd_, options.tcp_keepalive, options.tcp_keepalive_cnt,
-                       options.tcp_keepalive_idle, options.tcp_keepalive_intvl)
+                     fd_, options.tcp_keepalive, options.tcp_keepalive_cnt,
+                     options.tcp_keepalive_idle, options.tcp_keepalive_intvl)
                    | tune_tcp_maxrt (fd_, options.tcp_maxrt);
     return rc == 0;
 }

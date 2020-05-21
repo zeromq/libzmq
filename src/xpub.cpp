@@ -41,7 +41,10 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     _verbose_subs (false),
     _verbose_unsubs (false),
-    _more (false),
+    _more_send (false),
+    _more_recv (false),
+    _process_subscribe (false),
+    _only_first_subscribe (false),
     _lossy (true),
     _manual (false),
     _send_last_pipe (false),
@@ -76,9 +79,9 @@ void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
     if (_welcome_msg.size () > 0) {
         msg_t copy;
         copy.init ();
-        int rc = copy.copy (_welcome_msg);
+        const int rc = copy.copy (_welcome_msg);
         errno_assert (rc == 0);
-        bool ok = pipe_->write (&copy);
+        const bool ok = pipe_->write (&copy);
         zmq_assert (ok);
         pipe_->flush ();
     }
@@ -91,31 +94,46 @@ void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
 void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 {
     //  There are some subscriptions waiting. Let's process them.
-    msg_t sub;
-    while (pipe_->read (&sub)) {
-        metadata_t *metadata = sub.metadata ();
-        unsigned char *msg_data = static_cast<unsigned char *> (sub.data ()),
+    msg_t msg;
+    while (pipe_->read (&msg)) {
+        metadata_t *metadata = msg.metadata ();
+        unsigned char *msg_data = static_cast<unsigned char *> (msg.data ()),
                       *data = NULL;
         size_t size = 0;
         bool subscribe = false;
+        bool is_subscribe_or_cancel = false;
+        bool notify = false;
 
-        //  Apply the subscription to the trie
-        if (sub.is_subscribe () || sub.is_cancel ()) {
-            data = static_cast<unsigned char *> (sub.command_body ());
-            size = sub.command_body_size ();
-            subscribe = sub.is_subscribe ();
-        } else if (sub.size () > 0 && (*msg_data == 0 || *msg_data == 1)) {
-            data = msg_data + 1;
-            size = sub.size () - 1;
-            subscribe = *msg_data == 1;
-        } else {
+        const bool first_part = !_more_recv;
+        _more_recv = (msg.flags () & msg_t::more) != 0;
+
+        if (first_part || _process_subscribe) {
+            //  Apply the subscription to the trie
+            if (msg.is_subscribe () || msg.is_cancel ()) {
+                data = static_cast<unsigned char *> (msg.command_body ());
+                size = msg.command_body_size ();
+                subscribe = msg.is_subscribe ();
+                is_subscribe_or_cancel = true;
+            } else if (msg.size () > 0 && (*msg_data == 0 || *msg_data == 1)) {
+                data = msg_data + 1;
+                size = msg.size () - 1;
+                subscribe = *msg_data == 1;
+                is_subscribe_or_cancel = true;
+            }
+        }
+
+        if (first_part)
+            _process_subscribe =
+              !_only_first_subscribe || is_subscribe_or_cancel;
+
+        if (!is_subscribe_or_cancel) {
             //  Process user message coming upstream from xsub socket
-            _pending_data.push_back (blob_t (msg_data, sub.size ()));
+            _pending_data.push_back (blob_t (msg_data, msg.size ()));
             if (metadata)
                 metadata->add_ref ();
             _pending_metadata.push_back (metadata);
-            _pending_flags.push_back (sub.flags ());
-            sub.close ();
+            _pending_flags.push_back (msg.flags ());
+            msg.close ();
             continue;
         }
 
@@ -127,54 +145,47 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 _manual_subscriptions.add (data, size, pipe_);
 
             _pending_pipes.push_back (pipe_);
-
-            //  ZMTP 3.1 hack: we need to support sub/cancel commands, but
-            //  we can't give them back to userspace as it would be an API
-            //  breakage since the payload of the message is completely
-            //  different. Manually craft an old-style message instead.
-            data = data - 1;
-            size = size + 1;
-            if (subscribe)
-                *data = 1;
-            else
-                *data = 0;
-
-            _pending_data.push_back (blob_t (data, size));
-            if (metadata)
-                metadata->add_ref ();
-            _pending_metadata.push_back (metadata);
-            _pending_flags.push_back (0);
         } else {
-            bool notify;
             if (!subscribe) {
-                mtrie_t::rm_result rm_result =
+                const mtrie_t::rm_result rm_result =
                   _subscriptions.rm (data, size, pipe_);
                 //  TODO reconsider what to do if rm_result == mtrie_t::not_found
                 notify = rm_result != mtrie_t::values_remain || _verbose_unsubs;
             } else {
-                bool first_added = _subscriptions.add (data, size, pipe_);
+                const bool first_added = _subscriptions.add (data, size, pipe_);
                 notify = first_added || _verbose_subs;
             }
-
-            //  If the request was a new subscription, or the subscription
-            //  was removed, or verbose mode is enabled, store it so that
-            //  it can be passed to the user on next recv call.
-            if (options.type == ZMQ_XPUB && notify) {
-                data = data - 1;
-                size = size + 1;
-                if (subscribe)
-                    *data = 1;
-                else
-                    *data = 0;
-
-                _pending_data.push_back (blob_t (data, size));
-                if (metadata)
-                    metadata->add_ref ();
-                _pending_metadata.push_back (metadata);
-                _pending_flags.push_back (0);
-            }
         }
-        sub.close ();
+
+        //  If the request was a new subscription, or the subscription
+        //  was removed, or verbose mode or manual mode are enabled, store it
+        //  so that it can be passed to the user on next recv call.
+        if (_manual || (options.type == ZMQ_XPUB && notify)) {
+            //  ZMTP 3.1 hack: we need to support sub/cancel commands, but
+            //  we can't give them back to userspace as it would be an API
+            //  breakage since the payload of the message is completely
+            //  different. Manually craft an old-style message instead.
+            //  Although with other transports it would be possible to simply
+            //  reuse the same buffer and prefix a 0/1 byte to the topic, with
+            //  inproc the subscribe/cancel command string is not present in
+            //  the message, so this optimization is not possible.
+            //  The pushback makes a copy of the data array anyway, so the
+            //  number of buffer copies does not change.
+            blob_t notification (size + 1);
+            if (subscribe)
+                *notification.data () = 1;
+            else
+                *notification.data () = 0;
+            memcpy (notification.data () + 1, data, size);
+
+            _pending_data.push_back (ZMQ_MOVE (notification));
+            if (metadata)
+                metadata->add_ref ();
+            _pending_metadata.push_back (metadata);
+            _pending_flags.push_back (0);
+        }
+
+        msg.close ();
     }
 }
 
@@ -189,7 +200,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
 {
     if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
         || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE || option_ == ZMQ_XPUB_NODROP
-        || option_ == ZMQ_XPUB_MANUAL) {
+        || option_ == ZMQ_XPUB_MANUAL || option_ == ZMQ_ONLY_FIRST_SUBSCRIBE) {
         if (optvallen_ != sizeof (int)
             || *static_cast<const int *> (optval_) < 0) {
             errno = EINVAL;
@@ -208,6 +219,8 @@ int zmq::xpub_t::xsetsockopt (int option_,
             _lossy = (*static_cast<const int *> (optval_) == 0);
         else if (option_ == ZMQ_XPUB_MANUAL)
             _manual = (*static_cast<const int *> (optval_) != 0);
+        else if (option_ == ZMQ_ONLY_FIRST_SUBSCRIBE)
+            _only_first_subscribe = (*static_cast<const int *> (optval_) != 0);
     } else if (option_ == ZMQ_SUBSCRIBE && _manual) {
         if (_last_pipe != NULL)
             _subscriptions.add ((unsigned char *) optval_, optvallen_,
@@ -220,7 +233,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
         _welcome_msg.close ();
 
         if (optvallen_ > 0) {
-            int rc = _welcome_msg.init_size (optvallen_);
+            const int rc = _welcome_msg.init_size (optvallen_);
             errno_assert (rc == 0);
 
             unsigned char *data =
@@ -251,7 +264,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  Remove pipe without actually sending the message as it was taken
         //  care of by the manual call above. subscriptions is the real mtrie,
         //  so the pipe must be removed from there or it will be left over.
-        _subscriptions.rm (pipe_, stub, (void *) NULL, false);
+        _subscriptions.rm (pipe_, stub, static_cast<void *> (NULL), false);
     } else {
         //  Remove the pipe from the trie. If there are topics that nobody
         //  is interested in anymore, send corresponding unsubscriptions
@@ -275,10 +288,10 @@ void zmq::xpub_t::mark_last_pipe_as_matching (pipe_t *pipe_, xpub_t *self_)
 
 int zmq::xpub_t::xsend (msg_t *msg_)
 {
-    bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
 
     //  For the first part of multi-part message, find the matching pipes.
-    if (!_more) {
+    if (!_more_send) {
         if (unlikely (_manual && _last_pipe && _send_last_pipe)) {
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
                                   msg_->size (), mark_last_pipe_as_matching,
@@ -300,7 +313,7 @@ int zmq::xpub_t::xsend (msg_t *msg_)
             //  all the pipes as non-matching.
             if (!msg_more)
                 _dist.unmatch ();
-            _more = msg_more;
+            _more_send = msg_more;
             rc = 0; //  Yay, sent successfully
         }
     } else

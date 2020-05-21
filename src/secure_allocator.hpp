@@ -48,7 +48,8 @@ template <class T> struct secure_allocator_t
 {
     typedef T value_type;
 
-    secure_allocator_t () {}
+    secure_allocator_t () ZMQ_DEFAULT;
+
     template <class U>
     secure_allocator_t (const secure_allocator_t<U> &) ZMQ_NOEXCEPT
     {

@@ -45,6 +45,8 @@
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+#define ZMQ_PEER 19
+#define ZMQ_CHANNEL 20
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
@@ -57,6 +59,18 @@
 #define ZMQ_SOCKS_PASSWORD 100
 #define ZMQ_IN_BATCH_SIZE 101
 #define ZMQ_OUT_BATCH_SIZE 102
+#define ZMQ_WSS_KEY_PEM 103
+#define ZMQ_WSS_CERT_PEM 104
+#define ZMQ_WSS_TRUST_PEM 105
+#define ZMQ_WSS_HOSTNAME 106
+#define ZMQ_WSS_TRUST_SYSTEM 107
+#define ZMQ_ONLY_FIRST_SUBSCRIBE 108
+#define ZMQ_RECONNECT_STOP 109
+#define ZMQ_HELLO_MSG 110
+#define ZMQ_DISCONNECT_MSG 111
+
+/*  DRAFT ZMQ_RECONNECT_STOP options                                          */
+#define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
@@ -80,6 +94,7 @@ int zmq_msg_set_routing_id (zmq_msg_t *msg_, uint32_t routing_id_);
 uint32_t zmq_msg_routing_id (zmq_msg_t *msg_);
 int zmq_msg_set_group (zmq_msg_t *msg_, const char *group_);
 const char *zmq_msg_group (zmq_msg_t *msg_);
+int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -111,6 +126,7 @@ typedef struct zmq_poller_event_t
 
 void *zmq_poller_new (void);
 int zmq_poller_destroy (void **poller_p_);
+int zmq_poller_size (void *poller_);
 int zmq_poller_add (void *poller_,
                     void *socket_,
                     void *user_data_,

@@ -178,16 +178,16 @@ template <typename T> class atomic_ptr_t
 {
   public:
     //  Initialise atomic pointer
-    inline atomic_ptr_t () ZMQ_NOEXCEPT { _ptr = NULL; }
+    atomic_ptr_t () ZMQ_NOEXCEPT { _ptr = NULL; }
 
     //  Set value of atomic pointer in a non-threadsafe way
     //  Use this function only when you are sure that at most one
     //  thread is accessing the pointer at the moment.
-    inline void set (T *ptr_) ZMQ_NOEXCEPT { _ptr = ptr_; }
+    void set (T *ptr_) ZMQ_NOEXCEPT { _ptr = ptr_; }
 
     //  Perform atomic 'exchange pointers' operation. Pointer is set
     //  to the 'val_' value. Old value is returned.
-    inline T *xchg (T *val_) ZMQ_NOEXCEPT
+    T *xchg (T *val_) ZMQ_NOEXCEPT
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
         return _ptr.exchange (val_, std::memory_order_acq_rel);
@@ -205,7 +205,7 @@ template <typename T> class atomic_ptr_t
     //  The pointer is compared to 'cmp' argument and if they are
     //  equal, its value is set to 'val_'. Old value of the pointer
     //  is returned.
-    inline T *cas (T *cmp_, T *val_) ZMQ_NOEXCEPT
+    T *cas (T *cmp_, T *val_) ZMQ_NOEXCEPT
     {
 #if defined ZMQ_ATOMIC_PTR_CXX11
         _ptr.compare_exchange_strong (cmp_, val_, std::memory_order_acq_rel);
@@ -232,8 +232,7 @@ template <typename T> class atomic_ptr_t
 #endif
 
 #if !defined ZMQ_ATOMIC_PTR_CXX11
-    atomic_ptr_t (const atomic_ptr_t &);
-    const atomic_ptr_t &operator= (const atomic_ptr_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (atomic_ptr_t)
 #endif
 };
 

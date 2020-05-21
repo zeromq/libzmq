@@ -74,7 +74,7 @@ class timers_t
     int execute ();
 
     //  Return false if object is not a timers class.
-    bool check_tag ();
+    bool check_tag () const;
 
   private:
     //  Used to check whether the object is a timers class.
@@ -99,10 +99,9 @@ class timers_t
     typedef std::set<int> cancelled_timers_t;
     cancelled_timers_t _cancelled_timers;
 
-    timers_t (const timers_t &);
-    const timers_t &operator= (const timers_t &);
-
     struct match_by_id;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (timers_t)
 };
 }
 

@@ -55,14 +55,13 @@ class metadata_t
     bool drop_ref ();
 
   private:
-    metadata_t (const metadata_t &);
-    metadata_t &operator= (const metadata_t &);
-
     //  Reference counter.
     atomic_counter_t _ref_cnt;
 
     //  Dictionary holding metadata.
     const dict_t _dict;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (metadata_t)
 };
 }
 

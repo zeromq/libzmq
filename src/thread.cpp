@@ -50,7 +50,7 @@ static DWORD thread_routine (LPVOID arg_)
 static unsigned int __stdcall thread_routine (void *arg_)
 #endif
 {
-    zmq::thread_t *self = (zmq::thread_t *) arg_;
+    zmq::thread_t *self = static_cast<zmq::thread_t *> (arg_);
     self->applyThreadName ();
     self->_tfn (self->_arg);
     return 0;
@@ -82,9 +82,9 @@ bool zmq::thread_t::is_current_thread () const
 void zmq::thread_t::stop ()
 {
     if (_started) {
-        DWORD rc = WaitForSingleObject (_descriptor, INFINITE);
+        const DWORD rc = WaitForSingleObject (_descriptor, INFINITE);
         win_assert (rc != WAIT_FAILED);
-        BOOL rc2 = CloseHandle (_descriptor);
+        const BOOL rc2 = CloseHandle (_descriptor);
         win_assert (rc2 != 0);
     }
 }
@@ -154,7 +154,7 @@ void zmq::thread_t::
 
     // push our handler, raise, and finally pop our handler
     tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *) &rec;
-    DWORD MS_VC_EXCEPTION = 0x406D1388;
+    const DWORD MS_VC_EXCEPTION = 0x406D1388;
     RaiseException (MS_VC_EXCEPTION, 0,
                     sizeof (thread_info) / sizeof (ULONG_PTR),
                     (ULONG_PTR *) &thread_info);
@@ -277,10 +277,10 @@ bool zmq::thread_t::is_current_thread () const
 }
 
 void zmq::thread_t::setSchedulingParameters (
-  int priority_, int schedulingPolicy_, const std::set<int> &affinity_cpus_)
+  int priority_, int scheduling_policy_, const std::set<int> &affinity_cpus_)
 {
     _thread_priority = priority_;
-    _thread_sched_policy = schedulingPolicy_;
+    _thread_sched_policy = scheduling_policy_;
     _thread_affinity_cpus = affinity_cpus_;
 }
 
@@ -355,8 +355,9 @@ void zmq::thread_t::
     if (!_thread_affinity_cpus.empty ()) {
         cpu_set_t cpuset;
         CPU_ZERO (&cpuset);
-        for (std::set<int>::const_iterator it = _thread_affinity_cpus.begin ();
-             it != _thread_affinity_cpus.end (); it++) {
+        for (std::set<int>::const_iterator it = _thread_affinity_cpus.begin (),
+                                           end = _thread_affinity_cpus.end ();
+             it != end; it++) {
             CPU_SET ((int) (*it), &cpuset);
         }
         rc =

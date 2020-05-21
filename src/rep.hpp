@@ -39,7 +39,7 @@ class msg_t;
 class io_thread_t;
 class socket_base_t;
 
-class rep_t : public router_t
+class rep_t ZMQ_FINAL : public router_t
 {
   public:
     rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
@@ -60,8 +60,7 @@ class rep_t : public router_t
     //  of the request is the backtrace stack.
     bool _request_begins;
 
-    rep_t (const rep_t &);
-    const rep_t &operator= (const rep_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (rep_t)
 };
 }
 

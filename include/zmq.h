@@ -397,7 +397,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_GSSAPI 3
 
 /*  RADIO-DISH protocol                                                       */
-#define ZMQ_GROUP_MAX_LENGTH 15
+#define ZMQ_GROUP_MAX_LENGTH 255
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IDENTITY ZMQ_ROUTING_ID
@@ -658,6 +658,8 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+#define ZMQ_PEER 19
+#define ZMQ_CHANNEL 20
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
@@ -675,7 +677,13 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_WSS_TRUST_PEM 105
 #define ZMQ_WSS_HOSTNAME 106
 #define ZMQ_WSS_TRUST_SYSTEM 107
+#define ZMQ_ONLY_FIRST_SUBSCRIBE 108
+#define ZMQ_RECONNECT_STOP 109
+#define ZMQ_HELLO_MSG 110
+#define ZMQ_DISCONNECT_MSG 111
 
+/*  DRAFT ZMQ_RECONNECT_STOP options                                          */
+#define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
@@ -693,12 +701,15 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
 ZMQ_EXPORT int zmq_leave (void *s, const char *group);
+ZMQ_EXPORT uint32_t zmq_connect_peer (void *s_, const char *addr_);
 
 /*  DRAFT Msg methods.                                                        */
 ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
 ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
+ZMQ_EXPORT int
+zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -726,6 +737,7 @@ typedef struct zmq_poller_event_t
 
 ZMQ_EXPORT void *zmq_poller_new (void);
 ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int zmq_poller_size (void *poller);
 ZMQ_EXPORT int
 zmq_poller_add (void *poller, void *socket, void *user_data, short events);
 ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);

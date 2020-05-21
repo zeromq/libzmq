@@ -6,7 +6,7 @@ os:
 - linux
 - osx
 
-dist: trusty
+dist: bionic
 
 cache: ccache
 
@@ -29,23 +29,24 @@ env:
 matrix:
   include:
   - if: type = cron OR (branch =~ analyze$ AND type = push)
-    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-6.0 CC=clang-6.0 CXX=clang++-6.0
+    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-8 CC=clang-8 CXX=clang++-8
     os: linux
     compiler: clang
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-6.0
+          - llvm-toolchain-trusty-8
         packages:
-          - clang-6.0
-          - clang-tools-6.0
-          - clang-tidy-6.0
+          - clang-8
+          - clang-tools-8
+          - clang-tidy-8
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
+    dist: xenial
     addons:
       apt:
         packages:
@@ -92,30 +93,24 @@ matrix:
         - libpgm-dev
         - libsodium-dev
         - libnss3-dev
+        - libbsd-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
-  - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
-    dist: trusty
     addons:
       apt:
-        sources:
-        - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
-        - g++-6
-        - gcc-6
+        - libsodium-dev
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
-  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=/usr/lib/llvm-7/bin/clang-format
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=/usr/lib/llvm-8/bin/clang-format
     os: linux
     addons:
       apt:
-        sources:
-        - llvm-toolchain-trusty-7
-        - ubuntu-toolchain-r-test
         packages:
-        - clang-format-7
+        - clang-format-8
   - env: BUILD_TYPE=default POLLER=poll
     os: linux
   - env: BUILD_TYPE=default POLLER=select
@@ -146,13 +141,15 @@ matrix:
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
 - if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew update; brew install libsodium ; fi
+# To allow sonar to process history information, unshallow clone first.
 - if [ -n "$CLANG_TIDY" ] ; then
+    git fetch --unshallow ;
     curl -L https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip -o build-wrapper-linux-x86.zip ;
     unzip build-wrapper-linux-x86.zip ;
     export SONARCLOUD_BUILD_WRAPPER_PATH="$(pwd)/build-wrapper-linux-x86/" ;
-    curl -L https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.1.0.1141-linux.zip -o sonar-scanner-cli.zip ;
+    curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip -o sonar-scanner-cli.zip ;
     unzip sonar-scanner-cli.zip ;
-    export SONAR_SCANNER_CLI_PATH="$(pwd)/sonar-scanner-3.1.0.1141-linux/bin/" ;
+    export SONAR_SCANNER_CLI_PATH="$(pwd)/sonar-scanner-4.2.0.1873-linux/bin/" ;
   fi
 
 before_script:

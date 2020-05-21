@@ -297,8 +297,8 @@ Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented trans
 
 ZMQ_IDENTITY: Retrieve socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This option name is now deprecated. Use ZMQ_ROUTING_ID instead. 
-ZMQ_IDENTITY remains as an alias for now. 
+This option name is now deprecated. Use ZMQ_ROUTING_ID instead.
+ZMQ_IDENTITY remains as an alias for now.
 
 
 ZMQ_IMMEDIATE: Retrieve attach-on-connect value
@@ -626,6 +626,22 @@ Default value:: 0 (only use ZMQ_RECONNECT_IVL)
 Applicable socket types:: all, only for connection-oriented transport
 
 
+ZMQ_RECONNECT_STOP: Retrieve condition where reconnection will stop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_STOP' option shall retrieve the conditions under which
+automatic reconnection will stop.
+
+The 'ZMQ_RECONNECT_STOP_CONN_REFUSED' option will stop reconnection when 0MQ
+receives the ECONNREFUSED return code from the connect.  This indicates that
+there is no code bound to the specified endpoint.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 'ZMQ_RECONNECT_STOP_CONN_REFUSED'
+Default value:: 0
+Applicable socket types:: all, only for connection-oriented transports
+
+
 ZMQ_RECOVERY_IVL: Get multicast recovery interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECOVERY_IVL' option shall retrieve the recovery interval for
@@ -786,11 +802,12 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_THREAD_SAFE: Retrieve socket thread safety
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_SAFE' option shall retrieve a boolean value indicating whether
-or not the socket is threadsafe. Currently 'ZMQ_CLIENT' and 'ZMQ_SERVER' sockets
-are threadsafe.
+or not the socket is threadsafe. See linkzmq:zmq_socket[3] for which sockets are
+thread-safe.
 
 [horizontal]
-Option value type:: boolean
+Option value type:: int
+Option value unit:: boolean
 Applicable socket types:: all
 
 
@@ -823,7 +840,7 @@ ZMQ_ZAP_DOMAIN: Retrieve RFC 27 authentication domain
 
 The 'ZMQ_ZAP_DOMAIN' option shall retrieve the last ZAP domain set for
 the socket. The returned value shall be a NULL-terminated string and MAY
-be empty. An empty string means that ZAP authentication is disabled. 
+be empty. An empty string means that ZAP authentication is disabled.
 The returned size SHALL include the terminating null byte.
 
 [horizontal]

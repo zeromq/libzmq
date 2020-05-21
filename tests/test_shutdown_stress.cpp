@@ -48,7 +48,7 @@ struct thread_data
 extern "C" {
 static void worker (void *data_)
 {
-    struct thread_data *tdata = (struct thread_data *) data_;
+    const thread_data *const tdata = static_cast<const thread_data *> (data_);
 
     void *socket = zmq_socket (get_test_context (), ZMQ_SUB);
 

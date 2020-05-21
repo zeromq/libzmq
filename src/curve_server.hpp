@@ -42,20 +42,21 @@ namespace zmq
 #pragma warning(push)
 #pragma warning(disable : 4250)
 #endif
-class curve_server_t : public zap_client_common_handshake_t,
-                       public curve_mechanism_base_t
+class curve_server_t ZMQ_FINAL : public zap_client_common_handshake_t,
+                                 public curve_mechanism_base_t
 {
   public:
     curve_server_t (session_base_t *session_,
                     const std::string &peer_address_,
-                    const options_t &options_);
-    virtual ~curve_server_t ();
+                    const options_t &options_,
+                    const bool downgrade_sub_);
+    ~curve_server_t ();
 
     // mechanism implementation
-    virtual int next_handshake_command (msg_t *msg_);
-    virtual int process_handshake_command (msg_t *msg_);
-    virtual int encode (msg_t *msg_);
-    virtual int decode (msg_t *msg_);
+    int next_handshake_command (msg_t *msg_);
+    int process_handshake_command (msg_t *msg_);
+    int encode (msg_t *msg_);
+    int decode (msg_t *msg_);
 
   private:
     //  Our secret key (s)

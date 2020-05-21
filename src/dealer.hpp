@@ -47,21 +47,23 @@ class dealer_t : public socket_base_t
 {
   public:
     dealer_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
-    ~dealer_t ();
+    ~dealer_t () ZMQ_OVERRIDE;
 
   protected:
     //  Overrides of functions from socket_base_t.
     void xattach_pipe (zmq::pipe_t *pipe_,
                        bool subscribe_to_all_,
-                       bool locally_initiated_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    int xsend (zmq::msg_t *msg_);
-    int xrecv (zmq::msg_t *msg_);
-    bool xhas_in ();
-    bool xhas_out ();
-    void xread_activated (zmq::pipe_t *pipe_);
-    void xwrite_activated (zmq::pipe_t *pipe_);
-    void xpipe_terminated (zmq::pipe_t *pipe_);
+                       bool locally_initiated_) ZMQ_FINAL;
+    int xsetsockopt (int option_,
+                     const void *optval_,
+                     size_t optvallen_) ZMQ_OVERRIDE;
+    int xsend (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    int xrecv (zmq::msg_t *msg_) ZMQ_OVERRIDE;
+    bool xhas_in () ZMQ_OVERRIDE;
+    bool xhas_out () ZMQ_OVERRIDE;
+    void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
+    void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_OVERRIDE;
 
     //  Send and recv - knowing which pipe was used.
     int sendpipe (zmq::msg_t *msg_, zmq::pipe_t **pipe_);
@@ -76,8 +78,7 @@ class dealer_t : public socket_base_t
     // if true, send an empty message to every connected router peer
     bool _probe_router;
 
-    dealer_t (const dealer_t &);
-    const dealer_t &operator= (const dealer_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (dealer_t)
 };
 }
 

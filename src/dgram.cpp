@@ -94,7 +94,7 @@ int zmq::dgram_t::xsend (msg_t *msg_)
 {
     // If there's no out pipe, just drop it.
     if (!_pipe) {
-        int rc = msg_->close ();
+        const int rc = msg_->close ();
         errno_assert (rc == 0);
         return -1;
     }
@@ -127,7 +127,7 @@ int zmq::dgram_t::xsend (msg_t *msg_)
     _more_out = !_more_out;
 
     //  Detach the message from the data buffer.
-    int rc = msg_->init ();
+    const int rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;

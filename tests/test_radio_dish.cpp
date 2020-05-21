@@ -96,6 +96,35 @@ void test_leave_unjoined_fails ()
     test_context_socket_close (dish);
 }
 
+void test_long_group ()
+{
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *radio = test_context_socket (ZMQ_RADIO);
+    bind_loopback (radio, false, my_endpoint, len);
+
+    void *dish = test_context_socket (ZMQ_DISH);
+
+    // Joining to a long group, over 14 chars
+    char group[19] = "0123456789ABCDEFGH";
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, group));
+
+    // Connecting
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dish, my_endpoint));
+
+    msleep (SETTLE_TIME);
+
+    //  This is going to be sent to the dish
+    msg_send_expect_success (radio, group, "HELLO");
+
+    //  Check the correct message arrived
+    msg_recv_cmp (dish, group, "HELLO");
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
 void test_join_too_long_fails ()
 {
     void *dish = test_context_socket (ZMQ_DISH);
@@ -257,9 +286,8 @@ static const char *mcast_url (int ipv6_)
 {
     if (ipv6_) {
         return "udp://[" MCAST_IPV6 "]:5555";
-    } else {
-        return "udp://" MCAST_IPV4 ":5555";
     }
+    return "udp://" MCAST_IPV4 ":5555";
 }
 
 //  OSX uses a different name for this socket option
@@ -351,7 +379,7 @@ static bool is_multicast_available (int ipv6_)
 
     if (ipv6_) {
         struct ipv6_mreq mreq;
-        struct sockaddr_in6 *mcast_ipv6 = &mcast.ipv6;
+        const sockaddr_in6 *const mcast_ipv6 = &mcast.ipv6;
 
         mreq.ipv6mr_multiaddr = mcast_ipv6->sin6_addr;
         mreq.ipv6mr_interface = 0;
@@ -370,7 +398,7 @@ static bool is_multicast_available (int ipv6_)
         }
     } else {
         struct ip_mreq mreq;
-        struct sockaddr_in *mcast_ipv4 = &mcast.ipv4;
+        const sockaddr_in *const mcast_ipv4 = &mcast.ipv4;
 
         mreq.imr_multiaddr = mcast_ipv4->sin_addr;
         mreq.imr_interface.s_addr = htonl (INADDR_ANY);
@@ -506,6 +534,7 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_leave_unjoined_fails);
     RUN_TEST (test_join_too_long_fails);
+    RUN_TEST (test_long_group);
     RUN_TEST (test_join_twice_fails);
     RUN_TEST (test_radio_bind_fails_ipv4);
     RUN_TEST (test_radio_bind_fails_ipv6);

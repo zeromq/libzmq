@@ -39,11 +39,12 @@
 #include "tcp.hpp"
 #include "address.hpp"
 #include "ws_address.hpp"
-#include "session_base.hpp"
 #include "ws_engine.hpp"
+#include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
 #include "wss_engine.hpp"
+#include "wss_address.hpp"
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -73,7 +74,7 @@ zmq::ws_connecter_t::ws_connecter_t (class io_thread_t *io_thread_,
                                      address_t *addr_,
                                      bool delayed_start_,
                                      bool wss_,
-                                     const char *tls_hostname_) :
+                                     const std::string &tls_hostname_) :
     stream_connecter_base_t (
       io_thread_, session_, options_, addr_, delayed_start_),
     _connect_timer_started (false),
@@ -118,7 +119,16 @@ void zmq::ws_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd, get_socket_name<ws_address_t> (fd, socket_end_local));
+    if (_wss)
+#ifdef ZMQ_HAVE_WSS
+        create_engine (fd,
+                       get_socket_name<wss_address_t> (fd, socket_end_local));
+#else
+        assert (false);
+#endif
+    else
+        create_engine (fd,
+                       get_socket_name<ws_address_t> (fd, socket_end_local));
 }
 
 void zmq::ws_connecter_t::timer_event (int id_)
@@ -184,10 +194,10 @@ int zmq::ws_connecter_t::open ()
     unblock_socket (_s);
 
     //  Connect to the remote peer.
-#if defined ZMQ_HAVE_VXWORKS
+#ifdef ZMQ_HAVE_VXWORKS
     int rc = ::connect (_s, (sockaddr *) tcp_addr.addr (), tcp_addr.addrlen ());
 #else
-    int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
+    const int rc = ::connect (_s, tcp_addr.addr (), tcp_addr.addrlen ());
 #endif
     //  Connect was successful immediately.
     if (rc == 0) {
@@ -264,7 +274,7 @@ bool zmq::ws_connecter_t::tune_socket (const fd_t fd_)
     return rc == 0;
 }
 
-void zmq::ws_connecter_t::create_engine (fd_t fd,
+void zmq::ws_connecter_t::create_engine (fd_t fd_,
                                          const std::string &local_address_)
 {
     const endpoint_uri_pair_t endpoint_pair (local_address_, _endpoint,
@@ -275,14 +285,14 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
         engine = new (std::nothrow)
-          wss_engine_t (fd, options, endpoint_pair, *_addr->resolved.ws_addr,
+          wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
                         true, NULL, _hostname);
 #else
         assert (false);
 #endif
     else
         engine = new (std::nothrow) ws_engine_t (
-          fd, options, endpoint_pair, *_addr->resolved.ws_addr, true);
+          fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
@@ -291,5 +301,5 @@ void zmq::ws_connecter_t::create_engine (fd_t fd,
     //  Shut the connecter down.
     terminate ();
 
-    _socket->event_connected (endpoint_pair, fd);
+    _socket->event_connected (endpoint_pair, fd_);
 }

@@ -80,7 +80,7 @@ void *g_workers_pkts_out = NULL;
 
 static void client_task (void *db_)
 {
-    struct thread_data *databag = (struct thread_data *) db_;
+    const thread_data *const databag = static_cast<const thread_data *> (db_);
     // Endpoint socket gets random port to avoid test failing when port in use
     void *endpoint = zmq_socket (get_test_context (), ZMQ_PAIR);
     TEST_ASSERT_NOT_NULL (endpoint);
@@ -373,16 +373,16 @@ void check_proxy_stats (void *control_proxy_)
     if (is_verbose) {
         printf (
           "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.frontend.msg_in,
-          (unsigned long int) total_stats.frontend.bytes_in,
-          (unsigned long int) total_stats.frontend.msg_out,
-          (unsigned long int) total_stats.frontend.bytes_out);
+          static_cast<unsigned long int> (total_stats.frontend.msg_in),
+          static_cast<unsigned long int> (total_stats.frontend.bytes_in),
+          static_cast<unsigned long int> (total_stats.frontend.msg_out),
+          static_cast<unsigned long int> (total_stats.frontend.bytes_out));
         printf (
           "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          (unsigned long int) total_stats.backend.msg_in,
-          (unsigned long int) total_stats.backend.bytes_in,
-          (unsigned long int) total_stats.backend.msg_out,
-          (unsigned long int) total_stats.backend.bytes_out);
+          static_cast<unsigned long int> (total_stats.backend.msg_in),
+          static_cast<unsigned long int> (total_stats.backend.bytes_in),
+          static_cast<unsigned long int> (total_stats.backend.msg_out),
+          static_cast<unsigned long int> (total_stats.backend.bytes_out));
 
         printf ("clients sent out %d requests\n",
                 zmq_atomic_counter_value (g_clients_pkts_out));

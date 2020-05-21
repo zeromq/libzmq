@@ -88,7 +88,46 @@ void test_ctx_shutdown ()
     // Close the socket.
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
 
-    // Destory the context, will now not hang as we have closed the socket.
+    // Destroy the context, will now not hang as we have closed the socket.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (ctx));
+}
+
+void test_ctx_shutdown_socket_opened_after ()
+{
+    //  Set up our context.
+    void *ctx = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (ctx);
+
+    // Open a socket to start context, and close it immediately again.
+    void *socket = zmq_socket (ctx, ZMQ_PULL);
+    TEST_ASSERT_NOT_NULL (socket);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (socket));
+
+    // Shutdown context.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_shutdown (ctx));
+
+    // Opening socket should now fail.
+    TEST_ASSERT_NULL (zmq_socket (ctx, ZMQ_PULL));
+    TEST_ASSERT_FAILURE_ERRNO (ETERM, -1);
+
+    // Destroy the context.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (ctx));
+}
+
+void test_ctx_shutdown_only_socket_opened_after ()
+{
+    //  Set up our context.
+    void *ctx = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (ctx);
+
+    // Shutdown context.
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_shutdown (ctx));
+
+    // Opening socket should now fail.
+    TEST_ASSERT_NULL (zmq_socket (ctx, ZMQ_PULL));
+    TEST_ASSERT_FAILURE_ERRNO (ETERM, -1);
+
+    // Destroy the context.
     TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (ctx));
 }
 
@@ -123,8 +162,8 @@ struct poller_test_data_t
 
 void run_poller (void *data_)
 {
-    struct poller_test_data_t *poller_test_data =
-      (struct poller_test_data_t *) data_;
+    const poller_test_data_t *const poller_test_data =
+      static_cast<const poller_test_data_t *> (data_);
 
     void *socket =
       zmq_socket (poller_test_data->ctx, poller_test_data->socket_type);
@@ -201,6 +240,8 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_ctx_destroy);
     RUN_TEST (test_ctx_shutdown);
+    RUN_TEST (test_ctx_shutdown_socket_opened_after);
+    RUN_TEST (test_ctx_shutdown_only_socket_opened_after);
     RUN_TEST (test_zmq_ctx_term_null_fails);
     RUN_TEST (test_zmq_term_null_fails);
     RUN_TEST (test_zmq_ctx_shutdown_null_fails);

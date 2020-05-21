@@ -57,52 +57,53 @@ void test_start_empty ()
 struct test_events_t : zmq::i_poll_events
 {
     test_events_t (zmq::fd_t fd_, zmq::poller_t &poller_) :
-        fd (fd_),
-        poller (poller_)
+        _fd (fd_),
+        _poller (poller_)
     {
-        (void)fd;
+        (void) _fd;
     }
 
-    virtual void in_event ()
+    void in_event () ZMQ_OVERRIDE
     {
-        poller.rm_fd (handle);
-        handle = (zmq::poller_t::handle_t) NULL;
+        _poller.rm_fd (_handle);
+        _handle = (zmq::poller_t::handle_t) NULL;
 
         // this must only be incremented after rm_fd
         in_events.add (1);
     }
 
 
-    virtual void out_event ()
+    void out_event () ZMQ_OVERRIDE
     {
         // TODO
     }
 
 
-    virtual void timer_event (int id_)
+    void timer_event (int id_) ZMQ_OVERRIDE
     {
         LIBZMQ_UNUSED (id_);
-        poller.rm_fd (handle);
-        handle = (zmq::poller_t::handle_t) NULL;
+        _poller.rm_fd (_handle);
+        _handle = (zmq::poller_t::handle_t) NULL;
 
         // this must only be incremented after rm_fd
         timer_events.add (1);
     }
 
-    void set_handle (zmq::poller_t::handle_t handle_) { handle = handle_; }
+    void set_handle (zmq::poller_t::handle_t handle_) { _handle = handle_; }
 
     zmq::atomic_counter_t in_events, timer_events;
 
   private:
-    zmq::fd_t fd;
-    zmq::poller_t &poller;
-    zmq::poller_t::handle_t handle;
+    zmq::fd_t _fd;
+    zmq::poller_t &_poller;
+    zmq::poller_t::handle_t _handle;
 };
 
-void wait_in_events (test_events_t &events)
+void wait_in_events (test_events_t &events_)
 {
     void *watch = zmq_stopwatch_start ();
-    while (events.in_events.get () < 1) {
+    while (events_.in_events.get () < 1) {
+        msleep (1);
 #ifdef ZMQ_BUILD_DRAFT
         TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (SETTLE_TIME,
                                            zmq_stopwatch_intermediate (watch),
@@ -112,10 +113,11 @@ void wait_in_events (test_events_t &events)
     zmq_stopwatch_stop (watch);
 }
 
-void wait_timer_events (test_events_t &events)
+void wait_timer_events (test_events_t &events_)
 {
     void *watch = zmq_stopwatch_start ();
-    while (events.timer_events.get () < 1) {
+    while (events_.timer_events.get () < 1) {
+        msleep (1);
 #ifdef ZMQ_BUILD_DRAFT
         TEST_ASSERT_LESS_OR_EQUAL_MESSAGE (SETTLE_TIME,
                                            zmq_stopwatch_intermediate (watch),
@@ -125,40 +127,40 @@ void wait_timer_events (test_events_t &events)
     zmq_stopwatch_stop (watch);
 }
 
-void create_nonblocking_fdpair (zmq::fd_t *r, zmq::fd_t *w)
+void create_nonblocking_fdpair (zmq::fd_t *r_, zmq::fd_t *w_)
 {
-    int rc = zmq::make_fdpair (r, w);
+    int rc = zmq::make_fdpair (r_, w_);
     TEST_ASSERT_EQUAL_INT (0, rc);
-    TEST_ASSERT_NOT_EQUAL (zmq::retired_fd, *r);
-    TEST_ASSERT_NOT_EQUAL (zmq::retired_fd, *w);
-    zmq::unblock_socket (*r);
-    zmq::unblock_socket (*w);
+    TEST_ASSERT_NOT_EQUAL (zmq::retired_fd, *r_);
+    TEST_ASSERT_NOT_EQUAL (zmq::retired_fd, *w_);
+    zmq::unblock_socket (*r_);
+    zmq::unblock_socket (*w_);
 }
 
-void send_signal (zmq::fd_t w)
+void send_signal (zmq::fd_t w_)
 {
 #if defined ZMQ_HAVE_EVENTFD
     const uint64_t inc = 1;
-    ssize_t sz = write (w, &inc, sizeof (inc));
+    ssize_t sz = write (w_, &inc, sizeof (inc));
     assert (sz == sizeof (inc));
 #else
     {
         char msg[] = "test";
-        int rc = send (w, msg, sizeof (msg), 0);
+        int rc = send (w_, msg, sizeof (msg), 0);
         assert (rc == sizeof (msg));
     }
 #endif
 }
 
-void close_fdpair (zmq::fd_t w, zmq::fd_t r)
+void close_fdpair (zmq::fd_t w_, zmq::fd_t r_)
 {
-    int rc = closesocket (w);
+    int rc = closesocket (w_);
     TEST_ASSERT_EQUAL_INT (0, rc);
 #if !defined ZMQ_HAVE_EVENTFD
-    rc = closesocket (r);
+    rc = closesocket (r_);
     TEST_ASSERT_EQUAL_INT (0, rc);
 #else
-    LIBZMQ_UNUSED (r);
+    LIBZMQ_UNUSED (r_);
 #endif
 }
 

@@ -49,7 +49,8 @@ namespace zmq
 enum
 {
     ZMTP_1_0 = 0,
-    ZMTP_2_0 = 1
+    ZMTP_2_0 = 1,
+    ZMTP_3_x = 3
 };
 
 class io_thread_t;
@@ -59,7 +60,7 @@ class mechanism_t;
 //  This engine handles any socket with SOCK_STREAM semantics,
 //  e.g. TCP socket or an UNIX domain socket.
 
-class zmtp_engine_t : public stream_engine_base_t
+class zmtp_engine_t ZMQ_FINAL : public stream_engine_base_t
 {
   public:
     zmtp_engine_t (fd_t fd_,
@@ -85,12 +86,15 @@ class zmtp_engine_t : public stream_engine_base_t
 
     typedef bool (zmtp_engine_t::*handshake_fun_t) ();
     static handshake_fun_t select_handshake_fun (bool unversioned,
-                                                 unsigned char revision);
+                                                 unsigned char revision,
+                                                 unsigned char minor);
 
     bool handshake_v1_0_unversioned ();
     bool handshake_v1_0 ();
     bool handshake_v2_0 ();
+    bool handshake_v3_x (bool downgrade_sub);
     bool handshake_v3_0 ();
+    bool handshake_v3_1 ();
 
     int routing_id_msg (msg_t *msg_);
     int process_routing_id_msg (msg_t *msg_);
@@ -125,8 +129,7 @@ class zmtp_engine_t : public stream_engine_base_t
 
     int _heartbeat_timeout;
 
-    zmtp_engine_t (const zmtp_engine_t &);
-    const zmtp_engine_t &operator= (const zmtp_engine_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (zmtp_engine_t)
 };
 }
 

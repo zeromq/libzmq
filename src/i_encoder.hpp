@@ -30,6 +30,7 @@
 #ifndef __ZMQ_I_ENCODER_HPP_INCLUDED__
 #define __ZMQ_I_ENCODER_HPP_INCLUDED__
 
+#include "macros.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -41,7 +42,7 @@ class msg_t;
 
 struct i_encoder
 {
-    virtual ~i_encoder () {}
+    virtual ~i_encoder () ZMQ_DEFAULT;
 
     //  The function returns a batch of binary data. The data
     //  are filled to a supplied buffer. If no buffer is supplied (data_

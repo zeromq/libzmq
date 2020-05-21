@@ -68,7 +68,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
     //  URL
     const char *src_delimiter = strrchr (name_, ';');
     if (src_delimiter) {
-        std::string src_name (name_, src_delimiter - name_);
+        const std::string src_name (name_, src_delimiter - name_);
 
         ip_resolver_options_t src_resolver_opts;
 
@@ -128,13 +128,13 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
 
     ip_resolver_t resolver (resolver_opts);
 
-    int rc = resolver.resolve (&_target_address, name_);
+    const int rc = resolver.resolve (&_target_address, name_);
     if (rc != 0) {
         return -1;
     }
 
     _is_multicast = _target_address.is_multicast ();
-    uint16_t port = _target_address.port ();
+    const uint16_t port = _target_address.port ();
 
     if (has_interface) {
         //  If we have an interface specifier then the target address must be a

@@ -38,6 +38,7 @@ zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     _probe_router (false)
 {
     options.type = ZMQ_DEALER;
+    options.can_send_hello_msg = true;
 }
 
 zmq::dealer_t::~dealer_t ()
@@ -76,7 +77,7 @@ int zmq::dealer_t::xsetsockopt (int option_,
                                 const void *optval_,
                                 size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
+    const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
     if (is_int)
         memcpy (&value, optval_, sizeof (int));

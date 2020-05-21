@@ -41,7 +41,7 @@ the event that a peer is unavailable to receive them.
 
 Conventional sockets allow only strict one-to-one (two peers), many-to-one
 (many clients, one server), or in some cases one-to-many (multicast)
-relationships. With the exception of 'ZMQ_PAIR', 0MQ sockets may be connected
+relationships. With the exception of 'ZMQ_PAIR' and 'ZMQ_CHANNEL', 0MQ sockets may be connected
 *to multiple endpoints* using _zmq_connect()_, while simultaneously accepting
 incoming connections *from multiple endpoints* bound to the socket using
 _zmq_bind()_, thus allowing many-to-many relationships.
@@ -59,6 +59,8 @@ Following are the thread safe sockets:
 * ZMQ_RADIO
 * ZMQ_SCATTER
 * ZMQ_GATHER
+* ZMQ_PEER
+* ZMQ_CHANNEL
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
@@ -340,6 +342,60 @@ Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: N/A
 Action in mute state:: Block
 
+Scatter-gather pattern
+~~~~~~~~~~~~~~~~
+The scatter-gather pattern is the thread-safe version of the pipeline pattern.
+The scatter-gather pattern is used for distributing data to _nodes_ arranged in
+a pipeline. Data always flows down the pipeline, and each stage of the pipeline
+is connected to at least one _node_. When a pipeline stage is connected to
+multiple _nodes_ data is round-robined among all connected _nodes_.
+
+ZMQ_SCATTER
+^^^^^^^^
+A socket of type 'ZMQ_SCATTER' is used by a scatter-gather _node_ to send messages
+to downstream scatter-gather _nodes_. Messages are round-robined to all connected
+downstream _nodes_. The _zmq_recv()_ function is not implemented for this
+socket type.
+
+When a 'ZMQ_SCATTER' socket enters the 'mute' state due to having reached the
+high water mark for all downstream _nodes_, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there are no downstream _nodes_ at all,
+then any linkzmq:zmq_send[3] operations on the socket shall block until the mute
+state ends or at least one downstream _node_ becomes available for sending;
+messages are not discarded.
+
+NOTE: 'ZMQ_SCATTER' sockets are threadsafe. They do not accept ZMQ_RCVMORE on receives.
+This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_SCATTER characteristics
+Compatible peer sockets:: 'ZMQ_SCATTER'
+Direction:: Unidirectional
+Send/receive pattern:: Send only
+Incoming routing strategy:: N/A
+Outgoing routing strategy:: Round-robin
+Action in mute state:: Block
+
+
+ZMQ_GATHER
+^^^^^^^^
+A socket of type 'ZMQ_GATHER' is used by a scatter-gather _node_ to receive messages
+from upstream scatter-gather _nodes_. Messages are fair-queued from among all
+connected upstream _nodes_. The _zmq_send()_ function is not implemented for
+this socket type.
+
+NOTE: 'ZMQ_GATHER' sockets are threadsafe. They do not accept ZMQ_RCVMORE on receives.
+This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_GATHER characteristics
+Compatible peer sockets:: 'ZMQ_GATHER'
+Direction:: Unidirectional
+Send/receive pattern:: Receive only
+Incoming routing strategy:: Fair-queued
+Outgoing routing strategy:: N/A
+Action in mute state:: Block
+
 
 Exclusive pair pattern
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -379,6 +435,89 @@ Incoming routing strategy:: N/A
 Outgoing routing strategy:: N/A
 Action in mute state:: Block
 
+
+Peer-to-peer pattern
+~~~~~~~~~~~~~~~~~~~~~~
+
+The peer-to-peer pattern is used to connect a peer to multiple peers.
+Peer can both connect and bind and mix both of them with the same socket.
+The peer-to-peer pattern is useful to build peer-to-peer networks (e.g zyre, bitcoin, torrent)
+where a peer can both accept connections from other peers or connect to them.
+
+NOTE: Peer-to-peer is still in draft phase.
+
+ZMQ_PEER
+^^^^^^^^
+A 'ZMQ_PEER' socket talks to a set of 'ZMQ_PEER' sockets.
+
+To connect and fetch the 'routing_id' of the peer use linkzmq:zmq_connect_peer[3].
+
+Each received message has a 'routing_id' that is a 32-bit unsigned integer.
+The application can fetch this with linkzmq:zmq_msg_routing_id[3].
+
+To send a message to a given 'ZMQ_PEER' peer the application must set the peer's
+'routing_id' on the message, using linkzmq:zmq_msg_set_routing_id[3].
+
+If the 'routing_id' is not specified, or does not refer to a connected client
+peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
+the peer is full, the send call shall block, unless ZMQ_DONTWAIT is
+used in the send, in which case it shall fail with EAGAIN. The 'ZMQ_PEER'
+socket shall not drop messages in any case.
+
+NOTE: 'ZMQ_PEER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data.
+
+[horizontal]
+.Summary of ZMQ_PEER characteristics
+Compatible peer sockets:: 'ZMQ_PEER'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Return EAGAIN
+
+Channel pattern
+~~~~~~~~~~~~~~~~~~~~~~
+The channel pattern is the thread-safe version of the exclusive pair pattern.
+The channel pattern is used to connect a peer to precisely one other
+peer. This pattern is used for inter-thread communication across the inproc
+transport.
+
+NOTE: Channel is still in draft phase.
+
+ZMQ_CHANNEL
+^^^^^^^^
+A socket of type 'ZMQ_CHANNEL' can only be connected to a single peer at any one
+time.  No message routing or filtering is performed on messages sent over a
+'ZMQ_CHANNEL' socket.
+
+When a 'ZMQ_CHANNEL' socket enters the 'mute' state due to having reached the
+high water mark for the connected peer, or, for connection-oriented transports,
+if the ZMQ_IMMEDIATE option is set and there is no connected peer, then
+any linkzmq:zmq_send[3] operations on the socket shall block until the peer
+becomes available for sending; messages are not discarded.
+
+While 'ZMQ_CHANNEL' sockets can be used over transports other than linkzmq:zmq_inproc[7],
+their inability to auto-reconnect coupled with the fact new incoming connections will
+be terminated while any previous connections (including ones in a closing state)
+exist makes them unsuitable for TCP in most cases.
+
+NOTE: 'ZMQ_CHANNEL' sockets are designed for inter-thread communication across
+the linkzmq:zmq_inproc[7] transport and do not implement functionality such
+as auto-reconnection.
+
+NOTE: 'ZMQ_CHANNEL' sockets are threadsafe. They do not accept ZMQ_RCVMORE on receives.
+This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_CHANNEL characteristics
+Compatible peer sockets:: 'ZMQ_CHANNEL'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Incoming routing strategy:: N/A
+Outgoing routing strategy:: N/A
+Action in mute state:: Block
 
 Native Pattern
 ~~~~~~~~~~~~~~
@@ -556,7 +695,7 @@ The provided 'context' is invalid.
 *EMFILE*::
 The limit on the total number of open 0MQ sockets has been reached.
 *ETERM*::
-The context specified was terminated.
+The context specified was shutdown or terminated.
 
 EXAMPLE
 -------

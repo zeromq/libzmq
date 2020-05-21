@@ -47,7 +47,7 @@
 #include <sys/ucred.h>
 #endif
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1700)
 #include <type_traits>
 #endif
 
@@ -115,6 +115,10 @@ struct options_t
     //  retransmitted packets.
     //  Default 0 (unused)
     int tcp_maxrt;
+
+    //  Disable reconnect under certain conditions
+    //  Default 0
+    int reconnect_stop;
 
     //  Minimum interval between attempts to reconnect, in milliseconds.
     //  Default 100ms
@@ -293,6 +297,14 @@ struct options_t
     std::string wss_trust_pem;
     std::string wss_hostname;
     bool wss_trust_system;
+
+    //  Hello msg
+    std::vector<unsigned char> hello_msg;
+    bool can_send_hello_msg;
+
+    //  Disconnect msg
+    std::vector<unsigned char> disconnect_msg;
+    bool can_recv_disconnect_msg;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)
@@ -304,10 +316,10 @@ inline bool get_effective_conflate_option (const options_t &options)
                || options.type == ZMQ_SUB);
 }
 
-int do_getsockopt (void *const optval_,
-                   size_t *const optvallen_,
+int do_getsockopt (void *optval_,
+                   size_t *optvallen_,
                    const void *value_,
-                   const size_t value_len_);
+                   size_t value_len_);
 
 template <typename T>
 int do_getsockopt (void *const optval_, size_t *const optvallen_, T value_)
@@ -319,17 +331,17 @@ int do_getsockopt (void *const optval_, size_t *const optvallen_, T value_)
     return do_getsockopt (optval_, optvallen_, &value_, sizeof (T));
 }
 
-int do_getsockopt (void *const optval_,
-                   size_t *const optvallen_,
+int do_getsockopt (void *optval_,
+                   size_t *optvallen_,
                    const std::string &value_);
 
-int do_setsockopt_int_as_bool_strict (const void *const optval_,
-                                      const size_t optvallen_,
-                                      bool *const out_value_);
+int do_setsockopt_int_as_bool_strict (const void *optval_,
+                                      size_t optvallen_,
+                                      bool *out_value_);
 
-int do_setsockopt_int_as_bool_relaxed (const void *const optval_,
-                                       const size_t optvallen_,
-                                       bool *const out_value_);
+int do_setsockopt_int_as_bool_relaxed (const void *optval_,
+                                       size_t optvallen_,
+                                       bool *out_value_);
 }
 
 #endif

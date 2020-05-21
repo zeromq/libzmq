@@ -1,0 +1,92 @@
+zmq_connect_peer(3)
+===================
+
+
+NAME
+----
+zmq_connect_peer - create outgoing connection from socket and return the connection routing id in thread-safe and atomic way.
+
+
+SYNOPSIS
+--------
+*uint32_t zmq_connect_peer (void '*socket', const char '*endpoint');*
+
+
+DESCRIPTION
+-----------
+The _zmq_connect_peer()_ function connects a 'ZMQ_PEER' socket to an 'endpoint' and then returns the endpoint 'routing_id'.
+
+The 'endpoint' is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+The function is supported only on the 'ZMQ_PEER' socket type and would return `0` with 'errno' set to 'ENOTSUP' otherwise.
+
+The _zmq_connect_peer()_ support the following transports:
+
+'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
+'ws':: unicast transport using WebSockets, see linkzmq:zmq_ws[7]
+'wss':: unicast transport using WebSockets over TLS, see linkzmq:zmq_wss[7]
+
+RETURN VALUE
+------------
+The _zmq_connect_peer()_ function returns the peer 'routing_id' if successful. Otherwise it returns
+`0` and sets 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*EINVAL*::
+The endpoint supplied is invalid.
+*EPROTONOSUPPORT*::
+The requested 'transport' protocol is not supported with 'ZMQ_PEER'.
+*ENOCOMPATPROTO*::
+The requested 'transport' protocol is not compatible with the socket type.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EMTHREAD*::
+No I/O thread is available to accomplish the task.
+*ENOTSUP*::
+The socket is not of type 'ZMQ_PEER'.
+*EFAULT*::
+The 'ZMQ_IMMEDIATE' option is set on the socket.
+
+EXAMPLE
+-------
+.Connecting a peer socket to a TCP transport and sending a message
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_PEER);
+assert (socket);
+/* Connect it to the host server001, port 5555 using a TCP transport */
+uint32_t routing_id = zmq_connect (socket, "tcp://server001:5555");
+assert (routing_id == 0);
+/* Sending a message to the peer  */
+zmq_msg_t msg;
+int rc = zmq_msg_init_data (&msg, "HELLO", 5, NULL, NULL);
+assert (rc == 0);
+rc = zmq_msg_set_routing_id (&msg, routing_id);
+assert (rc == 0);
+rc = zmq_msg_send (&msg, socket, 0);
+assert (rc == 5);
+rc = zmq_msg_close (&msg);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_connect[3]
+linkzmq:zmq_bind[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

@@ -46,6 +46,9 @@ class ctx_t;
 class tcp_address_t;
 class udp_address_t;
 class ws_address_t;
+#ifdef ZMQ_HAVE_WSS
+class wss_address_t;
+#endif
 #if defined ZMQ_HAVE_IPC
 class ipc_address_t;
 #endif
@@ -61,6 +64,13 @@ namespace protocol_name
 static const char inproc[] = "inproc";
 static const char tcp[] = "tcp";
 static const char udp[] = "udp";
+#ifdef ZMQ_HAVE_OPENPGM
+static const char pgm[] = "pgm";
+static const char epgm[] = "epgm";
+#endif
+#ifdef ZMQ_HAVE_NORM
+static const char norm[] = "norm";
+#endif
 #ifdef ZMQ_HAVE_WS
 static const char ws[] = "ws";
 #endif
@@ -99,6 +109,9 @@ struct address_t
         udp_address_t *udp_addr;
 #ifdef ZMQ_HAVE_WS
         ws_address_t *ws_addr;
+#endif
+#ifdef ZMQ_HAVE_WSS
+        wss_address_t *wss_addr;
 #endif
 #if defined ZMQ_HAVE_IPC
         ipc_address_t *ipc_addr;

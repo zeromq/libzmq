@@ -152,6 +152,33 @@ case "${host_os}" in
         ;;
 esac
 
+# Data race/deadlock detection
+# NOTE: Running libzmq under TSAN doesn't make much sense -- synchronization in libzmq is to some extent
+# handled by the code "knowing" what threads are allowed to do, rather than by enforcing those
+# restrictions, so TSAN generates a lot of (presumably) false positives from libzmq.
+# The settings below are intended to enable libzmq to be built with minimal support for TSAN
+# such that it can be used along with other code that is also built with TSAN.
+AC_MSG_CHECKING([whether to enable TSan])
+AC_ARG_ENABLE(thread-sanitizer, [AS_HELP_STRING([--enable-thread-sanitizer=yes/no],
+                  [Build with clang Thread Sanitizer instrumentation])],
+                  [ZMQ_TSAN="$enableval"])
+
+if test "x${ZMQ_TSAN}" = "xyes"; then
+    TSAN_FLAGS="-fno-omit-frame-pointer -fsanitize=thread"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1"
+    CFLAGS="${CFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    CXXFLAGS="${CXXFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    LDFLAGS="${LDFLAGS} ${TSAN_FLAGS} -pie"
+
+    AM_CONDITIONAL(ENABLE_TSAN, true)
+    AC_MSG_RESULT([yes])
+else
+    AM_CONDITIONAL(ENABLE_TSAN, false)
+    AC_MSG_RESULT([no])
+fi
+
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
 AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],
@@ -159,8 +186,8 @@ AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes
                   [ZMQ_ASAN="$enableval"])
 
 if test "x${ZMQ_ASAN}" = "xyes"; then
-    CFLAGS="${CFLAGS} -fsanitize=address"
-    CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+    CFLAGS="${CFLAGS} -fsanitize=address -fsanitize=undefined -fsanitize=leak -fno-sanitize-recover=all"
+    CXXFLAGS="${CXXFLAGS} -fsanitize=address -fsanitize=undefined -fsanitize=leak -fno-sanitize-recover=all"
 
     AM_CONDITIONAL(ENABLE_ASAN, true)
     AC_MSG_RESULT([yes])
@@ -565,7 +592,9 @@ AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
 ws_crypto_library=""
 
 AC_ARG_ENABLE([ws],
-    [AS_HELP_STRING([--disable-ws], [Disable WebSocket transport [default=no]])])
+    [AS_HELP_STRING([--enable-ws], [Enable WebSocket transport [default=state of DRAFT]])],
+    [enable_ws=$enableval],
+    [enable_ws=$enable_drafts])
 
 AC_ARG_WITH([nss],
     [AS_HELP_STRING([--with-nss], [use nss instead of built-in sha1 [default=no]])])
@@ -576,6 +605,7 @@ AC_ARG_WITH([tls],
 if test "x$enable_ws" != "xno"; then
     if test "x$with_tls" = "xyes"; then
         PKG_CHECK_MODULES([GNUTLS], [gnutls >= 3.1.4], [
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE gnutls >= 3.1.4"
             ws_crypto_library="gnutls"
             AC_DEFINE(ZMQ_USE_GNUTLS, [1], [Use GNUTLS for TLS])
             AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
@@ -750,6 +780,45 @@ AC_COMPILE_IFELSE(
 	],[
 		AC_MSG_RESULT([no])
 ])
+
+AC_ARG_ENABLE([libbsd],
+    [AS_HELP_STRING([--enable-libbsd],
+        [enable libbsd [default=auto]])],
+    [enable_libbsd=$enableval],
+    [enable_libbsd="auto"])
+
+if test "x$enable_libbsd" != "xno"; then
+    PKG_CHECK_MODULES(LIBBSD, [libbsd],
+        [
+            AC_DEFINE(ZMQ_HAVE_LIBBSD, 1, [The libbsd library is to be used])
+            AC_SUBST([LIBBSD_CFLAGS])
+            AC_SUBST([LIBBSD_LIBS])
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libbsd"
+            found_libbsd="yes"
+        ],
+        [
+            found_libbsd="no"
+            if test "x$enable_libbsd" = "xyes"; then
+                AC_MSG_ERROR([Cannot find libbsd])
+            else
+                AC_MSG_WARN([Cannot find libbsd])
+            fi
+        ])
+fi
+if test "x$found_libbsd" != "xyes"; then
+    AC_MSG_CHECKING([whether strlcpy is available])
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM(
+            [[#include <string.h>]],
+            [[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
+        ],[
+            AC_MSG_RESULT([yes])
+            AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
+                [strlcpy is available])
+        ],[
+            AC_MSG_RESULT([no])
+    ])
+fi
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
@@ -962,6 +1031,25 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 
 # unittests will not build without the static libzmq.a
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
+
+# build using a fuzzing engine - fuzzers will be built separately and statically
+AC_ARG_WITH([fuzzing-engine], [AS_HELP_STRING([--with-fuzzing-engine],
+    [build libzmq with an exernal fuzzing engine [default=no]])],
+    [have_fuzzing_engine_ext=$withval],
+    [have_fuzzing_engine_ext=no])
+AC_ARG_WITH([fuzzing-installdir],
+    AS_HELP_STRING([--with-fuzzing-installdir=PATH],
+        [Path where to install fuzzer binaries]),
+    [fuzzing_installdir="$withval"])
+
+if test "x$have_fuzzing_engine_ext" != "xno" && test "x$fuzzing_installdir" != "x" && test "x$enable_static" = "xyes"; then
+    FUZZING_ENGINE_LIB="${have_fuzzing_engine_ext}"
+    FUZZING_INSTALLDIR="${fuzzing_installdir}"
+    AC_SUBST(FUZZING_ENGINE_LIB)
+    AC_SUBST(FUZZING_INSTALLDIR)
+    AC_DEFINE(ZMQ_USE_FUZZING_ENGINE, 1, [fuzz tests will be built with fuzzing engine])
+fi
+AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
 
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])

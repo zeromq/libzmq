@@ -68,7 +68,7 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
 
 void zmq::tcp_listener_t::in_event ()
 {
-    fd_t fd = accept ();
+    const fd_t fd = accept ();
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
@@ -81,8 +81,8 @@ void zmq::tcp_listener_t::in_event ()
     int rc = tune_tcp_socket (fd);
     rc = rc
          | tune_tcp_keepalives (
-             fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+           fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+           options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
         _socket->event_accept_failed (
@@ -163,7 +163,7 @@ int zmq::tcp_listener_t::create_socket (const char *addr_)
     return 0;
 
 error:
-    int err = errno;
+    const int err = errno;
     close ();
     errno = err;
     return -1;
@@ -205,7 +205,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
                            &ss_len, SOCK_CLOEXEC);
 #else
-    fd_t sock =
+    const fd_t sock =
       ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
 #endif
 
@@ -232,8 +232,10 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
-        for (options_t::tcp_accept_filters_t::size_type i = 0;
-             i != options.tcp_accept_filters.size (); ++i) {
+        for (options_t::tcp_accept_filters_t::size_type
+               i = 0,
+               size = options.tcp_accept_filters.size ();
+             i != size; ++i) {
             if (options.tcp_accept_filters[i].match_address (
                   reinterpret_cast<struct sockaddr *> (&ss), ss_len)) {
                 matched = true;
@@ -242,7 +244,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
         }
         if (!matched) {
 #ifdef ZMQ_HAVE_WINDOWS
-            int rc = closesocket (sock);
+            const int rc = closesocket (sock);
             wsa_assert (rc != SOCKET_ERROR);
 #else
             int rc = ::close (sock);
@@ -254,7 +256,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
     if (zmq::set_nosigpipe (sock)) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = closesocket (sock);
+        const int rc = closesocket (sock);
         wsa_assert (rc != SOCKET_ERROR);
 #else
         int rc = ::close (sock);

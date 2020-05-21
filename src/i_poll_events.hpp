@@ -30,6 +30,8 @@
 #ifndef __ZMQ_I_POLL_EVENTS_HPP_INCLUDED__
 #define __ZMQ_I_POLL_EVENTS_HPP_INCLUDED__
 
+#include "macros.hpp"
+
 namespace zmq
 {
 // Virtual interface to be exposed by object that want to be notified
@@ -37,7 +39,7 @@ namespace zmq
 
 struct i_poll_events
 {
-    virtual ~i_poll_events () {}
+    virtual ~i_poll_events () ZMQ_DEFAULT;
 
     // Called by I/O thread when file descriptor is ready for reading.
     virtual void in_event () = 0;

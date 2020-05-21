@@ -71,19 +71,20 @@ typedef struct
     void *subscriber_received_all;
 } proxy_hwm_cfg_t;
 
-static void lower_hwm (void *skt)
+static void lower_hwm (void *skt_)
 {
-    int send_hwm_ = HWM;
+    int send_hwm = HWM;
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (skt, ZMQ_SNDHWM, &send_hwm_, sizeof (send_hwm_)));
+      zmq_setsockopt (skt_, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm)));
 
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (skt, ZMQ_RCVHWM, &send_hwm_, sizeof (send_hwm_)));
+      zmq_setsockopt (skt_, ZMQ_RCVHWM, &send_hwm, sizeof (send_hwm)));
 }
 
-static void publisher_thread_main (void *pvoid)
+static void publisher_thread_main (void *pvoid_)
 {
-    proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
+    const proxy_hwm_cfg_t *const cfg =
+      static_cast<const proxy_hwm_cfg_t *> (pvoid_);
 
     void *pubsocket = zmq_socket (cfg->context, ZMQ_XPUB);
     assert (pubsocket);
@@ -136,9 +137,10 @@ static void publisher_thread_main (void *pvoid)
     zmq_close (pubsocket);
 }
 
-static void subscriber_thread_main (void *pvoid)
+static void subscriber_thread_main (void *pvoid_)
 {
-    proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
+    const proxy_hwm_cfg_t *const cfg =
+      static_cast<const proxy_hwm_cfg_t *> (pvoid_);
 
     void *subsocket = zmq_socket (cfg->context, ZMQ_SUB);
     assert (subsocket);
@@ -190,7 +192,7 @@ static void subscriber_thread_main (void *pvoid)
     zmq_close (subsocket);
 }
 
-bool recv_stat (void *sock_, bool last_, uint64_t *res)
+bool recv_stat (void *sock_, bool last_, uint64_t *res_)
 {
     zmq_msg_t stats_msg;
 
@@ -205,7 +207,7 @@ bool recv_stat (void *sock_, bool last_, uint64_t *res)
     }
 
     assert (rc == sizeof (uint64_t));
-    memcpy (res, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
+    memcpy (res_, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
 
     rc = zmq_msg_close (&stats_msg);
     assert (rc == 0);
@@ -264,10 +266,10 @@ bool check_proxy_stats (void *control_proxy_)
     return true;
 }
 
-static void proxy_stats_asker_thread_main (void *pvoid)
+static void proxy_stats_asker_thread_main (void *pvoid_)
 {
-    proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
-
+    const proxy_hwm_cfg_t *const cfg =
+      static_cast<const proxy_hwm_cfg_t *> (pvoid_);
 
     // CONTROL REQ
 
@@ -316,11 +318,11 @@ static void proxy_stats_asker_thread_main (void *pvoid)
     zmq_close (control_req);
 }
 
-static void proxy_thread_main (void *pvoid)
+static void proxy_thread_main (void *pvoid_)
 {
-    proxy_hwm_cfg_t *cfg = (proxy_hwm_cfg_t *) pvoid;
+    const proxy_hwm_cfg_t *const cfg =
+      static_cast<const proxy_hwm_cfg_t *> (pvoid_);
     int rc;
-
 
     // FRONTEND SUB
 

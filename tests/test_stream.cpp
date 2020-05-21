@@ -40,7 +40,7 @@ typedef uint8_t byte;
 typedef struct
 {
     byte signature[10]; //  0xFF 8*0x00 0x7F
-    byte version[2];    //  0x03 0x00 for ZMTP/3.0
+    byte version[2];    //  0x03 0x01 for ZMTP/3.1
     byte mechanism[20]; //  "NULL"
     byte as_server;
     byte filler[31];
@@ -52,7 +52,7 @@ typedef struct
 //  8-byte size is set to 1 for backwards compatibility
 
 static zmtp_greeting_t greeting = {
-  {0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F}, {3, 0}, {'N', 'U', 'L', 'L'}, 0, {0}};
+  {0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F}, {3, 1}, {'N', 'U', 'L', 'L'}, 0, {0}};
 
 static void test_stream_to_dealer ()
 {
@@ -135,8 +135,8 @@ static void test_stream_to_dealer ()
     }
 
     //  First two bytes are major and minor version numbers.
-    TEST_ASSERT_EQUAL_INT (3, buffer[0]); //  ZMTP/3.0
-    TEST_ASSERT_EQUAL_INT (0, buffer[1]);
+    TEST_ASSERT_EQUAL_INT (3, buffer[0]); //  ZMTP/3.1
+    TEST_ASSERT_EQUAL_INT (1, buffer[1]);
 
     //  Mechanism is "NULL"
     TEST_ASSERT_EQUAL_INT8_ARRAY (buffer + 2,

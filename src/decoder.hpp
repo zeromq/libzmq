@@ -66,12 +66,10 @@ class decoder_base_t : public i_decoder
         _buf = _allocator.allocate ();
     }
 
-    //  The destructor doesn't have to be virtual. It is made virtual
-    //  just to keep ICC and code checking tools from complaining.
-    virtual ~decoder_base_t () { _allocator.deallocate (); }
+    ~decoder_base_t () ZMQ_OVERRIDE { _allocator.deallocate (); }
 
     //  Returns a buffer to be filled with binary data.
-    void get_buffer (unsigned char **data_, std::size_t *size_)
+    void get_buffer (unsigned char **data_, std::size_t *size_) ZMQ_FINAL
     {
         _buf = _allocator.allocate ();
 
@@ -101,7 +99,7 @@ class decoder_base_t : public i_decoder
     //  Number of bytes processed is returned in bytes_used_.
     int decode (const unsigned char *data_,
                 std::size_t size_,
-                std::size_t &bytes_used_)
+                std::size_t &bytes_used_) ZMQ_FINAL
     {
         bytes_used_ = 0;
 
@@ -149,7 +147,7 @@ class decoder_base_t : public i_decoder
         return 0;
     }
 
-    virtual void resize_buffer (std::size_t new_size_)
+    void resize_buffer (std::size_t new_size_) ZMQ_FINAL
     {
         _allocator.resize (new_size_);
     }
@@ -186,8 +184,7 @@ class decoder_base_t : public i_decoder
     A _allocator;
     unsigned char *_buf;
 
-    decoder_base_t (const decoder_base_t &);
-    const decoder_base_t &operator= (const decoder_base_t &);
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (decoder_base_t)
 };
 }
 
