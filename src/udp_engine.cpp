@@ -601,6 +601,10 @@ void zmq::udp_engine_t::in_event ()
     errno_assert (rc == 0);
     memcpy (msg.data (), _in_buffer + body_offset, body_size);
 
+    std::string address (inet_ntoa (reinterpret_cast<sockaddr_in*> (&in_address)->sin_addr));
+    metadata_t::dict_t dict {{ZMQ_MSG_PROPERTY_PEER_ADDRESS, address}};
+    msg.set_metadata(new (std::nothrow) metadata_t (dict));
+
     // Push message body to session
     rc = _session->push_msg (&msg);
     // Message body doesn't fit in the pipe, drop and reset session state
