@@ -1751,7 +1751,10 @@ if(MSVC_VERSION EQUAL 1600)
 endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
-include(ClangFormat)
+option(ENABLE_CLANG "Include Clang" ON)
+if (ENABLE_CLANG)
+  include(ClangFormat)
+endif()
 
 # fixes https://github.com/zeromq/libzmq/issues/3776 The problem is, both libzmq-static libzmq try to use/generate
 # precompiled.pch at the same time Add a dependency, so they run in order and so they dont get in each others way TODO
