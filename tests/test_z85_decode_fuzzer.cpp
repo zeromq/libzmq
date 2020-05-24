@@ -50,7 +50,7 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     TEST_ASSERT_NOT_NULL (secret_key = (uint8_t *) malloc (size * 4 / 5));
 
     std::string z85_secret_key (reinterpret_cast<const char *> (data), size);
-    TEST_ASSERT_NOT_NULL (zmq_z85_decode (secret_key, z85_secret_key.c_str ()));
+    zmq_z85_decode (secret_key, z85_secret_key.c_str ());
 
     free (secret_key);
 
