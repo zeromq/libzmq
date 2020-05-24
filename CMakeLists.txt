@@ -31,6 +31,12 @@ include(ZMQSupportMacros)
 
 find_package(PkgConfig)
 
+# Set lists to empty beforehand as to not accidentally take values from parent
+set(sources)
+set(cxx-sources)
+set(html-docs)
+set(target_outputs)
+
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
