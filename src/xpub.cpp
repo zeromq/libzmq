@@ -131,8 +131,10 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             _process_subscribe =
               !_only_first_subscribe || is_subscribe_or_cancel;
 
-        if (!is_subscribe_or_cancel) {
-            //  Process user message coming upstream from xsub socket
+        if (!is_subscribe_or_cancel && options.type != ZMQ_PUB) {
+            //  Process user message coming upstream from xsub socket,
+            //  but not if the type is PUB, which never processes user
+            //  messages
             _pending_data.push_back (blob_t (msg_data, msg.size ()));
             if (metadata)
                 metadata->add_ref ();
