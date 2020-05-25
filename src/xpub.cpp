@@ -59,6 +59,11 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 zmq::xpub_t::~xpub_t ()
 {
     _welcome_msg.close ();
+    for (std::deque<metadata_t *>::iterator it = _pending_metadata.begin (),
+                                            end = _pending_metadata.end ();
+         it != end; ++it)
+        if (*it && (*it)->drop_ref ())
+            LIBZMQ_DELETE (*it);
 }
 
 void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
@@ -126,8 +131,10 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             _process_subscribe =
               !_only_first_subscribe || is_subscribe_or_cancel;
 
-        if (!is_subscribe_or_cancel) {
-            //  Process user message coming upstream from xsub socket
+        if (!is_subscribe_or_cancel && options.type != ZMQ_PUB) {
+            //  Process user message coming upstream from xsub socket,
+            //  but not if the type is PUB, which never processes user
+            //  messages
             _pending_data.push_back (blob_t (msg_data, msg.size ()));
             if (metadata)
                 metadata->add_ref ();
