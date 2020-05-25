@@ -59,6 +59,11 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
 zmq::xpub_t::~xpub_t ()
 {
     _welcome_msg.close ();
+    for (std::deque<metadata_t *>::iterator it = _pending_metadata.begin (),
+                                            end = _pending_metadata.end ();
+         it != end; ++it)
+        if (*it && (*it)->drop_ref ())
+            LIBZMQ_DELETE (*it);
 }
 
 void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
