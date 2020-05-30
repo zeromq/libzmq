@@ -104,7 +104,7 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     // the race condition in making it non-inheritable later is avoided
     const fd_t s =
       WSASocket (domain_, type_, protocol_, NULL, 0,
-                 WSA_FLAG_OVERLAPPED || WSA_FLAG_NO_HANDLE_INHERIT);
+                 WSA_FLAG_OVERLAPPED | WSA_FLAG_NO_HANDLE_INHERIT);
 #else
     const fd_t s = socket (domain_, type_, protocol_);
 #endif
