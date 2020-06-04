@@ -53,11 +53,13 @@
     classname (const classname &) = delete;                                    \
     classname &operator= (const classname &) = delete;                         \
     classname (classname &&) = delete;                                         \
-    classname &operator= (classname &&) = delete;
+    classname &operator= (classname &&) = delete;                              \
+  enum {};
 #else
 #define ZMQ_NON_COPYABLE_NOR_MOVABLE(classname)                                \
   private:                                                                     \
     classname (const classname &);                                             \
-    classname &operator= (const classname &);
+    classname &operator= (const classname &);                                  \
+		enum {};
 #endif
 #endif
