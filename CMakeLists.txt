@@ -1,7 +1,6 @@
 # CMake build script for ZeroMQ
 project(ZeroMQ)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "C:/Program Files (x86)/norm/lib/cmake/norm")
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   cmake_minimum_required(VERSION 3.0.2)
 else()
@@ -1460,7 +1459,7 @@ if(BUILD_STATIC)
   endif()
 
   if(norm_FOUND)
-      target_link_libraries(libzmq norm::norm)
+      target_link_libraries(libzmq-static norm::norm)
   endif()
 endif()
 
