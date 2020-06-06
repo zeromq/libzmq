@@ -161,6 +161,7 @@ struct curve_client_tools_t
         memcpy (&vouch_plaintext[crypto_box_ZEROBYTES], cn_public_, 32);
         memcpy (&vouch_plaintext[crypto_box_ZEROBYTES + 32], server_key_, 32);
 
+        memset (vouch_nonce, 0, crypto_box_NONCEBYTES);
         memcpy (vouch_nonce, "VOUCH---", 8);
         randombytes (vouch_nonce + 8, 16);
 
@@ -246,6 +247,8 @@ struct curve_client_tools_t
         memcpy (server_key, curve_server_key_, crypto_box_PUBLICKEYBYTES);
 
         //  Generate short-term key pair
+        memset (cn_secret, 0, crypto_box_SECRETKEYBYTES);
+        memset (cn_public, 0, crypto_box_PUBLICKEYBYTES);
         rc = crypto_box_keypair (cn_public, cn_secret);
         zmq_assert (rc == 0);
     }
