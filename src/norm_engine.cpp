@@ -9,6 +9,10 @@
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
+#if defined ZMQ_HAVE_WINDOWS
+#include <io.h>
+#endif
+
 zmq::norm_engine_t::norm_engine_t (io_thread_t *parent_,
                                    const options_t &options_) :
     io_object_t (parent_),
@@ -226,7 +230,14 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     if (is_receiver)
         zmq_input_ready = true;
 
+#if defined ZMQ_HAVE_WINDOWS
+    HANDLE normHandle = NormGetDescriptor (norm_instance);
+    fd_t normDescriptor =
+      _open_osfhandle (reinterpret_cast<intptr_t> (normHandle), 0);
+#else
     fd_t normDescriptor = NormGetDescriptor (norm_instance);
+#endif
+
     norm_descriptor_handle = add_fd (normDescriptor);
     // Set POLLIN for notification of pending NormEvents
     set_pollin (norm_descriptor_handle);
