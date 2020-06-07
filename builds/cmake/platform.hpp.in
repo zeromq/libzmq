@@ -63,6 +63,7 @@
 #cmakedefine ZMQ_HAVE_TIPC
 
 #cmakedefine ZMQ_HAVE_OPENPGM
+#cmakedefine ZMQ_HAVE_NORM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_BUILD_DRAFT_API
