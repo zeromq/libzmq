@@ -125,6 +125,7 @@ set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
+option(WITH_NORM "Build with support for NORM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if(APPLE)
@@ -1160,6 +1161,16 @@ if(WITH_OPENPGM)
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif()
 
+if(WITH_NORM)
+  find_package(norm)
+    if(norm_FOUND)
+      message(STATUS "Building with NORM")
+      set(ZMQ_HAVE_NORM 1)
+    else()
+      message(FATAL_ERROR "NORM not found")
+    endif()
+endif()
+
 if(WITH_VMCI)
   add_definitions(-DZMQ_HAVE_VMCI)
   include_directories(${VMCI_INCLUDE_DIRS})
@@ -1422,6 +1433,10 @@ if(BUILD_SHARED)
   if(RT_LIBRARY)
     target_link_libraries(libzmq -lrt)
   endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq norm::norm)
+  endif()
 endif()
 
 if(BUILD_STATIC)
@@ -1466,6 +1481,10 @@ if(BUILD_STATIC)
 
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
     add_definitions(-DUNITY_EXCLUDE_MATH_H)
+  endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq-static norm::norm)
   endif()
 endif()
 
