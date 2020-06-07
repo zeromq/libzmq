@@ -39,6 +39,12 @@
 // Test that zmq_bind can handle malformed strings
 extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
+    //  This test might create socket files, so move to /tmp to avoid clobbering
+    //  the working directory with random filenames
+    char *pwd = get_current_dir_name ();
+    TEST_ASSERT_NOT_NULL (pwd);
+    TEST_ASSERT_SUCCESS_ERRNO (chdir ("/tmp"));
+
     setup_test_context ();
     std::string my_endpoint (reinterpret_cast<const char *> (data), size);
     void *socket = test_context_socket (ZMQ_PUB);
@@ -46,6 +52,8 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 
     test_context_socket_close_zero_linger (socket);
     teardown_test_context ();
+    TEST_ASSERT_SUCCESS_ERRNO (chdir (pwd));
+    free (pwd);
 
     return 0;
 }
