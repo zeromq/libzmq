@@ -24,6 +24,7 @@ set(tests
     test_term_endpoint
     test_router_mandatory
     test_probe_router
+    test_pubsub
     test_stream
     test_stream_empty
     test_stream_disconnect
