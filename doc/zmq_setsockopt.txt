@@ -1253,7 +1253,7 @@ all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IP address whitelisting / blacklisting.
+and IP address allowing / blocking.
 
 [horizontal]
 Option value type:: binary data
@@ -1276,7 +1276,7 @@ LOCAL_PEERCRED socket options (currently only Linux and later versions of
 OS X).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: gid_t
@@ -1298,7 +1298,7 @@ NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
 socket option (currently only Linux).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: pid_t
@@ -1321,7 +1321,7 @@ LOCAL_PEERCRED socket options (currently only Linux and later versions of
 OS X).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: uid_t
