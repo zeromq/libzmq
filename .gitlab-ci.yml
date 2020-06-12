@@ -13,7 +13,7 @@ lib-build-macos:
     - mkdir build
     - mkdir release
     - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=$HOME/builds/sysroot/usr/local/
-    - make -C build
+    - make -j8 -C build
     - make -C build DESTDIR=$PWD/release install
     - make -C build DESTDIR=$HOME/builds/sysroot/ install
     - cd release/usr/local/
