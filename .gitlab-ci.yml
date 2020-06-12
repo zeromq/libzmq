@@ -12,10 +12,10 @@ lib-build-macos:
     - git clean -xfd
     - mkdir build
     - mkdir release
-    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=$HOME/builds/release/ingescape/usr/local/
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=$HOME/builds/sysroot/usr/local/
     - make -C build
     - make -C build DESTDIR=$PWD/release install
-    - make -C build DESTDIR=$HOME/builds/release/ingescape/ install
+    - make -C build DESTDIR=$HOME/builds/sysroot/ install
     - cd release/usr/local/
     - tar zcvf ../../../libzmq.tgz *
     - cd ../../..
