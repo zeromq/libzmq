@@ -60,14 +60,6 @@ namespace zmq
 
     private:
 
-        bool add_helper (unsigned char *prefix_, size_t size_,
-            zmq::pipe_t *pipe_);
-        void rm_helper (zmq::pipe_t *pipe_, unsigned char **buff_,
-            size_t buffsize_, size_t maxbuffsize_,
-            void (*func_) (unsigned char *data_, size_t size_, void *arg_),
-            void *arg_);
-        bool rm_helper (unsigned char *prefix_, size_t size_,
-            zmq::pipe_t *pipe_);
         bool is_redundant () const;
 
         typedef std::set <zmq::pipe_t*> pipes_t;
@@ -76,13 +68,25 @@ namespace zmq
         unsigned char min;
         unsigned short count;
         unsigned short live_nodes;
-        union {
+        union _next_t {
             class mtrie_t *node;
             class mtrie_t **table;
         } next;
 
         mtrie_t (const mtrie_t&);
         const mtrie_t &operator = (const mtrie_t&);
+
+        struct iter
+        {
+            class mtrie_t *node;
+            class mtrie_t *next_node;
+            unsigned char *prefix;
+            size_t size;
+            unsigned short current_child;
+            unsigned char new_min;
+            unsigned char new_max;
+            bool processed_for_removal;
+        };
     };
 
 }
