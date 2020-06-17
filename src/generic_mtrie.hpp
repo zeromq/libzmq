@@ -84,27 +84,6 @@ template <typename T> class generic_mtrie_t
                 Arg arg_);
 
   private:
-    bool add_helper (prefix_t prefix_, size_t size_, value_t *value_);
-    template <typename Arg>
-    void rm_helper (value_t *value_,
-                    unsigned char **buff_,
-                    size_t buffsize_,
-                    size_t maxbuffsize_,
-                    void (*func_) (prefix_t data_, size_t size_, Arg arg_),
-                    Arg arg_,
-                    bool call_on_uniq_);
-    template <typename Arg>
-    void rm_helper_multiple_subnodes (unsigned char **buff_,
-                                      size_t buffsize_,
-                                      size_t maxbuffsize_,
-                                      void (*func_) (prefix_t data_,
-                                                     size_t size_,
-                                                     Arg arg_),
-                                      Arg arg_,
-                                      bool call_on_uniq_,
-                                      value_t *pipe_);
-
-    rm_result rm_helper (prefix_t prefix_, size_t size_, value_t *value_);
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
@@ -113,11 +92,23 @@ template <typename T> class generic_mtrie_t
     unsigned char _min;
     unsigned short _count;
     unsigned short _live_nodes;
-    union
+    union _next_t
     {
         class generic_mtrie_t<value_t> *node;
         class generic_mtrie_t<value_t> **table;
     } _next;
+
+    struct iter
+    {
+        generic_mtrie_t<value_t> *node;
+        generic_mtrie_t<value_t> *next_node;
+        prefix_t prefix;
+        size_t size;
+        unsigned short current_child;
+        unsigned char new_min;
+        unsigned char new_max;
+        bool processed_for_removal;
+    };
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (generic_mtrie_t)
 };
