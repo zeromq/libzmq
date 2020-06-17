@@ -291,6 +291,9 @@ struct options_t
     // Version of monitor events to emit
     int monitor_event_version;
 
+    // minimum supported version of ZMTP
+    char min_zmtp[2];
+
     //  WSS Keys
     std::string wss_key_pem;
     std::string wss_cert_pem;
