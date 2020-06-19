@@ -29,18 +29,18 @@ env:
 matrix:
   include:
   - if: type = cron OR (branch =~ analyze$ AND type = push)
-    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-8 CC=clang-8 CXX=clang++-8
+    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-10 CC=clang-10 CXX=clang++-10
     os: linux
     compiler: clang
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
+          - llvm-toolchain-10
         packages:
-          - clang-8
-          - clang-tools-8
-          - clang-tidy-8
+          - clang-10
+          - clang-tools-10
+          - clang-tidy-10
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
