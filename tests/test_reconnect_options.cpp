@@ -248,6 +248,7 @@ void reconnect_stop_on_handshake_failed ()
     // ZMQ_EVENT_DISCONNECTED should be last event, because of ZMQ_RECONNECT_STOP set above
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
     expect_monitor_event (sub_mon, ZMQ_EVENT_DISCONNECTED);
     #else
     print_events(sub_mon, 2 * 1000, 1000);
