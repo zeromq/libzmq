@@ -28,6 +28,8 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     int init (const char *network_, bool send, bool recv);
     void shutdown ();
 
+    bool has_handshake_stage () ZMQ_FINAL { return false; };
+
     //  i_engine interface implementation.
     //  Plug the engine to the session.
     void plug (zmq::io_thread_t *io_thread_,

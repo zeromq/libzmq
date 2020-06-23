@@ -38,10 +38,10 @@
 #include "blob.hpp"
 #include "options.hpp"
 #include "endpoint.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
-class msg_t;
 class pipe_t;
 
 //  Create a pipepair for bi-directional transfer of messages.
@@ -146,6 +146,9 @@ class pipe_t ZMQ_FINAL : public object_t,
     const endpoint_uri_pair_t &get_endpoint_pair () const;
 
     void send_stats_to_peer (own_t *socket_base_);
+
+    void send_disconnect_msg ();
+    void set_disconnect_msg (const std::vector<unsigned char> &disconnect_);
 
   private:
     //  Type of the underlying lock-free pipe.
@@ -257,10 +260,15 @@ class pipe_t ZMQ_FINAL : public object_t,
     // The endpoints of this pipe.
     endpoint_uri_pair_t _endpoint_pair;
 
+    // Disconnect msg
+    msg_t _disconnect_msg;
+
     ZMQ_NON_COPYABLE_NOR_MOVABLE (pipe_t)
 };
 
 void send_routing_id (pipe_t *pipe_, const options_t &options_);
+
+void send_hello_msg (pipe_t *pipe_, const options_t &options_);
 }
 
 #endif

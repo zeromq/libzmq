@@ -228,6 +228,18 @@ Option value size:: 32 or 41
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
+ZMQ_DISCONNECT_MSG: set a disconnect message that the socket will generate when accepted peer disconnect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set, the socket will generate a disconnect message when accepted peer has been disconnected.
+You may set this on ROUTER, SERVER and PEER sockets.
+The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols, when heartbeat recognize a connection drop it
+will generate a disconnect message that can match the protocol of the application.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_ROUTER, ZMQ_SERVER and ZMQ_PEER
 
 ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -322,6 +334,18 @@ Option value unit:: milliseconds
 Default value:: 30000
 Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
 
+ZMQ_HELLO_MSG: set an hello message that will be sent when a new peer connect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set, the socket will automatically send an hello message when a new connection is made or accepted.
+You may set this on DEALER, ROUTER, CLIENT, SERVER and PEER sockets.
+The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols,
+as now heartbeat and sending the hello message can be left out of protocols and be handled by zeromq.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_ROUTER, ZMQ_DEALER, ZMQ_CLIENT, ZMQ_SERVER and ZMQ_PEER
 
 ZMQ_HEARTBEAT_IVL: Set interval between sending ZMTP heartbeats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -488,6 +512,20 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all
 
+
+ZMQ_MIN_ZMTP_VERSION: Minimum acceptable ZMTP version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the minimum ZMTP version that this socket supports.  If a
+peer socket identifies as an earlier version during handshaking,
+the connection will be immedidately closed.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: char[2]
+Option value unit:: 0, MIN_ZMTP_VERSION_1_0, MIN_ZMTP_VERSION_2_0, MIN_ZMTP_VERSION_3_0, MIN_ZMTP_VERSION_3_1
+Default value:: not set
+Applicable socket types:: all but ZMQ_STREAM
 
 ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -711,11 +749,20 @@ The 'ZMQ_RECONNECT_STOP_CONN_REFUSED' option will stop reconnection when 0MQ
 receives the ECONNREFUSED return code from the connect.  This indicates that
 there is no code bound to the specified endpoint.
 
+The 'ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED' option will stop reconnection if
+the 0MQ handshake fails.  This can be used to detect and/or prevent errant
+connection attempts to non-0MQ sockets.  Note that when specifying this option
+you may also want to set `ZMQ_HANDSHAKE_IVL` -- the default handshake interval
+is 30000 (30 seconds), which is typically too large.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
-Option value unit:: ZMQ_RECONNECT_STOP_CONN_REFUSED
+Option value unit:: 0, ZMQ_RECONNECT_STOP_CONN_REFUSED, ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED, ZMQ_RECONNECT_STOP_CONN_REFUSED | ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED
 Default value:: 0
-Applicable socket types:: all, only for connection-oriented transports
+Applicable socket types:: all, only for connection-oriented transports (ZMQ_HANDSHAKE_IVL is
+not applicable for ZMQ_STREAM sockets)
 
 
 ZMQ_RECOVERY_IVL: Set multicast recovery interval
@@ -1229,7 +1276,7 @@ all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IP address whitelisting / blacklisting.
+and IP address allowing / blocking.
 
 [horizontal]
 Option value type:: binary data
@@ -1252,7 +1299,7 @@ LOCAL_PEERCRED socket options (currently only Linux and later versions of
 OS X).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: gid_t
@@ -1274,7 +1321,7 @@ NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
 socket option (currently only Linux).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: pid_t
@@ -1297,7 +1344,7 @@ LOCAL_PEERCRED socket options (currently only Linux and later versions of
 OS X).
 
 NOTE: This option is deprecated, please use authentication via the ZAP API
-and IPC whitelisting / blacklisting.
+and IPC allowing / blocking.
 
 [horizontal]
 Option value type:: uid_t

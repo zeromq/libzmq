@@ -55,12 +55,10 @@ int test_assert_success_message_errno_helper (int rc_,
     return rc_;
 }
 
-int test_assert_success_message_raw_errno_helper (int rc_,
-                                                  const char *msg_,
-                                                  const char *expr_,
-                                                  int line_)
+int test_assert_success_message_raw_errno_helper (
+  int rc_, const char *msg_, const char *expr_, int line_, bool zero)
 {
-    if (rc_ == -1) {
+    if (rc_ == -1 || (zero && rc_ != 0)) {
 #if defined ZMQ_HAVE_WINDOWS
         int current_errno = WSAGetLastError ();
 #else
@@ -70,12 +68,22 @@ int test_assert_success_message_raw_errno_helper (int rc_,
         char buffer[512];
         buffer[sizeof (buffer) - 1] =
           0; // to ensure defined behavior with VC++ <= 2013
-        snprintf (buffer, sizeof (buffer) - 1, "%s failed%s%s%s, errno = %i",
-                  expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
-                  msg_ ? ")" : "", current_errno);
+        snprintf (
+          buffer, sizeof (buffer) - 1, "%s failed%s%s%s with %d, errno = %i/%s",
+          expr_, msg_ ? " (additional info: " : "", msg_ ? msg_ : "",
+          msg_ ? ")" : "", rc_, current_errno, strerror (current_errno));
         UNITY_TEST_FAIL (line_, buffer);
     }
     return rc_;
+}
+
+int test_assert_success_message_raw_zero_errno_helper (int rc_,
+                                                       const char *msg_,
+                                                       const char *expr_,
+                                                       int line_)
+{
+    return test_assert_success_message_raw_errno_helper (rc_, msg_, expr_,
+                                                         line_, true);
 }
 
 int test_assert_failure_message_raw_errno_helper (

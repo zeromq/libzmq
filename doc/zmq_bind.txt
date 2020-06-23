@@ -30,7 +30,7 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 'vmci':: virtual machine communications interface (VMCI), see linkzmq:zmq_vmci[7]
 'udp':: unreliable unicast and multicast using UDP, see linkzmq:zmq_udp[7]
 
-Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
+Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
 linkzmq:zmq_socket[3].
 

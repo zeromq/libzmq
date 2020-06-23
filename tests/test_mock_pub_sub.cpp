@@ -19,17 +19,6 @@
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
-typedef SOCKET raw_socket;
-#else
-#include <arpa/inet.h>
-#include <unistd.h>
-typedef int raw_socket;
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -67,7 +56,7 @@ static int get_monitor_event (void *monitor_)
     return -1;
 }
 
-static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
+static void recv_with_retry (fd_t fd_, char *buffer_, int bytes_)
 {
     int received = 0;
     while (true) {
@@ -81,13 +70,11 @@ static void recv_with_retry (raw_socket fd_, char *buffer_, int bytes_)
     }
 }
 
-static void mock_handshake (raw_socket fd_, bool sub_command, bool mock_pub)
+static void mock_handshake (fd_t fd_, bool sub_command, bool mock_pub)
 {
-    const uint8_t zmtp_greeting[33] = {0xff, 0, 0, 0,   0,   0,   0,   0, 0,
-                                       0x7f, 3, 0, 'N', 'U', 'L', 'L', 0};
     char buffer[128];
     memset (buffer, 0, sizeof (buffer));
-    memcpy (buffer, zmtp_greeting, sizeof (zmtp_greeting));
+    memcpy (buffer, zmtp_greeting_null, sizeof (zmtp_greeting_null));
 
     //  Mock ZMTP 3.1 which uses commands
     if (sub_command) {
@@ -99,24 +86,20 @@ static void mock_handshake (raw_socket fd_, bool sub_command, bool mock_pub)
     recv_with_retry (fd_, buffer, 64);
 
     if (!mock_pub) {
-        const uint8_t zmtp_ready[27] = {
-          4,   25,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
-          't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  3,   'S', 'U', 'B'};
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-          send (fd_, (const char *) zmtp_ready, 27, 0));
-        TEST_ASSERT_EQUAL_INT (27, rc);
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (
+          fd_, (const char *) zmtp_ready_sub, sizeof (zmtp_ready_sub), 0));
+        TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_sub), rc);
     } else {
-        const uint8_t zmtp_ready[28] = {
-          4,   26,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
-          't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  4,   'X', 'P', 'U', 'B'};
-        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-          send (fd_, (const char *) zmtp_ready, 28, 0));
-        TEST_ASSERT_EQUAL_INT (28, rc);
+        rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (
+          fd_, (const char *) zmtp_ready_xpub, sizeof (zmtp_ready_xpub), 0));
+        TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_xpub), rc);
     }
 
     //  greeting - XPUB has one extra byte
     memset (buffer, 0, sizeof (buffer));
-    recv_with_retry (fd_, buffer, mock_pub ? 27 : 28);
+    recv_with_retry (fd_, buffer,
+                     mock_pub ? sizeof (zmtp_ready_sub)
+                              : sizeof (zmtp_ready_xpub));
 }
 
 static void prep_server_socket (void **server_out_,
@@ -158,21 +141,7 @@ static void test_mock_pub_sub (bool sub_command_, bool mock_pub_)
     prep_server_socket (&server, &server_mon, my_endpoint, MAX_SOCKET_STRING,
                         mock_pub_ ? ZMQ_SUB : ZMQ_XPUB);
 
-    struct sockaddr_in ip4addr;
-    raw_socket s;
-
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (atoi (strrchr (my_endpoint, ':') + 1));
-#if defined(ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
-    ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
-#else
-    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
-#endif
-
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
-      connect (s, (struct sockaddr *) &ip4addr, sizeof ip4addr));
-    TEST_ASSERT_GREATER_THAN_INT (-1, rc);
+    fd_t s = connect_socket (my_endpoint);
 
     // Mock a ZMTP 3 client so we can forcibly try sub commands
     mock_handshake (s, sub_command_, mock_pub_);
@@ -188,6 +157,8 @@ static void test_mock_pub_sub (bool sub_command_, bool mock_pub_)
         rc = zmq_setsockopt (server, ZMQ_SUBSCRIBE, "A", 1);
         TEST_ASSERT_EQUAL_INT (0, rc);
         //  SUB binds, let its state machine run
+        //  Because zeromq attach the pipe after the handshake, we need more time here before we can run the state-machine
+        msleep (1);
         zmq_recv (server, buffer, 16, ZMQ_DONTWAIT);
 
         if (sub_command_) {

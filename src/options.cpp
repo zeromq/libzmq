@@ -249,11 +249,16 @@ zmq::options_t::options_t () :
     zero_copy (true),
     router_notify (0),
     monitor_event_version (1),
-    wss_trust_system (false)
+    wss_trust_system (false),
+    hello_msg (),
+    can_send_hello_msg (false),
+    disconnect_msg (),
+    can_recv_disconnect_msg (false)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
     memset (curve_server_key, 0, CURVE_KEYSIZE);
+    memset (min_zmtp, 0, 2);
 #if defined ZMQ_HAVE_VMCI
     vmci_buffer_size = 0;
     vmci_buffer_min_size = 0;
@@ -779,6 +784,13 @@ int zmq::options_t::setsockopt (int option_,
                                                       &multicast_loop);
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+        case ZMQ_MIN_ZMTP_VERSION:
+            if (optvallen_ == 2) {
+                memcpy (min_zmtp, optval_, 2);
+                return 0;
+            }
+
         case ZMQ_IN_BATCH_SIZE:
             if (is_int && value > 0) {
                 in_batch_size = value;
@@ -813,6 +825,29 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &wss_trust_system);
 #endif
+
+        case ZMQ_HELLO_MSG:
+            if (optvallen_ > 0) {
+                unsigned char *bytes = (unsigned char *) optval_;
+                hello_msg =
+                  std::vector<unsigned char> (bytes, bytes + optvallen_);
+            } else {
+                hello_msg = std::vector<unsigned char> ();
+            }
+
+            return 0;
+
+        case ZMQ_DISCONNECT_MSG:
+            if (optvallen_ > 0) {
+                unsigned char *bytes = (unsigned char *) optval_;
+                disconnect_msg =
+                  std::vector<unsigned char> (bytes, bytes + optvallen_);
+            } else {
+                disconnect_msg = std::vector<unsigned char> ();
+            }
+
+            return 0;
+
 #endif
 
         default:
@@ -1219,12 +1254,21 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+        case ZMQ_MIN_ZMTP_VERSION:
+            if (*optvallen_ == 2) {
+                memcpy (optval_, min_zmtp, 2);
+                return 0;
+            }
+            break;
+
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
                 return 0;
             }
             break;
+
         case ZMQ_IN_BATCH_SIZE:
             if (is_int) {
                 *value = in_batch_size;

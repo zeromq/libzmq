@@ -55,6 +55,8 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     options.type = ZMQ_ROUTER;
     options.recv_routing_id = true;
     options.raw_socket = false;
+    options.can_send_hello_msg = true;
+    options.can_recv_disconnect_msg = true;
 
     _prefetched_id.init ();
     _prefetched_msg.init ();
@@ -432,7 +434,7 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
     // TODO remove the const_cast, see comment in lookup_out_pipe
     const blob_t routing_id_blob (
       static_cast<unsigned char *> (const_cast<void *> (routing_id_)),
-      routing_id_size_);
+      routing_id_size_, reference_tag_t ());
     const out_pipe_t *out_pipe = lookup_out_pipe (routing_id_blob);
     if (!out_pipe) {
         errno = EHOSTUNREACH;

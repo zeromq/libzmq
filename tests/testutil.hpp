@@ -38,6 +38,15 @@
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
 
+//  For AF_INET and IPPROTO_TCP
+#if defined _WIN32
+#include "../src/windows.hpp"
+#else
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
+#endif
+
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
@@ -57,7 +66,32 @@
 #define ENDPOINT_5 "udp://127.0.0.1:5560"
 #define PORT_6 5561
 
+//  For tests that mock ZMTP
+const uint8_t zmtp_greeting_null[64] = {
+  0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0x7f, 3, 0, 'N', 'U', 'L', 'L',
+  0,    0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0,
+  0,    0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0};
+
+const uint8_t zmtp_greeting_curve[64] = {
+  0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0x7f, 3, 0, 'C', 'U', 'R', 'V',
+  'E',  0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0,
+  0,    0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0};
+const uint8_t zmtp_ready_dealer[43] = {
+  4,   41,  5,   'R', 'E', 'A', 'D', 'Y', 11,  'S', 'o', 'c', 'k', 'e', 't',
+  '-', 'T', 'y', 'p', 'e', 0,   0,   0,   6,   'D', 'E', 'A', 'L', 'E', 'R',
+  8,   'I', 'd', 'e', 'n', 't', 'i', 't', 'y', 0,   0,   0,   0};
+const uint8_t zmtp_ready_xpub[28] = {
+  4,   26,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
+  't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  4,   'X', 'P', 'U', 'B'};
+const uint8_t zmtp_ready_sub[27] = {
+  4,   25,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
+  't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  3,   'S', 'U', 'B'};
+
 #undef NDEBUG
+
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
 
 // duplicated from fd.hpp
 #ifdef ZMQ_HAVE_WINDOWS
@@ -74,26 +108,32 @@ inline const char *as_setsockopt_opt_t (const void *opt)
 {
     return static_cast<const char *> (opt);
 }
-#if defined _MSC_VER && _MSC_VER <= 1400
-typedef UINT_PTR fd_t;
-enum
-{
-    retired_fd = (fd_t) (~0)
-};
-#else
-typedef SOCKET fd_t;
-enum
-{
-    retired_fd = (fd_t) INVALID_SOCKET
-};
-#endif
 #else
 typedef size_t socket_size_t;
 inline const void *as_setsockopt_opt_t (const void *opt_)
 {
     return opt_;
 }
-typedef int fd_t;
+#endif
+
+// duplicated from fd.hpp
+typedef zmq_fd_t fd_t;
+#ifdef ZMQ_HAVE_WINDOWS
+#if defined _MSC_VER && _MSC_VER <= 1400
+enum
+{
+    retired_fd = (zmq_fd_t) (~0)
+};
+#else
+enum
+#if _MSC_VER >= 1800
+  : zmq_fd_t
+#endif
+{
+    retired_fd = INVALID_SOCKET
+};
+#endif
+#else
 enum
 {
     retired_fd = -1
@@ -171,5 +211,26 @@ int test_inet_pton (int af_, const char *src_, void *dst_);
 
 //  Binds an ipv4 BSD socket to an ephemeral port, returns the compiled sockaddr
 struct sockaddr_in bind_bsd_socket (int socket);
+
+//  Connects a BSD socket to the ZMQ endpoint. Works with ipv4/ipv6/unix.
+fd_t connect_socket (const char *endpoint_,
+                     const int af_ = AF_INET,
+                     const int protocol_ = IPPROTO_TCP);
+
+//  Binds a BSD socket to an ephemeral port, returns the file descriptor.
+//  The resulting ZMQ endpoint will be stored in my_endpoint, including the protocol
+//  prefix, so ensure it is writable and of appropriate size.
+//  Works with ipv4/ipv6/unix. With unix sockets address_/port_ can be empty and
+//  my_endpoint_ will contain a random path.
+fd_t bind_socket_resolve_port (const char *address_,
+                               const char *port_,
+                               char *my_endpoint_,
+                               const int af_ = AF_INET,
+                               const int protocol_ = IPPROTO_TCP);
+
+int fuzzer_corpus_encode (const char *filename,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases);
 
 #endif

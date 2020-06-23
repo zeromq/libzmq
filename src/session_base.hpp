@@ -62,7 +62,8 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     virtual void reset ();
     void flush ();
     void rollback ();
-    void engine_error (zmq::i_engine::error_reason_t reason_);
+    void engine_error (bool handshaked_, zmq::i_engine::error_reason_t reason_);
+    void engine_ready ();
 
     //  i_pipe_events interface implementation.
     void read_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
@@ -105,35 +106,6 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 
   private:
     void start_connecting (bool wait_);
-
-    typedef own_t *(session_base_t::*connecter_factory_fun_t) (
-      io_thread_t *io_thread, bool wait_);
-    typedef std::pair<const std::string, connecter_factory_fun_t>
-      connecter_factory_entry_t;
-    static connecter_factory_entry_t _connecter_factories[];
-    typedef std::map<std::string, connecter_factory_fun_t>
-      connecter_factory_map_t;
-    static connecter_factory_map_t _connecter_factories_map;
-
-    own_t *create_connecter_vmci (io_thread_t *io_thread_, bool wait_);
-    own_t *create_connecter_tipc (io_thread_t *io_thread_, bool wait_);
-    own_t *create_connecter_ipc (io_thread_t *io_thread_, bool wait_);
-    own_t *create_connecter_tcp (io_thread_t *io_thread_, bool wait_);
-    own_t *create_connecter_ws (io_thread_t *io_thread_, bool wait_);
-    own_t *create_connecter_wss (io_thread_t *io_thread_, bool wait_);
-
-    typedef void (session_base_t::*start_connecting_fun_t) (
-      io_thread_t *io_thread);
-    typedef std::pair<const std::string, start_connecting_fun_t>
-      start_connecting_entry_t;
-    static start_connecting_entry_t _start_connecting_entries[];
-    typedef std::map<std::string, start_connecting_fun_t>
-      start_connecting_map_t;
-    static start_connecting_map_t _start_connecting_map;
-
-    void start_connecting_pgm (io_thread_t *io_thread_);
-    void start_connecting_norm (io_thread_t *io_thread_);
-    void start_connecting_udp (io_thread_t *io_thread_);
 
     void reconnect ();
 
@@ -200,6 +172,26 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
 #endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (session_base_t)
+};
+
+class hello_msg_session_t ZMQ_FINAL : public session_base_t
+{
+  public:
+    hello_msg_session_t (zmq::io_thread_t *io_thread_,
+                         bool connect_,
+                         zmq::socket_base_t *socket_,
+                         const options_t &options_,
+                         address_t *addr_);
+    ~hello_msg_session_t ();
+
+    //  Overrides of the functions from session_base_t.
+    int pull_msg (msg_t *msg_);
+    void reset ();
+
+  private:
+    bool _new_pipe;
+
+    ZMQ_NON_COPYABLE_NOR_MOVABLE (hello_msg_session_t)
 };
 }
 

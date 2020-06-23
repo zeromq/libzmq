@@ -43,10 +43,13 @@ int test_assert_success_message_errno_helper (int rc_,
                                               const char *expr_,
                                               int line);
 
-int test_assert_success_message_raw_errno_helper (int rc_,
-                                                  const char *msg_,
-                                                  const char *expr_,
-                                                  int line);
+int test_assert_success_message_raw_errno_helper (
+  int rc_, const char *msg_, const char *expr_, int line, bool zero_ = false);
+
+int test_assert_success_message_raw_zero_errno_helper (int rc_,
+                                                       const char *msg_,
+                                                       const char *expr_,
+                                                       int line);
 
 int test_assert_failure_message_raw_errno_helper (
   int rc_, int expected_errno_, const char *msg_, const char *expr_, int line);
@@ -88,8 +91,21 @@ int test_assert_failure_message_raw_errno_helper (
 // A typical use would be:
 //   TEST_ASSERT_SUCCESS_RAW_ERRNO (send (fd, buffer, 64, 0));
 // In case of success, the result of the macro is the result of 'expr'.
+// Success is strictly defined by a return value different from -1, as opposed
+// to checking that it is 0, like TEST_ASSERT_FAILURE_RAW_ZERO_ERRNO does.
 #define TEST_ASSERT_SUCCESS_RAW_ERRNO(expr)                                    \
     test_assert_success_message_raw_errno_helper (expr, NULL, #expr, __LINE__)
+
+// Asserts that the socket API 'expr' is successful. In case of a failure, the
+// assertion message includes the literal 'expr' and the error code.
+// A typical use would be:
+//   TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (send (fd, buffer, 64, 0));
+// In case of success, the result of the macro is the result of 'expr'.
+// Success is strictly defined by a return value of 0, as opposed to checking
+// that it is not -1, like TEST_ASSERT_FAILURE_RAW_ERRNO does.
+#define TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO(expr)                               \
+    test_assert_success_message_raw_zero_errno_helper (expr, NULL, #expr,      \
+                                                       __LINE__)
 
 // Asserts that the socket API 'expr' is not successful, and the error code is
 // 'error_code'. In case of an unexpected succces, or a failure with an

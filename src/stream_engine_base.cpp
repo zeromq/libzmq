@@ -102,7 +102,8 @@ static std::string get_peer_address (zmq::fd_t s_)
 zmq::stream_engine_base_t::stream_engine_base_t (
   fd_t fd_,
   const options_t &options_,
-  const endpoint_uri_pair_t &endpoint_uri_pair_) :
+  const endpoint_uri_pair_t &endpoint_uri_pair_,
+  bool has_handshake_stage_) :
     _options (options_),
     _inpos (NULL),
     _insize (0),
@@ -128,7 +129,8 @@ zmq::stream_engine_base_t::stream_engine_base_t (
     _handshaking (true),
     _io_error (false),
     _session (NULL),
-    _socket (NULL)
+    _socket (NULL),
+    _has_handshake_stage (has_handshake_stage_)
 {
     const int rc = _tx_msg.init ();
     errno_assert (rc == 0);
@@ -252,6 +254,9 @@ bool zmq::stream_engine_base_t::in_event_internal ()
             //  Handshaking was successful.
             //  Switch into the normal message flow.
             _handshaking = false;
+
+            if (_mechanism == NULL && _has_handshake_stage)
+                _session->engine_ready ();
         } else
             return false;
     }
@@ -520,6 +525,9 @@ void zmq::stream_engine_base_t::mechanism_ready ()
         _has_heartbeat_timer = true;
     }
 
+    if (_has_handshake_stage)
+        _session->engine_ready ();
+
     bool flush_session = false;
 
     if (_options.recv_routing_id) {
@@ -572,6 +580,11 @@ void zmq::stream_engine_base_t::mechanism_ready ()
     if (!properties.empty ()) {
         _metadata = new (std::nothrow) metadata_t (properties);
         alloc_assert (_metadata);
+    }
+
+    if (_has_handshake_timer) {
+        cancel_timer (handshake_timer_id);
+        _has_handshake_timer = false;
     }
 
     _socket->event_handshake_succeeded (_endpoint_uri_pair, 0);
@@ -681,11 +694,22 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
             || _mechanism->status () == mechanism_t::handshaking)) {
         const int err = errno;
         _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
+        // special case: connecting to non-ZMTP process which immediately drops connection,
+        // or which never responds with greeting, should be treated as a protocol error
+        // (i.e. stop reconnect)
+        if  ( ( (reason_ == connection_error) || (reason_ == timeout_error) )
+            && (_options.reconnect_stop & ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED)) {
+            reason_ = protocol_error;
+        }
     }
 
     _socket->event_disconnected (_endpoint_uri_pair, _s);
     _session->flush ();
-    _session->engine_error (reason_);
+    _session->engine_error (
+      !_handshaking
+        && (_mechanism == NULL
+            || _mechanism->status () != mechanism_t::handshaking),
+      reason_);
     unplug ();
     delete this;
 }

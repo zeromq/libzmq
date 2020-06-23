@@ -115,7 +115,7 @@ int zmq::ipc_connecter_t::open ()
 
     //  Create the socket.
     _s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-    if (_s == -1)
+    if (_s == retired_fd)
         return -1;
 
     //  Set the non-blocking flag.

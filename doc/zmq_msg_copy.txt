@@ -22,8 +22,8 @@ CAUTION: The implementation may choose not to physically copy the message
 content, rather to share the underlying buffer between 'src' and 'dest'. Avoid
 modifying message content after a message has been copied with
 _zmq_msg_copy()_, doing so can result in undefined behaviour. If what you need
-is an actual hard copy, allocate a new message using _zmq_msg_init_size()_ and
-copy the message content using _memcpy()_.
+is an actual hard copy, initialize a new message using _zmq_msg_init_buffer()_
+with the message content.
 
 CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
 _zmq_msg_ family of functions.
@@ -46,8 +46,7 @@ EXAMPLE
 .Copying a message
 ----
 zmq_msg_t msg;
-zmq_msg_init_size (&msg, 255);
-memcpy (zmq_msg_data (&msg, "Hello, World", 12);
+zmq_msg_init_buffer (&msg, "Hello, World", 12);
 zmq_msg_t copy;
 zmq_msg_init (&copy);
 zmq_msg_copy (&copy, &msg);
@@ -61,6 +60,7 @@ SEE ALSO
 linkzmq:zmq_msg_move[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_buffer[3]
 linkzmq:zmq_msg_init_data[3]
 linkzmq:zmq_msg_close[3]
 linkzmq:zmq[7]

@@ -60,13 +60,7 @@ class socket_poller_t
     socket_poller_t ();
     ~socket_poller_t ();
 
-    typedef struct event_t
-    {
-        socket_base_t *socket;
-        fd_t fd;
-        void *user_data;
-        short events;
-    } event_t;
+    typedef zmq_poller_event_t event_t;
 
     int add (socket_base_t *socket_, void *user_data_, short events_);
     int modify (const socket_base_t *socket_, short events_);
@@ -86,6 +80,17 @@ class socket_poller_t
     bool check_tag () const;
 
   private:
+    typedef struct item_t
+    {
+        socket_base_t *socket;
+        fd_t fd;
+        void *user_data;
+        short events;
+#if defined ZMQ_POLL_BASED_ON_POLL
+        int pollfd_index;
+#endif
+    } item_t;
+
     static void zero_trail_events (zmq::socket_poller_t::event_t *events_,
                                    int n_events_,
                                    int found_);
@@ -103,6 +108,15 @@ class socket_poller_t
                                uint64_t &now_,
                                uint64_t &end_,
                                bool &first_pass_);
+    static bool is_socket (const item_t &item, const socket_base_t *socket_)
+    {
+        return item.socket == socket_;
+    }
+    static bool is_fd (const item_t &item, fd_t fd_)
+    {
+        return !item.socket && item.fd == fd_;
+    }
+
     int rebuild ();
 
     //  Used to check whether the object is a socket_poller.
@@ -110,17 +124,6 @@ class socket_poller_t
 
     //  Signaler used for thread safe sockets polling
     signaler_t *_signaler;
-
-    typedef struct item_t
-    {
-        socket_base_t *socket;
-        fd_t fd;
-        void *user_data;
-        short events;
-#if defined ZMQ_POLL_BASED_ON_POLL
-        int pollfd_index;
-#endif
-    } item_t;
 
     //  List of sockets
     typedef std::vector<item_t> items_t;

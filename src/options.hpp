@@ -47,7 +47,7 @@
 #include <sys/ucred.h>
 #endif
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1700)
 #include <type_traits>
 #endif
 
@@ -291,12 +291,23 @@ struct options_t
     // Version of monitor events to emit
     int monitor_event_version;
 
+    // minimum supported version of ZMTP
+    char min_zmtp[2];
+
     //  WSS Keys
     std::string wss_key_pem;
     std::string wss_cert_pem;
     std::string wss_trust_pem;
     std::string wss_hostname;
     bool wss_trust_system;
+
+    //  Hello msg
+    std::vector<unsigned char> hello_msg;
+    bool can_send_hello_msg;
+
+    //  Disconnect msg
+    std::vector<unsigned char> disconnect_msg;
+    bool can_recv_disconnect_msg;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

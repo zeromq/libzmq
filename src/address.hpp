@@ -46,7 +46,9 @@ class ctx_t;
 class tcp_address_t;
 class udp_address_t;
 class ws_address_t;
+#ifdef ZMQ_HAVE_WSS
 class wss_address_t;
+#endif
 #if defined ZMQ_HAVE_IPC
 class ipc_address_t;
 #endif
@@ -107,6 +109,8 @@ struct address_t
         udp_address_t *udp_addr;
 #ifdef ZMQ_HAVE_WS
         ws_address_t *ws_addr;
+#endif
+#ifdef ZMQ_HAVE_WSS
         wss_address_t *wss_addr;
 #endif
 #if defined ZMQ_HAVE_IPC

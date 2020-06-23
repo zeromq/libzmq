@@ -37,6 +37,7 @@ SEE ALSO
 linkzmq:zmq_msg_size[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_buffer[3]
 linkzmq:zmq_msg_init_data[3]
 linkzmq:zmq_msg_close[3]
 linkzmq:zmq[7]

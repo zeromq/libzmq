@@ -58,7 +58,8 @@ class c_single_allocator
 
     std::size_t size () const { return _buf_size; }
 
-    void resize (std::size_t new_size_) { _buf_size = new_size_; }
+    //  This buffer is fixed, size must not be changed
+    void resize (std::size_t new_size_) { LIBZMQ_UNUSED (new_size_); }
 
   private:
     std::size_t _buf_size;

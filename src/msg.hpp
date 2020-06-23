@@ -103,6 +103,7 @@ class msg_t
               content_t *content_ = NULL);
 
     int init_size (size_t size_);
+    int init_buffer (const void *buf_, size_t size_);
     int init_data (void *data_, size_t size_, msg_free_fn *ffn_, void *hint_);
     int init_external_storage (content_t *content_,
                                void *data_,
