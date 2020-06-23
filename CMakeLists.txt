@@ -110,11 +110,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
-<<<<<<< HEAD
 if(NOT MSVC)
-=======
-if (NOT MSVC)
->>>>>>> reconnect-redux-2
   if(NOT CMAKE_CXX_FLAGS MATCHES "-std=")
     # use C++11 by default if supported
     check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
@@ -310,57 +306,6 @@ set(POLLER
     ""
     CACHE STRING "Choose polling system for I/O threads. valid values are
   kqueue, epoll, devpoll, pollset, poll or select [default=autodetect]")
-<<<<<<< HEAD
-
-if (WIN32)
-    if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
-        set(ZMQ_HAVE_WINDOWS_UWP ON)
-        set(ZMQ_HAVE_IPC OFF)
-        # to remove compile warninging "D9002 ignoring unknown option"
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-        set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} CACHE STRING "" FORCE)
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO})
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} CACHE STRING "" FORCE)
-        string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
-    endif()
-    # from https://stackoverflow.com/a/40217291/2019765
-    macro(get_WIN32_WINNT version)
-        if (CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if ("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif ("${verMajor}" MATCHES "10")
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif(CMAKE_SYSTEM_VERSION)
-    endmacro(get_WIN32_WINNT)
-
-    get_WIN32_WINNT(ZMQ_WIN32_WINNT_DEFAULT)
-    message(STATUS "Detected _WIN32_WINNT from CMAKE_SYSTEM_VERSION: ${ZMQ_WIN32_WINNT_DEFAULT}")
-
-    # TODO limit _WIN32_WINNT to the actual Windows SDK version, which might be different from the default version installed with Visual Studio
-    if(MSVC_VERSION STREQUAL "1500" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.0")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0600")
-    elseif(MSVC_VERSION STREQUAL "1600" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1700" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.1")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0601")
-    elseif(MSVC_VERSION STREQUAL "1800" AND CMAKE_SYSTEM_VERSION VERSION_GREATER "6.2")
-        set(ZMQ_WIN32_WINNT_LIMIT "0x0602")
-    endif()
-    if(ZMQ_WIN32_WINNT_LIMIT)
-        message(STATUS "Mismatch of Visual Studio Version (${MSVC_VERSION}) and CMAKE_SYSTEM_VERSION (${CMAKE_SYSTEM_VERSION}), limiting _WIN32_WINNT to ${ZMQ_WIN32_WINNT_LIMIT}, you may override this by setting ZMQ_WIN32_WINNT")
-        set(ZMQ_WIN32_WINNT_DEFAULT "${ZMQ_WIN32_WINNT_LIMIT}")
-    endif()
-=======
->>>>>>> reconnect-redux-2
 
 if(WIN32)
   if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore" AND CMAKE_SYSTEM_VERSION MATCHES "^10.0")
@@ -491,11 +436,11 @@ if(POLLER STREQUAL "")
 endif()
 
 if(POLLER STREQUAL "kqueue"
-   OR POLLER STREQUAL "epoll"
-   OR POLLER STREQUAL "devpoll"
-   OR POLLER STREQUAL "pollset"
-   OR POLLER STREQUAL "poll"
-   OR POLLER STREQUAL "select")
+  OR POLLER STREQUAL "epoll"
+  OR POLLER STREQUAL "devpoll"
+  OR POLLER STREQUAL "pollset"
+  OR POLLER STREQUAL "poll"
+  OR POLLER STREQUAL "select")
   message(STATUS "Using polling method in I/O threads: ${POLLER}")
   string(TOUPPER ${POLLER} UPPER_POLLER)
   set(ZMQ_IOTHREAD_POLLER_USE_${UPPER_POLLER} 1)
@@ -540,28 +485,28 @@ if(NOT CYGWIN)
 endif()
 
 if(NOT WIN32)
-  set(ZMQ_HAVE_IPC 1)
+    set(ZMQ_HAVE_IPC 1)
 else()
-  check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+    check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
 endif()
 
-# ##################### BEGIN condition_variable_t selection
+###################### BEGIN condition_variable_t selection
 if(NOT ZMQ_CV_IMPL)
-  # prefer C++11 STL std::condition_variable implementation, if available
-  check_include_files(condition_variable ZMQ_HAVE_STL_CONDITION_VARIABLE LANGUAGE CXX)
+    # prefer C++11 STL std::condition_variable implementation, if available
+    check_include_files(condition_variable ZMQ_HAVE_STL_CONDITION_VARIABLE LANGUAGE CXX)
 
-  if(ZMQ_HAVE_STL_CONDITION_VARIABLE)
-    set(ZMQ_CV_IMPL_DEFAULT "stl11")
-  else()
-    if(WIN32 AND NOT CMAKE_SYSTEM_VERSION VERSION_LESS "6.0")
-      # Win32API CONDITION_VARIABLE is supported from Windows Vista only
-      set(ZMQ_CV_IMPL_DEFAULT "win32api")
-    elseif(CMAKE_USE_PTHREADS_INIT)
-      set(ZMQ_CV_IMPL_DEFAULT "pthreads")
+    if (ZMQ_HAVE_STL_CONDITION_VARIABLE)
+        set(ZMQ_CV_IMPL_DEFAULT "stl11")
     else()
-      set(ZMQ_CV_IMPL_DEFAULT "none")
+        if(WIN32 AND NOT CMAKE_SYSTEM_VERSION VERSION_LESS "6.0")
+            # Win32API CONDITION_VARIABLE is supported from Windows Vista only
+            set(ZMQ_CV_IMPL_DEFAULT "win32api")
+        elseif(CMAKE_USE_PTHREADS_INIT)
+            set(ZMQ_CV_IMPL_DEFAULT "pthreads")
+        else()
+            set(ZMQ_CV_IMPL_DEFAULT "none")
+        endif()
     endif()
-  endif()
 
   # TODO a vxworks implementation also exists, but vxworks is not currently supported with cmake at all
   set(ZMQ_CV_IMPL
@@ -572,17 +517,17 @@ endif()
 
 message(STATUS "Using condition_variable_t implementation: ${ZMQ_CV_IMPL}")
 if(ZMQ_CV_IMPL STREQUAL "stl11")
-  set(ZMQ_USE_CV_IMPL_STL11 1)
+    set(ZMQ_USE_CV_IMPL_STL11 1)
 elseif(ZMQ_CV_IMPL STREQUAL "win32api")
-  set(ZMQ_USE_CV_IMPL_WIN32API 1)
+    set(ZMQ_USE_CV_IMPL_WIN32API 1)
 elseif(ZMQ_CV_IMPL STREQUAL "pthreads")
-  set(ZMQ_USE_CV_IMPL_PTHREADS 1)
+    set(ZMQ_USE_CV_IMPL_PTHREADS 1)
 elseif(ZMQ_CV_IMPL STREQUAL "none")
-  set(ZMQ_USE_CV_IMPL_NONE 1)
+    set(ZMQ_USE_CV_IMPL_NONE 1)
 else()
-  message(ERROR "Unknown value for ZMQ_CV_IMPL: ${ZMQ_CV_IMPL}")
+    message(ERROR "Unknown value for ZMQ_CV_IMPL: ${ZMQ_CV_IMPL}")
 endif()
-# ##################### END condition_variable_t selection
+###################### END condition_variable_t selection
 
 if(NOT MSVC)
   check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
@@ -761,7 +706,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "SunOS"
     return 0; \
   } \
   "
-    HAVE_ATOMIC_H)
+  HAVE_ATOMIC_H)
 
   if(NOT HAVE_ATOMIC_H)
     set(ZMQ_FORCE_MUTEXES 1)
@@ -769,10 +714,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "SunOS"
 endif()
 
 if(NOT ANDROID)
-  zmq_check_noexcept()
+    zmq_check_noexcept()
 endif()
 
-# -----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 if(NOT CMAKE_CROSSCOMPILING AND NOT MSVC)
   zmq_check_sock_cloexec()
   zmq_check_o_cloexec()
@@ -789,9 +734,9 @@ if(NOT CMAKE_CROSSCOMPILING AND NOT MSVC)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux"
-   OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
-   OR CMAKE_SYSTEM_NAME MATCHES "GNU/Hurd"
-   OR CYGWIN)
+  OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
+  OR CMAKE_SYSTEM_NAME MATCHES "GNU/Hurd"
+  OR CYGWIN)
   add_definitions(-D_GNU_SOURCE)
 elseif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   add_definitions(-D__BSD_VISIBLE)
@@ -1843,17 +1788,6 @@ if(MSVC_VERSION EQUAL 1600)
 endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
-<<<<<<< HEAD
-include(ClangFormat)
-
-# fixes https://github.com/zeromq/libzmq/issues/3776
-# The problem is, both libzmq-static libzmq try to use/generate precompiled.pch at the same time
-# Add a dependency, so they run in order and so they dont get in each others way
-# TODO still generates warning "build\x64-Debug\ninja : warning : multiple rules generate precompiled.hpp.
-# builds involving this target will not be correct; continuing anyway [-w dupbuild=warn]"
-if (MSVC AND ENABLE_PRECOMPILED AND BUILD_SHARED AND BUILD_STATIC)
-    add_dependencies(libzmq-static libzmq)
-=======
 option(ENABLE_CLANG "Include Clang" ON)
 if (ENABLE_CLANG)
   include(ClangFormat)
@@ -1868,5 +1802,4 @@ if(MSVC
    AND BUILD_SHARED
    AND BUILD_STATIC)
   add_dependencies(libzmq-static libzmq)
->>>>>>> reconnect-redux-2
 endif()
