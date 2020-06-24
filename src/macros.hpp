@@ -54,12 +54,12 @@
     classname &operator= (const classname &) = delete;                         \
     classname (classname &&) = delete;                                         \
     classname &operator= (classname &&) = delete;                              \
-  enum {};
+  static_assert(true, "require a semicolon at the end of the function");
 #else
 #define ZMQ_NON_COPYABLE_NOR_MOVABLE(classname)                                \
   private:                                                                     \
     classname (const classname &);                                             \
     classname &operator= (const classname &);                                  \
-  enum {};
+  static_assert(true, "require a semicolon at the end of the function");
 #endif
 #endif
