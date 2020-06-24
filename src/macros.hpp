@@ -60,6 +60,6 @@
   private:                                                                     \
     classname (const classname &);                                             \
     classname &operator= (const classname &);                                  \
-		enum {};
+  enum {};
 #endif
 #endif
