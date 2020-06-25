@@ -783,7 +783,6 @@ int zmq::options_t::setsockopt (int option_,
                                                       &multicast_loop);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
         case ZMQ_IN_BATCH_SIZE:
             if (is_int && value > 0) {
                 in_batch_size = value;
@@ -1247,7 +1246,6 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
