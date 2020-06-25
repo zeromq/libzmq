@@ -251,12 +251,6 @@ zmq::zmtp_engine_t::handshake_fun_t zmq::zmtp_engine_t::select_handshake_fun (
 
 bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 {
-    if ((_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0)) {
-        // reject unversioned connections if ZMQ_ZMTP_STRICT specified
-        error (protocol_error);
-        return false;
-    }
-
     //  We send and receive rest of routing id message
     if (session ()->zap_enabled ()) {
         // reject ZMTP 1.0 connections if ZAP is enabled
@@ -314,12 +308,6 @@ bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 
 bool zmq::zmtp_engine_t::handshake_v1_0 ()
 {
-    if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(ZMQ_ZMTP_STRICT_V1_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V1_0)) < 0) ) {
-        error (protocol_error);
-        return false;
-    }
-
     if (session ()->zap_enabled ()) {
         // reject ZMTP 1.0 connections if ZAP is enabled
         error (protocol_error);
@@ -338,12 +326,6 @@ bool zmq::zmtp_engine_t::handshake_v1_0 ()
 
 bool zmq::zmtp_engine_t::handshake_v2_0 ()
 {
-    if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(ZMQ_ZMTP_STRICT_V2_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V2_0)) < 0) ) {
-        error (protocol_error);
-        return false;
-    }
-
     if (session ()->zap_enabled ()) {
         // reject ZMTP 2.0 connections if ZAP is enabled
         error (protocol_error);
@@ -424,12 +406,6 @@ bool zmq::zmtp_engine_t::handshake_v3_x (const bool downgrade_sub_)
 
 bool zmq::zmtp_engine_t::handshake_v3_0 ()
 {
-    if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(ZMQ_ZMTP_STRICT_V3_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V3_0)) < 0) ) {
-        error (protocol_error);
-        return false;
-    }
-
     _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
@@ -442,12 +418,6 @@ bool zmq::zmtp_engine_t::handshake_v3_0 ()
 
 bool zmq::zmtp_engine_t::handshake_v3_1 ()
 {
-    if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(ZMQ_ZMTP_STRICT_V3_1, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V3_1)) < 0) ) {
-        error (protocol_error);
-        return false;
-    }
-
     _encoder = new (std::nothrow) v3_1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
 
