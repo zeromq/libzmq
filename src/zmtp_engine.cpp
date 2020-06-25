@@ -252,7 +252,7 @@ zmq::zmtp_engine_t::handshake_fun_t zmq::zmtp_engine_t::select_handshake_fun (
 bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 {
     if ((_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0)) {
-        // reject unversioned connections if ZMQ_MIN_ZMTP_VERSION specified
+        // reject unversioned connections if ZMQ_ZMTP_STRICT specified
         error (protocol_error);
         return false;
     }
@@ -315,7 +315,7 @@ bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 bool zmq::zmtp_engine_t::handshake_v1_0 ()
 {
     if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(MIN_ZMTP_VERSION_1_0, _options.min_zmtp, sizeof(MIN_ZMTP_VERSION_1_0)) < 0) ) {
+        && (memcmp(ZMQ_ZMTP_STRICT_V1_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V1_0)) < 0) ) {
         error (protocol_error);
         return false;
     }
@@ -339,7 +339,7 @@ bool zmq::zmtp_engine_t::handshake_v1_0 ()
 bool zmq::zmtp_engine_t::handshake_v2_0 ()
 {
     if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(MIN_ZMTP_VERSION_2_0, _options.min_zmtp, sizeof(MIN_ZMTP_VERSION_2_0)) < 0) ) {
+        && (memcmp(ZMQ_ZMTP_STRICT_V2_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V2_0)) < 0) ) {
         error (protocol_error);
         return false;
     }
@@ -425,7 +425,7 @@ bool zmq::zmtp_engine_t::handshake_v3_x (const bool downgrade_sub_)
 bool zmq::zmtp_engine_t::handshake_v3_0 ()
 {
     if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(MIN_ZMTP_VERSION_3_0, _options.min_zmtp, sizeof(MIN_ZMTP_VERSION_3_0)) < 0) ) {
+        && (memcmp(ZMQ_ZMTP_STRICT_V3_0, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V3_0)) < 0) ) {
         error (protocol_error);
         return false;
     }
@@ -443,7 +443,7 @@ bool zmq::zmtp_engine_t::handshake_v3_0 ()
 bool zmq::zmtp_engine_t::handshake_v3_1 ()
 {
     if ( ( (_options.min_zmtp[0] != 0) || (_options.min_zmtp[1] != 0))
-        && (memcmp(MIN_ZMTP_VERSION_3_1, _options.min_zmtp, sizeof(MIN_ZMTP_VERSION_3_1)) < 0) ) {
+        && (memcmp(ZMQ_ZMTP_STRICT_V3_1, _options.min_zmtp, sizeof(ZMQ_ZMTP_STRICT_V3_1)) < 0) ) {
         error (protocol_error);
         return false;
     }

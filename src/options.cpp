@@ -785,7 +785,7 @@ int zmq::options_t::setsockopt (int option_,
 
 #ifdef ZMQ_BUILD_DRAFT_API
 
-        case ZMQ_MIN_ZMTP_VERSION:
+        case ZMQ_ZMTP_STRICT:
             if (optvallen_ == 2) {
                 memcpy (min_zmtp, optval_, 2);
                 return 0;
@@ -1255,7 +1255,7 @@ int zmq::options_t::getsockopt (int option_,
 
 #ifdef ZMQ_BUILD_DRAFT_API
 
-        case ZMQ_MIN_ZMTP_VERSION:
+        case ZMQ_ZMTP_STRICT:
             if (*optvallen_ == 2) {
                 memcpy (optval_, min_zmtp, 2);
                 return 0;

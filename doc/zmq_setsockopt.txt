@@ -513,7 +513,7 @@ Default value:: not set
 Applicable socket types:: all
 
 
-ZMQ_MIN_ZMTP_VERSION: Minimum acceptable ZMTP version
+ZMQ_ZMTP_STRICT: Minimum acceptable ZMTP version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the minimum ZMTP version that this socket supports.  If a
 peer socket identifies as an earlier version during handshaking,
@@ -523,7 +523,7 @@ NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: char[2]
-Option value unit:: 0, MIN_ZMTP_VERSION_1_0, MIN_ZMTP_VERSION_2_0, MIN_ZMTP_VERSION_3_0, MIN_ZMTP_VERSION_3_1
+Option value unit:: 0, ZMQ_ZMTP_STRICT_V1_0, ZMQ_ZMTP_STRICT_V2_0, ZMQ_ZMTP_STRICT_V3_0, ZMQ_ZMTP_STRICT_V3_1
 Default value:: not set
 Applicable socket types:: all but ZMQ_STREAM
 
