@@ -681,17 +681,10 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_RECONNECT_STOP 109
 #define ZMQ_HELLO_MSG 110
 #define ZMQ_DISCONNECT_MSG 111
-#define ZMQ_MIN_ZMTP_VERSION 112
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
 #define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 0x2
-
-/* ZMQ_MIN_ZMTP_VERSION options                                               */
-static const char MIN_ZMTP_VERSION_1_0[] = {1, 0};
-static const char MIN_ZMTP_VERSION_2_0[] = {2, 0};
-static const char MIN_ZMTP_VERSION_3_0[] = {3, 0};
-static const char MIN_ZMTP_VERSION_3_1[] = {3, 1};
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10

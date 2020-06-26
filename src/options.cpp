@@ -258,7 +258,6 @@ zmq::options_t::options_t () :
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
     memset (curve_server_key, 0, CURVE_KEYSIZE);
-    memset (min_zmtp, 0, 2);
 #if defined ZMQ_HAVE_VMCI
     vmci_buffer_size = 0;
     vmci_buffer_min_size = 0;
@@ -784,13 +783,6 @@ int zmq::options_t::setsockopt (int option_,
                                                       &multicast_loop);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
-        case ZMQ_MIN_ZMTP_VERSION:
-            if (optvallen_ == 2) {
-                memcpy (min_zmtp, optval_, 2);
-                return 0;
-            }
-
         case ZMQ_IN_BATCH_SIZE:
             if (is_int && value > 0) {
                 in_batch_size = value;
@@ -1254,14 +1246,6 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
-        case ZMQ_MIN_ZMTP_VERSION:
-            if (*optvallen_ == 2) {
-                memcpy (optval_, min_zmtp, 2);
-                return 0;
-            }
-            break;
-
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
