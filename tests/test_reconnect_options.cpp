@@ -222,6 +222,13 @@ void reconnect_stop_on_refused ()
 // test stopping reconnect on connection refused
 void reconnect_stop_on_handshake_failed ()
 {
+    char bind_address[MAX_SOCKET_STRING];
+    size_t addr_length = sizeof (bind_address);
+    void* dummy = test_context_socket (ZMQ_STREAM);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dummy, "tcp://127.0.0.1:0"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (dummy, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
+
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
     //  Monitor all events on sub
@@ -241,8 +248,8 @@ void reconnect_stop_on_handshake_failed ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_STOP,
                                                &stopReconnectOnError,
                                                sizeof (stopReconnectOnError)));
-    // connect to sshd
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "tcp://127.0.0.1:22"));
+    // connect to dummy stream socket above
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
 
     #if 1
     // ZMQ_EVENT_DISCONNECTED should be last event, because of ZMQ_RECONNECT_STOP set above
@@ -257,6 +264,7 @@ void reconnect_stop_on_handshake_failed ()
     //  Close sub
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (sub);
+    test_context_socket_close_zero_linger (dummy);
 
     //  Close monitor
     //  TODO why does this use zero_linger?
