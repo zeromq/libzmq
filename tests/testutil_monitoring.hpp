@@ -77,7 +77,7 @@ void expect_monitor_event_v2 (void *monitor_,
                               const char *expected_remote_address_ = NULL);
 
 
-const char* get_zmqEventName(uint64_t event);
-void print_events(void* socket, int timeout, int limit);
+const char *get_zmqEventName (uint64_t event);
+void print_events (void *socket, int timeout, int limit);
 
 #endif
