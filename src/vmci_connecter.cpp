@@ -179,7 +179,7 @@ void zmq::vmci_connecter_t::start_connecting ()
 
 void zmq::vmci_connecter_t::add_reconnect_timer ()
 {
-    if (options.reconnect_ivl != -1) {
+    if (options.reconnect_ivl > 0) {
         int rc_ivl = get_new_reconnect_ivl ();
         add_timer (rc_ivl, reconnect_timer_id);
         socket->event_connect_retried (
