@@ -481,7 +481,7 @@ void zmq::session_base_t::engine_error (bool handshaked_,
                 reconnect ();
                 break;
             }
-            /* FALLTHROUGH */
+
         case i_engine::protocol_error:
             if (_pending) {
                 if (_pipe)
