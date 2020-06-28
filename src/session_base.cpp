@@ -256,7 +256,8 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
     }
 
     if (unlikely (engine == NULL)) {
-        pipe->check_read ();
+        if (pipe)
+            pipe->check_read ();
         return;
     }
 
