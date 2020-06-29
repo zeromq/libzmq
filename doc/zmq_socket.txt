@@ -49,8 +49,8 @@ _zmq_bind()_, thus allowing many-to-many relationships.
 .Thread safety
 0MQ has both thread safe socket type and _not_ thread safe socket types.
 Applications MUST NOT use a _not_ thread safe socket
-from multiple threads except after migrating a socket from one thread to
-another with a "full fence" memory barrier.
+from multiple threads under any circumstances. Doing so results in undefined
+behaviour.
 
 Following are the thread safe sockets:
 * ZMQ_CLIENT

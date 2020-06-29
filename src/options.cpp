@@ -1252,6 +1252,7 @@ int zmq::options_t::getsockopt (int option_,
                 return 0;
             }
             break;
+
         case ZMQ_IN_BATCH_SIZE:
             if (is_int) {
                 *value = in_batch_size;

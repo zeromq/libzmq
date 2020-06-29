@@ -31,6 +31,12 @@ include(ZMQSupportMacros)
 
 find_package(PkgConfig)
 
+# Set lists to empty beforehand as to not accidentally take values from parent
+set(sources)
+set(cxx-sources)
+set(html-docs)
+set(target_outputs)
+
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
@@ -119,6 +125,7 @@ set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
+option(WITH_NORM "Build with support for NORM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if(APPLE)
@@ -1154,6 +1161,16 @@ if(WITH_OPENPGM)
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif()
 
+if(WITH_NORM)
+  find_package(norm)
+    if(norm_FOUND)
+      message(STATUS "Building with NORM")
+      set(ZMQ_HAVE_NORM 1)
+    else()
+      message(FATAL_ERROR "NORM not found")
+    endif()
+endif()
+
 if(WITH_VMCI)
   add_definitions(-DZMQ_HAVE_VMCI)
   include_directories(${VMCI_INCLUDE_DIRS})
@@ -1416,6 +1433,10 @@ if(BUILD_SHARED)
   if(RT_LIBRARY)
     target_link_libraries(libzmq -lrt)
   endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq norm::norm)
+  endif()
 endif()
 
 if(BUILD_STATIC)
@@ -1460,6 +1481,10 @@ if(BUILD_STATIC)
 
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
     add_definitions(-DUNITY_EXCLUDE_MATH_H)
+  endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq-static norm::norm)
   endif()
 endif()
 
@@ -1745,7 +1770,10 @@ if(MSVC_VERSION EQUAL 1600)
 endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
-include(ClangFormat)
+option(ENABLE_CLANG "Include Clang" ON)
+if (ENABLE_CLANG)
+  include(ClangFormat)
+endif()
 
 # fixes https://github.com/zeromq/libzmq/issues/3776 The problem is, both libzmq-static libzmq try to use/generate
 # precompiled.pch at the same time Add a dependency, so they run in order and so they dont get in each others way TODO

@@ -582,6 +582,11 @@ void zmq::stream_engine_base_t::mechanism_ready ()
         alloc_assert (_metadata);
     }
 
+    if (_has_handshake_timer) {
+        cancel_timer (handshake_timer_id);
+        _has_handshake_timer = false;
+    }
+
     _socket->event_handshake_succeeded (_endpoint_uri_pair, 0);
 }
 
@@ -689,6 +694,14 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
             || _mechanism->status () == mechanism_t::handshaking)) {
         const int err = errno;
         _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
+        // special case: connecting to non-ZMTP process which immediately drops connection,
+        // or which never responds with greeting, should be treated as a protocol error
+        // (i.e. stop reconnect)
+        if (((reason_ == connection_error) || (reason_ == timeout_error))
+            && (_options.reconnect_stop
+                & ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED)) {
+            reason_ = protocol_error;
+        }
     }
 
     _socket->event_disconnected (_endpoint_uri_pair, _s);

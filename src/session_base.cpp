@@ -481,7 +481,7 @@ void zmq::session_base_t::engine_error (bool handshaked_,
                 reconnect ();
                 break;
             }
-            /* FALLTHROUGH */
+
         case i_engine::protocol_error:
             if (_pending) {
                 if (_pipe)
@@ -587,7 +587,7 @@ void zmq::session_base_t::reconnect ()
     reset ();
 
     //  Reconnect.
-    if (options.reconnect_ivl != -1)
+    if (options.reconnect_ivl > 0)
         start_connecting (true);
     else {
         std::string *ep = new (std::string);
