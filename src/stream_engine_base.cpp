@@ -697,8 +697,9 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
         // special case: connecting to non-ZMTP process which immediately drops connection,
         // or which never responds with greeting, should be treated as a protocol error
         // (i.e. stop reconnect)
-        if  ( ( (reason_ == connection_error) || (reason_ == timeout_error) )
-            && (_options.reconnect_stop & ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED)) {
+        if (((reason_ == connection_error) || (reason_ == timeout_error))
+            && (_options.reconnect_stop
+                & ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED)) {
             reason_ = protocol_error;
         }
     }
