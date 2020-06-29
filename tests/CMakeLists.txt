@@ -160,6 +160,7 @@ if(ENABLE_DRAFTS)
     test_channel
     test_hello_msg
     test_disconnect_msg
+    test_zmtp_strict
   )
 endif()
 
