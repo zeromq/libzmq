@@ -291,7 +291,7 @@ struct options_t
     // Version of monitor events to emit
     int monitor_event_version;
 
-    // minimum supported version of ZMTP
+    // if set, reject connections to unversioned zmtp
     int zmtp_strict;
 
     //  WSS Keys
