@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2017 Contributors as noted in the AUTHORS file
+    Copyright (c) 2020 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,14 +27,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <assert.h>
+#include <memory.h>
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 #include "testutil_monitoring.hpp"
 
 #include <unity.h>
-
-#include <memory.h>
 
 // test connecting to unversioned zmtp w/o strict succeeds
 void connect_success_versioned ()

@@ -435,7 +435,7 @@ Applicable socket types:: all, when using TCP or IPC transports
 
 
 ZMQ_ZMTP_STRICT: Require versioned ZMTP protocol
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_ZMTP_STRICT' option shall retrieve the current setting for the socket.
 
 If set, the handshake will fail if the peer socket's ZMTP version is unspecified.
@@ -446,7 +446,8 @@ NOTE: in DRAFT state, not yet available in stable releases.
 Option value type:: int
 Option value unit:: boolean
 Default value:: 0 (false)
-Applicable socket types:: all but ZMQ_STREAM
+Applicable socket types:: all, only for connection-oriented transports
+(except ZMQ_STREAM)
 
 ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
