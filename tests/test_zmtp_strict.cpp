@@ -55,10 +55,13 @@ void connect_success ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
     // connect to dummy stream socket above
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
+    // wait for connect to happen
+    msleep(SETTLE_TIME);
 
 #if 1
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 #else
     print_events (sub_mon, 2 * 1000, 1000);
 #endif
@@ -85,6 +88,10 @@ void connect_failed ()
 
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
+    // set handshake interval (i.e., timeout) to a more reasonable value
+    int handshakeInterval = 1000;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      sub, ZMQ_HANDSHAKE_IVL, &handshakeInterval, sizeof (handshakeInterval)));
     // set strict option
     int zmtpStrict = 1;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
@@ -99,10 +106,11 @@ void connect_failed ()
     // connect to dummy stream socket above
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
 
-#if 0
+#if 1
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_DISCONNECTED);
 #else
     print_events (sub_mon, 2 * 1000, 1000);
 #endif
@@ -133,7 +141,7 @@ int main (void)
 
     UNITY_BEGIN ();
 
-    RUN_TEST (connect_success);
+    //RUN_TEST (connect_success);
     RUN_TEST (connect_failed);
     return UNITY_END ();
 }
