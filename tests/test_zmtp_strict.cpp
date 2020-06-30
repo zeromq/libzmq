@@ -34,18 +34,22 @@
 
 #include <unity.h>
 
+#include <memory.h>
+
 // test connecting to unversioned zmtp w/o strict succeeds
-void connect_success ()
+void connect_success_versioned ()
 {
-    char bind_address[MAX_SOCKET_STRING];
-    size_t addr_length = sizeof (bind_address);
-    void *dummy = test_context_socket (ZMQ_STREAM);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dummy, "tcp://127.0.0.1:0"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (dummy, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
+    char my_endpoint[MAX_SOCKET_STRING];
+    fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint);
 
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
+
+    // set handshake interval (i.e., timeout) to a more reasonable value
+    int handshakeInterval = 1000;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      sub, ZMQ_HANDSHAKE_IVL, &handshakeInterval, sizeof (handshakeInterval)));
+
     //  Monitor all events on sub
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
@@ -53,12 +57,28 @@ void connect_success ()
     void *sub_mon = test_context_socket (ZMQ_PAIR);
     //  Connect so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
-    // connect to dummy stream socket above
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
-    // wait for connect to happen
-    msleep(SETTLE_TIME);
 
-#if 1
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, my_endpoint));
+
+    fd_t server_accept =
+      TEST_ASSERT_SUCCESS_RAW_ERRNO (accept (server, NULL, NULL));
+
+    char buffer[128];
+    memset (buffer, 0, sizeof (buffer));
+    int rc;
+
+    memcpy (buffer, zmtp_greeting_null, sizeof (zmtp_greeting_null));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+        send (server_accept, buffer, sizeof(zmtp_greeting_null), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_greeting_null), rc);
+
+    memcpy (buffer, zmtp_ready_xpub, sizeof (zmtp_ready_xpub));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+        send (server_accept, buffer, sizeof(zmtp_ready_xpub), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_xpub), rc);
+
+#if 0
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
@@ -69,7 +89,67 @@ void connect_success ()
     //  Close sub
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (sub);
-    test_context_socket_close_zero_linger (dummy);
+    close (server);
+
+    //  Close monitor
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (sub_mon);
+}
+
+// test connecting to unversioned zmtp w/o strict succeeds
+void connect_success_unversioned ()
+{
+    char my_endpoint[MAX_SOCKET_STRING];
+    fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint);
+
+    // setup sub socket
+    void *sub = test_context_socket (ZMQ_SUB);
+
+    // set handshake interval (i.e., timeout) to a more reasonable value
+    int handshakeInterval = 1000;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      sub, ZMQ_HANDSHAKE_IVL, &handshakeInterval, sizeof (handshakeInterval)));
+
+    //  Monitor all events on sub
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    //  Create socket for collecting monitor events
+    void *sub_mon = test_context_socket (ZMQ_PAIR);
+    //  Connect so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, my_endpoint));
+
+    fd_t server_accept =
+      TEST_ASSERT_SUCCESS_RAW_ERRNO (accept (server, NULL, NULL));
+
+    char buffer[128];
+    memset (buffer, 0, sizeof (buffer));
+    int rc;
+
+    memcpy (buffer, zmtp_greeting_unversioned, sizeof (zmtp_greeting_unversioned));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+        send (server_accept, buffer, sizeof(zmtp_greeting_unversioned), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_greeting_unversioned), rc);
+
+    memcpy (buffer, zmtp_ready_xpub, sizeof (zmtp_ready_xpub));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+        send (server_accept, buffer, sizeof(zmtp_ready_xpub), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_ready_xpub), rc);
+
+#if 0
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+#else
+    print_events (sub_mon, 2 * 1000, 1000);
+#endif
+
+    //  Close sub
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (sub);
+    close (server);
 
     //  Close monitor
     //  TODO why does this use zero_linger?
@@ -77,17 +157,14 @@ void connect_success ()
 }
 
 // test connecting to unversioned zmtp w/strict fails
-void connect_failed ()
+void connect_failed_unversioned ()
 {
-    char bind_address[MAX_SOCKET_STRING];
-    size_t addr_length = sizeof (bind_address);
-    void *dummy = test_context_socket (ZMQ_STREAM);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dummy, "tcp://127.0.0.1:0"));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (dummy, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
+    char my_endpoint[MAX_SOCKET_STRING];
+    fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint);
 
     // setup sub socket
     void *sub = test_context_socket (ZMQ_SUB);
+
     // set handshake interval (i.e., timeout) to a more reasonable value
     int handshakeInterval = 1000;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
@@ -96,6 +173,7 @@ void connect_failed ()
     int zmtpStrict = 1;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       sub, ZMQ_ZMTP_STRICT, &zmtpStrict, sizeof (zmtpStrict)));
+
     //  Monitor all events on sub
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
@@ -103,14 +181,26 @@ void connect_failed ()
     void *sub_mon = test_context_socket (ZMQ_PAIR);
     //  Connect so they'll get events
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
-    // connect to dummy stream socket above
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
 
-#if 1
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, my_endpoint));
+
+    fd_t server_accept =
+      TEST_ASSERT_SUCCESS_RAW_ERRNO (accept (server, NULL, NULL));
+
+    char buffer[128];
+    memset (buffer, 0, sizeof (buffer));
+    int rc;
+
+    memcpy (buffer, zmtp_greeting_unversioned, sizeof (zmtp_greeting_unversioned));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+        send (server_accept, buffer, sizeof(zmtp_greeting_unversioned), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (zmtp_greeting_unversioned), rc);
+
+#if 0
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
     expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
-    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
-    expect_monitor_event (sub_mon, ZMQ_EVENT_DISCONNECTED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 #else
     print_events (sub_mon, 2 * 1000, 1000);
 #endif
@@ -118,7 +208,7 @@ void connect_failed ()
     //  Close sub
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (sub);
-    test_context_socket_close_zero_linger (dummy);
+    close (server);
 
     //  Close monitor
     //  TODO why does this use zero_linger?
@@ -141,7 +231,9 @@ int main (void)
 
     UNITY_BEGIN ();
 
-    //RUN_TEST (connect_success);
-    RUN_TEST (connect_failed);
+    RUN_TEST (connect_success_versioned);
+    RUN_TEST (connect_success_unversioned);
+    RUN_TEST (connect_failed_unversioned);
+
     return UNITY_END ();
 }

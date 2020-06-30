@@ -67,6 +67,9 @@
 #define PORT_6 5561
 
 //  For tests that mock ZMTP
+const uint8_t zmtp_greeting_unversioned[] = {
+  0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 const uint8_t zmtp_greeting_null[64] = {
   0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0x7f, 3, 0, 'N', 'U', 'L', 'L',
   0,    0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0,
