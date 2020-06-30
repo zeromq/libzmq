@@ -308,7 +308,8 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
     }
 
     if (unlikely (_engine == NULL)) {
-        _pipe->check_read ();
+        if (_pipe)
+            _pipe->check_read ();
         return;
     }
 
