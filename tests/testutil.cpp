@@ -60,6 +60,7 @@
 #include <net/if.h>
 #include <netdb.h>
 #include <sys/un.h>
+#include <dirent.h>
 #if defined(ZMQ_HAVE_AIX)
 #include <sys/types.h>
 #include <sys/socketvar.h>
@@ -519,50 +520,82 @@ bool strneq (const char *lhs_, const char *rhs_)
     return strcmp (lhs_, rhs_) != 0;
 }
 
-int fuzzer_corpus_encode (const char *filename,
+#if defined _WIN32
+int fuzzer_corpus_encode (const char *dirname,
                           uint8_t ***data,
                           size_t **len,
                           size_t *num_cases)
 {
-    TEST_ASSERT_NOT_NULL (filename);
+    (void) dirname;
+    (void) data;
+    (void) len;
+    (void) num_cases;
+
+    return -1;
+}
+
+#else
+
+int fuzzer_corpus_encode (const char *dirname,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases)
+{
+    TEST_ASSERT_NOT_NULL (dirname);
     TEST_ASSERT_NOT_NULL (data);
     TEST_ASSERT_NOT_NULL (len);
-    FILE *f = fopen (filename, "r");
-    if (!f)
+
+    struct dirent *ent;
+    DIR *dir = opendir (dirname);
+    if (!dir)
         return -1;
-    fseek (f, 0, SEEK_END);
-    size_t text_len = ftell (f) + 1;
-    fseek (f, 0, SEEK_SET);
-    char *buf = (char *) malloc (text_len);
-    TEST_ASSERT_NOT_NULL (buf);
 
     *len = NULL;
     *data = NULL;
     *num_cases = 0;
-    //  Convert to binary format, corpus is stored in ascii (hex)
-    while (fgets (buf, (int) text_len, f)) {
+
+    while ((ent = readdir (dir)) != NULL) {
+        if (!strcmp (ent->d_name, ".") || !strcmp (ent->d_name, ".."))
+            continue;
+
+        char *filename =
+          (char *) malloc (strlen (dirname) + strlen (ent->d_name) + 2);
+        TEST_ASSERT_NOT_NULL (filename);
+        strcpy (filename, dirname);
+        strcat (filename, "/");
+        strcat (filename, ent->d_name);
+        FILE *f = fopen (filename, "r");
+        free (filename);
+        if (!f)
+            continue;
+
+        fseek (f, 0, SEEK_END);
+        size_t file_len = ftell (f);
+        fseek (f, 0, SEEK_SET);
+        if (file_len == 0) {
+            fclose (f);
+            continue;
+        }
+
         *len = (size_t *) realloc (*len, (*num_cases + 1) * sizeof (size_t));
         TEST_ASSERT_NOT_NULL (*len);
-        *(*len + *num_cases) = strlen (buf) / 2;
+        *(*len + *num_cases) = file_len;
         *data =
           (uint8_t **) realloc (*data, (*num_cases + 1) * sizeof (uint8_t *));
         TEST_ASSERT_NOT_NULL (*data);
         *(*data + *num_cases) =
-          (uint8_t *) malloc (*(*len + *num_cases) * sizeof (uint8_t));
+          (uint8_t *) malloc (file_len * sizeof (uint8_t));
         TEST_ASSERT_NOT_NULL (*(*data + *num_cases));
-
-        const char *pos = buf;
-        for (size_t count = 0; count < *(*len + *num_cases);
-             ++count, pos += 2) {
-            char tmp[3] = {pos[0], pos[1], 0};
-            *(*(*data + *num_cases) + count) = (uint8_t) strtol (tmp, NULL, 16);
-        }
+        size_t read_bytes = 0;
+        read_bytes = fread (*(*data + *num_cases), 1, file_len, f);
+        TEST_ASSERT_EQUAL (file_len, read_bytes);
         (*num_cases)++;
+
+        fclose (f);
     }
 
-
-    free (buf);
-    fclose (f);
+    closedir (dir);
 
     return 0;
 }
+#endif

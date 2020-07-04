@@ -91,8 +91,8 @@ void test_connect_null_fuzzer ()
     uint8_t **data;
     size_t *len, num_cases = 0;
     if (fuzzer_corpus_encode (
-          "tests/fuzzer_corpora/test_connect_null_fuzzer.txt", &data, &len,
-          &num_cases)
+          "tests/libzmq-fuzz-corpora/test_connect_null_fuzzer_seed_corpus",
+          &data, &len, &num_cases)
         != 0)
         exit (77);
 

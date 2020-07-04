@@ -20,6 +20,7 @@ if [ $BUILD_TYPE = "default" ]; then
         CONFIG_OPTS+=("--enable-address-sanitizer=yes")
         # distcheck does an out-of-tree build, and the fuzzer tests use a hard-coded relative path for simplicity
         CHECK="check"
+        git clone --depth 1 https://github.com/zeromq/libzmq-fuzz-corpora.git tests/libzmq-fuzz-corpora
     fi
 
     if [ "$USE_NSS" = "yes" ]; then
