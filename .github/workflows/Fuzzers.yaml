@@ -25,7 +25,7 @@ jobs:
         allowed-broken-targets-percentage: 0
         dry-run: false
     - name: Run Fuzzers (${{ matrix.san }})
-      id: build
+      id: run
       uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
       with:
         sanitizer: ${{ matrix.san }}
