@@ -16,4 +16,10 @@ export CXXFLAGS+=" $(PKG_CONFIG_PATH=/tmp/zmq_install_dir/install_prefix/lib/pkg
 ./configure --disable-shared --prefix=/install_prefix --disable-perf --disable-curve-keygen PKG_CONFIG_PATH=/tmp/zmq_install_dir/install_prefix/lib/pkgconfig --with-libsodium=yes --with-fuzzing-installdir=fuzzers --with-fuzzing-engine=$LIB_FUZZING_ENGINE
 make -j$(nproc) V=1 install DESTDIR=/tmp/zmq_install_dir
 
+cd "${SRC}/libzmq-fuzz-corpora"
+cp dictionaries/* /tmp/zmq_install_dir/install_prefix/fuzzers/
+for t in test_*_seed_corpus; do
+  zip -j --quiet /tmp/zmq_install_dir/install_prefix/fuzzers/${t}.zip ${t}/*
+done
+
 cp /tmp/zmq_install_dir/install_prefix/fuzzers/* "${OUT}"
