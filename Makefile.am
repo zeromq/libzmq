@@ -1185,6 +1185,27 @@ tests_test_z85_decode_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_z85_decode_fuzzer_CXXFLAGS = -std=c++11
 endif
 
+if HAVE_WS
+fuzzer_apps += tests/test_connect_ws_fuzzer \
+	tests/test_bind_ws_fuzzer
+
+tests_test_connect_ws_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_connect_ws_fuzzer_SOURCES = tests/test_connect_ws_fuzzer.cpp
+tests_test_connect_ws_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_connect_ws_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_connect_ws_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_bind_ws_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_bind_ws_fuzzer_SOURCES = tests/test_bind_ws_fuzzer.cpp
+tests_test_bind_ws_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_bind_ws_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_bind_ws_fuzzer_CXXFLAGS = -std=c++11
+endif
+
 FUZZINGdir = ${prefix}/${FUZZING_INSTALLDIR}
 FUZZING_PROGRAMS = ${fuzzer_apps}
 else
@@ -1225,6 +1246,19 @@ tests_test_connect_curve_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_z85_decode_fuzzer_SOURCES = tests/test_z85_decode_fuzzer.cpp
 tests_test_z85_decode_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_z85_decode_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
+
+if HAVE_WS
+test_apps += tests/test_connect_ws_fuzzer \
+	tests/test_bind_ws_fuzzer
+
+tests_test_connect_ws_fuzzer_SOURCES = tests/test_connect_ws_fuzzer.cpp
+tests_test_connect_ws_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_connect_ws_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_bind_ws_fuzzer_SOURCES = tests/test_bind_ws_fuzzer.cpp
+tests_test_bind_ws_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_bind_ws_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 endif
 
