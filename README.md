@@ -6,6 +6,14 @@
 
 There is a new file added to the builds directory named as "build_ios.sh" that will prepare the env and compile the lib.
 
+## TODO ##
+
+[Done] Create build script
+[] Test socket and zmq encoding libs on a simple iOS project 
+[] Integrate on build_ci
+[] Improve and clean the solution
+[] Push to main repo
+
 ## Welcome
 
 The ZeroMQ lightweight messaging kernel is a library which extends the
