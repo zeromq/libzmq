@@ -1,8 +1,10 @@
 # ZeroMQ
 
-[![Build Status](https://travis-ci.org/zeromq/libzmq.png?branch=master)](https://travis-ci.org/zeromq/libzmq)
-[![Build status](https://ci.appveyor.com/api/projects/status/e2ks424yrs1un3wt?svg=true)](https://ci.appveyor.com/project/zeromq/libzmq)
-[![Coverage Status](https://coveralls.io/repos/github/zeromq/libzmq/badge.svg?branch=master)](https://coveralls.io/github/zeromq/libzmq?branch=master)
+!!! This is a attempt to port and test the libzmq for iOS SDK >= iphoneos13.5 !!!
+
+!!! WORKING IN PROGRESS !!!
+
+There is a new file added to the builds directory named as "build_ios.sh" that will prepare the env and compile the lib.
 
 ## Welcome
 
