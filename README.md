@@ -6,9 +6,14 @@
 
 There is a new file added to the builds directory named as "build_ios.sh" that will prepare the env and compile the lib.
 
+Check the folder examples/libzmq-ios for a simples iOS project calling the lib.
+
+This is still a working in progress.
+
 ## TODO ##
 
 [Done] Create build script
+[Done] Call static lib functions to make sure it works on iOS Hardward 
 [] Test socket and zmq encoding libs on a simple iOS project 
 [] Integrate on build_ci
 [] Improve and clean the solution
