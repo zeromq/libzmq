@@ -1,0 +1,416 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F42085AE24B1E5DA00570F48 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F42085AD24B1E5DA00570F48 /* AppDelegate.m */; };
+		F42085B124B1E5DA00570F48 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F42085B024B1E5DA00570F48 /* SceneDelegate.m */; };
+		F42085B424B1E5DA00570F48 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F42085B324B1E5DA00570F48 /* ViewController.m */; };
+		F42085B724B1E5DA00570F48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F42085B524B1E5DA00570F48 /* Main.storyboard */; };
+		F42085BA24B1E5DA00570F48 /* libzmq_ios.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F42085B824B1E5DA00570F48 /* libzmq_ios.xcdatamodeld */; };
+		F42085BC24B1E5DB00570F48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F42085BB24B1E5DB00570F48 /* Assets.xcassets */; };
+		F42085BF24B1E5DB00570F48 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F42085BD24B1E5DB00570F48 /* LaunchScreen.storyboard */; };
+		F42085C224B1E5DB00570F48 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F42085C124B1E5DB00570F48 /* main.m */; };
+		F442309024B326E100CAE0BA /* libzmq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F442308F24B326E100CAE0BA /* libzmq.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F42085A924B1E5DA00570F48 /* libzmq-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "libzmq-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F42085AC24B1E5DA00570F48 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		F42085AD24B1E5DA00570F48 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		F42085AF24B1E5DA00570F48 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		F42085B024B1E5DA00570F48 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		F42085B224B1E5DA00570F48 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		F42085B324B1E5DA00570F48 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		F42085B624B1E5DA00570F48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		F42085B924B1E5DA00570F48 /* libzmq_ios.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = libzmq_ios.xcdatamodel; sourceTree = "<group>"; };
+		F42085BB24B1E5DB00570F48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F42085BE24B1E5DB00570F48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F42085C024B1E5DB00570F48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F42085C124B1E5DB00570F48 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		F442308F24B326E100CAE0BA /* libzmq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libzmq.a; path = "libzmq-ios/libzmq.a"; sourceTree = SOURCE_ROOT; };
+		F44C1B6B24B1E7AC00212634 /* zmq_utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zmq_utils.h; sourceTree = "<group>"; };
+		F44C1B6C24B1E7AC00212634 /* zmq.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = zmq.h; sourceTree = "<group>"; };
+		F44C1B7024B1E87700212634 /* zmq_utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zmq_utils.h; sourceTree = "<group>"; };
+		F44C1B7124B1E87700212634 /* zmq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zmq.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F42085A624B1E5DA00570F48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F442309024B326E100CAE0BA /* libzmq.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F42085A024B1E5DA00570F48 = {
+			isa = PBXGroup;
+			children = (
+				F42085AB24B1E5DA00570F48 /* libzmq-ios */,
+				F42085AA24B1E5DA00570F48 /* Products */,
+				F42085C824B1E68E00570F48 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		F42085AA24B1E5DA00570F48 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F42085A924B1E5DA00570F48 /* libzmq-ios.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F42085AB24B1E5DA00570F48 /* libzmq-ios */ = {
+			isa = PBXGroup;
+			children = (
+				F44C1B6F24B1E87700212634 /* include */,
+				F42085AC24B1E5DA00570F48 /* AppDelegate.h */,
+				F42085AD24B1E5DA00570F48 /* AppDelegate.m */,
+				F42085AF24B1E5DA00570F48 /* SceneDelegate.h */,
+				F42085B024B1E5DA00570F48 /* SceneDelegate.m */,
+				F42085B224B1E5DA00570F48 /* ViewController.h */,
+				F42085B324B1E5DA00570F48 /* ViewController.m */,
+				F42085B524B1E5DA00570F48 /* Main.storyboard */,
+				F42085BB24B1E5DB00570F48 /* Assets.xcassets */,
+				F42085BD24B1E5DB00570F48 /* LaunchScreen.storyboard */,
+				F42085C024B1E5DB00570F48 /* Info.plist */,
+				F42085C124B1E5DB00570F48 /* main.m */,
+				F42085B824B1E5DA00570F48 /* libzmq_ios.xcdatamodeld */,
+			);
+			path = "libzmq-ios";
+			sourceTree = "<group>";
+		};
+		F42085C824B1E68E00570F48 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F44C1B6724B1E7AC00212634 /* libzmq-ios */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F44C1B6724B1E7AC00212634 /* libzmq-ios */ = {
+			isa = PBXGroup;
+			children = (
+				F442308F24B326E100CAE0BA /* libzmq.a */,
+				F44C1B6A24B1E7AC00212634 /* include */,
+			);
+			name = "libzmq-ios";
+			path = "../../libzmq/libzmq-ios";
+			sourceTree = "<group>";
+		};
+		F44C1B6A24B1E7AC00212634 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				F44C1B6B24B1E7AC00212634 /* zmq_utils.h */,
+				F44C1B6C24B1E7AC00212634 /* zmq.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		F44C1B6F24B1E87700212634 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				F44C1B7024B1E87700212634 /* zmq_utils.h */,
+				F44C1B7124B1E87700212634 /* zmq.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F42085A824B1E5DA00570F48 /* libzmq-ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F42085C524B1E5DB00570F48 /* Build configuration list for PBXNativeTarget "libzmq-ios" */;
+			buildPhases = (
+				F42085A524B1E5DA00570F48 /* Sources */,
+				F42085A624B1E5DA00570F48 /* Frameworks */,
+				F42085A724B1E5DA00570F48 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "libzmq-ios";
+			productName = "libzmq-ios";
+			productReference = F42085A924B1E5DA00570F48 /* libzmq-ios.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F42085A124B1E5DA00570F48 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1150;
+				ORGANIZATIONNAME = mileschet;
+				TargetAttributes = {
+					F42085A824B1E5DA00570F48 = {
+						CreatedOnToolsVersion = 11.5;
+					};
+				};
+			};
+			buildConfigurationList = F42085A424B1E5DA00570F48 /* Build configuration list for PBXProject "libzmq-ios" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F42085A024B1E5DA00570F48;
+			productRefGroup = F42085AA24B1E5DA00570F48 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F42085A824B1E5DA00570F48 /* libzmq-ios */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F42085A724B1E5DA00570F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F42085BF24B1E5DB00570F48 /* LaunchScreen.storyboard in Resources */,
+				F42085BC24B1E5DB00570F48 /* Assets.xcassets in Resources */,
+				F42085B724B1E5DA00570F48 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F42085A524B1E5DA00570F48 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F42085C224B1E5DB00570F48 /* main.m in Sources */,
+				F42085BA24B1E5DA00570F48 /* libzmq_ios.xcdatamodeld in Sources */,
+				F42085B424B1E5DA00570F48 /* ViewController.m in Sources */,
+				F42085AE24B1E5DA00570F48 /* AppDelegate.m in Sources */,
+				F42085B124B1E5DA00570F48 /* SceneDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F42085B524B1E5DA00570F48 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F42085B624B1E5DA00570F48 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		F42085BD24B1E5DB00570F48 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F42085BE24B1E5DB00570F48 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F42085C324B1E5DB00570F48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		F42085C424B1E5DB00570F48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F42085C624B1E5DB00570F48 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FFJKC46LZP;
+				INFOPLIST_FILE = "libzmq-ios/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libzmq-ios",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "mileschet.libzmq-ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F42085C724B1E5DB00570F48 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = FFJKC46LZP;
+				INFOPLIST_FILE = "libzmq-ios/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/libzmq-ios",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "mileschet.libzmq-ios";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F42085A424B1E5DA00570F48 /* Build configuration list for PBXProject "libzmq-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F42085C324B1E5DB00570F48 /* Debug */,
+				F42085C424B1E5DB00570F48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F42085C524B1E5DB00570F48 /* Build configuration list for PBXNativeTarget "libzmq-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F42085C624B1E5DB00570F48 /* Debug */,
+				F42085C724B1E5DB00570F48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		F42085B824B1E5DA00570F48 /* libzmq_ios.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				F42085B924B1E5DA00570F48 /* libzmq_ios.xcdatamodel */,
+			);
+			currentVersion = F42085B924B1E5DA00570F48 /* libzmq_ios.xcdatamodel */;
+			path = libzmq_ios.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = F42085A124B1E5DA00570F48 /* Project object */;
+}
