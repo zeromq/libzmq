@@ -14,7 +14,7 @@ DSTDIR=${SCRIPTDIR}
 BUILDDIR="${DSTDIR}/libzmq_build"
 DISTDIR="${DSTDIR}/libzmq_dist"
 LIBDIR=$(dirname ${SCRIPTDIR})
-./${LIBDIR}/autogen.sh
+${LIBDIR}/autogen.sh
 
 # http://libwebp.webm.googlecode.com/git/iosbuild.sh
 # Extract the latest SDK version from the final field of the form: iphoneosX.Y
@@ -119,7 +119,7 @@ do
 
     echo "Configuring for ${ARCH}..."
     set +e
-    cd ${LIBDIR} && make distclean
+    cd ${LIBDIR} 
     set -e
     ${LIBDIR}/configure \
 	--prefix=${BUILDARCHDIR} \
@@ -137,13 +137,13 @@ do
     LIBLIST+="${BUILDARCHDIR}/lib/${LIBNAME} "
 done
 
-# Copy headers and generate a single fat library file
-mkdir -p ${DISTLIBDIR}
-${LIPO} -create ${LIBLIST} -output ${DISTLIBDIR}/${LIBNAME}
-for ARCH in $ARCHS
-do
-    cp -R $BUILDDIR/$ARCH/include ${DISTDIR}
-    break
-done
+# # Copy headers and generate a single fat library file
+# mkdir -p ${DISTLIBDIR}
+# ${LIPO} -create ${LIBLIST} -output ${DISTLIBDIR}/${LIBNAME}
+# for ARCH in $ARCHS
+# do
+#     cp -R $BUILDDIR/$ARCH/include ${DISTDIR}
+#     break
+# done
 
 echo ${DISTLIBDIR}
