@@ -378,7 +378,10 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
-    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    const fd_t s_pre = socket (af_, SOCK_STREAM,
+                               protocol_ == IPPROTO_UDP
+                                 ? IPPROTO_UDP
+                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
     if (af_ == AF_INET || af_ == AF_INET6) {
@@ -397,8 +400,8 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
-        hint.ai_socktype = SOCK_STREAM;
-        hint.ai_protocol = protocol_;
+        hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
+        hint.ai_protocol = protocol_ == IPPROTO_UDP ? IPPROTO_UDP : IPPROTO_TCP;
 
         TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
           getaddrinfo (address, port, &hint, &in));
@@ -432,7 +435,10 @@ fd_t bind_socket_resolve_port (const char *address_,
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
-    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    const fd_t s_pre = socket (af_, SOCK_STREAM,
+                               protocol_ == IPPROTO_UDP
+                                 ? IPPROTO_UDP
+                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
     if (af_ == AF_INET || af_ == AF_INET6) {
@@ -448,7 +454,7 @@ fd_t bind_socket_resolve_port (const char *address_,
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
-        hint.ai_protocol = protocol_;
+        hint.ai_protocol = protocol_ == IPPROTO_UDP ? IPPROTO_UDP : IPPROTO_TCP;
 
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
@@ -501,7 +507,12 @@ fd_t bind_socket_resolve_port (const char *address_,
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
         sprintf (my_endpoint_, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP ? "tcp" : "udp", address_,
+                 protocol_ == IPPROTO_TCP
+                   ? "tcp"
+                   : protocol_ == IPPROTO_UDP
+                       ? "udp"
+                       : protocol_ == IPPROTO_WSS ? "wss" : "ws",
+                 address_,
                  af_ == AF_INET
                    ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
                    : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
