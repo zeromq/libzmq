@@ -280,9 +280,6 @@ case "${host_os}" in
         libzmq_pedantic="no"
         libzmq_werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
-        AC_LANG_PUSH([C++])
-        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
-        AC_LANG_POP([C++])
         ;;
     *haiku*)
         AC_DEFINE(ZMQ_HAVE_HAIKU, 1, [Have Haiku OS])
