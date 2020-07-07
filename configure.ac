@@ -748,7 +748,7 @@ AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
-AX_CHECK_COMPILE_FLAG([-Wno-atomic-alignment],
+AX_CHECK_COMPILE_FLAG([-Watomic-alignment],
     [CXXFLAGS+=" -Wno-atomic-alignment"],
     [],
     [-Werror])
@@ -1050,12 +1050,12 @@ AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
 
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 AC_LANG_POP([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CXXFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
