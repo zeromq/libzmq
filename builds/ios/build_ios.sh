@@ -2,27 +2,28 @@
 # This is a first attempt to create a script to libzmq for iOS >= 13.5, including arm64
 # inspired on https://raw.githubusercontent.com/drewcrawford/libzmq-ios/master/libzmq.sh
 
+set -e
+LIBNAME="libzmq.a"
 ARCHS=${ARCHS:-"armv7 armv7s arm64 x86_64"}
 DEVELOPER=$(xcode-select -print-path)
+LIPO=$(xcrun -sdk iphoneos -find lipo)
 SCRIPTDIR=$( (cd -P $(dirname $0) && pwd) )
 DISTLIBDIR="${SCRIPTDIR}/lib"
 DSTDIR=${SCRIPTDIR}
 BUILDDIR="${DSTDIR}/libzmq_build"
 DISTDIR="${DSTDIR}/libzmq_dist"
 LIBDIR=$(dirname $(dirname ${SCRIPTDIR}))
-${LIBDIR}/autogen.sh
-
-# http://libwebp.webm.googlecode.com/git/iosbuild.sh
-# Extract the latest SDK version from the final field of the form: iphoneosX.Y
 SDK=$(xcodebuild -showsdks \
     | grep iphoneos | sort | tail -n 1 | awk '{print substr($NF, 9)}'
     )
-
 IOS_VERSION_MIN=8.0
 OTHER_LDFLAGS=""
 OTHER_CFLAGS="-Os -Qunused-arguments"
+# Enable Bitcode
+OTHER_CPPFLAGS="-Os -fembed-bitcode"
 OTHER_CXXFLAGS="-Os"
 
+${LIBDIR}/autogen.sh
 for ARCH in $ARCHS
 do
     BUILDARCHDIR="$BUILDDIR/$ARCH"
@@ -75,8 +76,6 @@ do
             ;;
     esac
 
-    export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/sbin:$PATH"
-
     echo "Configuring for ${ARCH}..."
     set +e
     cd ${LIBDIR} 
@@ -85,17 +84,27 @@ do
 	--prefix=${BUILDARCHDIR} \
 	--disable-shared \
 	--enable-static \
-	--host=${HOST}\
-	--with-libsodium=${LIBSODIUM_DIST}
+	--host=${HOST}
 
     echo "Building ${LIBNAME} for ${ARCH}..."
     cd ${LIBDIR}
     
-    make -j8 V=0
+    make -j8 
     make install
+	make clean
 
-    LIBLIST+="${BUILDARCHDIR}/lib/${LIBNAME} "
 done
 
+mkdir -p ${DISTLIBDIR}
+for ARCH in $ARCHS
+do
+	LIBPATH="$BUILDDIR/$ARCH/lib/${LIBNAME}"
+	LIBLIST+=" -arch ${ARCH} ${LIBPATH}"
+done
+
+set +e
+
+${LIPO} -create ${LIBLIST} -output ${DISTLIBDIR}/${LIBNAME}
+
 echo "Done !"
-echo ${LIBLIST}
+
