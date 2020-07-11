@@ -143,9 +143,9 @@ if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
 
-# IPC is available on all platforms supported by autotools build at the moment except OpenVMS and VxWorks.
+# Disable IPC on unsupported platforms.
 case "${host_os}" in
-    *vxworks*|*openvms*)
+    *vxworks*|*openvms*|*mingw*)
         ;;
     *)
         AC_DEFINE(ZMQ_HAVE_IPC, 1, [Have AF_UNIX sockets for ipc transport])
@@ -280,9 +280,6 @@ case "${host_os}" in
         libzmq_pedantic="no"
         libzmq_werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
-        AC_LANG_PUSH([C++])
-        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
-        AC_LANG_POP([C++])
         ;;
     *haiku*)
         AC_DEFINE(ZMQ_HAVE_HAIKU, 1, [Have Haiku OS])
@@ -751,7 +748,7 @@ AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
-AX_CHECK_COMPILE_FLAG([-Wno-atomic-alignment],
+AX_CHECK_COMPILE_FLAG([-Watomic-alignment],
     [CXXFLAGS+=" -Wno-atomic-alignment"],
     [],
     [-Werror])
@@ -1053,12 +1050,12 @@ AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
 
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 AC_LANG_POP([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CXXFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
