@@ -104,7 +104,7 @@ done
 
 set +e
 
-echo ${LIPO} -create ${LIBLIST} -output ${DISTLIBDIR}/${LIBNAME}
+${LIPO} -create ${LIBLIST} -output ${DISTLIBDIR}/${LIBNAME}
 
 echo "Done !"
 
