@@ -251,6 +251,12 @@ zmq::zmtp_engine_t::handshake_fun_t zmq::zmtp_engine_t::select_handshake_fun (
 
 bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 {
+    if (_options.zmtp_strict == 1) {
+        // reject unversioned connections if ZMQ_ZMTP_STRICT specified
+        error (protocol_error);
+        return false;
+    }
+
     //  We send and receive rest of routing id message
     if (session ()->zap_enabled ()) {
         // reject ZMTP 1.0 connections if ZAP is enabled

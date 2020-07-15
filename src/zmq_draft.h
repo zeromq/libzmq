@@ -68,6 +68,7 @@
 #define ZMQ_RECONNECT_STOP 109
 #define ZMQ_HELLO_MSG 110
 #define ZMQ_DISCONNECT_MSG 111
+#define ZMQ_ZMTP_STRICT 112
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1

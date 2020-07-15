@@ -291,6 +291,9 @@ struct options_t
     // Version of monitor events to emit
     int monitor_event_version;
 
+    // if set, reject connections to unversioned zmtp
+    int zmtp_strict;
+
     //  WSS Keys
     std::string wss_key_pem;
     std::string wss_cert_pem;

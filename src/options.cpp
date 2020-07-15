@@ -249,6 +249,7 @@ zmq::options_t::options_t () :
     zero_copy (true),
     router_notify (0),
     monitor_event_version (1),
+    zmtp_strict(0),
     wss_trust_system (false),
     hello_msg (),
     can_send_hello_msg (false),
@@ -783,6 +784,14 @@ int zmq::options_t::setsockopt (int option_,
                                                       &multicast_loop);
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+        case ZMQ_ZMTP_STRICT:
+            if ((is_int) && ((value == 0) || (value == 1))) {
+                zmtp_strict = value;
+                return 0;
+            }
+            break;
+
         case ZMQ_IN_BATCH_SIZE:
             if (is_int && value > 0) {
                 in_batch_size = value;
@@ -1246,6 +1255,14 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+        case ZMQ_ZMTP_STRICT:
+            if (is_int) {
+                *value = zmtp_strict;
+                return 0;
+            }
+            break;
+
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
