@@ -196,7 +196,7 @@ else
     AC_MSG_RESULT([no])
 fi
 
-# By default compiling with -Werror except OSX and on Solaris when building
+# By default compiling with -Werror except on OSX and Solaris when building
 # with libsodium.
 AC_ARG_ENABLE([Werror],
     [AS_HELP_STRING([--disable-Werror], [disable Werror compiler flag [default=enabled]])],
@@ -278,7 +278,6 @@ case "${host_os}" in
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
         libzmq_pedantic="no"
-        libzmq_werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
         ;;
     *haiku*)
@@ -560,11 +559,16 @@ elif test "x$with_libsodium" = "xyes"; then
     curve_library="libsodium"
     enable_curve="yes"
 
-    # On Solaris, libsodium depends on libssp
     case "${host_os}" in
         *solaris*)
+            dnl On Solaris, libsodium depends on libssp
             LDFLAGS="-lssp $LDFLAGS"
             libzmq_pedantic="no"
+            libzmq_werror="no"
+        ;;
+        *darwin*)
+            dnl On Darwin, building with libsodium causes
+            dnl macro redefinition warnings
             libzmq_werror="no"
         ;;
     esac
