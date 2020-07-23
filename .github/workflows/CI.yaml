@@ -1,0 +1,91 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: x64
+            configuration: release  
+            os: windows-2019
+            WITH_LIBSODIUM: ON
+            ENABLE_CURVE: ON
+            CMAKE_GENERATOR: Visual Studio 16 2019
+            MSVCVERSION: v142
+            MSVCYEAR: vs2019
+            ARTIFACT_NAME: v142-x64
+            ENABLE_DRAFTS: ON
+          # - platform: Win32
+          #   configuration: Release            
+          #   os: windows-2016           
+          #   WITH_LIBSODIUM: ON
+          #   ENABLE_CURVE: ON            
+          #   CMAKE_GENERATOR: "Visual Studio 15 2017"
+          #   MSVCVERSION: "v141"
+          #   MSVCYEAR: "vs2017"            
+          #   ARTIFACT_NAME: v141
+          #   ENABLE_DRAFTS: ON            
+          - platform: x64
+            configuration: Release
+            os: windows-2016           
+            WITH_LIBSODIUM: ON            
+            ENABLE_CURVE: ON            
+            CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
+            MSVCVERSION: "v141"
+            MSVCYEAR: "vs2017"
+            ARTIFACT_NAME: v141-x64
+            ENABLE_DRAFTS: ON
+    env:
+      platform: ${{ matrix.platform }}
+      configuration: ${{ matrix.configuration }}
+      WITH_LIBSODIUM: ${{ matrix.WITH_LIBSODIUM }}
+      ENABLE_CURVE: ${{ matrix.ENABLE_CURVE }}
+      CMAKE_GENERATOR: ${{ matrix.CMAKE_GENERATOR }}
+      MSVCVERSION: ${{ matrix.MSVCVERSION }}
+      MSVCYEAR: ${{ matrix.MSVCYEAR }}
+      ARTIFACT_NAME: ${{ matrix.ARTIFACT_NAME }}
+      ENABLE_DRAFTS: ${{ matrix.ENABLE_DRAFTS }}
+      SODIUM_INCLUDE_DIR: ${{ github.workspace }}\libsodium\src\libsodium\include"
+      SODIUM_LIBRARY_DIR: ${{ github.workspace }}\libsodium\bin\${{ matrix.platform }}\${{ matrix.configuration }}\${{ matrix.MSVCVERSION }}\dynamic"
+      LIBZMQ_SRCDIR: ${{ github.workspace }}\libzmq
+    steps:    
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.0
+      if: matrix.os == 'windows-2019'
+    - name: Add msbuild to PATH 2016
+      run: echo "##[add-path]C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
+      if: matrix.os == 'windows-2016'    
+    - uses: actions/checkout@v2
+      if: matrix.WITH_LIBSODIUM == 'ON'
+      with:
+        repository: jedisct1/libsodium
+        ref: stable
+        path: libsodium        
+    - name: Compile libsodium
+      if: matrix.WITH_LIBSODIUM == 'ON'
+      shell: cmd
+      working-directory: libsodium
+      run: msbuild /v:minimal /p:Configuration=%Configuration%DLL builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
+    - name: Copy libsodium
+      if: matrix.WITH_LIBSODIUM == 'ON'
+      shell: powershell
+      working-directory: libsodium
+      run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
+    - uses: actions/checkout@v2    
+      with:    
+        path: libzmq
+    - run: md build_libzmq      
+      shell: cmd
+    - name: build
+      shell: cmd
+      working-directory: build_libzmq
+      run: |        
+        cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
+        cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount           
+    - name: test      
+      shell: cmd      
+      working-directory: build_libzmq
+      run: ctest -C "%Configuration%"

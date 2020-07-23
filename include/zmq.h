@@ -263,7 +263,7 @@ typedef struct zmq_msg_t
 #endif
 } zmq_msg_t;
 
-typedef void (zmq_free_fn) (void *data_, void *hint_);
+typedef void(zmq_free_fn) (void *data_, void *hint_);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
@@ -597,7 +597,7 @@ ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p_);
 
 #define ZMQ_HAVE_TIMERS
 
-typedef void (zmq_timer_fn) (int timer_id, void *arg);
+typedef void(zmq_timer_fn) (int timer_id, void *arg);
 
 ZMQ_EXPORT void *zmq_timers_new (void);
 ZMQ_EXPORT int zmq_timers_destroy (void **timers_p);
@@ -634,7 +634,7 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 /*  Sleeps for specified number of seconds.                                   */
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
-typedef void (zmq_thread_fn) (void *);
+typedef void(zmq_thread_fn) (void *);
 
 /* Start a thread. Returns a handle to the thread.                            */
 ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn *func_, void *arg_);
@@ -659,6 +659,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
 #define ZMQ_PEER 19
+#define ZMQ_CHANNEL 20
 
 /*  DRAFT Socket options.                                                     */
 #define ZMQ_ZAP_ENFORCE_DOMAIN 93
@@ -677,7 +678,13 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_WSS_HOSTNAME 106
 #define ZMQ_WSS_TRUST_SYSTEM 107
 #define ZMQ_ONLY_FIRST_SUBSCRIBE 108
+#define ZMQ_RECONNECT_STOP 109
+#define ZMQ_HELLO_MSG 110
+#define ZMQ_DISCONNECT_MSG 111
 
+/*  DRAFT ZMQ_RECONNECT_STOP options                                          */
+#define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
+#define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 0x2
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
@@ -702,6 +709,8 @@ ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
 ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
+ZMQ_EXPORT int
+zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
@@ -729,6 +738,7 @@ typedef struct zmq_poller_event_t
 
 ZMQ_EXPORT void *zmq_poller_new (void);
 ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int zmq_poller_size (void *poller);
 ZMQ_EXPORT int
 zmq_poller_add (void *poller, void *socket, void *user_data, short events);
 ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);

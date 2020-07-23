@@ -55,10 +55,10 @@ zmq::stream_connecter_base_t::stream_connecter_base_t (
     _s (retired_fd),
     _handle (static_cast<handle_t> (NULL)),
     _socket (session_->get_socket ()),
-    _session (session_),
     _delayed_start (delayed_start_),
     _reconnect_timer_started (false),
-    _current_reconnect_ivl (options.reconnect_ivl)
+    _current_reconnect_ivl (options.reconnect_ivl),
+    _session (session_)
 {
     zmq_assert (_addr);
     _addr->to_string (_endpoint);
@@ -101,7 +101,7 @@ void zmq::stream_connecter_base_t::process_term (int linger_)
 
 void zmq::stream_connecter_base_t::add_reconnect_timer ()
 {
-    if (options.reconnect_ivl != -1) {
+    if (options.reconnect_ivl > 0) {
         const int interval = get_new_reconnect_ivl ();
         add_timer (interval, reconnect_timer_id);
         _socket->event_connect_retried (

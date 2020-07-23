@@ -133,6 +133,17 @@
       ],
     },
     {
+      'target_name': 'test_msg_init',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_msg_init.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    },
+    {
       'target_name': 'test_connect_resolve',
       'type': 'executable',
       'sources': [

@@ -126,7 +126,7 @@ void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
                                    end = _subscriptions.end ();
          it != end;) {
         if (it->second == pipe_) {
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1700)
             it = _subscriptions.erase (it);
 #else
             _subscriptions.erase (it++);

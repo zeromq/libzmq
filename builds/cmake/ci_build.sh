@@ -60,8 +60,8 @@ if [ -n "$CLANG_TIDY" ] ; then
         MAKE_PREFIXES+=("${TRAVIS_BUILD_DIR}/bw-output")
         
     fi
-    CMAKE_PREFIXES+=("scan-build-8")
-    MAKE_PREFIXES+=("scan-build-8")
+    CMAKE_PREFIXES+=("scan-build-10")
+    MAKE_PREFIXES+=("scan-build-10")
     MAKE_PREFIXES+=("-plist-html")
     SCAN_BUILD_OUTPUT="$(pwd)/scan-build-report"
     MAKE_PREFIXES+=("-o ${SCAN_BUILD_OUTPUT}")

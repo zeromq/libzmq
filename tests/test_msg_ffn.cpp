@@ -41,7 +41,7 @@ void ffn (void *data_, void *hint_)
     memcpy (hint_, (void *) "freed", 5);
 }
 
-void test_msg_ffn ()
+void test_msg_init_ffn ()
 {
     //  Create the infrastructure
     char my_endpoint[MAX_SOCKET_STRING];
@@ -121,6 +121,6 @@ int main (void)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_msg_ffn);
+    RUN_TEST (test_msg_init_ffn);
     return UNITY_END ();
 }

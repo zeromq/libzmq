@@ -42,11 +42,11 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 #include "ws_engine.hpp"
-#include "wss_address.hpp"
 #include "session_base.hpp"
 
 #ifdef ZMQ_HAVE_WSS
 #include "wss_engine.hpp"
+#include "wss_address.hpp"
 #endif
 
 #ifndef ZMQ_HAVE_WINDOWS
@@ -126,9 +126,11 @@ std::string zmq::ws_listener_t::get_socket_name (zmq::fd_t fd_,
 {
     std::string socket_name;
 
+#ifdef ZMQ_HAVE_WSS
     if (_wss)
         socket_name = zmq::get_socket_name<wss_address_t> (fd_, socket_end_);
     else
+#endif
         socket_name = zmq::get_socket_name<ws_address_t> (fd_, socket_end_);
 
     return socket_name + _address.path ();
@@ -313,6 +315,7 @@ void zmq::ws_listener_t::create_engine (fd_t fd_)
     else
         engine = new (std::nothrow)
           ws_engine_t (fd_, options, endpoint_pair, _address, false);
+
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

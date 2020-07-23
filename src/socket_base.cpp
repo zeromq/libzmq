@@ -54,8 +54,9 @@
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
+#ifdef ZMQ_HAVE_WS
 #include "ws_address.hpp"
-#include "wss_address.hpp"
+#endif
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -72,6 +73,9 @@
 #include "mailbox.hpp"
 #include "mailbox_safe.hpp"
 
+#ifdef ZMQ_HAVE_WSS
+#include "wss_address.hpp"
+#endif
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
 #include "vmci_listener.hpp"
@@ -101,6 +105,7 @@
 #include "scatter.hpp"
 #include "dgram.hpp"
 #include "peer.hpp"
+#include "channel.hpp"
 
 void zmq::socket_base_t::inprocs_t::emplace (const char *endpoint_uri_,
                                              pipe_t *pipe_)
@@ -118,8 +123,10 @@ int zmq::socket_base_t::inprocs_t::erase_pipes (
         return -1;
     }
 
-    for (map_t::iterator it = range.first; it != range.second; ++it)
+    for (map_t::iterator it = range.first; it != range.second; ++it) {
+        it->second->send_disconnect_msg ();
         it->second->terminate (true);
+    }
     _inprocs.erase (range.first, range.second);
     return 0;
 }
@@ -210,6 +217,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_,
             break;
         case ZMQ_PEER:
             s = new (std::nothrow) peer_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_CHANNEL:
+            s = new (std::nothrow) channel_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
@@ -347,15 +357,15 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #endif
 #if defined ZMQ_HAVE_OPENPGM
         //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
-        && protocol_ != "pgm"
-        && protocol_ != "epgm"
+        && protocol_ != protocol_name::pgm
+        && protocol_ != protocol_name::epgm
 #endif
 #if defined ZMQ_HAVE_TIPC
         // TIPC transport is only available on Linux.
         && protocol_ != protocol_name::tipc
 #endif
 #if defined ZMQ_HAVE_NORM
-        && protocol_ != "norm"
+        && protocol_ != protocol_name::norm
 #endif
 #if defined ZMQ_HAVE_VMCI
         && protocol_ != protocol_name::vmci
@@ -369,7 +379,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
 #if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
-    if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm")
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    if ((protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm
+         || protocol_ == protocol_name::norm)
+#elif defined ZMQ_HAVE_OPENPGM
+    if ((protocol_ == protocol_name::pgm || protocol_ == protocol_name::epgm)
+#else // defined ZMQ_HAVE_NORM
+    if (protocol_ == protocol_name::norm
+#endif
         && options.type != ZMQ_PUB && options.type != ZMQ_SUB
         && options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
@@ -546,7 +563,15 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
+#if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm
+        || protocol == protocol_name::norm) {
+#elif defined ZMQ_HAVE_OPENPGM
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm) {
+#else // defined ZMQ_HAVE_NORM
+    if (protocol == protocol_name::norm) {
+#endif
         //  For convenience's sake, bind can be used interchangeable with
         //  connect for PGM, EPGM, NORM transports.
         rc = connect (endpoint_uri_);
@@ -554,6 +579,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
             options.connected = true;
         return rc;
     }
+#endif
 
     if (protocol == protocol_name::udp) {
         if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
@@ -813,6 +839,13 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
             //  the peer doesn't expect it.
             send_routing_id (new_pipes[0], options);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+            //  If set, send the hello msg of the local socket to the peer.
+            if (options.can_send_hello_msg && options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[0], options);
+            }
+#endif
+
             const endpoint_t endpoint = {this, options};
             pend_connection (std::string (endpoint_uri_), endpoint, new_pipes);
         } else {
@@ -825,6 +858,23 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
             if (options.recv_routing_id) {
                 send_routing_id (new_pipes[1], peer.options);
             }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+            //  If set, send the hello msg of the local socket to the peer.
+            if (options.can_send_hello_msg && options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[0], options);
+            }
+
+            //  If set, send the hello msg of the peer to the local socket.
+            if (peer.options.can_send_hello_msg
+                && peer.options.hello_msg.size () > 0) {
+                send_hello_msg (new_pipes[1], peer.options);
+            }
+
+            if (peer.options.can_recv_disconnect_msg
+                && peer.options.disconnect_msg.size () > 0)
+                new_pipes[0]->set_disconnect_msg (peer.options.disconnect_msg);
+#endif
 
             //  Attach remote end of the pipe to the peer socket. Note that peer's
             //  seqnum was incremented in find_endpoint function. We don't need it
@@ -968,7 +1018,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
     // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
-    if (protocol == "pgm" || protocol == "epgm") {
+    if (protocol == protocol_name::pgm || protocol == protocol_name::epgm) {
         struct pgm_addrinfo_t *res = NULL;
         uint16_t port_number = 0;
         int rc =
@@ -1021,9 +1071,20 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
-    const bool subscribe_to_all = protocol == "pgm" || protocol == "epgm"
-                                  || protocol == "norm"
+#if defined ZMQ_HAVE_OPENPGM && defined ZMQ_HAVE_NORM
+    const bool subscribe_to_all =
+      protocol == protocol_name::pgm || protocol == protocol_name::epgm
+      || protocol == protocol_name::norm || protocol == protocol_name::udp;
+#elif defined ZMQ_HAVE_OPENPGM
+    const bool subscribe_to_all = protocol == protocol_name::pgm
+                                  || protocol == protocol_name::epgm
                                   || protocol == protocol_name::udp;
+#elif defined ZMQ_HAVE_NORM
+    const bool subscribe_to_all =
+      protocol == protocol_name::norm || protocol == protocol_name::udp;
+#else
+    const bool subscribe_to_all = protocol == protocol_name::udp;
+#endif
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
@@ -1479,6 +1540,8 @@ void zmq::socket_base_t::process_term (int linger_)
 
     //  Ask all attached pipes to terminate.
     for (pipes_t::size_type i = 0, size = _pipes.size (); i != size; ++i) {
+        //  Only inprocs might have a disconnect message set
+        _pipes[i]->send_disconnect_msg ();
         _pipes[i]->terminate (false);
     }
     register_term_acks (static_cast<int> (_pipes.size ()));

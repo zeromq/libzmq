@@ -143,14 +143,41 @@ if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
 
-# IPC is available on all platforms supported by autotools build at the moment except OpenVMS and VxWorks.
+# Disable IPC on unsupported platforms.
 case "${host_os}" in
-    *vxworks*|*openvms*)
+    *vxworks*|*openvms*|*mingw*)
         ;;
     *)
         AC_DEFINE(ZMQ_HAVE_IPC, 1, [Have AF_UNIX sockets for ipc transport])
         ;;
 esac
+
+# Data race/deadlock detection
+# NOTE: Running libzmq under TSAN doesn't make much sense -- synchronization in libzmq is to some extent
+# handled by the code "knowing" what threads are allowed to do, rather than by enforcing those
+# restrictions, so TSAN generates a lot of (presumably) false positives from libzmq.
+# The settings below are intended to enable libzmq to be built with minimal support for TSAN
+# such that it can be used along with other code that is also built with TSAN.
+AC_MSG_CHECKING([whether to enable TSan])
+AC_ARG_ENABLE(thread-sanitizer, [AS_HELP_STRING([--enable-thread-sanitizer=yes/no],
+                  [Build with clang Thread Sanitizer instrumentation])],
+                  [ZMQ_TSAN="$enableval"])
+
+if test "x${ZMQ_TSAN}" = "xyes"; then
+    TSAN_FLAGS="-fno-omit-frame-pointer -fsanitize=thread"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0"
+    TSAN_CCFLAGS="${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1"
+    CFLAGS="${CFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    CXXFLAGS="${CXXFLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS}"
+    LDFLAGS="${LDFLAGS} ${TSAN_FLAGS} -pie"
+
+    AM_CONDITIONAL(ENABLE_TSAN, true)
+    AC_MSG_RESULT([yes])
+else
+    AM_CONDITIONAL(ENABLE_TSAN, false)
+    AC_MSG_RESULT([no])
+fi
 
 # Memory mis-use detection
 AC_MSG_CHECKING([whether to enable ASan])
@@ -159,8 +186,8 @@ AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes
                   [ZMQ_ASAN="$enableval"])
 
 if test "x${ZMQ_ASAN}" = "xyes"; then
-    CFLAGS="${CFLAGS} -fsanitize=address"
-    CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+    CFLAGS="${CFLAGS} -fsanitize=address -fsanitize=undefined -fsanitize=leak -fno-sanitize-recover=all"
+    CXXFLAGS="${CXXFLAGS} -fsanitize=address -fsanitize=undefined -fsanitize=leak -fno-sanitize-recover=all"
 
     AM_CONDITIONAL(ENABLE_ASAN, true)
     AC_MSG_RESULT([yes])
@@ -169,7 +196,7 @@ else
     AC_MSG_RESULT([no])
 fi
 
-# By default compiling with -Werror except OSX and on Solaris when building
+# By default compiling with -Werror except on OSX and Solaris when building
 # with libsodium.
 AC_ARG_ENABLE([Werror],
     [AS_HELP_STRING([--disable-Werror], [disable Werror compiler flag [default=enabled]])],
@@ -251,11 +278,7 @@ case "${host_os}" in
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
         libzmq_pedantic="no"
-        libzmq_werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
-        AC_LANG_PUSH([C++])
-        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
-        AC_LANG_POP([C++])
         ;;
     *haiku*)
         AC_DEFINE(ZMQ_HAVE_HAIKU, 1, [Have Haiku OS])
@@ -536,11 +559,16 @@ elif test "x$with_libsodium" = "xyes"; then
     curve_library="libsodium"
     enable_curve="yes"
 
-    # On Solaris, libsodium depends on libssp
     case "${host_os}" in
         *solaris*)
+            dnl On Solaris, libsodium depends on libssp
             LDFLAGS="-lssp $LDFLAGS"
             libzmq_pedantic="no"
+            libzmq_werror="no"
+        ;;
+        *darwin*)
+            dnl On Darwin, building with libsodium causes
+            dnl macro redefinition warnings
             libzmq_werror="no"
         ;;
     esac
@@ -724,7 +752,7 @@ AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
-AX_CHECK_COMPILE_FLAG([-Wno-atomic-alignment],
+AX_CHECK_COMPILE_FLAG([-Watomic-alignment],
     [CXXFLAGS+=" -Wno-atomic-alignment"],
     [],
     [-Werror])
@@ -1005,14 +1033,33 @@ AM_CONDITIONAL([WITH_CLANG_FORMAT], [$WITH_CLANG_FORMAT])
 # unittests will not build without the static libzmq.a
 AM_CONDITIONAL(ENABLE_STATIC, test "x$enable_static" = "xyes")
 
+# build using a fuzzing engine - fuzzers will be built separately and statically
+AC_ARG_WITH([fuzzing-engine], [AS_HELP_STRING([--with-fuzzing-engine],
+    [build libzmq with an exernal fuzzing engine [default=no]])],
+    [have_fuzzing_engine_ext=$withval],
+    [have_fuzzing_engine_ext=no])
+AC_ARG_WITH([fuzzing-installdir],
+    AS_HELP_STRING([--with-fuzzing-installdir=PATH],
+        [Path where to install fuzzer binaries]),
+    [fuzzing_installdir="$withval"])
+
+if test "x$have_fuzzing_engine_ext" != "xno" && test "x$fuzzing_installdir" != "x" && test "x$enable_static" = "xyes"; then
+    FUZZING_ENGINE_LIB="${have_fuzzing_engine_ext}"
+    FUZZING_INSTALLDIR="${fuzzing_installdir}"
+    AC_SUBST(FUZZING_ENGINE_LIB)
+    AC_SUBST(FUZZING_INSTALLDIR)
+    AC_DEFINE(ZMQ_USE_FUZZING_ENGINE, 1, [fuzz tests will be built with fuzzing engine])
+fi
+AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
+
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 AC_LANG_POP([C])
-AX_CHECK_COMPILE_FLAG([-Wno-tautological-constant-compare],
+AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
     [CXXFLAGS+=" -Wno-tautological-constant-compare"],
     [],
     [-Werror])

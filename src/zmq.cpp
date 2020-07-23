@@ -405,15 +405,11 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     if (!s)
         return -1;
     zmq_msg_t msg;
-    if (zmq_msg_init_size (&msg, len_))
+    int rc = zmq_msg_init_buffer (&msg, buf_, len_);
+    if (unlikely (rc < 0))
         return -1;
 
-    //  We explicitly allow a send from NULL, size zero
-    if (len_) {
-        assert (buf_);
-        memcpy (zmq_msg_data (&msg), buf_, len_);
-    }
-    const int rc = s_sendmsg (s, &msg, flags_);
+    rc = s_sendmsg (s, &msg, flags_);
     if (unlikely (rc < 0)) {
         const int err = errno;
         const int rc2 = zmq_msg_close (&msg);
@@ -621,6 +617,11 @@ int zmq_msg_init (zmq_msg_t *msg_)
 int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_size (size_);
+}
+
+int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))->init_buffer (buf_, size_);
 }
 
 int zmq_msg_init_data (
@@ -1218,6 +1219,14 @@ static int check_poller_fd_registration_args (void *const poller_,
     return 0;
 }
 
+int zmq_poller_size (void *poller_)
+{
+    if (-1 == check_poller (poller_))
+        return -1;
+
+    return (static_cast<zmq::socket_poller_t *> (poller_))->size ();
+}
+
 int zmq_poller_add (void *poller_, void *s_, void *user_data_, short events_)
 {
     if (-1 == check_poller_registration_args (poller_, s_)
@@ -1290,9 +1299,10 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
     const int rc = zmq_poller_wait_all (poller_, event_, 1, timeout_);
 
     if (rc < 0 && event_) {
-        // TODO this is not portable... zmq_poller_event_t contains pointers,
-        // for which nullptr does not need to be represented by all-zeroes
-        memset (event_, 0, sizeof (zmq_poller_event_t));
+        event_->socket = NULL;
+        event_->fd = zmq::retired_fd;
+        event_->user_data = NULL;
+        event_->events = 0;
     }
     // wait_all returns number of events, but we return 0 for any success
     return rc >= 0 ? 0 : rc;
@@ -1477,7 +1487,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_OPENPGM)
-    if (strcmp (capability_, "pgm") == 0)
+    if (strcmp (capability_, zmq::protocol_name::pgm) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_TIPC)
@@ -1485,7 +1495,7 @@ int zmq_has (const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_NORM)
-    if (strcmp (capability_, "norm") == 0)
+    if (strcmp (capability_, zmq::protocol_name::norm) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_CURVE)

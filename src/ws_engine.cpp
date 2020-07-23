@@ -115,7 +115,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
                                const endpoint_uri_pair_t &endpoint_uri_pair_,
                                const ws_address_t &address_,
                                bool client_) :
-    stream_engine_base_t (fd_, options_, endpoint_uri_pair_),
+    stream_engine_base_t (fd_, options_, endpoint_uri_pair_, true),
     _client (client_),
     _address (address_),
     _client_handshake_state (client_handshake_initial),
@@ -128,7 +128,7 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
 {
     memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
     memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
-    memset (_websocket_protocol, 0, MAX_HEADER_VALUE_LENGTH + 1);
+    memset (_websocket_protocol, 0, 256);
 
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
@@ -268,10 +268,10 @@ bool zmq::ws_engine_t::select_protocol (const char *protocol_)
              && strcmp ("ZWS2.0/CURVE", protocol_) == 0) {
         if (_options.as_server)
             _mechanism = new (std::nothrow)
-              curve_server_t (session (), _peer_address, _options);
+              curve_server_t (session (), _peer_address, _options, false);
         else
             _mechanism =
-              new (std::nothrow) curve_client_t (session (), _options);
+              new (std::nothrow) curve_client_t (session (), _options, false);
         alloc_assert (_mechanism);
         return true;
     }
@@ -488,7 +488,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *rest;
+                            char *rest = 0;
                             char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')

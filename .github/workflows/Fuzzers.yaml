@@ -1,0 +1,35 @@
+name: Fuzzers
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - '.github/workflows/Fuzzers.yaml'
+      - 'src/*'
+      - 'tests/*fuzzer.cpp'
+jobs:
+  Fuzzing:
+    runs-on: ubuntu-latest
+    if: github.repository == 'zeromq/libzmq'
+    strategy:
+      matrix:
+        san: [address, memory, undefined]
+    steps:
+    - name: Build Fuzzers (${{ matrix.san }})
+      id: build
+      uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
+      with:
+        sanitizer: ${{ matrix.san }}
+        oss-fuzz-project-name: 'libzmq'
+        allowed-broken-targets-percentage: 0
+        dry-run: false
+    - name: Run Fuzzers (${{ matrix.san }})
+      id: run
+      uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
+      with:
+        sanitizer: ${{ matrix.san }}
+        oss-fuzz-project-name: 'libzmq'
+        allowed-broken-targets-percentage: 0
+        dry-run: false
+        fuzz-seconds: 300

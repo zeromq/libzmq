@@ -725,7 +725,7 @@ void zmq::ctx_t::unregister_endpoints (const socket_base_t *const socket_)
                                end = _endpoints.end ();
          it != end;) {
         if (it->second.socket == socket_)
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1700)
             it = _endpoints.erase (it);
 #else
             _endpoints.erase (it++);
@@ -828,6 +828,13 @@ void zmq::ctx_t::connect_inproc_sockets (
         pending_connection_.bind_pipe->set_hwms (-1, -1);
     }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    if (bind_options_.can_recv_disconnect_msg
+        && !bind_options_.disconnect_msg.empty ())
+        pending_connection_.connect_pipe->set_disconnect_msg (
+          bind_options_.disconnect_msg);
+#endif
+
     if (side_ == bind_side) {
         command_t cmd;
         cmd.type = command_t::bind;
@@ -848,6 +855,14 @@ void zmq::ctx_t::connect_inproc_sockets (
         && pending_connection_.endpoint.socket->check_tag ()) {
         send_routing_id (pending_connection_.bind_pipe, bind_options_);
     }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  If set, send the hello msg of the bind socket to the pending connection.
+    if (bind_options_.can_send_hello_msg
+        && bind_options_.hello_msg.size () > 0) {
+        send_hello_msg (pending_connection_.bind_pipe, bind_options_);
+    }
+#endif
 }
 
 #ifdef ZMQ_HAVE_VMCI

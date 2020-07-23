@@ -6,7 +6,7 @@ os:
 - linux
 - osx
 
-dist: trusty
+dist: bionic
 
 cache: ccache
 
@@ -29,23 +29,24 @@ env:
 matrix:
   include:
   - if: type = cron OR (branch =~ analyze$ AND type = push)
-    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-8 CC=clang-8 CXX=clang++-8
+    env: BUILD_TYPE=cmake CLANG_TIDY=/usr/bin/clang-tidy-10 CC=clang-10 CXX=clang++-10
     os: linux
     compiler: clang
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - llvm-toolchain-trusty-8
+          - llvm-toolchain-10
         packages:
-          - clang-8
-          - clang-tools-8
-          - clang-tidy-8
+          - clang-10
+          - clang-tools-10
+          - clang-tidy-10
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
   - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
     os: linux
+    dist: xenial
     addons:
       apt:
         packages:
@@ -95,16 +96,12 @@ matrix:
         - libbsd-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
-  - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
-    dist: trusty
     addons:
       apt:
-        sources:
-        - sourceline: 'ppa:ubuntu-toolchain-r/test'
         packages:
-        - g++-6
-        - gcc-6
+        - libsodium-dev
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
@@ -112,9 +109,6 @@ matrix:
     os: linux
     addons:
       apt:
-        sources:
-        - llvm-toolchain-trusty-8
-        - ubuntu-toolchain-r-test
         packages:
         - clang-format-8
   - env: BUILD_TYPE=default POLLER=poll

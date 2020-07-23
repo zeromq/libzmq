@@ -27,10 +27,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef _WIN32
+#include "../src/windows.hpp"
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -100,16 +105,10 @@ void *setup_socks_server (char *socks_server_address,
                           int socks_server_address_len)
 {
     fprintf (stderr, "socks_server: setup socks server\n");
-    int server_fd = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    TEST_ASSERT_NOT_EQUAL (-1, server_fd);
-    int flag = 1;
-    int res;
-    res = setsockopt (server_fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-    TEST_ASSERT_SUCCESS_RAW_ERRNO (res);
-    struct sockaddr_in saddr = bind_bsd_socket (server_fd);
-    int nbytes = snprintf (socks_server_address, socks_server_address_len,
-                           "127.0.0.1:%d", ntohs (saddr.sin_port));
-    TEST_ASSERT (nbytes >= 0 && nbytes < socks_server_address_len);
+    int server_fd =
+      bind_socket_resolve_port ("127.0.0.1", "0", socks_server_address);
+    memmove (socks_server_address, strchr (socks_server_address, '/') + 2,
+             strlen (strchr (socks_server_address, '/') + 1));
     fprintf (stderr, "socks_server: bound to: tcp://%s\n",
              socks_server_address);
     return (void *) (intptr_t) server_fd;

@@ -161,6 +161,10 @@ void zmq::object_t::process_command (const command_t &cmd_)
             process_seqnum ();
             break;
 
+        case command_t::conn_failed:
+            process_conn_failed ();
+            break;
+
         case command_t::done:
         default:
             zmq_assert (false);
@@ -254,6 +258,14 @@ void zmq::object_t::send_attach (session_base_t *destination_,
     cmd.destination = destination_;
     cmd.type = command_t::attach;
     cmd.args.attach.engine = engine_;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_conn_failed (session_base_t *destination_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::conn_failed;
     send_command (cmd);
 }
 
@@ -524,6 +536,11 @@ void zmq::object_t::process_reaped ()
 }
 
 void zmq::object_t::process_seqnum ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_conn_failed ()
 {
     zmq_assert (false);
 }

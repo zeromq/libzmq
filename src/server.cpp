@@ -41,6 +41,8 @@ zmq::server_t::server_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     _next_routing_id (generate_random ())
 {
     options.type = ZMQ_SERVER;
+    options.can_send_hello_msg = true;
+    options.can_recv_disconnect_msg = true;
 }
 
 zmq::server_t::~server_t ()

@@ -120,6 +120,20 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
+int zmq::msg_t::init_buffer (const void *buf_, size_t size_)
+{
+    const int rc = init_size (size_);
+    if (unlikely (rc < 0)) {
+        return -1;
+    }
+    if (size_) {
+        // NULL and zero size is allowed
+        assert (NULL != buf_);
+        memcpy (data (), buf_, size_);
+    }
+    return 0;
+}
+
 int zmq::msg_t::init_external_storage (content_t *content_,
                                        void *data_,
                                        size_t size_,
@@ -221,7 +235,7 @@ int zmq::msg_t::init_leave ()
     return 0;
 }
 
-int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
+int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -229,14 +243,14 @@ int zmq::msg_t::init_subscribe (const size_t size_, const unsigned char *topic)
 
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
-            assert (topic);
-            memcpy (data (), topic, size_);
+            assert (topic_);
+            memcpy (data (), topic_, size_);
         }
     }
     return rc;
 }
 
-int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
+int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -244,8 +258,8 @@ int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic)
 
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
-            assert (topic);
-            memcpy (data (), topic, size_);
+            assert (topic_);
+            memcpy (data (), topic_, size_);
         }
     }
     return rc;

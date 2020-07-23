@@ -112,7 +112,8 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64 ()
         func = compatible_get_tick_count64;
 
 #if !defined ZMQ_HAVE_WINDOWS_UWP
-    ::FreeLibrary (module);
+    if (module != NULL)
+        ::FreeLibrary (module);
 #endif
 
     return func;
