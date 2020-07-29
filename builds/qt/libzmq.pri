@@ -2,6 +2,7 @@ DEFINES += ZMQ_HAVE_STRLCPY
 
 SOURCES += \
     $$PWD/../../src/address.cpp \
+    $$PWD/../../src/channel.cpp \
     $$PWD/../../src/client.cpp \
     $$PWD/../../src/clock.cpp \
     $$PWD/../../src/ctx.cpp \
