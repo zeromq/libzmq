@@ -299,6 +299,9 @@ int zmq::xpub_t::xsend (msg_t *msg_)
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!_more_send) {
+        // Ensure nothing from previous failed attempt to send is left matched
+        _dist.unmatch ();
+
         if (unlikely (_manual && _last_pipe && _send_last_pipe)) {
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
                                   msg_->size (), mark_last_pipe_as_matching,
