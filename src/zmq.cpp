@@ -857,10 +857,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     for (int i = 0; i != nitems_; i++) {
         if (items_[i].socket) {
             zmq::socket_base_t *s = as_socket_base_t (items_[i].socket);
-            if (s){
+            if (s) {
                 if (s->is_thread_safe ())
                     return zmq_poller_poll (items_, nitems_, timeout_);
-            }else{
+            } else {
                 //as_socket_base_t returned NULL : socket is invalid
                 return -1;
             }
