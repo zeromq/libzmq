@@ -41,6 +41,9 @@
 #include <cmnintrin.h>
 #else
 #include <intrin.h>
+#if defined(_M_ARM) || defined(_M_ARM64)
+#include <arm_neon.h>
+#endif
 #endif
 #endif
 
@@ -235,6 +238,14 @@ uint64_t zmq::clock_t::rdtsc ()
 {
 #if (defined _MSC_VER && (defined _M_IX86 || defined _M_X64))
     return __rdtsc ();
+#elif defined(_MSC_VER) && defined(_M_ARM) // NC => added for windows ARM
+    return __rdpmccntr64 ();
+#elif defined(_MSC_VER) && defined(_M_ARM64) // NC => added for windows ARM64
+    //return __rdpmccntr64 ();
+    //return __rdtscp (nullptr);
+    // todo: find proper implementation for ARM64
+    static uint64_t snCounter = 0;
+    return ++snCounter;
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));
