@@ -243,7 +243,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #elif defined(_MSC_VER) && defined(_M_ARM64) // NC => added for windows ARM64
     //return __rdpmccntr64 ();
     //return __rdtscp (nullptr);
-	// todo: find proper implementation for ARM64
+    // todo: find proper implementation for ARM64
     static uint64_t snCounter = 0;
     return ++snCounter;
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
