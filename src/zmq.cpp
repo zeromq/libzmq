@@ -855,9 +855,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     // if poller is present, use that if there is at least 1 thread-safe socket,
     // otherwise fall back to the previous implementation as it's faster.
     for (int i = 0; i != nitems_; i++) {
-        if (items_[i].socket
-            && as_socket_base_t (items_[i].socket)->is_thread_safe ()) {
-            return zmq_poller_poll (items_, nitems_, timeout_);
+        if (items_[i].socket) {
+            zmq::socket_base_t *s = as_socket_base_t (items_[i].socket);
+            if (s) {
+                if (s->is_thread_safe ())
+                    return zmq_poller_poll (items_, nitems_, timeout_);
+            } else {
+                //as_socket_base_t returned NULL : socket is invalid
+                return -1;
+            }
         }
     }
 #endif // ZMQ_HAVE_POLLER
