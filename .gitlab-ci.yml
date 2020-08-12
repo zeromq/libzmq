@@ -87,3 +87,16 @@ lib-build-linux:
   only:
     refs:
       - master
+
+# Create library for CentOS with Qt
+lib-build-centos-qt:
+  stage: lib-build
+  tags:
+    - centos-qt
+  script:
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSODIUM=ON -DENABLE_DRAFTS=ON -DCMAKE_PREFIX_PATH=/builds/sysroot/usr/local/
+    - make -C build
+    - make -C build DESTDIR=/builds/sysroot/ install
+  only:
+    refs:
+      - master
