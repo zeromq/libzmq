@@ -865,6 +865,10 @@ bool zmq::ws_engine_t::client_handshake ()
                         strcpy_s (_websocket_accept, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
+                        if (_mechanism) {
+                            _client_handshake_state = client_handshake_error;
+                            break;
+                        }
                         if (select_protocol (_header_value))
                             strcpy_s (_websocket_protocol, _header_value);
                     }
