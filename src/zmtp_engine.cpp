@@ -138,11 +138,6 @@ bool zmq::zmtp_engine_t::handshake ()
     if (_outsize == 0)
         set_pollout ();
 
-    if (_has_handshake_timer) {
-        cancel_timer (handshake_timer_id);
-        _has_handshake_timer = false;
-    }
-
     return true;
 }
 

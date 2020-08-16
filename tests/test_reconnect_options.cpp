@@ -156,6 +156,7 @@ void reconnect_success ()
 }
 
 
+#ifdef ZMQ_BUILD_DRAFT_API
 // test stopping reconnect on connection refused
 void reconnect_stop_on_refused ()
 {
@@ -215,6 +216,60 @@ void reconnect_stop_on_refused ()
     //  TODO why does this use zero_linger?
     test_context_socket_close_zero_linger (sub_mon);
 }
+#endif
+
+#ifdef ZMQ_BUILD_DRAFT_API
+// test stopping reconnect on connection refused
+void reconnect_stop_on_handshake_failed ()
+{
+    char bind_address[MAX_SOCKET_STRING];
+    size_t addr_length = sizeof (bind_address);
+    void *dummy = test_context_socket (ZMQ_STREAM);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (dummy, "tcp://127.0.0.1:0"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (dummy, ZMQ_LAST_ENDPOINT, bind_address, &addr_length));
+
+    // setup sub socket
+    void *sub = test_context_socket (ZMQ_SUB);
+    //  Monitor all events on sub
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    //  Create socket for collecting monitor events
+    void *sub_mon = test_context_socket (ZMQ_PAIR);
+    //  Connect so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
+    // set handshake interval (i.e., timeout) to a more reasonable value
+    int handshakeInterval = 1000;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      sub, ZMQ_HANDSHAKE_IVL, &handshakeInterval, sizeof (handshakeInterval)));
+    // set option to stop reconnecting on failed handshake
+    int stopReconnectOnError = ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_RECONNECT_STOP,
+                                               &stopReconnectOnError,
+                                               sizeof (stopReconnectOnError)));
+    // connect to dummy stream socket above
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, bind_address));
+
+#if 1
+    // ZMQ_EVENT_DISCONNECTED should be last event, because of ZMQ_RECONNECT_STOP set above
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_DELAYED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECTED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_DISCONNECTED);
+#else
+    print_events (sub_mon, 2 * 1000, 1000);
+#endif
+
+    //  Close sub
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (sub);
+    test_context_socket_close_zero_linger (dummy);
+
+    //  Close monitor
+    //  TODO why does this use zero_linger?
+    test_context_socket_close_zero_linger (sub_mon);
+}
+#endif
 
 void setUp ()
 {
@@ -234,7 +289,9 @@ int main (void)
 
     RUN_TEST (reconnect_default);
     RUN_TEST (reconnect_success);
+#ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (reconnect_stop_on_refused);
-
+    RUN_TEST (reconnect_stop_on_handshake_failed);
+#endif
     return UNITY_END ();
 }

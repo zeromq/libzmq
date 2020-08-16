@@ -735,11 +735,20 @@ The 'ZMQ_RECONNECT_STOP_CONN_REFUSED' option will stop reconnection when 0MQ
 receives the ECONNREFUSED return code from the connect.  This indicates that
 there is no code bound to the specified endpoint.
 
+The 'ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED' option will stop reconnection if
+the 0MQ handshake fails.  This can be used to detect and/or prevent errant
+connection attempts to non-0MQ sockets.  Note that when specifying this option
+you may also want to set `ZMQ_HANDSHAKE_IVL` -- the default handshake interval
+is 30000 (30 seconds), which is typically too large.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
-Option value unit:: ZMQ_RECONNECT_STOP_CONN_REFUSED
+Option value unit:: 0, ZMQ_RECONNECT_STOP_CONN_REFUSED, ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED, ZMQ_RECONNECT_STOP_CONN_REFUSED | ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED
 Default value:: 0
-Applicable socket types:: all, only for connection-oriented transports
+Applicable socket types:: all, only for connection-oriented transports (ZMQ_HANDSHAKE_IVL is
+not applicable for ZMQ_STREAM sockets)
 
 
 ZMQ_RECOVERY_IVL: Set multicast recovery interval

@@ -32,61 +32,48 @@
 #endif
 
 #include "testutil.hpp"
-#include "testutil_security.hpp"
+#include "testutil_unity.hpp"
 
-// Test that the ZMTP engine handles invalid handshake when connecting
-// https://rfc.zeromq.org/spec/37/
-// https://rfc.zeromq.org/spec/26/
+// Test that the ZMTP WebSocket engine handles invalid handshake when connecting
+// https://rfc.zeromq.org/spec/45/
 extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
-    const char *fixed_client_public =
-      "{{k*81)yMWEF{/BxdMd[5RL^qRFxBgoL<8m.D^KD";
-    const char *fixed_client_secret =
-      "N?Gmik8R[2ACw{b7*[-$S6[4}aO#?DB?#=<OQPc7";
-    const char *fixed_server_public =
-      "3.9-xXwy{g*w72TP*3iB9IJJRxlBH<ufTAvPd2>C";
-
     setup_test_context ();
     char my_endpoint[MAX_SOCKET_STRING];
-    fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint);
+    fd_t server = bind_socket_resolve_port ("127.0.0.1", "0", my_endpoint,
+                                            AF_INET, IPPROTO_WS);
 
-    curve_client_data_t curve_client_data = {
-      fixed_server_public, fixed_client_public, fixed_client_secret};
-    void *client_mon;
-    void *client = create_and_connect_client (
-      my_endpoint, socket_config_curve_client, &curve_client_data, &client_mon);
+    void *client = test_context_socket (ZMQ_PULL);
+    //  As per API by default there's no limit to the size of a message,
+    //  but the sanitizer allocator will barf over a gig or so
+    int64_t max_msg_size = 64 * 1024 * 1024;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (client, ZMQ_MAXMSGSIZE, &max_msg_size, sizeof (int64_t)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, my_endpoint));
 
     fd_t server_accept =
       TEST_ASSERT_SUCCESS_RAW_ERRNO (accept (server, NULL, NULL));
 
-    //  If there is not enough data for a full greeting, just send what we can
-    //  Otherwise send greeting first, as expected by the protocol
-    uint8_t buf[512];
-    if (size >= 64) {
-        send (server_accept, (void *) data, 64, MSG_NOSIGNAL);
-        data += 64;
-        size -= 64;
+    //  If there is not enough data for a full handshake, just send what we can
+    //  Otherwise send websocket handshake first, as expected by the protocol
+    uint8_t buf[256];
+    recv (server_accept, buf, 256, 0);
+    if (size >= 166) {
+        send (server_accept, (void *) data, 166, MSG_NOSIGNAL);
+        data += 166;
+        size -= 166;
     }
-    recv (server_accept, buf, 64, 0);
-    // Then expect HELLO and send WELCOME if there's enough data
-    if (size >= 170) {
-        recv (server_accept, buf, 202, 0);
-        send (server_accept, (void *) data, 170, MSG_NOSIGNAL);
-        data += 170;
-        size -= 170;
-    }
-    // Then expect INITIATE and send READY if there's enough data
-    if (size >= 72) {
-        recv (server_accept, buf, 512, 0);
-        send (server_accept, (void *) data, 72, MSG_NOSIGNAL);
-        data += 72;
-        size -= 72;
+    recv (server_accept, buf, 256, MSG_DONTWAIT);
+    //  Then send the READY command
+    if (size >= 29) {
+        send (server_accept, (void *) data, 29, MSG_NOSIGNAL);
+        data += 29;
+        size -= 29;
     }
     msleep (250);
     for (ssize_t sent = 0; size > 0 && (sent != -1 || errno == EINTR);
          size -= sent > 0 ? sent : 0, data += sent > 0 ? sent : 0)
         sent = send (server_accept, (const char *) data, size, MSG_NOSIGNAL);
-    recv (server_accept, buf, 512, MSG_DONTWAIT);
     msleep (250);
 
     zmq_msg_t msg;
@@ -100,20 +87,19 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     close (server);
 
     test_context_socket_close_zero_linger (client);
-    test_context_socket_close_zero_linger (client_mon);
     teardown_test_context ();
 
     return 0;
 }
 
 #ifndef ZMQ_USE_FUZZING_ENGINE
-void test_connect_curve_fuzzer ()
+void test_connect_ws_fuzzer ()
 {
     uint8_t **data;
     size_t *len, num_cases = 0;
     if (fuzzer_corpus_encode (
-          "tests/libzmq-fuzz-corpora/test_connect_curve_fuzzer_seed_corpus",
-          &data, &len, &num_cases)
+          "tests/libzmq-fuzz-corpora/test_connect_ws_fuzzer_seed_corpus", &data,
+          &len, &num_cases)
         != 0)
         exit (77);
 
@@ -132,7 +118,7 @@ int main (int argc, char **argv)
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_connect_curve_fuzzer);
+    RUN_TEST (test_connect_ws_fuzzer);
 
     return UNITY_END ();
 }

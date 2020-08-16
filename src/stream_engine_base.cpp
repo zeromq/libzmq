@@ -344,8 +344,14 @@ void zmq::stream_engine_base_t::out_event ()
         _outsize = _encoder->encode (&_outpos, 0);
 
         while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
-            if ((this->*_next_msg) (&_tx_msg) == -1)
-                break;
+            if ((this->*_next_msg) (&_tx_msg) == -1) {
+                //  ws_engine can cause an engine error and delete it, so
+                //  bail out immediately to avoid use-after-free
+                if (errno == ECONNRESET)
+                    return;
+                else
+                    break;
+            }
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
             const size_t n =
@@ -582,6 +588,11 @@ void zmq::stream_engine_base_t::mechanism_ready ()
         alloc_assert (_metadata);
     }
 
+    if (_has_handshake_timer) {
+        cancel_timer (handshake_timer_id);
+        _has_handshake_timer = false;
+    }
+
     _socket->event_handshake_succeeded (_endpoint_uri_pair, 0);
 }
 
@@ -689,6 +700,14 @@ void zmq::stream_engine_base_t::error (error_reason_t reason_)
             || _mechanism->status () == mechanism_t::handshaking)) {
         const int err = errno;
         _socket->event_handshake_failed_no_detail (_endpoint_uri_pair, err);
+        // special case: connecting to non-ZMTP process which immediately drops connection,
+        // or which never responds with greeting, should be treated as a protocol error
+        // (i.e. stop reconnect)
+        if (((reason_ == connection_error) || (reason_ == timeout_error))
+            && (_options.reconnect_stop
+                & ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED)) {
+            reason_ = protocol_error;
+        }
     }
 
     _socket->event_disconnected (_endpoint_uri_pair, _s);
