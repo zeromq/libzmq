@@ -43,6 +43,9 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
     void *s = test_context_socket (ZMQ_XPUB);
     int option;
 
+    //  A lot of options expect a well-formatted string
+    ((uint8_t *)data)[size - 1] = 0;
+
     for (option = ZMQ_AFFINITY; option < ZMQ_BINDTODEVICE + 1; ++option) {
         uint8_t out[512];
         size_t out_size = 512;
