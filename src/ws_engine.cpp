@@ -54,6 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstring>
 
+#include "compat.hpp"
 #include "tcp.hpp"
 #include "ws_engine.hpp"
 #include "session_base.hpp"
@@ -69,30 +70,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ZMQ_HAVE_CURVE
 #include "curve_client.hpp"
 #include "curve_server.hpp"
-#endif
-
-#ifdef ZMQ_HAVE_WINDOWS
-#define strcasecmp _stricmp
-#define strtok_r strtok_s
-#else
-#ifdef ZMQ_HAVE_LIBBSD
-#include <bsd/string.h>
-#elif !defined(ZMQ_HAVE_STRLCPY)
-static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
-{
-    size_t remain = dest_size_;
-    for (; remain && *src_; --remain, ++src_, ++dest_) {
-        *dest_ = *src_;
-    }
-    return dest_size_ - remain;
-}
-#endif
-template <size_t size>
-static int strcpy_s (char (&dest_)[size], const char *const src_)
-{
-    const size_t res = strlcpy (dest_, src_, size);
-    return res >= size ? ERANGE : 0;
-}
 #endif
 
 //  OSX uses a different name for this socket option

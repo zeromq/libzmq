@@ -16,6 +16,10 @@
 * Note for packagers: ZeroMQConfig.cmake is now installed in the arch-dependent
   subdirectory - eg: /usr/lib/x86_64-linux-gnu/cmake/
 
+* New DRAFT (see NEWS for 4.2.0) socket type:
+  - ZMQ_CHANNEL is a thread-safe alternative to ZMQ_PAIR.
+  See doc/zmq_socket.txt for details.
+
 * New DRAFT (see NEWS for 4.2.0) socket option:
   - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
     message to be processed as a subscribe/unsubscribe message, and the rest
@@ -48,8 +52,8 @@
 * New DRAFT (see NEWS for 4.2.0) zmq_poller_size API was added to allow querying
   the number of sockets/fds registered in a zmq_poller.
 
-* ZMTP 3.1 is now fully implemented, and 3.1 peers will receive subscribe/cancel
-  on PUB/SUB via commands rather than using the first byte of the payload.
+* ZMTP 3.1 peers will receive subscribe/cancel on PUB/SUB via commands rather
+  than using the first byte of the payload.
 
 * Fixed #3566 - malformed CURVE message can cause memory leak
 
