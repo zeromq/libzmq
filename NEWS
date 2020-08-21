@@ -55,6 +55,9 @@
 * ZMTP 3.1 peers will receive subscribe/cancel on PUB/SUB via commands rather
   than using the first byte of the payload.
 
+* zmq_z85_decode now checks that the input string's length is at least 5 characters
+  and always a multiple of 5 as per API specification.
+
 * Fixed #3566 - malformed CURVE message can cause memory leak
 
 * Fixed #3567 - missing ZeroMQ_INCLUDE_DIR in ZeroMQConfig.cmake when only
