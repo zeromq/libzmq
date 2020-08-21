@@ -13,14 +13,19 @@
   libbsd can be used and is enabled by default if available instead of the
   internal implementation, for better security maintenance in distros.
 
+* Note for packagers: ZeroMQConfig.cmake is now installed in the arch-dependent
+  subdirectory - eg: /usr/lib/x86_64-linux-gnu/cmake/
+
 * New DRAFT (see NEWS for 4.2.0) socket option:
   - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
     message to be processed as a subscribe/unsubscribe message, and the rest
     will be forwarded as user data to the application.
   - ZMQ_RECONNECT_STOP will cause a connecting socket to stop trying to
-    reconnect in specific circumstances. In this release, this can be set to
-    ECONNREFUSED errors, which implies the other end is not listening on the
-    requested port.
+    reconnect in specific circumstances. See the manpage for details.
+  - ZMQ_HELLO_MSG to set a message that will be automatically sent to a new
+    connection.
+  - ZMQ_DISCONNECT_MSG to set a message that will be automatically received when
+    a peer disconnects.
   See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
 
 * New DRAFT (see NEWS for 4.2.0) zmq_ctx_get_ext/zmq_ctx_set_ext APIs were added
@@ -36,6 +41,12 @@
 * New DRAFT (see NEWS for 4.2.0) socket type, PEER, which is thread safe and a
   related zmq_connect_peer function which atomically and thread-safely connects
   and returns a routing-id.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_msg_init_buffer API was added to allow
+  the construction of a message by copying from an existing buffer.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_poller_size API was added to allow querying
+  the number of sockets/fds registered in a zmq_poller.
 
 * ZMTP 3.1 is now fully implemented, and 3.1 peers will receive subscribe/cancel
   on PUB/SUB via commands rather than using the first byte of the payload.
@@ -116,6 +127,12 @@
 * Fixed #3805 - improve performance of CURVE by reducing copies
 
 * Fixed #3814 - send subscribe/cancel as commands to ZMTP 3.1 peers
+
+* Fixed #3847 - fix building without PGM and NORM
+
+* Fixed #3849 - install .cmake file in arch-dependent subdirectory
+
+* Fixed #4005 - allow building on Windows ARM/ARM64
 
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================
