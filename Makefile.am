@@ -1122,7 +1122,8 @@ if FUZZING_ENGINE_LIB
 fuzzer_apps = tests/test_bind_null_fuzzer \
 	tests/test_connect_null_fuzzer \
 	tests/test_bind_fuzzer \
-	tests/test_connect_fuzzer
+	tests/test_connect_fuzzer \
+	tests/test_socket_options_fuzzer
 
 tests_test_bind_null_fuzzer_DEPENDENCIES = src/libzmq.la
 tests_test_bind_null_fuzzer_SOURCES = tests/test_bind_null_fuzzer.cpp
@@ -1155,6 +1156,14 @@ tests_test_connect_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
 		${src_libzmq_la_LIBADD}
 tests_test_connect_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_connect_fuzzer_CXXFLAGS = -std=c++11
+
+tests_test_socket_options_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_socket_options_fuzzer_SOURCES = tests/test_socket_options_fuzzer.cpp
+tests_test_socket_options_fuzzer_LDADD = ${TESTUTIL_LIBS} ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_socket_options_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_socket_options_fuzzer_CXXFLAGS = -std=c++11
 
 if HAVE_CURVE
 fuzzer_apps += tests/test_bind_curve_fuzzer \
@@ -1213,7 +1222,8 @@ else
 test_apps += tests/test_bind_null_fuzzer \
 	tests/test_connect_null_fuzzer \
 	tests/test_bind_fuzzer \
-	tests/test_connect_fuzzer
+	tests/test_connect_fuzzer \
+	tests/test_socket_options_fuzzer
 
 tests_test_bind_null_fuzzer_SOURCES = tests/test_bind_null_fuzzer.cpp
 tests_test_bind_null_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1230,6 +1240,10 @@ tests_test_bind_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_connect_fuzzer_SOURCES = tests/test_connect_fuzzer.cpp
 tests_test_connect_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_connect_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_socket_options_fuzzer_SOURCES = tests/test_socket_options_fuzzer.cpp
+tests_test_socket_options_fuzzer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_socket_options_fuzzer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_CURVE
 test_apps += tests/test_bind_curve_fuzzer \
