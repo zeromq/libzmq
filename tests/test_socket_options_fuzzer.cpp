@@ -31,31 +31,36 @@
 #include <fuzzer/FuzzedDataProvider.h>
 #endif
 
-#include <string>
-#include <stdlib.h>
-
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#ifdef ZMQ_DISCONNECT_MSG
+#define LAST_OPTION ZMQ_DISCONNECT_MSG
+#else
+#define LAST_OPTION ZMQ_BINDTODEVICE
+#endif
+
 extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
-    setup_test_context ();
-    void *s = test_context_socket (ZMQ_XPUB);
     int option;
+    void *ctx = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (ctx);
+    void *server = zmq_socket (ctx, ZMQ_XPUB);
+    TEST_ASSERT_NOT_NULL (server);
 
-    //  A lot of options expect a well-formatted string
-    ((uint8_t *)data)[size - 1] = 0;
+    if (!size)
+        return 0;
 
-    for (option = ZMQ_AFFINITY; option < ZMQ_BINDTODEVICE + 1; ++option) {
-        uint8_t out[512];
-        size_t out_size = 512;
+    for (option = ZMQ_AFFINITY; option <= LAST_OPTION; ++option) {
+        uint8_t out[8192];
+        size_t out_size = 8192;
 
-        zmq_setsockopt(s, option, data, size);
-        zmq_getsockopt(s, option, out, &out_size);
+        zmq_setsockopt(server, option, data, size);
+        zmq_getsockopt(server, option, out, &out_size);
     }
 
-    test_context_socket_close_zero_linger (s);
-    teardown_test_context ();
+    zmq_close (server);
+    zmq_ctx_term (ctx);
 
     return 0;
 }
