@@ -1001,6 +1001,7 @@ set(cxx-sources
     client.hpp
     clock.hpp
     command.hpp
+    compat.hpp
     condition_variable.hpp
     config.hpp
     ctx.hpp
