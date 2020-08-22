@@ -761,7 +761,8 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_METADATA:
             if (optvallen_ > 0 && !is_int) {
-                const std::string s (static_cast<const char *> (optval_));
+                const std::string s (static_cast<const char *> (optval_),
+                                     optvallen_);
                 const size_t pos = s.find (':');
                 if (pos != std::string::npos && pos != 0
                     && pos != s.length () - 1) {
