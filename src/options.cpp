@@ -276,13 +276,16 @@ int zmq::options_t::set_curve_key (uint8_t *destination_,
             mechanism = ZMQ_CURVE;
             return 0;
 
-        case CURVE_KEYSIZE_Z85 + 1:
-            if (zmq_z85_decode (destination_,
-                                reinterpret_cast<const char *> (optval_))) {
+        case CURVE_KEYSIZE_Z85 + 1: {
+            const std::string s (static_cast<const char *> (optval_),
+                                 optvallen_);
+
+            if (zmq_z85_decode (destination_, s.c_str ())) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
+        }
 
         case CURVE_KEYSIZE_Z85:
             char z85_key[CURVE_KEYSIZE_Z85 + 1];
