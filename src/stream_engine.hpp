@@ -53,10 +53,12 @@ namespace zmq
     public:
 
         stream_engine_t (fd_t fd_, const options_t &options_, 
-                         const std::string &endpoint);
+                         const std::string &endpoint,
+                         bool has_handshake_stage_);
         ~stream_engine_t ();
 
         //  i_engine interface implementation.
+        bool has_handshake_stage () { return _has_handshake_stage; };
         void plug (zmq::io_thread_t *io_thread_,
            zmq::session_base_t *session_);
         void terminate ();
@@ -155,6 +157,10 @@ namespace zmq
 
         //  The session this engine is attached to.
         zmq::session_base_t *session;
+
+        //  Indicate if engine has an handshake stage, if it does, engine must call session.engine_ready
+        //  when handshake is completed.
+        bool _has_handshake_stage;
 
         options_t options;
 

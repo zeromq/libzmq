@@ -127,7 +127,7 @@ void zmq::tcp_connecter_t::out_event ()
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
-        stream_engine_t (fd, options, endpoint);
+        stream_engine_t (fd, options, endpoint, !options.raw_sock);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
