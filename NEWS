@@ -1,3 +1,32 @@
+0MQ version 4.1.8 stable, released on 20xx/xx/xx
+================================================
+
+* Security advisories:
+  * CVE-2020-15166: Denial-of-Service on CURVE/ZAP-protected servers by
+    unauthenticated clients.
+    If a raw TCP socket is opened and connected to an endpoint that is fully
+    configured with CURVE/ZAP, legitimate clients will not be able to exchange
+    any message. Handshakes complete successfully, and messages are delivered to
+    the library, but the server application never receives them.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-25wp-cf8g-938m
+  * Stack overflow on server running PUB/XPUB socket (CURVE disabled).
+    The PUB/XPUB subscription store (mtrie) is traversed using recursive
+    function calls. In the remove (unsubscription) case, the recursive calls are
+    NOT tail calls, so even with optimizations the stack grows linearly with the
+    length of a subscription topic. Topics are under the control of remote
+    clients - they can send a subscription to arbitrary length topics. An
+    attacker can thus cause a server to create an mtrie sufficiently large such
+    that, when unsubscribing, traversal will cause a stack overflow.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-qq65-x72m-9wr8
+  * Memory leak in client induced by malicious server(s) without CURVE/ZAP.
+    When a pipe processes a delimiter and is already not in active state but
+    still has an unfinished message, the message is leaked.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-wfr2-29gj-5w87
+
+
 0MQ version 4.1.7 stable, released on 2019/07/08
 ================================================
 
