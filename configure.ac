@@ -649,13 +649,18 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 
 # conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
-    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [
+    PKG_CHECK_MODULES([pgm], [openpgm-5.3 >= 5.3], [
         have_pgm_library="yes"
-        PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.2 >= 5.2"
+        PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.3 >= 5.3"
     ], [
-        PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1], [
+        PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [
             have_pgm_library="yes"
-            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.1 >= 5.1"
+            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.2 >= 5.2"
+        ], [
+            PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1], [
+                have_pgm_library="yes"
+                PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE openpgm-5.1 >= 5.1"
+            ])
         ])
     ])
 fi
