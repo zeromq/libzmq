@@ -133,6 +133,11 @@ void zmq::wss_engine_t::out_event ()
     if (_established)
         return ws_engine_t::out_event ();
 
+    do_handshake ();
+}
+
+bool zmq::wss_engine_t::do_handshake ()
+{
     int rc = gnutls_handshake (_tls_session);
 
     reset_pollout ();
@@ -140,42 +145,28 @@ void zmq::wss_engine_t::out_event ()
     if (rc == GNUTLS_E_SUCCESS) {
         start_ws_handshake ();
         _established = true;
-        return;
+        return false;
     } else if (rc == GNUTLS_E_AGAIN) {
         int direction = gnutls_record_get_direction (_tls_session);
         if (direction == 1)
             set_pollout ();
 
-        return;
+        return false;
     } else if (rc == GNUTLS_E_INTERRUPTED
                || rc == GNUTLS_E_WARNING_ALERT_RECEIVED) {
-        return;
+        return false;
     } else {
         error (zmq::i_engine::connection_error);
-        return;
+        return false;
     }
+
+    return true;
 }
 
 bool zmq::wss_engine_t::handshake ()
 {
     if (!_established) {
-        int rc = gnutls_handshake (_tls_session);
-
-        if (rc == GNUTLS_E_SUCCESS) {
-            start_ws_handshake ();
-            _established = true;
-            return false;
-        } else if (rc == GNUTLS_E_AGAIN) {
-            int direction = gnutls_record_get_direction (_tls_session);
-            if (direction == 1)
-                set_pollout ();
-
-            return false;
-        } else if (rc == GNUTLS_E_INTERRUPTED
-                   || rc == GNUTLS_E_WARNING_ALERT_RECEIVED) {
-            return false;
-        } else {
-            error (zmq::i_engine::connection_error);
+        if (!do_handshake ()) {
             return false;
         }
     }
