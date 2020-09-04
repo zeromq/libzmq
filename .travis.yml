@@ -44,12 +44,19 @@ matrix:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
-  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
+  - env: BUILD_TYPE=coverage CURVE=tweetnacl GSSAPI=enabled PGM=enabled NORM=enabled TIPC=enabled IPv6=ON TLS=enabled DRAFT=enabled
     os: linux
     dist: xenial
     addons:
       apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
         packages:
+        - libkrb5-dev
+        - libnorm-dev
+        - libpgm-dev
+        - libgnutls-dev
         - lcov
   - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled TLS=enabled
     os: linux
