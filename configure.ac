@@ -51,9 +51,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.3.1: 7:1:2 (ABI version 5)
 # ZeroMQ version 4.3.2: 7:2:2 (ABI version 5)
 # ZeroMQ version 4.3.3: 7:3:2 (ABI version 5)
+# ZeroMQ version 4.3.4: 7:4:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:3:2"
+LTVER="7:4:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
