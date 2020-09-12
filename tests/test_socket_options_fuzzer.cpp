@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2020 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,55 +27,72 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef ZMQ_USE_FUZZING_ENGINE
+#include <fuzzer/FuzzedDataProvider.h>
+#endif
+
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
-#include <string>
+#ifdef ZMQ_DISCONNECT_MSG
+#define LAST_OPTION ZMQ_DISCONNECT_MSG
+#else
+#define LAST_OPTION ZMQ_BINDTODEVICE
+#endif
 
-SETUP_TEARDOWN_TESTCONTEXT
-
-void test_roundtrip ()
+extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
-    char my_endpoint[256];
+    int option;
+    void *ctx = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (ctx);
+    void *server = zmq_socket (ctx, ZMQ_XPUB);
+    TEST_ASSERT_NOT_NULL (server);
 
-    void *sb = test_context_socket (ZMQ_PAIR);
-    bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
+    if (!size)
+        return 0;
 
-    void *sc = test_context_socket (ZMQ_PAIR);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
+    for (option = ZMQ_AFFINITY; option <= LAST_OPTION; ++option) {
+        uint8_t out[8192];
+        size_t out_size = 8192;
 
-    bounce (sb, sc);
-
-    test_context_socket_close (sc);
-    test_context_socket_close (sb);
-}
-
-static const char prefix[] = "ipc://";
-
-void test_endpoint_too_long ()
-{
-    std::string endpoint_too_long;
-    endpoint_too_long.append (prefix);
-    for (size_t i = 0; i < 108; ++i) {
-        endpoint_too_long.append ("a");
+        zmq_setsockopt (server, option, data, size);
+        zmq_getsockopt (server, option, out, &out_size);
     }
 
-    void *sb = test_context_socket (ZMQ_PAIR);
-    // TODO ENAMETOOLONG is not listed in the errors returned by zmq_bind,
-    // should this be EINVAL?
-    TEST_ASSERT_FAILURE_ERRNO (ENAMETOOLONG,
-                               zmq_bind (sb, endpoint_too_long.data ()));
+    zmq_close (server);
+    zmq_ctx_term (ctx);
 
-    test_context_socket_close (sb);
+    return 0;
 }
 
+#ifndef ZMQ_USE_FUZZING_ENGINE
+void test_socket_options_fuzzer ()
+{
+    uint8_t **data;
+    size_t *len, num_cases = 0;
+    if (fuzzer_corpus_encode (
+          "tests/libzmq-fuzz-corpora/test_socket_options_fuzzer_seed_corpus",
+          &data, &len, &num_cases)
+        != 0)
+        exit (77);
 
-int main (void)
+    while (num_cases-- > 0) {
+        TEST_ASSERT_SUCCESS_ERRNO (
+          LLVMFuzzerTestOneInput (data[num_cases], len[num_cases]));
+        free (data[num_cases]);
+    }
+
+    free (data);
+    free (len);
+}
+
+int main (int argc, char **argv)
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_roundtrip);
-    RUN_TEST (test_endpoint_too_long);
+    RUN_TEST (test_socket_options_fuzzer);
+
     return UNITY_END ();
 }
+#endif

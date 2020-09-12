@@ -76,7 +76,7 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
 #ifdef ZMQ_HAVE_WSS
     if (_wss) {
         int rc = gnutls_certificate_allocate_credentials (&_tls_cred);
-        assert (rc == GNUTLS_E_SUCCESS);
+        zmq_assert (rc == GNUTLS_E_SUCCESS);
 
         gnutls_datum_t cert = {(unsigned char *) options_.wss_cert_pem.c_str (),
                                (unsigned int) options_.wss_cert_pem.length ()};
@@ -84,7 +84,7 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
                               (unsigned int) options_.wss_key_pem.length ()};
         rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
                                                   GNUTLS_X509_FMT_PEM);
-        assert (rc == GNUTLS_E_SUCCESS);
+        zmq_assert (rc == GNUTLS_E_SUCCESS);
     }
 #endif
 }
@@ -310,7 +310,7 @@ void zmq::ws_listener_t::create_engine (fd_t fd_)
           wss_engine_t (fd_, options, endpoint_pair, _address, false, _tls_cred,
                         std::string ());
 #else
-        assert (false);
+        zmq_assert (false);
 #endif
     else
         engine = new (std::nothrow)
