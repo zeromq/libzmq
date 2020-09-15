@@ -28,6 +28,7 @@
 */
 
 #include "precompiled.hpp"
+#include "compat.hpp"
 #include "ipc_address.hpp"
 
 #if defined ZMQ_HAVE_IPC
@@ -35,18 +36,6 @@
 #include "err.hpp"
 
 #include <string>
-
-#ifndef HAVE_STRNLEN
-static size_t strnlen (const char *s, size_t len)
-{
-    for (size_t i = 0; i < len; i++) {
-        if (s[i] == '\0')
-            return i + 1;
-    }
-
-    return len;
-}
-#endif
 
 zmq::ipc_address_t::ipc_address_t ()
 {
