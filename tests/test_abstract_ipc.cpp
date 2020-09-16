@@ -35,6 +35,7 @@
 SETUP_TEARDOWN_TESTCONTEXT
 
 static const char test_endpoint[] = "ipc://@tmp-tester";
+static const char test_endpoint_empty[] = "ipc://@";
 
 void test_roundtrip ()
 {
@@ -56,11 +57,20 @@ void test_roundtrip ()
     test_context_socket_close (sb);
 }
 
+void test_empty_abstract_name ()
+{
+    void *sb = test_context_socket (ZMQ_DEALER);
+    TEST_ASSERT_FAILURE_ERRNO (EINVAL, zmq_bind (sb, test_endpoint_empty));
+
+    test_context_socket_close (sb);
+}
+
 int main (void)
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_empty_abstract_name);
     return UNITY_END ();
 }

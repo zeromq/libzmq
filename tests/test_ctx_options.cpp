@@ -283,6 +283,14 @@ void test_ctx_option_blocky ()
     test_context_socket_close (router);
 }
 
+void test_ctx_option_invalid ()
+{
+    TEST_ASSERT_EQUAL_INT (-1, zmq_ctx_set (get_test_context (), -1, 0));
+    TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+    TEST_ASSERT_EQUAL_INT (-1, zmq_ctx_get (get_test_context (), -1));
+    TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -297,5 +305,6 @@ int main (void)
     RUN_TEST (test_ctx_thread_opts);
     RUN_TEST (test_ctx_zero_copy);
     RUN_TEST (test_ctx_option_blocky);
+    RUN_TEST (test_ctx_option_invalid);
     return UNITY_END ();
 }

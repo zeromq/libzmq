@@ -344,8 +344,14 @@ void zmq::stream_engine_base_t::out_event ()
         _outsize = _encoder->encode (&_outpos, 0);
 
         while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
-            if ((this->*_next_msg) (&_tx_msg) == -1)
-                break;
+            if ((this->*_next_msg) (&_tx_msg) == -1) {
+                //  ws_engine can cause an engine error and delete it, so
+                //  bail out immediately to avoid use-after-free
+                if (errno == ECONNRESET)
+                    return;
+                else
+                    break;
+            }
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
             const size_t n =

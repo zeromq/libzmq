@@ -195,14 +195,11 @@ int zmq_ctx_set_ext (void *ctx_,
 
 int zmq_ctx_get (void *ctx_, int option_)
 {
-    int optval = 0;
-    size_t optvallen = sizeof (int);
-    if (zmq_ctx_get_ext (ctx_, option_, &optval, &optvallen) == 0) {
-        return optval;
+    if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {
+        errno = EFAULT;
+        return -1;
     }
-
-    errno = EFAULT;
-    return -1;
+    return (static_cast<zmq::ctx_t *> (ctx_))->get (option_);
 }
 
 int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
