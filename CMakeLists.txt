@@ -1382,8 +1382,13 @@ else()
       add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig}
                                        ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     else()
-      add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs}
-                                       ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      if (CMAKE_GENERATOR STREQUAL "Xcode")
+        add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      else()
+        add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      endif()
     endif()
     if(CMAKE_SYSTEM_NAME MATCHES "QNX")
       target_link_libraries(libzmq-static m)
