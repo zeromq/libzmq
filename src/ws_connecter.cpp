@@ -282,15 +282,16 @@ void zmq::ws_connecter_t::create_engine (fd_t fd_,
 
     //  Create the engine object for this connection.
     i_engine *engine = NULL;
-    if (_wss)
+    if (_wss) {
 #ifdef ZMQ_HAVE_WSS
         engine = new (std::nothrow)
           wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
                         true, NULL, _hostname);
 #else
+        LIBZMQ_UNUSED(_hostname);
         assert (false);
 #endif
-    else
+    } else
         engine = new (std::nothrow) ws_engine_t (
           fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true);
     alloc_assert (engine);

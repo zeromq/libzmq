@@ -175,7 +175,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
     std::list<struct iter> stack;
     unsigned char *buff = NULL;
     size_t maxbuffsize = 0;
-    struct iter it = {this, NULL, NULL, 0, 0, 0, false};
+    struct iter it = {this, NULL, NULL, 0, 0, 0, 0, false};
     stack.push_back (it);
 
     while (!stack.empty ()) {
@@ -216,7 +216,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                     it.processed_for_removal = true;
                     stack.push_back (it);
                     struct iter next = {
-                      it.node->_next.node, NULL, NULL, ++it.size, 0, 0, false};
+                      it.node->_next.node, NULL, NULL, ++it.size, 0, 0, 0, false};
                     stack.push_back (next);
                     break;
                 }
@@ -243,6 +243,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                           NULL,
                           NULL,
                           it.size + 1,
+                          0,
                           0,
                           0,
                           false};

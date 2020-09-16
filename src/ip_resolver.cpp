@@ -732,6 +732,7 @@ unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
   && !defined ZMQ_HAVE_VXWORKS
     return if_nametoindex (ifname_);
 #else
+    LIBZMQ_UNUSED(ifname_);
     // The function 'if_nametoindex' is not supported on Windows XP.
     // If we are targeting XP using a vxxx_xp toolset then fail.
     // This is brutal as this code could be run on later windows clients
