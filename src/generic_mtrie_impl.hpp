@@ -215,15 +215,14 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                     //  visit after the operation on the child can do the removals.
                     it.processed_for_removal = true;
                     stack.push_back (it);
-                    struct iter next = {
-                        it.node->_next.node,
-                        NULL,
-                        NULL,
-                        ++it.size,
-                        0,
-                        0,
-                        0,
-                        false};
+                    struct iter next = {it.node->_next.node,
+                                        NULL,
+                                        NULL,
+                                        ++it.size,
+                                        0,
+                                        0,
+                                        0,
+                                        false};
                     stack.push_back (next);
                     break;
                 }
@@ -245,15 +244,14 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                     it.processed_for_removal = true;
                     stack.push_back (it);
                     if (it.node->_next.table[it.current_child]) {
-                        struct iter next = {
-                            it.node->_next.table[it.current_child],
-                            NULL,
-                            NULL,
-                            it.size + 1,
-                            0,
-                            0,
-                            0,
-                            false};
+                        struct iter next = {it.node->_next.table[it.current_child],
+                                            NULL,
+                                            NULL,
+                                            it.size + 1,
+                                            0,
+                                            0,
+                                            0,
+                                            false};
                         stack.push_back (next);
                     }
                 }
