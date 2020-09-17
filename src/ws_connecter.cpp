@@ -288,7 +288,7 @@ void zmq::ws_connecter_t::create_engine (fd_t fd_,
           wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
                         true, NULL, _hostname);
 #else
-        LIBZMQ_UNUSED(_hostname);
+        LIBZMQ_UNUSED (_hostname);
         assert (false);
 #endif
     } else
