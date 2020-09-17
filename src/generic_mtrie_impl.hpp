@@ -245,14 +245,14 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                     stack.push_back (it);
                     if (it.node->_next.table[it.current_child]) {
                         struct iter next = {
-                        	it.node->_next.table[it.current_child],
-                            NULL,
-                            NULL,
-                            it.size + 1,
-                            0,
-                            0,
-                            0,
-                            false};
+                          it.node->_next.table[it.current_child],
+                          NULL,
+                          NULL,
+                          it.size + 1,
+                          0,
+                          0,
+                          0,
+                          false};
                         stack.push_back (next);
                     }
                 }
