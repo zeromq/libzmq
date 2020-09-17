@@ -115,7 +115,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
     };
     virtual int produce_pong_message (msg_t *msg_)
     {
-        LIBZMQ_UNUSED(msg_);
+        LIBZMQ_UNUSED (msg_);
         return -1;
     };
 
