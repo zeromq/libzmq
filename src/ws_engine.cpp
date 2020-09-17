@@ -944,6 +944,7 @@ int zmq::ws_engine_t::produce_close_message (msg_t *msg_)
 
 int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
 {
+    LIBZMQ_UNUSED (msg_);
     _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
       &ws_engine_t::close_connection_after_close);
 
@@ -953,6 +954,7 @@ int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
 
 int zmq::ws_engine_t::close_connection_after_close (msg_t *msg_)
 {
+    LIBZMQ_UNUSED (msg_);
     error (connection_error);
     errno = ECONNRESET;
     return -1;
