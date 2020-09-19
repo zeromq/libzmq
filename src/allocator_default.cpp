@@ -30,6 +30,8 @@
 #include "precompiled.hpp"
 #include "allocator_default.hpp"
 
+#include <new>
+
 zmq::allocator_default_t::allocator_default_t ()
 {
     _tag = 0xCAFEEBEB;

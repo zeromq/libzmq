@@ -253,7 +253,7 @@ int zmq_msg_allocator_destroy (void **allocator_)
         zmq_allocator_t *const allocator =
           static_cast<zmq_allocator_t *> (*allocator_);
         if (allocator && allocator->check_tag_fn (allocator->allocator)) {
-            delete allocator->allocator;
+            allocator->destroy_fn (allocator->allocator);
             allocator->allocator = NULL;
             delete allocator;
             *allocator_ = NULL;

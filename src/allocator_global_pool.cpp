@@ -63,7 +63,7 @@ void zmq::allocator_global_pool_t::allocate_block (size_t bl)
     if (_free_list_size <= bl) {
         _storage.resize (bl + 1);
         _free_list.resize (bl + 1);
-        for (auto i = _free_list_size; i <= bl; i++) {
+        for (size_t i = _free_list_size; i <= bl; i++) {
             size_t msg_size = MsgBlockToBytes (i);
             _storage[i].num_msgs =
               ZMG_GLOBAL_POOL_INITIAL_BLOCK_SIZE / msg_size;

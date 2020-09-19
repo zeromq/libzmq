@@ -723,6 +723,8 @@ struct zmq_allocator_t
     // Return true if this is an allocator and alive, otherwise false
     bool(*check_tag_fn) (void *allocator);
 
+    void(*destroy_fn)( void *allocator);
+
     void *allocator;
 };
 
