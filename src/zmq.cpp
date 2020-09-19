@@ -195,14 +195,11 @@ int zmq_ctx_set_ext (void *ctx_,
 
 int zmq_ctx_get (void *ctx_, int option_)
 {
-    int optval = 0;
-    size_t optvallen = sizeof (int);
-    if (zmq_ctx_get_ext (ctx_, option_, &optval, &optvallen) == 0) {
-        return optval;
+    if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {
+        errno = EFAULT;
+        return -1;
     }
-
-    errno = EFAULT;
-    return -1;
+    return (static_cast<zmq::ctx_t *> (ctx_))->get (option_);
 }
 
 int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
@@ -855,9 +852,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     // if poller is present, use that if there is at least 1 thread-safe socket,
     // otherwise fall back to the previous implementation as it's faster.
     for (int i = 0; i != nitems_; i++) {
-        if (items_[i].socket
-            && as_socket_base_t (items_[i].socket)->is_thread_safe ()) {
-            return zmq_poller_poll (items_, nitems_, timeout_);
+        if (items_[i].socket) {
+            zmq::socket_base_t *s = as_socket_base_t (items_[i].socket);
+            if (s) {
+                if (s->is_thread_safe ())
+                    return zmq_poller_poll (items_, nitems_, timeout_);
+            } else {
+                //as_socket_base_t returned NULL : socket is invalid
+                return -1;
+            }
         }
     }
 #endif // ZMQ_HAVE_POLLER

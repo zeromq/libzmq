@@ -36,9 +36,20 @@
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
 
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
 // Test that zmq_bind can handle malformed strings
 extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
+    //  This test might create socket files, so move to /tmp to avoid clobbering
+    //  the working directory with random filenames
+    char *pwd = (char *) malloc (PATH_MAX + 1);
+    TEST_ASSERT_NOT_NULL (pwd);
+    TEST_ASSERT_NOT_NULL (getcwd (pwd, PATH_MAX + 1));
+    TEST_ASSERT_SUCCESS_ERRNO (chdir ("/tmp"));
+
     setup_test_context ();
     std::string my_endpoint (reinterpret_cast<const char *> (data), size);
     void *socket = test_context_socket (ZMQ_PUB);
@@ -46,6 +57,8 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 
     test_context_socket_close_zero_linger (socket);
     teardown_test_context ();
+    TEST_ASSERT_SUCCESS_ERRNO (chdir (pwd));
+    free (pwd);
 
     return 0;
 }
@@ -55,8 +68,9 @@ void test_bind_fuzzer ()
 {
     uint8_t **data;
     size_t *len, num_cases = 0;
-    if (fuzzer_corpus_encode ("tests/fuzzer_corpora/test_bind_fuzzer.txt",
-                              &data, &len, &num_cases)
+    if (fuzzer_corpus_encode (
+          "tests/libzmq-fuzz-corpora/test_bind_fuzzer_seed_corpus", &data, &len,
+          &num_cases)
         != 0)
         exit (77);
 

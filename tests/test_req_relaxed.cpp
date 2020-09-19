@@ -28,8 +28,6 @@
 */
 
 #include "testutil.hpp"
-
-#include "testutil.hpp"
 #include "testutil_unity.hpp"
 
 #include <unity.h>
@@ -63,11 +61,12 @@ void setUp ()
           zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
 
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (rep[peer], my_endpoint));
+
+        //  These tests require strict ordering, so wait for the connections to
+        //  happen before opening the next, so that messages flow in the
+        //  expected direction
+        msleep (SETTLE_TIME);
     }
-    //  We have to give the connects time to finish otherwise the requests
-    //  will not properly round-robin. We could alternatively connect the
-    //  REQ sockets to the REP sockets.
-    msleep (SETTLE_TIME);
 }
 
 void tearDown ()

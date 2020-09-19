@@ -259,13 +259,14 @@ class condition_variable_t
             timeout.tv_sec = 0;
             timeout.tv_nsec = 0;
 #else
-            clock_gettime (CLOCK_MONOTONIC, &timeout);
+            rc = clock_gettime (CLOCK_MONOTONIC, &timeout);
+            posix_assert (rc);
 #endif
 
             timeout.tv_sec += timeout_ / 1000;
             timeout.tv_nsec += (timeout_ % 1000) * 1000000;
 
-            if (timeout.tv_nsec > 1000000000) {
+            if (timeout.tv_nsec >= 1000000000) {
                 timeout.tv_sec++;
                 timeout.tv_nsec -= 1000000000;
             }

@@ -60,6 +60,7 @@
 #include <net/if.h>
 #include <netdb.h>
 #include <sys/un.h>
+#include <dirent.h>
 #if defined(ZMQ_HAVE_AIX)
 #include <sys/types.h>
 #include <sys/socketvar.h>
@@ -377,7 +378,10 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
-    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    const fd_t s_pre = socket (af_, SOCK_STREAM,
+                               protocol_ == IPPROTO_UDP
+                                 ? IPPROTO_UDP
+                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
     if (af_ == AF_INET || af_ == AF_INET6) {
@@ -396,8 +400,8 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
         memset (&hint, 0, sizeof (struct addrinfo));
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
-        hint.ai_socktype = SOCK_STREAM;
-        hint.ai_protocol = protocol_;
+        hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
+        hint.ai_protocol = protocol_ == IPPROTO_UDP ? IPPROTO_UDP : IPPROTO_TCP;
 
         TEST_ASSERT_SUCCESS_RAW_ZERO_ERRNO (
           getaddrinfo (address, port, &hint, &in));
@@ -431,7 +435,10 @@ fd_t bind_socket_resolve_port (const char *address_,
     struct sockaddr_storage addr;
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
-    const fd_t s_pre = socket (af_, SOCK_STREAM, protocol_);
+    const fd_t s_pre = socket (af_, SOCK_STREAM,
+                               protocol_ == IPPROTO_UDP
+                                 ? IPPROTO_UDP
+                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
 
     if (af_ == AF_INET || af_ == AF_INET6) {
@@ -447,7 +454,7 @@ fd_t bind_socket_resolve_port (const char *address_,
         hint.ai_flags = AI_NUMERICSERV;
         hint.ai_family = af_;
         hint.ai_socktype = protocol_ == IPPROTO_UDP ? SOCK_DGRAM : SOCK_STREAM;
-        hint.ai_protocol = protocol_;
+        hint.ai_protocol = protocol_ == IPPROTO_UDP ? IPPROTO_UDP : IPPROTO_TCP;
 
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           setsockopt (s_pre, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int)));
@@ -500,7 +507,12 @@ fd_t bind_socket_resolve_port (const char *address_,
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
         sprintf (my_endpoint_, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP ? "tcp" : "udp", address_,
+                 protocol_ == IPPROTO_TCP
+                   ? "tcp"
+                   : protocol_ == IPPROTO_UDP
+                       ? "udp"
+                       : protocol_ == IPPROTO_WSS ? "wss" : "ws",
+                 address_,
                  af_ == AF_INET
                    ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
                    : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
@@ -519,50 +531,82 @@ bool strneq (const char *lhs_, const char *rhs_)
     return strcmp (lhs_, rhs_) != 0;
 }
 
-int fuzzer_corpus_encode (const char *filename,
+#if defined _WIN32
+int fuzzer_corpus_encode (const char *dirname,
                           uint8_t ***data,
                           size_t **len,
                           size_t *num_cases)
 {
-    TEST_ASSERT_NOT_NULL (filename);
+    (void) dirname;
+    (void) data;
+    (void) len;
+    (void) num_cases;
+
+    return -1;
+}
+
+#else
+
+int fuzzer_corpus_encode (const char *dirname,
+                          uint8_t ***data,
+                          size_t **len,
+                          size_t *num_cases)
+{
+    TEST_ASSERT_NOT_NULL (dirname);
     TEST_ASSERT_NOT_NULL (data);
     TEST_ASSERT_NOT_NULL (len);
-    FILE *f = fopen (filename, "r");
-    if (!f)
+
+    struct dirent *ent;
+    DIR *dir = opendir (dirname);
+    if (!dir)
         return -1;
-    fseek (f, 0, SEEK_END);
-    size_t text_len = ftell (f) + 1;
-    fseek (f, 0, SEEK_SET);
-    char *buf = (char *) malloc (text_len);
-    TEST_ASSERT_NOT_NULL (buf);
 
     *len = NULL;
     *data = NULL;
     *num_cases = 0;
-    //  Convert to binary format, corpus is stored in ascii (hex)
-    while (fgets (buf, (int) text_len, f)) {
+
+    while ((ent = readdir (dir)) != NULL) {
+        if (!strcmp (ent->d_name, ".") || !strcmp (ent->d_name, ".."))
+            continue;
+
+        char *filename =
+          (char *) malloc (strlen (dirname) + strlen (ent->d_name) + 2);
+        TEST_ASSERT_NOT_NULL (filename);
+        strcpy (filename, dirname);
+        strcat (filename, "/");
+        strcat (filename, ent->d_name);
+        FILE *f = fopen (filename, "r");
+        free (filename);
+        if (!f)
+            continue;
+
+        fseek (f, 0, SEEK_END);
+        size_t file_len = ftell (f);
+        fseek (f, 0, SEEK_SET);
+        if (file_len == 0) {
+            fclose (f);
+            continue;
+        }
+
         *len = (size_t *) realloc (*len, (*num_cases + 1) * sizeof (size_t));
         TEST_ASSERT_NOT_NULL (*len);
-        *(*len + *num_cases) = strlen (buf) / 2;
+        *(*len + *num_cases) = file_len;
         *data =
           (uint8_t **) realloc (*data, (*num_cases + 1) * sizeof (uint8_t *));
         TEST_ASSERT_NOT_NULL (*data);
         *(*data + *num_cases) =
-          (uint8_t *) malloc (*(*len + *num_cases) * sizeof (uint8_t));
+          (uint8_t *) malloc (file_len * sizeof (uint8_t));
         TEST_ASSERT_NOT_NULL (*(*data + *num_cases));
-
-        const char *pos = buf;
-        for (size_t count = 0; count < *(*len + *num_cases);
-             ++count, pos += 2) {
-            char tmp[3] = {pos[0], pos[1], 0};
-            *(*(*data + *num_cases) + count) = (uint8_t) strtol (tmp, NULL, 16);
-        }
+        size_t read_bytes = 0;
+        read_bytes = fread (*(*data + *num_cases), 1, file_len, f);
+        TEST_ASSERT_EQUAL (file_len, read_bytes);
         (*num_cases)++;
+
+        fclose (f);
     }
 
-
-    free (buf);
-    fclose (f);
+    closedir (dir);
 
     return 0;
 }
+#endif
