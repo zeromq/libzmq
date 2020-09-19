@@ -57,10 +57,12 @@ class stream_engine_base_t : public io_object_t, public i_engine
   public:
     stream_engine_base_t (fd_t fd_,
                           const options_t &options_,
-                          const endpoint_uri_pair_t &endpoint_uri_pair_);
+                          const endpoint_uri_pair_t &endpoint_uri_pair_,
+                          bool has_handshake_stage_);
     ~stream_engine_base_t () ZMQ_OVERRIDE;
 
     //  i_engine interface implementation.
+    bool has_handshake_stage () ZMQ_FINAL { return _has_handshake_stage; };
     void plug (zmq::io_thread_t *io_thread_,
                zmq::session_base_t *session_) ZMQ_FINAL;
     void terminate () ZMQ_FINAL;
@@ -96,10 +98,26 @@ class stream_engine_base_t : public io_object_t, public i_engine
     virtual bool handshake () { return true; };
     virtual void plug_internal (){};
 
-    virtual int process_command_message (msg_t *msg_) { return -1; };
-    virtual int produce_ping_message (msg_t *msg_) { return -1; };
-    virtual int process_heartbeat_message (msg_t *msg_) { return -1; };
-    virtual int produce_pong_message (msg_t *msg_) { return -1; };
+    virtual int process_command_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int produce_ping_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int process_heartbeat_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int produce_pong_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
 
     virtual int read (void *data, size_t size_);
     virtual int write (const void *data_, size_t size_);
@@ -189,8 +207,12 @@ class stream_engine_base_t : public io_object_t, public i_engine
     //  The session this engine is attached to.
     zmq::session_base_t *_session;
 
-    // Socket
+    //  Socket
     zmq::socket_base_t *_socket;
+
+    //  Indicate if engine has an handshake stage, if it does, engine must call session.engine_ready
+    //  when handshake is completed.
+    bool _has_handshake_stage;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (stream_engine_base_t)
 };

@@ -42,6 +42,10 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
 {
     const char *fixed_client_public =
       "{{k*81)yMWEF{/BxdMd[5RL^qRFxBgoL<8m.D^KD";
+    const char *fixed_client_secret =
+      "N?Gmik8R[2ACw{b7*[-$S6[4}aO#?DB?#=<OQPc7";
+    const char *fixed_server_public =
+      "3.9-xXwy{g*w72TP*3iB9IJJRxlBH<ufTAvPd2>C";
     const char *fixed_server_secret =
       "T}t5GLq%&Qm1)y3ywu-}pY3KEA//{^Ut!M1ut+B4";
     void *handler;
@@ -86,8 +90,27 @@ extern "C" int LLVMFuzzerTestOneInput (const uint8_t *data, size_t size)
         sent = send (client, (const char *) data, size, MSG_NOSIGNAL);
     msleep (250);
 
-    close (client);
+    //  Drain the queue, if any
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    while (-1 != zmq_msg_recv (&msg, server, ZMQ_DONTWAIT)) {
+        zmq_msg_close (&msg);
+        zmq_msg_init (&msg);
+    }
 
+    //  A well-behaved client should work while the malformed data from the other
+    //  is being received
+    curve_client_data_t curve_client_data = {
+      fixed_server_public, fixed_client_public, fixed_client_secret};
+    void *client_mon;
+    void *client_good = create_and_connect_client (
+      my_endpoint, socket_config_curve_client, &curve_client_data, &client_mon);
+
+    bounce (server, client_good);
+
+    close (client);
+    test_context_socket_close_zero_linger (client_good);
+    test_context_socket_close_zero_linger (client_mon);
     shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
     teardown_test_context ();
 
@@ -99,8 +122,9 @@ void test_bind_curve_fuzzer ()
 {
     uint8_t **data;
     size_t *len, num_cases = 0;
-    if (fuzzer_corpus_encode ("tests/fuzzer_corpora/test_bind_curve_fuzzer.txt",
-                              &data, &len, &num_cases)
+    if (fuzzer_corpus_encode (
+          "tests/libzmq-fuzz-corpora/test_bind_curve_fuzzer_seed_corpus", &data,
+          &len, &num_cases)
         != 0)
         exit (77);
 

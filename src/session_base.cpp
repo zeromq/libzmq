@@ -308,7 +308,8 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
     }
 
     if (unlikely (_engine == NULL)) {
-        _pipe->check_read ();
+        if (_pipe)
+            _pipe->check_read ();
         return;
     }
 
@@ -407,7 +408,18 @@ bool zmq::session_base_t::zap_enabled () const
 void zmq::session_base_t::process_attach (i_engine *engine_)
 {
     zmq_assert (engine_ != NULL);
+    zmq_assert (!_engine);
+    _engine = engine_;
 
+    if (!engine_->has_handshake_stage ())
+        engine_ready ();
+
+    //  Plug in the engine.
+    _engine->plug (_io_thread, this);
+}
+
+void zmq::session_base_t::engine_ready ()
+{
     //  Create the pipe if it does not exist yet.
     if (!_pipe && !is_terminating ()) {
         object_t *parents[2] = {this, _socket};
@@ -430,17 +442,12 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 
         //  The endpoints strings are not set on bind, set them here so that
         //  events can use them.
-        pipes[0]->set_endpoint_pair (engine_->get_endpoint ());
-        pipes[1]->set_endpoint_pair (engine_->get_endpoint ());
+        pipes[0]->set_endpoint_pair (_engine->get_endpoint ());
+        pipes[1]->set_endpoint_pair (_engine->get_endpoint ());
 
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (_socket, pipes[1]);
     }
-
-    //  Plug in the engine.
-    zmq_assert (!_engine);
-    _engine = engine_;
-    _engine->plug (_io_thread, this);
 }
 
 void zmq::session_base_t::engine_error (bool handshaked_,
@@ -475,7 +482,7 @@ void zmq::session_base_t::engine_error (bool handshaked_,
                 reconnect ();
                 break;
             }
-            /* FALLTHROUGH */
+
         case i_engine::protocol_error:
             if (_pending) {
                 if (_pipe)
@@ -581,7 +588,7 @@ void zmq::session_base_t::reconnect ()
     reset ();
 
     //  Reconnect.
-    if (options.reconnect_ivl != -1)
+    if (options.reconnect_ivl > 0)
         start_connecting (true);
     else {
         std::string *ep = new (std::string);

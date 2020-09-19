@@ -72,6 +72,8 @@ set(tests
     test_monitor
     test_socket_null
     test_reconnect_ivl
+    test_reconnect_options
+    test_tcp_accept_filter
     test_mock_pub_sub)
 
 if(NOT WIN32)
@@ -155,7 +157,6 @@ if(ENABLE_DRAFTS)
     test_router_notify
     test_xpub_manual_last_value
     test_peer
-    test_reconnect_options
     test_msg_init
     test_channel
     test_hello_msg

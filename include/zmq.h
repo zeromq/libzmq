@@ -41,7 +41,7 @@
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 4
 #define ZMQ_VERSION_MINOR 3
-#define ZMQ_VERSION_PATCH 3
+#define ZMQ_VERSION_PATCH 4
 
 #define ZMQ_MAKE_VERSION(major, minor, patch)                                  \
     ((major) *10000 + (minor) *100 + (patch))
@@ -684,6 +684,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
+#define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 0x2
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10

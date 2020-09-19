@@ -74,6 +74,7 @@
         '../../src/clock.cpp',
         '../../src/clock.hpp',
         '../../src/command.hpp',
+        '../../src/compat.hpp',
         '../../src/condition_variable.hpp',
         '../../src/config.hpp',
         '../../src/ctx.cpp',

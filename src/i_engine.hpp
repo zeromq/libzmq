@@ -50,6 +50,10 @@ struct i_engine
 
     virtual ~i_engine () ZMQ_DEFAULT;
 
+    //  Indicate if the engine has an handshake stage.
+    //  If engine has handshake stage, engine must call session.engine_ready when the handshake is complete.
+    virtual bool has_handshake_stage () = 0;
+
     //  Plug the engine to the session.
     virtual void plug (zmq::io_thread_t *io_thread_,
                        class session_base_t *session_) = 0;

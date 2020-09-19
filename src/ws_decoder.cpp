@@ -212,10 +212,13 @@ int zmq::ws_decoder_t::size_ready (unsigned char const *read_pos_)
     // data into a new message and complete it in the next receive.
 
     shared_message_memory_allocator &allocator = get_allocator ();
-    if (unlikely (!_zero_copy
+    if (unlikely (!_zero_copy || allocator.data () > read_pos_
+                  || static_cast<size_t> (read_pos_ - allocator.data ())
+                       > allocator.size ()
                   || _size > static_cast<size_t> (
                        allocator.data () + allocator.size () - read_pos_))) {
         // a new message has started, but the size would exceed the pre-allocated arena
+        // (or read_pos_ is in the initial handshake buffer)
         // this happens every time when a message does not fit completely into the buffer
         rc = _in_progress.init_size (static_cast<size_t> (_size));
     } else {

@@ -31,14 +31,57 @@ include(ZMQSupportMacros)
 
 find_package(PkgConfig)
 
+# Set lists to empty beforehand as to not accidentally take values from parent
+set(sources)
+set(cxx-sources)
+set(html-docs)
+set(target_outputs)
+
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
   message(STATUS "Instrumenting with Address Sanitizer")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope -fno-omit-frame-pointer")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address -fsanitize-address-use-after-scope")
+endif()
+
+# NOTE: Running libzmq under TSAN doesn't make much sense -- synchronization in libzmq is to some extent
+# handled by the code "knowing" what threads are allowed to do, rather than by enforcing those
+# restrictions, so TSAN generates a lot of (presumably) false positives from libzmq.
+# The settings below are intended to enable libzmq to be built with minimal support for TSAN
+# such that it can be used along with other code that is also built with TSAN.
+option(ENABLE_TSAN "Build with thread sanitizer" OFF)
+if(ENABLE_TSAN)
+  message(STATUS "Instrumenting with Thread Sanitizer")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+  set(TSAN_FLAGS "-fno-omit-frame-pointer -fsanitize=thread")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-memory-accesses=0")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-atomics=0")
+  set(TSAN_CCFLAGS "${TSAN_CCFLAGS} -mllvm -tsan-instrument-func-entry-exit=1")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS} -fPIE")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TSAN_FLAGS} ${TSAN_CCFLAGS} -fPIE")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${TSAN_FLAGS} -pie -Qunused-arguments")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${TSAN_FLAGS} -pie -Qunused-arguments")
+endif()
+
+option(ENABLE_UBSAN "Build with undefined behavior sanitizer" OFF)
+if(ENABLE_UBSAN)
+  message(STATUS "Instrumenting with Undefined Behavior Sanitizer")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fno-omit-frame-pointer")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=undefined")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-conversion")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=implicit-integer-truncation")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=integer")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=nullability")
+  set(UBSAN_FLAGS "${UBSAN_FLAGS} -fsanitize=vptr")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${UBSAN_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UBSAN_FLAGS}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${UBSAN_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${UBSAN_FLAGS}")
 endif()
 
 option(ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
@@ -100,6 +143,7 @@ set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
+option(WITH_NORM "Build with support for NORM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if(APPLE)
@@ -542,7 +586,7 @@ if(NOT MSVC)
   set(CMAKE_REQUIRED_LIBRARIES)
 
   check_cxx_symbol_exists(fork unistd.h HAVE_FORK)
-  check_cxx_symbol_exists(gethrtimei sys/time.h HAVE_GETHRTIME)
+  check_cxx_symbol_exists(gethrtime sys/time.h HAVE_GETHRTIME)
   check_cxx_symbol_exists(mkdtemp stdlib.h HAVE_MKDTEMP)
   check_cxx_symbol_exists(accept4 sys/socket.h HAVE_ACCEPT4)
   check_cxx_symbol_exists(strnlen string.h HAVE_STRNLEN)
@@ -964,6 +1008,7 @@ set(cxx-sources
     client.hpp
     clock.hpp
     command.hpp
+    compat.hpp
     condition_variable.hpp
     config.hpp
     ctx.hpp
@@ -1144,6 +1189,16 @@ if(WITH_OPENPGM)
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif()
 
+if(WITH_NORM)
+  find_package(norm)
+    if(norm_FOUND)
+      message(STATUS "Building with NORM")
+      set(ZMQ_HAVE_NORM 1)
+    else()
+      message(FATAL_ERROR "NORM not found")
+    endif()
+endif()
+
 if(WITH_VMCI)
   add_definitions(-DZMQ_HAVE_VMCI)
   include_directories(${VMCI_INCLUDE_DIRS})
@@ -1311,13 +1366,19 @@ else()
       add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig}
                                 ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     else()
-      add_library(libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
-                                ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        if (CMAKE_GENERATOR STREQUAL "Xcode")
+           add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs}
+                                     ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        else()
+           add_library(libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
+                                     ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        endif()
+     
     endif()
     # NOTE: the SOVERSION and VERSION MUST be the same as the one generated by libtool! It is NOT the same as the
     # version of the package.
     set_target_properties(
-      libzmq PROPERTIES COMPILE_DEFINITIONS "DLL_EXPORT" PUBLIC_HEADER "${public_headers}" VERSION "5.2.3"
+      libzmq PROPERTIES COMPILE_DEFINITIONS "DLL_EXPORT" PUBLIC_HEADER "${public_headers}" VERSION "5.2.4"
                         SOVERSION "5" OUTPUT_NAME "${ZMQ_OUTPUT_BASENAME}" PREFIX "lib")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(
@@ -1336,8 +1397,13 @@ else()
       add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig}
                                        ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     else()
-      add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
-                                       ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      if (CMAKE_GENERATOR STREQUAL "Xcode")
+        add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      else()
+        add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      endif()
     endif()
     if(CMAKE_SYSTEM_NAME MATCHES "QNX")
       target_link_libraries(libzmq-static m)
@@ -1406,6 +1472,10 @@ if(BUILD_SHARED)
   if(RT_LIBRARY)
     target_link_libraries(libzmq -lrt)
   endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq norm::norm)
+  endif()
 endif()
 
 if(BUILD_STATIC)
@@ -1450,6 +1520,10 @@ if(BUILD_STATIC)
 
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
     add_definitions(-DUNITY_EXCLUDE_MATH_H)
+  endif()
+
+  if(norm_FOUND)
+      target_link_libraries(libzmq-static norm::norm)
   endif()
 endif()
 
@@ -1735,7 +1809,10 @@ if(MSVC_VERSION EQUAL 1600)
 endif()
 
 # this cannot be moved, as it does not only contain function/macro definitions
-include(ClangFormat)
+option(ENABLE_CLANG "Include Clang" ON)
+if (ENABLE_CLANG)
+  include(ClangFormat)
+endif()
 
 # fixes https://github.com/zeromq/libzmq/issues/3776 The problem is, both libzmq-static libzmq try to use/generate
 # precompiled.pch at the same time Add a dependency, so they run in order and so they dont get in each others way TODO

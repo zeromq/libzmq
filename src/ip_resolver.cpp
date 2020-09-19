@@ -252,6 +252,10 @@ int zmq::ip_resolver_t::resolve (ip_addr_t *ip_addr_, const char *name_)
 
     if (pos != std::string::npos) {
         std::string if_str = addr.substr (pos + 1);
+        if (if_str.empty ()) {
+            errno = EINVAL;
+            return -1;
+        }
         addr = addr.substr (0, pos);
 
         if (isalpha (if_str.at (0))) {
@@ -728,6 +732,7 @@ unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
   && !defined ZMQ_HAVE_VXWORKS
     return if_nametoindex (ifname_);
 #else
+    LIBZMQ_UNUSED (ifname_);
     // The function 'if_nametoindex' is not supported on Windows XP.
     // If we are targeting XP using a vxxx_xp toolset then fail.
     // This is brutal as this code could be run on later windows clients
