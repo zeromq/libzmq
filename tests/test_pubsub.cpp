@@ -65,7 +65,7 @@ void test (const char *address)
 
 void test_norm ()
 {
-    test ("norm://127.0.0.1:*");
+    test ("norm://224.1.2.3:5556");
 }
 
 void test_tcp ()
