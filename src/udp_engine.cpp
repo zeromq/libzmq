@@ -373,8 +373,7 @@ void zmq::udp_engine_t::out_event ()
     if (rc == 0) {
         msg_t body_msg;
         rc = _session->pull_msg (&body_msg);
-        //  TODO rc is not checked here. We seem to assume rc == 0. An
-        //  assertion should be added.
+        errno_assert ( rc == 0 );
 
         const size_t group_size = group_msg.size ();
         const size_t body_size = body_msg.size ();
