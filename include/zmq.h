@@ -252,7 +252,7 @@ typedef struct zmq_msg_t
 {
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
     __declspec(align (8)) unsigned char _[64];
-#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_ARM_ARMV7VE))
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_ARM_ARMV7VE) || defined(_M_ARM))
     __declspec(align (4)) unsigned char _[64];
 #elif defined(__GNUC__) || defined(__INTEL_COMPILER)                           \
   || (defined(__SUNPRO_C) && __SUNPRO_C >= 0x590)                              \
