@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2019 Contributors as noted in the AUTHORS file
+    Copyright (c) 2020 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,43 +27,47 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_WSS_ENGINE_HPP_INCLUDED__
-#define __ZMQ_WSS_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_COMPAT_HPP_INCLUDED__
+#define __ZMQ_COMPAT_HPP_INCLUDED__
 
-#include <gnutls/gnutls.h>
-#include "ws_engine.hpp"
+#include "precompiled.hpp"
+#include <string.h>
 
-#define WSS_BUFFER_SIZE 8192
-
-namespace zmq
+#ifdef ZMQ_HAVE_WINDOWS
+#define strcasecmp _stricmp
+#define strtok_r strtok_s
+#else
+#ifdef ZMQ_HAVE_LIBBSD
+#include <bsd/string.h>
+#elif !defined(ZMQ_HAVE_STRLCPY)
+static inline size_t
+strlcpy (char *dest_, const char *src_, const size_t dest_size_)
 {
-class wss_engine_t : public ws_engine_t
-{
-  public:
-    wss_engine_t (fd_t fd_,
-                  const options_t &options_,
-                  const endpoint_uri_pair_t &endpoint_uri_pair_,
-                  ws_address_t &address_,
-                  bool client_,
-                  void *tls_server_cred_,
-                  const std::string &hostname_);
-    ~wss_engine_t ();
-
-    void out_event ();
-
-  protected:
-    bool handshake ();
-    void plug_internal ();
-    int read (void *data, size_t size_);
-    int write (const void *data_, size_t size_);
-
-  private:
-    bool do_handshake ();
-
-    bool _established;
-    gnutls_certificate_credentials_t _tls_client_cred;
-    gnutls_session_t _tls_session;
-};
+    size_t remain = dest_size_;
+    for (; remain && *src_; --remain, ++src_, ++dest_) {
+        *dest_ = *src_;
+    }
+    return dest_size_ - remain;
 }
+#endif
+template <size_t size>
+static inline int strcpy_s (char (&dest_)[size], const char *const src_)
+{
+    const size_t res = strlcpy (dest_, src_, size);
+    return res >= size ? ERANGE : 0;
+}
+#endif
+
+#ifndef HAVE_STRNLEN
+static inline size_t strnlen (const char *s, size_t len)
+{
+    for (size_t i = 0; i < len; i++) {
+        if (s[i] == '\0')
+            return i + 1;
+    }
+
+    return len;
+}
+#endif
 
 #endif

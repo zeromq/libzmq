@@ -98,10 +98,26 @@ class stream_engine_base_t : public io_object_t, public i_engine
     virtual bool handshake () { return true; };
     virtual void plug_internal (){};
 
-    virtual int process_command_message (msg_t *msg_) { return -1; };
-    virtual int produce_ping_message (msg_t *msg_) { return -1; };
-    virtual int process_heartbeat_message (msg_t *msg_) { return -1; };
-    virtual int produce_pong_message (msg_t *msg_) { return -1; };
+    virtual int process_command_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int produce_ping_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int process_heartbeat_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
+    virtual int produce_pong_message (msg_t *msg_)
+    {
+        LIBZMQ_UNUSED (msg_);
+        return -1;
+    };
 
     virtual int read (void *data, size_t size_);
     virtual int write (const void *data_, size_t size_);

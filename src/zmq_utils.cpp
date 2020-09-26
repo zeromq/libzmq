@@ -166,6 +166,11 @@ uint8_t *zmq_z85_decode (uint8_t *dest_, const char *string_)
     unsigned int byte_nbr = 0;
     unsigned int char_nbr = 0;
     uint32_t value = 0;
+    size_t src_len = strlen (string_);
+
+    if (src_len < 5 || src_len % 5 != 0)
+        goto error_inval;
+
     while (string_[char_nbr]) {
         //  Accumulate value in base 85
         if (UINT32_MAX / 85 < value) {
