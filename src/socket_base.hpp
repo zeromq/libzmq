@@ -164,6 +164,8 @@ class socket_base_t : public own_t,
     //  after gathering the data asynchronously. Requires event monitoring to
     //  be enabled.
     int query_pipes_stats ();
+    
+    bool is_disconnected () const;
 
   protected:
     socket_base_t (zmq::ctx_t *parent_,
