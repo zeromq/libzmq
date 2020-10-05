@@ -192,7 +192,7 @@ void test_null_creds ()
     expect_bounce_fail (server, client);
     test_context_socket_close_zero_linger (client);
 
-    int error;
+    int error = 0;
     int event = get_monitor_event (server_mon, &error, NULL);
     TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, event);
     TEST_ASSERT_EQUAL_INT (ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH, error);
