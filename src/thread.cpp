@@ -67,15 +67,15 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_, const char *name_)
     // set default stack size to 4MB to avoid std::map stack overflow on x64
     unsigned int stack = 0;
 #if defined _WIN64
-    stack = 0x400000; 
+    stack = 0x400000;
 #endif
 
 #if defined _WIN32_WCE
-    _descriptor =
-      (HANDLE) CreateThread (NULL, stack, &::thread_routine, this, 0, &_thread_id);
+    _descriptor = (HANDLE) CreateThread (NULL, stack, &::thread_routine, this,
+                                         0, &_thread_id);
 #else
-    _descriptor = (HANDLE) _beginthreadex (NULL, stack, &::thread_routine, this, 0,
-                                           &_thread_id);
+    _descriptor = (HANDLE) _beginthreadex (NULL, stack, &::thread_routine, this,
+                                           0, &_thread_id);
 #endif
     win_assert (_descriptor != NULL);
     _started = true;
