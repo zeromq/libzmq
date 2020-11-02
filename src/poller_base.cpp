@@ -136,7 +136,7 @@ void zmq::worker_poller_base_t::start (const char *name_)
 
 void zmq::worker_poller_base_t::check_thread () const
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
     zmq_assert (!_worker.get_started () || _worker.is_current_thread ());
 #endif
 }
