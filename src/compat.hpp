@@ -37,9 +37,10 @@
 #define strcasecmp _stricmp
 #define strtok_r strtok_s
 #else
+#ifndef ZMQ_HAVE_STRLCPY
 #ifdef ZMQ_HAVE_LIBBSD
 #include <bsd/string.h>
-#elif !defined(ZMQ_HAVE_STRLCPY)
+#else
 static inline size_t
 strlcpy (char *dest_, const char *src_, const size_t dest_size_)
 {
@@ -49,6 +50,7 @@ strlcpy (char *dest_, const char *src_, const size_t dest_size_)
     }
     return dest_size_ - remain;
 }
+#endif
 #endif
 template <size_t size>
 static inline int strcpy_s (char (&dest_)[size], const char *const src_)

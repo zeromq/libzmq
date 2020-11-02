@@ -250,9 +250,7 @@ if(NOT MSVC)
       set(ZMQ_HAVE_LIBBSD 1)
     endif()
   endif()
-  if(NOT WITH_LIBBSD OR NOT LIBBSD_FOUND)
-    check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
-  endif()
+  check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
 endif()
 
 # Select curve encryption library, defaults to tweetnacl To use libsodium instead, use --with-libsodium(must be
