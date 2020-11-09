@@ -61,9 +61,9 @@ EXAMPLE
 ----
 //  Create frontend, backend and control sockets
 void *frontend = zmq_socket (context, ZMQ_ROUTER);
-assert (backend);
-void *backend = zmq_socket (context, ZMQ_DEALER);
 assert (frontend);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+assert (backend);
 void *control = zmq_socket (context, ZMQ_SUB);
 assert (control);
 
