@@ -50,6 +50,8 @@ ERRORS
 ------
 *EINVAL*::
 The requested option _option_name_ is unknown.
+*EFAULT*::
+The provided 'context' is invalid.
 
 
 EXAMPLE
