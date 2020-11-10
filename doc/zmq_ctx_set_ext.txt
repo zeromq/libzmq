@@ -60,7 +60,7 @@ The provided 'context' is invalid.
 
 EXAMPLE
 -------
-.Setting a prefix on internal ZMQ threda names:
+.Setting a prefix on internal ZMQ thread names:
 ----
 void *context = zmq_ctx_new ();
 const char prefix[] = "MyApp";
