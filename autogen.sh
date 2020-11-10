@@ -43,7 +43,8 @@ if [ $? -ne 0 ]; then
 fi
 
 autoreconf --install --force --verbose -I config
-if [ $? -ne 0 ]; then
-    echo "autogen.sh: error: autoreconf exited with status $?" 1>&2
+res=$?
+if [ "$res" -ne 0 ]; then
+    echo "autogen.sh: error: autoreconf exited with status $res" 1>&2
     exit 1
 fi
