@@ -53,9 +53,6 @@ void test_push_round_robin_out (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         pulls[peer] = test_context_socket (ZMQ_PULL);
 
-        int timeout = 250;
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (pulls[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (pulls[peer], connect_address));
     }
 
