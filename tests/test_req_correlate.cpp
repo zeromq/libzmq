@@ -41,10 +41,6 @@ void test_req_correlate ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int)));
 
-    int rcvtimeo = 100;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (req, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int)));
-
     char my_endpoint[MAX_SOCKET_STRING];
     bind_loopback_ipv4 (router, my_endpoint, sizeof my_endpoint);
 
