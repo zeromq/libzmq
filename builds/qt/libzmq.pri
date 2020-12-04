@@ -1,5 +1,9 @@
 DEFINES += ZMQ_HAVE_STRLCPY
 
+win32 {
+    DEFINES += ZMQ_STATIC
+}
+
 SOURCES += \
     $$PWD/../../src/address.cpp \
     $$PWD/../../src/channel.cpp \
