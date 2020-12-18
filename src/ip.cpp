@@ -559,6 +559,10 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 #ifdef ZMQ_HAVE_IPC
     ipc_address_t address;
     std::string dirname, filename;
+    sockaddr_un lcladdr;
+    socklen_t lcladdr_len = sizeof lcladdr;
+    int rc = 0;
+    int saved_errno = 0;
 
     //  Create a listening socket.
     const SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
@@ -570,7 +574,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     create_ipc_wildcard_address (dirname, filename);
 
     //  Initialise the address structure.
-    int rc = address.resolve (filename.c_str ());
+    rc = address.resolve (filename.c_str ());
     if (rc != 0) {
         goto error_closelistener;
     }
@@ -589,9 +593,6 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         errno = wsa_error_to_errno (WSAGetLastError ());
         goto error_closelistener;
     }
-
-    sockaddr_un lcladdr;
-    socklen_t lcladdr_len = sizeof lcladdr;
 
     rc = getsockname (listener, reinterpret_cast<struct sockaddr *> (&lcladdr),
                       &lcladdr_len);
@@ -621,7 +622,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     return 0;
 
 error_closeclient:
-    int saved_errno = errno;
+    saved_errno = errno;
     rc = closesocket (*w_);
     wsa_assert (rc == 0);
     errno = saved_errno;
