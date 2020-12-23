@@ -788,6 +788,25 @@ AC_COMPILE_IFELSE(
 		AC_MSG_RESULT([no])
 ])
 
+AC_MSG_CHECKING([whether if_nametoindex is available])
+AC_COMPILE_IFELSE(
+    [AC_LANG_PROGRAM([[
+        #ifdef _WIN32
+        #include <iphlpapi.h>
+        #else
+        #include <sys/types.h>
+        #include <sys/socket.h>
+        #include <net/if.h>
+        #endif]], [[
+        if_nametoindex("");
+    ]])],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(HAVE_IF_NAMETOINDEX, [1],
+        [if_nametoindex is available])
+    ],[
+        AC_MSG_RESULT([no])
+])
+
 AC_ARG_ENABLE([libbsd],
     [AS_HELP_STRING([--enable-libbsd],
         [enable libbsd [default=auto]])],
