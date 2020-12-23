@@ -546,11 +546,13 @@ if(ZMQ_HAVE_WINDOWS)
 
   set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
   check_cxx_symbol_exists(GetAdaptersAddresses "winsock2.h;iphlpapi.h" HAVE_IPHLAPI)
+  check_cxx_symbol_exists(if_nametoindex "iphlpapi.h" HAVE_IF_NAMETOINDEX)
 
   set(CMAKE_REQUIRED_LIBRARIES "")
   # TODO: This not the symbol we're looking for. What is the symbol?
   check_library_exists(ws2 fopen "" HAVE_WS2)
 else()
+  check_cxx_symbol_exists(if_nametoindex net/if.h HAVE_IF_NAMETOINDEX)
   check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
   check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 endif()
