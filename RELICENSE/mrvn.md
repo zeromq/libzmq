@@ -12,4 +12,4 @@ including all past, present and future contributions of the author
 listed above.
 
 Goswin von Brederlow
-202/12/20
+2020/12/20
