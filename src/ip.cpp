@@ -53,6 +53,9 @@
 #endif
 
 #include <direct.h>
+
+#define rmdir _rmdir
+#define unlink _unlink
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
@@ -619,6 +622,16 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     rc = closesocket (listener);
     wsa_assert (rc == 0);
 
+    //  Cleanup temporary socket file descriptor
+    if (!filename.empty ()) {
+        rc = ::unlink (filename.c_str ());
+        if ((rc == 0) && !dirname.empty ()) {
+            rc = ::rmdir (dirname.c_str ());
+            dirname.clear ();
+        }
+        filename.clear ();
+    }
+
     return 0;
 
 error_closeclient:
@@ -631,6 +644,17 @@ error_closelistener:
     saved_errno = errno;
     rc = closesocket (listener);
     wsa_assert (rc == 0);
+
+    //  Cleanup temporary socket file descriptor
+    if (!filename.empty ()) {
+        rc = ::unlink (filename.c_str ());
+        if ((rc == 0) && !dirname.empty ()) {
+            rc = ::rmdir (dirname.c_str ());
+            dirname.clear ();
+        }
+        filename.clear ();
+    }
+
     errno = saved_errno;
 
     return -1;
