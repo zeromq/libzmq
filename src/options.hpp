@@ -100,6 +100,9 @@ struct options_t
     // Type of service (containing DSCP and ECN socket options)
     int tos;
 
+    // Protocol-defined priority
+    int priority;
+
     //  Socket type.
     int8_t type;
 

@@ -206,6 +206,7 @@ zmq::options_t::options_t () :
     sndbuf (-1),
     rcvbuf (-1),
     tos (0),
+    priority (0),
     type (-1),
     linger (-1),
     connect_timeout (0),
@@ -844,6 +845,13 @@ int zmq::options_t::setsockopt (int option_,
 
             return 0;
 
+        case ZMQ_PRIORITY:
+            if (is_int && value >= 0) {
+                priority = value;
+                return 0;
+            }
+            break;
+
 #endif
 
         default:
@@ -1267,6 +1275,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_OUT_BATCH_SIZE:
             if (is_int) {
                 *value = out_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_PRIORITY:
+            if (is_int) {
+                *value = priority;
                 return 0;
             }
             break;
