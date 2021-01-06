@@ -959,6 +959,12 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([
         [Whether TCP_KEEPALIVE is supported.])
     ])
 
+LIBZMQ_CHECK_SO_PRIORITY([
+    AC_DEFINE([ZMQ_HAVE_SO_PRIORITY],
+        [1],
+        [Whether SO_PRIORITY is supported.])
+    ])
+
 LIBZMQ_CHECK_GETRANDOM([
     AC_DEFINE([ZMQ_HAVE_GETRANDOM],
         [1],

@@ -40,6 +40,7 @@
 
 #cmakedefine ZMQ_HAVE_SOCK_CLOEXEC
 #cmakedefine ZMQ_HAVE_SO_KEEPALIVE
+#cmakedefine ZMQ_HAVE_SO_PRIORITY
 #cmakedefine ZMQ_HAVE_TCP_KEEPCNT
 #cmakedefine ZMQ_HAVE_TCP_KEEPIDLE
 #cmakedefine ZMQ_HAVE_TCP_KEEPINTVL

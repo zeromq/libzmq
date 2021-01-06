@@ -137,6 +137,40 @@ void test_setsockopt_bindtodevice ()
     test_context_socket_close (socket);
 }
 
+void test_setsockopt_priority ()
+{
+#ifdef ZMQ_BUILD_DRAFT_API
+#ifdef ZMQ_HAVE_SO_PRIORITY
+    void *socket = test_context_socket (ZMQ_PUSH);
+
+    int val = 5;
+    size_t placeholder = sizeof (val);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_PRIORITY, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (0, val);
+
+    val = 3;
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_PRIORITY, &val, sizeof (val)));
+    TEST_ASSERT_EQUAL_INT (3, val);
+
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (socket, ZMQ_PRIORITY, &val, &placeholder));
+    TEST_ASSERT_EQUAL_INT (3, val);
+
+    test_context_socket_close (socket);
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without ZMQ_PRIORITY support, "
+                         "ignoring setsockopt_priority test");
+#endif
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring "
+                         "setsockopt_priority test");
+#endif
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -146,5 +180,6 @@ int main ()
     RUN_TEST (test_setsockopt_tcp_send_buffer);
     RUN_TEST (test_setsockopt_use_fd);
     RUN_TEST (test_setsockopt_bindtodevice);
+    RUN_TEST (test_setsockopt_priority);
     return UNITY_END ();
 }

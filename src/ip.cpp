@@ -230,6 +230,16 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos_)
 #endif
 }
 
+void zmq::set_socket_priority (fd_t s_, int priority_)
+{
+#ifdef ZMQ_HAVE_SO_PRIORITY
+    int rc =
+      setsockopt (s_, SOL_SOCKET, SO_PRIORITY,
+                  reinterpret_cast<char *> (&priority_), sizeof (priority_));
+    errno_assert (rc == 0);
+#endif
+}
+
 int zmq::set_nosigpipe (fd_t s_)
 {
 #ifdef SO_NOSIGPIPE
