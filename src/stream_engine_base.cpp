@@ -91,7 +91,7 @@ static std::string get_peer_address (zmq::fd_t s_)
             if (cred.cr_ngroups > 0)
                 buf << cred.cr_groups[0];
             buf << ":";
-            _peer_address += buf.str ();
+            peer_address += buf.str ();
         }
     }
 #endif
