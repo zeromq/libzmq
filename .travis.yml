@@ -158,6 +158,8 @@ matrix:
           - libnorm-dev
           - libpgm-dev
           - libgnutls28-dev
+  allow_failures:
+    - arch: arm64
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
