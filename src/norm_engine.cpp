@@ -5,9 +5,31 @@
 
 #if defined ZMQ_HAVE_NORM
 
+#if defined (ZMQ_HAVE_WINDOWS) && defined(ZMQ_IOTHREAD_POLLER_USE_EPOLL)
+    #define ZMQ_USE_NORM_SOCKET_WRAPPER
+    #include <windows.h>
+    #include <WinSock2.h>
+    #include <afunix.h>
+    #include <WinUser.h>
+#endif
+
 #include "norm_engine.hpp"
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
+
+
+
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+
+struct norm_wrapper_sockets_t{
+    NormDescriptor norm_descriptor;
+    SOCKET wrapper_socket;
+};
+
+    DWORD WINAPI norm_handle_to_socket( LPVOID lpParam );
+    SOCKET norm_create_write_socket();
+    SOCKET norm_create_read_socket();
+#endif
 
 zmq::norm_engine_t::norm_engine_t (io_thread_t *parent_,
                                    const options_t &options_) :
@@ -219,6 +241,9 @@ void zmq::norm_engine_t::shutdown ()
 void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
                                session_base_t *session_)
 {
+    norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
+    sockets->norm_descriptor = NormGetDescriptor (norm_instance);
+    sockets->wrapper_socket = norm_create_write_socket();
     // TBD - we may assign the NORM engine to an io_thread in the future???
     zmq_session = session_;
     if (is_sender)
@@ -226,13 +251,22 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     if (is_receiver)
         zmq_input_ready = true;
 
-    fd_t normDescriptor = NormGetDescriptor (norm_instance);
+    fd_t normDescriptor = norm_create_read_socket();
     norm_descriptor_handle = add_fd (normDescriptor);
     // Set POLLIN for notification of pending NormEvents
     set_pollin (norm_descriptor_handle);
 
     if (is_sender)
         send_data ();
+
+    DWORD threadId;
+    HANDLE thread = CreateThread( 
+            NULL,                   // default security attributes
+            0,                      // use default stack size  
+            norm_handle_to_socket,       // thread function name
+            sockets,          // argument to thread function 
+            0,                      // use default creation flags 
+            &threadId);   // returns the thread identifier ;
 
 } // end zmq::norm_engine_t::init()
 
@@ -717,5 +751,51 @@ const zmq::endpoint_uri_pair_t &zmq::norm_engine_t::get_endpoint () const
 {
     return _empty_endpoint;
 }
+
+
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+
+DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
+{
+    norm_wrapper_sockets_t* wrapper_sockets = (norm_wrapper_sockets_t*) lpParam;
+    char message = 0;
+
+    // wait for norm event
+    MsgWaitForMultipleObjectsEx(1, &(wrapper_sockets->norm_descriptor), INFINITE, QS_ALLINPUT, 0);
+
+    // post event to socket
+
+    send(wrapper_sockets->wrapper_socket,&message, sizeof(message), 0);
+
+    // wait for event to be handled
+
+    return 0;
+}
+
+SOCKET norm_create_read_socket()
+{
+    auto sock_fd = socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
+    const char* address = "normwrapper";
+    sockaddr_un servaddr;
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sun_family = AF_UNIX;
+    strncpy(&servaddr.sun_path[1], address, strlen(address));
+    bind(sock_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    return sock_fd;
+}
+
+SOCKET norm_create_write_socket()
+{
+    auto sock_fd = socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
+    const char* address = "normwrapper";
+    sockaddr_un servaddr;
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sun_family = AF_UNIX;
+    strncpy(&servaddr.sun_path[1], address, strlen(address));
+    connect(sock_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    return sock_fd;
+}
+
+#endif
 
 #endif // ZMQ_HAVE_NORM
