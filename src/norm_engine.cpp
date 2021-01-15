@@ -367,6 +367,12 @@ void zmq::norm_engine_t::in_event ()
         zmq_assert (false);
         return;
     }
+    
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+    char buf;
+    int rc = recv(wrapper_read_fd, &buf, sizeof(buf), 0);
+    errno_assert(rc == 1);
+#endif 
 
     switch (event.type) {
         case NORM_TX_QUEUE_VACANCY:
