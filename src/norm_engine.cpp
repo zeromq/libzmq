@@ -5,13 +5,12 @@
 
 #if defined ZMQ_HAVE_NORM
 
-#if defined (ZMQ_HAVE_WINDOWS) && defined(ZMQ_IOTHREAD_POLLER_USE_EPOLL)
-    #define ZMQ_USE_NORM_SOCKET_WRAPPER
+#include "norm_engine.hpp"
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     #include "ip.hpp"
     #include <iostream>
 #endif
 
-#include "norm_engine.hpp"
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
@@ -237,9 +236,8 @@ void zmq::norm_engine_t::shutdown ()
 void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
                                session_base_t *session_)
 {
-    fd_t read_fd;
     fd_t write_fd;
-    int rc = make_fdpair(&read_fd, &write_fd);
+    int rc = make_fdpair(&wrapper_read_fd, &write_fd);
     norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
     sockets->norm_descriptor = NormGetDescriptor (norm_instance);
     sockets->wrapper_socket = write_fd;
@@ -251,7 +249,7 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     if (is_receiver)
         zmq_input_ready = true;
 
-    norm_descriptor_handle = add_fd (read_fd);
+    norm_descriptor_handle = add_fd (wrapper_read_fd);
     // Set POLLIN for notification of pending NormEvents
     set_pollin (norm_descriptor_handle);
 
@@ -775,7 +773,7 @@ DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
         
         std::cout << "Sending wrapper event" << std::endl;
 
-        //GetQueueStatus(QS_ALLINPUT);
+        GetQueueStatus(QS_ALLINPUT);
     }
     // wait for event to be handled
 
