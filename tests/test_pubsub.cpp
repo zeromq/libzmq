@@ -115,6 +115,8 @@ int main ()
     RUN_TEST (test_tcp);
     RUN_TEST (test_inproc);
     RUN_TEST (test_inproc_late_bind);
+#if defined ZMQ_HAVE_NORM
     RUN_TEST (test_norm);
+#endif
     return UNITY_END ();
 }

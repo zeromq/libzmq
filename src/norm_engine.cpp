@@ -277,7 +277,10 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
 void zmq::norm_engine_t::unplug ()
 {
     rm_fd (norm_descriptor_handle);
-
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+    int rc = closesocket (wrapper_read_fd);
+    errno_assert (rc != -1);
+#endif
     zmq_session = NULL;
 } // end zmq::norm_engine_t::unplug()
 
@@ -775,9 +778,10 @@ DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
         WaitForSingleObjectEx(wrapper_sockets->norm_descriptor, INFINITE, true);
         
         if (!NormGetNextEvent (wrapper_sockets->norm_instance_handle, &message)) {
-            // NORM has died before we unplugged?!
-            zmq_assert (false);
-            return -1;
+            // Probably got closed event
+            int rc = closesocket(wrapper_sockets->wrapper_socket);
+            errno_assert (rc != -1);
+            return 0;
         }
 
         int rc = send(wrapper_sockets->wrapper_socket,reinterpret_cast<char*>(&message), sizeof(message), 0);

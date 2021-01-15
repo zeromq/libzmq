@@ -4,7 +4,6 @@
 
 #if defined ZMQ_HAVE_NORM
 
-
 #if defined (ZMQ_HAVE_WINDOWS) && defined(ZMQ_IOTHREAD_POLLER_USE_EPOLL)
     #define ZMQ_USE_NORM_SOCKET_WRAPPER
 #endif
