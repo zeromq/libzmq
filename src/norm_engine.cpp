@@ -7,10 +7,8 @@
 
 #if defined (ZMQ_HAVE_WINDOWS) && defined(ZMQ_IOTHREAD_POLLER_USE_EPOLL)
     #define ZMQ_USE_NORM_SOCKET_WRAPPER
-    #include <windows.h>
-    #include <WinSock2.h>
-    #include <afunix.h>
-    #include <WinUser.h>
+    #include "ip.hpp"
+    #include <iostream>
 #endif
 
 #include "norm_engine.hpp"
@@ -27,8 +25,6 @@ struct norm_wrapper_sockets_t{
 };
 
     DWORD WINAPI norm_handle_to_socket( LPVOID lpParam );
-    SOCKET norm_create_write_socket();
-    SOCKET norm_create_read_socket();
 #endif
 
 zmq::norm_engine_t::norm_engine_t (io_thread_t *parent_,
@@ -241,9 +237,13 @@ void zmq::norm_engine_t::shutdown ()
 void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
                                session_base_t *session_)
 {
+    fd_t read_fd;
+    fd_t write_fd;
+    int rc = make_fdpair(&read_fd, &write_fd);
     norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
     sockets->norm_descriptor = NormGetDescriptor (norm_instance);
-    sockets->wrapper_socket = norm_create_write_socket();
+    sockets->wrapper_socket = write_fd;
+
     // TBD - we may assign the NORM engine to an io_thread in the future???
     zmq_session = session_;
     if (is_sender)
@@ -251,8 +251,7 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     if (is_receiver)
         zmq_input_ready = true;
 
-    fd_t normDescriptor = norm_create_read_socket();
-    norm_descriptor_handle = add_fd (normDescriptor);
+    norm_descriptor_handle = add_fd (read_fd);
     // Set POLLIN for notification of pending NormEvents
     set_pollin (norm_descriptor_handle);
 
@@ -361,6 +360,8 @@ void zmq::norm_engine_t::send_data ()
 
 void zmq::norm_engine_t::in_event ()
 {
+    std::cout << "Got event" << std::endl;
+
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
     if (!NormGetNextEvent (norm_instance, &event)) {
@@ -760,40 +761,25 @@ DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
     norm_wrapper_sockets_t* wrapper_sockets = (norm_wrapper_sockets_t*) lpParam;
     char message = 0;
 
-    // wait for norm event
-    MsgWaitForMultipleObjectsEx(1, &(wrapper_sockets->norm_descriptor), INFINITE, QS_ALLINPUT, 0);
+    for(;;)
+    {
+        // wait for norm event
+        MsgWaitForMultipleObjectsEx(1, &(wrapper_sockets->norm_descriptor), INFINITE, QS_ALLINPUT, 0);
 
-    // post event to socket
+        // post event to socket
 
-    send(wrapper_sockets->wrapper_socket,&message, sizeof(message), 0);
+        int rc = send(wrapper_sockets->wrapper_socket,&message, sizeof(message), 0);
+        errno_assert (rc != -1);
 
+        Sleep(1);
+        
+        std::cout << "Sending wrapper event" << std::endl;
+
+        //GetQueueStatus(QS_ALLINPUT);
+    }
     // wait for event to be handled
 
     return 0;
-}
-
-SOCKET norm_create_read_socket()
-{
-    auto sock_fd = socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
-    const char* address = "normwrapper";
-    sockaddr_un servaddr;
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sun_family = AF_UNIX;
-    strncpy(&servaddr.sun_path[1], address, strlen(address));
-    bind(sock_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    return sock_fd;
-}
-
-SOCKET norm_create_write_socket()
-{
-    auto sock_fd = socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
-    const char* address = "normwrapper";
-    sockaddr_un servaddr;
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sun_family = AF_UNIX;
-    strncpy(&servaddr.sun_path[1], address, strlen(address));
-    connect(sock_fd, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    return sock_fd;
 }
 
 #endif
