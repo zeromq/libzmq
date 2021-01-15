@@ -8,7 +8,6 @@
 #include "norm_engine.hpp"
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     #include "ip.hpp"
-    #include <iostream>
 #endif
 
 #include "session_base.hpp"
@@ -21,6 +20,7 @@
 struct norm_wrapper_sockets_t{
     NormDescriptor norm_descriptor;
     SOCKET wrapper_socket;
+    NormInstanceHandle norm_instance_handle;
 };
 
     DWORD WINAPI norm_handle_to_socket( LPVOID lpParam );
@@ -242,6 +242,7 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
     sockets->norm_descriptor = NormGetDescriptor (norm_instance);
     sockets->wrapper_socket = write_fd;
+    sockets->norm_instance_handle = norm_instance;
     norm_descriptor_handle = add_fd (wrapper_read_fd);
 #else
     fd_t normDescriptor = NormGetDescriptor (norm_instance);
@@ -366,16 +367,15 @@ void zmq::norm_engine_t::in_event ()
 {
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+    int rc = recv(wrapper_read_fd, reinterpret_cast<char*>(&event), sizeof(event), 0);
+    errno_assert(rc == sizeof(event));
+#else
     if (!NormGetNextEvent (norm_instance, &event)) {
         // NORM has died before we unplugged?!
         zmq_assert (false);
         return;
     }
-    
-#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    char buf;
-    int rc = recv(wrapper_read_fd, &buf, sizeof(buf), 0);
-    errno_assert(rc == 1);
 #endif 
 
     switch (event.type) {
@@ -767,23 +767,21 @@ const zmq::endpoint_uri_pair_t &zmq::norm_engine_t::get_endpoint () const
 DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
 {
     norm_wrapper_sockets_t* wrapper_sockets = (norm_wrapper_sockets_t*) lpParam;
-    char message = 0;
+    NormEvent message;
 
     for(;;)
     {
         // wait for norm event
-        MsgWaitForMultipleObjectsEx(1, &(wrapper_sockets->norm_descriptor), INFINITE, QS_ALLINPUT, 0);
-
-        // post event to socket
-
-        int rc = send(wrapper_sockets->wrapper_socket,&message, sizeof(message), 0);
-        errno_assert (rc != -1);
-
-        Sleep(1);
+        WaitForSingleObjectEx(wrapper_sockets->norm_descriptor, INFINITE, true);
         
-        std::cout << "Sending wrapper event" << std::endl;
+        if (!NormGetNextEvent (wrapper_sockets->norm_instance_handle, &message)) {
+            // NORM has died before we unplugged?!
+            zmq_assert (false);
+            return -1;
+        }
 
-        GetQueueStatus(QS_ALLINPUT);
+        int rc = send(wrapper_sockets->wrapper_socket,reinterpret_cast<char*>(&message), sizeof(message), 0);
+        errno_assert (rc != -1);
     }
     // wait for event to be handled
 
