@@ -236,12 +236,19 @@ void zmq::norm_engine_t::shutdown ()
 void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
                                session_base_t *session_)
 {
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     fd_t write_fd;
     int rc = make_fdpair(&wrapper_read_fd, &write_fd);
     norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
     sockets->norm_descriptor = NormGetDescriptor (norm_instance);
     sockets->wrapper_socket = write_fd;
-
+    norm_descriptor_handle = add_fd (wrapper_read_fd);
+#else
+    fd_t normDescriptor = NormGetDescriptor (norm_instance);
+    norm_descriptor_handle = add_fd (normDescriptor);
+#endif
+    // Set POLLIN for notification of pending NormEvents
+    set_pollin (norm_descriptor_handle);
     // TBD - we may assign the NORM engine to an io_thread in the future???
     zmq_session = session_;
     if (is_sender)
@@ -249,13 +256,11 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
     if (is_receiver)
         zmq_input_ready = true;
 
-    norm_descriptor_handle = add_fd (wrapper_read_fd);
-    // Set POLLIN for notification of pending NormEvents
-    set_pollin (norm_descriptor_handle);
 
     if (is_sender)
         send_data ();
 
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     DWORD threadId;
     HANDLE thread = CreateThread( 
             NULL,                   // default security attributes
@@ -264,6 +269,7 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
             sockets,          // argument to thread function 
             0,                      // use default creation flags 
             &threadId);   // returns the thread identifier ;
+#endif
 
 } // end zmq::norm_engine_t::init()
 
@@ -358,8 +364,6 @@ void zmq::norm_engine_t::send_data ()
 
 void zmq::norm_engine_t::in_event ()
 {
-    std::cout << "Got event" << std::endl;
-
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
     if (!NormGetNextEvent (norm_instance, &event)) {
