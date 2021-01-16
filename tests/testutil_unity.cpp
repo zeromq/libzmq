@@ -298,7 +298,7 @@ void bind_loopback_tipc (void *socket_, char *my_endpoint_, size_t len_)
     test_bind (socket_, "tipc://<*>", my_endpoint_, len_);
 }
 
-#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_GNU)
+#if defined(ZMQ_HAVE_IPC)
 void make_random_ipc_endpoint (char *out_endpoint_)
 {
 #ifdef ZMQ_HAVE_WINDOWS

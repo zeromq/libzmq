@@ -67,6 +67,10 @@
 #endif
 #endif
 
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
 const char *SEQ_END = (const char *) 1;
 
 const char bounce_content[] = "12345678ABCDEFGH12345678abcdefgh";
