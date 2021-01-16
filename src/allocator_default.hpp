@@ -55,6 +55,11 @@ class allocator_default_t
         return static_cast<allocator_default_t *> (allocator_)->check_tag ();
     }
 
+    static void destroy_fn(void *allocator_)
+    {
+        free( static_cast<allocator_default_t *> (allocator_) );
+    }
+
     // allocate() typically gets called by the consumer thread: the user app thread(s)
     void *allocate (size_t len_);
 

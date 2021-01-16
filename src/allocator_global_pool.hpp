@@ -65,6 +65,11 @@ class allocator_global_pool_t
           ->check_tag ();
     }
 
+    static void destroy_fn(void *allocator_)
+    {
+        free( static_cast<allocator_global_pool_t *> (allocator_) );
+    }
+
     allocator_global_pool_t (size_t initialMaximumBlockSize = 8192);
     ~allocator_global_pool_t ();
 
@@ -80,6 +85,7 @@ class allocator_global_pool_t
     size_t size () const;
 
     bool check_tag () const;
+
 
   private:
     uint32_t _tag;

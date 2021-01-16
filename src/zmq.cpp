@@ -229,6 +229,7 @@ void *zmq_msg_allocator_new (int type_)
             allocator->deallocate_fn = &allocator_default->deallocate_fn;
             allocator->check_tag_fn = &allocator_default->check_tag_fn;
             allocator->allocator = allocator_default;
+            allocator->destroy_fn = &allocator_default->destroy_fn;
             break;
         case ZMQ_MSG_ALLOCATOR_GLOBAL_POOL:
             allocator_global = new (std::nothrow) zmq::allocator_global_pool_t;
@@ -236,6 +237,7 @@ void *zmq_msg_allocator_new (int type_)
             allocator->deallocate_fn = &allocator_global->deallocate_fn;
             allocator->check_tag_fn = &allocator_global->check_tag_fn;
             allocator->allocator = allocator_global;
+            allocator->destroy_fn = &allocator_global->destroy_fn;
         default:
             break;
     }
