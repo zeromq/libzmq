@@ -7,23 +7,23 @@
 
 #include "norm_engine.hpp"
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    #include "ip.hpp"
+#include "ip.hpp"
 #endif
 
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
 
-
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
 
-struct norm_wrapper_sockets_t{
+struct norm_wrapper_thread_args_t
+{
     NormDescriptor norm_descriptor;
-    SOCKET wrapper_socket;
+    SOCKET wrapper_write_fd;
     NormInstanceHandle norm_instance_handle;
 };
 
-    DWORD WINAPI norm_handle_to_socket( LPVOID lpParam );
+DWORD WINAPI normWrapperThread (LPVOID lpParam);
 #endif
 
 zmq::norm_engine_t::norm_engine_t (io_thread_t *parent_,
@@ -237,12 +237,10 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
                                session_base_t *session_)
 {
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    fd_t write_fd;
-    int rc = make_fdpair(&wrapper_read_fd, &write_fd);
-    norm_wrapper_sockets_t * sockets = new norm_wrapper_sockets_t;
-    sockets->norm_descriptor = NormGetDescriptor (norm_instance);
-    sockets->wrapper_socket = write_fd;
-    sockets->norm_instance_handle = norm_instance;
+    norm_wrapper_thread_args_t *threadArgs = new norm_wrapper_thread_args_t;
+    int rc = make_fdpair (&wrapper_read_fd, &threadArgs->wrapper_write_fd);
+    threadArgs->norm_descriptor = NormGetDescriptor (norm_instance);
+    threadArgs->norm_instance_handle = norm_instance;
     norm_descriptor_handle = add_fd (wrapper_read_fd);
 #else
     fd_t normDescriptor = NormGetDescriptor (norm_instance);
@@ -262,14 +260,8 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
         send_data ();
 
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    DWORD threadId;
-    HANDLE thread = CreateThread( 
-            NULL,                   // default security attributes
-            0,                      // use default stack size  
-            norm_handle_to_socket,       // thread function name
-            sockets,          // argument to thread function 
-            0,                      // use default creation flags 
-            &threadId);   // returns the thread identifier ;
+    wrapper_thread_handle = CreateThread (NULL, 0, normWrapperThread,
+                                          threadArgs, 0, &wrapper_thread_id);
 #endif
 
 } // end zmq::norm_engine_t::init()
@@ -278,6 +270,12 @@ void zmq::norm_engine_t::unplug ()
 {
     rm_fd (norm_descriptor_handle);
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+    PostThreadMessage (wrapper_thread_id, WM_QUIT, (WPARAM) NULL,
+                       (LPARAM) NULL);
+    WaitForSingleObject (wrapper_thread_handle, INFINITE);
+    DWORD exitCode;
+    GetExitCodeThread (wrapper_thread_handle, &exitCode);
+    zmq_assert (exitCode != -1);
     int rc = closesocket (wrapper_read_fd);
     errno_assert (rc != -1);
 #endif
@@ -371,15 +369,16 @@ void zmq::norm_engine_t::in_event ()
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    int rc = recv(wrapper_read_fd, reinterpret_cast<char*>(&event), sizeof(event), 0);
-    errno_assert(rc == sizeof(event));
+    int rc = recv (wrapper_read_fd, reinterpret_cast<char *> (&event),
+                   sizeof (event), 0);
+    errno_assert (rc == sizeof (event));
 #else
     if (!NormGetNextEvent (norm_instance, &event)) {
         // NORM has died before we unplugged?!
         zmq_assert (false);
         return;
     }
-#endif 
+#endif
 
     switch (event.type) {
         case NORM_TX_QUEUE_VACANCY:
@@ -766,30 +765,56 @@ const zmq::endpoint_uri_pair_t &zmq::norm_engine_t::get_endpoint () const
 
 
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-
-DWORD WINAPI norm_handle_to_socket( LPVOID lpParam )
+#include <iostream>
+DWORD WINAPI normWrapperThread (LPVOID lpParam)
 {
-    norm_wrapper_sockets_t* wrapper_sockets = (norm_wrapper_sockets_t*) lpParam;
+    norm_wrapper_thread_args_t *norm_wrapper_thread_args =
+      (norm_wrapper_thread_args_t *) lpParam;
     NormEvent message;
+    DWORD waitRc;
+    DWORD exitCode = 0;
+    int rc;
 
-    for(;;)
-    {
-        // wait for norm event
-        WaitForSingleObjectEx(wrapper_sockets->norm_descriptor, INFINITE, true);
-        
-        if (!NormGetNextEvent (wrapper_sockets->norm_instance_handle, &message)) {
-            // Probably got closed event
-            int rc = closesocket(wrapper_sockets->wrapper_socket);
+    for (;;) {
+        // wait for norm event or message
+        waitRc = MsgWaitForMultipleObjectsEx (
+          1, &norm_wrapper_thread_args->norm_descriptor, INFINITE,
+          QS_ALLPOSTMESSAGE, 0);
+
+        // Check if norm event
+        if (waitRc == WAIT_OBJECT_0) {
+            // Process norm event
+            if (!NormGetNextEvent (
+                  norm_wrapper_thread_args->norm_instance_handle, &message)) {
+                exitCode = -1;
+                break;
+            }
+            rc =
+              send (norm_wrapper_thread_args->wrapper_write_fd,
+                    reinterpret_cast<char *> (&message), sizeof (message), 0);
             errno_assert (rc != -1);
-            return 0;
+        // Check if message
+        } else if (waitRc == WAIT_OBJECT_0 + 1) {
+            // Exit if WM_QUIT is received otherwise do nothing
+            MSG message;
+            GetMessage (&message, 0, 0, 0);
+            if (message.message == WM_QUIT) {
+                break;
+            } else {
+                // do nothing
+            }
+        // Otherwise an error occurred
+        } else {
+            exitCode = -1;
+            break;
         }
-
-        int rc = send(wrapper_sockets->wrapper_socket,reinterpret_cast<char*>(&message), sizeof(message), 0);
-        errno_assert (rc != -1);
     }
-    // wait for event to be handled
+    // Free resources
+    rc = closesocket (norm_wrapper_thread_args->wrapper_write_fd);
+    free (norm_wrapper_thread_args);
+    errno_assert (rc != -1);
 
-    return 0;
+    return exitCode;
 }
 
 #endif
