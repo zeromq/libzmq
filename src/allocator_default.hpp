@@ -57,7 +57,7 @@ class allocator_default_t
 
     static void destroy_fn(void *allocator_)
     {
-        free( static_cast<allocator_default_t *> (allocator_) );
+        operator delete (static_cast<allocator_default_t *> (allocator_));
     }
 
     // allocate() typically gets called by the consumer thread: the user app thread(s)
