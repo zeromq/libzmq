@@ -65,7 +65,11 @@ void test (const char *address)
 
 void test_norm ()
 {
+#if defined ZMQ_HAVE_NORM
     test ("norm://224.1.2.3:5556");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without NORM, ignoring test");
+#endif
 }
 
 void test_tcp ()
@@ -78,9 +82,9 @@ void test_inproc ()
     test ("inproc://hello-msg");
 }
 
-#ifdef ZMQ_BUILD_DRAFT_API
 void test_inproc_late_bind ()
 {
+#if defined ZMQ_BUILD_DRAFT_API
     char address[] = "inproc://late-hello-msg";
 
     //  Create a server
@@ -106,8 +110,10 @@ void test_inproc_late_bind ()
     //  Clean up.
     test_context_socket_close (client);
     test_context_socket_close (server);
-}
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
 #endif
+}
 
 int main ()
 {
@@ -116,11 +122,7 @@ int main ()
     UNITY_BEGIN ();
     RUN_TEST (test_tcp);
     RUN_TEST (test_inproc);
-#ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (test_inproc_late_bind);
-#endif
-#if defined ZMQ_HAVE_NORM
     RUN_TEST (test_norm);
-#endif
     return UNITY_END ();
 }
