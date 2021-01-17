@@ -78,6 +78,7 @@ void test_inproc ()
     test ("inproc://hello-msg");
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
 void test_inproc_late_bind ()
 {
     char address[] = "inproc://late-hello-msg";
@@ -106,6 +107,7 @@ void test_inproc_late_bind ()
     test_context_socket_close (client);
     test_context_socket_close (server);
 }
+#endif
 
 int main ()
 {
@@ -114,7 +116,9 @@ int main ()
     UNITY_BEGIN ();
     RUN_TEST (test_tcp);
     RUN_TEST (test_inproc);
+#ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (test_inproc_late_bind);
+#endif
 #if defined ZMQ_HAVE_NORM
     RUN_TEST (test_norm);
 #endif
