@@ -72,57 +72,11 @@ void test_norm ()
 #endif
 }
 
-void test_tcp ()
-{
-    test ("tcp://127.0.0.1:*");
-}
-
-void test_inproc ()
-{
-    test ("inproc://hello-msg");
-}
-
-void test_inproc_late_bind ()
-{
-#if defined ZMQ_BUILD_DRAFT_API
-    char address[] = "inproc://late-hello-msg";
-
-    //  Create a server
-    void *server = test_context_socket (ZMQ_SERVER);
-
-    //  set server socket options
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (server, ZMQ_HELLO_MSG, "W", 1));
-
-    //  Create a dealer
-    void *client = test_context_socket (ZMQ_CLIENT);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (client, ZMQ_HELLO_MSG, "H", 1));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (client, address));
-
-    //  bind server after the dealer
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (server, address));
-
-    // Receive the welcome message from server
-    recv_string_expect_success (client, "W", 0);
-
-    // Receive the hello message from client
-    recv_string_expect_success (server, "H", 0);
-
-    //  Clean up.
-    test_context_socket_close (client);
-    test_context_socket_close (server);
-#else
-    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
-#endif
-}
-
 int main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_tcp);
-    RUN_TEST (test_inproc);
-    RUN_TEST (test_inproc_late_bind);
     RUN_TEST (test_norm);
     return UNITY_END ();
 }
