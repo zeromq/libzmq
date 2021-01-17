@@ -829,9 +829,9 @@ tests_test_tcp_accept_filter_SOURCES = tests/test_tcp_accept_filter.cpp
 tests_test_tcp_accept_filter_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_tcp_accept_filter_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_pub_sub_SOURCES = tests/test_pub_sub.cpp
-tests_test_pub_sub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_pub_sub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_pubsub_SOURCES = tests/test_pubsub.cpp
+tests_test_pubsub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pubsub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_CURVE
 
