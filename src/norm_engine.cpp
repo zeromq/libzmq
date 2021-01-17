@@ -793,7 +793,7 @@ DWORD WINAPI normWrapperThread (LPVOID lpParam)
               send (norm_wrapper_thread_args->wrapper_write_fd,
                     reinterpret_cast<char *> (&message), sizeof (message), 0);
             errno_assert (rc != -1);
-        // Check if message
+            // Check if message
         } else if (waitRc == WAIT_OBJECT_0 + 1) {
             // Exit if WM_QUIT is received otherwise do nothing
             MSG message;
@@ -803,7 +803,7 @@ DWORD WINAPI normWrapperThread (LPVOID lpParam)
             } else {
                 // do nothing
             }
-        // Otherwise an error occurred
+            // Otherwise an error occurred
         } else {
             exitCode = -1;
             break;
