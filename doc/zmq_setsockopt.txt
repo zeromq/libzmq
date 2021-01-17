@@ -755,8 +755,9 @@ you may also want to set `ZMQ_HANDSHAKE_IVL` -- the default handshake interval
 is 30000 (30 seconds), which is typically too large.
 
 The 'ZMQ_RECONNECT_STOP_AFTER_DISCONNECT' option will stop reconnection when 
-called zmq_disconnect(). This can be useful when the user request failed(server not
-ready),the sokcet do not need to continue to reconnect after user disconnect actively.
+zmq_disconnect() has been called. This can be useful when the user's request failed
+(server not ready), as the socket does not need to continue to reconnect after
+user disconnect actively.
 
 NOTE: in DRAFT state, not yet available in stable releases.
 
