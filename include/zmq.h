@@ -643,6 +643,22 @@ ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn *func_, void *arg_);
 ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 
+struct zmq_allocator_t
+{
+    // Allocate a chunk of memory of size len and return the pointer
+    void*(*allocate_fn) (void *allocator, size_t len);
+
+    // Deallocate the memory chunk pointed to by data_
+    void(*deallocate_fn) (void *allocator, void *data_);
+
+    // Return true if this is an allocator and alive, otherwise false
+    bool(*check_tag_fn) (void *allocator);
+
+    void(*destroy_fn)( void *allocator);
+
+    void *allocator;
+};
+
 /******************************************************************************/
 /*  These functions are DRAFT and disabled in stable releases, and subject to */
 /*  change at ANY time until declared stable.                                 */
@@ -707,22 +723,6 @@ ZMQ_EXPORT void *zmq_msg_allocator_new (int type_);
 ZMQ_EXPORT int zmq_msg_allocator_destroy (void **allocator_);
 ZMQ_EXPORT int
 zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_);
-
-struct zmq_allocator_t
-{
-    // Allocate a chunk of memory of size len and return the pointer
-    void*(*allocate_fn) (void *allocator, size_t len);
-
-    // Deallocate the memory chunk pointed to by data_
-    void(*deallocate_fn) (void *allocator, void *data_);
-
-    // Return true if this is an allocator and alive, otherwise false
-    bool(*check_tag_fn) (void *allocator);
-
-    void(*destroy_fn)( void *allocator);
-
-    void *allocator;
-};
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
