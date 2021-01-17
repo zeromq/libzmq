@@ -68,9 +68,9 @@ int main (int argc, char *argv[])
         return -1;
     }
 
-#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+#if (defined ZMQ_BUILD_DRAFT_API)
     // EXPERIMENTAL ALLOCATOR FOR MSG_T
-    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
+    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_DEFAULT);
 #endif
 
     s = zmq_socket (ctx, ZMQ_PUSH);
@@ -111,7 +111,7 @@ int main (int argc, char *argv[])
     }
 
     for (i = 0; i != message_count; i++) {
-#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+#if (defined ZMQ_BUILD_DRAFT_API)
         rc = zmq_msg_init_allocator (&msg, message_size, allocator);
 #else
         rc = zmq_msg_init_size (&msg, message_size);
@@ -144,7 +144,7 @@ int main (int argc, char *argv[])
         return -1;
     }
 
-#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+#if (defined ZMQ_BUILD_DRAFT_API)
     // IMPORTANT: destroy the allocator only after zmq_ctx_term() since otherwise
     // some zmq_msg_t may still be "in fly"
     zmq_msg_allocator_destroy (&allocator);

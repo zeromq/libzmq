@@ -97,7 +97,6 @@ struct iovec
 #include "ip.hpp"
 #include "address.hpp"
 #include "allocator_default.hpp"
-#include "allocator_global_pool.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -221,7 +220,6 @@ void *zmq_msg_allocator_new (int type_)
 {
     zmq_allocator_t *allocator = new (std::nothrow) zmq_allocator_t;
     zmq::allocator_default_t *allocator_default = NULL;
-    zmq::allocator_global_pool_t *allocator_global = NULL;
     switch (type_) {
         case ZMQ_MSG_ALLOCATOR_DEFAULT:
             allocator_default = new (std::nothrow) zmq::allocator_default_t;
@@ -230,15 +228,6 @@ void *zmq_msg_allocator_new (int type_)
             allocator->check_tag_fn = &allocator_default->check_tag_fn;
             allocator->allocator = allocator_default;
             allocator->destroy_fn = &allocator_default->destroy_fn;
-            break;
-        case ZMQ_MSG_ALLOCATOR_GLOBAL_POOL:
-            allocator_global = new (std::nothrow) zmq::allocator_global_pool_t;
-            allocator->allocate_fn = &allocator_global->allocate_fn;
-            allocator->deallocate_fn = &allocator_global->deallocate_fn;
-            allocator->check_tag_fn = &allocator_global->check_tag_fn;
-            allocator->allocator = allocator_global;
-            allocator->destroy_fn = &allocator_global->destroy_fn;
-        default:
             break;
     }
 

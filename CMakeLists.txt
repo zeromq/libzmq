@@ -896,7 +896,6 @@ set(cxx-sources
     precompiled.cpp
     address.cpp
     allocator_default.cpp
-    allocator_global_pool.cpp
     channel.cpp
     client.cpp
     clock.cpp
@@ -998,11 +997,9 @@ set(cxx-sources
     # at least for VS, the header files must also be listed
     address.hpp
     allocator_default.hpp
-    allocator_global_pool.cpp
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
-    basic_concurrent_queue.hpp
     blob.hpp
     channel.hpp
     client.hpp
@@ -1142,8 +1139,6 @@ set(cxx-sources
     yqueue.hpp
     zap_client.hpp
     zmtp_engine.hpp)
-
-list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/mpmcqueue/concurrentqueue.h)
 
 if(MINGW)
   # Generate the right type when using -m32 or -m64

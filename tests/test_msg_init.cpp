@@ -79,7 +79,7 @@ void test_msg_init_allocator ()
 #if defined(ZMQ_BUILD_DRAFT_API)
     const char *data = "foobar";
     zmq_msg_t msg;
-    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
+    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_DEFAULT);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg, 6, allocator));
     TEST_ASSERT_EQUAL_INT (6, zmq_msg_size (&msg));
