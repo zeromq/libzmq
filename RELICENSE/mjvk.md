@@ -6,7 +6,7 @@ Mozilla Public License v2 (MPLv2) or any other Open Source Initiative
 approved license chosen by the current ZeroMQ BDFL (Benevolent
 Dictator for Life).
 
-A portion of the commits made by the Github handle "mjvk", with
+A portion of the commits made by the Github handle "mjvk" and "mjvankampen", with
 commit author "Mark Jan van Kampen <markjanvankampen@gmail.com>", are
 copyright of Mark Jan van Kampen.  This document hereby grants the libzmq
 project team to relicense libzmq, including all past, present and
