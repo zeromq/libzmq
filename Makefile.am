@@ -513,8 +513,7 @@ test_apps = \
 	tests/test_reconnect_ivl \
 	tests/test_mock_pub_sub \
 	tests/test_socket_null \
-	tests/test_tcp_accept_filter \
-	tests/test_pubsub
+	tests/test_tcp_accept_filter
 
 UNITY_CPPFLAGS = -I$(top_srcdir)/external/unity -DUNITY_USE_COMMAND_LINE_ARGS -DUNITY_EXCLUDE_FLOAT
 UNITY_LIBS = $(top_builddir)/external/unity/libunity.a
@@ -828,10 +827,6 @@ tests_test_mock_pub_sub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_tcp_accept_filter_SOURCES = tests/test_tcp_accept_filter.cpp
 tests_test_tcp_accept_filter_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_tcp_accept_filter_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
-tests_test_pubsub_SOURCES = tests/test_pubsub.cpp
-tests_test_pubsub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_pubsub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_CURVE
 
