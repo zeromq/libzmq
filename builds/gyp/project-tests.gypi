@@ -901,6 +901,17 @@
       'dependencies': [
         'libzmq'
       ],
+    },
+    {
+      'target_name': 'test_pubsub',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_pubsub.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
     }
   ]
 }
