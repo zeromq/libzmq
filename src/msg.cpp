@@ -225,6 +225,7 @@ int zmq::msg_t::init_from_allocator (size_t size_, zmq_allocator_t *alloc_)
         _u.vsm.flags = 0;
         _u.vsm.size = static_cast<unsigned char> (size_);
         _u.vsm.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.vsm.routing_id = 0;
     } else {
         _u.lmsg.metadata = NULL;
@@ -232,6 +233,7 @@ int zmq::msg_t::init_from_allocator (size_t size_, zmq_allocator_t *alloc_)
         _u.lmsg.flags = 0;
         _u.lmsg.allocator_was_used = 1;
         _u.lmsg.group.sgroup.group[0] = '\0';
+        _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
         _u.lmsg.content = reinterpret_cast<content_t *> (
           alloc_->allocate_fn (alloc_->allocator, size_ + sizeof (content_t)));
