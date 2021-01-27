@@ -157,13 +157,13 @@ void zmq::thread_t::
 
 #elif defined(__MINGW32__)
 
-    int rc = pthread_setname_np (pthread_self(), _name);
+    int rc = pthread_setname_np (pthread_self (), _name);
     if (rc)
         return;
 
 #else
 
-    // not implemented
+        // not implemented
 
 #endif
 }
