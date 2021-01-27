@@ -36,6 +36,10 @@
 #include <winnt.h>
 #endif
 
+#ifdef __MINGW32__
+#include "pthread.h"
+#endif
+
 bool zmq::thread_t::get_started () const
 {
     return _started;
@@ -111,6 +115,8 @@ void zmq::thread_t::
     // not implemented
 }
 
+#ifdef _MSC_VER
+
 namespace
 {
 #pragma pack(push, 8)
@@ -124,22 +130,7 @@ struct thread_info_t
 #pragma pack(pop)
 }
 
-struct MY_EXCEPTION_REGISTRATION_RECORD
-{
-    typedef EXCEPTION_DISPOSITION (NTAPI *HandlerFunctionType) (
-      EXCEPTION_RECORD *, void *, CONTEXT *, void *);
-
-    MY_EXCEPTION_REGISTRATION_RECORD *Next;
-    HandlerFunctionType Handler;
-};
-
-static EXCEPTION_DISPOSITION NTAPI continue_execution (EXCEPTION_RECORD *rec,
-                                                       void *frame,
-                                                       CONTEXT *ctx,
-                                                       void *disp)
-{
-    return ExceptionContinueExecution;
-}
+#endif
 
 void zmq::thread_t::
   applyThreadName () // to be called in secondary thread context
@@ -147,28 +138,36 @@ void zmq::thread_t::
     if (!_name[0] || !IsDebuggerPresent ())
         return;
 
+#ifdef _MSC_VER
+
     thread_info_t thread_info;
     thread_info._type = 0x1000;
     thread_info._name = _name;
     thread_info._thread_id = -1;
     thread_info._flags = 0;
 
-    NT_TIB *tib = ((NT_TIB *) NtCurrentTeb ());
+    __try {
+        const DWORD MS_VC_EXCEPTION = 0x406D1388;
+        RaiseException (MS_VC_EXCEPTION, 0,
+                        sizeof (thread_info) / sizeof (ULONG_PTR),
+                        (ULONG_PTR *) &thread_info);
+    }
+    __except (EXCEPTION_CONTINUE_EXECUTION) {
+    }
 
-    MY_EXCEPTION_REGISTRATION_RECORD rec;
-    rec.Next = (MY_EXCEPTION_REGISTRATION_RECORD *) tib->ExceptionList;
-    rec.Handler = continue_execution;
+#elif defined(__MINGW32__)
 
-    // push our handler, raise, and finally pop our handler
-    tib->ExceptionList = (_EXCEPTION_REGISTRATION_RECORD *) &rec;
-    const DWORD MS_VC_EXCEPTION = 0x406D1388;
-    RaiseException (MS_VC_EXCEPTION, 0,
-                    sizeof (thread_info) / sizeof (ULONG_PTR),
-                    (ULONG_PTR *) &thread_info);
-    tib->ExceptionList =
-      (_EXCEPTION_REGISTRATION_RECORD
-         *) (((MY_EXCEPTION_REGISTRATION_RECORD *) tib->ExceptionList)->Next);
+    int rc = pthread_setname_np (pthread_self (), _name);
+    if (rc)
+        return;
+
+#else
+
+        // not implemented
+
+#endif
 }
+
 
 #elif defined ZMQ_HAVE_VXWORKS
 
