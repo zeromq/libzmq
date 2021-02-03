@@ -53,10 +53,12 @@ jobs:
       LIBZMQ_SRCDIR: ${{ github.workspace }}\libzmq
     steps:    
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.0
+      uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
     - name: Add msbuild to PATH 2016
-      run: echo "##[add-path]C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin"
+      uses: microsoft/setup-msbuild@v1.0.2
+      with:
+        vs-version: '[15.0,16.0)'
       if: matrix.os == 'windows-2016'    
     - uses: actions/checkout@v2
       if: matrix.WITH_LIBSODIUM == 'ON'

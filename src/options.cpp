@@ -206,6 +206,7 @@ zmq::options_t::options_t () :
     sndbuf (-1),
     rcvbuf (-1),
     tos (0),
+    priority (0),
     type (-1),
     linger (-1),
     connect_timeout (0),
@@ -249,7 +250,6 @@ zmq::options_t::options_t () :
     zero_copy (true),
     router_notify (0),
     monitor_event_version (1),
-    zmtp_strict(0),
     wss_trust_system (false),
     hello_msg (),
     can_send_hello_msg (false),
@@ -277,13 +277,16 @@ int zmq::options_t::set_curve_key (uint8_t *destination_,
             mechanism = ZMQ_CURVE;
             return 0;
 
-        case CURVE_KEYSIZE_Z85 + 1:
-            if (zmq_z85_decode (destination_,
-                                reinterpret_cast<const char *> (optval_))) {
+        case CURVE_KEYSIZE_Z85 + 1: {
+            const std::string s (static_cast<const char *> (optval_),
+                                 optvallen_);
+
+            if (zmq_z85_decode (destination_, s.c_str ())) {
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
+        }
 
         case CURVE_KEYSIZE_Z85:
             char z85_key[CURVE_KEYSIZE_Z85 + 1];
@@ -762,7 +765,8 @@ int zmq::options_t::setsockopt (int option_,
 
         case ZMQ_METADATA:
             if (optvallen_ > 0 && !is_int) {
-                const std::string s (static_cast<const char *> (optval_));
+                const std::string s (static_cast<const char *> (optval_),
+                                     optvallen_);
                 const size_t pos = s.find (':');
                 if (pos != std::string::npos && pos != 0
                     && pos != s.length () - 1) {
@@ -784,14 +788,6 @@ int zmq::options_t::setsockopt (int option_,
                                                       &multicast_loop);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
-        case ZMQ_ZMTP_STRICT:
-            if ((is_int) && ((value == 0) || (value == 1))) {
-                zmtp_strict = value;
-                return 0;
-            }
-            break;
-
         case ZMQ_IN_BATCH_SIZE:
             if (is_int && value > 0) {
                 in_batch_size = value;
@@ -848,6 +844,13 @@ int zmq::options_t::setsockopt (int option_,
             }
 
             return 0;
+
+        case ZMQ_PRIORITY:
+            if (is_int && value >= 0) {
+                priority = value;
+                return 0;
+            }
+            break;
 
 #endif
 
@@ -1255,14 +1258,6 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
 #ifdef ZMQ_BUILD_DRAFT_API
-
-        case ZMQ_ZMTP_STRICT:
-            if (is_int) {
-                *value = zmtp_strict;
-                return 0;
-            }
-            break;
-
         case ZMQ_ROUTER_NOTIFY:
             if (is_int) {
                 *value = router_notify;
@@ -1280,6 +1275,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_OUT_BATCH_SIZE:
             if (is_int) {
                 *value = out_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_PRIORITY:
+            if (is_int) {
+                *value = priority;
                 return 0;
             }
             break;

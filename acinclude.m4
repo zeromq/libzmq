@@ -871,6 +871,33 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_SO_PRIORITY([action-if-found], [action-if-not-found])           #
+dnl # Check if SO_PRIORITY is supported                                            #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_SO_PRIORITY], [{
+    AC_CACHE_CHECK([whether SO_PRIORITY is supported], [libzmq_cv_so_priority],
+        [AC_TRY_RUN([/* SO_PRIORITY test */
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main (int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return (
+        ((s = socket (PF_INET, SOCK_STREAM, 0)) == -1) ||
+        ((rc = setsockopt (s, SOL_SOCKET, SO_PRIORITY, (char*) &opt, sizeof (int))) == -1)
+    );
+}
+        ],
+        [libzmq_cv_so_priority="yes"],
+        [libzmq_cv_so_priority="no"],
+        [libzmq_cv_so_priority="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_so_priority" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_GETRANDOM([action-if-found], [action-if-not-found])  #
 dnl # Checks if getrandom is supported                                  #
 dnl ################################################################################

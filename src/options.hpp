@@ -100,6 +100,9 @@ struct options_t
     // Type of service (containing DSCP and ECN socket options)
     int tos;
 
+    // Protocol-defined priority
+    int priority;
+
     //  Socket type.
     int8_t type;
 
@@ -290,9 +293,6 @@ struct options_t
 
     // Version of monitor events to emit
     int monitor_event_version;
-
-    // if set, reject connections to unversioned zmtp
-    int zmtp_strict;
 
     //  WSS Keys
     std::string wss_key_pem;

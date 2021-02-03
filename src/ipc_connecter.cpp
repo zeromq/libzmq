@@ -100,6 +100,13 @@ void zmq::ipc_connecter_t::start_connecting ()
         // should be done here as well (and then this could be pulled up to
         // stream_connecter_base_t).
     }
+    //stop connecting after called zmq_disconnect
+    else if (rc == -1
+             && (options.reconnect_stop & ZMQ_RECONNECT_STOP_AFTER_DISCONNECT)
+             && errno == ECONNREFUSED && _socket->is_disconnected ()) {
+        if (_s != retired_fd)
+            close ();
+    }
 
     //  Handle any other error condition by eventual reconnect.
     else {

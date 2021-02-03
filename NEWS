@@ -1,5 +1,71 @@
-0MQ version 4.3.x stable, released on 20xx/xx/xx
+0MQ version 4.3.4 stable, released on 2020/01/17
 ================================================
+
+* New DRAFT (see NEWS for 4.2.0) socket option:
+  - ZMQ_PRIORITY will set the SO_PRIORITY socket option on the underlying
+    sockets. Only supported on Linux.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* Fixed #4113 - compilation errors on kFreeBSD and GNU/Hurd
+
+* Fixed #4086 - excessive amount of socket files left behind in Windows TMP
+                directory
+
+* Fixed #4108 - regression that breaks using IPv6 link-local addresses on Linux
+
+* Fixed #4078 - compilation errors on Android
+
+* Fixed #4074 - compilation error with ulibc and libbsd
+
+* Fixed #4060 - stack overflow on Windows x64
+
+* Fixed #4051 - various compilation errors on Windows ARM 32bit
+
+* Fixed #4043 - various compilation warnings with XCode
+
+* Fixed #4038 - return value of zmq_ctx_get changed unintentionally
+
+
+0MQ version 4.3.3 stable, released on 2020/09/07
+================================================
+
+* Security advisories:
+  * CVE-2020-15166: Denial-of-Service on CURVE/ZAP-protected servers by
+    unauthenticated clients.
+    If a raw TCP socket is opened and connected to an endpoint that is fully
+    configured with CURVE/ZAP, legitimate clients will not be able to exchange
+    any message. Handshakes complete successfully, and messages are delivered to
+    the library, but the server application never receives them.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-25wp-cf8g-938m
+  * Stack overflow on server running PUB/XPUB socket (CURVE disabled).
+    The PUB/XPUB subscription store (mtrie) is traversed using recursive
+    function calls. In the remove (unsubscription) case, the recursive calls are
+    NOT tail calls, so even with optimizations the stack grows linearly with the
+    length of a subscription topic. Topics are under the control of remote
+    clients - they can send a subscription to arbitrary length topics. An
+    attacker can thus cause a server to create an mtrie sufficiently large such
+    that, when unsubscribing, traversal will cause a stack overflow.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-qq65-x72m-9wr8
+  * Memory leak in PUB server induced by malicious client(s) without CURVE/ZAP.
+    Messages with metadata are never processed by PUB sockets, but the metadata
+    is kept referenced in the PUB object and never freed.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-4p5v-h92w-6wxw
+  * Memory leak in client induced by malicious server(s) without CURVE/ZAP.
+    When a pipe processes a delimiter and is already not in active state but
+    still has an unfinished message, the message is leaked.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-wfr2-29gj-5w87
+  * Heap overflow when receiving malformed ZMTP v1 packets (CURVE disabled).
+    By crafting a packet which is not valid ZMTP v2/v3, and which has two
+    messages larger than 8192 bytes, the decoder can be tricked into changing
+    the recorded size of the 8192 bytes static buffer, which then gets overflown
+    by the next message. The content that gets written in the overflown memory
+    is entirely decided by the sender.
+    For more information see the security advisory:
+    https://github.com/zeromq/libzmq/security/advisories/GHSA-fc3w-qxf5-7hp6
 
 * Note for packagers: an external, self-contained sha1 library is now
   included in the source tree under external/sha1/ - it is licensed
@@ -13,14 +79,23 @@
   libbsd can be used and is enabled by default if available instead of the
   internal implementation, for better security maintenance in distros.
 
+* Note for packagers: ZeroMQConfig.cmake is now installed in the arch-dependent
+  subdirectory - eg: /usr/lib/x86_64-linux-gnu/cmake/
+
+* New DRAFT (see NEWS for 4.2.0) socket type:
+  - ZMQ_CHANNEL is a thread-safe alternative to ZMQ_PAIR.
+  See doc/zmq_socket.txt for details.
+
 * New DRAFT (see NEWS for 4.2.0) socket option:
   - ZMQ_ONLY_FIRST_SUBSCRIBE will cause only the first part of a multipart
     message to be processed as a subscribe/unsubscribe message, and the rest
     will be forwarded as user data to the application.
   - ZMQ_RECONNECT_STOP will cause a connecting socket to stop trying to
-    reconnect in specific circumstances. In this release, this can be set to
-    ECONNREFUSED errors, which implies the other end is not listening on the
-    requested port.
+    reconnect in specific circumstances. See the manpage for details.
+  - ZMQ_HELLO_MSG to set a message that will be automatically sent to a new
+    connection.
+  - ZMQ_DISCONNECT_MSG to set a message that will be automatically received when
+    a peer disconnects.
   See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
 
 * New DRAFT (see NEWS for 4.2.0) zmq_ctx_get_ext/zmq_ctx_set_ext APIs were added
@@ -37,8 +112,17 @@
   related zmq_connect_peer function which atomically and thread-safely connects
   and returns a routing-id.
 
-* ZMTP 3.1 is now fully implemented, and 3.1 peers will receive subscribe/cancel
-  on PUB/SUB via commands rather than using the first byte of the payload.
+* New DRAFT (see NEWS for 4.2.0) zmq_msg_init_buffer API was added to allow
+  the construction of a message by copying from an existing buffer.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_poller_size API was added to allow querying
+  the number of sockets/fds registered in a zmq_poller.
+
+* ZMTP 3.1 peers will receive subscribe/cancel on PUB/SUB via commands rather
+  than using the first byte of the payload.
+
+* zmq_z85_decode now checks that the input string's length is at least 5 characters
+  and always a multiple of 5 as per API specification.
 
 * Fixed #3566 - malformed CURVE message can cause memory leak
 
@@ -116,6 +200,12 @@
 * Fixed #3805 - improve performance of CURVE by reducing copies
 
 * Fixed #3814 - send subscribe/cancel as commands to ZMTP 3.1 peers
+
+* Fixed #3847 - fix building without PGM and NORM
+
+* Fixed #3849 - install .cmake file in arch-dependent subdirectory
+
+* Fixed #4005 - allow building on Windows ARM/ARM64
 
 0MQ version 4.3.2 stable, released on 2019/07/08
 ================================================

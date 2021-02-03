@@ -84,10 +84,10 @@ if(ENABLE_UBSAN)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${UBSAN_FLAGS}")
 endif()
 
-option (ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
-if (ENABLE_INTRINSICS)
-   message(STATUS "Using compiler intrinsics for atomic ops")
-   add_definitions(-DZMQ_HAVE_ATOMIC_INTRINSICS)
+option(ENABLE_INTRINSICS "Build using compiler intrinsics for atomic ops" OFF)
+if(ENABLE_INTRINSICS)
+  message(STATUS "Using compiler intrinsics for atomic ops")
+  add_definitions(-DZMQ_HAVE_ATOMIC_INTRINSICS)
 endif()
 
 set(ZMQ_OUTPUT_BASENAME
@@ -110,7 +110,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
-if(NOT MSVC)
+if (NOT MSVC)
   if(NOT CMAKE_CXX_FLAGS MATCHES "-std=")
     # use C++11 by default if supported
     check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
@@ -250,9 +250,7 @@ if(NOT MSVC)
       set(ZMQ_HAVE_LIBBSD 1)
     endif()
   endif()
-  if(NOT WITH_LIBBSD OR NOT LIBBSD_FOUND)
-    check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
-  endif()
+  check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
 endif()
 
 # Select curve encryption library, defaults to tweetnacl To use libsodium instead, use --with-libsodium(must be
@@ -436,11 +434,11 @@ if(POLLER STREQUAL "")
 endif()
 
 if(POLLER STREQUAL "kqueue"
-  OR POLLER STREQUAL "epoll"
-  OR POLLER STREQUAL "devpoll"
-  OR POLLER STREQUAL "pollset"
-  OR POLLER STREQUAL "poll"
-  OR POLLER STREQUAL "select")
+   OR POLLER STREQUAL "epoll"
+   OR POLLER STREQUAL "devpoll"
+   OR POLLER STREQUAL "pollset"
+   OR POLLER STREQUAL "poll"
+   OR POLLER STREQUAL "select")
   message(STATUS "Using polling method in I/O threads: ${POLLER}")
   string(TOUPPER ${POLLER} UPPER_POLLER)
   set(ZMQ_IOTHREAD_POLLER_USE_${UPPER_POLLER} 1)
@@ -485,28 +483,28 @@ if(NOT CYGWIN)
 endif()
 
 if(NOT WIN32)
-    set(ZMQ_HAVE_IPC 1)
+  set(ZMQ_HAVE_IPC 1)
 else()
-    check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+  check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
 endif()
 
-###################### BEGIN condition_variable_t selection
+# ##################### BEGIN condition_variable_t selection
 if(NOT ZMQ_CV_IMPL)
-    # prefer C++11 STL std::condition_variable implementation, if available
-    check_include_files(condition_variable ZMQ_HAVE_STL_CONDITION_VARIABLE LANGUAGE CXX)
+  # prefer C++11 STL std::condition_variable implementation, if available
+  check_include_files(condition_variable ZMQ_HAVE_STL_CONDITION_VARIABLE LANGUAGE CXX)
 
-    if (ZMQ_HAVE_STL_CONDITION_VARIABLE)
-        set(ZMQ_CV_IMPL_DEFAULT "stl11")
+  if(ZMQ_HAVE_STL_CONDITION_VARIABLE)
+    set(ZMQ_CV_IMPL_DEFAULT "stl11")
+  else()
+    if(WIN32 AND NOT CMAKE_SYSTEM_VERSION VERSION_LESS "6.0")
+      # Win32API CONDITION_VARIABLE is supported from Windows Vista only
+      set(ZMQ_CV_IMPL_DEFAULT "win32api")
+    elseif(CMAKE_USE_PTHREADS_INIT)
+      set(ZMQ_CV_IMPL_DEFAULT "pthreads")
     else()
-        if(WIN32 AND NOT CMAKE_SYSTEM_VERSION VERSION_LESS "6.0")
-            # Win32API CONDITION_VARIABLE is supported from Windows Vista only
-            set(ZMQ_CV_IMPL_DEFAULT "win32api")
-        elseif(CMAKE_USE_PTHREADS_INIT)
-            set(ZMQ_CV_IMPL_DEFAULT "pthreads")
-        else()
-            set(ZMQ_CV_IMPL_DEFAULT "none")
-        endif()
+      set(ZMQ_CV_IMPL_DEFAULT "none")
     endif()
+  endif()
 
   # TODO a vxworks implementation also exists, but vxworks is not currently supported with cmake at all
   set(ZMQ_CV_IMPL
@@ -517,17 +515,17 @@ endif()
 
 message(STATUS "Using condition_variable_t implementation: ${ZMQ_CV_IMPL}")
 if(ZMQ_CV_IMPL STREQUAL "stl11")
-    set(ZMQ_USE_CV_IMPL_STL11 1)
+  set(ZMQ_USE_CV_IMPL_STL11 1)
 elseif(ZMQ_CV_IMPL STREQUAL "win32api")
-    set(ZMQ_USE_CV_IMPL_WIN32API 1)
+  set(ZMQ_USE_CV_IMPL_WIN32API 1)
 elseif(ZMQ_CV_IMPL STREQUAL "pthreads")
-    set(ZMQ_USE_CV_IMPL_PTHREADS 1)
+  set(ZMQ_USE_CV_IMPL_PTHREADS 1)
 elseif(ZMQ_CV_IMPL STREQUAL "none")
-    set(ZMQ_USE_CV_IMPL_NONE 1)
+  set(ZMQ_USE_CV_IMPL_NONE 1)
 else()
-    message(ERROR "Unknown value for ZMQ_CV_IMPL: ${ZMQ_CV_IMPL}")
+  message(ERROR "Unknown value for ZMQ_CV_IMPL: ${ZMQ_CV_IMPL}")
 endif()
-###################### END condition_variable_t selection
+# ##################### END condition_variable_t selection
 
 if(NOT MSVC)
   check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
@@ -548,11 +546,13 @@ if(ZMQ_HAVE_WINDOWS)
 
   set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
   check_cxx_symbol_exists(GetAdaptersAddresses "winsock2.h;iphlpapi.h" HAVE_IPHLAPI)
+  check_cxx_symbol_exists(if_nametoindex "iphlpapi.h" HAVE_IF_NAMETOINDEX)
 
   set(CMAKE_REQUIRED_LIBRARIES "")
   # TODO: This not the symbol we're looking for. What is the symbol?
   check_library_exists(ws2 fopen "" HAVE_WS2)
 else()
+  check_cxx_symbol_exists(if_nametoindex net/if.h HAVE_IF_NAMETOINDEX)
   check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
   check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 endif()
@@ -586,7 +586,7 @@ if(NOT MSVC)
   set(CMAKE_REQUIRED_LIBRARIES)
 
   check_cxx_symbol_exists(fork unistd.h HAVE_FORK)
-  check_cxx_symbol_exists(gethrtimei sys/time.h HAVE_GETHRTIME)
+  check_cxx_symbol_exists(gethrtime sys/time.h HAVE_GETHRTIME)
   check_cxx_symbol_exists(mkdtemp stdlib.h HAVE_MKDTEMP)
   check_cxx_symbol_exists(accept4 sys/socket.h HAVE_ACCEPT4)
   check_cxx_symbol_exists(strnlen string.h HAVE_STRNLEN)
@@ -706,7 +706,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "SunOS"
     return 0; \
   } \
   "
-  HAVE_ATOMIC_H)
+    HAVE_ATOMIC_H)
 
   if(NOT HAVE_ATOMIC_H)
     set(ZMQ_FORCE_MUTEXES 1)
@@ -714,15 +714,16 @@ if(CMAKE_SYSTEM_NAME MATCHES "SunOS"
 endif()
 
 if(NOT ANDROID)
-    zmq_check_noexcept()
+  zmq_check_noexcept()
 endif()
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 if(NOT CMAKE_CROSSCOMPILING AND NOT MSVC)
   zmq_check_sock_cloexec()
   zmq_check_o_cloexec()
   zmq_check_so_bindtodevice()
   zmq_check_so_keepalive()
+  zmq_check_so_priority()
   zmq_check_tcp_keepcnt()
   zmq_check_tcp_keepidle()
   zmq_check_tcp_keepintvl()
@@ -734,9 +735,9 @@ if(NOT CMAKE_CROSSCOMPILING AND NOT MSVC)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux"
-  OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
-  OR CMAKE_SYSTEM_NAME MATCHES "GNU/Hurd"
-  OR CYGWIN)
+   OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
+   OR CMAKE_SYSTEM_NAME MATCHES "GNU/Hurd"
+   OR CYGWIN)
   add_definitions(-D_GNU_SOURCE)
 elseif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   add_definitions(-D__BSD_VISIBLE)
@@ -1001,6 +1002,7 @@ set(cxx-sources
     client.hpp
     clock.hpp
     command.hpp
+    compat.hpp
     condition_variable.hpp
     config.hpp
     ctx.hpp
@@ -1356,13 +1358,19 @@ else()
       add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig}
                                 ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     else()
-      add_library(libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
-                                ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        if (CMAKE_GENERATOR STREQUAL "Xcode")
+           add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs}
+                                     ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        else()
+           add_library(libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
+                                     ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+        endif()
+     
     endif()
     # NOTE: the SOVERSION and VERSION MUST be the same as the one generated by libtool! It is NOT the same as the
     # version of the package.
     set_target_properties(
-      libzmq PROPERTIES COMPILE_DEFINITIONS "DLL_EXPORT" PUBLIC_HEADER "${public_headers}" VERSION "5.2.3"
+      libzmq PROPERTIES COMPILE_DEFINITIONS "DLL_EXPORT" PUBLIC_HEADER "${public_headers}" VERSION "5.2.4"
                         SOVERSION "5" OUTPUT_NAME "${ZMQ_OUTPUT_BASENAME}" PREFIX "lib")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(
@@ -1381,8 +1389,13 @@ else()
       add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig}
                                        ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     else()
-      add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
-                                       ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      if (CMAKE_GENERATOR STREQUAL "Xcode")
+        add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      else()
+        add_library(libzmq-static STATIC $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs}
+                                         ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+      endif()
     endif()
     if(CMAKE_SYSTEM_NAME MATCHES "QNX")
       target_link_libraries(libzmq-static m)

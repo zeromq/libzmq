@@ -67,9 +67,6 @@
 #define PORT_6 5561
 
 //  For tests that mock ZMTP
-const uint8_t zmtp_greeting_unversioned[] = {
-  0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
 const uint8_t zmtp_greeting_null[64] = {
   0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0x7f, 3, 0, 'N', 'U', 'L', 'L',
   0,    0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,   0,   0,   0,
@@ -214,6 +211,10 @@ int test_inet_pton (int af_, const char *src_, void *dst_);
 
 //  Binds an ipv4 BSD socket to an ephemeral port, returns the compiled sockaddr
 struct sockaddr_in bind_bsd_socket (int socket);
+
+//  Some custom definitions in addition to IPPROTO_TCP and IPPROTO_UDP
+#define IPPROTO_WS 10000
+#define IPPROTO_WSS 10001
 
 //  Connects a BSD socket to the ZMQ endpoint. Works with ipv4/ipv6/unix.
 fd_t connect_socket (const char *endpoint_,
