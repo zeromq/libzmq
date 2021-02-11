@@ -3,6 +3,11 @@ stages:
   - lib-build
 
 
+# Global variables. Can be used by any jobs
+variables:
+  DEPLOYMENT_WINDOWS_NET_SHARE: "\\\\autan\\gitlab_workspace\\dependencies"
+
+
 # Create library for macos
 lib-build-macos:
   stage: lib-build
