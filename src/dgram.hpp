@@ -62,8 +62,6 @@ class dgram_t ZMQ_FINAL : public socket_base_t
   private:
     zmq::pipe_t *_pipe;
 
-    zmq::pipe_t *_last_in;
-
     //  If true, more outgoing message parts are expected.
     bool _more_out;
 
