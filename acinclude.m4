@@ -1213,6 +1213,11 @@ AC_DEFUN([LIBZMQ_CHECK_CACHELINE], [{
             zmq_cacheline_size=$(cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size 2>/dev/null || echo 64)
         fi
     fi
+    if test "x$zmq_cacheline_size" = "xundefined"; then
+        # On some platforms e.g. Fedora33 s390x the cacheline size reported
+        # by getconf as 'undefined'.
+        zmq_cacheline_size=64
+    fi
 	AC_MSG_NOTICE([Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
 	AC_DEFINE_UNQUOTED(ZMQ_CACHELINE_SIZE, $zmq_cacheline_size, [Using "$zmq_cacheline_size" bytes alignment for lock-free data structures])
 }])
