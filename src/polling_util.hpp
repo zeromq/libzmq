@@ -46,7 +46,7 @@ template <typename T, size_t S> class fast_vector_t
     explicit fast_vector_t (const size_t nitems_)
     {
         if (nitems_ > S) {
-            _buf = static_cast<T *> (malloc (nitems_ * sizeof (T)));
+            _buf = new (std::nothrow) T[nitems_];
             //  TODO since this function is called by a client, we could return errno == ENOMEM here
             alloc_assert (_buf);
         } else {
@@ -59,7 +59,7 @@ template <typename T, size_t S> class fast_vector_t
     ~fast_vector_t ()
     {
         if (_buf != _static_buf)
-            free (_buf);
+            delete[] _buf;
     }
 
   private:
