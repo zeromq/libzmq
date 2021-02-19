@@ -65,11 +65,6 @@ class fq_t
     //  beginning of the pipes array.
     pipes_t::size_type _active;
 
-    //  Pointer to the last pipe we received message from.
-    //  NULL when no message has been received or the pipe
-    //  has terminated.
-    pipe_t *_last_in;
-
     //  Index of the next bound pipe to read a message from.
     pipes_t::size_type _current;
 
