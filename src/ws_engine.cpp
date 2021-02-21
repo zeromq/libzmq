@@ -454,7 +454,8 @@ bool zmq::ws_engine_t::server_handshake ()
                         _header_upgrade_websocket =
                           strcasecmp ("websocket", _header_value) == 0;
                     else if (strcasecmp ("connection", _header_name) == 0) {
-                        char *element = strtok (_header_value, ",");
+                        char *rest = NULL;
+                        char *element = strtok_r (_header_value, ",", &rest);
                         while (element != NULL) {
                             while (*element == ' ')
                                 element++;
@@ -462,7 +463,7 @@ bool zmq::ws_engine_t::server_handshake ()
                                 _header_connection_upgrade = true;
                                 break;
                             }
-                            element = strtok (NULL, ",");
+                            element = strtok_r (NULL, ",", &rest);
                         }
                     } else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
                                == 0)
@@ -473,7 +474,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *rest = 0;
+                            char *rest = NULL;
                             char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
