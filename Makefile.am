@@ -1024,19 +1024,19 @@ endif
 endif
 
 if HAVE_VMCI
-test_apps += test_pair_vmci test_reqrep_vmci
+test_apps += tests/test_pair_vmci tests/test_reqrep_vmci
 
-test_pair_vmci_SOURCES = tests/test_pair_vmci.cpp
-test_pair_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-test_pair_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-test_pair_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
-test_pair_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
+tests_test_pair_vmci_SOURCES = tests/test_pair_vmci.cpp
+tests_test_pair_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pair_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_pair_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
+tests_test_pair_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
-test_reqrep_vmci_SOURCES = tests/test_reqrep_vmci.cpp
-test_reqrep_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-test_reqrep_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
-test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
+tests_test_reqrep_vmci_SOURCES = tests/test_reqrep_vmci.cpp
+tests_test_reqrep_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_reqrep_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
+tests_test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
 endif
 

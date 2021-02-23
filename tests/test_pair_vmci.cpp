@@ -48,10 +48,10 @@ void test_pair_vmci ()
     void *sc = test_context_socket (ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint.c_str ()));
 
-    bounce (sb, sc);
+    expect_bounce_fail (sb, sc);
 
-    test_context_socket_close (sc);
-    test_context_socket_close (sb);
+    test_context_socket_close_zero_linger (sc);
+    test_context_socket_close_zero_linger (sb);
 }
 
 int main (void)

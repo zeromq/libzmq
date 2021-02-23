@@ -65,7 +65,7 @@ matrix:
         packages:
         - valgrind
         - libgnutls-dev
-  - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled NORM=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled NORM=enabled VMCI=enabled
     os: linux
     addons:
       apt:
