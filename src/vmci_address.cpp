@@ -39,6 +39,11 @@
 
 #include "err.hpp"
 
+zmq::vmci_address_t::vmci_address_t ()
+{
+    memset (&address, 0, sizeof address);
+}
+
 zmq::vmci_address_t::vmci_address_t (ctx_t *parent_) : parent (parent_)
 {
     memset (&address, 0, sizeof address);
@@ -54,10 +59,6 @@ zmq::vmci_address_t::vmci_address_t (const sockaddr *sa,
     memset (&address, 0, sizeof address);
     if (sa->sa_family == parent->get_vmci_socket_family ())
         memcpy (&address, sa, sa_len);
-}
-
-zmq::vmci_address_t::~vmci_address_t ()
-{
 }
 
 int zmq::vmci_address_t::resolve (const char *path_)
@@ -125,7 +126,7 @@ int zmq::vmci_address_t::resolve (const char *path_)
     return 0;
 }
 
-int zmq::vmci_address_t::to_string (std::string &addr_)
+int zmq::vmci_address_t::to_string (std::string &addr_) const
 {
     if (address.svm_family != parent->get_vmci_socket_family ()) {
         addr_.clear ();
@@ -162,6 +163,15 @@ const sockaddr *zmq::vmci_address_t::addr () const
 socklen_t zmq::vmci_address_t::addrlen () const
 {
     return static_cast<socklen_t> (sizeof address);
+}
+
+#if defined ZMQ_HAVE_WINDOWS
+unsigned short zmq::vmci_address_t::family () const
+#else
+sa_family_t zmq::vmci_address_t::family () const
+#endif
+{
+    return parent->get_vmci_socket_family ();
 }
 
 #endif

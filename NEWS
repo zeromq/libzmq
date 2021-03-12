@@ -1,3 +1,31 @@
+0MQ version 4.3.4 stable, released on 2021/01/17
+================================================
+
+* New DRAFT (see NEWS for 4.2.0) socket option:
+  - ZMQ_PRIORITY will set the SO_PRIORITY socket option on the underlying
+    sockets. Only supported on Linux.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* Fixed #4113 - compilation errors on kFreeBSD and GNU/Hurd
+
+* Fixed #4086 - excessive amount of socket files left behind in Windows TMP
+                directory
+
+* Fixed #4108 - regression that breaks using IPv6 link-local addresses on Linux
+
+* Fixed #4078 - compilation errors on Android
+
+* Fixed #4074 - compilation error with ulibc and libbsd
+
+* Fixed #4060 - stack overflow on Windows x64
+
+* Fixed #4051 - various compilation errors on Windows ARM 32bit
+
+* Fixed #4043 - various compilation warnings with XCode
+
+* Fixed #4038 - return value of zmq_ctx_get changed unintentionally
+
+
 0MQ version 4.3.3 stable, released on 2020/09/07
 ================================================
 

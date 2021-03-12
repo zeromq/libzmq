@@ -66,4 +66,14 @@ function set_config_opts() {
     if [ -n "$FORCE_98" ] && [ "$FORCE_98" = "enabled" ]; then
         CONFIG_OPTS+=("--enable-force-CXX98-compat=yes")
     fi
+
+    if [ -n "$VMCI" ] && [ "$VMCI" = "enabled" ]; then
+        CONFIG_OPTS+=("--with-vmci=$PWD/vmci")
+        # VMWare headeers are not ISO C++ compliant
+        CONFIG_OPTS+=("--disable-pedantic")
+        git clone --depth 1 https://github.com/vmware/open-vm-tools.git
+        mkdir -p vmci
+        # Linux headers are redefined, so we can't just add -I to the whole dir
+        cp open-vm-tools/open-vm-tools/lib/include/vmci_* vmci/
+    fi
 }

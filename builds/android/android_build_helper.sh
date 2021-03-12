@@ -267,12 +267,15 @@ function android_build_verify_so {
     fi
     android_build_check_fail
 
-    if command -v readelf >/dev/null 2>&1 ; then
+    local READELF="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-readelf"
+    if command -v ${READELF} >/dev/null 2>&1 ; then
+        local readelf_bin="${READELF}"
+    elif command -v readelf >/dev/null 2>&1 ; then
         local readelf_bin="readelf"
     elif command -v greadelf >/dev/null 2>&1 ; then
         local readelf_bin="greadelf"
     else
-        ANDROID_BUILD_FAIL+=("Could not find [g]readelf")
+        ANDROID_BUILD_FAIL+=("Could not find any of readelf, greadelf, or ${READELF}")
     fi
     android_build_check_fail
 

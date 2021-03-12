@@ -726,10 +726,10 @@ void zmq::ip_resolver_t::do_freeaddrinfo (struct addrinfo *res_)
     freeaddrinfo (res_);
 }
 
+
 unsigned int zmq::ip_resolver_t::do_if_nametoindex (const char *ifname_)
 {
-#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP         \
-  && !defined ZMQ_HAVE_VXWORKS
+#ifdef HAVE_IF_NAMETOINDEX
     return if_nametoindex (ifname_);
 #else
     LIBZMQ_UNUSED (ifname_);

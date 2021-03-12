@@ -453,11 +453,20 @@ bool zmq::ws_engine_t::server_handshake ()
                     if (strcasecmp ("upgrade", _header_name) == 0)
                         _header_upgrade_websocket =
                           strcasecmp ("websocket", _header_value) == 0;
-                    else if (strcasecmp ("connection", _header_name) == 0)
-                        _header_connection_upgrade =
-                          strcasecmp ("upgrade", _header_value) == 0;
-                    else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
-                             == 0)
+                    else if (strcasecmp ("connection", _header_name) == 0) {
+                        char *rest = NULL;
+                        char *element = strtok_r (_header_value, ",", &rest);
+                        while (element != NULL) {
+                            while (*element == ' ')
+                                element++;
+                            if (strcasecmp ("upgrade", element) == 0) {
+                                _header_connection_upgrade = true;
+                                break;
+                            }
+                            element = strtok_r (NULL, ",", &rest);
+                        }
+                    } else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
+                               == 0)
                         strcpy_s (_websocket_key, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
@@ -465,7 +474,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *rest = 0;
+                            char *rest = NULL;
                             char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')

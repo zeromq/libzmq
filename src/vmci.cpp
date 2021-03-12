@@ -28,7 +28,9 @@
 */
 #include "precompiled.hpp"
 
+#include "ip.hpp"
 #include "vmci.hpp"
+#include "vmci_address.hpp"
 
 #if defined ZMQ_HAVE_VMCI
 
@@ -95,6 +97,25 @@ void zmq::tune_vmci_connect_timeout (ctx_t *context_,
 #else
     errno_assert (rc == 0);
 #endif
+}
+
+zmq::fd_t zmq::vmci_open_socket (const char *address_,
+                                 const zmq::options_t &options_,
+                                 zmq::vmci_address_t *out_vmci_addr_)
+{
+    //  Convert the textual address into address structure.
+    int rc = out_vmci_addr_->resolve (address_);
+    if (rc != 0)
+        return retired_fd;
+
+    //  Create the socket.
+    fd_t s = open_socket (out_vmci_addr_->family (), SOCK_STREAM, 0);
+
+    if (s == retired_fd) {
+        return retired_fd;
+    }
+
+    return s;
 }
 
 #endif

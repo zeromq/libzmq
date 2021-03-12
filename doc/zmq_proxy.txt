@@ -65,7 +65,7 @@ RETURN VALUE
 ------------
 The _zmq_proxy()_ function always returns `-1` and 'errno' set to *ETERM* or
 *EINTR* (the 0MQ 'context' associated with either of the specified sockets was
-terminated).
+terminated) or *EFAULT* (the provided 'frontend' or 'backend' was invalid).
 
 
 EXAMPLE
@@ -74,9 +74,9 @@ EXAMPLE
 ----
 //  Create frontend and backend sockets
 void *frontend = zmq_socket (context, ZMQ_ROUTER);
-assert (backend);
-void *backend = zmq_socket (context, ZMQ_DEALER);
 assert (frontend);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+assert (backend);
 //  Bind both sockets to TCP ports
 assert (zmq_bind (frontend, "tcp://*:5555") == 0);
 assert (zmq_bind (backend, "tcp://*:5556") == 0);

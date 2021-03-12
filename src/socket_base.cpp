@@ -1216,6 +1216,11 @@ int zmq::socket_base_t::term_endpoint (const char *endpoint_uri_)
         term_child (it->second.first);
     }
     _endpoints.erase (range.first, range.second);
+
+    if (options.reconnect_stop & ZMQ_RECONNECT_STOP_AFTER_DISCONNECT) {
+        _disconnected = true;
+    }
+
     return 0;
 }
 
@@ -2049,6 +2054,11 @@ void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
         _monitor_socket = NULL;
         _monitor_events = 0;
     }
+}
+
+bool zmq::socket_base_t::is_disconnected () const
+{
+    return _disconnected;
 }
 
 zmq::routing_socket_base_t::routing_socket_base_t (class ctx_t *parent_,

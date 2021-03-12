@@ -269,5 +269,9 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     if (options.tos != 0)
         set_ip_type_of_service (sock, options.tos);
 
+    // Set the protocol-defined priority for this client socket
+    if (options.priority != 0)
+        set_socket_priority (sock, options.priority);
+
     return sock;
 }

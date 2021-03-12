@@ -39,11 +39,6 @@ char connect_address[MAX_SOCKET_STRING];
 void test_fair_queue_in (const char *bind_address_)
 {
     void *rep = test_context_socket (ZMQ_REP);
-
-    int timeout = 250;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof (int)));
-
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (rep, bind_address_));
     size_t len = MAX_SOCKET_STRING;
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -54,8 +49,6 @@ void test_fair_queue_in (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         reqs[peer] = test_context_socket (ZMQ_REQ);
 
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (reqs[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (reqs[peer], connect_address));
     }
 

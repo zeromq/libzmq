@@ -62,8 +62,6 @@ class pair_t ZMQ_FINAL : public socket_base_t
   private:
     zmq::pipe_t *_pipe;
 
-    zmq::pipe_t *_last_in;
-
     ZMQ_NON_COPYABLE_NOR_MOVABLE (pair_t)
 };
 }

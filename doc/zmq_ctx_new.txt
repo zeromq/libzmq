@@ -33,7 +33,12 @@ of the values defined below.
 
 ERRORS
 ------
-No error values are defined for this function.
+*EMFILE*::
+The limit on the total number of open files has been reached and it
+wasn't possible to create a new context.
+*EMFILE*::
+The limit on the total number of open files in system has been reached
+and it wasn't possible to create a new context.
 
 
 SEE ALSO

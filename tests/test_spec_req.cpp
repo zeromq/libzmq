@@ -48,9 +48,6 @@ void test_round_robin_out (const char *bind_address_)
     for (size_t peer = 0; peer < services; peer++) {
         rep[peer] = test_context_socket (ZMQ_REP);
 
-        int timeout = 250;
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (rep[peer], connect_address));
     }
     //  We have to give the connects time to finish otherwise the requests
@@ -87,10 +84,6 @@ void test_req_only_listens_to_current_peer (const char *bind_address_)
 
     for (size_t i = 0; i < services; ++i) {
         router[i] = test_context_socket (ZMQ_ROUTER);
-
-        int timeout = 250;
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (router[i], ZMQ_RCVTIMEO, &timeout, sizeof (timeout)));
 
         int enabled = 1;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (

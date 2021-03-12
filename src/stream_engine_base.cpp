@@ -84,14 +84,14 @@ static std::string get_peer_address (zmq::fd_t s_)
     else if (family == PF_UNIX) {
         struct xucred cred;
         socklen_t size = sizeof (cred);
-        if (!getsockopt (_s, 0, LOCAL_PEERCRED, &cred, &size)
+        if (!getsockopt (s_, 0, LOCAL_PEERCRED, &cred, &size)
             && cred.cr_version == XUCRED_VERSION) {
             std::ostringstream buf;
             buf << ":" << cred.cr_uid << ":";
             if (cred.cr_ngroups > 0)
                 buf << cred.cr_groups[0];
             buf << ":";
-            _peer_address += buf.str ();
+            peer_address += buf.str ();
         }
     }
 #endif
