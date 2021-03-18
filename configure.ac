@@ -697,9 +697,9 @@ if test "x$with_norm_ext" != "xno"; then
         if test "x$with_norm_ext" != "xyes"; then
             norm_path="${with_norm_ext}"
             norm_CFLAGS="${norm_CFLAGS} -I${norm_path}/include"
-            norm_LIBS="${norm_LIBS} -L${norm_path}/lib"
+            norm_LIBS="${norm_LIBS} -L${norm_path}/lib -L${norm_path}/protolib/lib"
         fi
-        norm_LIBS="${norm_LIBS} -lnorm"
+        norm_LIBS="${norm_LIBS} -lnorm -lprotokit"
         have_norm_library="yes"
         PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $norm_LIBS"
         AC_SUBST(norm_LIBS)
