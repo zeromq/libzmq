@@ -13,7 +13,7 @@ Name:          zeromq
 Version:       4.3.5
 Release:       1%{?dist}
 Summary:       The ZeroMQ messaging library
-Group:         Applications/Internet
+Group:         Development/Libraries/C and C++
 License:       LGPLv3+
 URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
