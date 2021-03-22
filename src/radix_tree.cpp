@@ -558,7 +558,7 @@ visit_keys (node_t node_,
     for (size_t i = 0, edgecount = node_.edgecount (); i < edgecount; ++i) {
         visit_keys (node_.node_at (i), buffer_, func_, arg_);
     }
-    buffer_.resize (buffer_.size () - prefix_length);
+    buffer_.resize (static_cast<uint32_t> (buffer_.size () - prefix_length));
 }
 
 void zmq::radix_tree_t::apply (
