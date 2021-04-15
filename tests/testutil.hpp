@@ -42,6 +42,8 @@
 #if defined _WIN32
 #include "../src/windows.hpp"
 #else
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
