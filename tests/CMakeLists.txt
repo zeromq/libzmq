@@ -136,9 +136,6 @@ if(NOT WIN32)
         test_term_endpoint_tipc)
     endif()
   endif()
-  if(ZMQ_HAVE_BUSY_POLL)
-    list(APPEND tests test_busy_poll)
-  endif()
 endif()
 
 if(WITH_VMCI)
@@ -165,6 +162,9 @@ if(ENABLE_DRAFTS)
     test_hello_msg
     test_disconnect_msg
   )
+  if(ZMQ_HAVE_BUSY_POLL)
+    list(APPEND tests test_busy_poll)
+  endif()
 endif()
 
 if(ZMQ_HAVE_WS)
