@@ -797,6 +797,12 @@ int zmq::options_t::setsockopt (int option_,
             }
             break;
 
+        case ZMQ_BUSY_POLL:
+            if (is_int) {
+                busy_poll = value;
+                return 0;
+            }
+            break;
 #ifdef ZMQ_HAVE_WSS
         case ZMQ_WSS_KEY_PEM:
             // TODO: check if valid certificate
@@ -1263,6 +1269,13 @@ int zmq::options_t::getsockopt (int option_,
         case ZMQ_OUT_BATCH_SIZE:
             if (is_int) {
                 *value = out_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_BUSY_POLL:
+            if (is_int) {
+                *value = busy_poll;
                 return 0;
             }
             break;
