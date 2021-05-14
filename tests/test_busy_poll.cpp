@@ -40,7 +40,7 @@ void test_busy_poll ()
     //  set socket ZMQ_BUSY_POLL options
     int busy_poll = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (socket, ZMQ_BUSY_POLL, &busy_poll, sizeof(int)));
+      zmq_setsockopt (socket, ZMQ_BUSY_POLL, &busy_poll, sizeof (int)));
 
     //  bind socket
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));

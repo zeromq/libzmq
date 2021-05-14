@@ -347,7 +347,7 @@ void zmq::tune_tcp_busy_poll (fd_t socket_, int busy_poll_)
     if (busy_poll_ > 0) {
         const int rc =
           setsockopt (socket_, SOL_SOCKET, SO_BUSY_POLL,
-                      reinterpret_cast<char *> (&busy_poll_), sizeof(int));
+                      reinterpret_cast<char *> (&busy_poll_), sizeof (int));
         assert_success_or_recoverable (socket_, rc);
     }
 #else

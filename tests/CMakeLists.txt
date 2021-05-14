@@ -137,11 +137,7 @@ if(NOT WIN32)
     endif()
   endif()
   if(ZMQ_HAVE_BUSY_POLL)
-    list(
-            APPEND
-            tests
-            test_busy_poll
-    )
+    list(APPEND tests test_busy_poll)
   endif()
 endif()
 
