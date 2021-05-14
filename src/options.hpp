@@ -308,6 +308,9 @@ struct options_t
     //  Disconnect msg
     std::vector<unsigned char> disconnect_msg;
     bool can_recv_disconnect_msg;
+
+    //  This option removes several delays caused by scheduling, interrupts and context switching.
+    int busy_poll;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

@@ -69,6 +69,7 @@
 #define ZMQ_HELLO_MSG 110
 #define ZMQ_DISCONNECT_MSG 111
 #define ZMQ_PRIORITY 112
+#define ZMQ_BUSY_POLL 113
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
