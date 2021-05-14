@@ -352,6 +352,7 @@ void zmq::tune_tcp_busy_poll (fd_t socket_, int busy_poll_)
     }
 #else
     LIBZMQ_UNUSED (socket_);
+    LIBZMQ_UNUSED (busy_poll_);
 #endif
 }
 

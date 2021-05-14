@@ -88,7 +88,7 @@ Applicable socket types:: all, when using TCP or UDP transports.
 
 
 ZMQ_BUSY_POLL: This removes delays caused by the interrupt and the resultant context switch.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Busy polling helps reduce latency in the network receive path by allowing socket layer code
 to poll the receive queue of a network device, and disabling network interrupts. This removes
 delays caused by the interrupt and the resultant context switch. However, it also increases

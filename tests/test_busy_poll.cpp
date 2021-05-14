@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2021 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -43,7 +43,7 @@ void test_busy_poll ()
       zmq_setsockopt (socket, ZMQ_BUSY_POLL, &busy_poll, sizeof(int)));
 
     //  bind socket
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://*:5900"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));
 
     //  Clean up.
     test_context_socket_close (socket);
