@@ -254,7 +254,8 @@ zmq::options_t::options_t () :
     hello_msg (),
     can_send_hello_msg (false),
     disconnect_msg (),
-    can_recv_disconnect_msg (false)
+    can_recv_disconnect_msg (false),
+    busy_poll (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
