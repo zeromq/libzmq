@@ -84,14 +84,14 @@ static std::string get_peer_address (zmq::fd_t s_)
     else if (family == PF_UNIX) {
         struct xucred cred;
         socklen_t size = sizeof (cred);
-        if (!getsockopt (_s, 0, LOCAL_PEERCRED, &cred, &size)
+        if (!getsockopt (s_, 0, LOCAL_PEERCRED, &cred, &size)
             && cred.cr_version == XUCRED_VERSION) {
             std::ostringstream buf;
             buf << ":" << cred.cr_uid << ":";
             if (cred.cr_ngroups > 0)
                 buf << cred.cr_groups[0];
             buf << ":";
-            _peer_address += buf.str ();
+            peer_address += buf.str ();
         }
     }
 #endif
@@ -344,8 +344,14 @@ void zmq::stream_engine_base_t::out_event ()
         _outsize = _encoder->encode (&_outpos, 0);
 
         while (_outsize < static_cast<size_t> (_options.out_batch_size)) {
-            if ((this->*_next_msg) (&_tx_msg) == -1)
-                break;
+            if ((this->*_next_msg) (&_tx_msg) == -1) {
+                //  ws_engine can cause an engine error and delete it, so
+                //  bail out immediately to avoid use-after-free
+                if (errno == ECONNRESET)
+                    return;
+                else
+                    break;
+            }
             _encoder->load_msg (&_tx_msg);
             unsigned char *bufptr = _outpos + _outsize;
             const size_t n =

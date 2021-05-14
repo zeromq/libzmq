@@ -39,7 +39,6 @@
 zmq::dgram_t::dgram_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     _pipe (NULL),
-    _last_in (NULL),
     _more_out (false)
 {
     options.type = ZMQ_DGRAM;
@@ -71,9 +70,6 @@ void zmq::dgram_t::xattach_pipe (pipe_t *pipe_,
 void zmq::dgram_t::xpipe_terminated (pipe_t *pipe_)
 {
     if (pipe_ == _pipe) {
-        if (_last_in == _pipe) {
-            _last_in = NULL;
-        }
         _pipe = NULL;
     }
 }
@@ -147,7 +143,6 @@ int zmq::dgram_t::xrecv (msg_t *msg_)
         errno = EAGAIN;
         return -1;
     }
-    _last_in = _pipe;
 
     return 0;
 }

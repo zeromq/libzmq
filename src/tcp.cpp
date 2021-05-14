@@ -393,6 +393,10 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     if (options_.tos != 0)
         set_ip_type_of_service (s, options_.tos);
 
+    // Set the protocol-defined priority for this socket
+    if (options_.priority != 0)
+        set_socket_priority (s, options_.priority);
+
     // Set the socket to loopback fastpath if configured.
     if (options_.loopback_fastpath)
         tcp_tune_loopback_fast_path (s);

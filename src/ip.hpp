@@ -51,6 +51,9 @@ int get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_);
 // Sets the IP Type-Of-Service for the underlying socket
 void set_ip_type_of_service (fd_t s_, int iptos_);
 
+// Sets the protocol-defined priority for the underlying socket
+void set_socket_priority (fd_t s_, int priority_);
+
 // Sets the SO_NOSIGPIPE option for the underlying socket.
 // Return 0 on success, -1 if the connection has been closed by the peer
 int set_nosigpipe (fd_t s_);

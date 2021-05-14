@@ -41,6 +41,9 @@
 #include <cmnintrin.h>
 #else
 #include <intrin.h>
+#if defined(_M_ARM) || defined(_M_ARM64)
+#include <arm_neon.h>
+#endif
 #endif
 #endif
 
@@ -123,9 +126,11 @@ static f_compatible_get_tick_count64 my_get_tick_count64 =
   init_compatible_get_tick_count64 ();
 #endif
 
+#ifndef ZMQ_HAVE_WINDOWS
 const uint64_t usecs_per_msec = 1000;
-const uint64_t usecs_per_sec = 1000000;
 const uint64_t nsecs_per_usec = 1000;
+#endif
+const uint64_t usecs_per_sec = 1000000;
 
 zmq::clock_t::clock_t () :
     _last_tsc (rdtsc ()),
@@ -235,6 +240,14 @@ uint64_t zmq::clock_t::rdtsc ()
 {
 #if (defined _MSC_VER && (defined _M_IX86 || defined _M_X64))
     return __rdtsc ();
+#elif defined(_MSC_VER) && defined(_M_ARM)   // NC => added for windows ARM
+    return __rdpmccntr64 ();
+#elif defined(_MSC_VER) && defined(_M_ARM64) // NC => added for windows ARM64
+    //return __rdpmccntr64 ();
+    //return __rdtscp (nullptr);
+    // todo: find proper implementation for ARM64
+    static uint64_t snCounter = 0;
+    return ++snCounter;
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));

@@ -35,7 +35,7 @@
 
 #include <new>
 
-#include "stream_engine.hpp"
+//#include "stream_engine.hpp"
 #include "vmci_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
@@ -55,30 +55,8 @@
 zmq::vmci_listener_t::vmci_listener_t (io_thread_t *io_thread_,
                                        socket_base_t *socket_,
                                        const options_t &options_) :
-    own_t (io_thread_, options_),
-    io_object_t (io_thread_),
-    s (retired_fd),
-    socket (socket_)
+    stream_listener_base_t (io_thread_, socket_, options_)
 {
-}
-
-zmq::vmci_listener_t::~vmci_listener_t ()
-{
-    zmq_assert (s == retired_fd);
-}
-
-void zmq::vmci_listener_t::process_plug ()
-{
-    //  Start polling for incoming connections.
-    handle = add_fd (s);
-    set_pollin (handle);
-}
-
-void zmq::vmci_listener_t::process_term (int linger_)
-{
-    rm_fd (handle);
-    close ();
-    own_t::process_term (linger_);
 }
 
 void zmq::vmci_listener_t::in_event ()
@@ -87,8 +65,8 @@ void zmq::vmci_listener_t::in_event ()
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     if (fd == retired_fd) {
-        socket->event_accept_failed (
-          make_unconnected_bind_endpoint_pair (endpoint), zmq_errno ());
+        _socket->event_accept_failed (
+          make_unconnected_bind_endpoint_pair (_endpoint), zmq_errno ());
         return;
     }
 
@@ -107,41 +85,24 @@ void zmq::vmci_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow) stream_engine_t (
-      fd, options, make_unconnected_bind_endpoint_pair (endpoint));
-    alloc_assert (engine);
-
-    //  Choose I/O thread to run connecter in. Given that we are already
-    //  running in an I/O thread, there must be at least one available.
-    io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_assert (io_thread);
-
-    //  Create and launch a session object.
-    session_base_t *session =
-      session_base_t::create (io_thread, false, socket, options, NULL);
-    errno_assert (session);
-    session->inc_seqnum ();
-    launch_child (session);
-    send_attach (session, engine, false);
-    socket->event_accepted (make_unconnected_bind_endpoint_pair (endpoint), fd);
+    create_engine (fd);
 }
 
-int zmq::vmci_listener_t::get_local_address (std::string &addr_)
+std::string
+zmq::vmci_listener_t::get_socket_name (zmq::fd_t fd_,
+                                       socket_end_t socket_end_) const
 {
     struct sockaddr_storage ss;
-#ifdef ZMQ_HAVE_HPUX
-    int sl = sizeof (ss);
-#else
-    socklen_t sl = sizeof (ss);
-#endif
-    int rc = getsockname (s, (sockaddr *) &ss, &sl);
-    if (rc != 0) {
-        addr_.clear ();
-        return rc;
+    const zmq_socklen_t sl = get_socket_address (fd_, socket_end_, &ss);
+    if (sl == 0) {
+        return std::string ();
     }
 
-    vmci_address_t addr ((struct sockaddr *) &ss, sl, this->get_ctx ());
-    return addr.to_string (addr_);
+    const vmci_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl,
+                               this->get_ctx ());
+    std::string address_string;
+    addr.to_string (address_string);
+    return address_string;
 }
 
 int zmq::vmci_listener_t::set_local_address (const char *addr_)
@@ -156,7 +117,7 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
         return -1;
 
     //  Create a listening socket.
-    s =
+    _s =
       open_socket (this->get_ctx ()->get_vmci_socket_family (), SOCK_STREAM, 0);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
@@ -165,18 +126,18 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
     }
 #if !defined _WIN32_WCE
     //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
+    BOOL brc = SetHandleInformation ((HANDLE) _s, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
 #endif
 #else
-    if (s == -1)
+    if (_s == -1)
         return -1;
 #endif
 
-    address.to_string (endpoint);
+    address.to_string (_endpoint);
 
     //  Bind the socket.
-    rc = bind (s, address.addr (), address.addrlen ());
+    rc = bind (_s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -188,7 +149,7 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
 #endif
 
     //  Listen for incoming connections.
-    rc = listen (s, options.backlog);
+    rc = listen (_s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -199,7 +160,8 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
         goto error;
 #endif
 
-    socket->event_listening (make_unconnected_bind_endpoint_pair (endpoint), s);
+    _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
+                              _s);
     return 0;
 
 error:
@@ -209,27 +171,13 @@ error:
     return -1;
 }
 
-void zmq::vmci_listener_t::close ()
-{
-    zmq_assert (s != retired_fd);
-#ifdef ZMQ_HAVE_WINDOWS
-    int rc = closesocket (s);
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    int rc = ::close (s);
-    errno_assert (rc == 0);
-#endif
-    socket->event_closed (make_unconnected_bind_endpoint_pair (endpoint), s);
-    s = retired_fd;
-}
-
 zmq::fd_t zmq::vmci_listener_t::accept ()
 {
     //  Accept one connection and deal with different failure modes.
     //  The situation where connection cannot be accepted due to insufficient
     //  resources is considered valid and treated by ignoring the connection.
-    zmq_assert (s != retired_fd);
-    fd_t sock = ::accept (s, NULL, NULL);
+    zmq_assert (_s != retired_fd);
+    fd_t sock = ::accept (_s, NULL, NULL);
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {

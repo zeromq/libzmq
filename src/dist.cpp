@@ -64,6 +64,18 @@ void zmq::dist_t::attach (pipe_t *pipe_)
     }
 }
 
+bool zmq::dist_t::has_pipe (pipe_t *pipe_)
+{
+    std::size_t claimed_index = _pipes.index (pipe_);
+
+    // If pipe claims to be outside the available index space it can't be in the distributor.
+    if (claimed_index >= _pipes.size ()) {
+        return false;
+    }
+
+    return _pipes[claimed_index] == pipe_;
+}
+
 void zmq::dist_t::match (pipe_t *pipe_)
 {
     //  If pipe is already matching do nothing.

@@ -513,6 +513,18 @@ Default value:: -1
 Applicable socket types:: all bound sockets, when using IPC or TCP transport
 
 
+ZMQ_PRIORITY: Retrieve the Priority on socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gets the protocol-defined priority for all packets to be sent on this
+socket, where supported by the OS.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0
+Default value:: 0
+Applicable socket types:: all, only for connection-oriented transports
+
+
 ZMQ_RATE: Retrieve multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for

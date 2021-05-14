@@ -28,6 +28,7 @@
 */
 
 #include "precompiled.hpp"
+#include "compat.hpp"
 #include "macros.hpp"
 #include "msg.hpp"
 

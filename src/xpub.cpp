@@ -272,6 +272,12 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  care of by the manual call above. subscriptions is the real mtrie,
         //  so the pipe must be removed from there or it will be left over.
         _subscriptions.rm (pipe_, stub, static_cast<void *> (NULL), false);
+
+        // In case the pipe is currently set as last we must clear it to prevent
+        // subscriptions from being re-added.
+        if (pipe_ == _last_pipe) {
+            _last_pipe = NULL;
+        }
     } else {
         //  Remove the pipe from the trie. If there are topics that nobody
         //  is interested in anymore, send corresponding unsubscriptions
@@ -299,6 +305,9 @@ int zmq::xpub_t::xsend (msg_t *msg_)
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!_more_send) {
+        // Ensure nothing from previous failed attempt to send is left matched
+        _dist.unmatch ();
+
         if (unlikely (_manual && _last_pipe && _send_last_pipe)) {
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
                                   msg_->size (), mark_last_pipe_as_matching,
@@ -345,6 +354,12 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
     if (_manual && !_pending_pipes.empty ()) {
         _last_pipe = _pending_pipes.front ();
         _pending_pipes.pop_front ();
+
+        // If the distributor doesn't know about this pipe it must have already
+        // been terminated and thus we can't allow manual subscriptions.
+        if (_last_pipe != NULL && !_dist.has_pipe (_last_pipe)) {
+            _last_pipe = NULL;
+        }
     }
 
     int rc = msg_->close ();

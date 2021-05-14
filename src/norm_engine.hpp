@@ -4,6 +4,11 @@
 
 #if defined ZMQ_HAVE_NORM
 
+#if defined(ZMQ_HAVE_WINDOWS) && defined(ZMQ_IOTHREAD_POLLER_USE_EPOLL)
+#define ZMQ_USE_NORM_SOCKET_WRAPPER
+#endif
+
+
 #include "io_object.hpp"
 #include "i_engine.hpp"
 #include "options.hpp"
@@ -186,6 +191,12 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     NormRxStreamState::List
       msg_ready_list; // rx streams w/ msg ready for push to zmq
 
+#ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
+    fd_t
+      wrapper_read_fd; // filedescriptor used to read norm events through the wrapper
+    DWORD wrapper_thread_id;
+    HANDLE wrapper_thread_handle;
+#endif
 
 }; // end class norm_engine_t
 }

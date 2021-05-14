@@ -56,10 +56,6 @@ void setUp ()
     for (size_t peer = 0; peer < services; peer++) {
         rep[peer] = test_context_socket (ZMQ_REP);
 
-        int timeout = 500;
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_setsockopt (rep[peer], ZMQ_RCVTIMEO, &timeout, sizeof (int)));
-
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (rep[peer], my_endpoint));
 
         //  These tests require strict ordering, so wait for the connections to

@@ -54,6 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <cstring>
 
+#include "compat.hpp"
 #include "tcp.hpp"
 #include "ws_engine.hpp"
 #include "session_base.hpp"
@@ -69,30 +70,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef ZMQ_HAVE_CURVE
 #include "curve_client.hpp"
 #include "curve_server.hpp"
-#endif
-
-#ifdef ZMQ_HAVE_WINDOWS
-#define strcasecmp _stricmp
-#define strtok_r strtok_s
-#else
-#ifdef ZMQ_HAVE_LIBBSD
-#include <bsd/string.h>
-#elif !defined(ZMQ_HAVE_STRLCPY)
-static size_t strlcpy (char *dest_, const char *src_, const size_t dest_size_)
-{
-    size_t remain = dest_size_;
-    for (; remain && *src_; --remain, ++src_, ++dest_) {
-        *dest_ = *src_;
-    }
-    return dest_size_ - remain;
-}
-#endif
-template <size_t size>
-static int strcpy_s (char (&dest_)[size], const char *const src_)
-{
-    const size_t res = strlcpy (dest_, src_, size);
-    return res >= size ? ERANGE : 0;
-}
 #endif
 
 //  OSX uses a different name for this socket option
@@ -476,11 +453,20 @@ bool zmq::ws_engine_t::server_handshake ()
                     if (strcasecmp ("upgrade", _header_name) == 0)
                         _header_upgrade_websocket =
                           strcasecmp ("websocket", _header_value) == 0;
-                    else if (strcasecmp ("connection", _header_name) == 0)
-                        _header_connection_upgrade =
-                          strcasecmp ("upgrade", _header_value) == 0;
-                    else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
-                             == 0)
+                    else if (strcasecmp ("connection", _header_name) == 0) {
+                        char *rest = NULL;
+                        char *element = strtok_r (_header_value, ",", &rest);
+                        while (element != NULL) {
+                            while (*element == ' ')
+                                element++;
+                            if (strcasecmp ("upgrade", element) == 0) {
+                                _header_connection_upgrade = true;
+                                break;
+                            }
+                            element = strtok_r (NULL, ",", &rest);
+                        }
+                    } else if (strcasecmp ("Sec-WebSocket-Key", _header_name)
+                               == 0)
                         strcpy_s (_websocket_key, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
@@ -488,7 +474,7 @@ bool zmq::ws_engine_t::server_handshake ()
                         // Sec-WebSocket-Protocol can appear multiple times or be a comma separated list
                         // if _websocket_protocol is already set we skip the check
                         if (_websocket_protocol[0] == '\0') {
-                            char *rest = 0;
+                            char *rest = NULL;
                             char *p = strtok_r (_header_value, ",", &rest);
                             while (p != NULL) {
                                 if (*p == ' ')
@@ -865,6 +851,10 @@ bool zmq::ws_engine_t::client_handshake ()
                         strcpy_s (_websocket_accept, _header_value);
                     else if (strcasecmp ("Sec-WebSocket-Protocol", _header_name)
                              == 0) {
+                        if (_mechanism) {
+                            _client_handshake_state = client_handshake_error;
+                            break;
+                        }
                         if (select_protocol (_header_value))
                             strcpy_s (_websocket_protocol, _header_value);
                     }
@@ -963,6 +953,7 @@ int zmq::ws_engine_t::produce_close_message (msg_t *msg_)
 
 int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
 {
+    LIBZMQ_UNUSED (msg_);
     _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
       &ws_engine_t::close_connection_after_close);
 
@@ -972,6 +963,7 @@ int zmq::ws_engine_t::produce_no_msg_after_close (msg_t *msg_)
 
 int zmq::ws_engine_t::close_connection_after_close (msg_t *msg_)
 {
+    LIBZMQ_UNUSED (msg_);
     error (connection_error);
     errno = ECONNRESET;
     return -1;

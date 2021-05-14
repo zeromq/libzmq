@@ -51,6 +51,9 @@ class dist_t
     //  Adds the pipe to the distributor object.
     void attach (zmq::pipe_t *pipe_);
 
+    //  Checks if this pipe is present in the distributor.
+    bool has_pipe (zmq::pipe_t *pipe_);
+
     //  Activates pipe that have previously reached high watermark.
     void activated (zmq::pipe_t *pipe_);
 

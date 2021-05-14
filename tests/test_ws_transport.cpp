@@ -271,6 +271,33 @@ void test_mask_shared_msg ()
     test_context_socket_close (sb);
 }
 
+void test_pub_sub ()
+{
+    char connect_address[MAX_SOCKET_STRING];
+    size_t addr_length = sizeof (connect_address);
+    void *sb = test_context_socket (ZMQ_XPUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, "ws://127.0.0.1:*"));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, connect_address, &addr_length));
+
+    void *sc = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sc, ZMQ_SUBSCRIBE, "A", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sc, ZMQ_SUBSCRIBE, "B", 1));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, connect_address));
+
+    recv_string_expect_success (sb, "\1A", 0);
+    recv_string_expect_success (sb, "\1B", 0);
+
+    send_string_expect_success (sb, "A", 0);
+    send_string_expect_success (sb, "B", 0);
+
+    recv_string_expect_success (sc, "A", 0);
+    recv_string_expect_success (sc, "B", 0);
+
+    test_context_socket_close (sc);
+    test_context_socket_close (sb);
+}
+
 
 int main ()
 {
@@ -283,6 +310,7 @@ int main ()
     RUN_TEST (test_large_message);
     RUN_TEST (test_heartbeat);
     RUN_TEST (test_mask_shared_msg);
+    RUN_TEST (test_pub_sub);
 
     if (zmq_has ("curve"))
         RUN_TEST (test_curve);

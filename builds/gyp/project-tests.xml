@@ -81,4 +81,5 @@
     <test name = "test_filter_ipc" />
     <test name = "test_fork" />
     <test name = "test_abstract_ipc" />
+    <test name = "test_pubsub" />
 </tests>
