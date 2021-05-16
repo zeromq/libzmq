@@ -25,7 +25,7 @@ array. The *zmq_pollitem_t* structure is defined as follows:
 typedef struct
 {
     void '*socket';
-    int 'fd';
+    zmq_fd_t 'fd';
     short 'events';
     short 'revents';
 } zmq_pollitem_t;
