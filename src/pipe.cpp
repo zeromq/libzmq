@@ -597,7 +597,7 @@ void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
 
 void zmq::pipe_t::send_disconnect_msg ()
 {
-    if (_disconnect_msg.size () > 0) {
+    if (_disconnect_msg.size () > 0 && _out_pipe) {
         // Rollback any incomplete message in the pipe, and push the disconnect message.
         rollback ();
 
