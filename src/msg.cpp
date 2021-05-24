@@ -701,11 +701,11 @@ int zmq::msg_t::set_group (const char *group_, size_t length_)
         assert (_u.base.group.lgroup.content);
         new (&_u.base.group.lgroup.content->refcnt) zmq::atomic_counter_t ();
         _u.base.group.lgroup.content->refcnt.set (1);
-        strncpy (_u.base.group.lgroup.content->group, group_, length_);
-        _u.base.group.lgroup.content->group[length_] = '\0';
+        strncpy (_u.base.group.lgroup.content->group, group_, sizeof _u.base.group.lgroup.content->group);
+        _u.base.group.lgroup.content->group[sizeof _u.base.group.lgroup.content->group - 1] = '\0';
     } else {
-        strncpy (_u.base.group.sgroup.group, group_, length_);
-        _u.base.group.sgroup.group[length_] = '\0';
+        strncpy (_u.base.group.sgroup.group, group_, sizeof _u.base.group.sgroup.group);
+        _u.base.group.sgroup.group[sizeof _u.base.group.sgroup.group - 1] = '\0';
     }
 
     return 0;
