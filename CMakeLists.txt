@@ -6,6 +6,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 else()
   cmake_minimum_required(VERSION 2.8.12)
 endif()
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.11" CACHE STRING "Minimum OS X deployment version")
+
+option(OSX_UNIVERSAL "Build for both arm64 and x86_64" OFF)
+if(OSX_UNIVERSAL)
+    set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+    message(STATUS "Building for arm64 and x86_64")
+endif()
 
 include(CheckIncludeFiles)
 include(CheckCCompilerFlag)
