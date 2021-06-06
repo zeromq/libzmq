@@ -255,6 +255,8 @@ zmq::options_t::options_t () :
     can_send_hello_msg (false),
     disconnect_msg (),
     can_recv_disconnect_msg (false),
+    hiccup_msg (),
+    can_recv_hiccup_msg (false),
     busy_poll (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
@@ -858,6 +860,18 @@ int zmq::options_t::setsockopt (int option_,
                 return 0;
             }
             break;
+
+        case ZMQ_HICCUP_MSG:
+            if (optvallen_ > 0) {
+                unsigned char *bytes = (unsigned char *) optval_;
+                hiccup_msg =
+                  std::vector<unsigned char> (bytes, bytes + optvallen_);
+            } else {
+                hiccup_msg = std::vector<unsigned char> ();
+            }
+
+            return 0;
+
 
 #endif
 

@@ -615,3 +615,15 @@ void zmq::pipe_t::set_disconnect_msg (
       _disconnect_msg.init_buffer (&disconnect_[0], disconnect_.size ());
     errno_assert (rc == 0);
 }
+
+void zmq::pipe_t::send_hiccup_msg (const std::vector<unsigned char> &hiccup_)
+{
+    if (!hiccup_.empty () && _out_pipe) {
+        msg_t msg;
+        const int rc = msg.init_buffer (&hiccup_[0], hiccup_.size ());
+        errno_assert (rc == 0);
+
+        _out_pipe->write (msg, false);
+        flush ();
+    }
+}

@@ -460,14 +460,18 @@ void zmq::session_base_t::engine_error (bool handshaked_,
     if (_pipe) {
         clean_pipes ();
 
-#ifdef ZMQ_BUILD_DRAFT_API
         //  Only send disconnect message if socket was accepted and handshake was completed
         if (!_active && handshaked_ && options.can_recv_disconnect_msg
             && !options.disconnect_msg.empty ()) {
             _pipe->set_disconnect_msg (options.disconnect_msg);
             _pipe->send_disconnect_msg ();
         }
-#endif
+
+        //  Only send hiccup message if socket was connected and handshake was completed
+        if (_active && handshaked_ && options.can_recv_hiccup_msg
+            && !options.hiccup_msg.empty ()) {
+            _pipe->send_hiccup_msg (options.hiccup_msg);
+        }
     }
 
     zmq_assert (reason_ == i_engine::connection_error

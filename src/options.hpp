@@ -309,6 +309,10 @@ struct options_t
     std::vector<unsigned char> disconnect_msg;
     bool can_recv_disconnect_msg;
 
+    //  Hiccup msg
+    std::vector<unsigned char> hiccup_msg;
+    bool can_recv_hiccup_msg;
+
     //  This option removes several delays caused by scheduling, interrupts and context switching.
     int busy_poll;
 };

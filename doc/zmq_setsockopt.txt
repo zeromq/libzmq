@@ -256,6 +256,21 @@ Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: ZMQ_ROUTER, ZMQ_SERVER and ZMQ_PEER
 
+
+ZMQ_HICCUP_MSG: set a hiccup message that the socket will generate when connected peer temporarly disconnect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set, the socket will generate a hiccup message when connect peer has been disconnected.
+You may set this on DEALER, CLIENT and PEER sockets.
+The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols, when heartbeat recognize a connection drop it
+will generate a hiccup message that can match the protocol of the application.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_DEALER, ZMQ_CLIENT and ZMQ_PEER
+
+
 ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defines whether communications on the socket will be encrypted, see
