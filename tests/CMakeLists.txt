@@ -161,6 +161,7 @@ if(ENABLE_DRAFTS)
     test_channel
     test_hello_msg
     test_disconnect_msg
+    test_hiccup_msg
   )
   if(ZMQ_HAVE_BUSY_POLL)
     list(APPEND tests test_busy_poll)
