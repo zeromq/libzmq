@@ -73,7 +73,7 @@
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
 #define ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED 0x2
-#define ZMQ_RECONNECT_STOP_AFTER_DISCONNECT 0x3
+#define ZMQ_RECONNECT_STOP_AFTER_DISCONNECT 0x4
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
