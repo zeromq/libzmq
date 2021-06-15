@@ -121,7 +121,7 @@ inline size_t valid_pollset_bytes (const fd_set &pollset_)
            - reinterpret_cast<const char *> (&pollset_);
 }
 #else
-inline size_t valid_pollset_bytes (const fd_set &/*pollset_*/)
+inline size_t valid_pollset_bytes (const fd_set & /*pollset_*/)
 {
     return sizeof (fd_set);
 }
