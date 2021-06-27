@@ -11,7 +11,7 @@
         <title>libzmq-vc142</title>
         <authors>libzmq contributors</authors>
         <owners>Eric Voskuil</owners>
-        <licenseUrl>https://raw.github.com/zeromq/libzmq/master/COPYING.LESSER</licenseUrl>
+        <licenseUrl>https://raw.github.com/zeromq/libzmq/master/COPYING</licenseUrl>
         <projectUrl>https://github.com/zeromq/libzmq</projectUrl>
         <iconUrl>https://avatars1.githubusercontent.com/u/109777?s=32</iconUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>

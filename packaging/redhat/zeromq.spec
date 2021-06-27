@@ -249,7 +249,7 @@ autoreconf -fi
 %defattr(-,root,root,-)
 
 # docs in the main package
-%doc AUTHORS COPYING COPYING.LESSER NEWS
+%doc AUTHORS COPYING NEWS
 
 # libraries
 %{_libdir}/libzmq.so.*

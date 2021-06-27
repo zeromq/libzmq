@@ -1170,7 +1170,7 @@ endif()
 
 set(public_headers include/zmq.h include/zmq_utils.h)
 
-set(readme-docs AUTHORS COPYING COPYING.LESSER NEWS)
+set(readme-docs AUTHORS COPYING NEWS)
 
 # -----------------------------------------------------------------------------
 # optional modules
