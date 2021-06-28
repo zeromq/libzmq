@@ -216,7 +216,7 @@ struct command_t
 #else
 }
 #ifdef HAVE_POSIX_MEMALIGN
- __attribute__ ((aligned (ZMQ_CACHELINE_SIZE)))
+__attribute__ ((aligned (ZMQ_CACHELINE_SIZE)))
 #endif
 ;
 #endif
