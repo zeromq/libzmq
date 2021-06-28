@@ -478,7 +478,6 @@ else()
 endif()
 message(STATUS "Using ${ZMQ_CACHELINE_SIZE} bytes alignment for lock-free data structures")
 check_cxx_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
-check_cxx_symbol_exists(_aligned_malloc malloc.h HAVE_ALIGNED_MALLOC)
 
 if(NOT CYGWIN)
   # TODO cannot we simply do 'if(WIN32) set(ZMQ_HAVE_WINDOWS ON)' or similar?

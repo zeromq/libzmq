@@ -51,7 +51,7 @@ namespace zmq
 //  T is the type of the object in the queue.
 //  N is granularity of the queue (how many pushes have to be done till
 //  actual memory allocation is required).
-#if defined HAVE_POSIX_MEMALIGN || defined HAVE_ALIGNED_MALLOC
+#if defined HAVE_POSIX_MEMALIGN
 // ALIGN is the memory alignment size to use in the case where we have
 // posix_memalign available. Default value is 64, this alignment will
 // prevent two queue chunks from occupying the same CPU cache line on
@@ -187,8 +187,6 @@ template <typename T, int N> class yqueue_t
         if (posix_memalign (&pv, ALIGN, sizeof (chunk_t)) == 0)
             return (chunk_t *) pv;
         return NULL;
-#elif defined HAVE_ALIGNED_MALLOC
-        return static_cast<chunk_t *> (_aligned_malloc (sizeof (chunk_t), ALIGN));
 #else
         return static_cast<chunk_t *> (malloc (sizeof (chunk_t)));
 #endif

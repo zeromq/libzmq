@@ -45,14 +45,7 @@ class socket_base_t;
 
 //  This structure defines the commands that can be sent between threads.
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4324) // C4324: alignment padding warnings
-    #ifdef HAVE_ALIGNED_MALLOC
-    __declspec(align (ZMQ_CACHELINE_SIZE))
-    #endif
-#endif
-  struct command_t
+struct command_t
 {
     //  Object to process the command.
     zmq::object_t *destination;
