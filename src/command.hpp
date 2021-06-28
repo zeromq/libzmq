@@ -212,7 +212,6 @@ struct command_t
     } args;
 #ifdef _MSC_VER
 };
-#pragma warning(pop)
 #else
 }
 #ifdef HAVE_POSIX_MEMALIGN
