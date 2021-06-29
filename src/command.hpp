@@ -33,6 +33,7 @@
 #include <string>
 #include "stdint.hpp"
 #include "endpoint.hpp"
+#include "platform.hpp"
 
 namespace zmq
 {
@@ -44,12 +45,7 @@ class socket_base_t;
 
 //  This structure defines the commands that can be sent between threads.
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4324) // C4324: alignment padding warnings
-__declspec(align (64))
-#endif
-  struct command_t
+struct command_t
 {
     //  Object to process the command.
     zmq::object_t *destination;
@@ -216,9 +212,12 @@ __declspec(align (64))
     } args;
 #ifdef _MSC_VER
 };
-#pragma warning(pop)
 #else
-} __attribute__ ((aligned (64)));
+}
+#ifdef HAVE_POSIX_MEMALIGN
+__attribute__ ((aligned (ZMQ_CACHELINE_SIZE)))
+#endif
+;
 #endif
 }
 
