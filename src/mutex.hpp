@@ -35,7 +35,7 @@
 
 //  Mutex class encapsulates OS mutex in a platform-independent way.
 
-#ifdef ZMQ_HAVE_WINDOWS
+#if defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_USE_CV_IMPL_PTHREADS)
 
 #include "windows.hpp"
 

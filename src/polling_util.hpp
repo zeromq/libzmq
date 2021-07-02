@@ -109,9 +109,9 @@ timeout_t
 compute_timeout (bool first_pass_, long timeout_, uint64_t now_, uint64_t end_);
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
+#if defined ZMQ_HAVE_WINDOWS
 inline size_t valid_pollset_bytes (const fd_set &pollset_)
 {
-#if defined ZMQ_HAVE_WINDOWS
     // On Windows we don't need to copy the whole fd_set.
     // SOCKETS are continuous from the beginning of fd_array in fd_set.
     // We just need to copy fd_count elements of fd_array.
@@ -119,10 +119,14 @@ inline size_t valid_pollset_bytes (const fd_set &pollset_)
     return reinterpret_cast<const char *> (
              &pollset_.fd_array[pollset_.fd_count])
            - reinterpret_cast<const char *> (&pollset_);
-#else
-    return sizeof (fd_set);
-#endif
 }
+#else
+inline size_t valid_pollset_bytes (const fd_set & /*pollset_*/)
+{
+    return sizeof (fd_set);
+}
+#endif
+
 
 #if defined ZMQ_HAVE_WINDOWS
 // struct fd_set {

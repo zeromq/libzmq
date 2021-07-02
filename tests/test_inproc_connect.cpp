@@ -54,8 +54,9 @@ static void simult_conn (void *endpt_)
 
     // Connect
     // do not use test_context_socket here, as it is not thread-safe
-    void *connect_socket = zmq_socket (get_test_context (), ZMQ_SUB);
+    void *connect_socket = zmq_socket (get_test_context (), ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, endpt));
+    recv_string_expect_success (connect_socket, "foobar", 0);
 
     // Cleanup
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (connect_socket));
@@ -68,8 +69,9 @@ static void simult_bind (void *endpt_)
 
     // Bind
     // do not use test_context_socket here, as it is not thread-safe
-    void *bind_socket = zmq_socket (get_test_context (), ZMQ_PUB);
+    void *bind_socket = zmq_socket (get_test_context (), ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (bind_socket, endpt));
+    send_string_expect_success (bind_socket, "foobar", 0);
 
     // Cleanup
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (bind_socket));

@@ -341,6 +341,21 @@ void zmq::tcp_tune_loopback_fast_path (const fd_t socket_)
 #endif
 }
 
+void zmq::tune_tcp_busy_poll (fd_t socket_, int busy_poll_)
+{
+#if defined(ZMQ_HAVE_BUSY_POLL)
+    if (busy_poll_ > 0) {
+        const int rc =
+          setsockopt (socket_, SOL_SOCKET, SO_BUSY_POLL,
+                      reinterpret_cast<char *> (&busy_poll_), sizeof (int));
+        assert_success_or_recoverable (socket_, rc);
+    }
+#else
+    LIBZMQ_UNUSED (socket_);
+    LIBZMQ_UNUSED (busy_poll_);
+#endif
+}
+
 zmq::fd_t zmq::tcp_open_socket (const char *address_,
                                 const zmq::options_t &options_,
                                 bool local_,
@@ -398,6 +413,9 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     if (options_.rcvbuf >= 0)
         set_tcp_receive_buffer (s, options_.rcvbuf);
 
+    //  This option removes several delays caused by scheduling, interrupts and context switching.
+    if (options_.busy_poll)
+        tune_tcp_busy_poll (s, options_.busy_poll);
     return s;
 
 setsockopt_error:

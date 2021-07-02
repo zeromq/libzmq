@@ -41,7 +41,12 @@
 //  For AF_INET and IPPROTO_TCP
 #if defined _WIN32
 #include "../src/windows.hpp"
+#if defined(__MINGW32__)
+#include <unistd.h>
+#endif
 #else
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>

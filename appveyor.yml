@@ -272,18 +272,18 @@ test_script:
   - cmd: if "%APPVEYOR_REPO_TAG%"=="false" (ctest -C "%Configuration%" -V %TEST_OPTIONS%)
 
 deploy:
-  - provider: BinTray
-    username: somdoron
-    api_key:
-      secure: B4TC4GvUMbwX13Skh2Kvyc6SnqLkjNS9W0gtN2yxUC2Y4oQSCK2F4eRgtpMpCasg
-    subject: zeromq
-    repo: generic
-    package: libzmq
-    publish: true
-    override: true
-    version: ${ZMQ_VERSION}
-    on:
-      APPVEYOR_REPO_TAG: true
+  - provider: GitHub
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    release: libzmq $(APPVEYOR_REPO_TAG_NAME)
+    description: |
+        Windows binaries for libzmq $(APPVEYOR_REPO_TAG_NAME), uploaded from appveyor.
+        Edit after appveyor is done uploading.
+    auth_token:
+      secure: vmAeVtN2qiQgFBCB2I5FDDRtADQ7GUdR9NwAJJyakbiV5OHzLHExDcC/D9Oh5r67
+    draft: true
+    prerelease: false
+    force_update: true # adds files, clobbers release name and description
+
 
 # the analysis build is repeated; apparently appveyor only uses the first section that matches some branch
 for:

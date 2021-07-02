@@ -13,8 +13,8 @@ Name:          zeromq
 Version:       4.3.5
 Release:       1%{?dist}
 Summary:       The ZeroMQ messaging library
-Group:         Applications/Internet
-License:       LGPLv3+
+Group:         Development/Libraries/C and C++
+License:       LGPL-3.0-or-later
 URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
@@ -228,11 +228,12 @@ autoreconf -fi
 
 %{__make} %{?_smp_mflags}
 
+%check
+%{__make} check VERBOSE=1
+
 %install
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
-
 # Install the package to build area
-%{__make} check VERBOSE=1
 %makeinstall
 
 %post

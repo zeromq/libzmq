@@ -35,6 +35,7 @@
 
 #include "err.hpp"
 #include "atomic_ptr.hpp"
+#include "platform.hpp"
 
 namespace zmq
 {
@@ -50,7 +51,7 @@ namespace zmq
 //  T is the type of the object in the queue.
 //  N is granularity of the queue (how many pushes have to be done till
 //  actual memory allocation is required).
-#ifdef HAVE_POSIX_MEMALIGN
+#if defined HAVE_POSIX_MEMALIGN
 // ALIGN is the memory alignment size to use in the case where we have
 // posix_memalign available. Default value is 64, this alignment will
 // prevent two queue chunks from occupying the same CPU cache line on
@@ -181,7 +182,7 @@ template <typename T, int N> class yqueue_t
 
     static inline chunk_t *allocate_chunk ()
     {
-#ifdef HAVE_POSIX_MEMALIGN
+#if defined HAVE_POSIX_MEMALIGN
         void *pv;
         if (posix_memalign (&pv, ALIGN, sizeof (chunk_t)) == 0)
             return (chunk_t *) pv;

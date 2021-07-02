@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2021 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,45 +27,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "precompiled.hpp"
-#include "macros.hpp"
-#include "peer.hpp"
-#include "pipe.hpp"
-#include "wire.hpp"
-#include "random.hpp"
-#include "likely.hpp"
-#include "err.hpp"
+#include "testutil.hpp"
+#include "testutil_unity.hpp"
 
-zmq::peer_t::peer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    server_t (parent_, tid_, sid_)
+SETUP_TEARDOWN_TESTCONTEXT
+
+void test_busy_poll ()
 {
-    options.type = ZMQ_PEER;
-    options.can_send_hello_msg = true;
-    options.can_recv_disconnect_msg = true;
-    options.can_recv_hiccup_msg = true;
+    //  Create a socket
+    void *socket = test_context_socket (ZMQ_DEALER);
+
+    //  set socket ZMQ_BUSY_POLL options
+    int busy_poll = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (socket, ZMQ_BUSY_POLL, &busy_poll, sizeof (int)));
+
+    //  bind socket
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://127.0.0.1:*"));
+
+    //  Clean up.
+    test_context_socket_close (socket);
 }
 
-uint32_t zmq::peer_t::connect_peer (const char *endpoint_uri_)
+int main ()
 {
-    scoped_optional_lock_t sync_lock (&_sync);
-
-    // connect_peer cannot work with immediate enabled
-    if (options.immediate == 1) {
-        errno = EFAULT;
-        return 0;
-    }
-
-    int rc = socket_base_t::connect_internal (endpoint_uri_);
-    if (rc != 0)
-        return 0;
-
-    return _peer_last_routing_id;
-}
-
-void zmq::peer_t::xattach_pipe (pipe_t *pipe_,
-                                bool subscribe_to_all_,
-                                bool locally_initiated_)
-{
-    server_t::xattach_pipe (pipe_, subscribe_to_all_, locally_initiated_);
-    _peer_last_routing_id = pipe_->get_server_socket_routing_id ();
+    setup_test_environment ();
+    UNITY_BEGIN ();
+    RUN_TEST (test_busy_poll);
+    return UNITY_END ();
 }

@@ -150,6 +150,8 @@ class pipe_t ZMQ_FINAL : public object_t,
     void send_disconnect_msg ();
     void set_disconnect_msg (const std::vector<unsigned char> &disconnect_);
 
+    void send_hiccup_msg (const std::vector<unsigned char> &hiccup_);
+
   private:
     //  Type of the underlying lock-free pipe.
     typedef ypipe_base_t<msg_t> upipe_t;

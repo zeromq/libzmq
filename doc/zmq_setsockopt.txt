@@ -87,6 +87,21 @@ Default value:: not set
 Applicable socket types:: all, when using TCP or UDP transports.
 
 
+ZMQ_BUSY_POLL: This removes delays caused by the interrupt and the resultant context switch.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Busy polling helps reduce latency in the network receive path by allowing socket layer code
+to poll the receive queue of a network device, and disabling network interrupts. This removes
+delays caused by the interrupt and the resultant context switch. However, it also increases
+CPU utilization. Busy polling also prevents the CPU from sleeping, which can incur additional
+power consumption.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0,1
+Default value:: 0
+Applicable socket types:: all
+
+
 ZMQ_CONNECT_RID: Assign the next outbound connection id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This option name is now deprecated. Use ZMQ_CONNECT_ROUTING_ID instead.
@@ -240,6 +255,21 @@ Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: ZMQ_ROUTER, ZMQ_SERVER and ZMQ_PEER
+
+
+ZMQ_HICCUP_MSG: set a hiccup message that the socket will generate when connected peer temporarly disconnect
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set, the socket will generate a hiccup message when connect peer has been disconnected.
+You may set this on DEALER, CLIENT and PEER sockets.
+The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols, when heartbeat recognize a connection drop it
+will generate a hiccup message that can match the protocol of the application.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_DEALER, ZMQ_CLIENT and ZMQ_PEER
+
 
 ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

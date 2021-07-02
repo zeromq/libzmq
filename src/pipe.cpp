@@ -597,7 +597,7 @@ void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
 
 void zmq::pipe_t::send_disconnect_msg ()
 {
-    if (_disconnect_msg.size () > 0) {
+    if (_disconnect_msg.size () > 0 && _out_pipe) {
         // Rollback any incomplete message in the pipe, and push the disconnect message.
         rollback ();
 
@@ -614,4 +614,16 @@ void zmq::pipe_t::set_disconnect_msg (
     const int rc =
       _disconnect_msg.init_buffer (&disconnect_[0], disconnect_.size ());
     errno_assert (rc == 0);
+}
+
+void zmq::pipe_t::send_hiccup_msg (const std::vector<unsigned char> &hiccup_)
+{
+    if (!hiccup_.empty () && _out_pipe) {
+        msg_t msg;
+        const int rc = msg.init_buffer (&hiccup_[0], hiccup_.size ());
+        errno_assert (rc == 0);
+
+        _out_pipe->write (msg, false);
+        flush ();
+    }
 }
