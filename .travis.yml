@@ -102,6 +102,10 @@ matrix:
         - libbsd-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
+    addons:
+      homebrew:
+        packages:
+        - libsodium
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
     addons:
@@ -162,8 +166,6 @@ matrix:
     - arch: arm64
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
-- if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew update; brew install libsodium ; fi
 # To allow sonar to process history information, unshallow clone first.
 - if [ -n "$CLANG_TIDY" ] ; then
     git fetch --unshallow ;
