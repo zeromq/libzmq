@@ -176,6 +176,10 @@ install:
   - cmd: echo "Platform='%Platform%'"
   - cmd: if "%WITH_LIBSODIUM%"=="ON" set LIBSODIUMDIR=C:\projects\libsodium
   - cmd: if "%WITH_LIBSODIUM%"=="ON" (
+                git config --global user.email "test@appveyor.com" &&
+                git config --global user.name "appveyor"
+         )
+  - cmd: if "%WITH_LIBSODIUM%"=="ON" (
             if not exist "%LIBSODIUMDIR%" (
                 git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
             ) else (
