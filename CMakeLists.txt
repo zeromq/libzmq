@@ -10,7 +10,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.11" CACHE STRING "Minimum OS X deployment ve
 
 option(OSX_UNIVERSAL "Build for both arm64 and x86_64" OFF)
 if(OSX_UNIVERSAL)
-    set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "Build universal binaries")
     message(STATUS "Building for arm64 and x86_64")
 endif()
 
