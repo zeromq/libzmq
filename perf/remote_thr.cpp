@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "platform.hpp"
 #include "../include/zmq.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +68,11 @@ int main (int argc, char *argv[])
         return -1;
     }
 
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+    // EXPERIMENTAL ALLOCATOR FOR MSG_T
+    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_GLOBAL_POOL);
+#endif
+
     s = zmq_socket (ctx, ZMQ_PUSH);
     if (!s) {
         printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
@@ -105,7 +111,11 @@ int main (int argc, char *argv[])
     }
 
     for (i = 0; i != message_count; i++) {
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+        rc = zmq_msg_init_allocator (&msg, message_size, allocator);
+#else
         rc = zmq_msg_init_size (&msg, message_size);
+#endif
         if (rc != 0) {
             printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
             return -1;
@@ -133,6 +143,12 @@ int main (int argc, char *argv[])
         printf ("error in zmq_ctx_term: %s\n", zmq_strerror (errno));
         return -1;
     }
+
+#if (defined ZMQ_BUILD_DRAFT_API && defined ZMQ_MSG_ALLOCATOR_GLOBAL_POOL)
+    // IMPORTANT: destroy the allocator only after zmq_ctx_term() since otherwise
+    // some zmq_msg_t may still be "in fly"
+    zmq_msg_allocator_destroy (&allocator);
+#endif
 
     return 0;
 }

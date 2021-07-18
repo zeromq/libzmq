@@ -90,6 +90,15 @@ int zmq_ctx_get_ext (void *context_,
                      void *optval_,
                      size_t *optvallen_);
 
+/* ZMQ-provided message-pool implementations.                                 */
+// default allocator using malloc/free
+#define ZMQ_MSG_ALLOCATOR_DEFAULT 0
+// using internally a MPMC queue
+#define ZMQ_MSG_ALLOCATOR_GLOBAL_POOL 1
+
+void *zmq_msg_allocator_new (int type_);
+int zmq_msg_allocator_destroy (void **allocator_);
+
 /*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s_, const char *group_);
 int zmq_leave (void *s_, const char *group_);
