@@ -47,6 +47,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "random.hpp"
+#include "allocator_default.hpp"
 
 #ifdef ZMQ_HAVE_VMCI
 #include <vmci_sockets.h>
@@ -311,6 +312,18 @@ int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
             }
             break;
 
+            /*case ZMQ_MSG_ALLOCATOR: {
+            if (optvallen_ == sizeof (zmq::allocator_t)) {
+                const zmq::allocator_t *all =
+                  static_cast<const zmq::allocator_t *> (optval_);
+                if (all->check_tag ()) {
+                    _allocator = const_cast<zmq::allocator_t *> (all);
+                    return 0;
+                }
+            }
+            break;
+    }*/
+
         default: {
             return thread_ctx_t::set (option_, optval_, optvallen_);
         }
@@ -381,6 +394,9 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
                 return 0;
             }
             break;
+            /*
+        case ZMQ_MSG_ALLOCATOR: {
+        } break;*/
 
         default: {
             return thread_ctx_t::get (option_, optval_, optvallen_);

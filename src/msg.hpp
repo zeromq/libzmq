@@ -47,6 +47,7 @@
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
 typedef void(msg_free_fn) (void *data_, void *hint_);
+struct zmq_allocator_t;
 }
 
 namespace zmq
@@ -110,6 +111,7 @@ class msg_t
                                size_t size_,
                                msg_free_fn *ffn_,
                                void *hint_);
+    int init_from_allocator (size_t size_, zmq_allocator_t *alloc_);
     int init_delimiter ();
     int init_join ();
     int init_leave ();
@@ -274,9 +276,10 @@ class msg_t
         {
             metadata_t *metadata;
             content_t *content;
+            unsigned char allocator_was_used; // boolean flag
             unsigned char
               unused[msg_t_size
-                     - (sizeof (metadata_t *) + sizeof (content_t *) + 2
+                     - (sizeof (metadata_t *) + sizeof (content_t *) + 3
                         + sizeof (uint32_t) + sizeof (group_t))];
             unsigned char type;
             unsigned char flags;
