@@ -195,6 +195,7 @@ uint64_t zmq::clock_t::now_us ()
 
 #else
 
+    LIBZMQ_UNUSED (nsecs_per_usec);
     //  Use POSIX gettimeofday function to get precise time.
     struct timeval tv;
     int rc = gettimeofday (&tv, NULL);
