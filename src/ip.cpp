@@ -876,9 +876,9 @@ char *widechar_to_utf8 (const wchar_t *widestring)
     char *utf8 = 0;
     nch = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, 0, 0, NULL, NULL);
     if (nch > 0) {
-        utf8 = (char *)malloc ((nch + 1) * sizeof (char));
-        n = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, utf8,
-                                 nch, NULL, NULL);
+        utf8 = (char *) malloc ((nch + 1) * sizeof (char));
+        n = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, utf8, nch, NULL,
+                                 NULL);
         utf8[nch] = 0;
     }
     return utf8;
@@ -901,9 +901,9 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
         return -1;
     }
 
-    char* tmp = widechar_to_utf8 (buffer);
+    char *tmp = widechar_to_utf8 (buffer);
     if (tmp == 0) {
-	return -1;
+        return -1;
     }
 
     path_.assign (tmp);
