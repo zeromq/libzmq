@@ -550,6 +550,20 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 AC_ARG_ENABLE([curve],
     [AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]])])
 
+AC_ARG_ENABLE(
+    [libsodium_randombytes_close],
+    [AS_HELP_STRING(
+        [--disable-libsodium_randombytes_close],
+        [Do not call libsodium randombytes_close() when terminating contexts.
+        If disabled, may leave one FD open on /dev/urandom
+        until randombytes_close() is called explicitly,
+        but fixes a crash when multiple contexts are used with CURVE.
+        Has no effect when getrandom() is available. [default=enabled]]
+    )],
+    [],
+    [enable_libsodium_randombytes_close=yes]
+)
+
 if test "x$enable_curve" = "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
@@ -558,6 +572,12 @@ elif test "x$with_libsodium" = "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(ZMQ_USE_LIBSODIUM, [1], [Using libsodium for curve encryption])
+    if test "x$enable_libsodium_randombytes_close" = "xyes"; then
+        AC_DEFINE(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE, [1], [Automatically close libsodium randombytes. Not threadsafe without getrandom()])
+    else
+        AC_MSG_NOTICE([Disabling libsodium randombytes_close(). randombytes_close() may need to be called in applcation code.])
+    fi
+
     curve_library="libsodium"
     enable_curve="yes"
 
