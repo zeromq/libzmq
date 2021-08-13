@@ -151,8 +151,6 @@ static void manage_random (bool init_)
     if (init_) {
         int rc = sodium_init ();
         zmq_assert (rc != -1);
-    } else {
-        randombytes_close ();
     }
 #else
     LIBZMQ_UNUSED (init_);
