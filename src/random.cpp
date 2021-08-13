@@ -151,8 +151,13 @@ static void manage_random (bool init_)
     if (init_) {
         int rc = sodium_init ();
         zmq_assert (rc != -1);
+#if defined(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE)
     } else {
+        // randombytes_close either a no-op or not threadsafe
+        // doing this without refcounting can cause crashes
+        // if called while a context is active
         randombytes_close ();
+#endif
     }
 #else
     LIBZMQ_UNUSED (init_);

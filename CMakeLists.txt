@@ -258,6 +258,7 @@ endif()
 
 option(WITH_LIBSODIUM "Use libsodium instead of built-in tweetnacl" ON)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
+option(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "Automatically close libsodium randombytes. Not threadsafe without getrandom()" ON)
 option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(ENABLE_CURVE)
@@ -271,6 +272,9 @@ if(ENABLE_CURVE)
       endif()
       set(ZMQ_USE_LIBSODIUM 1)
       set(ZMQ_HAVE_CURVE 1)
+      if (ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE)
+        set(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE 1)
+      endif()
     else()
       message(
         WARNING
