@@ -74,6 +74,39 @@ void test_msg_init_buffer ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
 }
 
+void test_msg_init_allocator ()
+{
+#if defined(ZMQ_BUILD_DRAFT_API)
+    const char *data = "foobar";
+    zmq_msg_t msg;
+    void *allocator = zmq_msg_allocator_new (ZMQ_MSG_ALLOCATOR_DEFAULT);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg, 6, allocator));
+    TEST_ASSERT_EQUAL_INT (6, zmq_msg_size (&msg));
+    memcpy (zmq_msg_data (&msg), data, 6);
+    TEST_ASSERT_EQUAL_STRING_LEN (data, zmq_msg_data (&msg), 6);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
+
+    zmq_msg_t msg2;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg2, 0, allocator));
+    TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&msg2));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
+
+    void *data3 = malloc (1024);
+    memset (data3, 1, 1024);
+    zmq_msg_t msg3;
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_allocator (&msg3, 1024, allocator));
+    TEST_ASSERT_EQUAL_INT (1024, zmq_msg_size (&msg3));
+    memcpy (zmq_msg_data (&msg3), data3, 1024);
+    TEST_ASSERT_EQUAL_MEMORY (data3, zmq_msg_data (&msg3), 1024);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg3));
+    free (data3);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_allocator_destroy (&allocator));
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
+#endif
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -82,5 +115,6 @@ int main (void)
     RUN_TEST (test_msg_init);
     RUN_TEST (test_msg_init_size);
     RUN_TEST (test_msg_init_buffer);
+    RUN_TEST (test_msg_init_allocator);
     return UNITY_END ();
 }

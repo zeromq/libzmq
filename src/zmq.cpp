@@ -96,6 +96,7 @@ struct iovec
 #include "timers.hpp"
 #include "ip.hpp"
 #include "address.hpp"
+#include "allocator_default.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -210,6 +211,48 @@ int zmq_ctx_get_ext (void *ctx_, int option_, void *optval_, size_t *optvallen_)
     }
     return (static_cast<zmq::ctx_t *> (ctx_))
       ->get (option_, optval_, optvallen_);
+}
+
+
+// New allocator API
+
+void *zmq_msg_allocator_new (int type_)
+{
+    zmq_allocator_t *allocator = new (std::nothrow) zmq_allocator_t;
+    zmq::allocator_default_t *allocator_default = NULL;
+    switch (type_) {
+        case ZMQ_MSG_ALLOCATOR_DEFAULT:
+            allocator_default = new (std::nothrow) zmq::allocator_default_t;
+            allocator->allocate_fn = &allocator_default->allocate_fn;
+            allocator->deallocate_fn = &allocator_default->deallocate_fn;
+            allocator->check_tag_fn = &allocator_default->check_tag_fn;
+            allocator->allocator = allocator_default;
+            allocator->destroy_fn = &allocator_default->destroy_fn;
+            break;
+    }
+
+    if (!allocator || !allocator->allocator) {
+        errno = ENOMEM;
+        return NULL;
+    }
+    return allocator;
+}
+
+int zmq_msg_allocator_destroy (void **allocator_)
+{
+    if (allocator_) {
+        zmq_allocator_t *const allocator =
+          static_cast<zmq_allocator_t *> (*allocator_);
+        if (allocator && allocator->check_tag_fn (allocator->allocator)) {
+            allocator->destroy_fn (allocator->allocator);
+            allocator->allocator = NULL;
+            delete allocator;
+            *allocator_ = NULL;
+            return 0;
+        }
+    }
+    errno = EFAULT;
+    return -1;
 }
 
 
@@ -614,6 +657,13 @@ int zmq_msg_init (zmq_msg_t *msg_)
 int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_size (size_);
+}
+
+int zmq_msg_init_allocator (zmq_msg_t *msg_, size_t size_, void *allocator_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))
+      ->init_from_allocator (size_,
+                             reinterpret_cast<zmq_allocator_t *> (allocator_));
 }
 
 int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_)
