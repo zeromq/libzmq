@@ -1,11 +1,7 @@
 # CMake build script for ZeroMQ
 project(ZeroMQ)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-  cmake_minimum_required(VERSION 3.0.2)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
+cmake_minimum_required(VERSION 3.0.2)
 
 include(CheckIncludeFiles)
 include(CheckCCompilerFlag)
@@ -204,12 +200,13 @@ if(ENABLE_WS)
       list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
+      include_directories(${GNUTLS_INCLUDE_DIRS})
 
       message(STATUS "Enable WSS transport")
       set(ZMQ_USE_GNUTLS 1)
       set(ZMQ_HAVE_WSS 1)
     else()
-      message(WARNING "No WSS support, you may want to install GnuTLS and run cmake again")
+      message(FATAL_ERROR "No WSS support, you may want to install GnuTLS and run cmake again")
     endif()
   endif()
 endif()
@@ -228,7 +225,7 @@ if(NOT ZMQ_USE_GNUTLS)
         message(STATUS "Using NSS")
         set(ZMQ_USE_NSS 1)
       else()
-        message(WARNING "No nss installed, if you don't want builtin SHA1, install NSS or GnuTLS")
+        message(FATAL_ERROR "No nss installed, if you don't want builtin SHA1, install NSS or GnuTLS")
       endif()
     endif()
   endif()
@@ -277,7 +274,7 @@ if(ENABLE_CURVE)
       endif()
     else()
       message(
-        WARNING
+        FATAL_ERROR
           "libsodium not installed, instead using builtin tweetnacl, you may want to install libsodium and run cmake again"
       )
     endif()
