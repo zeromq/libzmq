@@ -416,6 +416,9 @@ LIBZMQ_CHECK_DOC_BUILD
 # Check polling system, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_POLLER
 
+# Check for pselect to activate ppoll, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_PPOLL
+
 # Check cacheline size, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_CACHELINE
 

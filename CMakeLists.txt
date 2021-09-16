@@ -468,6 +468,11 @@ message(STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
 string(TOUPPER ${API_POLLER} UPPER_API_POLLER)
 set(ZMQ_POLL_BASED_ON_${UPPER_API_POLLER} 1)
 
+check_cxx_symbol_exists(pselect sys/select.h HAVE_PSELECT)
+if (NOT WIN32 AND HAVE_PSELECT)
+  set(ZMQ_HAVE_PPOLL 1)
+endif()
+
 # special alignment settings
 execute_process(
   COMMAND getconf LEVEL1_DCACHE_LINESIZE

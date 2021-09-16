@@ -165,7 +165,11 @@ if(ENABLE_DRAFTS)
     test_hello_msg
     test_disconnect_msg
     test_hiccup_msg
+    test_zmq_ppoll_fd
   )
+  if(HAVE_FORK)
+    list(APPEND tests test_zmq_ppoll_signals)
+  endif()
   if(ZMQ_HAVE_BUSY_POLL)
     list(APPEND tests test_busy_poll)
   endif()
