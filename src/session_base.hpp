@@ -113,7 +113,7 @@ class session_base_t : public own_t, public io_object_t, public i_pipe_events
     void process_plug () ZMQ_FINAL;
     void process_attach (zmq::i_engine *engine_) ZMQ_FINAL;
     void process_term (int linger_) ZMQ_FINAL;
-    void process_conn_failed ();
+    void process_conn_failed () ZMQ_OVERRIDE;
 
     //  i_poll_events handlers.
     void timer_event (int id_) ZMQ_FINAL;
