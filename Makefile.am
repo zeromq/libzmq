@@ -20,11 +20,17 @@ include_HEADERS = \
 	include/zmq_utils.h
 
 src_libzmq_la_SOURCES = \
+	external/mpmcqueue/concurrentqueue.h \
 	src/address.cpp \
 	src/address.hpp \
+	src/allocator_default.cpp \
+	src/allocator_default.hpp \
+	src/allocator_global_pool.cpp \
+	src/allocator_global_pool.hpp \
 	src/array.hpp \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \
+	src/basic_concurrent_queue.hpp \
 	src/blob.hpp \
 	src/channel.cpp \
 	src/channel.hpp \

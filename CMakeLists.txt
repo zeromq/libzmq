@@ -622,6 +622,8 @@ if(MSVC)
 
     zmq_check_cxx_flag_prepend("/analyze")
 
+    zmq_check_cxx_flag_prepend("/Zc:__cplusplus") # enables right reporting of __cplusplus, ref. https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus/
+
     # C++11/14/17-specific, but maybe possible via conditional defines
     zmq_check_cxx_flag_prepend("/wd26440") # Function '...' can be declared 'noexcept'
     zmq_check_cxx_flag_prepend("/wd26432") # If you define or delete any default operation in the type '...', define or
@@ -901,6 +903,8 @@ endif()
 set(cxx-sources
     precompiled.cpp
     address.cpp
+    allocator_default.cpp
+    allocator_global_pool.cpp
     channel.cpp
     client.cpp
     clock.cpp
@@ -1001,9 +1005,12 @@ set(cxx-sources
     zmtp_engine.cpp
     # at least for VS, the header files must also be listed
     address.hpp
+    allocator_default.hpp
+    allocator_global_pool.cpp
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
+    basic_concurrent_queue.hpp
     blob.hpp
     channel.hpp
     client.hpp
@@ -1143,6 +1150,8 @@ set(cxx-sources
     yqueue.hpp
     zap_client.hpp
     zmtp_engine.hpp)
+
+list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/mpmcqueue/concurrentqueue.h)
 
 if(MINGW)
   # Generate the right type when using -m32 or -m64
