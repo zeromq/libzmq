@@ -41,8 +41,7 @@
 
 zmq::plain_client_t::plain_client_t (session_base_t *const session_,
                                      const options_t &options_) :
-    mechanism_base_t (session_, options_),
-    _state (sending_hello)
+    mechanism_base_t (session_, options_), _state (sending_hello)
 {
 }
 

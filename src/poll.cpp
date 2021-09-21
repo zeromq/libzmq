@@ -42,8 +42,7 @@
 #include "i_poll_events.hpp"
 
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
-    worker_poller_base_t (ctx_),
-    retired (false)
+    worker_poller_base_t (ctx_), retired (false)
 {
 }
 

@@ -477,8 +477,8 @@ zmq::select_t::fds_set_t::fds_set_t (const fds_set_t &other_)
 #endif
 }
 
-zmq::select_t::fds_set_t &zmq::select_t::fds_set_t::
-operator= (const fds_set_t &other_)
+zmq::select_t::fds_set_t &
+zmq::select_t::fds_set_t::operator= (const fds_set_t &other_)
 {
 #if defined ZMQ_HAVE_WINDOWS
     // On Windows we don't need to copy the whole fd_set.

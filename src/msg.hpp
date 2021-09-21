@@ -46,7 +46,7 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void(msg_free_fn) (void *data_, void *hint_);
+typedef void (msg_free_fn) (void *data_, void *hint_);
 }
 
 namespace zmq

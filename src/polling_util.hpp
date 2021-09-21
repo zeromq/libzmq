@@ -82,7 +82,7 @@ template <typename T, size_t S> class resizable_fast_vector_t
             _dynamic_buf = new (std::nothrow) std::vector<T> (nitems_);
             //  TODO since this function is called by a client, we could return errno == ENOMEM here
             alloc_assert (_dynamic_buf);
-            memcpy(&(*_dynamic_buf)[0], _static_buf, sizeof _static_buf);
+            memcpy (&(*_dynamic_buf)[0], _static_buf, sizeof _static_buf);
         }
     }
 

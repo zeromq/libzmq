@@ -44,8 +44,7 @@ const size_t id_len = sizeof (id) - 1;
 zap_client_t::zap_client_t (session_base_t *const session_,
                             const std::string &peer_address_,
                             const options_t &options_) :
-    mechanism_base_t (session_, options_),
-    peer_address (peer_address_)
+    mechanism_base_t (session_, options_), peer_address (peer_address_)
 {
 }
 

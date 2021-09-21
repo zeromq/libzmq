@@ -37,8 +37,7 @@
 #include "msg.hpp"
 
 zmq::radio_t::radio_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_, true),
-    _lossy (true)
+    socket_base_t (parent_, tid_, sid_, true), _lossy (true)
 {
     options.type = ZMQ_RADIO;
 }
