@@ -115,7 +115,10 @@ void test_unbind_via_last_endpoint ()
 #endif
 #if defined ZMQ_HAVE_VMCI
     void *req = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (req, ep_wc_vmci));
+    int rc = zmq_bind (req, ep_wc_vmci);
+    if (rc < 0 && errno == EAFNOSUPPORT)
+        TEST_IGNORE_MESSAGE ("VMCI not supported");
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
 #endif
 
     // Unbind sockets binded by wild-card address
@@ -153,7 +156,10 @@ void test_wildcard_unbind_fails ()
 #endif
 #if defined ZMQ_HAVE_VMCI
     void *req = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (req, ep_wc_vmci));
+    int rc = zmq_bind (req, ep_wc_vmci);
+    if (rc < 0 && errno == EAFNOSUPPORT)
+        TEST_IGNORE_MESSAGE ("VMCI not supported");
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
 #endif
 
     // Sockets binded by wild-card address can't be unbinded by wild-card address
