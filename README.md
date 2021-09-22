@@ -176,7 +176,7 @@ Announcements mailing list: zeromq-announce@lists.zeromq.org
 Git repository: http://github.com/zeromq/libzmq
 
 ZeroMQ developers can also be found on the IRC channel #zeromq, on the
-Freenode network (irc.freenode.net).
+Libera Chat network (irc.libera.chat).
 
 ## License
 
