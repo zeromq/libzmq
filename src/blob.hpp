@@ -100,9 +100,7 @@ struct blob_t
     //  Use with caution and ensure that the blob_t will not outlive
     //  the referenced data.
     blob_t (unsigned char *const data_, const size_t size_, reference_tag_t) :
-        _data (data_),
-        _size (size_),
-        _owned (false)
+        _data (data_), _size (size_), _owned (false)
     {
     }
 

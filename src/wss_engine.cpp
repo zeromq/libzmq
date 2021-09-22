@@ -194,7 +194,7 @@ int zmq::wss_engine_t::read (void *data_, size_t size_)
         return -1;
     }
 
-	if (rc == 0) {
+    if (rc == 0) {
         errno = EPIPE;
         return -1;
     }

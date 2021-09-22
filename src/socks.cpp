@@ -55,8 +55,7 @@ zmq::socks_greeting_t::socks_greeting_t (const uint8_t *methods_,
 }
 
 zmq::socks_greeting_encoder_t::socks_greeting_encoder_t () :
-    _bytes_encoded (0),
-    _bytes_written (0)
+    _bytes_encoded (0), _bytes_written (0)
 {
 }
 
@@ -131,8 +130,7 @@ void zmq::socks_choice_decoder_t::reset ()
 
 zmq::socks_basic_auth_request_t::socks_basic_auth_request_t (
   const std::string &username_, const std::string &password_) :
-    username (username_),
-    password (password_)
+    username (username_), password (password_)
 {
     zmq_assert (username_.size () <= UINT8_MAX);
     zmq_assert (password_.size () <= UINT8_MAX);
@@ -140,8 +138,7 @@ zmq::socks_basic_auth_request_t::socks_basic_auth_request_t (
 
 
 zmq::socks_basic_auth_request_encoder_t::socks_basic_auth_request_encoder_t () :
-    _bytes_encoded (0),
-    _bytes_written (0)
+    _bytes_encoded (0), _bytes_written (0)
 {
 }
 
@@ -223,16 +220,13 @@ void zmq::socks_auth_response_decoder_t::reset ()
 zmq::socks_request_t::socks_request_t (uint8_t command_,
                                        std::string hostname_,
                                        uint16_t port_) :
-    command (command_),
-    hostname (ZMQ_MOVE (hostname_)),
-    port (port_)
+    command (command_), hostname (ZMQ_MOVE (hostname_)), port (port_)
 {
     zmq_assert (hostname.size () <= UINT8_MAX);
 }
 
 zmq::socks_request_encoder_t::socks_request_encoder_t () :
-    _bytes_encoded (0),
-    _bytes_written (0)
+    _bytes_encoded (0), _bytes_written (0)
 {
 }
 
@@ -308,9 +302,7 @@ void zmq::socks_request_encoder_t::reset ()
 zmq::socks_response_t::socks_response_t (uint8_t response_code_,
                                          const std::string &address_,
                                          uint16_t port_) :
-    response_code (response_code_),
-    address (address_),
-    port (port_)
+    response_code (response_code_), address (address_), port (port_)
 {
 }
 

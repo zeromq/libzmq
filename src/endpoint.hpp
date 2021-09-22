@@ -47,9 +47,7 @@ struct endpoint_uri_pair_t
     endpoint_uri_pair_t (const std::string &local,
                          const std::string &remote,
                          endpoint_type_t local_type) :
-        local (local),
-        remote (remote),
-        local_type (local_type)
+        local (local), remote (remote), local_type (local_type)
     {
     }
 

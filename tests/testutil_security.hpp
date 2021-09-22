@@ -35,7 +35,7 @@
 
 //  security test utils
 
-typedef void(socket_config_fn) (void *, void *);
+typedef void (socket_config_fn) (void *, void *);
 
 //  NULL specific functions
 void socket_config_null_client (void *server_, void *server_secret_);

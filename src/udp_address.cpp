@@ -46,8 +46,7 @@
 #endif
 
 zmq::udp_address_t::udp_address_t () :
-    _bind_interface (-1),
-    _is_multicast (false)
+    _bind_interface (-1), _is_multicast (false)
 {
     _bind_address = ip_addr_t::any (AF_INET);
     _target_address = ip_addr_t::any (AF_INET);

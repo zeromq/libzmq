@@ -58,10 +58,7 @@ class decoder_base_t : public i_decoder
 {
   public:
     explicit decoder_base_t (const size_t buf_size_) :
-        _next (NULL),
-        _read_pos (NULL),
-        _to_read (0),
-        _allocator (buf_size_)
+        _next (NULL), _read_pos (NULL), _to_read (0), _allocator (buf_size_)
     {
         _buf = _allocator.allocate ();
     }

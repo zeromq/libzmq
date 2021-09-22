@@ -1,15 +1,20 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 9 * * 5"
 
 jobs:
   build:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: x64
-            configuration: release  
+            configuration: release
             os: windows-2019
             WITH_LIBSODIUM: ON
             ENABLE_CURVE: ON
@@ -18,26 +23,113 @@ jobs:
             MSVCYEAR: vs2019
             ARTIFACT_NAME: v142-x64
             ENABLE_DRAFTS: ON
-          # - platform: Win32
-          #   configuration: Release            
-          #   os: windows-2016           
-          #   WITH_LIBSODIUM: ON
-          #   ENABLE_CURVE: ON            
-          #   CMAKE_GENERATOR: "Visual Studio 15 2017"
-          #   MSVCVERSION: "v141"
-          #   MSVCYEAR: "vs2017"            
-          #   ARTIFACT_NAME: v141
-          #   ENABLE_DRAFTS: ON            
           - platform: x64
             configuration: Release
-            os: windows-2016           
-            WITH_LIBSODIUM: ON            
-            ENABLE_CURVE: ON            
+            os: windows-2016
+            WITH_LIBSODIUM: ON
+            ENABLE_CURVE: ON
             CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
             MSVCVERSION: "v141"
             MSVCYEAR: "vs2017"
             ARTIFACT_NAME: v141-x64
             ENABLE_DRAFTS: ON
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            PACKAGES: asciidoc xmlto
+            CURVE: tweetnacl
+            DRAFT: disabled
+            POLLER: select
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            CURVE: tweetnacl
+            DRAFT: disabled
+            POLLER: poll
+          - os: ubuntu-latest
+            BUILD_TYPE: android
+            CURVE: tweetnacl
+            DRAFT: disabled
+          - os: ubuntu-latest
+            BUILD_TYPE: coverage
+            PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev lcov
+            CURVE: tweetnacl
+            DRAFT: enabled
+            GSSAPI: enabled
+            PGM: enabled
+            NORM: enabled
+            TIPC: enabled
+            TLS: enabled
+            VMCI: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: valgrind
+            PACKAGES: valgrind libgnutls28-dev
+            CURVE: tweetnacl
+            DRAFT: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            CURVE: libsodium
+            DRAFT: enabled
+            PACKAGES: cmake libsodium-dev
+            TLS: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            DRAFT: enabled
+            PACKAGES: cmake clang-format-11
+            DO_CLANG_FORMAT_CHECK: 1
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev libsodium-dev libnss3-dev libbsd-dev
+            CURVE: libsodium
+            ADDRESS_SANITIZER: enabled
+            DRAFT: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev libsodium-dev libnss3-dev libbsd-dev
+            CURVE: libsodium
+            GSSAPI: enabled
+            PGM: enabled
+            NORM: enabled
+            TIPC: enabled
+            IPv6: ON
+            TLS: enabled
+            USE_NSS: yes
+            VMCI: enabled
+            DRAFT: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: default
+            PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev libsodium-dev libnss3-dev
+            CURVE: libsodium
+            GSSAPI: enabled
+            PGM: enabled
+            NORM: enabled
+            TIPC: enabled
+            IPv6: ON
+            TLS: enabled
+            USE_NSS: yes
+            VMCI: enabled
+            DRAFT: enabled
+            FORCE_98: enabled
+            CXX: clang++
+          - os: ubuntu-latest
+            BUILD_TYPE: abi-compliance-checker
+            PACKAGES: abi-dumper abi-compliance-checker
+            CURVE: tweetnacl
+            DRAFT: disabled
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            PACKAGES: clang-tidy clang-tools
+            CURVE: tweetnacl
+            DRAFT: enabled
+            CXX: clang++
+          - os: macos-latest
+            BUILD_TYPE: default
+            PACKAGES: automake autoconf
+            CURVE: tweetnacl
+            DRAFT: enabled
+          - os: macos-latest
+            BUILD_TYPE: default
+            PACKAGES: automake autoconf libsodium
+            CURVE: libsodium
+            DRAFT: disabled
     env:
       platform: ${{ matrix.platform }}
       configuration: ${{ matrix.configuration }}
@@ -51,6 +143,22 @@ jobs:
       SODIUM_INCLUDE_DIR: ${{ github.workspace }}\libsodium\src\libsodium\include"
       SODIUM_LIBRARY_DIR: ${{ github.workspace }}\libsodium\bin\${{ matrix.platform }}\${{ matrix.configuration }}\${{ matrix.MSVCVERSION }}\dynamic"
       LIBZMQ_SRCDIR: ${{ github.workspace }}\libzmq
+      BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
+      CURVE: ${{ matrix.CURVE }}
+      DRAFT: ${{ matrix.DRAFT }}
+      ADDRESS_SANITIZER: ${{ matrix.ADDRESS_SANITIZER }}
+      DO_CLANG_FORMAT_CHECK: ${{ matrix.DO_CLANG_FORMAT_CHECK }}
+      FORCE_98: ${{ matrix.FORCE_98 }}
+      CXX: ${{ matrix.CXX }}
+      GSSAPI: ${{ matrix.GSSAPI }}
+      PGM: ${{ matrix.PGM }}
+      NORM: ${{ matrix.NORM }}
+      TIPC: ${{ matrix.TIPC }}
+      IPv6: ${{ matrix.IPv6 }}
+      TLS: ${{ matrix.TLS }}
+      USE_NSS: ${{ matrix.USE_NSS }}
+      VMCI: ${{ matrix.VMCI }}
+      POLLER: ${{ matrix.POLLER }}
     steps:    
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -65,29 +173,71 @@ jobs:
       with:
         repository: jedisct1/libsodium
         ref: stable
-        path: libsodium        
+        path: libsodium
     - name: Compile libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON'
+      if: matrix.WITH_LIBSODIUM == 'ON' && (matrix.os == 'windows-2019' || matrix.os == 'windows-2016')
       shell: cmd
       working-directory: libsodium
       run: msbuild /v:minimal /p:Configuration=%Configuration%DLL builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
     - name: Copy libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON'
+      if: matrix.WITH_LIBSODIUM == 'ON' && (matrix.os == 'windows-2019' || matrix.os == 'windows-2016')
       shell: powershell
       working-directory: libsodium
       run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
     - uses: actions/checkout@v2    
       with:    
         path: libzmq
-    - run: md build_libzmq      
+    - run: md build_libzmq
       shell: cmd
-    - name: build
+      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
+    - name: build-win
+      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
       shell: cmd
       working-directory: build_libzmq
       run: |        
         cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
         cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount           
-    - name: test      
-      shell: cmd      
+    - name: test
+      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
+      shell: cmd
       working-directory: build_libzmq
       run: ctest -C "%Configuration%"
+    - name: Add debian packages
+      if: matrix.os == 'ubuntu-latest' && (matrix.BUILD_TYPE != 'coverage' || github.repository == 'zeromq/libzmq')
+      uses: myci-actions/add-deb-repo@10
+      with:
+        repo-name: obs
+        repo: deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/ ./
+        keys-asc: https://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_20.04/Release.key
+        install: ${{ matrix.PACKAGES }}
+    - name: Add brew packages
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: brew install ${{ matrix.PACKAGES }}
+    - name: build
+      if: (matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest') && (matrix.BUILD_TYPE != 'coverage' || github.repository == 'zeromq/libzmq')
+      shell: bash
+      working-directory: libzmq
+      run: ./ci_build.sh
+    - name: coveralls
+      if: matrix.BUILD_TYPE == 'coverage' && github.repository == 'zeromq/libzmq'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: /home/runner/work/libzmq/libzmq/libzmq/lcov.info
+  cron:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+    env:
+      BUILD_TYPE: cmake
+      CXX: clang++
+      CLANG_TIDY: clang-tidy
+    steps:
+    - name: Add debian packages
+      run: apt-get install --yes clang-tidy clang-tools
+    - name: build
+      shell: bash
+      working-directory: libzmq
+      run: ./ci_build.sh

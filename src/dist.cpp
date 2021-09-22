@@ -35,10 +35,7 @@
 #include "likely.hpp"
 
 zmq::dist_t::dist_t () :
-    _matching (0),
-    _active (0),
-    _eligible (0),
-    _more (false)
+    _matching (0), _active (0), _eligible (0), _more (false)
 {
 }
 

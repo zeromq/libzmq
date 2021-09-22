@@ -462,7 +462,7 @@ void test_proxy ()
 
 int main (void)
 {
-    setup_test_environment ();
+    setup_test_environment (360);
 
     UNITY_BEGIN ();
     RUN_TEST (test_proxy);

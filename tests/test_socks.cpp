@@ -871,7 +871,7 @@ void test_socks_userpass_options (void)
 
 int main ()
 {
-    setup_test_environment ();
+    setup_test_environment (180);
 
     UNITY_BEGIN ();
     RUN_TEST (test_socks_proxy_options);

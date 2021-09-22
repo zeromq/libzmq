@@ -564,7 +564,7 @@ int main (void)
     setup_testutil_security_curve ();
 
 
-    setup_test_environment ();
+    setup_test_environment (180);
 
     UNITY_BEGIN ();
     RUN_TEST (test_curve_security_with_valid_credentials);

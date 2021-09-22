@@ -38,8 +38,7 @@
 #include <limits.h>
 
 zmq::ws_encoder_t::ws_encoder_t (size_t bufsize_, bool must_mask_) :
-    encoder_base_t<ws_encoder_t> (bufsize_),
-    _must_mask (must_mask_)
+    encoder_base_t<ws_encoder_t> (bufsize_), _must_mask (must_mask_)
 {
     //  Write 0 bytes to the batch and go to message_ready state.
     next_step (NULL, 0, &ws_encoder_t::message_ready, true);

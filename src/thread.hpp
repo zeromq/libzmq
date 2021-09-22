@@ -41,7 +41,7 @@
 
 namespace zmq
 {
-typedef void(thread_fn) (void *);
+typedef void (thread_fn) (void *);
 
 //  Class encapsulating OS thread. Thread initiation/termination is done
 //  using special functions rather than in constructor/destructor so that

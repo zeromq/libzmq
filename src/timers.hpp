@@ -38,7 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace zmq
 {
-typedef void(timers_timer_fn) (int timer_id_, void *arg_);
+typedef void (timers_timer_fn) (int timer_id_, void *arg_);
 
 class timers_t
 {

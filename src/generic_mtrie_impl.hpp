@@ -45,10 +45,7 @@ namespace zmq
 {
 template <typename T>
 generic_mtrie_t<T>::generic_mtrie_t () :
-    _pipes (0),
-    _min (0),
-    _count (0),
-    _live_nodes (0)
+    _pipes (0), _min (0), _count (0), _live_nodes (0)
 {
 }
 

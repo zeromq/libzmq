@@ -487,7 +487,6 @@ test_apps = \
 	tests/test_conflate \
 	tests/test_inproc_connect \
 	tests/test_issue_566 \
-	tests/test_proxy \
 	tests/test_proxy_hwm \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
@@ -720,9 +719,14 @@ tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
 tests_test_issue_566_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_issue_566_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+# TODO: gets stuck even with long timeout running under Github Actions
+if !VALGRIND_ENABLED
+test_apps += tests/test_proxy
+
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
 tests_test_proxy_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 tests_test_proxy_hwm_SOURCES = tests/test_proxy_hwm.cpp
 tests_test_proxy_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1001,16 +1005,20 @@ tests_test_security_gssapi_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
 if ON_LINUX
-test_apps += tests/test_abstract_ipc \
-	tests/test_socks
+test_apps += tests/test_abstract_ipc
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
 tests_test_abstract_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+# TODO: gets stuck even with long timeout running under Github Actions
+if !VALGRIND_ENABLED
+test_apps += tests/test_socks
+
 tests_test_socks_SOURCES = tests/test_socks.cpp
 tests_test_socks_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 # TODO: enable when https://github.com/zeromq/libzmq/issues/3898 is fixed
 if !ENABLE_ASAN
