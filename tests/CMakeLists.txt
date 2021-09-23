@@ -297,7 +297,7 @@ if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
   endif()
   # add additional required flags ZMQ_USE_TWEETNACL will already be defined when not using sodium
-  if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
+  if(ZMQ_HAVE_CURVE AND ZMQ_USE_TWEETNACL)
     target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
   endif()
 endif()
