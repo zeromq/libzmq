@@ -108,8 +108,9 @@ typedef int timeout_t;
 
 timeout_t
 compute_timeout (bool first_pass_, long timeout_, uint64_t now_, uint64_t end_);
-
-#elif defined ZMQ_POLL_BASED_ON_SELECT
+#endif
+#if (!defined ZMQ_POLL_BASED_ON_POLL && defined ZMQ_POLL_BASED_ON_SELECT)      \
+  || defined ZMQ_HAVE_PPOLL
 #if defined ZMQ_HAVE_WINDOWS
 inline size_t valid_pollset_bytes (const fd_set &pollset_)
 {

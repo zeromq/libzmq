@@ -1065,7 +1065,8 @@ test_apps += tests/test_poller \
 	tests/test_hello_msg \
 	tests/test_disconnect_msg \
 	tests/test_channel \
-	tests/test_hiccup_msg
+	tests/test_hiccup_msg \
+	tests/test_zmq_ppoll_fd
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1134,6 +1135,18 @@ tests_test_channel_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_hiccup_msg_SOURCES = tests/test_hiccup_msg.cpp
 tests_test_hiccup_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_hiccup_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_zmq_ppoll_fd_SOURCES = tests/test_zmq_ppoll_fd.cpp
+tests_test_zmq_ppoll_fd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_zmq_ppoll_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+if HAVE_FORK
+test_apps += tests/test_zmq_ppoll_signals
+
+tests_test_zmq_ppoll_signals_SOURCES = tests/test_zmq_ppoll_signals.cpp
+tests_test_zmq_ppoll_signals_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_zmq_ppoll_signals_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 endif
 
 if FUZZING_ENGINE_LIB

@@ -101,6 +101,11 @@ typedef unsigned __int8 uint8_t;
 #include <stdint.h>
 #endif
 
+#if !defined _WIN32
+// needed for sigset_t definition in zmq_ppoll
+#include <signal.h>
+#endif
+
 //  32-bit AIX's pollfd struct members are called reqevents and rtnevents so it
 //  defines compatibility macros for them. Need to include that header first to
 //  stop build failures since zmq_pollset_t defines them as events and revents.
@@ -762,6 +767,19 @@ ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
 ZMQ_EXPORT int zmq_socket_monitor_versioned (
   void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
+
+#if !defined _WIN32
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const sigset_t *sigmask_);
+#else
+// Windows has no sigset_t
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const void *sigmask_);
+#endif
 
 #endif // ZMQ_BUILD_DRAFT_API
 

@@ -169,6 +169,19 @@ int zmq_socket_monitor_versioned (
   void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 int zmq_socket_monitor_pipes_stats (void *s_);
 
+#if !defined _WIN32
+int zmq_ppoll (zmq_pollitem_t *items_,
+               int nitems_,
+               long timeout_,
+               const sigset_t *sigmask_);
+#else
+// Windows has no sigset_t
+int zmq_ppoll (zmq_pollitem_t *items_,
+               int nitems_,
+               long timeout_,
+               const void *sigmask_);
+#endif
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_DRAFT_H_INCLUDED__
