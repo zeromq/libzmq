@@ -386,7 +386,11 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
                                protocol_ == IPPROTO_UDP   ? IPPROTO_UDP
                                : protocol_ == IPPROTO_TCP ? IPPROTO_TCP
                                                           : 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    TEST_ASSERT_NOT_EQUAL (INVALID_SOCKET, s_pre);
+#else
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+#endif
 
     if (af_ == AF_INET || af_ == AF_INET6) {
         const char *port = strrchr (endpoint_, ':') + 1;
@@ -443,7 +447,11 @@ fd_t bind_socket_resolve_port (const char *address_,
                                protocol_ == IPPROTO_UDP   ? IPPROTO_UDP
                                : protocol_ == IPPROTO_TCP ? IPPROTO_TCP
                                                           : 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    TEST_ASSERT_NOT_EQUAL (INVALID_SOCKET, s_pre);
+#else
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+#endif
 
     if (af_ == AF_INET || af_ == AF_INET6) {
 #ifdef ZMQ_HAVE_WINDOWS
