@@ -1150,6 +1150,11 @@ AC_ARG_WITH([pkgconfigdir],
     [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
+AC_ARG_ENABLE([no-export],
+    [AS_HELP_STRING([--enable-no-export],
+        [Build libzmq with empty ZMQ_EXPORT macro, bypassing platform-based automated detection [default=no]])],
+    [CPPFLAGS="-DZMQ_NO_EXPORT $CPPFLAGS"])
+
 AC_CONFIG_FILES([ \
     Makefile \
     src/libzmq.pc \

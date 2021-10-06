@@ -59,6 +59,9 @@ extern "C" {
 #include <stdio.h>
 
 /*  Handle DSO symbol visibility                                             */
+#if defined ZMQ_NO_EXPORT
+#define ZMQ_EXPORT
+#else
 #if defined _WIN32
 #if defined ZMQ_STATIC
 #define ZMQ_EXPORT
@@ -74,6 +77,7 @@ extern "C" {
 #define ZMQ_EXPORT __attribute__ ((visibility ("default")))
 #else
 #define ZMQ_EXPORT
+#endif
 #endif
 #endif
 
