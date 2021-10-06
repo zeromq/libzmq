@@ -1828,3 +1828,9 @@ if(MSVC
    AND BUILD_STATIC)
   add_dependencies(libzmq-static libzmq)
 endif()
+
+option(ENABLE_NO_EXPORT "Build with empty ZMQ_EXPORT macro, bypassing platform-based automated detection" OFF)
+if(ENABLE_NO_EXPORT)
+  message(STATUS "Building with empty ZMQ_EXPORT macro")
+  add_definitions(-DZMQ_NO_EXPORT)
+endif()
