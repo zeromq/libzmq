@@ -97,7 +97,7 @@ function android_build_set_env {
         export TOOLCHAIN_ARCH="x86_64"
     fi
 
-    export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
+    export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/sysroot"
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 }
 
@@ -170,7 +170,7 @@ function _android_build_opts_process_binaries {
     local TOOLCHAIN="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}"
     local CC="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang"
     local CXX="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang++"
-    local LD="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ld"
+    local LD="${TOOLCHAIN_PATH}/ld"
     local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
     local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
     local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
