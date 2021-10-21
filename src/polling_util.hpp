@@ -31,8 +31,13 @@
 #define __ZMQ_SOCKET_POLLING_UTIL_HPP_INCLUDED__
 
 #include <stdlib.h>
-#include <sys/select.h>
 #include <vector>
+
+#if defined ZMQ_HAVE_WINDOWS
+#include <winsock.h>
+#else
+#include <sys/select.h>
+#endif
 
 #include "macros.hpp"
 #include "stdint.hpp"
