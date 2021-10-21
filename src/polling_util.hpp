@@ -33,6 +33,12 @@
 #include <stdlib.h>
 #include <vector>
 
+#if defined ZMQ_HAVE_WINDOWS
+#include <winsock.h>
+#else
+#include <sys/select.h>
+#endif
+
 #include "macros.hpp"
 #include "stdint.hpp"
 #include "platform.hpp"
