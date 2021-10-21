@@ -31,6 +31,7 @@
 #define __ZMQ_SOCKET_POLLING_UTIL_HPP_INCLUDED__
 
 #include <stdlib.h>
+#include <sys/select.h>
 #include <vector>
 
 #include "macros.hpp"
