@@ -158,7 +158,7 @@ endif()
 
 # Enable WebSocket transport and RadixTree
 if(ENABLE_DRAFTS)
-  message(STATUS "Building draft classes and methods")
+  message(WARNING "Building draft classes and methods")
   set(ZMQ_BUILD_DRAFT_API 1)
   option(ENABLE_WS "Enable WebSocket transport" ON)
   option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
@@ -204,6 +204,7 @@ if(ENABLE_WS)
       list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
+      include_directories(${GNUTLS_INCLUDE_DIRS})
 
       message(STATUS "Enable WSS transport")
       set(ZMQ_USE_GNUTLS 1)
@@ -660,7 +661,7 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  zmq_check_cxx_flag_prepend("-Wextra")
+  zmq_check_cxx_flag_prepend("-Wextra -Wno-unused-parameter")
 endif()
 
 option(LIBZMQ_PEDANTIC "" ON)
