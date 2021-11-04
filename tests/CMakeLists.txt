@@ -166,7 +166,8 @@ if(ENABLE_DRAFTS)
     test_disconnect_msg
     test_hiccup_msg
     test_zmq_ppoll_fd
-  )
+    test_xsub_verbose
+)
   if(HAVE_FORK)
     list(APPEND tests test_zmq_ppoll_signals)
   endif()

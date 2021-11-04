@@ -1252,6 +1252,21 @@ Default value:: NULL
 Applicable socket types:: ZMQ_XPUB
 
 
+ZMQ_XSUB_VERBOSE_UNSUBSCRIBE: pass duplicate unsubscribe messages on XSUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XSUB' socket behaviour on duplicated unsubscriptions. If enabled, the socket
+passes all unsubscribe messages to the caller. If disabled, only the last unsubscription
+from each filter will be passed. The default is 0 (disabled).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XSUB
+
+
 ZMQ_ONLY_FIRST_SUBSCRIBE: Process only first subscribe/unsubscribe in a multipart message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If set, only the first part of the multipart message is processed as
