@@ -1066,7 +1066,8 @@ test_apps += tests/test_poller \
 	tests/test_disconnect_msg \
 	tests/test_channel \
 	tests/test_hiccup_msg \
-	tests/test_zmq_ppoll_fd
+	tests/test_zmq_ppoll_fd \
+	tests/test_xsub_verbose
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1139,6 +1140,10 @@ tests_test_hiccup_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_zmq_ppoll_fd_SOURCES = tests/test_zmq_ppoll_fd.cpp
 tests_test_zmq_ppoll_fd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_zmq_ppoll_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_xsub_verbose_SOURCES = tests/test_xsub_verbose.cpp
+tests_test_xsub_verbose_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_xsub_verbose_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_FORK
 test_apps += tests/test_zmq_ppoll_signals
