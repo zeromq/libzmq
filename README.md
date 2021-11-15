@@ -76,7 +76,8 @@ case of a released version.
 | DragonFly BSD  | amd64             | gcc 8.3              | autotools    | 2018/08/07 git-72854e63 |         |
 | IBM i          | ppc64             | gcc 6.3              | autotools    | 2019/10/02 git-25320a3  |         |
 | QNX 7.0        | x86_64            | gcc 5.4.0            | CMake        | 4.3.2                   |         |
-
+| Windows 10     | ARM64             | Visual Studio 2019   | CMake        | 2021/11/15 git-2375ca8b |         |
+| Windows 10     | ARM64             | clang                | CMake        | 2021/11/15 git-2375ca8b |         |
 
 ### Supported platforms without known active users
 
@@ -103,7 +104,6 @@ Note: this list is incomplete and inaccurate and still needs some work.
 | OS and version | Architecture | Compiler and version | Remarks                                                                 |
 |----------------|--------------|----------------------|-------------------------------------------------------------------------|
 | QNX 6.3        | ?            | gcc 3.3.5            | see #3371, support was added by a user, but not contributed to upstream |
-| Windows 10     | ARM, ARM64   | Visual Studio 2017   | see #3366, probably only minor issues                                   |
 
 For more details, see [here](SupportedPlatforms.md).
 
