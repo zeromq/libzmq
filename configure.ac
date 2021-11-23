@@ -795,8 +795,23 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork mkdtemp accept4)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs mkdtemp accept4)
 AC_CHECK_HEADERS([alloca.h])
+
+# AC_CHECK_FUNCS(fork) fails on gcc 7
+AC_MSG_CHECKING([whether fork is available])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <unistd.h>]],
+		[[return fork();]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(HAVE_FORK, [1], [fork is available])
+		AM_CONDITIONAL(HAVE_FORK, true)
+	],[
+		AC_MSG_RESULT([no])
+		AM_CONDITIONAL(HAVE_FORK, false)
+])
 
 # string.h doesn't seem to be included by default in Fedora 30
 AC_MSG_CHECKING([whether strnlen is available])
@@ -994,8 +1009,6 @@ LIBZMQ_CHECK_GETRANDOM([
         [1],
         [Whether getrandom is supported.])
     ])
-
-AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 
 if test "x$cross_compiling" = "xyes"; then
     #   Enable draft by default when cross-compiling
