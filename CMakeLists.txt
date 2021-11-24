@@ -496,8 +496,12 @@ endif()
 
 if(NOT WIN32)
   set(ZMQ_HAVE_IPC 1)
+  set(ZMQ_HAVE_STRUCT_SOCKADDR_UN 1)
 else()
-  check_struct_has_member("struct sockaddr_un" sun_path "winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+  check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+  if(ZMQ_HAVE_IPC)
+    check_struct_has_member("struct sockaddr_un" sun_path "winsock2.h;afunix.h" ZMQ_HAVE_STRUCT_SOCKADDR_UN)
+  endif()
 endif()
 
 # ##################### BEGIN condition_variable_t selection
