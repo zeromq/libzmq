@@ -98,3 +98,13 @@ static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 #define snprintf(buffer_, count_, format_, ...)                                \
     _snprintf_s (buffer_, count_, _TRUNCATE, format_, __VA_ARGS__)
 #endif
+
+//  Workaround missing struct sockaddr_un in afunix.h.
+//  Fix #3949.
+#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_STRUCT_SOCKADDR_UN)
+struct sockaddr_un
+{
+    ADDRESS_FAMILY sun_family; /* AF_UNIX */
+    char sun_path[108];        /* pathname */
+};
+#endif
