@@ -90,7 +90,6 @@ static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 #ifndef AI_NUMERICSERV
 #define AI_NUMERICSERV 0x0400
 #endif
-#endif
 
 //  In MSVC prior to v14, snprintf is not available
 //  The closest implementation is the _snprintf_s function
@@ -107,4 +106,6 @@ struct sockaddr_un
     ADDRESS_FAMILY sun_family; /* AF_UNIX */
     char sun_path[108];        /* pathname */
 };
+#endif
+
 #endif
