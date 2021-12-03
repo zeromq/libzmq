@@ -192,6 +192,10 @@ void zmq::epoll_t::loop ()
             const poll_entry_t *const pe =
               static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
 
+            if (NULL == pe)
+                continue;
+            if (NULL == pe->events)
+                continue;
             if (pe->fd == retired_fd)
                 continue;
             if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
