@@ -401,6 +401,8 @@ bool zmq::router_t::xhas_in ()
     errno_assert (rc == 0);
     memcpy (_prefetched_id.data (), routing_id.data (), routing_id.size ());
     _prefetched_id.set_flags (msg_t::more);
+    if (_prefetched_msg.metadata ())
+        _prefetched_id.set_metadata (_prefetched_msg.metadata ());
 
     _prefetched = true;
     _routing_id_sent = false;
