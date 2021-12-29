@@ -160,7 +160,6 @@ endif()
 # Enable WebSocket transport and RadixTree
 if(ENABLE_DRAFTS)
   message(STATUS "Building draft classes and methods")
-  set(ZMQ_BUILD_DRAFT_API 1)
   option(ENABLE_WS "Enable WebSocket transport" ON)
   option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
 else()
@@ -1379,9 +1378,6 @@ else()
   if(NOT MINGW)
     add_library(objects OBJECT ${sources})
     set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(
-      objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
   endif()
 
   if(BUILD_SHARED)
@@ -1450,10 +1446,19 @@ if(BUILD_STATIC)
   list(APPEND target_outputs "libzmq-static")
 endif()
 
-foreach(target ${target_outputs})
+set(build_targets ${target_outputs})
+if(TARGET objects)
+  list(APPEND build_targets "objects")
+endif()
+
+foreach(target ${build_targets})
   target_include_directories(
     ${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
+
+  if(ENABLE_DRAFTS)
+    target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
+  endif()
 endforeach()
 
 if(BUILD_SHARED)
