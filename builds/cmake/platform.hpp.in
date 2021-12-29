@@ -71,7 +71,6 @@
 #cmakedefine ZMQ_HAVE_NORM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
-#cmakedefine ZMQ_BUILD_DRAFT_API
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
