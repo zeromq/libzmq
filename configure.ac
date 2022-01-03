@@ -308,6 +308,27 @@ case "${host_os}" in
         if test "x$libzmq_netbsd_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
+        # NetBSD Current (to become 10) has changed the type of udata in it's
+        # kevent struct from intptr_t to void * to align with darwin and other
+        # BSDs, see upstream commit:
+        # https://github.com/NetBSD/src/commit/e5ead823eb916b56589d2c6c560dbcfe4a2d0afc
+        AC_MSG_CHECKING([whether kevent udata type is intptr_t])
+        AC_LANG_PUSH([C++])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM(
+            [[#include <sys/types.h>
+              #include <sys/event.h>
+              #include <sys/time.h>]],
+            [[struct kevent ev;
+              intptr_t udata;
+              EV_SET(&ev, 0, 0, EV_ADD, 0, 0, udata);
+              return 0;]])],
+            [libzmq_netbsd_kevent_udata_intptr_t=yes],
+            [libzmq_netbsd_kevent_udata_intptr_t=no])
+        AC_LANG_POP([C++])
+        AC_MSG_RESULT([$libzmq_netbsd_kevent_udata_intptr_t])
+        if test "x$libzmq_netbsd_kevent_udata_intptr_t" = "xyes"; then
+            AC_DEFINE(ZMQ_NETBSD_KEVENT_UDATA_INTPTR_T, 1, [kevent udata type is intptr_t])
+        fi
         ;;
     *openbsd*|*bitrig*)
         # Define on OpenBSD to enable all library features
