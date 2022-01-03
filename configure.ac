@@ -653,7 +653,7 @@ if test "x$enable_ws" != "xno"; then
     else
         AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
         AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
-        AC_MSG_NOTICE(Using builting SHA1)
+        AC_MSG_NOTICE(Using built-in SHA1)
         ws_crypto_library="builtin"
     fi
 fi
