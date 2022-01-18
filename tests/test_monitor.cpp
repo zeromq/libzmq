@@ -396,17 +396,19 @@ void test_monitor_versioned_stats (bind_function_t bind_function_,
     for (int i = 0; i < pulls_count; ++i) {
         char *push_local_address = NULL;
         char *push_remote_address = NULL;
-        uint64_t queue_stat[2];
+        uint64_t *queue_stat = NULL;
         int64_t event = get_monitor_event_v2 (
-          push_mon, queue_stat, &push_local_address, &push_remote_address);
+          push_mon, &queue_stat, &push_local_address, &push_remote_address);
         TEST_ASSERT_EQUAL_STRING (server_endpoint, push_local_address);
         TEST_ASSERT_EQUAL_STRING_LEN (expected_prefix_, push_remote_address,
                                       strlen (expected_prefix_));
         TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_PIPES_STATS, event);
+        TEST_ASSERT_NOT_NULL (queue_stat);
         TEST_ASSERT_EQUAL_INT (i == 0 ? 0 : send_hwm, queue_stat[0]);
         TEST_ASSERT_EQUAL_INT (0, queue_stat[1]);
         free (push_local_address);
         free (push_remote_address);
+        free (queue_stat);
     }
 
     //  Close client and server
