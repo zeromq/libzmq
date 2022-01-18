@@ -67,7 +67,7 @@ int expect_monitor_event_multiple (void *server_mon_,
                                    bool optional_ = false);
 
 int64_t get_monitor_event_v2 (void *monitor_,
-                              uint64_t *value_,
+                              uint64_t **value_,
                               char **local_address_,
                               char **remote_address_);
 
