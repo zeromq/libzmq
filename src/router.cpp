@@ -420,7 +420,7 @@ bool zmq::router_t::xhas_out ()
 {
     //  In theory, ROUTER socket is always ready for writing (except when
     //  MANDATORY is set). Whether actual attempt to write succeeds depends
-    //  on whitch pipe the message is going to be routed to.
+    //  on which pipe the message is going to be routed to.
 
     if (!_mandatory)
         return true;

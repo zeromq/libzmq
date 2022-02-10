@@ -96,7 +96,7 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     rdata_notify_handle = add_fd (rdata_notify_fd);
     pending_notify_handle = add_fd (pending_notify_fd);
 
-    //  Set POLLIN. We wont never want to stop polling for uplink = we never
+    //  Set POLLIN. We will never want to stop polling for uplink = we never
     //  want to stop processing NAKs.
     set_pollin (uplink_handle);
     set_pollin (rdata_notify_handle);

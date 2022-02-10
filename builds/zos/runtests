@@ -85,7 +85,7 @@ verbose() {
 TESTS_ENVIRONMENT=
 
 #---------------------------------------------------------------------------
-# Explicitly add SRCDIR into library serach path, to make sure we
+# Explicitly add SRCDIR into library search path, to make sure we
 # use our just-built version
 LIBPATH="${SRCDIR}:/lib:/usr/lib"
 export LIBPATH

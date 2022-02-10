@@ -52,7 +52,7 @@ mkdir -p "${cache}"
 
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
-    echo "Doing a clean build (removing previous build and depedencies)..."
+    echo "Doing a clean build (removing previous build and dependencies)..."
     rm -rf "${ANDROID_BUILD_PREFIX}"/*
 fi
 

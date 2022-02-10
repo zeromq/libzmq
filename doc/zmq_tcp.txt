@@ -76,7 +76,7 @@ HWM
 For the TCP transport, the high water mark (HWM) mechanism works in conjunction
 with the TCP socket buffers handled at OS level.
 Depending on the OS and several other factors the size of such TCP buffers will
-be different. Moreover TCP buffers provided by the OS will accomodate a varying
+be different. Moreover TCP buffers provided by the OS will accommodate a varying
 number of messages depending on the size of messages (unlike ZMQ HWM settings
 the TCP socket buffers are measured in bytes and not messages).
 

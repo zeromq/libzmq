@@ -266,7 +266,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     size_t zmq_events_size = sizeof (int);
     int zmq_events;
 
-    // Normal case - excercise the queues
+    // Normal case - exercise the queues
     send_string_expect_success (push, "0", ZMQ_SNDMORE);
     send_string_expect_success (push, "0", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));

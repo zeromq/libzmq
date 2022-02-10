@@ -33,7 +33,7 @@ installed, ZeroMQ can be built as follows:
 *   Download and extract ZeroMQ tar file
 
 *   Ensure contents of this directory are present at `builds/zos`
-    within that extracted diretory (eg, `zeromq-VERSION/builds/zos/`; 
+    within that extracted directory (eg, `zeromq-VERSION/builds/zos/`; 
     copy these files in, if not already present, and make sure the
     shell scripts are executable)
 
@@ -238,7 +238,7 @@ them, and it would be non-trivial to track them by hand.)
 The source code in ZeroMQ is a combination of a C++ core library
 (in `*.cpp` and `*.hpp` files), and a C wrapper (also in `*.cpp`
 files).  It is all compiled with the C++ compiler.  The IBM XL C/C++
-complier (at least the version used for initial porting) insists
+compiler (at least the version used for initial porting) insists
 that C++ source be in `*.C` files (note capital C).  To work around
 this issue the compile flag `-+` is used (specified in the `zc++`
 compiler wrapper), which tells the compiler the file should be
@@ -359,7 +359,7 @@ syntax):
         setenv CXXFLAGS "-Wc,xplink -Wl,xplink -+"
 
 *   run configure script with `--disable-eventfd` (`sys/eventfd.h` does
-    not exist, but the test for its existance has a false positive on
+    not exist, but the test for its existence has a false positive on
     z/OS UNIX System Services, apparently due to the way the `c++`
     compiler wrapper passes errors back from the IBM XL C/C++ compiler),
     and with `--with-poller=poll` because `poll` is the most advanced

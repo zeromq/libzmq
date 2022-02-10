@@ -167,7 +167,7 @@ struct options_t
     std::string socks_proxy_address;
 
     // Credentials for SOCKS proxy.
-    // Conneciton method will be basic auth if username
+    // Connection method will be basic auth if username
     // is not empty, no auth otherwise.
     std::string socks_proxy_username;
     std::string socks_proxy_password;
