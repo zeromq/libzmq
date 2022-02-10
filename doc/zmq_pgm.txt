@@ -134,7 +134,7 @@ CONFIGURATION
 -------------
 
 The PGM is protocol is capable of multicasting data at high rates (500Mbps+)
-with large messages (1MB+), however it requires setting the relevent ZMQ socket
+with large messages (1MB+), however it requires setting the relevant ZMQ socket
 options that are documented in linkzmq:zmq_setsockopt[3]:
 
 * The 'ZMQ_RATE' should be set sufficiently high, e.g. 1Gbps

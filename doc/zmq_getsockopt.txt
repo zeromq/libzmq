@@ -624,7 +624,7 @@ ZMQ_RECONNECT_IVL_MAX: Retrieve maximum reconnection interval
 The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection
 interval for the specified 'socket'.  This is the maximum period 0MQ shall wait
 between attempts to reconnect. On each reconnect attempt, the previous interval
-shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for
+shall be doubled until ZMQ_RECONNECT_IVL_MAX is reached. This allows for
 exponential backoff strategy. Default value means no exponential backoff is
 performed and reconnect interval calculations are only based on
 ZMQ_RECONNECT_IVL.

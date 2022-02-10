@@ -91,7 +91,7 @@ associated with the socket registration, and requires that the _socket_
 remains valid.
 
 _zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_ are
-analogous to the previous functions but manage regular file descriptiors
+analogous to the previous functions but manage regular file descriptors
 registered with a poller. On Windows, these functions can only be used with
 WinSock sockets.
 
@@ -185,7 +185,7 @@ For 0MQ sockets this flag has no effect on the _zmq_poller_add_ and
 _zmq_poller_modify_ functions, and is never set in the
 'events' member of the zmq_poller_event_t structure.
 For standard sockets this means there
-is urgent data to read. Refer to the POLLPRI flag for more informations.
+is urgent data to read. Refer to the POLLPRI flag for more information.
 For a file descriptor, refer to your OS documentation: as an example, GPIO
 interrupts are signaled through a POLLPRI event.
 This flag has no effect on Windows.

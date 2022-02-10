@@ -5,7 +5,7 @@
 # to get through both ./configure arguments _and_ Makefile/shell expansion
 # safely so more easily added in this wrapper.
 #
-# Finally, by default will enable xplink for C++ compatibilty and performance
+# Finally, by default will enable xplink for C++ compatibility and performance
 # (c++ standard library requires xplink enabled).
 #
 # Additional compile/link flags can be passed in as ZCXXFLAGS, eg:

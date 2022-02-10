@@ -307,7 +307,7 @@ bool zmq::initialize_network ()
 #endif
 
 #ifdef ZMQ_HAVE_WINDOWS
-    //  Intialise Windows sockets. Note that WSAStartup can be called multiple
+    //  Initialise Windows sockets. Note that WSAStartup can be called multiple
     //  times given that WSACleanup will be called for each WSAStartup.
 
     const WORD version_requested = MAKEWORD (2, 2);

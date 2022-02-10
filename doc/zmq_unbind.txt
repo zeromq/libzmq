@@ -18,7 +18,7 @@ The _zmq_unbind()_ function shall unbind a socket specified
 by the 'socket' argument from the endpoint specified by the 'endpoint'
 argument. 
 
-Addionally the incoming message queue associated with the endpoint will be
+Additionally the incoming message queue associated with the endpoint will be
 discarded. This means that after unbinding an endpoint it is possible to
 received messages originating from that same endpoint if they were already
 present in the incoming message queue before unbinding.

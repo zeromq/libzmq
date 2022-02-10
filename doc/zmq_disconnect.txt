@@ -19,7 +19,7 @@ by the 'socket' argument from the endpoint specified by the 'endpoint'
 argument. Note the actual disconnect system call might occur at a later time.
 
 Upon disconnection the will also stop receiving messages originating from
-this endpoint. Moreover, the socket will no longuer be able
+this endpoint. Moreover, the socket will no longer be able
 to queue outgoing messages to this endpoint. The outgoing message queue
 associated with the endpoint will be discarded. However, if the socket's linger
 period is non-zero, libzmq will still attempt to transmit these discarded messages,

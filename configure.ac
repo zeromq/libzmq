@@ -599,7 +599,7 @@ elif test "x$with_libsodium" = "xyes"; then
     if test "x$enable_libsodium_randombytes_close" = "xyes"; then
         AC_DEFINE(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE, [1], [Automatically close libsodium randombytes. Not threadsafe without getrandom()])
     else
-        AC_MSG_NOTICE([Disabling libsodium randombytes_close(). randombytes_close() may need to be called in applcation code.])
+        AC_MSG_NOTICE([Disabling libsodium randombytes_close(). randombytes_close() may need to be called in application code.])
     fi
 
     curve_library="libsodium"

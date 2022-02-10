@@ -97,7 +97,7 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
         return dbuffer.read (value_);
     }
 
-    //  Applies the function fn to the first elemenent in the pipe
+    //  Applies the function fn to the first element in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
     bool probe (bool (*fn_) (const T &)) { return dbuffer.probe (fn_); }

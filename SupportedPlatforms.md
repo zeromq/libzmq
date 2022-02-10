@@ -14,7 +14,7 @@ Supported platforms with primary CI
 - it is a precondition for merging a pull request that no builds or tests of these platforms are broken
 - contributors can easily enable these builds and tests for their branches in their fork
 
-Suported platforms with secondary CI
+Supported platforms with secondary CI
 - have builds and tests run for the master branch
 - these are monitored periodically by the project maintainers, and efforts are made to fix any broken builds or tests in a timely manner
 - it is a precondition for a release that no builds or tests of these platforms are broken

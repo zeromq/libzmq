@@ -77,7 +77,7 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
         _queue.back () = value_;
         _queue.push ();
 
-        //  Move the "flush up to here" poiter.
+        //  Move the "flush up to here" pointer.
         if (!incomplete_)
             _f = &_queue.back ();
     }
@@ -108,7 +108,7 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
 
         //  Try to set 'c' to 'f'.
         if (_c.cas (_w, _f) != _w) {
-            //  Compare-and-swap was unseccessful because 'c' is NULL.
+            //  Compare-and-swap was unsuccessful because 'c' is NULL.
             //  This means that the reader is asleep. Therefore we don't
             //  care about thread-safeness and update c in non-atomic
             //  manner. We'll return false to let the caller know
@@ -163,7 +163,7 @@ template <typename T, int N> class ypipe_t ZMQ_FINAL : public ypipe_base_t<T>
         return true;
     }
 
-    //  Applies the function fn to the first elemenent in the pipe
+    //  Applies the function fn to the first element in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
     bool probe (bool (*fn_) (const T &))

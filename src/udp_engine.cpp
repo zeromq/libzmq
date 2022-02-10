@@ -575,7 +575,7 @@ void zmq::udp_engine_t::in_event ()
         msg.set_flags (msg_t::more);
         memcpy (msg.data (), group_buffer, group_size);
 
-        //  This doesn't fit, just ingore
+        //  This doesn't fit, just ignore
         if (nbytes - 1 < group_size)
             return;
 

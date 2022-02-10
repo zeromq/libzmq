@@ -50,7 +50,7 @@ const char *name = "zmqtest2";
 static volatile int zap_deny_all = 0;
 
 //  --------------------------------------------------------------------------
-//  This methods receives and validates ZAP requestes (allowing or denying
+//  This methods receives and validates ZAP requests (allowing or denying
 //  each client connection).
 //  N.B. on failure, each crypto type in keytab will be tried
 
