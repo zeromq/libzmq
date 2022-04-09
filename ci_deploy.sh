@@ -15,14 +15,6 @@ if [[ $BUILD_TYPE == "default" && $CURVE == "libsodium" && -z $DRAFT ]]; then
     md5sum *.zip *.tar.gz > MD5SUMS
     sha1sum *.zip *.tar.gz > SHA1SUMS
     cd -
-
-    # Trigger source run on new tag on OBS. The latest tag will be fetched.
-    if [ -n "${OBS_STABLE_TOKEN}" ]; then
-        curl -H "Authorization: Token ${OBS_STABLE_TOKEN}" -X POST https://api.opensuse.org/trigger/runservice
-    fi
-    if [ -n "${OBS_DRAFT_TOKEN}" ]; then
-        curl -H "Authorization: Token ${OBS_DRAFT_TOKEN}" -X POST https://api.opensuse.org/trigger/runservice
-    fi
 else
     export LIBZMQ_DEPLOYMENT=""
 fi

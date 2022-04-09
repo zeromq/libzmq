@@ -4,3 +4,13 @@ workflow:
         source_project: network:messaging:zeromq:git-draft
         source_package: libzmq
         target_project: network:messaging:zeromq:ci
+release:
+  steps:
+    - trigger_services:
+        project: network:messaging:zeromq:release-stable
+        package: libzmq
+    - trigger_services:
+        project: network:messaging:zeromq:release-draft
+        package: libzmq
+  filters:
+    event: tag_push
