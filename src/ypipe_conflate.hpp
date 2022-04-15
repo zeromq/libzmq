@@ -39,15 +39,12 @@ namespace zmq
 //  Adapter for dbuffer, to plug it in instead of a queue for the sake
 //  of implementing the conflate socket option, which, if set, makes
 //  the receiving side to discard all incoming messages but the last one.
-//
-//  reader_awake flag is needed here to mimic ypipe delicate behaviour
-//  around the reader being asleep (see 'c' pointer being NULL in ypipe.hpp)
 
 template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
 {
   public:
     //  Initialises the pipe.
-    ypipe_conflate_t () : reader_awake (false) {}
+    ypipe_conflate_t () = default;
 
     //  Following function (write) deliberately copies uninitialised data
     //  when used with zmq_msg. Initialising the VSM body for
@@ -75,16 +72,12 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
     //  is as of the usual ypipe.
     //  Returns false if the reader thread is sleeping. In that case,
     //  caller is obliged to wake the reader up before using the pipe again.
-    bool flush () { return reader_awake; }
+    bool flush () { return false; }
 
     //  Check whether item is available for reading.
     bool check_read ()
     {
-        const bool res = dbuffer.check_read ();
-        if (!res)
-            reader_awake = false;
-
-        return res;
+        return dbuffer.check_read ();
     }
 
     //  Reads an item from the pipe. Returns false if there is no value.
@@ -104,7 +97,6 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
 
   protected:
     dbuffer_t<T> dbuffer;
-    bool reader_awake;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ypipe_conflate_t)
 };
