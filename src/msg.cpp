@@ -267,7 +267,7 @@ int zmq::msg_t::init_cancel (const size_t size_, const unsigned char *topic_)
 }
 
 int zmq::msg_t::init_exclude_subscribe (const size_t size_,
-                                  const unsigned char *topic_)
+                                        const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -283,7 +283,7 @@ int zmq::msg_t::init_exclude_subscribe (const size_t size_,
 }
 
 int zmq::msg_t::init_unexclude_subscribe (const size_t size_,
-                                         const unsigned char *topic_)
+                                          const unsigned char *topic_)
 {
     int rc = init_size (size_);
     if (rc == 0) {
@@ -615,8 +615,8 @@ void *zmq::msg_t::command_body ()
     else if (this->is_subscribe ())
         data = static_cast<unsigned char *> (this->data ()) + sub_cmd_name_size;
     else if (this->is_exclude_subscribe ())
-        data =
-          static_cast<unsigned char *> (this->data ()) + exclude_subscribe_cmd_name_size;
+        data = static_cast<unsigned char *> (this->data ())
+               + exclude_subscribe_cmd_name_size;
     else if (this->is_unexclude_subscribe ())
         data = static_cast<unsigned char *> (this->data ())
                + unexclude_subscribe_cmd_name_size;

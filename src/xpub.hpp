@@ -72,8 +72,8 @@ class xpub_t : public socket_base_t
                                      xpub_t *self_);
 
     static void send_unexclude_subscribescription (zmq::mtrie_t::prefix_t data_,
-                                     size_t size_,
-                                     xpub_t *self_);
+                                                   size_t size_,
+                                                   xpub_t *self_);
 
     //  Function to be applied to each matching pipes.
     static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *self_);

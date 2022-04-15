@@ -50,7 +50,8 @@ int zmq::sub_t::xsetsockopt (int option_,
                              size_t optvallen_)
 {
     if (option_ != ZMQ_SUBSCRIBE && option_ != ZMQ_UNSUBSCRIBE
-        && option_ != ZMQ_EXCLUDE_SUBSCRIBE && option_ != ZMQ_UNEXCLUDE_SUBSCRIBE) {
+        && option_ != ZMQ_EXCLUDE_SUBSCRIBE
+        && option_ != ZMQ_UNEXCLUDE_SUBSCRIBE) {
         errno = EINVAL;
         return -1;
     }
