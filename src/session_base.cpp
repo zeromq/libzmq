@@ -184,7 +184,8 @@ int zmq::session_base_t::push_msg (msg_t *msg_)
 {
     //  pass subscribe/cancel to the sockets
     if ((msg_->flags () & msg_t::command) && !msg_->is_subscribe ()
-        && !msg_->is_cancel ())
+        && !msg_->is_cancel () && !msg_->is_exclude_subscribe ()
+        && !msg_->is_unexclude_subscribe ())
         return 0;
     if (_pipe && _pipe->write (msg_)) {
         const int rc = msg_->init ();

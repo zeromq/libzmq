@@ -59,12 +59,18 @@ void zmq::v3_1_encoder_t::message_ready ()
     if (in_progress ()->size () > UCHAR_MAX)
         protocol_flags |= v2_protocol_t::large_flag;
     if (in_progress ()->flags () & msg_t::command
-        || in_progress ()->is_subscribe () || in_progress ()->is_cancel ()) {
+        || in_progress ()->is_subscribe () || in_progress ()->is_cancel ()
+        || in_progress ()->is_exclude_subscribe ()
+        || in_progress ()->is_unexclude_subscribe ()) {
         protocol_flags |= v2_protocol_t::command_flag;
         if (in_progress ()->is_subscribe ())
             size += zmq::msg_t::sub_cmd_name_size;
         else if (in_progress ()->is_cancel ())
             size += zmq::msg_t::cancel_cmd_name_size;
+        else if (in_progress ()->is_exclude_subscribe ())
+            size += zmq::msg_t::exclude_subscribe_cmd_name_size;
+        else if (in_progress ()->is_unexclude_subscribe ())
+            size += zmq::msg_t::unexclude_subscribe_cmd_name_size;
     }
 
     //  Encode the message length. For messages less then 256 bytes,
@@ -92,6 +98,14 @@ void zmq::v3_1_encoder_t::message_ready ()
         memcpy (_tmp_buf + header_size, zmq::cancel_cmd_name,
                 zmq::msg_t::cancel_cmd_name_size);
         header_size += zmq::msg_t::cancel_cmd_name_size;
+    } else if (in_progress ()->is_exclude_subscribe ()) {
+        memcpy (_tmp_buf + header_size, zmq::exclude_subscribe_cmd_name,
+                zmq::msg_t::exclude_subscribe_cmd_name_size);
+        header_size += zmq::msg_t::exclude_subscribe_cmd_name_size;
+    } else if (in_progress ()->is_unexclude_subscribe ()) {
+        memcpy (_tmp_buf + header_size, zmq::unexclude_subscribe_cmd_name,
+                zmq::msg_t::unexclude_subscribe_cmd_name_size);
+        header_size += zmq::msg_t::unexclude_subscribe_cmd_name_size;
     }
 
     next_step (_tmp_buf, header_size, &v3_1_encoder_t::size_ready, false);

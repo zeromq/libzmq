@@ -560,6 +560,10 @@ int zmq::zmtp_engine_t::process_command_message (msg_t *msg_)
       *(static_cast<const uint8_t *> (msg_->data ()));
     const size_t ping_name_size = msg_t::ping_cmd_name_size - 1;
     const size_t sub_name_size = msg_t::sub_cmd_name_size - 1;
+    const size_t exclud_sub_name_size =
+      msg_t::exclude_subscribe_cmd_name_size - 1;
+    const size_t unexclude_sub_name_size =
+      msg_t::unexclude_subscribe_cmd_name_size - 1;
     const size_t cancel_name_size = msg_t::cancel_cmd_name_size - 1;
     //  Malformed command
     if (unlikely (msg_->size () < cmd_name_size + sizeof (cmd_name_size)))
@@ -579,6 +583,12 @@ int zmq::zmtp_engine_t::process_command_message (msg_t *msg_)
     if (cmd_name_size == cancel_name_size
         && memcmp (cmd_name, "CANCEL", cmd_name_size) == 0)
         msg_->set_flags (zmq::msg_t::cancel);
+    if (cmd_name_size == exclud_sub_name_size
+        && memcmp (cmd_name, "EXCLUDE", cmd_name_size) == 0)
+        msg_->set_flags (zmq::msg_t::exclude_subscribe);
+    if (cmd_name_size == unexclude_sub_name_size
+        && memcmp (cmd_name, "UNEXCLUDE", cmd_name_size) == 0)
+        msg_->set_flags (zmq::msg_t::unexclude_subscribe);
 
     if (msg_->is_ping () || msg_->is_pong ())
         return process_heartbeat_message (msg_);

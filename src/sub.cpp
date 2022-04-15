@@ -49,7 +49,8 @@ int zmq::sub_t::xsetsockopt (int option_,
                              const void *optval_,
                              size_t optvallen_)
 {
-    if (option_ != ZMQ_SUBSCRIBE && option_ != ZMQ_UNSUBSCRIBE) {
+    if (option_ != ZMQ_SUBSCRIBE && option_ != ZMQ_UNSUBSCRIBE
+        && option_ != ZMQ_EXCLUDE_SUBSCRIBE && option_ != ZMQ_UNEXCLUDE_SUBSCRIBE) {
         errno = EINVAL;
         return -1;
     }
@@ -60,6 +61,10 @@ int zmq::sub_t::xsetsockopt (int option_,
     const unsigned char *data = static_cast<const unsigned char *> (optval_);
     if (option_ == ZMQ_SUBSCRIBE) {
         rc = msg.init_subscribe (optvallen_, data);
+    } else if (option_ == ZMQ_EXCLUDE_SUBSCRIBE) {
+        rc = msg.init_exclude_subscribe (optvallen_, data);
+    } else if (option_ == ZMQ_UNEXCLUDE_SUBSCRIBE) {
+        rc = msg.init_unexclude_subscribe (optvallen_, data);
     } else {
         rc = msg.init_cancel (optvallen_, data);
     }

@@ -56,6 +56,10 @@ namespace zmq
 
 static const char cancel_cmd_name[] = "\6CANCEL";
 static const char sub_cmd_name[] = "\x9SUBSCRIBE";
+static const char exclude_subscribe_cmd_name[] = "\x7"
+                                                 "EXCLUDE";
+static const char unexclude_subscribe_cmd_name[] = "\x9"
+                                                   "UNEXCLUDE";
 
 class msg_t
 {
@@ -83,11 +87,13 @@ class msg_t
         command = 2, //  Command frame (see ZMTP spec)
         //  Command types, use only bits 2-5 and compare with ==, not bitwise,
         //  a command can never be of more that one type at the same time
-        ping = 4,
-        pong = 8,
-        subscribe = 12,
-        cancel = 16,
-        close_cmd = 20,
+        ping = 4,                 // 0000 0100
+        pong = 8,                 // 0000 1000
+        subscribe = 12,           // 0000 1100
+        cancel = 16,              // 0001 0000
+        close_cmd = 20,           // 0001 0100
+        exclude_subscribe = 24,   // 0001 1000
+        unexclude_subscribe = 28, // 0001 1100
         credential = 32,
         routing_id = 64,
         shared = 128
@@ -115,6 +121,9 @@ class msg_t
     int init_leave ();
     int init_subscribe (const size_t size_, const unsigned char *topic);
     int init_cancel (const size_t size_, const unsigned char *topic);
+    int init_exclude_subscribe (const size_t size_, const unsigned char *topic);
+    int init_unexclude_subscribe (const size_t size_,
+                                  const unsigned char *topic);
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
@@ -145,6 +154,16 @@ class msg_t
     bool is_cancel () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == cancel;
+    }
+
+    bool is_exclude_subscribe () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == exclude_subscribe;
+    }
+
+    bool is_unexclude_subscribe () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == unexclude_subscribe;
     }
 
     size_t command_body_size () const;
@@ -183,9 +202,11 @@ class msg_t
     };
     enum
     {
-        ping_cmd_name_size = 5,   // 4PING
-        cancel_cmd_name_size = 7, // 6CANCEL
-        sub_cmd_name_size = 10    // 9SUBSCRIBE
+        ping_cmd_name_size = 5,                 // 4PING
+        cancel_cmd_name_size = 7,               // 6CANCEL
+        sub_cmd_name_size = 10,                 // 9SUBSCRIBE
+        exclude_subscribe_cmd_name_size = 8,    // 7EXCLUDE
+        unexclude_subscribe_cmd_name_size = 10, // 9UNEXCLUDE
     };
 
   private:

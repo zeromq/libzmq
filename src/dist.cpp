@@ -88,6 +88,15 @@ void zmq::dist_t::match (pipe_t *pipe_)
     _matching++;
 }
 
+void zmq::dist_t::unmatch (pipe_t *pipe_)
+{
+    //  Swap it out if the pipe is marked as matching
+    if (_pipes.index (pipe_) < _matching) {
+        _matching--;
+        _pipes.swap (_pipes.index (pipe_), _matching);
+    }
+}
+
 void zmq::dist_t::reverse_match ()
 {
     const pipes_t::size_type prev_matching = _matching;

@@ -71,11 +71,22 @@ class xpub_t : public socket_base_t
                                      size_t size_,
                                      xpub_t *self_);
 
+    static void send_unexclude_subscribescription (zmq::mtrie_t::prefix_t data_,
+                                     size_t size_,
+                                     xpub_t *self_);
+
     //  Function to be applied to each matching pipes.
     static void mark_as_matching (zmq::pipe_t *pipe_, xpub_t *self_);
+    //  Function to be applied to filter some matching pipes out
+    static void mark_as_unmatching (zmq::pipe_t *pipe_, xpub_t *self_);
 
     //  List of all subscriptions mapped to corresponding pipes.
     mtrie_t _subscriptions;
+
+    //  List of all exclude-subscriptions mapped to corresponding pipes.
+    //  'exclude-subscription' means the subscriber don't want some specified
+    //  topics, even though these tops are includeed in `_subscriptions`
+    mtrie_t _exclude_subscriptions;
 
     //  List of manual subscriptions mapped to corresponding pipes.
     mtrie_t _manual_subscriptions;

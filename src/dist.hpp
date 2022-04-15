@@ -61,6 +61,10 @@ class dist_t
     //  will send message also to this pipe.
     void match (zmq::pipe_t *pipe_);
 
+    //  Mark the pipe as not matching. Subsequent call to send_to_matching
+    //  will no send message also to this pipe.
+    void unmatch (zmq::pipe_t *pipe_);
+
     //  Marks all pipes that are not matched as matched and vice-versa.
     void reverse_match ();
 

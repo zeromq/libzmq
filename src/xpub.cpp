@@ -106,7 +106,9 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                       *data = NULL;
         size_t size = 0;
         bool subscribe = false;
-        bool is_subscribe_or_cancel = false;
+        bool exclude_subscribe = false;
+        bool unexclude_subscribe = false;
+        bool is_sub_unsub_family = false;
         bool notify = false;
 
         const bool first_part = !_more_recv;
@@ -114,24 +116,27 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 
         if (first_part || _process_subscribe) {
             //  Apply the subscription to the trie
-            if (msg.is_subscribe () || msg.is_cancel ()) {
+            if (msg.is_subscribe () || msg.is_cancel ()
+                || msg.is_exclude_subscribe ()
+                || msg.is_unexclude_subscribe ()) {
                 data = static_cast<unsigned char *> (msg.command_body ());
                 size = msg.command_body_size ();
                 subscribe = msg.is_subscribe ();
-                is_subscribe_or_cancel = true;
+                exclude_subscribe = msg.is_exclude_subscribe ();
+                unexclude_subscribe = msg.is_unexclude_subscribe ();
+                is_sub_unsub_family = true;
             } else if (msg.size () > 0 && (*msg_data == 0 || *msg_data == 1)) {
                 data = msg_data + 1;
                 size = msg.size () - 1;
                 subscribe = *msg_data == 1;
-                is_subscribe_or_cancel = true;
+                is_sub_unsub_family = true;
             }
         }
 
         if (first_part)
-            _process_subscribe =
-              !_only_first_subscribe || is_subscribe_or_cancel;
+            _process_subscribe = !_only_first_subscribe || is_sub_unsub_family;
 
-        if (is_subscribe_or_cancel) {
+        if (is_sub_unsub_family) {
             if (_manual) {
                 // Store manual subscription to use on termination
                 if (!subscribe)
@@ -141,16 +146,22 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 
                 _pending_pipes.push_back (pipe_);
             } else {
-                if (!subscribe) {
+                if (subscribe) {
+                    const bool first_added =
+                      _subscriptions.add (data, size, pipe_);
+                    notify = first_added || _verbose_subs;
+                } else if (exclude_subscribe) {
+                    _exclude_subscriptions.add (data, size, pipe_);
+                    notify = false;
+                } else if (unexclude_subscribe) {
+                    _exclude_subscriptions.rm (data, size, pipe_);
+                    notify = false;
+                } else {
                     const mtrie_t::rm_result rm_result =
                       _subscriptions.rm (data, size, pipe_);
                     //  TODO reconsider what to do if rm_result == mtrie_t::not_found
                     notify =
                       rm_result != mtrie_t::values_remain || _verbose_unsubs;
-                } else {
-                    const bool first_added =
-                      _subscriptions.add (data, size, pipe_);
-                    notify = first_added || _verbose_subs;
                 }
             }
 
@@ -283,6 +294,8 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  is interested in anymore, send corresponding unsubscriptions
         //  upstream.
         _subscriptions.rm (pipe_, send_unsubscription, this, !_verbose_unsubs);
+        _exclude_subscriptions.rm (pipe_, send_unexclude_subscribescription,
+                                   this, !_verbose_unsubs);
     }
 
     _dist.pipe_terminated (pipe_);
@@ -291,6 +304,11 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, xpub_t *self_)
 {
     self_->_dist.match (pipe_);
+}
+
+void zmq::xpub_t::mark_as_unmatching (pipe_t *pipe_, xpub_t *self_)
+{
+    self_->_dist.unmatch (pipe_);
 }
 
 void zmq::xpub_t::mark_last_pipe_as_matching (pipe_t *pipe_, xpub_t *self_)
@@ -313,9 +331,13 @@ int zmq::xpub_t::xsend (msg_t *msg_)
                                   msg_->size (), mark_last_pipe_as_matching,
                                   this);
             _last_pipe = NULL;
-        } else
+        } else {
             _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
                                   msg_->size (), mark_as_matching, this);
+            _exclude_subscriptions.match (
+              static_cast<unsigned char *> (msg_->data ()), msg_->size (),
+              mark_as_unmatching, this);
+        }
         // If inverted matching is used, reverse the selection now
         if (options.invert_matching) {
             _dist.reverse_match ();
@@ -408,4 +430,10 @@ void zmq::xpub_t::send_unsubscription (zmq::mtrie_t::prefix_t data_,
             self_->_pending_pipes.push_back (NULL);
         }
     }
+}
+
+void zmq::xpub_t::send_unexclude_subscribescription (
+  zmq::mtrie_t::prefix_t data_, size_t size_, xpub_t *self_)
+{
+    // do nothing
 }
