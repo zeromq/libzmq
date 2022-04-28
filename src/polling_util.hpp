@@ -33,6 +33,12 @@
 #include <stdlib.h>
 #include <vector>
 
+#if defined ZMQ_HAVE_WINDOWS
+#include <winsock.h>
+#else
+#include <sys/select.h>
+#endif
+
 #include "macros.hpp"
 #include "stdint.hpp"
 #include "platform.hpp"
@@ -76,12 +82,13 @@ template <typename T, size_t S> class resizable_fast_vector_t
 
     void resize (const size_t nitems_)
     {
-        if (_dynamic_buf)
+        if (_dynamic_buf) {
             _dynamic_buf->resize (nitems_);
-        if (nitems_ > S) {
-            _dynamic_buf = new (std::nothrow) std::vector<T>;
+        } else if (nitems_ > S) {
+            _dynamic_buf = new (std::nothrow) std::vector<T> (nitems_);
             //  TODO since this function is called by a client, we could return errno == ENOMEM here
             alloc_assert (_dynamic_buf);
+            memcpy (&(*_dynamic_buf)[0], _static_buf, sizeof _static_buf);
         }
     }
 
@@ -107,8 +114,9 @@ typedef int timeout_t;
 
 timeout_t
 compute_timeout (bool first_pass_, long timeout_, uint64_t now_, uint64_t end_);
-
-#elif defined ZMQ_POLL_BASED_ON_SELECT
+#endif
+#if (!defined ZMQ_POLL_BASED_ON_POLL && defined ZMQ_POLL_BASED_ON_SELECT)      \
+  || defined ZMQ_HAVE_PPOLL
 #if defined ZMQ_HAVE_WINDOWS
 inline size_t valid_pollset_bytes (const fd_set &pollset_)
 {

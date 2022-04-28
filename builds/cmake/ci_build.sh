@@ -52,6 +52,15 @@ CMAKE_PREFIXES=()
 MAKE_PREFIXES=()
 PARALLEL_MAKE_OPT="-j5"
 if [ -n "$CLANG_TIDY" ] ; then
+    # To allow sonar to process history information, unshallow clone first.
+    git fetch --unshallow
+    curl -L https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip -o build-wrapper-linux-x86.zip
+    unzip build-wrapper-linux-x86.zip
+    export SONARCLOUD_BUILD_WRAPPER_PATH="${PWD}/build-wrapper-linux-x86/"
+    curl -L https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.2.0.1873-linux.zip -o sonar-scanner-cli.zip
+    unzip sonar-scanner-cli.zip
+    export SONAR_SCANNER_CLI_PATH="${PWD}/sonar-scanner-4.2.0.1873-linux/bin/"
+
     CMAKE_OPTS+=("-DCMAKE_BUILD_TYPE=Debug") # do a debug build to avoid unused variable warnings with assertions, and to speed up build
     CMAKE_OPTS+=("-DCMAKE_CXX_CLANG_TIDY:STRING=${CLANG_TIDY}")
     if [ -n ${SONARCLOUD_BUILD_WRAPPER_PATH} ] ; then

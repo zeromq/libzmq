@@ -102,6 +102,7 @@ void zmq::shared_message_memory_allocator::deallocate ()
 {
     zmq::atomic_counter_t *c = reinterpret_cast<zmq::atomic_counter_t *> (_buf);
     if (_buf && !c->sub (1)) {
+        c->~atomic_counter_t ();
         std::free (_buf);
     }
     clear ();

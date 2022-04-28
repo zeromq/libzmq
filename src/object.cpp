@@ -44,8 +44,7 @@ zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) : _ctx (ctx_), _tid (tid_)
 }
 
 zmq::object_t::object_t (object_t *parent_) :
-    _ctx (parent_->_ctx),
-    _tid (parent_->_tid)
+    _ctx (parent_->_ctx), _tid (parent_->_tid)
 {
 }
 

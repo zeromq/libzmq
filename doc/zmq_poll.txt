@@ -71,7 +71,7 @@ _zmq_poll()_.
 
 *ZMQ_POLLPRI*::
 For 0MQ sockets this flags is of no use. For standard sockets this means there
-is urgent data to read. Refer to the POLLPRI flag for more informations.
+is urgent data to read. Refer to the POLLPRI flag for more information.
 For file descriptor, refer to your use case: as an example, GPIO interrupts
 are signaled through a POLLPRI event.
 This flag has no effect on Windows.
@@ -86,7 +86,7 @@ The *zmq_pollitem_t* array must only be used by the thread which
 will/is calling _zmq_poll_.
 
 If a socket is contained in multiple *zmq_pollitem_t* arrays, each owned by a
-different thread, the socket itself needs to be thead-safe (Server, Client, ...).
+different thread, the socket itself needs to be thread-safe (Server, Client, ...).
 Otherwise, behaviour is undefined.
 
 

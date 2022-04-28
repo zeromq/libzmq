@@ -136,7 +136,7 @@ void zmq::ws_engine_t::start_ws_handshake ()
             protocol = "ZWS2.0/CURVE";
 #endif
         else {
-            // Avoid unitialized variable error breaking UWP build
+            // Avoid uninitialized variable error breaking UWP build
             protocol = "";
             assert (false);
         }

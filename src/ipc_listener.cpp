@@ -78,8 +78,7 @@
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
                                      const options_t &options_) :
-    stream_listener_base_t (io_thread_, socket_, options_),
-    _has_file (false)
+    stream_listener_base_t (io_thread_, socket_, options_), _has_file (false)
 {
 }
 

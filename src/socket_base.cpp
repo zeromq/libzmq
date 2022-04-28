@@ -804,16 +804,14 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
-        const int sndhwm = peer.socket == NULL
-                             ? options.sndhwm
-                             : options.sndhwm != 0 && peer.options.rcvhwm != 0
-                                 ? options.sndhwm + peer.options.rcvhwm
-                                 : 0;
-        const int rcvhwm = peer.socket == NULL
-                             ? options.rcvhwm
-                             : options.rcvhwm != 0 && peer.options.sndhwm != 0
-                                 ? options.rcvhwm + peer.options.sndhwm
-                                 : 0;
+        const int sndhwm = peer.socket == NULL ? options.sndhwm
+                           : options.sndhwm != 0 && peer.options.rcvhwm != 0
+                             ? options.sndhwm + peer.options.rcvhwm
+                             : 0;
+        const int rcvhwm = peer.socket == NULL ? options.rcvhwm
+                           : options.rcvhwm != 0 && peer.options.sndhwm != 0
+                             ? options.rcvhwm + peer.options.sndhwm
+                             : 0;
 
         //  Create a bi-directional pipe to connect the peers.
         object_t *parents[2] = {this, peer.socket == NULL ? this : peer.socket};

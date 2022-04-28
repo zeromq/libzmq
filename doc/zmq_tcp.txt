@@ -67,7 +67,7 @@ A 'peer address' may be specified by either of the following:
 * The IPv4 or IPv6 address of the peer, in its numeric representation.
 
 Note: A description of the ZeroMQ Message Transport Protocol (ZMTP) which is 
-used by the TCP transport can be found at <http://rfc.zeromq.org/spec:15>
+used by the TCP transport can be found at <http://rfc.zeromq.org/spec:23>
 
 
 HWM
@@ -76,7 +76,7 @@ HWM
 For the TCP transport, the high water mark (HWM) mechanism works in conjunction
 with the TCP socket buffers handled at OS level.
 Depending on the OS and several other factors the size of such TCP buffers will
-be different. Moreover TCP buffers provided by the OS will accomodate a varying
+be different. Moreover TCP buffers provided by the OS will accommodate a varying
 number of messages depending on the size of messages (unlike ZMQ HWM settings
 the TCP socket buffers are measured in bytes and not messages).
 

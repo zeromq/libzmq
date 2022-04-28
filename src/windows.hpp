@@ -90,11 +90,22 @@ static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 #ifndef AI_NUMERICSERV
 #define AI_NUMERICSERV 0x0400
 #endif
-#endif
 
 //  In MSVC prior to v14, snprintf is not available
 //  The closest implementation is the _snprintf_s function
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf(buffer_, count_, format_, ...)                                \
     _snprintf_s (buffer_, count_, _TRUNCATE, format_, __VA_ARGS__)
+#endif
+
+//  Workaround missing struct sockaddr_un in afunix.h.
+//  Fix #3949.
+#if defined(ZMQ_HAVE_IPC) && !defined(ZMQ_HAVE_STRUCT_SOCKADDR_UN)
+struct sockaddr_un
+{
+    ADDRESS_FAMILY sun_family; /* AF_UNIX */
+    char sun_path[108];        /* pathname */
+};
+#endif
+
 #endif

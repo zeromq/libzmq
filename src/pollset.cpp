@@ -43,8 +43,7 @@
 #include "i_poll_events.hpp"
 
 zmq::pollset_t::pollset_t (const zmq::thread_ctx_t &ctx_) :
-    ctx (ctx_),
-    stopping (false)
+    ctx (ctx_), stopping (false)
 {
     pollset_fd = pollset_create (-1);
     errno_assert (pollset_fd != -1);

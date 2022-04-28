@@ -71,6 +71,7 @@
 #define ZMQ_PRIORITY 112
 #define ZMQ_BUSY_POLL 113
 #define ZMQ_HICCUP_MSG 114
+#define ZMQ_XSUB_VERBOSE_UNSUBSCRIBE 115
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
@@ -168,6 +169,19 @@ int zmq_socket_get_peer_state (void *socket_,
 int zmq_socket_monitor_versioned (
   void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 int zmq_socket_monitor_pipes_stats (void *s_);
+
+#if !defined _WIN32
+int zmq_ppoll (zmq_pollitem_t *items_,
+               int nitems_,
+               long timeout_,
+               const sigset_t *sigmask_);
+#else
+// Windows has no sigset_t
+int zmq_ppoll (zmq_pollitem_t *items_,
+               int nitems_,
+               long timeout_,
+               const void *sigmask_);
+#endif
 
 #endif // ZMQ_BUILD_DRAFT_API
 

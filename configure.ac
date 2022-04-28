@@ -308,6 +308,27 @@ case "${host_os}" in
         if test "x$libzmq_netbsd_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
+        # NetBSD Current (to become 10) has changed the type of udata in it's
+        # kevent struct from intptr_t to void * to align with darwin and other
+        # BSDs, see upstream commit:
+        # https://github.com/NetBSD/src/commit/e5ead823eb916b56589d2c6c560dbcfe4a2d0afc
+        AC_MSG_CHECKING([whether kevent udata type is intptr_t])
+        AC_LANG_PUSH([C++])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM(
+            [[#include <sys/types.h>
+              #include <sys/event.h>
+              #include <sys/time.h>]],
+            [[struct kevent ev;
+              intptr_t udata;
+              EV_SET(&ev, 0, 0, EV_ADD, 0, 0, udata);
+              return 0;]])],
+            [libzmq_netbsd_kevent_udata_intptr_t=yes],
+            [libzmq_netbsd_kevent_udata_intptr_t=no])
+        AC_LANG_POP([C++])
+        AC_MSG_RESULT([$libzmq_netbsd_kevent_udata_intptr_t])
+        if test "x$libzmq_netbsd_kevent_udata_intptr_t" = "xyes"; then
+            AC_DEFINE(ZMQ_NETBSD_KEVENT_UDATA_INTPTR_T, 1, [kevent udata type is intptr_t])
+        fi
         ;;
     *openbsd*|*bitrig*)
         # Define on OpenBSD to enable all library features
@@ -415,6 +436,9 @@ LIBZMQ_CHECK_DOC_BUILD
 
 # Check polling system, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_POLLER
+
+# Check for pselect to activate ppoll, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_PPOLL
 
 # Check cacheline size, set appropriate macro in src/platform.hpp
 LIBZMQ_CHECK_CACHELINE
@@ -575,7 +599,7 @@ elif test "x$with_libsodium" = "xyes"; then
     if test "x$enable_libsodium_randombytes_close" = "xyes"; then
         AC_DEFINE(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE, [1], [Automatically close libsodium randombytes. Not threadsafe without getrandom()])
     else
-        AC_MSG_NOTICE([Disabling libsodium randombytes_close(). randombytes_close() may need to be called in applcation code.])
+        AC_MSG_NOTICE([Disabling libsodium randombytes_close(). randombytes_close() may need to be called in application code.])
     fi
 
     curve_library="libsodium"
@@ -650,7 +674,7 @@ if test "x$enable_ws" != "xno"; then
     else
         AC_DEFINE(ZMQ_HAVE_WS, [1], [Using websocket])
         AC_DEFINE(ZMQ_USE_BUILTIN_SHA1, [1], [Using built-in sha1])
-        AC_MSG_NOTICE(Using builting SHA1)
+        AC_MSG_NOTICE(Using built-in SHA1)
         ws_crypto_library="builtin"
     fi
 fi
@@ -792,8 +816,23 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork mkdtemp accept4)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs mkdtemp accept4)
 AC_CHECK_HEADERS([alloca.h])
+
+# AC_CHECK_FUNCS(fork) fails on gcc 7
+AC_MSG_CHECKING([whether fork is available])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <unistd.h>]],
+		[[return fork();]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(HAVE_FORK, [1], [fork is available])
+		AM_CONDITIONAL(HAVE_FORK, true)
+	],[
+		AC_MSG_RESULT([no])
+		AM_CONDITIONAL(HAVE_FORK, false)
+])
 
 # string.h doesn't seem to be included by default in Fedora 30
 AC_MSG_CHECKING([whether strnlen is available])
@@ -992,8 +1031,6 @@ LIBZMQ_CHECK_GETRANDOM([
         [Whether getrandom is supported.])
     ])
 
-AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
-
 if test "x$cross_compiling" = "xyes"; then
     #   Enable draft by default when cross-compiling
     defaultval=yes
@@ -1146,6 +1183,11 @@ AC_ARG_WITH([pkgconfigdir],
     [pkgconfigdir="$withval"],
     [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
+
+AC_ARG_ENABLE([no-export],
+    [AS_HELP_STRING([--enable-no-export],
+        [Build libzmq with empty ZMQ_EXPORT macro, bypassing platform-based automated detection [default=no]])],
+    [CPPFLAGS="-DZMQ_NO_EXPORT $CPPFLAGS"])
 
 AC_CONFIG_FILES([ \
     Makefile \

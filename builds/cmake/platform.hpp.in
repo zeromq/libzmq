@@ -12,6 +12,7 @@
 #cmakedefine ZMQ_IOTHREAD_POLLER_USE_DEVPOLL
 #cmakedefine ZMQ_IOTHREAD_POLLER_USE_POLL
 #cmakedefine ZMQ_IOTHREAD_POLLER_USE_SELECT
+#cmakedefine ZMQ_HAVE_PPOLL
 
 #cmakedefine ZMQ_POLL_BASED_ON_SELECT
 #cmakedefine ZMQ_POLL_BASED_ON_POLL
@@ -58,6 +59,7 @@
 #cmakedefine ZMQ_HAVE_LIBBSD
 
 #cmakedefine ZMQ_HAVE_IPC
+#cmakedefine ZMQ_HAVE_STRUCT_SOCKADDR_UN
 
 #cmakedefine ZMQ_USE_BUILTIN_SHA1
 #cmakedefine ZMQ_USE_NSS
@@ -69,7 +71,6 @@
 #cmakedefine ZMQ_HAVE_NORM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
-#cmakedefine ZMQ_BUILD_DRAFT_API
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM

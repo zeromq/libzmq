@@ -194,6 +194,11 @@ int zmq::wss_engine_t::read (void *data_, size_t size_)
         return -1;
     }
 
+    if (rc == 0) {
+        errno = EPIPE;
+        return -1;
+    }
+
     if (rc < 0) {
         errno = EINVAL;
         return -1;
@@ -207,14 +212,8 @@ int zmq::wss_engine_t::write (const void *data_, size_t size_)
 {
     ssize_t rc = gnutls_record_send (_tls_session, data_, size_);
 
-    if (rc == GNUTLS_E_INTERRUPTED) {
-        errno = EINTR;
-        return -1;
-    }
-
-    if (rc == GNUTLS_E_AGAIN) {
-        errno = EAGAIN;
-        return -1;
+    if (rc == GNUTLS_E_INTERRUPTED || rc == GNUTLS_E_AGAIN) {
+        return 0;
     }
 
     if (rc < 0) {

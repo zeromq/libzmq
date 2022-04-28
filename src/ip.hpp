@@ -77,7 +77,7 @@ void make_socket_noninheritable (fd_t sock_);
 
 //  Asserts that:
 //  - an internal 0MQ error did not occur,
-//  - and, if a socket error occured, it can be recovered from.
+//  - and, if a socket error occurred, it can be recovered from.
 void assert_success_or_recoverable (fd_t s_, int rc_);
 
 #ifdef ZMQ_HAVE_IPC

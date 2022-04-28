@@ -74,7 +74,7 @@ void zmq::own_t::process_seqnum ()
     //  Catch up with counter of processed commands.
     _processed_seqnum++;
 
-    //  We may have catched up and still have pending terms acks.
+    //  We may have caught up and still have pending terms acks.
     check_term_acks ();
 }
 

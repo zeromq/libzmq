@@ -45,10 +45,7 @@ namespace zmq
 {
 template <typename T>
 generic_mtrie_t<T>::generic_mtrie_t () :
-    _pipes (0),
-    _min (0),
-    _count (0),
-    _live_nodes (0)
+    _pipes (0), _min (0), _count (0), _live_nodes (0)
 {
 }
 
@@ -162,12 +159,12 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                              Arg arg_,
                              bool call_on_uniq_)
 {
-    //  This used to be implemented as a non-tail recursive travesal of the trie,
+    //  This used to be implemented as a non-tail recursive traversal of the trie,
     //  which means remote clients controlled the depth of the recursion and the
     //  stack size.
     //  To simulate the non-tail recursion, with post-recursion changes depending on
     //  the result of the recursive call, a stack is used to re-visit the same node
-    //  and operate on it again after children have been visisted.
+    //  and operate on it again after children have been visited.
     //  A boolean is used to record whether the node had already been visited and to
     //  determine if the pre- or post- children visit actions have to be taken.
     //  In the case of a node with (N > 1) children, the node has to be re-visited
@@ -404,12 +401,12 @@ template <typename T>
 typename generic_mtrie_t<T>::rm_result
 generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
 {
-    //  This used to be implemented as a non-tail recursive travesal of the trie,
+    //  This used to be implemented as a non-tail recursive traversal of the trie,
     //  which means remote clients controlled the depth of the recursion and the
     //  stack size.
     //  To simulate the non-tail recursion, with post-recursion changes depending on
     //  the result of the recursive call, a stack is used to re-visit the same node
-    //  and operate on it again after children have been visisted.
+    //  and operate on it again after children have been visited.
     //  A boolean is used to record whether the node had already been visited and to
     //  determine if the pre- or post- children visit actions have to be taken.
     rm_result ret = not_found;

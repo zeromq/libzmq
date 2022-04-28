@@ -34,8 +34,7 @@
 #include "msg.hpp"
 
 zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_),
-    _probe_router (false)
+    socket_base_t (parent_, tid_, sid_), _probe_router (false)
 {
     options.type = ZMQ_DEALER;
     options.can_send_hello_msg = true;

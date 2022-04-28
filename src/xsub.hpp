@@ -91,6 +91,10 @@ class xsub_t : public socket_base_t
     trie_t _subscriptions;
 #endif
 
+    // If true, send all unsubscription messages upstream, not just
+    // unique ones
+    bool _verbose_unsubs;
+
     //  If true, 'message' contains a matching message to return on the
     //  next recv call.
     bool _has_message;

@@ -383,10 +383,14 @@ fd_t connect_socket (const char *endpoint_, const int af_, const int protocol_)
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
     const fd_t s_pre = socket (af_, SOCK_STREAM,
-                               protocol_ == IPPROTO_UDP
-                                 ? IPPROTO_UDP
-                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
+                               protocol_ == IPPROTO_UDP   ? IPPROTO_UDP
+                               : protocol_ == IPPROTO_TCP ? IPPROTO_TCP
+                                                          : 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    TEST_ASSERT_NOT_EQUAL (INVALID_SOCKET, s_pre);
+#else
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+#endif
 
     if (af_ == AF_INET || af_ == AF_INET6) {
         const char *port = strrchr (endpoint_, ':') + 1;
@@ -440,10 +444,14 @@ fd_t bind_socket_resolve_port (const char *address_,
     //  OSX is very opinionated and wants the size to match the AF family type
     socklen_t addr_len;
     const fd_t s_pre = socket (af_, SOCK_STREAM,
-                               protocol_ == IPPROTO_UDP
-                                 ? IPPROTO_UDP
-                                 : protocol_ == IPPROTO_TCP ? IPPROTO_TCP : 0);
+                               protocol_ == IPPROTO_UDP   ? IPPROTO_UDP
+                               : protocol_ == IPPROTO_TCP ? IPPROTO_TCP
+                                                          : 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    TEST_ASSERT_NOT_EQUAL (INVALID_SOCKET, s_pre);
+#else
     TEST_ASSERT_NOT_EQUAL (-1, s_pre);
+#endif
 
     if (af_ == AF_INET || af_ == AF_INET6) {
 #ifdef ZMQ_HAVE_WINDOWS
@@ -511,11 +519,10 @@ fd_t bind_socket_resolve_port (const char *address_,
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
         sprintf (my_endpoint_, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP
-                   ? "tcp"
-                   : protocol_ == IPPROTO_UDP
-                       ? "udp"
-                       : protocol_ == IPPROTO_WSS ? "wss" : "ws",
+                 protocol_ == IPPROTO_TCP   ? "tcp"
+                 : protocol_ == IPPROTO_UDP ? "udp"
+                 : protocol_ == IPPROTO_WSS ? "wss"
+                                            : "ws",
                  address_,
                  af_ == AF_INET
                    ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)

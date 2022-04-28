@@ -46,9 +46,9 @@
 #include "i_poll_events.hpp"
 #include "likely.hpp"
 
-//  NetBSD defines (struct kevent).udata as intptr_t, everyone else
-//  as void *.
-#if defined ZMQ_HAVE_NETBSD
+// NetBSD up to version 9 defines (struct kevent).udata as intptr_t,
+// everyone else as void *.
+#if defined ZMQ_HAVE_NETBSD && defined(ZMQ_NETBSD_KEVENT_UDATA_INTPTR_T)
 #define kevent_udata_t intptr_t
 #else
 #define kevent_udata_t void *

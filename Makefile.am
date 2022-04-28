@@ -487,7 +487,6 @@ test_apps = \
 	tests/test_conflate \
 	tests/test_inproc_connect \
 	tests/test_issue_566 \
-	tests/test_proxy \
 	tests/test_proxy_hwm \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
@@ -720,9 +719,14 @@ tests_test_issue_566_SOURCES = tests/test_issue_566.cpp
 tests_test_issue_566_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_issue_566_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+# TODO: gets stuck even with long timeout running under Github Actions
+if !VALGRIND_ENABLED
+test_apps += tests/test_proxy
+
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
 tests_test_proxy_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 tests_test_proxy_hwm_SOURCES = tests/test_proxy_hwm.cpp
 tests_test_proxy_hwm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1001,16 +1005,20 @@ tests_test_security_gssapi_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
 if ON_LINUX
-test_apps += tests/test_abstract_ipc \
-	tests/test_socks
+test_apps += tests/test_abstract_ipc
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
 tests_test_abstract_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+# TODO: gets stuck even with long timeout running under Github Actions
+if !VALGRIND_ENABLED
+test_apps += tests/test_socks
+
 tests_test_socks_SOURCES = tests/test_socks.cpp
 tests_test_socks_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_socks_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 
 # TODO: enable when https://github.com/zeromq/libzmq/issues/3898 is fixed
 if !ENABLE_ASAN
@@ -1057,7 +1065,9 @@ test_apps += tests/test_poller \
 	tests/test_hello_msg \
 	tests/test_disconnect_msg \
 	tests/test_channel \
-	tests/test_hiccup_msg
+	tests/test_hiccup_msg \
+	tests/test_zmq_ppoll_fd \
+	tests/test_xsub_verbose
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1126,6 +1136,22 @@ tests_test_channel_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_hiccup_msg_SOURCES = tests/test_hiccup_msg.cpp
 tests_test_hiccup_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_hiccup_msg_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_zmq_ppoll_fd_SOURCES = tests/test_zmq_ppoll_fd.cpp
+tests_test_zmq_ppoll_fd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_zmq_ppoll_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_xsub_verbose_SOURCES = tests/test_xsub_verbose.cpp
+tests_test_xsub_verbose_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_xsub_verbose_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+if HAVE_FORK
+test_apps += tests/test_zmq_ppoll_signals
+
+tests_test_zmq_ppoll_signals_SOURCES = tests/test_zmq_ppoll_signals.cpp
+tests_test_zmq_ppoll_signals_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_zmq_ppoll_signals_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
 endif
 
 if FUZZING_ENGINE_LIB

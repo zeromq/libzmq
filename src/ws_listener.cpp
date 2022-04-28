@@ -70,8 +70,7 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
                                    socket_base_t *socket_,
                                    const options_t &options_,
                                    bool wss_) :
-    stream_listener_base_t (io_thread_, socket_, options_),
-    _wss (wss_)
+    stream_listener_base_t (io_thread_, socket_, options_), _wss (wss_)
 {
 #ifdef ZMQ_HAVE_WSS
     if (_wss) {

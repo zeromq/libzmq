@@ -50,7 +50,13 @@ void test_pair_tcp (extra_func_t extra_func_ = NULL)
         extra_func_ (sb);
 
     char my_endpoint[MAX_SOCKET_STRING];
-    bind_loopback_ipv4 (sb, my_endpoint, sizeof my_endpoint);
+    size_t my_endpoint_length = sizeof my_endpoint;
+    int rc = zmq_bind (sb, "tcp://127.0.0.1:*");
+    if (rc < 0 && errno == EOPNOTSUPP)
+        TEST_IGNORE_MESSAGE ("SO_BINDTODEVICE not supported");
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &my_endpoint_length));
 
     void *sc = test_context_socket (ZMQ_PAIR);
     if (extra_func_)

@@ -244,7 +244,7 @@ EXAMPLE
 //  in case of error.
 
 static uint64_t
-get_monitor_event (void *monitor, uint64_t *value, char **local_address, char **remote_address)
+get_monitor_event (void *monitor, uint64_t **value, char **local_address, char **remote_address)
 {
     //  First frame in message contains event number
     zmq_msg_t msg;
@@ -267,6 +267,11 @@ get_monitor_event (void *monitor, uint64_t *value, char **local_address, char **
     memcpy (&value_count, zmq_msg_data (&msg), sizeof (value_count));
     zmq_msg_close (&msg);
 
+    if (value) {
+        *value = (uint64_t *) malloc (value_count * sizeof (uint64_t));
+        assert (*value);
+    }
+
     for (uint64_t i = 0; i < value_count; ++i) {
         //  Subsequent frames in message contain event values
         zmq_msg_init (&msg);
@@ -274,8 +279,8 @@ get_monitor_event (void *monitor, uint64_t *value, char **local_address, char **
             return -1;              //  Interrupted, presumably
         assert (zmq_msg_more (&msg));
 
-        if (value_ && value_ + i)
-            memcpy (value_ + i, zmq_msg_data (&msg), sizeof (*value_));
+        if (value && *value)
+            memcpy (&(*value)[i], zmq_msg_data (&msg), sizeof (uint64_t));
         zmq_msg_close (&msg);
     }
 

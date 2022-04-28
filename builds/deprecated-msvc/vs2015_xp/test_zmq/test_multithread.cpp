@@ -22,7 +22,7 @@ send random size message to each socket and check server answer
 
 #define CLIENT_COUNT 5			// client threads count
 #define CLIENT_CONNECTION 100	// ZMQ_CLIENT sockets at each client
-#define CLIENT_RECCONECT 1000	// reconnect one socket after messages
+#define CLIENT_RECONNECT 1000	// reconnect one socket after messages
 
 #define MESSAGE_MAX_SIZE 1024
 
@@ -157,7 +157,7 @@ void client(int num)
 	client_ready++;
 	while (client_ready < CLIENT_COUNT) Sleep(10); // wait while all clients open sockets
 
-	int recconect = 0;
+	int reconnect = 0;
 	while(1) {
 		int val[CLIENT_CONNECTION];
 		zmq_msg_t msg;
@@ -179,8 +179,8 @@ void client(int num)
 			client_cnt[num]++;
 		}
 		// reconnect one
-		recconect++;
-		if(recconect == CLIENT_RECCONECT) {
+		reconnect++;
+		if(reconnect == CLIENT_RECONNECT) {
 			int n = rand() % CLIENT_CONNECTION;
 			zmq_close(sock[n]);
 			sock[n] = zmq_socket(ctx, ZMQ_CLIENT); assert(sock[n]);

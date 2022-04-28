@@ -43,7 +43,10 @@ void test_reqrep_vmci ()
     std::string endpoint = s.str ();
 
     void *sb = test_context_socket (ZMQ_DEALER);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, endpoint.c_str ()));
+    int rc = zmq_bind (sb, endpoint.c_str ());
+    if (rc < 0 && errno == EAFNOSUPPORT)
+        TEST_IGNORE_MESSAGE ("VMCI not supported");
+    TEST_ASSERT_SUCCESS_ERRNO (rc);
 
     void *sc = test_context_socket (ZMQ_DEALER);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint.c_str ()));

@@ -70,7 +70,7 @@
 #include <ipexport.h>
 #include <iphlpapi.h>
 #include <limits.h>
-#include <Mstcpip.h>
+#include <mstcpip.h>
 #include <mswsock.h>
 #include <process.h>
 #include <rpc.h>

@@ -257,7 +257,7 @@ Default value:: NULL
 Applicable socket types:: ZMQ_ROUTER, ZMQ_SERVER and ZMQ_PEER
 
 
-ZMQ_HICCUP_MSG: set a hiccup message that the socket will generate when connected peer temporarly disconnect
+ZMQ_HICCUP_MSG: set a hiccup message that the socket will generate when connected peer temporarily disconnect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When set, the socket will generate a hiccup message when connect peer has been disconnected.
 You may set this on DEALER, CLIENT and PEER sockets.
@@ -527,9 +527,9 @@ ZMQ_METADATA: Add application metadata properties to a socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The _ZMQ_METADATA_ option shall add application metadata to the specified _socket_,
 the metadata is exchanged with peers during connection setup. A metadata property is
-specfied as a string, delimited by a colon, starting with the metadata _property_
+specified as a string, delimited by a colon, starting with the metadata _property_
 followed by the metadata value, for example "X-key:value".
-_Property_ names are restrited to maximum 255 characters and must be prefixed by "X-".
+_Property_ names are restricted to maximum 255 characters and must be prefixed by "X-".
 Multiple application metadata properties can be added to a socket by executing zmq_setsockopt()
 multiple times. As the argument is a null-terminated string, binary data must be encoded
 before it is added e.g. using Z85 (linkzmq:zmq_z85_encode[3]).
@@ -755,7 +755,7 @@ ZMQ_RECONNECT_IVL_MAX: Set maximum reconnection interval
 The 'ZMQ_RECONNECT_IVL_MAX' option shall set the maximum reconnection interval
 for the specified 'socket'.  This is the maximum period 0MQ shall wait between
 attempts to reconnect. On each reconnect attempt, the previous interval shall be
-doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for exponential
+doubled until ZMQ_RECONNECT_IVL_MAX is reached. This allows for exponential
 backoff strategy. Default value means no exponential backoff is performed and
 reconnect interval calculations are only based on ZMQ_RECONNECT_IVL.
 
@@ -1238,7 +1238,7 @@ Applicable socket types:: ZMQ_XPUB, ZMQ_PUB
 
 ZMQ_XPUB_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets a welcome message the will be recieved by subscriber when connecting.
+Sets a welcome message the will be received by subscriber when connecting.
 Subscriber must subscribe to the Welcome message before connecting.
 Welcome message will also be sent on reconnecting.
 For welcome message to work well user must poll on incoming subscription messages on the XPUB socket and handle them.
@@ -1250,6 +1250,21 @@ Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: ZMQ_XPUB
+
+
+ZMQ_XSUB_VERBOSE_UNSUBSCRIBE: pass duplicate unsubscribe messages on XSUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XSUB' socket behaviour on duplicated unsubscriptions. If enabled, the socket
+passes all unsubscribe messages to the caller. If disabled, only the last unsubscription
+from each filter will be passed. The default is 0 (disabled).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XSUB
 
 
 ZMQ_ONLY_FIRST_SUBSCRIBE: Process only first subscribe/unsubscribe in a multipart message

@@ -12,7 +12,7 @@ SYNOPSIS
 
 *void *zmq_poller_new (void);*
 
-*int zmq_poller_destroy (void '*poller_p');*
+*int zmq_poller_destroy (void '****poller_p');*
 
 *int zmq_poller_size (void '*poller');*
 
@@ -91,7 +91,7 @@ associated with the socket registration, and requires that the _socket_
 remains valid.
 
 _zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_ are
-analogous to the previous functions but manage regular file descriptiors
+analogous to the previous functions but manage regular file descriptors
 registered with a poller. On Windows, these functions can only be used with
 WinSock sockets.
 
@@ -185,7 +185,7 @@ For 0MQ sockets this flag has no effect on the _zmq_poller_add_ and
 _zmq_poller_modify_ functions, and is never set in the
 'events' member of the zmq_poller_event_t structure.
 For standard sockets this means there
-is urgent data to read. Refer to the POLLPRI flag for more informations.
+is urgent data to read. Refer to the POLLPRI flag for more information.
 For a file descriptor, refer to your OS documentation: as an example, GPIO
 interrupts are signaled through a POLLPRI event.
 This flag has no effect on Windows.
@@ -218,21 +218,25 @@ All other functions return 0 in case of a successful execution.
 ERRORS
 ------
 On _zmq_poller_new_:
+
 *ENOMEM*::
 A new poller could not be allocated successfully.
 
 On _zmq_poller_destroy_:
+
 *EFAULT*::
 _poller_p_ did not point to a valid poller. Note that passing an invalid pointer (e.g.
 pointer to deallocated memory) may cause undefined behaviour (e.g. an access violation).
 
 On _zmq_poller_size_:
+
 *EFAULT*::
 _poller_ did not point to a valid poller. Note that passing an
 invalid pointer (e.g. pointer to deallocated memory) may cause undefined
 behaviour (e.g. an access violation).
 
 On _zmq_poller_add_, _zmq_poller_modify_ and _zmq_poller_remove_:
+
 *EFAULT*::
 _poller_ did not point to a valid poller. Note that passing an
 invalid pointer (e.g. pointer to deallocated memory) may cause undefined
@@ -243,10 +247,12 @@ invalid pointer (e.g. pointer to deallocated memory) may cause undefined
 behaviour (e.g. an access violation).
 
 On _zmq_poller_add_:
+
 *EMFILE*::
 TODO
 
 On _zmq_poller_add_ or _zmq_poller_add_fd_:
+
 *ENOMEM*::
 Necessary resources could not be allocated.
 *EINVAL*::
@@ -254,14 +260,17 @@ _socket_ resp. _fd_ was already registered with the poller.
 
 On _zmq_poller_modify_, _zmq_poller_modify_fd_, _zmq_poller_remove_ or
 _zmq_poller_remove_fd_:
+
 *EINVAL*::
 _socket_ resp. _fd_ was not registered with the poller.
 
 On _zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_:
-*EBADF**:
+
+*EBADF*::
 The _fd_ specified was the retired fd.
 
 On _zmq_poller_wait_ and _zmq_poller_wait_all_:
+
 *ENOMEM*::
 Necessary resources could not be allocated.
 *ETERM*::
@@ -278,6 +287,7 @@ available.
 No registered event was signalled before the timeout was reached.
 
 On _zmq_poller_fd_:
+
 *EINVAL*::
 The poller has no associated file descriptor.
 *EFAULT*::
@@ -289,16 +299,24 @@ EXAMPLE
 ----
 void *poller = zmq_poller_new ();
 
-zmq_poller_event_t events [2];
 /* First item refers to 0MQ socket 'socket' */
 zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
 /* Second item refers to standard socket 'fd' */
 zmq_poller_add_fd (poller, fd, NULL, ZMQ_POLLIN);
+
+zmq_poller_event_t events [2];
 /* Poll for events indefinitely */
 int rc = zmq_poller_wait_all (poller, events, 2, -1);
 assert (rc >= 0);
 /* Returned events will be stored in 'events' */
-zmq_poller_destroy (poller);
+for (int i = 0; i < 2; ++i) {
+    if (events[i].socket == socket && events[i].events & ZMQ_POLLIN) {
+        // ...
+    } else if (events[i].fd == fd && events[i].events & ZMQ_POLLIN)) {
+        // ...
+    }
+}
+zmq_poller_destroy (&poller);
 ----
 
 

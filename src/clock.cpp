@@ -244,11 +244,12 @@ uint64_t zmq::clock_t::rdtsc ()
 #elif defined(_MSC_VER) && defined(_M_ARM)   // NC => added for windows ARM
     return __rdpmccntr64 ();
 #elif defined(_MSC_VER) && defined(_M_ARM64) // NC => added for windows ARM64
-    //return __rdpmccntr64 ();
-    //return __rdtscp (nullptr);
-    // todo: find proper implementation for ARM64
-    static uint64_t snCounter = 0;
-    return ++snCounter;
+    const int64_t pmccntr_el0 = (((3 & 1) << 14) |  // op0
+                                 ((3 & 7) << 11) |  // op1
+                                 ((9 & 15) << 7) |  // crn
+                                 ((13 & 15) << 3) | // crm
+                                 ((0 & 7) << 0));   // op2
+    return _ReadStatusReg (pmccntr_el0);
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));

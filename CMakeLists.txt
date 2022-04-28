@@ -22,6 +22,7 @@ include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CMakeDependentOption)
 include(CheckCXXSymbolExists)
+include(CheckStructHasMember)
 include(CheckTypeSize)
 include(FindThreads)
 include(GNUInstallDirs)
@@ -118,14 +119,14 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
 endif()
 
 if (NOT MSVC)
-  if(NOT CMAKE_CXX_FLAGS MATCHES "-std=")
+  if(NOT CMAKE_CXX_FLAGS MATCHES "-std=" AND NOT CXX_STANDARD AND NOT CMAKE_CXX_STANDARD)
     # use C++11 by default if supported
     check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
     if(COMPILER_SUPPORTS_CXX11)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     endif()
   endif()
-  if(NOT CMAKE_C_FLAGS MATCHES "-std=")
+  if(NOT CMAKE_C_FLAGS MATCHES "-std=" AND NOT C_STANDARD AND NOT CMAKE_C_STANDARD)
     check_c_compiler_flag("-std=c11" COMPILER_SUPPORTS_C11)
     if(COMPILER_SUPPORTS_C11)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
@@ -166,7 +167,6 @@ endif()
 # Enable WebSocket transport and RadixTree
 if(ENABLE_DRAFTS)
   message(STATUS "Building draft classes and methods")
-  set(ZMQ_BUILD_DRAFT_API 1)
   option(ENABLE_WS "Enable WebSocket transport" ON)
   option(ENABLE_RADIX_TREE "Use radix tree implementation to manage subscriptions" ON)
 else()
@@ -490,6 +490,11 @@ message(STATUS "Using polling method in zmq_poll(er)_* API: ${API_POLLER}")
 string(TOUPPER ${API_POLLER} UPPER_API_POLLER)
 set(ZMQ_POLL_BASED_ON_${UPPER_API_POLLER} 1)
 
+check_cxx_symbol_exists(pselect sys/select.h HAVE_PSELECT)
+if (NOT WIN32 AND HAVE_PSELECT)
+  set(ZMQ_HAVE_PPOLL 1)
+endif()
+
 # special alignment settings
 execute_process(
   COMMAND getconf LEVEL1_DCACHE_LINESIZE
@@ -512,8 +517,12 @@ endif()
 
 if(NOT WIN32)
   set(ZMQ_HAVE_IPC 1)
+  set(ZMQ_HAVE_STRUCT_SOCKADDR_UN 1)
 else()
   check_include_files("winsock2.h;afunix.h" ZMQ_HAVE_IPC)
+  if(ZMQ_HAVE_IPC)
+    check_struct_has_member("struct sockaddr_un" sun_path "winsock2.h;afunix.h" ZMQ_HAVE_STRUCT_SOCKADDR_UN)
+  endif()
 endif()
 
 # ##################### BEGIN condition_variable_t selection
@@ -908,13 +917,6 @@ if(MSVC)
   string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
   string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
-  # Optimization flags. http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
-  if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /LTCG")
-    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /LTCG")
-  endif()
 endif()
 
 # -----------------------------------------------------------------------------
@@ -1247,8 +1249,8 @@ list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix ${prefix})
-set(libdir ${prefix}/lib)
-set(includedir ${prefix}/include)
+set(libdir ${prefix}/${CMAKE_INSTALL_LIBDIR})
+set(includedir ${prefix}/${CMAKE_INSTALL_INCLUDEDIR})
 set(VERSION ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc @ONLY)
 set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
@@ -1336,6 +1338,27 @@ if(MSVC)
                            VS_GLOBAL_RunCodeAnalysis true)
   endfunction()
   if(BUILD_SHARED)
+    # Whole Program Optimization flags. http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
+    #
+    # "Finally, there's the subject of libraries. It's possible to create .LIB 
+    # files with code in its IL form. The linker will happily work with these 
+    # .LIB files. Be aware that these libraries will be tied to a specific 
+    # version of the compiler and linker. If you distribute these libraries, 
+    # you'll need to update them if Microsoft changes the format of IL in a 
+    # future release."
+    # 
+    # /GL and /LTCG can cause problems when libraries built with different 
+    # versions of compiler are later linked into an executable while /LTCG is active. 
+    # https://social.msdn.microsoft.com/Forums/vstudio/en-US/5c102025-c254-4f02-9a51-c775c6cc9f4b/problem-with-ltcg-when-building-a-static-library-in-vs2005?forum=vcgeneral
+    #
+    # For this reason, enable only when building a "Release" (e.g. non-DEBUG) DLL.
+    if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GL")
+      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
+      set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /LTCG")
+      set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /LTCG")
+    endif()
+
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs}
                               ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     if(ENABLE_ANALYSIS)
@@ -1377,9 +1400,6 @@ else()
   if(NOT MINGW)
     add_library(objects OBJECT ${sources})
     set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(
-      objects PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
   endif()
 
   if(BUILD_SHARED)
@@ -1448,10 +1468,19 @@ if(BUILD_STATIC)
   list(APPEND target_outputs "libzmq-static")
 endif()
 
-foreach(target ${target_outputs})
+set(build_targets ${target_outputs})
+if(TARGET objects)
+  list(APPEND build_targets "objects")
+endif()
+
+foreach(target ${build_targets})
   target_include_directories(
     ${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
+
+  if(ENABLE_DRAFTS)
+    target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
+  endif()
 endforeach()
 
 if(BUILD_SHARED)
@@ -1844,4 +1873,10 @@ if(MSVC
    AND BUILD_SHARED
    AND BUILD_STATIC)
   add_dependencies(libzmq-static libzmq)
+endif()
+
+option(ENABLE_NO_EXPORT "Build with empty ZMQ_EXPORT macro, bypassing platform-based automated detection" OFF)
+if(ENABLE_NO_EXPORT)
+  message(STATUS "Building with empty ZMQ_EXPORT macro")
+  add_definitions(-DZMQ_NO_EXPORT)
 endif()

@@ -207,7 +207,7 @@ int expect_monitor_event_multiple (void *server_mon_,
 }
 
 static int64_t get_monitor_event_internal_v2 (void *monitor_,
-                                              uint64_t *value_,
+                                              uint64_t **value_,
                                               char **local_address_,
                                               char **remote_address_,
                                               int recv_flag_)
@@ -239,6 +239,12 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
     memcpy (&value_count, zmq_msg_data (&msg), sizeof (value_count));
     zmq_msg_close (&msg);
 
+    if (value_) {
+        *value_ =
+          (uint64_t *) malloc ((size_t) value_count * sizeof (uint64_t));
+        TEST_ASSERT_NOT_NULL (*value_);
+    }
+
     for (uint64_t i = 0; i < value_count; ++i) {
         //  Subsequent frames in message contain event values
         zmq_msg_init (&msg);
@@ -249,8 +255,8 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
         TEST_ASSERT_TRUE (zmq_msg_more (&msg));
         TEST_ASSERT_EQUAL_UINT (sizeof (uint64_t), zmq_msg_size (&msg));
 
-        if (value_ && value_ + i)
-            memcpy (value_ + i, zmq_msg_data (&msg), sizeof (*value_));
+        if (value_ && *value_)
+            memcpy (&(*value_)[i], zmq_msg_data (&msg), sizeof (uint64_t));
         zmq_msg_close (&msg);
     }
 
@@ -266,7 +272,7 @@ static int64_t get_monitor_event_internal_v2 (void *monitor_,
 }
 
 static int64_t get_monitor_event_with_timeout_v2 (void *monitor_,
-                                                  uint64_t *value_,
+                                                  uint64_t **value_,
                                                   char **local_address_,
                                                   char **remote_address_,
                                                   int timeout_)
@@ -299,7 +305,7 @@ static int64_t get_monitor_event_with_timeout_v2 (void *monitor_,
 }
 
 int64_t get_monitor_event_v2 (void *monitor_,
-                              uint64_t *value_,
+                              uint64_t **value_,
                               char **local_address_,
                               char **remote_address_)
 {

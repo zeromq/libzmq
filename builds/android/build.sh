@@ -35,7 +35,7 @@ esac
 
 # Set default values used in ci builds
 
-export NDK_VERSION=${NDK_VERSION:-android-ndk-r21e}
+export NDK_VERSION=${NDK_VERSION:-android-ndk-r22b}
 # With NDK r21e, the minimum SDK version range is [16, 29].
 # SDK version 21 is the minimum version for 64-bit builds.
 export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
@@ -52,7 +52,7 @@ mkdir -p "${cache}"
 
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
-    echo "Doing a clean build (removing previous build and depedencies)..."
+    echo "Doing a clean build (removing previous build and dependencies)..."
     rm -rf "${ANDROID_BUILD_PREFIX}"/*
 fi
 

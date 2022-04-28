@@ -59,6 +59,9 @@ extern "C" {
 #include <stdio.h>
 
 /*  Handle DSO symbol visibility                                             */
+#if defined ZMQ_NO_EXPORT
+#define ZMQ_EXPORT
+#else
 #if defined _WIN32
 #if defined ZMQ_STATIC
 #define ZMQ_EXPORT
@@ -74,6 +77,7 @@ extern "C" {
 #define ZMQ_EXPORT __attribute__ ((visibility ("default")))
 #else
 #define ZMQ_EXPORT
+#endif
 #endif
 #endif
 
@@ -99,6 +103,11 @@ typedef unsigned __int8 uint8_t;
 #endif
 #else
 #include <stdint.h>
+#endif
+
+#if !defined _WIN32
+// needed for sigset_t definition in zmq_ppoll
+#include <signal.h>
 #endif
 
 //  32-bit AIX's pollfd struct members are called reqevents and rtnevents so it
@@ -249,7 +258,7 @@ typedef struct zmq_msg_t
 #endif
 } zmq_msg_t;
 
-typedef void(zmq_free_fn) (void *data_, void *hint_);
+typedef void (zmq_free_fn) (void *data_, void *hint_);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
@@ -583,7 +592,7 @@ ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p_);
 
 #define ZMQ_HAVE_TIMERS
 
-typedef void(zmq_timer_fn) (int timer_id, void *arg);
+typedef void (zmq_timer_fn) (int timer_id, void *arg);
 
 ZMQ_EXPORT void *zmq_timers_new (void);
 ZMQ_EXPORT int zmq_timers_destroy (void **timers_p);
@@ -620,7 +629,7 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 /*  Sleeps for specified number of seconds.                                   */
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
-typedef void(zmq_thread_fn) (void *);
+typedef void (zmq_thread_fn) (void *);
 
 /* Start a thread. Returns a handle to the thread.                            */
 ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn *func_, void *arg_);
@@ -670,6 +679,7 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_PRIORITY 112
 #define ZMQ_BUSY_POLL 113
 #define ZMQ_HICCUP_MSG 114
+#define ZMQ_XSUB_VERBOSE_UNSUBSCRIBE 115
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1
@@ -762,6 +772,19 @@ ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
 ZMQ_EXPORT int zmq_socket_monitor_versioned (
   void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
 ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
+
+#if !defined _WIN32
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const sigset_t *sigmask_);
+#else
+// Windows has no sigset_t
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const void *sigmask_);
+#endif
 
 #endif // ZMQ_BUILD_DRAFT_API
 

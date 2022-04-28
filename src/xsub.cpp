@@ -36,6 +36,7 @@
 
 zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
+    _verbose_unsubs (false),
     _has_message (false),
     _more_send (false),
     _more_recv (false),
@@ -110,6 +111,12 @@ int zmq::xsub_t::xsetsockopt (int option_,
         _only_first_subscribe = (*static_cast<const int *> (optval_) != 0);
         return 0;
     }
+#ifdef ZMQ_BUILD_DRAFT_API
+    else if (option_ == ZMQ_XSUB_VERBOSE_UNSUBSCRIBE) {
+        _verbose_unsubs = (*static_cast<const int *> (optval_) != 0);
+        return 0;
+    }
+#endif
     errno = EINVAL;
     return -1;
 }
@@ -132,7 +139,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     if (msg_->is_subscribe () || (size > 0 && *data == 1)) {
         //  Process subscribe message
         //  This used to filter out duplicate subscriptions,
-        //  however this is alread done on the XPUB side and
+        //  however this is already done on the XPUB side and
         //  doing it here as well breaks ZMQ_XPUB_VERBOSE
         //  when there are forwarding devices involved.
         if (!msg_->is_subscribe ()) {
@@ -150,7 +157,8 @@ int zmq::xsub_t::xsend (msg_t *msg_)
             size = size - 1;
         }
         _process_subscribe = true;
-        if (_subscriptions.rm (data, size))
+        const bool rm_result = _subscriptions.rm (data, size);
+        if (rm_result || _verbose_unsubs)
             return _dist.send_to_all (msg_);
     } else
         //  User message sent upstream to XPUB socket
