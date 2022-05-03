@@ -1625,7 +1625,11 @@ endif()
 # -----------------------------------------------------------------------------
 # tests
 
-option(BUILD_TESTS "Whether or not to build the tests" ON)
+if(${CMAKE_VERSION} VERSION_LESS 3.12.3)
+  option(BUILD_TESTS "Whether or not to build the tests" OFF)
+else()
+  option(BUILD_TESTS "Whether or not to build the tests" ON)
+endif()
 
 set(ZMQ_BUILD_TESTS
     ${BUILD_TESTS}
