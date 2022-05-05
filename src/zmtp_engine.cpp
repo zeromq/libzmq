@@ -487,8 +487,10 @@ int zmq::zmtp_engine_t::produce_ping_message (msg_t *msg_)
     rc = _mechanism->encode (msg_);
     _next_msg = &zmtp_engine_t::pull_and_encode;
     if (!_has_timeout_timer && _heartbeat_timeout > 0) {
-        add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
-        _has_timeout_timer = true;
+        if (!_input_stopped && !_output_stopped) {
+            add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
+            _has_timeout_timer = true;
+        }
     }
     return rc;
 }
@@ -524,8 +526,10 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
         remote_heartbeat_ttl *= 100;
 
         if (!_has_ttl_timer && remote_heartbeat_ttl > 0) {
-            add_timer (remote_heartbeat_ttl, heartbeat_ttl_timer_id);
-            _has_ttl_timer = true;
+            if (!_input_stopped && !_output_stopped) {
+                add_timer (remote_heartbeat_ttl, heartbeat_ttl_timer_id);
+                _has_ttl_timer = true;
+            }
         }
 
         //  As per ZMTP 3.1 the PING command might contain an up to 16 bytes
