@@ -487,10 +487,8 @@ int zmq::zmtp_engine_t::produce_ping_message (msg_t *msg_)
     rc = _mechanism->encode (msg_);
     _next_msg = &zmtp_engine_t::pull_and_encode;
     if (!_has_timeout_timer && _heartbeat_timeout > 0) {
-        if (!_input_stopped) {
-            add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
-            _has_timeout_timer = true;
-        }
+        add_timer (_heartbeat_timeout, heartbeat_timeout_timer_id);
+        _has_timeout_timer = true;
     }
     return rc;
 }
