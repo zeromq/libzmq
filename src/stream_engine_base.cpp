@@ -527,8 +527,10 @@ const zmq::endpoint_uri_pair_t &zmq::stream_engine_base_t::get_endpoint () const
 void zmq::stream_engine_base_t::mechanism_ready ()
 {
     if (_options.heartbeat_interval > 0 && !_has_heartbeat_timer) {
-        add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
-        _has_heartbeat_timer = true;
+        if (!_input_stopped && !_output_stopped) {
+            add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
+            _has_heartbeat_timer = true;
+        }
     }
 
     if (_has_handshake_stage)
@@ -756,7 +758,8 @@ void zmq::stream_engine_base_t::timer_event (int id_)
     } else if (id_ == heartbeat_ivl_timer_id) {
         _next_msg = &stream_engine_base_t::produce_ping_message;
         out_event ();
-        add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
+        if (!_input_stopped && !_output_stopped)
+            add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
     } else if (id_ == heartbeat_ttl_timer_id) {
         _has_ttl_timer = false;
         error (timeout_error);
