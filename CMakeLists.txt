@@ -240,19 +240,6 @@ if(NOT ZMQ_USE_GNUTLS)
   endif()
 endif()
 
-if(NOT MSVC)
-  option(WITH_LIBBSD "Use libbsd instead of builtin strlcpy" ON)
-  if(WITH_LIBBSD)
-    pkg_check_modules(LIBBSD "libbsd")
-    if(LIBBSD_FOUND)
-      message(STATUS "Using libbsd")
-      set(pkg_config_names_private "${pkg_config_names_private} libbsd")
-      set(ZMQ_HAVE_LIBBSD 1)
-    endif()
-  endif()
-  check_cxx_symbol_exists(strlcpy string.h ZMQ_HAVE_STRLCPY)
-endif()
-
 # Select curve encryption library, defaults to tweetnacl To use libsodium instead, use --with-libsodium(must be
 # installed) To disable curve, use --disable-curve
 
@@ -1318,15 +1305,15 @@ if(MSVC)
   if(BUILD_SHARED)
     # Whole Program Optimization flags. http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
     #
-    # "Finally, there's the subject of libraries. It's possible to create .LIB 
-    # files with code in its IL form. The linker will happily work with these 
-    # .LIB files. Be aware that these libraries will be tied to a specific 
-    # version of the compiler and linker. If you distribute these libraries, 
-    # you'll need to update them if Microsoft changes the format of IL in a 
+    # "Finally, there's the subject of libraries. It's possible to create .LIB
+    # files with code in its IL form. The linker will happily work with these
+    # .LIB files. Be aware that these libraries will be tied to a specific
+    # version of the compiler and linker. If you distribute these libraries,
+    # you'll need to update them if Microsoft changes the format of IL in a
     # future release."
-    # 
-    # /GL and /LTCG can cause problems when libraries built with different 
-    # versions of compiler are later linked into an executable while /LTCG is active. 
+    #
+    # /GL and /LTCG can cause problems when libraries built with different
+    # versions of compiler are later linked into an executable while /LTCG is active.
     # https://social.msdn.microsoft.com/Forums/vstudio/en-US/5c102025-c254-4f02-9a51-c775c6cc9f4b/problem-with-ltcg-when-building-a-static-library-in-vs2005?forum=vcgeneral
     #
     # For this reason, enable only when building a "Release" (e.g. non-DEBUG) DLL.
@@ -1471,10 +1458,6 @@ if(BUILD_SHARED)
     target_link_libraries(libzmq ${NSS3_LIBRARIES})
   endif()
 
-  if(LIBBSD_FOUND)
-    target_link_libraries(libzmq ${LIBBSD_LIBRARIES})
-  endif()
-
   if(SODIUM_FOUND)
     target_link_libraries(libzmq ${SODIUM_LIBRARIES})
     # On Solaris, libsodium depends on libssp
@@ -1510,10 +1493,6 @@ if(BUILD_STATIC)
   target_link_libraries(libzmq-static ${CMAKE_THREAD_LIBS_INIT})
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq-static ${GNUTLS_LIBRARIES})
-  endif()
-
-  if(LIBBSD_FOUND)
-    target_link_libraries(libzmq-static ${LIBBSD_LIBRARIES})
   endif()
 
   if(NSS3_FOUND)
@@ -1578,10 +1557,6 @@ if(BUILD_SHARED)
 
       if(GNUTLS_FOUND)
         target_link_libraries(${perf-tool} ${GNUTLS_LIBRARIES})
-      endif()
-
-      if(LIBBSD_FOUND)
-        target_link_libraries(${perf-tool} ${LIBBSD_LIBRARIES})
       endif()
 
       if(NSS3_FOUND)

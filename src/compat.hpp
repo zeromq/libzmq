@@ -37,26 +37,41 @@
 #define strcasecmp _stricmp
 #define strtok_r strtok_s
 #else
-#ifndef ZMQ_HAVE_STRLCPY
-#ifdef ZMQ_HAVE_LIBBSD
-#include <bsd/string.h>
-#else
-static inline size_t
-strlcpy (char *dest_, const char *src_, const size_t dest_size_)
-{
-    size_t remain = dest_size_;
-    for (; remain && *src_; --remain, ++src_, ++dest_) {
-        *dest_ = *src_;
-    }
-    return dest_size_ - remain;
-}
-#endif
-#endif
+/*
+ * https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/strcpy-s-wcscpy-s-mbscpy-s?view=msvc-170
+ */
 template <size_t size>
-static inline int strcpy_s (char (&dest_)[size], const char *const src_)
+static inline int strcpy_s (char (&dst)[size], const char *const src)
 {
-    const size_t res = strlcpy (dest_, src_, size);
-    return res >= size ? ERANGE : 0;
+    size_t i;
+
+    if (src == NULL) {
+        /*
+         * XXX:
+         * Microsoft's documentation is ambiguous.
+         *
+         * How does Microsoft handle size == 0 when src is NULL?
+         * Do they return ERANGE?
+         *
+         * How does Microsoft handle size == 0 when src is non-NULL?
+         * Do they write a '\0' to *dst anyway?
+         */
+        if (size > 0)
+            *dst = '\0';
+        return (errno = EINVAL);
+    }
+
+    for (i = 0;; i++) {
+        if (i >= size) {
+            if (size > 0)
+                *dst = '\0';
+            return (errno = ERANGE);
+        }
+        dst[i] = src[i];
+        if (src[i] == '\0')
+            return 0;
+    }
+    /* NOTREACHED */
 }
 #endif
 

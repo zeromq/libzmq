@@ -12,7 +12,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
-# Allow "configure --disable-maintainer-mode" to disable timestamp checking 
+# Allow "configure --disable-maintainer-mode" to disable timestamp checking
 AM_MAINTAINER_MODE([enable])
 
 m4_pattern_allow([AC_PROG_CC_C99])
@@ -863,43 +863,6 @@ AC_COMPILE_IFELSE(
         AC_MSG_RESULT([yes])
         AC_DEFINE(HAVE_IF_NAMETOINDEX, [1],
         [if_nametoindex is available])
-    ],[
-        AC_MSG_RESULT([no])
-])
-
-AC_ARG_ENABLE([libbsd],
-    [AS_HELP_STRING([--enable-libbsd],
-        [enable libbsd [default=auto]])],
-    [enable_libbsd=$enableval],
-    [enable_libbsd="auto"])
-
-if test "x$enable_libbsd" != "xno"; then
-    PKG_CHECK_MODULES(LIBBSD, [libbsd],
-        [
-            AC_DEFINE(ZMQ_HAVE_LIBBSD, 1, [The libbsd library is to be used])
-            AC_SUBST([LIBBSD_CFLAGS])
-            AC_SUBST([LIBBSD_LIBS])
-            PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libbsd"
-            found_libbsd="yes"
-        ],
-        [
-            found_libbsd="no"
-            if test "x$enable_libbsd" = "xyes"; then
-                AC_MSG_ERROR([Cannot find libbsd])
-            else
-                AC_MSG_WARN([Cannot find libbsd])
-            fi
-        ])
-fi
-AC_MSG_CHECKING([whether strlcpy is available])
-AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM(
-        [[#include <string.h>]],
-        [[char buf [100]; size_t bar = strlcpy (buf, "foo", 100); (void)bar; return 0;]])
-    ],[
-        AC_MSG_RESULT([yes])
-        AC_DEFINE(ZMQ_HAVE_STRLCPY, [1],
-            [strlcpy is available])
     ],[
         AC_MSG_RESULT([no])
 ])

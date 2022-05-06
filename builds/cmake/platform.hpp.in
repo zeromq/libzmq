@@ -55,8 +55,6 @@
 #cmakedefine ZMQ_HAVE_PTHREAD_SET_AFFINITY
 #cmakedefine HAVE_ACCEPT4
 #cmakedefine HAVE_STRNLEN
-#cmakedefine ZMQ_HAVE_STRLCPY
-#cmakedefine ZMQ_HAVE_LIBBSD
 
 #cmakedefine ZMQ_HAVE_IPC
 #cmakedefine ZMQ_HAVE_STRUCT_SOCKADDR_UN
