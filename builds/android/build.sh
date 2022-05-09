@@ -37,6 +37,7 @@ esac
 export NDK_VERSION=${NDK_VERSION:-android-ndk-r24}
 # With NDK r22b, the minimum SDK version range is [16, 31].
 # Since NDK r24, the minimum SDK version range is [19, 31].
+# SDK version 21 is the minimum version for 64-bit builds.
 export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 
 # Set up android build environment and set ANDROID_BUILD_OPTS array
