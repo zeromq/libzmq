@@ -112,12 +112,12 @@ function android_build_env {
 
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r20\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24\")")
     fi
 
     if [ -z "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_PATH environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r20/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r24/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
     fi
 
     if [ -z "$TOOLCHAIN_HOST" ]; then
@@ -181,10 +181,22 @@ function _android_build_opts_process_binaries {
     else
        local LD="${TOOLCHAIN_PATH}/ld"
     fi
-    local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
-    local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
-    local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
-    local STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
+    # Since NDK r24 this binary was removed due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as" ]; then
+        local AS="${TOOLCHAIN_PATH}/llvm-as"
+    else
+        local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
+    fi
+    # Since NDK r23 those binaries were removed due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+        local AR="${TOOLCHAIN_PATH}/llvm-ar"
+        local RANLIB="${TOOLCHAIN_PATH}/llvm-ranlib"
+        local STRIP="${TOOLCHAIN_PATH}/llvm-strip"
+    else
+        local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
+        local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
+        local STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
+    fi
 
     if [ ! -x "${CC}" ]; then
         ANDROID_BUILD_FAIL+=("The CC binary does not exist or is not executable")
@@ -239,7 +251,12 @@ function android_build_opts {
 
     _android_build_opts_process_binaries
 
-    local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
+    # Since NDK r23 we don't need -lgcc due to LLVM being now the default
+    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+        local LIBS="-lc -ldl -lm -llog -lc++_shared"
+    else
+        local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
+    fi
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
     LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
