@@ -97,11 +97,17 @@ function android_build_set_env {
         export TOOLCHAIN_ARCH="x86_64"
     fi
 
+    # Since NDK r23 LLVM is the default
+    if [ -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+        # Choose a C++ standard library implementation from the ndk
+        ANDROID_BUILD_CXXSTL="gnustl_shared_49"
+    fi
+    
     # Since NDK r22 the "platforms" dir got removed
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
     else
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/sysroot"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 }
