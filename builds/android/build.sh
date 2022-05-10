@@ -11,6 +11,9 @@ ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-`pwd`}"
 # Get access to android_build functions and variables
 source ./android_build_helper.sh
 
+# Choose a C++ standard library implementation from the ndk
+ANDROID_BUILD_CXXSTL="gnustl_shared_49"
+
 BUILD_ARCH=$1
 if [ -z $BUILD_ARCH ]; then
     usage
