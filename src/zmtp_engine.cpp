@@ -550,6 +550,8 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
 
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
           &zmtp_engine_t::produce_pong_message);
+        if (unlikely (_input_stopped))
+          return 0;
         out_event ();
     }
 

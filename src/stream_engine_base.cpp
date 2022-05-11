@@ -757,8 +757,8 @@ void zmq::stream_engine_base_t::timer_event (int id_)
         if (!_input_stopped) {
             _next_msg = &stream_engine_base_t::produce_ping_message;
             out_event ();
-            add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
         }
+        add_timer (_options.heartbeat_interval, heartbeat_ivl_timer_id);
     } else if (id_ == heartbeat_ttl_timer_id) {
         _has_ttl_timer = false;
         error (timeout_error);
