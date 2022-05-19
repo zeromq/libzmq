@@ -664,11 +664,10 @@ error_closelistener:
         }
         filename.clear ();
     }
-
+    /*
     errno = saved_errno;
-
     return -1;
-
+    */
 try_tcpip:
     // try to fallback to TCP/IP
     // TODO: maybe remember this decision permanently?
