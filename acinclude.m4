@@ -1,24 +1,4 @@
 dnl ##############################################################################
-dnl # LIBZMQ_CONFIG_LIBTOOL                                                      #
-dnl # Configure libtool. Requires AC_CANONICAL_HOST                              #
-dnl ##############################################################################
-AC_DEFUN([LIBZMQ_CONFIG_LIBTOOL],  [{
-    AC_REQUIRE([AC_CANONICAL_HOST])
-
-    # Libtool configuration for different targets
-    case "${host_os}" in
-        *mingw*|*cygwin*|*msys*)
-            # Disable static build by default
-            AC_DISABLE_STATIC
-        ;;
-        *)
-            # Everything else with static enabled
-            AC_ENABLE_STATIC
-        ;;
-    esac
-}])
-
-dnl ##############################################################################
 dnl # LIBZMQ_CHECK_LANG_ICC([action-if-found], [action-if-not-found])            #
 dnl # Check if the current language is compiled using ICC                        #
 dnl # Adapted from http://software.intel.com/en-us/forums/showthread.php?t=67984 #
