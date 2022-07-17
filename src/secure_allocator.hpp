@@ -60,7 +60,11 @@ template <class T> struct secure_allocator_t
         alloc_assert (res);
         return res;
     }
-    void deallocate (T *p, std::size_t) ZMQ_NOEXCEPT { sodium_free (p); }
+    void deallocate (T *p, std::size_t) ZMQ_NOEXCEPT
+    {
+        if (p)
+            sodium_free (p);
+    }
 
     // the following is only required with C++98
     // TODO maybe make this conditionally compiled
