@@ -28,7 +28,7 @@ For the UDP transport, the transport is `udp`.
 The meaning of the 'address' part is defined below.
 
 Binding a socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------
 With 'udp' we can only bind the 'ZMQ_DISH' socket type.
 When binding a socket using _zmq_bind()_ with the 'udp'
 transport the 'endpoint' shall be interpreted as an 'interface' followed by a
@@ -45,7 +45,7 @@ The UDP port number may be specified a numeric value, usually above
 1024 on POSIX systems.
 
 Connecting a socket
-~~~~~~~~~~~~~~~~~~~
+-------------------
 With 'udp' we can only connect the 'ZMQ_RADIO' socket type.
 When connecting a socket to a peer address using _zmq_connect()_ with the 'udp'
 transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
