@@ -328,6 +328,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
     switch (option_) {
         case ZMQ_MAX_SOCKETS:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _max_sockets;
                 return 0;
             }
@@ -342,6 +343,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_IO_THREADS:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _io_thread_count;
                 return 0;
             }
@@ -349,6 +351,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_IPV6:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _ipv6;
                 return 0;
             }
@@ -356,6 +359,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_BLOCKY:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _blocky;
                 return 0;
             }
@@ -363,6 +367,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_MAX_MSGSZ:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _max_msgsz;
                 return 0;
             }
@@ -370,6 +375,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_MSG_T_SIZE:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = sizeof (zmq_msg_t);
                 return 0;
             }
@@ -377,6 +383,7 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
 
         case ZMQ_ZERO_COPY_RECV:
             if (is_int) {
+                scoped_lock_t locker (_opt_sync);
                 *value = _zero_copy;
                 return 0;
             }
