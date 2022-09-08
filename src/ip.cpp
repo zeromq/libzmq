@@ -577,6 +577,11 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     int rc = 0;
     int saved_errno = 0;
 
+    // It appears that a lack of runtime AF_UNIX support
+    // can fail in more than one way.
+    // At least: open_socket can fail or later in bind
+    bool ipc_fallback_on_tcpip = true;
+
     //  Create a listening socket.
     const SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
     if (listener == retired_fd) {
@@ -599,6 +604,9 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         errno = wsa_error_to_errno (WSAGetLastError ());
         goto error_closelistener;
     }
+    // if we got here, ipc should be working,
+    // so raise any remaining errors
+    ipc_fallback_on_tcpip = false;
 
     //  Listen for incoming connections.
     rc = listen (listener, 1);
@@ -665,8 +673,12 @@ error_closelistener:
         filename.clear ();
     }
 
-    errno = saved_errno;
+    // ipc failed due to lack of AF_UNIX support, fallback on tcpip
+    if (ipc_fallback_on_tcpip) {
+        goto try_tcpip;
+    }
 
+    errno = saved_errno;
     return -1;
 
 try_tcpip:
