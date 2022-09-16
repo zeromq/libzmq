@@ -154,6 +154,17 @@ For OSX users, packages are available via brew.
 
     brew install zeromq
 
+## Installation of package manager <a name="package manager"/>
+
+### vcpkg
+
+vcpkg is a full platform package manager, you can easily install libzmq via vcpkg.
+
+    git clone https://github.com/microsoft/vcpkg.git
+    ./bootstrap-vcpkg.bat # For powershell
+    ./bootstrap-vcpkg.sh # For bash
+    ./vcpkg install zeromq
+
 ## Build from sources <a name="build"/>
 
 To build from sources, see the INSTALL file included with the distribution.
