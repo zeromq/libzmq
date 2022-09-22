@@ -44,7 +44,7 @@ elif [ $CURVE == "libsodium" ]; then
 
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
             (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
-        git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
+        git clone --depth 1 -b stable https://github.com/jedisct1/libsodium.git
         ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make install)
     fi
 fi
