@@ -5,12 +5,12 @@
 You need the Android Native Development Kit (NDK) installed. See
 [here](https://developer.android.com/ndk) to download it.
 
-This project is tested against Android NDK version r24.
+This project is tested against Android NDK version r25.
 
-If you installed version r24 all you have to do is to expose the NDK root
+If you installed version r25 all you have to do is to expose the NDK root
 directory as environment variable, e.g:
 
-    export ANDROID_NDK_ROOT=$HOME/android-ndk-r24
+    export ANDROID_NDK_ROOT=$HOME/android-ndk-r25
 
 If you installed another version you have to expose the NDK root directory as
 well as the NDK version, e.g:
