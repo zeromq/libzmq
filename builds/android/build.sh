@@ -34,7 +34,7 @@ case $(uname | tr '[:upper:]' '[:lower:]') in
 esac
 
 # Set default values used in ci builds
-export NDK_VERSION=${NDK_VERSION:-android-ndk-r24}
+export NDK_VERSION=${NDK_VERSION:-android-ndk-r25}
 # With NDK r22b, the minimum SDK version range is [16, 31].
 # Since NDK r24, the minimum SDK version range is [19, 31].
 # SDK version 21 is the minimum version for 64-bit builds.
