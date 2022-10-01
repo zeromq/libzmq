@@ -320,8 +320,12 @@ function android_build_verify_so {
         ANDROID_BUILD_FAIL+=("  ${elfoutput}")
     fi
 
-    for dep_soname do
-        if [[ $elfoutput != *"library: [${dep_soname}]"* ]]; then
+    for dep_soname in "$@" ; do
+        local dep_sofile="${ANDROID_BUILD_PREFIX}/lib/${dep_soname}"
+        if [ ! -f "${dep_sofile}" ]; then
+            ANDROID_BUILD_FAIL+=("Found no library named ${dep_soname}")
+            ANDROID_BUILD_FAIL+=("  ${dep_sofile}")
+        elif [[ $elfoutput != *"library: [${dep_soname}]"* ]]; then
             ANDROID_BUILD_FAIL+=("Library ${soname} was expected to be linked to library with soname:")
             ANDROID_BUILD_FAIL+=("  ${dep_soname}")
         fi
