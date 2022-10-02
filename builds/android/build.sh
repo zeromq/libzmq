@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 function usage {
     echo "Usage ./build.sh [ arm | arm64 | x86 | x86_64 ]"
 }
@@ -86,7 +88,7 @@ LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
 (android_build_verify_so ${VERIFY} &> /dev/null) || {
     rm -rf "${cache}/libzmq"
-    (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && make clean)
+    (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && ( make clean || : ))
 
     (cd "${cache}/libzmq" && ./autogen.sh \
         && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" ${CURVE} --without-docs \
