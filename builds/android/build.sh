@@ -70,10 +70,19 @@ elif [ $CURVE == "libsodium" ]; then
     (android_build_verify_so "libsodium.so" &> /dev/null) || {
         rm -rf "${cache}/libsodium"
         (cd "${cache}" && git clone -b stable --depth 1 https://github.com/jedisct1/libsodium.git) || exit 1
-        (cd "${cache}/libsodium" && ./autogen.sh \
-            && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
+        (
+            CONFIG_OPTS=()
+            CONFIG_OPTS+=("--quiet")
+            CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
+	    CONFIG_OPTS+=("--disable-soname-versions")
+
+            cd "${cache}/libsodium" \
+            && ./autogen.sh \
+            && android_show_configure_opts "LIBSODIUM" "${CONFIG_OPTS[@]}" \
+            && ./configure "${CONFIG_OPTS[@]}" \
             && make -j 4 \
-            && make install) || exit 1
+            && make install
+        ) || exit 1
     }
 elif [ $CURVE == "tweetnacl" ]; then
     # Default
@@ -90,10 +99,20 @@ LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
     rm -rf "${cache}/libzmq"
     (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && ( make clean || : ))
 
-    (cd "${cache}/libzmq" && ./autogen.sh \
-        && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" ${CURVE} --without-docs \
+    (
+        CONFIG_OPTS=()
+        CONFIG_OPTS+=("--quiet")
+        CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
+        CONFIG_OPTS+=("${CURVE}")
+        CONFIG_OPTS+=("--without-docs")
+	
+        cd "${cache}/libzmq" \
+        && ./autogen.sh \
+        && android_show_configure_opts "LIBZMQ" "${CONFIG_OPTS[@]}" \
+        && ./configure "${CONFIG_OPTS[@]}" \
         && make -j 4 \
-        && make install) || exit 1
+        && make install
+    ) || exit 1
 }
 
 ##
