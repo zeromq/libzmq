@@ -339,7 +339,7 @@ function android_show_configure_opts {
     shift
     echo "LIBZMQ (${BUILD_ARCH}) - ./configure options to build '${tag}':"
     for opt in "$@"; do
-	echo "  > ${opt}"
+        echo "  > ${opt}"
     done
     echo ""
 }
