@@ -333,3 +333,14 @@ function android_build_verify_so {
 
     android_build_check_fail
 }
+
+function android_show_configure_opts {
+    local tag=$1
+    shift
+    echo "LIBZMQ (${BUILD_ARCH}) - ./configure options to build '${tag}':"
+    for opt in "$@"; do
+        echo "  > ${opt}"
+    done
+    echo ""
+}
+
