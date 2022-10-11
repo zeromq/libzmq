@@ -7,6 +7,8 @@ export NDK_VERSION=android-ndk-r25
 export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
 
 # Cleanup.
+rm -rf /tmp/android_build/
+rm -rf prefix/
 rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
