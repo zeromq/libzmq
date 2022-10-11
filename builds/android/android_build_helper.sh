@@ -167,7 +167,7 @@ function android_build_env {
         ANDROID_BUILD_FAIL+=("  ${ANDROID_STL_ROOT}")
     fi
 
-    if [ -n "${ANDROID_LIBC_ROOT}" ] && [ ! -d ${ANDROID_LIBC_ROOT} ]; then
+    if [ -n "${ANDROID_LIBC_ROOT}" ] && [ ! -d "${ANDROID_LIBC_ROOT}" ]; then
         ANDROID_BUILD_FAIL+=("The ANDROID_LIBC_ROOT directory does not exist")
         ANDROID_BUILD_FAIL+=("  ${ANDROID_LIBC_ROOT}")
     fi

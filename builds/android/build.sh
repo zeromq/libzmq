@@ -119,10 +119,10 @@ fi
 ##
 # Fetch the STL as well.
 
-cp ${ANDROID_STL_ROOT}/${ANDROID_STL} ${ANDROID_BUILD_PREFIX}/lib/.
+cp "${ANDROID_STL_ROOT}/${ANDROID_STL}" "${ANDROID_BUILD_PREFIX}/lib/."
 
 ##
 # Verify shared libraries in prefix
 
-android_build_verify_so ${VERIFY} ${ANDROID_STL}
+android_build_verify_so "${VERIFY}" "${ANDROID_STL}"
 echo "libzmq android build succeeded"
