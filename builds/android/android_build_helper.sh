@@ -104,6 +104,18 @@ function android_build_set_env {
        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
+
+    # Since NDK r25, libc++_shared.so is no more in 'sources/cxx-stl/...'
+    export ANDROID_STL="libc++_shared.so"
+    if [ -x "${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}/${ANDROID_STL}" ] ; then
+        export ANDROID_STL_ROOT="${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
+    else 
+        export ANDROID_STL_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}"
+
+        # NDK 25 requires -L<path-to-libc.so> ... 
+        # I don't understand why, but without it, ./configure fails to build a valid 'conftest'.
+        export ANDROID_LIBC_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}/${MIN_SDK_VERSION}"
+    fi
 }
 
 function android_build_env {
@@ -148,6 +160,16 @@ function android_build_env {
     if [ ! -d "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("The ANDROID_NDK_ROOT directory does not exist")
         ANDROID_BUILD_FAIL+=("  ${ANDROID_NDK_ROOT}")
+    fi
+
+    if [ ! -d "$ANDROID_STL_ROOT" ]; then
+        ANDROID_BUILD_FAIL+=("The ANDROID_STL_ROOT directory does not exist")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_STL_ROOT}")
+    fi
+
+    if [ -n "${ANDROID_LIBC_ROOT}" ] && [ ! -d ${ANDROID_LIBC_ROOT} ]; then
+        ANDROID_BUILD_FAIL+=("The ANDROID_LIBC_ROOT directory does not exist")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_LIBC_ROOT}")
     fi
 
     if [ ! -d "$TOOLCHAIN_PATH" ]; then
@@ -258,7 +280,10 @@ function android_build_opts {
         local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
     fi
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
-    LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
+    if [ -n "${ANDROID_LIBC_ROOT}" ] ; then
+	LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
+    fi
+    LDFLAGS+=" -L${ANDROID_STL_ROOT}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
     CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
 

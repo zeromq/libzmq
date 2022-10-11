@@ -14,7 +14,10 @@ ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-`pwd`}"
 source ./android_build_helper.sh
 
 # Choose a C++ standard library implementation from the ndk
-ANDROID_BUILD_CXXSTL="gnustl_shared_49"
+export ANDROID_BUILD_CXXSTL="gnustl_shared_49"
+
+# Additional flags for LIBTOOL, for LIBZMQ and other dependencies.
+export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
 BUILD_ARCH=$1
 if [ -z $BUILD_ARCH ]; then
@@ -93,8 +96,6 @@ fi
 ##
 # Build libzmq from local source
 
-LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
-
 (android_build_verify_so ${VERIFY} &> /dev/null) || {
     rm -rf "${cache}/libzmq"
     (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && ( make clean || : ))
@@ -116,7 +117,12 @@ LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 }
 
 ##
+# Fetch the STL as well.
+
+cp ${ANDROID_STL_ROOT}/${ANDROID_STL} ${ANDROID_BUILD_PREFIX}/lib/.
+
+##
 # Verify shared libraries in prefix
 
-android_build_verify_so ${VERIFY}
+android_build_verify_so ${VERIFY} ${ANDROID_STL}
 echo "libzmq android build succeeded"
