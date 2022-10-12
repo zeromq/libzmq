@@ -55,12 +55,12 @@ if [[ $ANDROID_BUILD_CLEAN ]]; then
     rm -rf "${ANDROID_BUILD_PREFIX}"/*
 fi
 
+VERIFY=("libzmq.so")
 if [ -z $CURVE ]; then
     CURVE="--disable-curve"
-    VERIFY="libzmq.so"
 elif [ $CURVE == "libsodium" ]; then
     CURVE="--with-libsodium=yes"
-    VERIFY="libzmq.so libsodium.so"
+    VERIFY+=("libsodium.so")
     ##
     # Build libsodium from latest master branch
 
@@ -84,13 +84,12 @@ elif [ $CURVE == "libsodium" ]; then
 elif [ $CURVE == "tweetnacl" ]; then
     # Default
     CURVE=""
-    VERIFY="libzmq.so"
 fi
 
 ##
 # Build libzmq from local source
 
-(android_build_verify_so ${VERIFY} &> /dev/null) || {
+(android_build_verify_so "${VERIFY[@]}" &> /dev/null) || {
     rm -rf "${cache}/libzmq"
     (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && ( make clean || : ))
 
@@ -118,5 +117,5 @@ cp "${ANDROID_STL_ROOT}/${ANDROID_STL}" "${ANDROID_BUILD_PREFIX}/lib/."
 ##
 # Verify shared libraries in prefix
 
-android_build_verify_so "${VERIFY}" "${ANDROID_STL}"
+android_build_verify_so "${VERIFY[@]}" "${ANDROID_STL}"
 echo "LIBZMQ (${BUILD_ARCH}) - Android build successful"
