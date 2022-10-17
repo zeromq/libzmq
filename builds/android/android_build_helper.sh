@@ -80,9 +80,9 @@ esac
 export NDK_NUMBER="$(( $(echo ${NDK_VERSION}|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
 NDK_VERSION_LETTER="$(echo ${NDK_VERSION}|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[a-z]' '[A-Z]')"
 if [ -n "${NDK_VERSION_LETTER}" ] ; then
-    NDK_NUMBER=$(( $(( ${NDK_NUMBER} + $(printf '%d' \'${NDK_VERSION_LETTER}) )) - 64 ))
+    NDK_NUMBER=$(( $(( $NDK_NUMBER + $(printf '%d' \'${NDK_VERSION_LETTER}) )) - 64 ))
 fi
-echo "LIBZMQ - Configured NDK_VERSION: ${NDK_VERSION} (${NDK_NUMBER})."
+echo "LIBZMQ - Configured NDK_VERSION: ${NDK_VERSION} ($NDK_NUMBER)."
 
 function android_build_check_fail {
     if [ ! ${#ANDROID_BUILD_FAIL[@]} -eq 0 ]; then
