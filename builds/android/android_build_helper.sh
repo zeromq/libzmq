@@ -77,10 +77,10 @@ esac
 #   android-ndk-r21e -> 2105
 #   android-ndk-r25  -> 2500
 ########################################################################    
-export NDK_NUMBER="$(( $(echo ${NDK_VERSION}|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
-NDK_VERSION_LETTER="$(echo ${NDK_VERSION}|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
+export NDK_NUMBER="$(( $(echo \"${NDK_VERSION}\"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
+NDK_VERSION_LETTER="$(echo \"${NDK_VERSION}\"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
 if [ -n "${NDK_VERSION_LETTER}" ] ; then
-    NDK_NUMBER=$(( $(( $NDK_NUMBER + $(printf '%d' \'${NDK_VERSION_LETTER}) )) - 64 ))
+    NDK_NUMBER=$(( $(( $NDK_NUMBER + $(printf '%d' \'"${NDK_VERSION_LETTER}") )) - 64 ))
 fi
 echo "LIBZMQ - Configured NDK_VERSION: ${NDK_VERSION} ($NDK_NUMBER)."
 
