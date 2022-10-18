@@ -3,12 +3,15 @@
 #   Exit if any step fails
 set -e
 
-export NDK_VERSION=android-ndk-r25
-export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
+# Configuration
+export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-$(cd $(dirname "${BASH_SOURCE[0]}") ; pwd)}"
 
 # Cleanup.
 rm -rf /tmp/android_build/
-rm -rf prefix/
+rm -rf $(dirname "${BASH_SOURCE[0]}")/prefix
 rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
