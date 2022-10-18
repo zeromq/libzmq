@@ -58,6 +58,32 @@ fi
 # (Empty string indicates no failure)
 ANDROID_BUILD_FAIL=()
 
+
+########################################################################
+# Sanity checks
+########################################################################
+if [ -z "${NDK_VERSION}" ] ; then
+    echo "NDK_VERSION not set !"
+    exit 1
+fi
+case "${NDK_VERSION}" in
+    "android-ndk-r"[0-9][0-9] ) : ;;
+    "android-ndk-r"[0-9][0-9][a-z] ) : ;;
+    * ) echo "Invalid format for NDK_VERSION ('${NDK_VERSION}')" ; exit 1 ;;
+esac
+
+########################################################################
+# Compute NDK version into a numeric form:
+#   android-ndk-r21e -> 2105
+#   android-ndk-r25  -> 2500
+########################################################################    
+export NDK_NUMBER="$(( $(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
+NDK_VERSION_LETTER="$(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
+if [ -n "${NDK_VERSION_LETTER}" ] ; then
+    NDK_NUMBER=$(( $(( NDK_NUMBER + $(printf '%d' \'"${NDK_VERSION_LETTER}") )) - 64 ))
+fi
+echo "LIBZMQ - Configured NDK_VERSION: ${NDK_VERSION} ($NDK_NUMBER)."
+
 function android_build_check_fail {
     if [ ! ${#ANDROID_BUILD_FAIL[@]} -eq 0 ]; then
         echo "Android (${TOOLCHAIN_ARCH}) build failed for the following reasons:"
@@ -286,6 +312,13 @@ function android_build_opts {
     LDFLAGS+=" -L${ANDROID_STL_ROOT}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
     CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
+
+    if [ ${NDK_NUMBER} -ge 2400 ] ; then
+	if [ "${BUILD_ARCH}" = "arm64" ] ; then
+            CXXFLAGS+=" -mno-outline-atomics"
+	fi
+    fi
+
 
     ANDROID_BUILD_OPTS+=("CFLAGS=${CFLAGS} ${ANDROID_BUILD_EXTRA_CFLAGS}")
     ANDROID_BUILD_OPTS+=("CPPFLAGS=${CPPFLAGS} ${ANDROID_BUILD_EXTRA_CPPFLAGS}")
