@@ -56,6 +56,7 @@ BUILD_ARCH="$1"
 # Compilation
 ########################################################################
 # Get access to android_build functions and variables
+# Perform some sanity checks and calculate some variables.
 source ./android_build_helper.sh
 
 # Choose a C++ standard library implementation from the ndk
@@ -64,15 +65,9 @@ export ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 # Additional flags for LIBTOOL, for LIBZMQ and other dependencies.
 export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-platform="$(uname | tr '[:upper:]' '[:lower:]')"
-case "${platform}" in
-  linux*)  export HOST_PLATFORM=linux-x86_64 ;;
-  darwin*) export HOST_PLATFORM=darwin-x86_64 ;;
-  *)       echo "LIBZMQ (${BUILD_ARCH}) - Unsupported platform ('${platform}')" ; exit 1 ;;
-esac
-
 # Set up android build environment and set ANDROID_BUILD_OPTS array
 android_build_set_env "${BUILD_ARCH}"
+android_download_ndk
 android_build_env
 android_build_opts
 

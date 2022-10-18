@@ -18,28 +18,6 @@ rm -rf "${PWD}/prefix"
 rm -rf /tmp/tmp-deps
 mkdir -p /tmp/tmp-deps
 
-case $(uname | tr '[:upper:]' '[:lower:]') in
-  linux*)
-    HOST_PLATFORM=linux
-    ;;
-  darwin*)
-    HOST_PLATFORM=darwin
-    ;;
-  *)
-    echo "Unsupported platform"
-    exit 1
-    ;;
-esac
-
-if [ ! -d "${ANDROID_NDK_ROOT}" ]; then
-    export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
-
-    (cd '/tmp' \
-        && wget "http://dl.google.com/android/repository/${FILENAME}" -O "${FILENAME}" &> /dev/null \
-        && unzip -q "${FILENAME}") || exit 1
-    unset FILENAME
-fi
-
 ./build.sh "arm"
 ./build.sh "arm64"
 ./build.sh "x86"
