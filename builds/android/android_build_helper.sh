@@ -48,6 +48,9 @@
 # repository for the benefit of other users.
 #
 
+########################################################################
+# Initialization
+########################################################################
 # Get directory of current script (if not already set)
 # This directory is also the basis for the build directories the get created.
 if [ -z "$ANDROID_BUILD_DIR" ]; then
@@ -72,6 +75,11 @@ case "${NDK_VERSION}" in
     * ) echo "Invalid format for NDK_VERSION ('${NDK_VERSION}')" ; exit 1 ;;
 esac
 
+if [ -z "${ANDROID_NDK_ROOT}" ] ; then
+    echo "ANDROID_NDK_ROOT not set !"
+    exit 1
+fi
+
 ########################################################################
 # Compute NDK version into a numeric form:
 #   android-ndk-r21e -> 2105
@@ -95,10 +103,66 @@ function android_build_check_fail {
     fi
 }
 
+function android_download_ndk {
+    if [ -d "${ANDROID_NDK_ROOT}" ] ; then
+        # NDK folder detected, let's assume it's valid ...
+        echo "LIBZMQ (${BUILD_ARCH}) - Using existing NDK folder '${ANDROID_NDK_ROOT}'."
+        return
+    fi
+    if [ ! -d  "$(dirname "${ANDROID_NDK_ROOT}")" ] ; then
+        ANDROID_BUILD_FAIL+=("Cannot download NDK in a non existing folder")
+        ANDROID_BUILD_FAIL+=("  $(dirname "${ANDROID_NDK_ROOT}/")")
+    fi
+
+    if [ -z "${ANDROID_NDK_FILENAME}" ] ; then
+        ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_FILENAME environment variable")
+    fi
+
+    android_build_check_fail
+
+    echo "LIBZMQ (${BUILD_ARCH}) - Downloading NDK '${NDK_VERSION}'..."
+    (
+        cd "$(dirname "${ANDROID_NDK_ROOT}")" \
+        && rm -f "${ANDROID_NDK_FILENAME}" \
+        && wget -q "http://dl.google.com/android/repository/${ANDROID_NDK_FILENAME}" -O "${ANDROID_NDK_FILENAME}" \
+        && echo "LIBZMQ (${BUILD_ARCH}) - Extracting NDK '${ANDROID_NDK_FILENAME}'..." \
+        && unzip -q "${ANDROID_NDK_FILENAME}" \
+        && echo "LIBZMQ (${BUILD_ARCH}) - NDK extracted under '${ANDROID_NDK_ROOT}'."
+    ) || {
+        ANDROID_BUILD_FAIL+=("Failed to install NDK ('${NDK_VERSION}')")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_NDK_FILENAME}")
+    }
+
+    android_build_check_fail
+}
+
 function android_build_set_env {
     BUILD_ARCH=$1
 
-    export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/bin"
+    platform="$(uname | tr '[:upper:]' '[:lower:]')"
+    case "${platform}" in
+        linux*)
+            if [ $NDK_NUMBER -ge 2300 ] ; then
+                # Since NDK 23, NDK archives are renamed.
+                export ANDROID_NDK_FILENAME=${NDK_VERSION}-linux.zip
+            else
+                export ANDROID_NDK_FILENAME=${NDK_VERSION}-linux-x86_64.zip
+            fi
+            export ANDROID_BUILD_PLATFORM=linux-x86_64
+            ;;
+        darwin*)
+            if [ $NDK_NUMBER -ge 2300 ] ; then
+                # Since NDK 23, NDK archives are renamed.
+                export ANDROID_NDK_FILENAME=${NDK_VERSION}-darwin.zip
+            else
+                export ANDROID_NDK_FILENAME=${NDK_VERSION}-darwin-x86_64.zip
+            fi
+            export ANDROID_BUILD_PLATFORM=darwin-x86_64
+            ;;
+        *)    echo "LIBZMQ (${BUILD_ARCH}) - Unsupported platform ('${platform}')" ; exit 1 ;;
+    esac
+
+    export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}/bin"
 
     # Set variables for each architecture
     if [ "${BUILD_ARCH}" == "arm" ]; then
@@ -127,7 +191,7 @@ function android_build_set_env {
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
     else
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/sysroot"
+       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 
@@ -220,7 +284,7 @@ function android_build_env {
 }
 
 function _android_build_opts_process_binaries {
-    local TOOLCHAIN="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}"
+    local TOOLCHAIN="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}"
     local CC="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang"
     local CXX="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang++"
     # Since NDK r22 the "platforms" dir got removed and the default linker is LLD
@@ -307,16 +371,16 @@ function android_build_opts {
     fi
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
     if [ -n "${ANDROID_LIBC_ROOT}" ] ; then
-	LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
+        LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
     fi
     LDFLAGS+=" -L${ANDROID_STL_ROOT}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
     CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
 
     if [ ${NDK_NUMBER} -ge 2400 ] ; then
-	if [ "${BUILD_ARCH}" = "arm64" ] ; then
+        if [ "${BUILD_ARCH}" = "arm64" ] ; then
             CXXFLAGS+=" -mno-outline-atomics"
-	fi
+        fi
     fi
 
 
@@ -326,7 +390,7 @@ function android_build_opts {
     ANDROID_BUILD_OPTS+=("LDFLAGS=${LDFLAGS} ${ANDROID_BUILD_EXTRA_LDFLAGS}")
     ANDROID_BUILD_OPTS+=("LIBS=${LIBS} ${ANDROID_BUILD_EXTRA_LIBS}")
 
-    ANDROID_BUILD_OPTS+=("PKG_CONFIG_LIBDIR=${ANDROID_NDK_ROOT}/prebuilt/${HOST_PLATFORM}/lib/pkgconfig")
+    ANDROID_BUILD_OPTS+=("PKG_CONFIG_LIBDIR=${ANDROID_NDK_ROOT}/prebuilt/${ANDROID_BUILD_PLATFORM}/lib/pkgconfig")
     ANDROID_BUILD_OPTS+=("PKG_CONFIG_PATH=${ANDROID_BUILD_PREFIX}/lib/pkgconfig")
     ANDROID_BUILD_OPTS+=("PKG_CONFIG_SYSROOT_DIR=${ANDROID_BUILD_SYSROOT}")
     ANDROID_BUILD_OPTS+=("PKG_CONFIG_DIR=")
