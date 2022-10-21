@@ -371,16 +371,16 @@ function android_build_opts {
     fi
     local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
     if [ -n "${ANDROID_LIBC_ROOT}" ] ; then
-	LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
+        LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
     fi
     LDFLAGS+=" -L${ANDROID_STL_ROOT}"
     CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
     CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
 
     if [ ${NDK_NUMBER} -ge 2400 ] ; then
-	if [ "${BUILD_ARCH}" = "arm64" ] ; then
+        if [ "${BUILD_ARCH}" = "arm64" ] ; then
             CXXFLAGS+=" -mno-outline-atomics"
-	fi
+        fi
     fi
 
 
