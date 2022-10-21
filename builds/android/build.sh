@@ -19,7 +19,7 @@ export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 
 # Use directory of current script as the build directory
 # ${ANDROID_BUILD_DIR}/prefix/<build_arch>/lib will contain produced libraries
-export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-$(cd $(dirname "${BASH_SOURCE[0]}") ; pwd)}"
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd)}"
 
 # Clean before processing
 export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-}"
