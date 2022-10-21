@@ -78,7 +78,7 @@ mkdir -p "${cache}"
 
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
-    echo "LIBZMQ (${BUILD_ARCH}) - Doing a clean build (removing previous build and dependencies)..."
+    android_build_trace "Doing a clean build (removing previous build and dependencies)..."
     rm -rf "${ANDROID_BUILD_PREFIX:-android-build-prefix-not-set}"/*
 
     # Called shells MUST not clean after ourselves !
@@ -97,7 +97,7 @@ elif [ "${CURVE}" == "libsodium" ]; then
     (android_build_verify_so "libsodium.so" &> /dev/null) || {
         rm -rf "${cache}/libsodium"
         (
-            echo "LIBZMQ (${BUILD_ARCH}) - Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${cache}/libsodium}'." \
+            android_build_trace "Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${cache}/libsodium}'." \
             && cd "${cache}" \
             && git clone --quiet -b stable --depth 1 https://github.com/jedisct1/libsodium.git \
             && cd "${cache}/libsodium" \
@@ -154,4 +154,4 @@ cp "${ANDROID_STL_ROOT}/${ANDROID_STL}" "${ANDROID_BUILD_PREFIX}/lib/."
 # Verify shared libraries in prefix
 
 android_build_verify_so "${VERIFY[@]}" "${ANDROID_STL}"
-echo "LIBZMQ (${BUILD_ARCH}) - Android build successful"
+android_build_trace "Android build successful"

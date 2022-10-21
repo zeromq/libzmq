@@ -49,52 +49,19 @@
 #
 
 ########################################################################
-# Initialization
+# Utilities & helper functions
 ########################################################################
-# Get directory of current script (if not already set)
-# This directory is also the basis for the build directories the get created.
-if [ -z "$ANDROID_BUILD_DIR" ]; then
-    ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-fi
-
-# Set up a variable to hold the global failure reasons, separated by newlines
-# (Empty string indicates no failure)
-ANDROID_BUILD_FAIL=()
-
-
-########################################################################
-# Sanity checks
-########################################################################
-if [ -z "${NDK_VERSION}" ] ; then
-    echo "NDK_VERSION not set !"
-    exit 1
-fi
-case "${NDK_VERSION}" in
-    "android-ndk-r"[0-9][0-9] ) : ;;
-    "android-ndk-r"[0-9][0-9][a-z] ) : ;;
-    * ) echo "Invalid format for NDK_VERSION ('${NDK_VERSION}')" ; exit 1 ;;
-esac
-
-if [ -z "${ANDROID_NDK_ROOT}" ] ; then
-    echo "ANDROID_NDK_ROOT not set !"
-    exit 1
-fi
-
-########################################################################
-# Compute NDK version into a numeric form:
-#   android-ndk-r21e -> 2105
-#   android-ndk-r25  -> 2500
-########################################################################    
-export NDK_NUMBER="$(( $(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
-NDK_VERSION_LETTER="$(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
-if [ -n "${NDK_VERSION_LETTER}" ] ; then
-    NDK_NUMBER=$(( $(( NDK_NUMBER + $(printf '%d' \'"${NDK_VERSION_LETTER}") )) - 64 ))
-fi
-echo "LIBZMQ - Configured NDK_VERSION: ${NDK_VERSION} ($NDK_NUMBER)."
+function android_build_trace {
+    if [ -n "${BUILD_ARCH}" ] ; then
+        echo "LIBZMQ (${BUILD_ARCH}) - $*"
+    else
+        echo "LIBZMQ - $*"
+    fi
+}
 
 function android_build_check_fail {
     if [ ! ${#ANDROID_BUILD_FAIL[@]} -eq 0 ]; then
-        echo "Android (${TOOLCHAIN_ARCH}) build failed for the following reasons:"
+        android_build_trace "Android build failed for the following reasons:"
         for reason in "${ANDROID_BUILD_FAIL[@]}"; do
             local formatted_reason="  ${reason}"
             echo "${formatted_reason}"
@@ -106,7 +73,7 @@ function android_build_check_fail {
 function android_download_ndk {
     if [ -d "${ANDROID_NDK_ROOT}" ] ; then
         # NDK folder detected, let's assume it's valid ...
-        echo "LIBZMQ (${BUILD_ARCH}) - Using existing NDK folder '${ANDROID_NDK_ROOT}'."
+        android_build_trace "Using existing NDK folder '${ANDROID_NDK_ROOT}'."
         return
     fi
     if [ ! -d  "$(dirname "${ANDROID_NDK_ROOT}")" ] ; then
@@ -120,14 +87,14 @@ function android_download_ndk {
 
     android_build_check_fail
 
-    echo "LIBZMQ (${BUILD_ARCH}) - Downloading NDK '${NDK_VERSION}'..."
+    android_build_trace "Downloading NDK '${NDK_VERSION}'..."
     (
         cd "$(dirname "${ANDROID_NDK_ROOT}")" \
         && rm -f "${ANDROID_NDK_FILENAME}" \
         && wget -q "http://dl.google.com/android/repository/${ANDROID_NDK_FILENAME}" -O "${ANDROID_NDK_FILENAME}" \
-        && echo "LIBZMQ (${BUILD_ARCH}) - Extracting NDK '${ANDROID_NDK_FILENAME}'..." \
+        && android_build_trace "Extracting NDK '${ANDROID_NDK_FILENAME}'..." \
         && unzip -q "${ANDROID_NDK_FILENAME}" \
-        && echo "LIBZMQ (${BUILD_ARCH}) - NDK extracted under '${ANDROID_NDK_ROOT}'."
+        && android_build_trace "NDK extracted under '${ANDROID_NDK_ROOT}'."
     ) || {
         ANDROID_BUILD_FAIL+=("Failed to install NDK ('${NDK_VERSION}')")
         ANDROID_BUILD_FAIL+=("  ${ANDROID_NDK_FILENAME}")
@@ -159,7 +126,7 @@ function android_build_set_env {
             fi
             export ANDROID_BUILD_PLATFORM=darwin-x86_64
             ;;
-        *)    echo "LIBZMQ (${BUILD_ARCH}) - Unsupported platform ('${platform}')" ; exit 1 ;;
+        *)    android_build_trace "Unsupported platform ('${platform}')" ; exit 1 ;;
     esac
 
     export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}/bin"
@@ -460,9 +427,66 @@ function android_build_verify_so {
 function android_show_configure_opts {
     local tag=$1
     shift
-    echo "LIBZMQ (${BUILD_ARCH}) - ./configure options to build '${tag}':"
+    android_build_trace "./configure options to build '${tag}':"
     for opt in "$@"; do
         echo "  > ${opt}"
     done
     echo ""
 }
+
+########################################################################
+# Initialization
+########################################################################
+# Get directory of current script (if not already set)
+# This directory is also the basis for the build directories the get created.
+if [ -z "$ANDROID_BUILD_DIR" ]; then
+    ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
+
+# Set up a variable to hold the global failure reasons, separated by newlines
+# (Empty string indicates no failure)
+ANDROID_BUILD_FAIL=()
+
+########################################################################
+# Initialization
+########################################################################
+# Get directory of current script (if not already set)
+# This directory is also the basis for the build directories the get created.
+if [ -z "$ANDROID_BUILD_DIR" ]; then
+    ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+fi
+
+# Set up a variable to hold the global failure reasons, separated by newlines
+# (Empty string indicates no failure)
+ANDROID_BUILD_FAIL=()
+
+########################################################################
+# Sanity checks
+########################################################################
+if [ -z "${NDK_VERSION}" ] ; then
+    android_build_trace "NDK_VERSION not set !"
+    exit 1
+fi
+case "${NDK_VERSION}" in
+    "android-ndk-r"[0-9][0-9] ) : ;;
+    "android-ndk-r"[0-9][0-9][a-z] ) : ;;
+    * ) android_build_trace "Invalid format for NDK_VERSION ('${NDK_VERSION}')" ; exit 1 ;;
+esac
+
+if [ -z "${ANDROID_NDK_ROOT}" ] ; then
+    android_build_trace "ANDROID_NDK_ROOT not set !"
+    exit 1
+fi
+
+########################################################################
+# Compute NDK version into a numeric form:
+#   android-ndk-r21e -> 2105
+#   android-ndk-r25  -> 2500
+########################################################################    
+export NDK_NUMBER="$(( $(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
+NDK_VERSION_LETTER="$(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
+if [ -n "${NDK_VERSION_LETTER}" ] ; then
+    NDK_NUMBER=$(( $(( NDK_NUMBER + $(printf '%d' \'"${NDK_VERSION_LETTER}") )) - 64 ))
+fi
+android_build_trace "Configured NDK_VERSION: ${NDK_VERSION} ($NDK_NUMBER)."
+
