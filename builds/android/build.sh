@@ -2,14 +2,59 @@
 
 set -e
 
+# Use directory of current script as the working directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+########################################################################
+# Configuration & tuning options.
+########################################################################
+# Set default values used in ci builds
+export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+
+# Set default path to find Android NDK.
+# Must be of the form <path>/${NDK_VERSION} !!
+export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
+
+# With NDK r22b, the minimum SDK version range is [16, 31].
+# Since NDK r24, the minimum SDK version range is [19, 31].
+# SDK version 21 is the minimum version for 64-bit builds.
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+
+# Use directory of current script as the build directory
+# ${ANDROID_BUILD_DIR}/prefix/<build_arch>/lib will contain produced libraries
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}}"
+
+# Clean before processing
+export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-}"
+
+# Select CURVE implementation:
+# - ""               # Do not use any CURVE implementation.
+# - "libsodium"      # Use LIBSODIUM implementation.
+# - "tweetnacl"      # Use internal TWEETNACL implementation.
+export CURVE="${CURVE:-}"
+
+########################################################################
+# Utilities
+########################################################################
 function usage {
-    echo "LIBZMQ (${BUILD_ARCH}) - Usage ./build.sh [ arm | arm64 | x86 | x86_64 ]"
+    echo "LIBZMQ - Usage:"
+    echo "  export XXX=yyy"
+    echo "  ./build.sh [ arm | arm64 | x86 | x86_64 ]"
+    echo ""
+    echo "See this file (configuration & tuning options) for details"
+    echo "on variables XXX and their values xxx"
+    exit 1
 }
 
-# Use directory of current script as the build directory and working directory
-cd "$( dirname "${BASH_SOURCE[0]}" )"
-ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-`pwd`}"
+########################################################################
+# Sanity checks
+########################################################################
+BUILD_ARCH="$1"
+[ -z "${BUILD_ARCH}" ] && usage
 
+########################################################################
+# Compilation
+########################################################################
 # Get access to android_build functions and variables
 source ./android_build_helper.sh
 
@@ -19,12 +64,6 @@ export ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 # Additional flags for LIBTOOL, for LIBZMQ and other dependencies.
 export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-BUILD_ARCH=$1
-if [ -z $BUILD_ARCH ]; then
-    usage
-    exit 1
-fi
-
 platform="$(uname | tr '[:upper:]' '[:lower:]')"
 case "${platform}" in
   linux*)  export HOST_PLATFORM=linux-x86_64 ;;
@@ -32,15 +71,8 @@ case "${platform}" in
   *)       echo "LIBZMQ (${BUILD_ARCH}) - Unsupported platform ('${platform}')" ; exit 1 ;;
 esac
 
-# Set default values used in ci builds
-export NDK_VERSION=${NDK_VERSION:-android-ndk-r25}
-# With NDK r22b, the minimum SDK version range is [16, 31].
-# Since NDK r24, the minimum SDK version range is [19, 31].
-# SDK version 21 is the minimum version for 64-bit builds.
-export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
-
 # Set up android build environment and set ANDROID_BUILD_OPTS array
-android_build_set_env $BUILD_ARCH
+android_build_set_env "${BUILD_ARCH}"
 android_build_env
 android_build_opts
 
@@ -52,26 +84,35 @@ mkdir -p "${cache}"
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
     echo "LIBZMQ (${BUILD_ARCH}) - Doing a clean build (removing previous build and dependencies)..."
-    rm -rf "${ANDROID_BUILD_PREFIX}"/*
+    rm -rf "${ANDROID_BUILD_PREFIX:-android-build-prefix-not-set}"/*
+
+    # Called shells MUST not clean after ourselves !
+    export ANDROID_BUILD_CLEAN=""
 fi
 
 VERIFY=("libzmq.so")
-if [ -z $CURVE ]; then
+if [ -z "${CURVE}" ]; then
     CURVE="--disable-curve"
-elif [ $CURVE == "libsodium" ]; then
+elif [ "${CURVE}" == "libsodium" ]; then
     CURVE="--with-libsodium=yes"
     VERIFY+=("libsodium.so")
     ##
-    # Build libsodium from latest master branch
+    # Build LIBSODIUM from latest STABLE branch
 
     (android_build_verify_so "libsodium.so" &> /dev/null) || {
         rm -rf "${cache}/libsodium"
-        (cd "${cache}" && git clone -b stable --depth 1 https://github.com/jedisct1/libsodium.git) || exit 1
+        (
+            echo "LIBZMQ (${BUILD_ARCH}) - Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${cache}/libsodium}'." \
+            && cd "${cache}" \
+            && git clone --quiet -b stable --depth 1 https://github.com/jedisct1/libsodium.git \
+            && cd "${cache}/libsodium" \
+            && git log --oneline -n 1
+        ) || exit 1
         (
             CONFIG_OPTS=()
             CONFIG_OPTS+=("--quiet")
             CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
-	    CONFIG_OPTS+=("--disable-soname-versions")
+            CONFIG_OPTS+=("--disable-soname-versions")
 
             cd "${cache}/libsodium" \
             && ./autogen.sh \
@@ -99,7 +140,7 @@ fi
         CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
         CONFIG_OPTS+=("${CURVE}")
         CONFIG_OPTS+=("--without-docs")
-	
+
         cd "${cache}/libzmq" \
         && ./autogen.sh \
         && android_show_configure_opts "LIBZMQ" "${CONFIG_OPTS[@]}" \

@@ -101,22 +101,22 @@ function android_build_set_env {
     export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/bin"
 
     # Set variables for each architecture
-    if [ $BUILD_ARCH == "arm" ]; then
+    if [ "${BUILD_ARCH}" == "arm" ]; then
         export TOOLCHAIN_HOST="arm-linux-androideabi"
         export TOOLCHAIN_COMP="armv7a-linux-androideabi${MIN_SDK_VERSION}"
         export TOOLCHAIN_ABI="armeabi-v7a"
         export TOOLCHAIN_ARCH="arm"
-    elif [ $BUILD_ARCH == "x86" ]; then
+    elif [ "${BUILD_ARCH}" == "x86" ]; then
         export TOOLCHAIN_HOST="i686-linux-android"
         export TOOLCHAIN_COMP="i686-linux-android${MIN_SDK_VERSION}"
         export TOOLCHAIN_ABI="x86"
         export TOOLCHAIN_ARCH="x86"
-    elif [ $BUILD_ARCH == "arm64" ]; then
+    elif [ "${BUILD_ARCH}" == "arm64" ]; then
         export TOOLCHAIN_HOST="aarch64-linux-android"
         export TOOLCHAIN_COMP="aarch64-linux-android${MIN_SDK_VERSION}"
         export TOOLCHAIN_ABI="arm64-v8a"
         export TOOLCHAIN_ARCH="arm64"
-    elif [ $BUILD_ARCH == "x86_64" ]; then
+    elif [ "${BUILD_ARCH}" == "x86_64" ]; then
         export TOOLCHAIN_HOST="x86_64-linux-android"
         export TOOLCHAIN_COMP="x86_64-linux-android${MIN_SDK_VERSION}"
         export TOOLCHAIN_ABI="x86_64"
@@ -353,7 +353,7 @@ function android_build_verify_so {
     android_build_check_fail
 
     local READELF="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-readelf"
-    if command -v ${READELF} >/dev/null 2>&1 ; then
+    if command -v "${READELF}" >/dev/null 2>&1 ; then
         local readelf_bin="${READELF}"
     elif command -v readelf >/dev/null 2>&1 ; then
         local readelf_bin="readelf"
@@ -364,7 +364,8 @@ function android_build_verify_so {
     fi
     android_build_check_fail
 
-    local elfoutput=$(LC_ALL=C $readelf_bin -d ${sofile})
+    local elfoutput
+    elfoutput=$(LC_ALL=C $readelf_bin -d "${sofile}")
 
     local soname_regexp='soname: \[([[:alnum:]\.]+)\]'
     if [[ $elfoutput =~ $soname_regexp ]]; then
@@ -401,4 +402,3 @@ function android_show_configure_opts {
     done
     echo ""
 }
-
