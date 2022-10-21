@@ -2,6 +2,9 @@
 
 set -e
 
+# Use directory of current script as the working directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
 ########################################################################
 # Configuration & tuning options.
 ########################################################################
@@ -19,7 +22,7 @@ export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 
 # Use directory of current script as the build directory
 # ${ANDROID_BUILD_DIR}/prefix/<build_arch>/lib will contain produced libraries
-export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd)}"
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}}"
 
 # Clean before processing
 export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-}"
@@ -52,9 +55,6 @@ BUILD_ARCH="$1"
 ########################################################################
 # Compilation
 ########################################################################
-# Use directory of current script as the working directory
-cd "$( dirname "${BASH_SOURCE[0]}" )"
-
 # Get access to android_build functions and variables
 source ./android_build_helper.sh
 
@@ -72,7 +72,7 @@ case "${platform}" in
 esac
 
 # Set up android build environment and set ANDROID_BUILD_OPTS array
-android_build_set_env $BUILD_ARCH
+android_build_set_env "${BUILD_ARCH}"
 android_build_env
 android_build_opts
 
@@ -84,16 +84,16 @@ mkdir -p "${cache}"
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
     echo "LIBZMQ (${BUILD_ARCH}) - Doing a clean build (removing previous build and dependencies)..."
-    rm -rf "${ANDROID_BUILD_PREFIX}"/*
+    rm -rf "${ANDROID_BUILD_PREFIX:-android-build-prefix-not-set}"/*
 
     # Called shells MUST not clean after ourselves !
     export ANDROID_BUILD_CLEAN=""
 fi
 
 VERIFY=("libzmq.so")
-if [ -z $CURVE ]; then
+if [ -z "${CURVE}" ]; then
     CURVE="--disable-curve"
-elif [ $CURVE == "libsodium" ]; then
+elif [ "${CURVE}" == "libsodium" ]; then
     CURVE="--with-libsodium=yes"
     VERIFY+=("libsodium.so")
     ##
