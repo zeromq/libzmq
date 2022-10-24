@@ -126,13 +126,7 @@ elif [ "${CURVE}" == "libsodium" ]; then
 
     (android_build_verify_so "libsodium.so" &> /dev/null) || {
         if [ ! -d "${LIBSODIUM_ROOT}" ] ; then
-            android_build_trace "Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${LIBSODIUM_ROOT}'."
-            mkdir -p "$(dirname "${LIBSODIUM_ROOT}")"
-            git clone --quiet -b stable --depth 1 https://github.com/jedisct1/libsodium.git "${LIBSODIUM_ROOT}"
-            ( cd "${LIBSODIUM_ROOT}" && git log --oneline -n 1)  || exit 1
-        else
-            android_build_trace "Cleaning LIBSODIUM folder '${LIBSODIUM_ROOT}'."
-            ( cd "${LIBSODIUM_ROOT}" && (make clean || :) && rm -f config.status ) || exit 1
+            android_clone_library "LIBSODIUM" "${LIBSODIUM_ROOT}" "https://github.com/jedisct1/libsodium.git" "stable"
         fi
 
         (
@@ -141,15 +135,7 @@ elif [ "${CURVE}" == "libsodium" ]; then
             CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
             CONFIG_OPTS+=("--disable-soname-versions")
 
-            # Remove *.la files as they might cause errors with cross compiled libraries
-            find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
-
-            cd "${LIBSODIUM_ROOT}" \
-            && ./autogen.sh \
-            && android_show_configure_opts "LIBSODIUM" "${CONFIG_OPTS[@]}" \
-            && ./configure "${CONFIG_OPTS[@]}" \
-            && make -j 4 \
-            && make install
+            android_build_library "LIBSODIUM" "${LIBSODIUM_ROOT}"
         ) || exit 1
     }
 elif [ $CURVE == "tweetnacl" ]; then
@@ -170,15 +156,7 @@ fi
         CONFIG_OPTS+=("${CURVE}")
         CONFIG_OPTS+=("--without-docs")
 
-        # Remove *.la files as they might cause errors with cross compiled libraries
-        find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
-
-        cd "${LIBZMQ_ROOT}" \
-        && ./autogen.sh \
-        && android_show_configure_opts "LIBZMQ" "${CONFIG_OPTS[@]}" \
-        && ./configure "${CONFIG_OPTS[@]}" \
-        && make -j 4 \
-        && make install
+        android_build_library "LIBZMQ" "${LIBZMQ_ROOT}"
     ) || exit 1
 }
 
