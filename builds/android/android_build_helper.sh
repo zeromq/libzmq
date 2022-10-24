@@ -109,7 +109,7 @@ function android_build_set_env {
     platform="$(uname | tr '[:upper:]' '[:lower:]')"
     case "${platform}" in
         linux*)
-            if [ $NDK_NUMBER -ge 2300 ] ; then
+            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
                 # Since NDK 23, NDK archives are renamed.
                 export ANDROID_NDK_FILENAME=${NDK_VERSION}-linux.zip
             else
@@ -118,7 +118,7 @@ function android_build_set_env {
             export ANDROID_BUILD_PLATFORM=linux-x86_64
             ;;
         darwin*)
-            if [ $NDK_NUMBER -ge 2300 ] ; then
+            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
                 # Since NDK 23, NDK archives are renamed.
                 export ANDROID_NDK_FILENAME=${NDK_VERSION}-darwin.zip
             else
@@ -129,7 +129,8 @@ function android_build_set_env {
         *)    android_build_trace "Unsupported platform ('${platform}')" ; exit 1 ;;
     esac
 
-    export TOOLCHAIN_PATH="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}/bin"
+    export ANDROID_BUILD_TOOLCHAIN="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}"
+    export TOOLCHAIN_PATH="${ANDROID_BUILD_TOOLCHAIN}/bin"
 
     # Set variables for each architecture
     if [ "${BUILD_ARCH}" == "arm" ]; then
@@ -158,7 +159,7 @@ function android_build_set_env {
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
     else
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}/sysroot"
+       export ANDROID_BUILD_SYSROOT="${ANDROID_BUILD_TOOLCHAIN}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 
@@ -182,6 +183,11 @@ function android_build_env {
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
         ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25\")")
+    fi
+
+    if [ -z "$ANDROID_BUILD_TOOLCHAIN" ]; then
+        ANDROID_BUILD_FAIL+=("Please set the ANDROID_BUILD_TOOLCHAIN environment variable")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r25/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64\")")
     fi
 
     if [ -z "$TOOLCHAIN_PATH" ]; then
@@ -229,6 +235,11 @@ function android_build_env {
         ANDROID_BUILD_FAIL+=("  ${ANDROID_LIBC_ROOT}")
     fi
 
+    if [ ! -d "${ANDROID_BUILD_TOOLCHAIN}" ]; then
+        ANDROID_BUILD_FAIL+=("The ANDROID_BUILD_TOOLCHAIN directory does not exist")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_TOOLCHAIN}")
+    fi
+
     if [ ! -d "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("The TOOLCHAIN_PATH directory does not exist")
         ANDROID_BUILD_FAIL+=("  ${TOOLCHAIN_PATH}")
@@ -251,75 +262,74 @@ function android_build_env {
 }
 
 function _android_build_opts_process_binaries {
-    local TOOLCHAIN="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/${ANDROID_BUILD_PLATFORM}"
-    local CC="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang"
-    local CXX="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang++"
+    export ANDROID_BUILD_CC="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang"
+    export ANDROID_BUILD_CXX="${TOOLCHAIN_PATH}/${TOOLCHAIN_COMP}-clang++"
     # Since NDK r22 the "platforms" dir got removed and the default linker is LLD
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
-       local LD="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ld"
+       export ANDROID_BUILD_LD="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ld"
     else
-       local LD="${TOOLCHAIN_PATH}/ld"
+       export ANDROID_BUILD_LD="${TOOLCHAIN_PATH}/ld"
     fi
     # Since NDK r24 this binary was removed due to LLVM being now the default
     if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as" ]; then
-        local AS="${TOOLCHAIN_PATH}/llvm-as"
+        export ANDROID_BUILD_AS="${TOOLCHAIN_PATH}/llvm-as"
     else
-        local AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
+        export ANDROID_BUILD_AS="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-as"
     fi
     # Since NDK r23 those binaries were removed due to LLVM being now the default
     if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
-        local AR="${TOOLCHAIN_PATH}/llvm-ar"
-        local RANLIB="${TOOLCHAIN_PATH}/llvm-ranlib"
-        local STRIP="${TOOLCHAIN_PATH}/llvm-strip"
+        export ANDROID_BUILD_AR="${TOOLCHAIN_PATH}/llvm-ar"
+        export ANDROID_BUILD_RANLIB="${TOOLCHAIN_PATH}/llvm-ranlib"
+        export ANDROID_BUILD_STRIP="${TOOLCHAIN_PATH}/llvm-strip"
     else
-        local AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
-        local RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
-        local STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
+        export ANDROID_BUILD_AR="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar"
+        export ANDROID_BUILD_RANLIB="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ranlib"
+        export ANDROID_BUILD_STRIP="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-strip"
     fi
 
-    if [ ! -x "${CC}" ]; then
+    if [ ! -x "${ANDROID_BUILD_CC}" ]; then
         ANDROID_BUILD_FAIL+=("The CC binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${CC}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_CC}")
     fi
 
-    if [ ! -x "${CXX}" ]; then
+    if [ ! -x "${ANDROID_BUILD_CXX}" ]; then
         ANDROID_BUILD_FAIL+=("The CXX binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${CXX}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_CXX}")
     fi
 
-    if [ ! -x "${LD}" ]; then
+    if [ ! -x "${ANDROID_BUILD_LD}" ]; then
         ANDROID_BUILD_FAIL+=("The LD binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${LD}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_LD}")
     fi
 
-    if [ ! -x "${AS}" ]; then
+    if [ ! -x "${ANDROID_BUILD_AS}" ]; then
         ANDROID_BUILD_FAIL+=("The AS binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${AS}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_AS}")
     fi
 
-    if [ ! -x "${AR}" ]; then
+    if [ ! -x "${ANDROID_BUILD_AR}" ]; then
         ANDROID_BUILD_FAIL+=("The AR binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${AR}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_AR}")
     fi
 
-    if [ ! -x "${RANLIB}" ]; then
+    if [ ! -x "${ANDROID_BUILD_RANLIB}" ]; then
         ANDROID_BUILD_FAIL+=("The RANLIB binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${RANLIB}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_RANLIB}")
     fi
 
-    if [ ! -x "${STRIP}" ]; then
+    if [ ! -x "${ANDROID_BUILD_STRIP}" ]; then
         ANDROID_BUILD_FAIL+=("The STRIP binary does not exist or is not executable")
-        ANDROID_BUILD_FAIL+=("  ${STRIP}")
+        ANDROID_BUILD_FAIL+=("  ${ANDROID_BUILD_STRIP}")
     fi
 
-    ANDROID_BUILD_OPTS+=("TOOLCHAIN=${TOOLCHAIN}")
-    ANDROID_BUILD_OPTS+=("CC=${CC}")
-    ANDROID_BUILD_OPTS+=("CXX=${CXX}")
-    ANDROID_BUILD_OPTS+=("LD=${LD}")
-    ANDROID_BUILD_OPTS+=("AS=${AS}")
-    ANDROID_BUILD_OPTS+=("AR=${AR}")
-    ANDROID_BUILD_OPTS+=("RANLIB=${RANLIB}")
-    ANDROID_BUILD_OPTS+=("STRIP=${STRIP}")
+    ANDROID_BUILD_OPTS+=("TOOLCHAIN=${ANDROID_BUILD_TOOLCHAIN}")
+    ANDROID_BUILD_OPTS+=("CC=${ANDROID_BUILD_CC}")
+    ANDROID_BUILD_OPTS+=("CXX=${ANDROID_BUILD_CXX}")
+    ANDROID_BUILD_OPTS+=("LD=${ANDROID_BUILD_LD}")
+    ANDROID_BUILD_OPTS+=("AS=${ANDROID_BUILD_AS}")
+    ANDROID_BUILD_OPTS+=("AR=${ANDROID_BUILD_AR}")
+    ANDROID_BUILD_OPTS+=("RANLIB=${ANDROID_BUILD_RANLIB}")
+    ANDROID_BUILD_OPTS+=("STRIP=${ANDROID_BUILD_STRIP}")
 
     android_build_check_fail
 }
@@ -332,30 +342,31 @@ function android_build_opts {
 
     # Since NDK r23 we don't need -lgcc due to LLVM being now the default
     if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
-        local LIBS="-lc -ldl -lm -llog -lc++_shared"
+        export ANDROID_BUILD_LIBS="-lc -ldl -lm -llog -lc++_shared"
     else
-        local LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
+        export ANDROID_BUILD_LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
     fi
-    local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
-    if [ -n "${ANDROID_LIBC_ROOT}" ] ; then
-        LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
-    fi
-    LDFLAGS+=" -L${ANDROID_STL_ROOT}"
-    CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
-    CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
 
-    if [ ${NDK_NUMBER} -ge 2400 ] ; then
+    export ANDROID_BUILD_LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
+    if [ -n "${ANDROID_LIBC_ROOT}" ] ; then
+        ANDROID_BUILD_LDFLAGS+=" -L${ANDROID_LIBC_ROOT}"
+    fi
+    ANDROID_BUILD_LDFLAGS+=" -L${ANDROID_STL_ROOT}"
+
+    export ANDROID_BUILD_CFLAGS+=" -D_GNU_SOURCE -D_REENTRANT -D_THREAD_SAFE"
+    export ANDROID_BUILD_CPPFLAGS+=" -I${ANDROID_BUILD_PREFIX}/include"
+
+    if [ "${NDK_NUMBER}" -ge 2400 ] ; then
         if [ "${BUILD_ARCH}" = "arm64" ] ; then
-            CXXFLAGS+=" -mno-outline-atomics"
+            export ANDROID_BUILD_CXXFLAGS+=" -mno-outline-atomics"
         fi
     fi
 
-
-    ANDROID_BUILD_OPTS+=("CFLAGS=${CFLAGS} ${ANDROID_BUILD_EXTRA_CFLAGS}")
-    ANDROID_BUILD_OPTS+=("CPPFLAGS=${CPPFLAGS} ${ANDROID_BUILD_EXTRA_CPPFLAGS}")
-    ANDROID_BUILD_OPTS+=("CXXFLAGS=${CXXFLAGS} ${ANDROID_BUILD_EXTRA_CXXFLAGS}")
-    ANDROID_BUILD_OPTS+=("LDFLAGS=${LDFLAGS} ${ANDROID_BUILD_EXTRA_LDFLAGS}")
-    ANDROID_BUILD_OPTS+=("LIBS=${LIBS} ${ANDROID_BUILD_EXTRA_LIBS}")
+    ANDROID_BUILD_OPTS+=("CFLAGS=${ANDROID_BUILD_CFLAGS} ${ANDROID_BUILD_EXTRA_CFLAGS}")
+    ANDROID_BUILD_OPTS+=("CPPFLAGS=${ANDROID_BUILD_CPPFLAGS} ${ANDROID_BUILD_EXTRA_CPPFLAGS}")
+    ANDROID_BUILD_OPTS+=("CXXFLAGS=${ANDROID_BUILD_CXXFLAGS} ${ANDROID_BUILD_EXTRA_CXXFLAGS}")
+    ANDROID_BUILD_OPTS+=("LDFLAGS=${ANDROID_BUILD_LDFLAGS} ${ANDROID_BUILD_EXTRA_LDFLAGS}")
+    ANDROID_BUILD_OPTS+=("LIBS=${ANDROID_BUILD_LIBS} ${ANDROID_BUILD_EXTRA_LIBS}")
 
     ANDROID_BUILD_OPTS+=("PKG_CONFIG_LIBDIR=${ANDROID_NDK_ROOT}/prebuilt/${ANDROID_BUILD_PLATFORM}/lib/pkgconfig")
     ANDROID_BUILD_OPTS+=("PKG_CONFIG_PATH=${ANDROID_BUILD_PREFIX}/lib/pkgconfig")
@@ -383,20 +394,20 @@ function android_build_verify_so {
     fi
     android_build_check_fail
 
-    local READELF="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-readelf"
-    if command -v "${READELF}" >/dev/null 2>&1 ; then
-        local readelf_bin="${READELF}"
+    local readelf="${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-readelf"
+    if command -v "${readelf}" >/dev/null 2>&1 ; then
+        export ANDROID_BUILD_READELF="${readelf}"
     elif command -v readelf >/dev/null 2>&1 ; then
-        local readelf_bin="readelf"
+        export ANDROID_BUILD_READELF="readelf"
     elif command -v greadelf >/dev/null 2>&1 ; then
-        local readelf_bin="greadelf"
+        export ANDROID_BUILD_READELF="greadelf"
     else
-        ANDROID_BUILD_FAIL+=("Could not find any of readelf, greadelf, or ${READELF}")
+        ANDROID_BUILD_FAIL+=("Could not find any of readelf, greadelf, or ${readelf}")
     fi
     android_build_check_fail
 
     local elfoutput
-    elfoutput=$(LC_ALL=C $readelf_bin -d "${sofile}")
+    elfoutput=$(LC_ALL=C ${ANDROID_BUILD_READELF} -d "${sofile}")
 
     local soname_regexp='soname: \[([[:alnum:]\.]+)\]'
     if [[ $elfoutput =~ $soname_regexp ]]; then
