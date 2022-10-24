@@ -4,6 +4,7 @@ set -e
 
 # Use directory of current script as the working directory
 cd "$( dirname "${BASH_SOURCE[0]}" )"
+LIBZMQ_ROOT="$(cd ../.. && pwd)"
 
 ########################################################################
 # Configuration & tuning options.
@@ -46,35 +47,64 @@ function usage {
     exit 1
 }
 
+# Initialize env variable XXX_ROOT, given dependency name "xxx".
+# If XXX_ROOT is not set:
+#    If a folder xxx exists close to current clone, set XXX_ROOT with it.
+#    Else, set XXX_ROOT with /tmp/tmp-deps/xxx.
+# Else
+#    Verify that folder XXX_ROOT exists.
+function init_dependency_root {
+    local lib_name
+    lib_name="$1"
+    local variable_name
+    variable_name="$(echo "${lib_name}" | tr '[:lower:]' '[:upper:]')_ROOT"
+    local variable_value
+    variable_value="$(eval echo "\${${variable_name}}")"
+
+    if [ -z "${variable_value}" ] ; then
+        if [ -d "${LIBZMQ_ROOT}/../${lib_name}" ] ; then
+            eval "export ${variable_name}=\"$(cd "${LIBZMQ_ROOT}/../${lib_name}" && pwd)\""
+        else
+            eval "export ${variable_name}=\"/tmp/tmp-deps/${lib_name}\""
+        fi
+        variable_value="$(eval echo "\${${variable_name}}")"
+    elif [ ! -d "${variable_value}" ] ; then
+        echo "LIBZMQ - Error: Folder '${variable_value}' does not exist."
+        exit 1
+    fi
+
+    echo "LIBZMQ - ${variable_name}=${variable_value}"
+}
+
 ########################################################################
 # Sanity checks
 ########################################################################
 BUILD_ARCH="$1"
 [ -z "${BUILD_ARCH}" ] && usage
 
+# Set ROOT path for LIBSODIUM source tree, if CURVE is "libsodium"
+if [ "${CURVE}x" = "libsodiumx" ] ; then
+    init_dependency_root "libsodium"
+fi
+
 ########################################################################
 # Compilation
 ########################################################################
-# Get access to android_build functions and variables
-# Perform some sanity checks and calculate some variables.
-source ./android_build_helper.sh
-
 # Choose a C++ standard library implementation from the ndk
 export ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 
 # Additional flags for LIBTOOL, for LIBZMQ and other dependencies.
 export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
+# Get access to android_build functions and variables
+# Perform some sanity checks and calculate some variables.
+source ./android_build_helper.sh
+
 # Set up android build environment and set ANDROID_BUILD_OPTS array
 android_build_set_env "${BUILD_ARCH}"
 android_download_ndk
 android_build_env
 android_build_opts
-
-# Use a temporary build directory
-cache="/tmp/android_build/${TOOLCHAIN_ARCH}"
-rm -rf "${cache}"
-mkdir -p "${cache}"
 
 # Check for environment variable to clear the prefix and do a clean build
 if [[ $ANDROID_BUILD_CLEAN ]]; then
@@ -95,21 +125,26 @@ elif [ "${CURVE}" == "libsodium" ]; then
     # Build LIBSODIUM from latest STABLE branch
 
     (android_build_verify_so "libsodium.so" &> /dev/null) || {
-        rm -rf "${cache}/libsodium"
-        (
-            android_build_trace "Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${cache}/libsodium}'." \
-            && cd "${cache}" \
-            && git clone --quiet -b stable --depth 1 https://github.com/jedisct1/libsodium.git \
-            && cd "${cache}/libsodium" \
-            && git log --oneline -n 1
-        ) || exit 1
+        if [ ! -d "${LIBSODIUM_ROOT}" ] ; then
+            android_build_trace "Cloning 'https://github.com/jedisct1/libsodium.git' (branch 'stable') under '${LIBSODIUM_ROOT}'."
+            mkdir -p "$(dirname "${LIBSODIUM_ROOT}")"
+            git clone --quiet -b stable --depth 1 https://github.com/jedisct1/libsodium.git "${LIBSODIUM_ROOT}"
+            ( cd "${LIBSODIUM_ROOT}" && git log --oneline -n 1)  || exit 1
+        else
+            android_build_trace "Cleaning LIBSODIUM folder '${LIBSODIUM_ROOT}'."
+            ( cd "${LIBSODIUM_ROOT}" && (make clean || :) && rm -f config.status ) || exit 1
+        fi
+
         (
             CONFIG_OPTS=()
             CONFIG_OPTS+=("--quiet")
             CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
             CONFIG_OPTS+=("--disable-soname-versions")
 
-            cd "${cache}/libsodium" \
+            # Remove *.la files as they might cause errors with cross compiled libraries
+            find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
+
+            cd "${LIBSODIUM_ROOT}" \
             && ./autogen.sh \
             && android_show_configure_opts "LIBSODIUM" "${CONFIG_OPTS[@]}" \
             && ./configure "${CONFIG_OPTS[@]}" \
@@ -126,8 +161,7 @@ fi
 # Build libzmq from local source
 
 (android_build_verify_so "${VERIFY[@]}" &> /dev/null) || {
-    rm -rf "${cache}/libzmq"
-    (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && ( make clean || : ))
+    (cd "${LIBZMQ_ROOT}" && ( make clean || : ) && rm -f ./config.status ) || exit 1
 
     (
         CONFIG_OPTS=()
@@ -136,7 +170,10 @@ fi
         CONFIG_OPTS+=("${CURVE}")
         CONFIG_OPTS+=("--without-docs")
 
-        cd "${cache}/libzmq" \
+        # Remove *.la files as they might cause errors with cross compiled libraries
+        find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
+
+        cd "${LIBZMQ_ROOT}" \
         && ./autogen.sh \
         && android_show_configure_opts "LIBZMQ" "${CONFIG_OPTS[@]}" \
         && ./configure "${CONFIG_OPTS[@]}" \
