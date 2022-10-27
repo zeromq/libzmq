@@ -501,19 +501,6 @@ fi
 ANDROID_BUILD_FAIL=()
 
 ########################################################################
-# Initialization
-########################################################################
-# Get directory of current script (if not already set)
-# This directory is also the basis for the build directories the get created.
-if [ -z "$ANDROID_BUILD_DIR" ]; then
-    ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-fi
-
-# Set up a variable to hold the global failure reasons, separated by newlines
-# (Empty string indicates no failure)
-ANDROID_BUILD_FAIL=()
-
-########################################################################
 # Sanity checks
 ########################################################################
 if [ -z "${NDK_VERSION}" ] ; then
