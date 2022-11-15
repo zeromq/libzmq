@@ -189,7 +189,7 @@ Supported events (v2)
 ----------------
 
 ZMQ_EVENT_PIPES_STATS
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 This event provides two values, the number of messages in each of the two
 queues associated with the returned endpoint (respectively egress and ingress).
 This event only triggers after calling the function
