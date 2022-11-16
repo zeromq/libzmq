@@ -83,11 +83,15 @@ template <typename T> class generic_mtrie_t
                 void (*func_) (value_t *value_, Arg arg_),
                 Arg arg_);
 
+    size_t num_prefixes () const { return _num_prefixes; }
+
   private:
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
     pipes_t *_pipes;
+
+    size_t _num_prefixes;
 
     unsigned char _min;
     unsigned short _count;
