@@ -189,7 +189,7 @@ class socket_base_t : public own_t,
     //  The default implementation assumes there are no specific socket
     //  options for the particular socket type. If not so, ZMQ_FINAL this
     //  method.
-    virtual int xgetsockopt (int option_, void *optval_, size_t optvallen_);
+    virtual int xgetsockopt (int option_, void *optval_, size_t *optvallen_);
 
     //  The default implementation assumes that send is not supported.
     virtual bool xhas_out ();

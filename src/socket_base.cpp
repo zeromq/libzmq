@@ -1625,7 +1625,7 @@ int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
     return -1;
 }
 
-int zmq::socket_base_t::xgetsockopt (int, void *, size_t)
+int zmq::socket_base_t::xgetsockopt (int, void *, size_t *)
 {
     errno = EINVAL;
     return -1;

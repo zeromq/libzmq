@@ -255,22 +255,19 @@ int zmq::xpub_t::xsetsockopt (int option_,
     return 0;
 }
 
-int zmq::xpub_t::xgetsockopt (int option_, void *optval_, size_t optvallen_)
+int zmq::xpub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     if (option_ == ZMQ_SUBSCRIPTION_COUNT) {
-        if (optvallen_ != sizeof (int)
-            || *static_cast<const int *> (optval_) < 0) {
-            errno = EINVAL;
-            return -1;
-        }
-
-        if (option_ == ZMQ_SUBSCRIPTION_COUNT) {
-            return do_getsockopt<int> (optval_, optvallen_,
-                                       _subscriptions.num_prefixes ());
-        }
-        // room for future options here
+        return do_getsockopt<int> (optval_, optvallen_,
+                                   _subscriptions.num_prefixes ());
     }
+
+    // room for future options here
+
+    errno = EINVAL;
+    return -1;
 }
+
 static void stub (zmq::mtrie_t::prefix_t data_, size_t size_, void *arg_)
 {
     LIBZMQ_UNUSED (data_);
