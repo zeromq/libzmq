@@ -537,8 +537,10 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
         }
     }
 
-    if (ret == last_value_removed)
+    if (ret == last_value_removed) {
+        zmq_assert (_num_prefixes > 0);
         _num_prefixes--;
+    }
 
     return ret;
 }

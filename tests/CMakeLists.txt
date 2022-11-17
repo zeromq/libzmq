@@ -167,6 +167,7 @@ if(ENABLE_DRAFTS)
     test_hiccup_msg
     test_zmq_ppoll_fd
     test_xsub_verbose
+    test_pubsub_num_subscriptions
 )
   if(HAVE_FORK)
     list(APPEND tests test_zmq_ppoll_signals)
