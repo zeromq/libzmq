@@ -259,7 +259,7 @@ int zmq::xpub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     if (option_ == ZMQ_SUBSCRIPTION_COUNT) {
         return do_getsockopt<int> (optval_, optvallen_,
-                                   _subscriptions.num_prefixes ());
+                                   (int) _subscriptions.num_prefixes ());
     }
 
     // room for future options here

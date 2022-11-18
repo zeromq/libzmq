@@ -29,6 +29,7 @@
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
+#include <string.h>
 
 SETUP_TEARDOWN_TESTCONTEXT
 
@@ -46,12 +47,12 @@ void test ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subscriber, my_endpoint));
 
     //  Subscribe to all messages.
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "topicprefix1", 0));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "aa", 0));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "bb", 0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_SUBSCRIBE, "topicprefix1", strlen ("topicprefix1")));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_SUBSCRIBE, "topicprefix2", strlen ("topicprefix2")));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_SUBSCRIBE, "topicprefix3", strlen ("topicprefix3")));
 
     //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
@@ -68,8 +69,7 @@ void test ()
     size_t num_subs_len = sizeof (num_subs);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
       publisher, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
-    TEST_ASSERT_EQUAL_INT (
-      1, num_subs); // FIXME: why do I get 1... I would expect 3 !!!
+    TEST_ASSERT_EQUAL_INT (3, num_subs);
 
     //  Clean up.
     test_context_socket_close (publisher);
