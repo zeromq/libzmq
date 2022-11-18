@@ -81,8 +81,30 @@ function android_download_ndk {
         ANDROID_BUILD_FAIL+=("  $(dirname "${ANDROID_NDK_ROOT}/")")
     fi
 
-    if [ -z "${ANDROID_NDK_FILENAME}" ] ; then
-        ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_FILENAME environment variable")
+    local platform="$(uname | tr '[:upper:]' '[:lower:]')"
+    local filename
+    case "${platform}" in
+        linux*)
+            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
+                # Since NDK 23, NDK archives are renamed.
+                filename=${NDK_VERSION}-linux.zip
+            else
+                filename=${NDK_VERSION}-linux-x86_64.zip
+            fi
+            ;;
+        darwin*)
+            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
+                # Since NDK 23, NDK archives are renamed.
+                filename=${NDK_VERSION}-darwin.zip
+            else
+                filename=${NDK_VERSION}-darwin-x86_64.zip
+            fi
+            ;;
+        *)    android_build_trace "Unsupported platform ('${platform}')" ; exit 1 ;;
+    esac
+
+    if [ -z "${filename}" ] ; then
+        ANDROID_BUILD_FAIL+=("Unable to detect NDK filename.")
     fi
 
     android_build_check_fail
@@ -90,14 +112,14 @@ function android_download_ndk {
     android_build_trace "Downloading NDK '${NDK_VERSION}'..."
     (
         cd "$(dirname "${ANDROID_NDK_ROOT}")" \
-        && rm -f "${ANDROID_NDK_FILENAME}" \
-        && wget -q "http://dl.google.com/android/repository/${ANDROID_NDK_FILENAME}" -O "${ANDROID_NDK_FILENAME}" \
-        && android_build_trace "Extracting NDK '${ANDROID_NDK_FILENAME}'..." \
-        && unzip -q "${ANDROID_NDK_FILENAME}" \
+        && rm -f "${filename}" \
+        && wget -q "http://dl.google.com/android/repository/${filename}" -O "${filename}" \
+        && android_build_trace "Extracting NDK '${filename}'..." \
+        && unzip -q "${filename}" \
         && android_build_trace "NDK extracted under '${ANDROID_NDK_ROOT}'."
     ) || {
         ANDROID_BUILD_FAIL+=("Failed to install NDK ('${NDK_VERSION}')")
-        ANDROID_BUILD_FAIL+=("  ${ANDROID_NDK_FILENAME}")
+        ANDROID_BUILD_FAIL+=("  ${filename}")
     }
 
     android_build_check_fail
@@ -106,24 +128,12 @@ function android_download_ndk {
 function android_build_set_env {
     BUILD_ARCH=$1
 
-    platform="$(uname | tr '[:upper:]' '[:lower:]')"
+    local platform="$(uname | tr '[:upper:]' '[:lower:]')"
     case "${platform}" in
         linux*)
-            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
-                # Since NDK 23, NDK archives are renamed.
-                export ANDROID_NDK_FILENAME=${NDK_VERSION}-linux.zip
-            else
-                export ANDROID_NDK_FILENAME=${NDK_VERSION}-linux-x86_64.zip
-            fi
             export ANDROID_BUILD_PLATFORM=linux-x86_64
             ;;
         darwin*)
-            if [ "${NDK_NUMBER}" -ge 2300 ] ; then
-                # Since NDK 23, NDK archives are renamed.
-                export ANDROID_NDK_FILENAME=${NDK_VERSION}-darwin.zip
-            else
-                export ANDROID_NDK_FILENAME=${NDK_VERSION}-darwin-x86_64.zip
-            fi
             export ANDROID_BUILD_PLATFORM=darwin-x86_64
             ;;
         *)    android_build_trace "Unsupported platform ('${platform}')" ; exit 1 ;;
