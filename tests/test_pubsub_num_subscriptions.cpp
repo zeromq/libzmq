@@ -33,6 +33,29 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
+
+void settle_subscriptions (void *skt)
+{
+    //  To kick the application thread, do a dummy getsockopt - users here
+    //  should use the monitor and the other sockets in a poll.
+    unsigned long int dummy;
+    size_t dummy_size = sizeof (dummy);
+    msleep (SETTLE_TIME);
+    zmq_getsockopt (skt, ZMQ_EVENTS, &dummy, &dummy_size);
+}
+
+void assert_subscription_count (void *publisher, size_t expected_subscriptions)
+{
+    int num_subs = 0;
+    size_t num_subs_len = sizeof (num_subs);
+
+    settle_subscriptions (publisher);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
+      publisher, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
+
+    TEST_ASSERT_EQUAL_INT (expected_subscriptions, num_subs);
+}
+
 void test ()
 {
     //  Create a publisher
@@ -46,7 +69,7 @@ void test ()
     void *subscriber = test_context_socket (ZMQ_SUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subscriber, my_endpoint));
 
-    //  Subscribe to all messages.
+    //  Subscribe to 3 topics
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       subscriber, ZMQ_SUBSCRIBE, "topicprefix1", strlen ("topicprefix1")));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
@@ -56,20 +79,31 @@ void test ()
 
     //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
-    msleep (SETTLE_TIME);
-    msleep (SETTLE_TIME);
 
-    //  Send an empty message
+    //  Send test messages on the 3 topics
     send_string_expect_success (publisher, "topicprefix1: hello world", 0);
+    send_string_expect_success (publisher, "topicprefix2: hello world", 0);
+    send_string_expect_success (publisher, "topicprefix3: hello world", 0);
 
-    //  Receive the message in the subscriber
+    //  Receive the messages in the subscriber
     recv_string_expect_success (subscriber, "topicprefix1: hello world", 0);
+    recv_string_expect_success (subscriber, "topicprefix2: hello world", 0);
+    recv_string_expect_success (subscriber, "topicprefix3: hello world", 0);
 
-    int num_subs = 0;
-    size_t num_subs_len = sizeof (num_subs);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
-      publisher, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
-    TEST_ASSERT_EQUAL_INT (3, num_subs);
+    // We are confident now that the PUB must have received 3 subscriptions up to now
+    assert_subscription_count (publisher, 3);
+
+    // Remove first subscription and check we decreased to 2
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_UNSUBSCRIBE, "topicprefix3", strlen ("topicprefix3")));
+    assert_subscription_count (publisher, 2);
+
+    // Remove other 2 subscriptions and check we're back to 0 subscriptions
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_UNSUBSCRIBE, "topicprefix1", strlen ("topicprefix1")));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      subscriber, ZMQ_UNSUBSCRIBE, "topicprefix2", strlen ("topicprefix2")));
+    assert_subscription_count (publisher, 0);
 
     //  Clean up.
     test_context_socket_close (publisher);
