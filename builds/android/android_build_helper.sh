@@ -472,29 +472,49 @@ function android_clone_library {
     ( cd "${root}" && git log --oneline -n 1)  || exit 1
 }
 
-# Caller must set CONFIG_OPTS before call.
+# Caller must set CONFIG_OPTS[], before call.
 function android_build_library {
     local tag=$1 ; shift
-    local clone_root=$1 ; shift
+    local root=$1 ; shift
 
     android_build_trace "Cleaning library '${tag}'."
     (
-        cd "${clone_root}" \
-        && ( make clean || : ) && \
-        rm -f config.status 
-    ) || exit 1
+        if [ -n "${ANDROID_BUILD_PREFIX}" ] && [ -d "${ANDROID_BUILD_PREFIX}" ] ; then
+            # Remove *.la files as they might cause errors with cross compiled libraries
+            find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
+        fi
 
+        cd "${root}" \
+        && ( make clean || : ) \
+        && rm -f config.status
+    ) &> /dev/null
+
+    android_build_trace "Building library '${tag}'."
     (
-        # Remove *.la files as they might cause errors with cross compiled libraries
-        find "${ANDROID_BUILD_PREFIX}" -name '*.la' -exec rm {} +
+        set -e
 
-        cd "${clone_root}" \
-        && ./autogen.sh \
-        && android_show_configure_opts "${tag}" "${CONFIG_OPTS[@]}" \
-        && ./configure "${CONFIG_OPTS[@]}" \
-        && make -j 4 \
-        && make install
-    ) || exit 1
+        android_show_configure_opts "${tag}" "${CONFIG_OPTS[@]}"
+
+        cd "${root}"
+        if [ -e autogen.sh ]; then
+            ./autogen.sh 2> /dev/null
+        fi
+        if [ -e buildconf ]; then
+            ./buildconf 2> /dev/null
+        fi
+        if [ ! -e autogen.sh ] && [ ! -e buildconf ] && [ ! -e ./configure ] && [ -s ./configure.ac ] ; then
+            libtoolize --copy --force && \
+            aclocal -I . && \
+            autoheader && \
+            automake --add-missing --copy && \
+            autoconf || \
+            autoreconf -fiv
+        fi
+
+        ./configure "${CONFIG_OPTS[@]}"
+        make -j 4
+        make install
+    )
 }
 
 ########################################################################
