@@ -455,6 +455,72 @@ function android_show_configure_opts {
     echo ""
 }
 
+# Initialize env variable XXX_ROOT, given dependency name "xxx".
+# If XXX_ROOT is not set:
+#    If ${PROJECT_ROOT}/../xxx exists
+#        set XXX_ROOT with it.
+#    Else
+#        set XXX_ROOT with /tmp/tmp-deps/xxx.
+# Else
+#    Verify that folder XXX_ROOT exists.
+function android_init_dependency_root {
+    local lib_name
+    lib_name="$1"
+    local variable_name
+    variable_name="$(echo "${lib_name}" | tr '[:lower:]' '[:upper:]')_ROOT"
+    local variable_value
+    variable_value="$(eval echo "\${${variable_name}}")"
+
+    if [ -z "${PROJECT_ROOT}" ] ; then
+        android_build_trace "Error: Variable PROJECT_ROOT is not set."
+        exit 1
+    fi
+    if [ ! -d "${PROJECT_ROOT}" ] ; then
+        android_build_trace "Error: Cannot find folder '${PROJECT_ROOT}'."
+        exit 1
+    fi
+
+    if [ -z "${variable_value}" ] ; then
+        if [ -d "${PROJECT_ROOT}/../${lib_name}" ] ; then
+            eval "export ${variable_name}=\"$(cd "${PROJECT_ROOT}/../${lib_name}" && pwd)\""
+        else
+            eval "export ${variable_name}=\"/tmp/tmp-deps/${lib_name}\""
+        fi
+        variable_value="$(eval echo "\${${variable_name}}")"
+    elif [ ! -d "${variable_value}" ] ; then
+        android_build_trace "Error: Folder '${variable_value}' does not exist."
+        exit 1
+    fi
+
+    android_build_trace "${variable_name}=${variable_value}"
+}
+
+function android_download_library {
+    local tag="$1" ; shift
+    local root="$1" ; shift
+    local url="$1" ; shift
+    local parent="$(dirname "${root}")"
+    local archive="$(basename "${url}")"
+
+    mkdir -p "${parent}"
+    cd "${parent}"
+
+    android_build_trace "Downloading ${tag} from '${url}' ..."
+    rm -f "${archive}"
+    wget -q "${url}"
+    case "${archive}" in
+        *."tar.gz" ) folder="$(basename "${archive}" ".tar.gz")" ;;
+        *."tgz" )    folder="$(basename "${archive}" ".tgz")" ;;
+        * ) android_build_trace "Unsupported extension for '${archive}'." ; exit 1 ;;
+    esac
+    android_build_trace "Extracting '${archive}' ..."
+    tar -xzf "${archive}"
+    if [ ! -d "${root}" ] ; then
+	mv "${folder}" "${root}"
+    fi
+    android_build_trace "${tag} extracted under under '${root}'."
+}
+
 function android_clone_library {
     local tag="$1" ; shift
     local root="$1" ; shift
