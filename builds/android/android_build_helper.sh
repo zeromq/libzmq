@@ -31,6 +31,7 @@
 #
 ###
 #
+# Courtesy of Joe Eli McIlvain; original code at:
 # https://github.com/jemc/android_build_helper
 #   android_build_helper.sh
 #
@@ -43,9 +44,11 @@
 # To get the latest version of this script, please download from:
 #   https://github.com/jemc/android_build_helper
 #
-# You are free to modify this script, but if you add improvements,
-# please consider submitting a pull request to the aforementioned upstream
-# repository for the benefit of other users.
+# You are free to modify and redistribute this script, but if you add
+# improvements, please consider submitting a pull request or patch to the
+# aforementioned upstream repository for the benefit of other users.
+#
+# This script is provided with no express or implied warranties.
 #
 
 ########################################################################
@@ -81,8 +84,10 @@ function android_download_ndk {
         ANDROID_BUILD_FAIL+=("  $(dirname "${ANDROID_NDK_ROOT}/")")
     fi
 
-    local platform="$(uname | tr '[:upper:]' '[:lower:]')"
+    android_build_check_fail
+
     local filename
+    local platform="$(uname | tr '[:upper:]' '[:lower:]')"
     case "${platform}" in
         linux*)
             if [ "${NDK_NUMBER}" -ge 2300 ] ; then
@@ -167,9 +172,9 @@ function android_build_set_env {
 
     # Since NDK r22 the "platforms" dir got removed
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
     else
-       export ANDROID_BUILD_SYSROOT="${ANDROID_BUILD_TOOLCHAIN}/sysroot"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_BUILD_TOOLCHAIN}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 
@@ -177,10 +182,10 @@ function android_build_set_env {
     export ANDROID_STL="libc++_shared.so"
     if [ -x "${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}/${ANDROID_STL}" ] ; then
         export ANDROID_STL_ROOT="${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
-    else 
+    else
         export ANDROID_STL_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}"
 
-        # NDK 25 requires -L<path-to-libc.so> ... 
+        # NDK 25 requires -L<path-to-libc.so> ...
         # I don't understand why, but without it, ./configure fails to build a valid 'conftest'.
         export ANDROID_LIBC_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}/${MIN_SDK_VERSION}"
     fi
@@ -589,7 +594,7 @@ function android_build_library {
 # Get directory of current script (if not already set)
 # This directory is also the basis for the build directories the get created.
 if [ -z "$ANDROID_BUILD_DIR" ]; then
-    ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    export ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
 
 # Where to download our dependencies
@@ -602,13 +607,10 @@ ANDROID_BUILD_FAIL=()
 ########################################################################
 # Sanity checks
 ########################################################################
-if [ -z "${NDK_VERSION}" ] ; then
-    android_build_trace "NDK_VERSION not set !"
-    exit 1
-fi
 case "${NDK_VERSION}" in
     "android-ndk-r"[0-9][0-9] ) : ;;
     "android-ndk-r"[0-9][0-9][a-z] ) : ;;
+    "" ) android_build_trace "Variable NDK_VERSION not set." ; exit 1 ;;
     * ) android_build_trace "Invalid format for NDK_VERSION ('${NDK_VERSION}')" ; exit 1 ;;
 esac
 
@@ -621,7 +623,7 @@ fi
 # Compute NDK version into a numeric form:
 #   android-ndk-r21e -> 2105
 #   android-ndk-r25  -> 2500
-########################################################################    
+########################################################################
 export NDK_NUMBER="$(( $(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
 NDK_VERSION_LETTER="$(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
 if [ -n "${NDK_VERSION_LETTER}" ] ; then
