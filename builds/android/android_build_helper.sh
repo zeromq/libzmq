@@ -457,19 +457,19 @@ function android_show_configure_opts {
 
 function android_clone_library {
     local tag="$1" ; shift
-    local clone_root="$1" ; shift
-    local clone_url="$1" ; shift 
-    local clone_branch="$1" ; shift
+    local root="$1" ; shift
+    local url="$1" ; shift
+    local branch="$1" ; shift
 
-    mkdir -p "$(dirname "${clone_root}")"
-    if [ -n "${clone_branch}" ] ; then
-	android_build_trace "Cloning '${clone_url}' (branch '${clone_branch}') under '${clone_root}'."
-	git clone --quiet --depth 1 -b "${clone_branch}" "${clone_url}" "${clone_root}"
+    mkdir -p "$(dirname "${root}")"
+    if [ -n "${branch}" ] ; then
+        android_build_trace "Cloning '${url}' (branch '${branch}') under '${root}'."
+        git clone --quiet --depth 1 -b "${branch}" "${url}" "${root}"
     else
-	android_build_trace "Cloning '${clone_url}' (default branch) under '${clone_root}'."
-	git clone --quiet --depth 1 "${clone_url}" "${clone_root}"
+        android_build_trace "Cloning '${url}' (default branch) under '${root}'."
+        git clone --quiet --depth 1 "${url}" "${root}"
     fi
-    ( cd "${clone_root}" && git log --oneline -n 1)  || exit 1
+    ( cd "${root}" && git log --oneline -n 1)  || exit 1
 }
 
 # Caller must set CONFIG_OPTS before call.
