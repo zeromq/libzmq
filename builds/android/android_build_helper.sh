@@ -460,7 +460,7 @@ function android_show_configure_opts {
 #    If ${PROJECT_ROOT}/../xxx exists
 #        set XXX_ROOT with it.
 #    Else
-#        set XXX_ROOT with /tmp/tmp-deps/xxx.
+#        set XXX_ROOT with ${ANDROID_DEPENDENCIES_DIR}/xxx.
 # Else
 #    Verify that folder XXX_ROOT exists.
 function android_init_dependency_root {
@@ -484,7 +484,7 @@ function android_init_dependency_root {
         if [ -d "${PROJECT_ROOT}/../${lib_name}" ] ; then
             eval "export ${variable_name}=\"$(cd "${PROJECT_ROOT}/../${lib_name}" && pwd)\""
         else
-            eval "export ${variable_name}=\"/tmp/tmp-deps/${lib_name}\""
+            eval "export ${variable_name}=\"${ANDROID_DEPENDENCIES_DIR}/${lib_name}\""
         fi
         variable_value="$(eval echo "\${${variable_name}}")"
     elif [ ! -d "${variable_value}" ] ; then
@@ -591,6 +591,9 @@ function android_build_library {
 if [ -z "$ANDROID_BUILD_DIR" ]; then
     ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 fi
+
+# Where to download our dependencies
+export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-/tmp/tmp-deps}"
 
 # Set up a variable to hold the global failure reasons, separated by newlines
 # (Empty string indicates no failure)
