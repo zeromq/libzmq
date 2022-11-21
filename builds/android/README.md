@@ -1,8 +1,10 @@
 # Android Build
 
-## Prerequisites
+## Preamble
 
 The last known NDK is automatically downloaded, if not specified otherwise.
+
+As indicated in the main [README](../../README.md#supported-platforms-with-primary-CI), Android support is still DRAFT.
 
 ## Configuration
 
@@ -21,8 +23,7 @@ Provided build scripts can mainly be used like
 
 ### Android NDK
 
-LIBZMQ is tested against Android NDK version r25, but should
-support older ones too.
+LIBZMQ is tested against Android NDK versions r19 to r25.
 
 By default, LIBZMQ uses NDK `android-ndk-r25`, but you can specify
 a different one:
@@ -63,22 +64,32 @@ where <arch> is one of `arm`, `arm64`, `x86` or `x86_64`.
 
 ### Android build cleanup
 
-You can build your own Android libraries, and place them under
-${ANDROID_BUILD_DIR}/prefix/<arch>/lib, but then, you'll need to
-indicate the build scripts to not clean this folder, with the 
-help of ANDROID_BUILD_CLEAN
+Build and Dependency storage folders are automatically cleaned,
+by ci_build.sh. This can be avoided with the help of
 
-    ANDROID_BUILD_CLEAN=no
+    ANDROID_BUILD_DIR="no"
+
+If you turn this to "no", make sure to clean what has to be, before
+calling `build.sh` or `ci_build.sh`.
+
+### Prebuilt Android libraries
+
+Android prebuilt libraries have to be stored under
+
+    ANDROID_BUILD_DIR/prefix/<arch>/lib
+
+Do not forget to disable [Android cleanup](#android-build-cleanup).
 
 ### Dependencies
 
-By default, dependencies are stored under /tmp/tmp-deps, but you
-can specify another folder with the help of ANDROID_DEPENDENCIES:
+By default, `build.sh` download dependencies under `/tmp/tmp-deps`.
+
+You can specify another folder with the help of ANDROID_DEPENDENCIES_DIR:
 
    ANDROID_DEPENDENCIES_DIR=${HOME}/my_dependencies
 
-If you place your own dependency source trees there, you'll need
-to specify ANDROID_BUILD_CLEAN=no too.
+If you place your own dependency source trees there, 
+do not forget to disable [Android cleanup](#android-build-cleanup).
 
 ### Cryptographic configuration
 
@@ -115,7 +126,7 @@ Select your preferred parameters:
     export YYY=yyy
     ...
 
-And, in the android directory, run:
+and run:
 
     cd <libzmq>/builds/android
     ./build.sh [ arm | arm64 | x86 | x86_64 ]
@@ -125,13 +136,13 @@ SHELL script, like in ci_build.sh.
 
 ## CI build 
 
-Basically, it will call build.sh once, for each Android target.
+Basically, it will call `build.sh` once, for each Android target.
 
 This script accepts the same configuration variables, but some are set
 with different default values. For instance, the dependencies are not
-downloaded or cloned in /tmp/tmp-deps, but inside LIBZMQ clone.
+downloaded or cloned in `/tmp/tmp-deps, but inside LIBZMQ clone.
 
-It can be used in the same way than build.sh
+It can be used in the same way as build.sh
 
     export XXX=xxx
     export YYY=yyy
