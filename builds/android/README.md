@@ -6,10 +6,11 @@ The last known NDK is automatically downloaded, if not specified otherwise.
 
 ## Configuration
 
-Basically, LIBZMQ build for Android, relies on exported variables.
-Provided build scripts can mainly be used like
-
 ### Basics
+
+Basically, LIBZMQ build for Android, relies on exported variables.
+
+Provided build scripts can mainly be used like
 
     export XXX=xxx
     export YYY=yyy
