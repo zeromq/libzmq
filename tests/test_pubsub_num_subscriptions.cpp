@@ -56,7 +56,7 @@ void assert_subscription_count (void *publisher, size_t expected_subscriptions)
     TEST_ASSERT_EQUAL_INT (expected_subscriptions, num_subs);
 }
 
-void test ()
+void test_independent_topic_prefixes ()
 {
     //  Create a publisher
     void *publisher = test_context_socket (ZMQ_PUB);
@@ -110,11 +110,53 @@ void test ()
     test_context_socket_close (subscriber);
 }
 
+
+void test_nested_topic_prefixes ()
+{
+    //  Create a publisher
+    void *publisher = test_context_socket (ZMQ_PUB);
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    //  Bind publisher
+    test_bind (publisher, "inproc://soname", my_endpoint, MAX_SOCKET_STRING);
+
+    //  Create a subscriber
+    void *subscriber = test_context_socket (ZMQ_SUB);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subscriber, my_endpoint));
+
+    //  Subscribe to 3 topics
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "a", strlen ("a")));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "ab", strlen ("ab")));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "abc", strlen ("abc")));
+
+    // Even if the subscriptions are nested one into the other, the number of subscriptions
+    // received on the publisher socket will be 3:
+    assert_subscription_count (publisher, 3);
+
+    //  Subscribe to other 3 topics
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xyz", strlen ("a")));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xy", strlen ("ab")));
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "x", strlen ("abc")));
+
+    assert_subscription_count (publisher, 6);
+
+    //  Clean up.
+    test_context_socket_close (publisher);
+    test_context_socket_close (subscriber);
+}
+
 int main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test);
+    RUN_TEST (test_independent_topic_prefixes);
+    RUN_TEST (test_nested_topic_prefixes);
     return UNITY_END ();
 }

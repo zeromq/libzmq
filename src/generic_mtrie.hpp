@@ -84,13 +84,7 @@ template <typename T> class generic_mtrie_t
                 void (*func_) (value_t *value_, Arg arg_),
                 Arg arg_);
 
-    //  Retrieve the number of unique prefixes stored in this trie.
-    //  Note that prefixes that are included inside other prefixes
-    //  are not considered to be "unique" prefixes; e.g. for the trie
-    //  't', after adding
-    //    t.add("abc", 3, ...)
-    //    t.add("abcde", 5, ...)
-    //  this function will return just '1'.
+    //  Retrieve the number of prefixes stored in this trie (added - removed)
     //  Note this is a multithread safe function.
     uint32_t num_prefixes () const { return _num_prefixes.get (); }
 
