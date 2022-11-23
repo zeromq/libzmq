@@ -145,7 +145,7 @@ bool generic_mtrie_t<T>::add (prefix_t prefix_, size_t size_, value_t *pipe_)
         it->_pipes = new (std::nothrow) pipes_t;
         alloc_assert (it->_pipes);
 
-        _num_prefixes++;
+        _num_prefixes.add (1);
     }
     it->_pipes->insert (pipe_);
 
@@ -538,8 +538,8 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
     }
 
     if (ret == last_value_removed) {
-        zmq_assert (_num_prefixes > 0);
-        _num_prefixes--;
+        zmq_assert (_num_prefixes.get () > 0);
+        _num_prefixes.sub (1);
     }
 
     return ret;
