@@ -1068,7 +1068,7 @@ test_apps += tests/test_poller \
 	tests/test_hiccup_msg \
 	tests/test_zmq_ppoll_fd \
 	tests/test_xsub_verbose \
-	tests/test_pubsub_num_subscriptions
+	tests/test_pubsub_topics_count
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1146,9 +1146,9 @@ tests_test_xsub_verbose_SOURCES = tests/test_xsub_verbose.cpp
 tests_test_xsub_verbose_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xsub_verbose_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
-tests_test_pubsub_num_subscriptions_SOURCES = tests/test_pubsub_num_subscriptions.cpp
-tests_test_pubsub_num_subscriptions_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_pubsub_num_subscriptions_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+tests_test_pubsub_topics_count_SOURCES = tests/test_pubsub_topics_count.cpp
+tests_test_pubsub_topics_count_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pubsub_topics_count_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_FORK
 test_apps += tests/test_zmq_ppoll_signals

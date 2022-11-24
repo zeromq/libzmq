@@ -123,7 +123,7 @@ int zmq::xsub_t::xsetsockopt (int option_,
 
 int zmq::xsub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
 {
-    if (option_ == ZMQ_SUBSCRIPTION_COUNT) {
+    if (option_ == ZMQ_TOPICS_COUNT) {
         // make sure to use a multi-thread safe function to avoid race conditions with I/O threads
         // where subscriptions are processed:
 #ifdef ZMQ_USE_RADIX_TREE

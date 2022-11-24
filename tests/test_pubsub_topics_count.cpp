@@ -51,7 +51,7 @@ int get_subscription_count (void *skt)
 
     settle_subscriptions (skt);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (skt, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
+      zmq_getsockopt (skt, ZMQ_TOPICS_COUNT, &num_subs, &num_subs_len));
 
     return num_subs;
 }
