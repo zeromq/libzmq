@@ -258,6 +258,8 @@ int zmq::xpub_t::xsetsockopt (int option_,
 int zmq::xpub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     if (option_ == ZMQ_SUBSCRIPTION_COUNT) {
+        // make sure to use a multi-thread safe function to avoid race conditions with I/O threads
+        // where subscriptions are processed:
         return do_getsockopt<int> (optval_, optvallen_,
                                    (int) _subscriptions.num_prefixes ());
     }

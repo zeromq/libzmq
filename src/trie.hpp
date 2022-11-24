@@ -34,6 +34,7 @@
 
 #include "macros.hpp"
 #include "stdint.hpp"
+#include "atomic_counter.hpp"
 
 namespace zmq
 {
@@ -80,6 +81,53 @@ class trie_t
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (trie_t)
 };
+
+
+// lightweight wrapper around trie_t adding tracking of total number of prefixes
+class trie_with_size_t
+{
+  public:
+    trie_with_size_t () {}
+    ~trie_with_size_t () {}
+
+    bool add (unsigned char *prefix_, size_t size_)
+    {
+        if (_trie.add (prefix_, size_)) {
+            _num_prefixes.add (1);
+            return true;
+        } else
+            return false;
+    }
+
+    bool rm (unsigned char *prefix_, size_t size_)
+    {
+        if (_trie.rm (prefix_, size_)) {
+            _num_prefixes.sub (1);
+            return true;
+        } else
+            return false;
+    }
+
+    bool check (const unsigned char *data_, size_t size_) const
+    {
+        return _trie.check (data_, size_);
+    }
+
+    void apply (void (*func_) (unsigned char *data_, size_t size_, void *arg_),
+                void *arg_)
+    {
+        _trie.apply (func_, arg_);
+    }
+
+    //  Retrieve the number of prefixes stored in this trie (added - removed)
+    //  Note this is a multithread safe function.
+    uint32_t num_prefixes () const { return _num_prefixes.get (); }
+
+  private:
+    atomic_counter_t _num_prefixes;
+    trie_t _trie;
+};
+
 }
 
 #endif

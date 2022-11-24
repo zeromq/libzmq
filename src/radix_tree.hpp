@@ -33,6 +33,7 @@
 #include <stddef.h>
 
 #include "stdint.hpp"
+#include "atomic_counter.hpp"
 
 // Wrapper type for a node's data layout.
 //
@@ -133,6 +134,7 @@ class radix_tree_t
     void apply (void (*func_) (unsigned char *data, size_t size, void *arg),
                 void *arg_);
 
+    //  Retrieve size of the radix tree. Note this is a multithread safe function.
     size_t size () const;
 
   private:
@@ -140,7 +142,7 @@ class radix_tree_t
     match (const unsigned char *key_, size_t key_size_, bool is_lookup_) const;
 
     node_t _root;
-    size_t _size;
+    atomic_counter_t _size;
 };
 }
 

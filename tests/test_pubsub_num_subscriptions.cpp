@@ -44,16 +44,16 @@ void settle_subscriptions (void *skt)
     zmq_getsockopt (skt, ZMQ_EVENTS, &dummy, &dummy_size);
 }
 
-void assert_subscription_count (void *publisher, size_t expected_subscriptions)
+int get_subscription_count (void *skt)
 {
     int num_subs = 0;
     size_t num_subs_len = sizeof (num_subs);
 
-    settle_subscriptions (publisher);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_getsockopt (
-      publisher, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
+    settle_subscriptions (skt);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (skt, ZMQ_SUBSCRIPTION_COUNT, &num_subs, &num_subs_len));
 
-    TEST_ASSERT_EQUAL_INT (expected_subscriptions, num_subs);
+    return num_subs;
 }
 
 void test_independent_topic_prefixes ()
@@ -76,40 +76,27 @@ void test_independent_topic_prefixes ()
       subscriber, ZMQ_SUBSCRIBE, "topicprefix2", strlen ("topicprefix2")));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       subscriber, ZMQ_SUBSCRIBE, "topicprefix3", strlen ("topicprefix3")));
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 3);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 3);
 
-    //  Wait a bit till the subscription gets to the publisher
-    msleep (SETTLE_TIME);
-
-    //  Send test messages on the 3 topics
-    send_string_expect_success (publisher, "topicprefix1: hello world", 0);
-    send_string_expect_success (publisher, "topicprefix2: hello world", 0);
-    send_string_expect_success (publisher, "topicprefix3: hello world", 0);
-
-    //  Receive the messages in the subscriber
-    recv_string_expect_success (subscriber, "topicprefix1: hello world", 0);
-    recv_string_expect_success (subscriber, "topicprefix2: hello world", 0);
-    recv_string_expect_success (subscriber, "topicprefix3: hello world", 0);
-
-    // We are confident now that the PUB must have received 3 subscriptions up to now
-    assert_subscription_count (publisher, 3);
-
-    // Remove first subscription and check we decreased to 2
+    // Remove first subscription and check subscriptions went 3 -> 2
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       subscriber, ZMQ_UNSUBSCRIBE, "topicprefix3", strlen ("topicprefix3")));
-    assert_subscription_count (publisher, 2);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 2);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 2);
 
     // Remove other 2 subscriptions and check we're back to 0 subscriptions
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       subscriber, ZMQ_UNSUBSCRIBE, "topicprefix1", strlen ("topicprefix1")));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       subscriber, ZMQ_UNSUBSCRIBE, "topicprefix2", strlen ("topicprefix2")));
-    assert_subscription_count (publisher, 0);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 0);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 0);
 
     //  Clean up.
     test_context_socket_close (publisher);
     test_context_socket_close (subscriber);
 }
-
 
 void test_nested_topic_prefixes ()
 {
@@ -124,7 +111,7 @@ void test_nested_topic_prefixes ()
     void *subscriber = test_context_socket (ZMQ_SUB);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (subscriber, my_endpoint));
 
-    //  Subscribe to 3 topics
+    //  Subscribe to 3 (nested) topics
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "a", strlen ("a")));
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -133,10 +120,11 @@ void test_nested_topic_prefixes ()
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "abc", strlen ("abc")));
 
     // Even if the subscriptions are nested one into the other, the number of subscriptions
-    // received on the publisher socket will be 3:
-    assert_subscription_count (publisher, 3);
+    // received on the subscriber/publisher socket will be 3:
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 3);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 3);
 
-    //  Subscribe to other 3 topics
+    //  Subscribe to other 3 (nested) topics
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xyz", strlen ("a")));
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -144,7 +132,8 @@ void test_nested_topic_prefixes ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "x", strlen ("abc")));
 
-    assert_subscription_count (publisher, 6);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 6);
+    TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 6);
 
     //  Clean up.
     test_context_socket_close (publisher);
