@@ -326,7 +326,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
                 _root._data = current_node._data;
             else
                 parent_node.set_node_at (edge_index, current_node);
-            ++_size;
+            _size.add (1);
             return true;
         }
 
@@ -362,7 +362,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
         current_node.set_edge_at (0, key_node.prefix ()[0], key_node);
         current_node.set_edge_at (1, split_node.prefix ()[0], split_node);
 
-        ++_size;
+        _size.add (1);
         parent_node.set_node_at (edge_index, current_node);
         return true;
     }
@@ -394,7 +394,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
         current_node.set_edge_at (0, split_node.prefix ()[0], split_node);
         current_node.set_refcount (1);
 
-        ++_size;
+        _size.add (1);
         parent_node.set_node_at (edge_index, current_node);
         return true;
     }
@@ -402,7 +402,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
     zmq_assert (key_bytes_matched == key_size_);
     zmq_assert (prefix_bytes_matched == current_node.prefix_length ());
 
-    ++_size;
+    _size.add (1);
     current_node.set_refcount (current_node.refcount () + 1);
     return current_node.refcount () == 1;
 }
@@ -424,7 +424,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         return false;
 
     current_node.set_refcount (current_node.refcount () - 1);
-    --_size;
+    _size.sub (1);
     if (current_node.refcount () > 0)
         return false;
 
@@ -574,5 +574,5 @@ void zmq::radix_tree_t::apply (
 
 size_t zmq::radix_tree_t::size () const
 {
-    return _size;
+    return _size.get ();
 }

@@ -472,8 +472,8 @@ test_apps = \
 	tests/test_unbind_wildcard \
 	tests/test_ctx_options \
 	tests/test_ctx_destroy \
-        tests/test_security_no_zap_handler \
-        tests/test_security_null \
+	tests/test_security_no_zap_handler \
+	tests/test_security_null \
 	tests/test_security_plain \
 	tests/test_security_zap \
 	tests/test_iov \
@@ -1067,7 +1067,8 @@ test_apps += tests/test_poller \
 	tests/test_channel \
 	tests/test_hiccup_msg \
 	tests/test_zmq_ppoll_fd \
-	tests/test_xsub_verbose
+	tests/test_xsub_verbose \
+	tests/test_pubsub_topics_count
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -1144,6 +1145,10 @@ tests_test_zmq_ppoll_fd_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_xsub_verbose_SOURCES = tests/test_xsub_verbose.cpp
 tests_test_xsub_verbose_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xsub_verbose_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_pubsub_topics_count_SOURCES = tests/test_pubsub_topics_count.cpp
+tests_test_pubsub_topics_count_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pubsub_topics_count_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 if HAVE_FORK
 test_apps += tests/test_zmq_ppoll_signals

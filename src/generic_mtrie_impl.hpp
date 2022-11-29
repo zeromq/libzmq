@@ -45,7 +45,7 @@ namespace zmq
 {
 template <typename T>
 generic_mtrie_t<T>::generic_mtrie_t () :
-    _pipes (0), _min (0), _count (0), _live_nodes (0)
+    _pipes (0), _num_prefixes (0), _min (0), _count (0), _live_nodes (0)
 {
 }
 
@@ -144,6 +144,8 @@ bool generic_mtrie_t<T>::add (prefix_t prefix_, size_t size_, value_t *pipe_)
     if (!it->_pipes) {
         it->_pipes = new (std::nothrow) pipes_t;
         alloc_assert (it->_pipes);
+
+        _num_prefixes.add (1);
     }
     it->_pipes->insert (pipe_);
 
@@ -533,6 +535,11 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                 }
             }
         }
+    }
+
+    if (ret == last_value_removed) {
+        zmq_assert (_num_prefixes.get () > 0);
+        _num_prefixes.sub (1);
     }
 
     return ret;

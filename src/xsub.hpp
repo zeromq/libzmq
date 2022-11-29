@@ -60,6 +60,7 @@ class xsub_t : public socket_base_t
     int xsetsockopt (int option_,
                      const void *optval_,
                      size_t optvallen_) ZMQ_OVERRIDE;
+    int xgetsockopt (int option_, void *optval_, size_t *optvallen_) ZMQ_FINAL;
     int xsend (zmq::msg_t *msg_) ZMQ_OVERRIDE;
     bool xhas_out () ZMQ_OVERRIDE;
     int xrecv (zmq::msg_t *msg_) ZMQ_FINAL;
@@ -88,7 +89,7 @@ class xsub_t : public socket_base_t
 #ifdef ZMQ_USE_RADIX_TREE
     radix_tree_t _subscriptions;
 #else
-    trie_t _subscriptions;
+    trie_with_size_t _subscriptions;
 #endif
 
     // If true, send all unsubscription messages upstream, not just
