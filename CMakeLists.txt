@@ -263,7 +263,7 @@ option(ENABLE_CURVE "Enable CURVE security" ON)
 
 if(ENABLE_CURVE)
   if(WITH_LIBSODIUM)
-    find_package("Sodium")
+    find_package("sodium")
     if(SODIUM_FOUND)
       message(STATUS "Using libsodium for CURVE security")
       include_directories(${SODIUM_INCLUDE_DIRS})
