@@ -99,6 +99,17 @@ bool operator!= (const secure_allocator_t<T> &, const secure_allocator_t<U> &)
 #else
 template <typename T> struct secure_allocator_t : std::allocator<T>
 {
+    secure_allocator_t () ZMQ_DEFAULT;
+
+    template <class U>
+    secure_allocator_t (const secure_allocator_t<U> &) ZMQ_NOEXCEPT
+    {
+    }
+
+    template <class U> struct rebind
+    {
+        typedef secure_allocator_t<U> other;
+    };
 };
 #endif
 }
