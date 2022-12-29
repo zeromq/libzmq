@@ -368,7 +368,7 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
 
     char port[6];
     const int port_len =
-      sprintf (port, "%d", static_cast<int> (ntohs (addr_->sin_port)));
+      snprintf (port, sizeof(port), "%d", static_cast<int> (ntohs (addr_->sin_port)));
     zmq_assert (port_len > 0);
 
     const size_t name_len = strlen (name);
