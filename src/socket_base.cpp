@@ -1504,14 +1504,16 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
     command_t cmd;
     int rc = _mailbox->recv (&cmd, timeout_);
 
+    if (rc != 0 && errno == EINTR)
+        return -1;
+
     //  Process all available commands.
-    while (rc == 0) {
-        cmd.destination->process_command (cmd);
+    while (rc == 0 || errno == EINTR) {
+        if (rc == 0) {
+            cmd.destination->process_command (cmd);
+	}
         rc = _mailbox->recv (&cmd, 0);
     }
-
-    if (errno == EINTR)
-        return -1;
 
     zmq_assert (errno == EAGAIN);
 
