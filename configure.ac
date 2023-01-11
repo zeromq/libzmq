@@ -713,6 +713,11 @@ fi
 
 if test "x$have_pgm_library" = "xyes"; then
     AC_DEFINE(ZMQ_HAVE_OPENPGM, [1], [Have OpenPGM extension])
+    # When using CXX98 mode 'restrict will not be defined, so redefine it, as it
+    # is used in the PGM headers
+    if test "x$enable_force_CXX98_compat" = "xyes"; then
+        CPPFLAGS="-Drestrict=__restrict__ $CPPFLAGS"
+    fi
 fi
 
 AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
