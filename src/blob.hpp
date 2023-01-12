@@ -114,7 +114,7 @@ struct blob_t
     unsigned char *data () { return _data; }
 
     //  Defines an order relationship on blob_t.
-    bool operator< (blob_t const &other_) const
+    bool operator<(blob_t const &other_) const
     {
         const int cmpres =
           memcmp (_data, other_._data, std::min (_size, other_._size));
@@ -182,7 +182,10 @@ struct blob_t
         return *this;
     }
 #else
-    blob_t (const blob_t &other) : _owned (false) { set_deep_copy (other); }
+    blob_t (const blob_t &other) : _owned (false)
+    {
+        set_deep_copy (other);
+    }
     blob_t &operator= (const blob_t &other)
     {
         if (this != &other) {

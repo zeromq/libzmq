@@ -168,7 +168,10 @@ void test_destroy_queue_on_disconnect (const char *bind_address_)
 }
 
 #define TEST_SUITE(name, bind_address)                                         \
-    void test_fair_queue_in_##name () { test_fair_queue_in (bind_address); }   \
+    void test_fair_queue_in_##name ()                                          \
+    {                                                                          \
+        test_fair_queue_in (bind_address);                                     \
+    }                                                                          \
     void test_destroy_queue_on_disconnect_##name ()                            \
     {                                                                          \
         test_destroy_queue_on_disconnect (bind_address);                       \

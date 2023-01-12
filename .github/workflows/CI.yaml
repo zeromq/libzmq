@@ -23,16 +23,6 @@ jobs:
             MSVCYEAR: vs2019
             ARTIFACT_NAME: v142-x64
             ENABLE_DRAFTS: ON
-          - platform: x64
-            configuration: Release
-            os: windows-2016
-            WITH_LIBSODIUM: ON
-            ENABLE_CURVE: ON
-            CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-            MSVCVERSION: "v141"
-            MSVCYEAR: "vs2017"
-            ARTIFACT_NAME: v141-x64
-            ENABLE_DRAFTS: ON
           - os: ubuntu-latest
             BUILD_TYPE: default
             PACKAGES: asciidoc xmlto
@@ -163,11 +153,6 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
-    - name: Add msbuild to PATH 2016
-      uses: microsoft/setup-msbuild@v1.0.2
-      with:
-        vs-version: '[15.0,16.0)'
-      if: matrix.os == 'windows-2016'    
     - uses: actions/checkout@v2
       if: matrix.WITH_LIBSODIUM == 'ON'
       with:
@@ -175,12 +160,12 @@ jobs:
         ref: stable
         path: libsodium
     - name: Compile libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON' && (matrix.os == 'windows-2019' || matrix.os == 'windows-2016')
+      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2019'
       shell: cmd
       working-directory: libsodium
       run: msbuild /v:minimal /p:Configuration=%Configuration%DLL builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
     - name: Copy libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON' && (matrix.os == 'windows-2019' || matrix.os == 'windows-2016')
+      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2019'
       shell: powershell
       working-directory: libsodium
       run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
@@ -189,16 +174,16 @@ jobs:
         path: libzmq
     - run: md build_libzmq
       shell: cmd
-      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
+      if: matrix.os == 'windows-2019'
     - name: build-win
-      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
+      if: matrix.os == 'windows-2019'
       shell: cmd
       working-directory: build_libzmq
       run: |        
         cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
         cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount           
     - name: test
-      if: matrix.os == 'windows-2019' || matrix.os == 'windows-2016'
+      if: matrix.os == 'windows-2019'
       shell: cmd
       working-directory: build_libzmq
       run: ctest -C "%Configuration%"

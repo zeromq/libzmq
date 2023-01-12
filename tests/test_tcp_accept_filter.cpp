@@ -83,7 +83,10 @@ void test_bad_filter_string (const char *const filter_)
 }
 
 #define TEST_BAD_FILTER_STRING(case, filter)                                   \
-    void test_bad_filter_string_##case () { test_bad_filter_string (filter); }
+    void test_bad_filter_string_##case ()                                      \
+    {                                                                          \
+        test_bad_filter_string (filter);                                       \
+    }
 
 TEST_BAD_FILTER_STRING (foo, "foo")
 TEST_BAD_FILTER_STRING (zeros_foo, "0.0.0.0foo")

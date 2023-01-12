@@ -1511,7 +1511,7 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
     while (rc == 0 || errno == EINTR) {
         if (rc == 0) {
             cmd.destination->process_command (cmd);
-	}
+        }
         rc = _mailbox->recv (&cmd, 0);
     }
 
