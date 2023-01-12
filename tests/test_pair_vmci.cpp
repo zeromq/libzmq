@@ -44,14 +44,14 @@ void test_pair_vmci ()
 
     void *sb = test_context_socket (ZMQ_PAIR);
     int rc = zmq_bind (sb, endpoint.c_str ());
-    if (rc < 0 && errno == EAFNOSUPPORT)
+    if (rc < 0 && (errno == EAFNOSUPPORT || errno == EPROTONOSUPPORT))
         TEST_IGNORE_MESSAGE ("VMCI not supported");
     TEST_ASSERT_SUCCESS_ERRNO (rc);
 
     void *sc = test_context_socket (ZMQ_PAIR);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint.c_str ()));
 
-    expect_bounce_fail (sb, sc);
+    bounce (sb, sc);
 
     test_context_socket_close_zero_linger (sc);
     test_context_socket_close_zero_linger (sb);
