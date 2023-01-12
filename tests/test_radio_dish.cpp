@@ -41,7 +41,10 @@
 
 // Helper macro to define the v4/v6 function pairs
 #define MAKE_TEST_V4V6(_test)                                                  \
-    static void _test##_ipv4 () { _test (false); }                             \
+    static void _test##_ipv4 ()                                                \
+    {                                                                          \
+        _test (false);                                                         \
+    }                                                                          \
                                                                                \
     static void _test##_ipv6 ()                                                \
     {                                                                          \

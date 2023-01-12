@@ -333,7 +333,10 @@ void call_poller_wait_all_null_event_fails_event_count_zero (void *poller_)
 }
 
 #define TEST_CASE_FUNC_PARAM(name, func)                                       \
-    void test_##name () { func (name); }
+    void test_##name ()                                                        \
+    {                                                                          \
+        func (name);                                                           \
+    }
 
 TEST_CASE_FUNC_PARAM (call_poller_wait_null_event_fails, test_with_valid_poller)
 TEST_CASE_FUNC_PARAM (call_poller_wait_all_null_event_fails_event_count_nonzero,

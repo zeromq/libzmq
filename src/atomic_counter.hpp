@@ -197,7 +197,10 @@ class atomic_counter_t
 #endif
     }
 
-    integer_t get () const ZMQ_NOEXCEPT { return _value; }
+    integer_t get () const ZMQ_NOEXCEPT
+    {
+        return _value;
+    }
 
   private:
 #if defined ZMQ_ATOMIC_COUNTER_CXX11

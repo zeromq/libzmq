@@ -397,13 +397,13 @@ int zmq::proxy (class socket_base_t *frontend_,
                 frontend_in = (events[i].events & ZMQ_POLLIN) != 0;
                 frontend_out = (events[i].events & ZMQ_POLLOUT) != 0;
             } else
-              //  This 'if' needs to be after check for 'frontend_' in order never
-              //  to be reached in case frontend_==backend_, so we ensure backend_in=false in that case.
-              if (events[i].socket == backend_) {
-                backend_in = (events[i].events & ZMQ_POLLIN) != 0;
-                backend_out = (events[i].events & ZMQ_POLLOUT) != 0;
-            } else if (events[i].socket == control_)
-                control_in = (events[i].events & ZMQ_POLLIN) != 0;
+                //  This 'if' needs to be after check for 'frontend_' in order never
+                //  to be reached in case frontend_==backend_, so we ensure backend_in=false in that case.
+                if (events[i].socket == backend_) {
+                    backend_in = (events[i].events & ZMQ_POLLIN) != 0;
+                    backend_out = (events[i].events & ZMQ_POLLOUT) != 0;
+                } else if (events[i].socket == control_)
+                    control_in = (events[i].events & ZMQ_POLLIN) != 0;
         }
 
 

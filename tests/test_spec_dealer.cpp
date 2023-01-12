@@ -185,7 +185,10 @@ void test_block_on_send_no_peers (const char *bind_address_)
     {                                                                          \
         test_round_robin_out (bind_address);                                   \
     }                                                                          \
-    void test_fair_queue_in_##name () { test_fair_queue_in (bind_address); }   \
+    void test_fair_queue_in_##name ()                                          \
+    {                                                                          \
+        test_fair_queue_in (bind_address);                                     \
+    }                                                                          \
     void test_block_on_send_no_peers_##name ()                                 \
     {                                                                          \
         test_block_on_send_no_peers (bind_address);                            \
