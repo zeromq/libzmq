@@ -112,6 +112,7 @@ void test_ppoll_signals ()
 
         // finish
         test_context_socket_close (socket);
+        teardown_test_context ();
 
         // wait for child
         int status = 0;
@@ -176,6 +177,7 @@ void test_ppoll_signals ()
         // wait before closing socket, so that parent has time to receive
         sleep (1);
         test_context_socket_close (socket);
+        teardown_test_context ();
         _Exit (0);
     }
 #else
