@@ -73,7 +73,17 @@ void recv_string_expect_success_or_eagain (void *socket_,
 void test_ppoll_signals ()
 {
 #ifdef ZMQ_HAVE_PPOLL
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     pid_t child_pid;
+
+    /* Get a random TCP port first */
+    setup_test_context ();
+    void *sb = test_context_socket (ZMQ_REP);
+    bind_loopback (sb, 0, my_endpoint, len);
+    test_context_socket_close (sb);
+    teardown_test_context ();
+
     do {
         child_pid = fork ();
     } while (child_pid == -1); // retry if fork fails
@@ -85,7 +95,7 @@ void test_ppoll_signals ()
         int recv_timeout = 5000;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           socket, ZMQ_RCVTIMEO, &recv_timeout, sizeof (recv_timeout)));
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, "tcp://*:6660"));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (socket, my_endpoint));
         // bind is on the master process to avoid zombie children to hold on to binds
 
         // first send a test message to check whether the signal mask is setup in the child process
@@ -139,8 +149,7 @@ void test_ppoll_signals ()
         TEST_ASSERT_SUCCESS_ERRNO (sigaction (SIGTERM, &sa, NULL));
 
         void *socket = test_context_socket (ZMQ_REP);
-        TEST_ASSERT_SUCCESS_ERRNO (
-          zmq_connect (socket, "tcp://127.0.0.1:6660"));
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (socket, my_endpoint));
 
         zmq_pollitem_t pollitems[] = {
           {socket, 0, ZMQ_POLLIN, 0},
