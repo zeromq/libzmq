@@ -126,11 +126,11 @@ void test_nested_topic_prefixes ()
 
     //  Subscribe to other 3 (nested) topics
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xyz", strlen ("a")));
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xyz", strlen ("xyz")));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xy", strlen ("ab")));
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "xy", strlen ("xy")));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "x", strlen ("abc")));
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "x", strlen ("x")));
 
     TEST_ASSERT_EQUAL_INT (get_subscription_count (subscriber), 6);
     TEST_ASSERT_EQUAL_INT (get_subscription_count (publisher), 6);

@@ -124,7 +124,7 @@ void zmq::raw_engine_t::error (error_reason_t reason_)
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
         terminator.init ();
-        (this->*_process_msg) (&terminator);
+        push_raw_msg_to_session (&terminator);
         terminator.close ();
     }
     stream_engine_base_t::error (reason_);
