@@ -66,8 +66,12 @@ void make_connect_address (char *connect_address_,
                            const int port_,
                            const char *bind_address_)
 {
-    sprintf (connect_address_, "tcp://%s:%i;%s", ipv6_ ? "[::1]" : "127.0.0.1",
-             port_, strrchr (bind_address_, '/') + 1);
+    const size_t addr_len =
+      snprintf (0, 0, "tcp://%s:%i;%s", ipv6_ ? "[::1]" : "127.0.0.1", port_,
+                strrchr (bind_address_, '/') + 1);
+    snprintf (connect_address_, addr_len, "tcp://%s:%i;%s",
+              ipv6_ ? "[::1]" : "127.0.0.1", port_,
+              strrchr (bind_address_, '/') + 1);
 }
 
 void test_multi_connect (int ipv6_)

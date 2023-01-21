@@ -519,25 +519,25 @@ fd_t bind_socket_resolve_port (const char *address_,
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
 
-        size_t endpoint_len = snprintf (0, 0, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP   ? "tcp"
-                 : protocol_ == IPPROTO_UDP ? "udp"
-                 : protocol_ == IPPROTO_WSS ? "wss"
-                                            : "ws",
-                 address_,
-                 af_ == AF_INET
-                   ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
-                   : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
+        size_t endpoint_len = snprintf (
+          0, 0, "%s://%s:%u",
+          protocol_ == IPPROTO_TCP   ? "tcp"
+          : protocol_ == IPPROTO_UDP ? "udp"
+          : protocol_ == IPPROTO_WSS ? "wss"
+                                     : "ws",
+          address_,
+          af_ == AF_INET ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
+                         : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
 
         snprintf (my_endpoint_, endpoint_len, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP   ? "tcp"
-                 : protocol_ == IPPROTO_UDP ? "udp"
-                 : protocol_ == IPPROTO_WSS ? "wss"
-                                            : "ws",
-                 address_,
-                 af_ == AF_INET
-                   ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
-                   : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
+                  protocol_ == IPPROTO_TCP   ? "tcp"
+                  : protocol_ == IPPROTO_UDP ? "udp"
+                  : protocol_ == IPPROTO_WSS ? "wss"
+                                             : "ws",
+                  address_,
+                  af_ == AF_INET
+                    ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
+                    : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
     }
 
     return s_pre;
