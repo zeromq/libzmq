@@ -120,7 +120,7 @@ void test_setsockopt_bindtodevice ()
     TEST_ASSERT_EQUAL_INT8 ('\0', devname[0]);
     TEST_ASSERT_EQUAL_UINT (1, buflen);
 
-    sprintf (devname, "testdev");
+    snprintf (devname, BOUNDDEVBUFSZ * sizeof (char), "testdev");
     buflen = strlen (devname);
 
     TEST_ASSERT_SUCCESS_ERRNO (
