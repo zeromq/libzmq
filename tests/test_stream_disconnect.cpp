@@ -78,8 +78,8 @@ void test_stream_disconnect ()
 
     //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
 #ifdef ZMQ_HAVE_WINDOWS
-    sprintf (connect_endpoint, "tcp://127.0.0.1:%s",
-             strrchr (bind_endpoint, ':') + 1);
+    snprintf (connect_endpoint, MAX_SOCKET_STRING * sizeof (char),
+              "tcp://127.0.0.1:%s", strrchr (bind_endpoint, ':') + 1);
 #else
     strcpy (connect_endpoint, bind_endpoint);
 #endif

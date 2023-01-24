@@ -58,7 +58,7 @@ void test_issue_566 ()
         void *dealer = zmq_socket (ctx2, ZMQ_DEALER);
         //  Leave space for NULL char from sprintf, gcc warning
         char routing_id[11];
-        sprintf (routing_id, "%09d", cycle);
+        snprintf (routing_id, 11 * sizeof (char), "%09d", cycle);
         TEST_ASSERT_SUCCESS_ERRNO (
           zmq_setsockopt (dealer, ZMQ_ROUTING_ID, routing_id, 10));
         int rcvtimeo = 1000;

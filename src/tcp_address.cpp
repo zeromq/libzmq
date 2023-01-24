@@ -129,7 +129,8 @@ static std::string make_address_string (const char *hbuf_,
     pos += hbuf_len;
     memcpy (pos, ipv6_suffix_, sizeof ipv6_suffix_ - 1);
     pos += sizeof ipv6_suffix_ - 1;
-    pos += sprintf (pos, "%d", ntohs (port_));
+    pos += snprintf (pos, max_port_str_length + 1 * sizeof (char), "%d",
+                     ntohs (port_));
     return std::string (buf, pos - buf);
 }
 
