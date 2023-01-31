@@ -81,7 +81,7 @@ struct blob_t
         _size (size_),
         _owned (true)
     {
-        alloc_assert (_data);
+        alloc_assert (!_size || _data);
     }
 
     //  Creates a blob_t of a given size, an initializes content by copying
@@ -91,8 +91,10 @@ struct blob_t
         _size (size_),
         _owned (true)
     {
-        alloc_assert (_data);
-        memcpy (_data, data_, size_);
+        alloc_assert (!size_ || _data);
+        if (size_ && _data) {
+            memcpy (_data, data_, size_);
+        }
     }
 
     //  Creates a blob_t for temporary use that only references a
@@ -126,10 +128,12 @@ struct blob_t
     {
         clear ();
         _data = static_cast<unsigned char *> (malloc (other_._size));
-        alloc_assert (_data);
+        alloc_assert (!other_._size || _data);
         _size = other_._size;
         _owned = true;
-        memcpy (_data, other_._data, _size);
+        if (_size && _data) {
+            memcpy (_data, other_._data, _size);
+        }
     }
 
     //  Sets a blob_t to a copy of a given buffer.
@@ -137,10 +141,12 @@ struct blob_t
     {
         clear ();
         _data = static_cast<unsigned char *> (malloc (size_));
-        alloc_assert (_data);
+        alloc_assert (!size_ || _data);
         _size = size_;
         _owned = true;
-        memcpy (_data, data_, size_);
+        if (size_ && _data) {
+            memcpy (_data, data_, size_);
+        }
     }
 
     //  Empties a blob_t.
