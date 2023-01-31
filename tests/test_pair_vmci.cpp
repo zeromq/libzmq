@@ -38,8 +38,11 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_pair_vmci ()
 {
+    unsigned int cid = VMCISock_GetLocalCID ();
+    if (cid == VMADDR_CID_ANY)
+        TEST_IGNORE_MESSAGE ("VMCI environment unavailable, skipping test");
     std::stringstream s;
-    s << "vmci://" << VMCISock_GetLocalCID () << ":" << 5560;
+    s << "vmci://" << cid << ":" << 5560;
     std::string endpoint = s.str ();
 
     void *sb = test_context_socket (ZMQ_PAIR);
