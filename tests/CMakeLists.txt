@@ -277,7 +277,7 @@ foreach(test ${tests})
     endif()
   else()
     # per-test directories not generated on OS X / Darwin
-    if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang.*")
+    if(NOT APPLE)
       link_directories(${test} PRIVATE "${ZeroMQ_SOURCE_DIR}/../lib")
     endif()
   endif()
