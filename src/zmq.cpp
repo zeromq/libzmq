@@ -1770,10 +1770,12 @@ int zmq_proxy_steerable (void *frontend_,
         errno = EFAULT;
         return -1;
     }
-    return zmq::proxy (static_cast<zmq::socket_base_t *> (frontend_),
-                       static_cast<zmq::socket_base_t *> (backend_),
-                       static_cast<zmq::socket_base_t *> (capture_),
-                       static_cast<zmq::socket_base_t *> (control_));
+#ifdef ZMQ_HAVE_WINDOWS
+    errno = WSAEOPNOTSUPP;
+#else
+    errno = EOPNOTSUPP;
+#endif
+    return -1;
 }
 
 //  The deprecated device functionality

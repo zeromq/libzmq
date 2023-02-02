@@ -32,7 +32,10 @@
 
 #include <stdlib.h>
 
-SETUP_TEARDOWN_TESTCONTEXT
+void setUp ()
+{
+    setup_test_context ();
+}
 
 // This is our server task.
 // It runs a proxy with a single REP socket as both frontend and backend.
@@ -51,7 +54,7 @@ void server_task (void * /*unused_*/)
     send_string_expect_success (control, my_endpoint, 0);
 
     // Use rep as both frontend and backend
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_proxy_steerable (rep, rep, NULL, control));
+    zmq_proxy (rep, rep, NULL);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (rep));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (control));
@@ -82,10 +85,9 @@ void test_proxy_single_socket ()
     send_string_expect_success (req, "msg22", 0);
     recv_string_expect_success (req, "msg22", 0);
 
-    send_string_expect_success (control, "TERMINATE", 0);
-
     test_context_socket_close (control);
     test_context_socket_close (req);
+    teardown_test_context ();
     free (my_endpoint);
 
     zmq_threadclose (server_thread);

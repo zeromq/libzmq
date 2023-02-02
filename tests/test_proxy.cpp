@@ -33,8 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-SETUP_TEARDOWN_TESTCONTEXT
-
 #define CONTENT_SIZE 13
 #define CONTENT_SIZE_MAX 32
 #define ROUTING_ID_SIZE 10
@@ -48,22 +46,15 @@ struct thread_data
     int id;
 };
 
-typedef struct
-{
-    uint64_t msg_in;
-    uint64_t bytes_in;
-    uint64_t msg_out;
-    uint64_t bytes_out;
-} zmq_socket_stats_t;
-
-typedef struct
-{
-    zmq_socket_stats_t frontend;
-    zmq_socket_stats_t backend;
-} zmq_proxy_stats_t;
-
 void *g_clients_pkts_out = NULL;
 void *g_workers_pkts_out = NULL;
+void *control_context = NULL;
+
+void setUp ()
+{
+    setup_test_context ();
+}
+
 
 // Asynchronous client-to-server (DEALER to ROUTER) - pure libzmq
 //
@@ -98,7 +89,7 @@ static void client_task (void *db_)
     TEST_ASSERT_NOT_NULL (client);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (get_test_context (), ZMQ_SUB);
+    void *control = zmq_socket (control_context, ZMQ_SUB);
     TEST_ASSERT_NOT_NULL (control);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -210,13 +201,6 @@ void server_task (void * /*unused_*/)
       zmq_setsockopt (backend, ZMQ_LINGER, &linger, sizeof (linger)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (backend, "inproc://backend"));
 
-    // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (get_test_context (), ZMQ_REP);
-    TEST_ASSERT_NOT_NULL (control);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger)));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (control, "inproc://control_proxy"));
-
     // Launch pool of worker threads, precise number is not critical
     int thread_nbr;
     void *threads[5];
@@ -242,15 +226,13 @@ void server_task (void * /*unused_*/)
     }
 
     // Connect backend to frontend via a proxy
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_proxy_steerable (frontend, backend, NULL, control));
+    zmq_proxy (frontend, backend, NULL);
 
     for (thread_nbr = 0; thread_nbr < QT_WORKERS; thread_nbr++)
         zmq_threadclose (threads[thread_nbr]);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (frontend));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (backend));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (control));
     for (int i = 0; i < QT_CLIENTS; ++i) {
         TEST_ASSERT_SUCCESS_ERRNO (zmq_close (endpoint_receivers[i]));
     }
@@ -270,7 +252,7 @@ static void server_worker (void * /*unused_*/)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (worker, "inproc://backend"));
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (get_test_context (), ZMQ_SUB);
+    void *control = zmq_socket (control_context, ZMQ_SUB);
     TEST_ASSERT_NOT_NULL (control);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
     TEST_ASSERT_SUCCESS_ERRNO (
@@ -332,82 +314,6 @@ static void server_worker (void * /*unused_*/)
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (control));
 }
 
-uint64_t recv_stat (void *sock_, bool last_)
-{
-    uint64_t res;
-    zmq_msg_t stats_msg;
-
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&stats_msg));
-    TEST_ASSERT_EQUAL_INT (sizeof (uint64_t),
-                           zmq_recvmsg (sock_, &stats_msg, 0));
-    memcpy (&res, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&stats_msg));
-
-    int more;
-    size_t moresz = sizeof more;
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_getsockopt (sock_, ZMQ_RCVMORE, &more, &moresz));
-    TEST_ASSERT_TRUE ((last_ && !more) || (!last_ && more));
-
-    return res;
-}
-
-// Utility function to interrogate the proxy:
-
-void check_proxy_stats (void *control_proxy_)
-{
-    zmq_proxy_stats_t total_stats;
-
-    send_string_expect_success (control_proxy_, "STATISTICS", 0);
-
-    // first frame of the reply contains FRONTEND stats:
-    total_stats.frontend.msg_in = recv_stat (control_proxy_, false);
-    total_stats.frontend.bytes_in = recv_stat (control_proxy_, false);
-    total_stats.frontend.msg_out = recv_stat (control_proxy_, false);
-    total_stats.frontend.bytes_out = recv_stat (control_proxy_, false);
-
-    // second frame of the reply contains BACKEND stats:
-    total_stats.backend.msg_in = recv_stat (control_proxy_, false);
-    total_stats.backend.bytes_in = recv_stat (control_proxy_, false);
-    total_stats.backend.msg_out = recv_stat (control_proxy_, false);
-    total_stats.backend.bytes_out = recv_stat (control_proxy_, true);
-
-    // check stats
-
-    if (is_verbose) {
-        printf (
-          "frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          static_cast<unsigned long int> (total_stats.frontend.msg_in),
-          static_cast<unsigned long int> (total_stats.frontend.bytes_in),
-          static_cast<unsigned long int> (total_stats.frontend.msg_out),
-          static_cast<unsigned long int> (total_stats.frontend.bytes_out));
-        printf (
-          "backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-          static_cast<unsigned long int> (total_stats.backend.msg_in),
-          static_cast<unsigned long int> (total_stats.backend.bytes_in),
-          static_cast<unsigned long int> (total_stats.backend.msg_out),
-          static_cast<unsigned long int> (total_stats.backend.bytes_out));
-
-        printf ("clients sent out %d requests\n",
-                zmq_atomic_counter_value (g_clients_pkts_out));
-        printf ("workers sent out %d replies\n",
-                zmq_atomic_counter_value (g_workers_pkts_out));
-    }
-    TEST_ASSERT_EQUAL_UINT (
-      (unsigned) zmq_atomic_counter_value (g_clients_pkts_out),
-      total_stats.frontend.msg_in);
-    TEST_ASSERT_EQUAL_UINT (
-      (unsigned) zmq_atomic_counter_value (g_workers_pkts_out),
-      total_stats.frontend.msg_out);
-    TEST_ASSERT_EQUAL_UINT (
-      (unsigned) zmq_atomic_counter_value (g_workers_pkts_out),
-      total_stats.backend.msg_in);
-    TEST_ASSERT_EQUAL_UINT (
-      (unsigned) zmq_atomic_counter_value (g_clients_pkts_out),
-      total_stats.backend.msg_out);
-}
-
-
 // The main thread simply starts several clients and a server, and then
 // waits for the server to finish.
 
@@ -415,20 +321,15 @@ void test_proxy ()
 {
     g_clients_pkts_out = zmq_atomic_counter_new ();
     g_workers_pkts_out = zmq_atomic_counter_new ();
+    control_context = zmq_ctx_new ();
+    TEST_ASSERT_NOT_NULL (control_context);
 
     // Control socket receives terminate command from main over inproc
-    void *control = test_context_socket (ZMQ_PUB);
+    void *control = zmq_socket (control_context, ZMQ_PUB);
     int linger = 0;
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger)));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (control, "inproc://control"));
-
-    // Control socket receives terminate command from main over inproc
-    void *control_proxy = test_context_socket (ZMQ_REQ);
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (control_proxy, ZMQ_LINGER, &linger, sizeof (linger)));
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_bind (control_proxy, "inproc://control_proxy"));
 
     void *threads[QT_CLIENTS + 1];
     struct thread_data databags[QT_CLIENTS + 1];
@@ -446,22 +347,18 @@ void test_proxy ()
     msleep (500); // Wait for all clients and workers to STOP
 
     if (is_verbose)
-        printf ("retrieving stats from the proxy\n");
-    check_proxy_stats (control_proxy);
-
-    if (is_verbose)
         printf ("shutting down all clients and server workers\n");
     send_string_expect_success (control, "TERMINATE", 0);
 
-    if (is_verbose)
-        printf ("shutting down the proxy\n");
-    send_string_expect_success (control_proxy, "TERMINATE", 0);
+    msleep (500); // Wait for all clients and workers to terminate
 
-    test_context_socket_close (control);
-    test_context_socket_close (control_proxy);
+    teardown_test_context ();
 
     for (int i = 0; i < QT_CLIENTS + 1; i++)
         zmq_threadclose (threads[i]);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_close (control));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (control_context));
 }
 
 int main (void)
