@@ -172,7 +172,7 @@ int wsa_error_to_errno (int errcode_);
 //  Provides convenient way to check whether memory allocation have succeeded.
 #define alloc_assert(x)                                                        \
     do {                                                                       \
-        if (unlikely (!x)) {                                                   \
+        if (unlikely (!(x))) {                                                 \
             fprintf (stderr, "FATAL ERROR: OUT OF MEMORY (%s:%d)\n", __FILE__, \
                      __LINE__);                                                \
             fflush (stderr);                                                   \
