@@ -195,7 +195,7 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 #endif
         if (rc != 0) {
             assert_success_or_recoverable (_fd, rc);
-            error (connection_error);
+            error (protocol_error);
             return;
         }
 
