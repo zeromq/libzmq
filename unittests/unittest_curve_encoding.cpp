@@ -84,13 +84,14 @@ void test_roundtrip (zmq::msg_t *msg_)
         TEST_ASSERT_EQUAL_UINT8_ARRAY (&original[0], msg_->data (),
                                        original.size ());
     }
-#else
-    TEST_IGNORE_MESSAGE ("CURVE support is disabled");
 #endif
 }
 
 void test_roundtrip_empty ()
 {
+#ifndef ZMQ_HAVE_CURVE
+    TEST_IGNORE_MESSAGE ("CURVE support is disabled");
+#endif
     zmq::msg_t msg;
     msg.init ();
 
@@ -101,6 +102,9 @@ void test_roundtrip_empty ()
 
 void test_roundtrip_small ()
 {
+#ifndef ZMQ_HAVE_CURVE
+    TEST_IGNORE_MESSAGE ("CURVE support is disabled");
+#endif
     zmq::msg_t msg;
     msg.init_size (32);
     memcpy (msg.data (), "0123456789ABCDEF0123456789ABCDEF", 32);
@@ -112,6 +116,9 @@ void test_roundtrip_small ()
 
 void test_roundtrip_large ()
 {
+#ifndef ZMQ_HAVE_CURVE
+    TEST_IGNORE_MESSAGE ("CURVE support is disabled");
+#endif
     zmq::msg_t msg;
     msg.init_size (2048);
     for (size_t pos = 0; pos < 2048; pos += 32) {
@@ -126,6 +133,9 @@ void test_roundtrip_large ()
 
 void test_roundtrip_empty_more ()
 {
+#ifndef ZMQ_HAVE_CURVE
+    TEST_IGNORE_MESSAGE ("CURVE support is disabled");
+#endif
     zmq::msg_t msg;
     msg.init ();
     msg.set_flags (zmq::msg_t::more);

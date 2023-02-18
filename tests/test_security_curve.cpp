@@ -27,7 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// TODO remove this workaround for handling libsodium/tweetnacl
+// TODO remove this workaround for handling libsodium
 
 //  To define SIZE_MAX with older compilers
 #define __STDC_LIMIT_MACROS
@@ -38,18 +38,14 @@
 #include "../src/platform.hpp"
 #endif
 
-#ifndef ZMQ_USE_TWEETNACL
-#define ZMQ_USE_TWEETNACL
-#endif
-#ifdef ZMQ_USE_LIBSODIUM
-#undef ZMQ_USE_LIBSODIUM
+#ifndef ZMQ_USE_LIBSODIUM
+#define ZMQ_USE_LIBSODIUM
 #endif
 
 #include "testutil.hpp"
 #include "testutil_security.hpp"
 #include <unity.h>
 
-#include "../src/tweetnacl.h"
 #include "../src/curve_client_tools.hpp"
 #include "../src/random.hpp"
 

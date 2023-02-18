@@ -43,9 +43,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(ZMQ_USE_TWEETNACL)
-#include "tweetnacl.h"
-#elif defined(ZMQ_USE_LIBSODIUM)
+#if defined(ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
 #endif
 
@@ -211,7 +209,7 @@ error_inval:
 }
 
 //  --------------------------------------------------------------------------
-//  Generate a public/private keypair with tweetnacl or libsodium.
+//  Generate a public/private keypair with libsodium.
 //  Generated keys will be 40 byte z85-encoded strings.
 //  Returns 0 on success, -1 on failure, setting errno.
 //  Sets errno = ENOTSUP in the absence of a CURVE library.
@@ -243,7 +241,7 @@ int zmq_curve_keypair (char *z85_public_key_, char *z85_secret_key_)
 }
 
 //  --------------------------------------------------------------------------
-//  Derive the public key from a private key using tweetnacl or libsodium.
+//  Derive the public key from a private key using libsodium.
 //  Derived key will be 40 byte z85-encoded string.
 //  Returns 0 on success, -1 on failure, setting errno.
 //  Sets errno = ENOTSUP in the absence of a CURVE library.

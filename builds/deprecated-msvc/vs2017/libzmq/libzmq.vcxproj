@@ -66,9 +66,6 @@
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
-  <PropertyGroup>
-    <Option-tweet>true</Option-tweet>
-  </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />
@@ -159,7 +156,6 @@
     <ClInclude Include="..\..\..\..\src\timers.hpp" />
     <ClInclude Include="..\..\..\..\src\thread.hpp" />
     <ClInclude Include="..\..\..\..\src\trie.hpp" />
-    <ClInclude Include="..\..\..\..\src\tweetnacl.h" />
     <ClInclude Include="..\..\..\..\src\udp_address.hpp" />
     <ClInclude Include="..\..\..\..\src\udp_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_decoder.hpp" />
@@ -257,9 +253,6 @@
     <ClCompile Include="..\..\..\..\src\thread.cpp" />
     <ClCompile Include="..\..\..\..\src\timers.cpp" />
     <ClCompile Include="..\..\..\..\src\trie.cpp" />
-    <ClCompile Include="..\..\..\..\src\tweetnacl.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\udp_address.cpp" />
     <ClCompile Include="..\..\..\..\src\udp_engine.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />

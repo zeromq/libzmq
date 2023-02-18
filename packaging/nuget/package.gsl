@@ -25,7 +25,7 @@
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <developmentDependency>false</developmentDependency>
         <description>The 0MQ lightweight messaging kernel is a library which extends the standard socket interfaces with features traditionally provided by specialised messaging middleware products. 0MQ sockets provide an abstraction of asynchronous message queues, multiple messaging patterns, message filtering (subscriptions), seamless access to multiple transport protocols and more.</description>
-        <summary>The 0MQ lightweight messaging kernel, with tweetnacl integrated, packaged for specific Visual Studio compiler.</summary>
+        <summary>The 0MQ lightweight messaging kernel, packaged for specific Visual Studio compiler.</summary>
         <releaseNotes>https://raw.github.com/zeromq/libzmq/master/NEWS</releaseNotes>
         <copyright>GNU Lesser GPL v3</copyright>
         <tags>native, libzmq, zmq, 0MQ, messaging, sockets, C++</tags>
@@ -125,8 +125,6 @@
   <!-- general -->
   <ItemDefinitionGroup>
     <ClCompile>
-      <!-- ZMQ_USE_TWEETNACL defined in packaged builds and must be defined for package consumer. -->
-      <PreprocessorDefinitions>ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$\(MSBuildThisFileDirectory)include\\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

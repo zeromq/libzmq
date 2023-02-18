@@ -283,12 +283,6 @@ src_libzmq_la_SOURCES += \
 	external/wepoll/wepoll.h
 endif
 
-if USE_TWEETNACL
-src_libzmq_la_SOURCES += \
-	src/tweetnacl.c \
-	src/tweetnacl.h
-endif
-
 if HAVE_WS
 src_libzmq_la_SOURCES += \
 	src/ws_address.cpp \
@@ -846,11 +840,6 @@ tests_test_security_curve_SOURCES = \
 	src/random.cpp \
 	src/err.hpp \
 	src/err.cpp
-
-if USE_TWEETNACL
-tests_test_security_curve_SOURCES += \
-	src/tweetnacl.c
-endif
 
 tests_test_security_curve_LDADD = \
         ${TESTUTIL_LIBS} src/libzmq.la $(LIBUNWIND_LIBS) $(LIBBSD_LIBS)

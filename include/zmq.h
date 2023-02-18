@@ -566,7 +566,7 @@ zmq_z85_encode (char *dest_, const uint8_t *data_, size_t size_);
 /*  Decode data with Z85 encoding. Returns decoded data                       */
 ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest_, const char *string_);
 
-/*  Generate z85-encoded public and private keypair with tweetnacl/libsodium. */
+/*  Generate z85-encoded public and private keypair with libsodium. */
 /*  Returns 0 on success.                                                     */
 ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key_, char *z85_secret_key_);
 

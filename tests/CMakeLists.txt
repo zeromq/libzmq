@@ -260,7 +260,7 @@ endif()
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1
   if(ZMQ_HAVE_CURVE AND ${test} MATCHES test_security_curve)
-    add_executable(${test} ${test}.cpp "../src/tweetnacl.c" "../src/err.cpp" "../src/random.cpp" "../src/clock.cpp")
+    add_executable(${test} ${test}.cpp "../src/err.cpp" "../src/random.cpp" "../src/clock.cpp")
   else()
     add_executable(${test} ${test}.cpp)
   endif()
@@ -322,11 +322,6 @@ endif()
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
   if(ZMQ_HAVE_CURVE)
     set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
-  endif()
-
-  # add additional required flags ZMQ_USE_TWEETNACL will already be defined when not using sodium
-  if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
-    target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
   endif()
 endif()
 

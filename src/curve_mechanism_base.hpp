@@ -32,9 +32,7 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#if defined(ZMQ_USE_TWEETNACL)
-#include "tweetnacl.h"
-#elif defined(ZMQ_USE_LIBSODIUM)
+#if defined(ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
 #endif
 
