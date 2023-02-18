@@ -750,22 +750,11 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
-ZMQ_RECONNECT_IVL_MAX: Set maximum reconnection interval
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX' option shall set the maximum reconnection interval
-for the specified 'socket'.  This is the maximum period 0MQ shall wait between
-attempts to reconnect. On each reconnect attempt, the previous interval shall be
-doubled until ZMQ_RECONNECT_IVL_MAX is reached. This allows for exponential
-backoff strategy. Default value means no exponential backoff is performed and
-reconnect interval calculations are only based on ZMQ_RECONNECT_IVL.
-
-NOTE:  Values less than ZMQ_RECONNECT_IVL will be ignored.
-
-[horizontal]
-Option value type:: int
-Option value unit:: milliseconds
-Default value:: 0 (only use ZMQ_RECONNECT_IVL)
-Applicable socket types:: all, only for connection-oriented transports
+ZMQ_RECONNECT_IVL_MAX: DEPRECATED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_IVL_MAX option is an empty stub that only returns an
+*EOPNOTSUPP* error, as the author did not provide a relicense agreement for
+the Mozilla Public License v2 relicense of libzmq.
 
 
 ZMQ_RECONNECT_STOP: Set condition where reconnection will stop
@@ -784,7 +773,7 @@ connection attempts to non-0MQ sockets.  Note that when specifying this option
 you may also want to set `ZMQ_HANDSHAKE_IVL` -- the default handshake interval
 is 30000 (30 seconds), which is typically too large.
 
-The 'ZMQ_RECONNECT_STOP_AFTER_DISCONNECT' option will stop reconnection when 
+The 'ZMQ_RECONNECT_STOP_AFTER_DISCONNECT' option will stop reconnection when
 zmq_disconnect() has been called. This can be useful when the user's request failed
 (server not ready), as the socket does not need to continue to reconnect after
 user disconnect actively.
