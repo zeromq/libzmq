@@ -22,6 +22,9 @@ stamp-h1
 ## CMake
 cmake-build-debug/
 build/
+## Zig Build
+zig-out/
+zig-cache/
 ## Android
 builds/android/prefix
 ## IntelliJ

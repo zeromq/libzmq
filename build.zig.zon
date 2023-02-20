@@ -1,0 +1,6 @@
+.{
+    .name = "libzmq",
+    .version = "4.3.5",
+
+    .dependencies = .{},
+}
