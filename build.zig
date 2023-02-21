@@ -1,9 +1,14 @@
+//! Requires zig version: 0.11 or higher
+/// build: zig build -Doptimize=ReleaseFast -Dshared (or -Dshared=true/false)
 const std = @import("std");
 const Builder = std.Build.Builder;
 
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+
+    // Options - static library [default]
+    const shared = b.option(bool, "shared", "Build the Shared Library [default: false]") orelse false;
 
     // Generating "platform.hpp"
     const config_header = if (!target.isWindows()) b.addConfigHeader(.{
@@ -38,13 +43,23 @@ pub fn build(b: *Builder) void {
         .ZMQ_HAVE_CURVE = 1,
         .ZMQ_USE_TWEETNACL = 1,
         .ZMQ_USE_SELECT = 1,
+        .ZMQ_USE_CV_IMPL_STL11 = 1,
+        .ZMQ_CACHELINE_SIZE = 1,
+        .ZMQ_IOTHREAD_POLLER_USE_SELECT = 1,
+        .ZMQ_POLL_BASED_ON_SELECT = 1,
+        .ZMQ_USE_BUILTIN_SHA1 = 1,
+        .HAVE_STRNLEN = 1,
     });
 
     var sources_cpp = std.ArrayList([]const u8).init(b.allocator);
     sources_cpp.appendSlice(sources) catch @panic("slice error");
-    if (target.getOsTag() == .windows) sources_cpp.appendSlice(msvc_sources) catch @panic("slice error");
+    //if (target.getOsTag() == .windows) sources_cpp.appendSlice(msvc_sources) catch @panic("slice error");
 
-    const libzmq = b.addSharedLibrary(.{
+    const libzmq = if (!shared) b.addStaticLibrary(.{
+        .name = "zmq",
+        .target = target,
+        .optimize = optimize,
+    }) else b.addSharedLibrary(.{
         .name = "zmq",
         .target = target,
         .version = .{
@@ -56,8 +71,7 @@ pub fn build(b: *Builder) void {
     });
     if (optimize == .Debug or optimize == .ReleaseSafe)
         libzmq.bundle_compiler_rt = true
-    else
-        libzmq.want_lto = true;
+    else if (shared) libzmq.want_lto = true;
     libzmq.addConfigHeader(config_header);
     libzmq.addIncludePath("include");
     libzmq.addIncludePath("src");
@@ -68,6 +82,7 @@ pub fn build(b: *Builder) void {
     libzmq.linkLibCpp(); // LLVM libc++ (builtin)
     libzmq.linkLibC(); // OS libc
     libzmq.install();
+    libzmq.installHeadersDirectory("include", "zmq");
 }
 
 const cxxflags: []const []const u8 = &.{
@@ -143,7 +158,6 @@ const sources: []const []const u8 = &.{
     "src/decoder_allocators.cpp",
     "src/socket_poller.cpp",
     "src/timers.cpp",
-    //    "src/config.hpp",
     "src/radio.cpp",
     "src/dish.cpp",
     "src/udp_engine.cpp",
@@ -157,150 +171,4 @@ const sources: []const []const u8 = &.{
 
     //"external/wepoll/wepoll.c",
     "external/sha1/sha1.c",
-};
-const msvc_sources: []const []const u8 = &.{
-    // at least for VS, the header files must also be listed
-    "src/address.hpp",
-    "src/array.hpp",
-    "src/atomic_counter.hpp",
-    "src/atomic_ptr.hpp",
-    "src/blob.hpp",
-    "src/channel.hpp",
-    "src/client.hpp",
-    "src/clock.hpp",
-    "src/command.hpp",
-    "src/compat.hpp",
-    "src/condition_variable.hpp",
-    "src/config.hpp",
-    "src/ctx.hpp",
-    "src/curve_client.hpp",
-    "src/curve_client_tools.hpp",
-    "src/curve_mechanism_base.hpp",
-    "src/curve_server.hpp",
-    "src/dbuffer.hpp",
-    "src/dealer.hpp",
-    "src/decoder.hpp",
-    "src/decoder_allocators.hpp",
-    "src/devpoll.hpp",
-    "src/dgram.hpp",
-    "src/dish.hpp",
-    "src/dist.hpp",
-    "src/encoder.hpp",
-    "src/endpoint.hpp",
-    "src/epoll.hpp",
-    "src/err.hpp",
-    "src/fd.hpp",
-    "src/fq.hpp",
-    "src/gather.hpp",
-    "src/generic_mtrie.hpp",
-    "src/generic_mtrie_impl.hpp",
-    "src/gssapi_client.hpp",
-    "src/gssapi_mechanism_base.hpp",
-    "src/gssapi_server.hpp",
-    "src/i_decoder.hpp",
-    "src/i_encoder.hpp",
-    "src/i_engine.hpp",
-    "src/i_mailbox.hpp",
-    "src/i_poll_events.hpp",
-    "src/io_object.hpp",
-    "src/io_thread.hpp",
-    "src/ip.hpp",
-    "src/ipc_address.hpp",
-    "src/ipc_connecter.hpp",
-    "src/ipc_listener.hpp",
-    "src/kqueue.hpp",
-    "src/lb.hpp",
-    "src/likely.hpp",
-    "src/macros.hpp",
-    "src/mailbox.hpp",
-    "src/mailbox_safe.hpp",
-    "src/mechanism.hpp",
-    "src/mechanism_base.hpp",
-    "src/metadata.hpp",
-    "src/msg.hpp",
-    "src/mtrie.hpp",
-    "src/mutex.hpp",
-    "src/norm_engine.hpp",
-    "src/null_mechanism.hpp",
-    "src/object.hpp",
-    "src/options.hpp",
-    "src/own.hpp",
-    "src/pair.hpp",
-    "src/peer.hpp",
-    "src/pgm_receiver.hpp",
-    "src/pgm_sender.hpp",
-    "src/pgm_socket.hpp",
-    "src/pipe.hpp",
-    "src/plain_client.hpp",
-    "src/plain_common.hpp",
-    "src/plain_server.hpp",
-    "src/poll.hpp",
-    "src/poller.hpp",
-    "src/poller_base.hpp",
-    "src/polling_util.hpp",
-    "src/pollset.hpp",
-    "src/precompiled.hpp",
-    "src/proxy.hpp",
-    "src/pub.hpp",
-    "src/pull.hpp",
-    "src/push.hpp",
-    "src/radio.hpp",
-    "src/random.hpp",
-    "src/raw_decoder.hpp",
-    "src/raw_encoder.hpp",
-    "src/raw_engine.hpp",
-    "src/reaper.hpp",
-    "src/rep.hpp",
-    "src/req.hpp",
-    "src/router.hpp",
-    "src/scatter.hpp",
-    "src/secure_allocator.hpp",
-    "src/select.hpp",
-    "src/server.hpp",
-    "src/session_base.hpp",
-    "src/signaler.hpp",
-    "src/socket_base.hpp",
-    "src/socket_poller.hpp",
-    "src/socks.hpp",
-    "src/socks_connecter.hpp",
-    "src/stdint.hpp",
-    "src/stream.hpp",
-    "src/stream_engine_base.hpp",
-    "src/stream_connecter_base.hpp",
-    "src/stream_connecter_base.cpp",
-    "src/stream_listener_base.hpp",
-    "src/stream_listener_base.cpp",
-    "src/sub.hpp",
-    "src/tcp.hpp",
-    "src/tcp_address.hpp",
-    "src/tcp_connecter.hpp",
-    "src/tcp_listener.hpp",
-    "src/thread.hpp",
-    "src/timers.hpp",
-    "src/tipc_address.hpp",
-    "src/tipc_connecter.hpp",
-    "src/tipc_listener.hpp",
-    "src/trie.hpp",
-    "src/udp_address.hpp",
-    "src/udp_engine.hpp",
-    "src/v1_decoder.hpp",
-    "src/v1_encoder.hpp",
-    "src/v2_decoder.hpp",
-    "src/v2_encoder.hpp",
-    "src/v3_1_encoder.hpp",
-    "src/v2_protocol.hpp",
-    "src/vmci.hpp",
-    "src/vmci_address.hpp",
-    "src/vmci_connecter.hpp",
-    "src/vmci_listener.hpp",
-    "src/windows.hpp",
-    "src/wire.hpp",
-    "src/xpub.hpp",
-    "src/xsub.hpp",
-    "src/ypipe.hpp",
-    "src/ypipe_base.hpp",
-    "src/ypipe_conflate.hpp",
-    "src/yqueue.hpp",
-    "src/zap_client.hpp",
-    "src/zmtp_engine.hpp",
 };
