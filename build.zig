@@ -102,7 +102,7 @@ pub fn build(b: *Builder) void {
     libzmq.addConfigHeader(config_header);
     libzmq.addIncludePath("include");
     libzmq.addIncludePath("src");
-    libzmq.addIncludePath("src/external");
+    libzmq.addIncludePath("external");
     libzmq.addIncludePath(config_header.include_path);
     libzmq.addCSourceFiles(cxxSources, cxxFlags);
     libzmq.addCSourceFiles(extraCsources, cFlags);
