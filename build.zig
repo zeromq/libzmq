@@ -82,7 +82,7 @@ pub fn build(b: *Builder) void {
     libzmq.linkLibCpp(); // LLVM libc++ (builtin)
     libzmq.linkLibC(); // OS libc
     libzmq.install();
-    libzmq.installHeadersDirectory("include", "zmq");
+    libzmq.installHeadersDirectory("include", "");
 }
 
 const cxxflags: []const []const u8 = &.{
