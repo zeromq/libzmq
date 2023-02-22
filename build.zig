@@ -17,29 +17,37 @@ pub fn build(b: *Builder) void {
             .include_path = "platform.hpp",
         }, .{
             .ZMQ_HAVE_LINUX = {},
-            .ZMQ_USE_EPOLL = 1,
-            .ZMQ_HAVE_CURVE = 1,
-            .ZMQ_USE_TWEETNACL = 1,
-            .ZMQ_HAVE_EVENTFD = 1,
-            .ZMQ_HAVE_IFADDRS = 1,
-            .ZMQ_HAVE_SOCK_CLOEXEC = 1,
-            .ZMQ_HAVE_SO_BINDTODEVICE = 1,
-            .ZMQ_HAVE_SO_KEEPALIVED = 1,
-            .ZMQ_HAVE_SO_PEERCRED = 1,
-            .ZMQ_HAVE_TCP_KEEPCNT = 1,
-            .ZMQ_HAVE_TCP_KEEPIDLE = 1,
-            .ZMQ_HAVE_TCP_KEEPINTVL = 1,
-            .ZMQ_HAVE_UIO = 1,
-            .ZMQ_HAVE_STRLCPY = 1,
-            .ZMQ_USE_BUILTIN_SHA1 = 1,
-            .HAVE_FORK = 1,
+            .ZMQ_HAVE_PPOLL = {},
+            .ZMQ_USE_EPOLL = {},
+            .ZMQ_HAVE_CURVE = {},
+            .ZMQ_USE_TWEETNACL = {},
+            .ZMQ_HAVE_EVENTFD = {},
+            .ZMQ_HAVE_IFADDRS = {},
+            .ZMQ_HAVE_NOEXCEPT = {},
+            .ZMQ_HAVE_SOCK_CLOEXEC = {},
+            .ZMQ_HAVE_SO_BINDTODEVICE = {},
+            .ZMQ_HAVE_SO_KEEPALIVED = {},
+            .ZMQ_HAVE_SO_PEERCRED = {},
+            .ZMQ_HAVE_TCP_KEEPCNT = {},
+            .ZMQ_HAVE_TCP_KEEPIDLE = {},
+            .ZMQ_HAVE_TCP_KEEPINTVL = {},
+            .ZMQ_HAVE_UIO = {},
+            .ZMQ_CLOCK_GETTIME = {},
+            .ZMQ_HAVE_STRLCPY = {},
+            .ZMQ_USE_BUILTIN_SHA1 = {},
+            .HAVE_FORK = {},
+            .ZMQ_HAVE_MKDTEMP = {},
             .HAVE_POSIX_MEMALIGN = 1,
-            .HAVE_ACCEPT4 = 1,
-            .HAVE_STRNLEN = 1,
-            .ZMQ_IOTHREAD_POLLER_USE_EPOLL = 1,
-            .ZMQ_USE_CV_IMPL_STL11 = 1,
-            .ZMQ_POLL_BASED_ON_POLL = 1,
+            .HAVE_ACCEPT4 = {},
+            .HAVE_IF_NAMETOINDEX = {},
+            .HAVE_STRNLEN = {},
+            .ZMQ_IOTHREAD_POLLER_USE_EPOLL = {},
+            .ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC = {},
+            .ZMQ_USE_CV_IMPL_STL11 = {},
+            .ZMQ_HAVE_IPC = {},
+            .ZMQ_POLL_BASED_ON_POLL = {},
             .ZMQ_CACHELINE_SIZE = 64,
+            .ZMQ_USE_RADIX_TREE = {},
         }),
         .windows => b.addConfigHeader(.{
             .style = .blank,
@@ -98,35 +106,83 @@ pub fn build(b: *Builder) void {
     });
     if (optimize == .Debug or optimize == .ReleaseSafe)
         libzmq.bundle_compiler_rt = true
-    else if (shared) libzmq.want_lto = true;
+    else if (shared) {
+        //libzmq.want_lto = true;
+        libzmq.force_pic = true;
+    }
+    libzmq.strip = true;
     libzmq.addConfigHeader(config_header);
     libzmq.addIncludePath("include");
     libzmq.addIncludePath("src");
     libzmq.addIncludePath("external");
     libzmq.addIncludePath(config_header.include_path);
-    libzmq.addCSourceFiles(cxxSources, cxxFlags);
+    libzmq.addCSourceFiles(switch (target.getOsTag()) {
+        .windows => cxxSources ++ [_][]const u8{"src/select.cpp"},
+        .macos => cxxSources ++ [_][]const u8{"src/kqeue.cpp"},
+        .linux => cxxSources ++ [_][]const u8{"src/epoll.cpp"},
+        else => cxxSources,
+    }, cxxFlags);
     libzmq.addCSourceFiles(extraCsources, cFlags);
     if (target.isWindows()) {
         libzmq.addCSourceFile("external/wepoll/wepoll.c", cFlags);
+        // no pkg-config
+        libzmq.linkSystemLibraryName("kernel32");
+        libzmq.linkSystemLibraryName("ntdll");
         libzmq.linkSystemLibraryName("ws2_32");
         libzmq.linkSystemLibraryName("rpcrt4");
         libzmq.linkSystemLibraryName("iphlpapi");
-        //libzmq.linkSystemLibraryName("rt");
+    } else if (target.isDarwin()) {
+        // TODO
+        //libzmq.linkFramework("");
+    } else {
+        libzmq.linkSystemLibrary("rt");
     }
-    libzmq.linkLibCpp(); // LLVM libc++ (builtin)
-    libzmq.linkLibC(); // OS libc
+    // TODO: No support MSVC libc
+    if (target.getAbi() != .msvc) {
+        libzmq.linkLibCpp(); // LLVM libc++ (builtin)
+        libzmq.linkLibC(); // OS libc
+    }
     libzmq.install();
     libzmq.installHeadersDirectory("include", "");
 }
 
 const cFlags: []const []const u8 = &.{
-    "-Oz",
+    "-O3",
     "-Wall",
     "-pedantic",
+    "-Wno-long-long",
+    "-Wno-uninitialized",
+    "-fno-sanitize=all",
 };
-const cxxFlags = cFlags ++ [_][]const u8{"-std=c++14"};
+const cxxFlags = cFlags;
 const cxxSources: []const []const u8 = &.{
-    "src/kqueue.cpp",
+    "src/address.cpp",
+    "src/channel.cpp",
+    "src/client.cpp",
+    "src/clock.cpp",
+    "src/ctx.cpp",
+    "src/curve_client.cpp",
+    "src/curve_mechanism_base.cpp",
+    "src/curve_server.cpp",
+    "src/dealer.cpp",
+    "src/devpoll.cpp",
+    "src/dgram.cpp",
+    "src/dish.cpp",
+    "src/dist.cpp",
+    "src/endpoint.cpp",
+    "src/err.cpp",
+    "src/fq.cpp",
+    "src/gather.cpp",
+    "src/gssapi_mechanism_base.cpp",
+    "src/gssapi_client.cpp",
+    "src/gssapi_server.cpp",
+    "src/io_object.cpp",
+    "src/io_thread.cpp",
+    "src/ip.cpp",
+    "src/ip_resolver.cpp",
+    "src/ipc_address.cpp",
+    "src/ipc_connecter.cpp",
+    "src/ipc_listener.cpp",
     "src/lb.cpp",
     "src/mailbox.cpp",
     "src/mailbox_safe.cpp",
@@ -136,10 +192,10 @@ const cxxSources: []const []const u8 = &.{
     "src/msg.cpp",
     "src/mtrie.cpp",
     "src/norm_engine.cpp",
+    "src/null_mechanism.cpp",
     "src/object.cpp",
     "src/options.cpp",
     "src/own.cpp",
-    "src/null_mechanism.cpp",
     "src/pair.cpp",
     "src/peer.cpp",
     "src/pgm_receiver.cpp",
@@ -152,19 +208,22 @@ const cxxSources: []const []const u8 = &.{
     "src/poller_base.cpp",
     "src/polling_util.cpp",
     "src/pollset.cpp",
+    "src/precompiled.cpp",
     "src/proxy.cpp",
     "src/pub.cpp",
     "src/pull.cpp",
     "src/push.cpp",
+    "src/radio.cpp",
+    "src/radix_tree.cpp",
     "src/random.cpp",
-    "src/raw_encoder.cpp",
     "src/raw_decoder.cpp",
+    "src/raw_encoder.cpp",
     "src/raw_engine.cpp",
     "src/reaper.cpp",
     "src/rep.cpp",
     "src/req.cpp",
     "src/router.cpp",
-    "src/select.cpp",
+    "src/scatter.cpp",
     "src/server.cpp",
     "src/session_base.cpp",
     "src/signaler.cpp",
@@ -172,6 +231,8 @@ const cxxSources: []const []const u8 = &.{
     "src/socks.cpp",
     "src/socks_connecter.cpp",
     "src/stream.cpp",
+    "src/stream_connecter_base.cpp",
+    "src/stream_listener_base.cpp",
     "src/stream_engine_base.cpp",
     "src/sub.cpp",
     "src/tcp.cpp",
@@ -179,29 +240,17 @@ const cxxSources: []const []const u8 = &.{
     "src/tcp_connecter.cpp",
     "src/tcp_listener.cpp",
     "src/thread.cpp",
+    "src/timers.cpp",
     "src/trie.cpp",
-    "src/radix_tree.cpp",
+    "src/udp_address.cpp",
+    "src/udp_engine.cpp",
     "src/v1_decoder.cpp",
-    "src/v1_encoder.cpp",
     "src/v2_decoder.cpp",
+    "src/v1_encoder.cpp",
     "src/v2_encoder.cpp",
-    "src/v3_1_encoder.cpp",
     "src/xpub.cpp",
     "src/xsub.cpp",
     "src/zmq.cpp",
-    "src/zmq_utils.cpp",
-    "src/decoder_allocators.cpp",
-    "src/socket_poller.cpp",
-    "src/timers.cpp",
-    "src/radio.cpp",
-    "src/dish.cpp",
-    "src/udp_engine.cpp",
-    "src/udp_address.cpp",
-    "src/scatter.cpp",
-    "src/gather.cpp",
-    "src/ip_resolver.cpp",
-    "src/zap_client.cpp",
-    "src/zmtp_engine.cpp",
 };
 const extraCsources: []const []const u8 = &.{
     "src/tweetnacl.c",
