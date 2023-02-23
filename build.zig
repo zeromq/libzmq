@@ -55,37 +55,38 @@ pub fn build(b: *Builder) void {
         }, .{
             .ZMQ_HAVE_WINDOWS = {},
             .ZMQ_HAVE_MINGW32 = {},
-            .ZMQ_HAVE_CURVE = 1,
-            .ZMQ_USE_TWEETNACL = 1,
-            .ZMQ_USE_SELECT = 1,
-            .ZMQ_USE_CV_IMPL_STL11 = 1,
+            .ZMQ_HAVE_CURVE = {},
+            .ZMQ_USE_TWEETNACL = {},
+            .ZMQ_USE_SELECT = {},
+            .ZMQ_USE_CV_IMPL_STL11 = {},
             .ZMQ_CACHELINE_SIZE = 64,
-            .ZMQ_IOTHREAD_POLLER_USE_SELECT = 1,
-            .ZMQ_POLL_BASED_ON_SELECT = 1,
-            .ZMQ_USE_BUILTIN_SHA1 = 1,
+            .ZMQ_IOTHREAD_POLLER_USE_SELECT = {},
+            .ZMQ_POLL_BASED_ON_SELECT = {},
+            .ZMQ_USE_BUILTIN_SHA1 = {},
             .HAVE_STRNLEN = 1,
+            .ZMQ_USE_RADIX_TREE = {},
         }),
         .macos => b.addConfigHeader(.{
             .style = .blank,
             .include_path = "platform.hpp",
         }, .{
             .ZMQ_HAVE_OSX = {},
-            .ZMQ_USE_KQUEUE = 1,
+            .ZMQ_USE_KQUEUE = {},
             .ZMQ_POSIX_MEMALIGN = 1,
             .ZMQ_CACHELINE_SIZE = 64,
-            .ZMQ_HAVE_CURVE = 1,
-            .ZMQ_USE_TWEETNACL = 1,
-            .ZMQ_HAVE_UIO = 1,
-            .ZMQ_HAVE_IFADDRS = 1,
-            .ZMQ_HAVE_OS_KEEPALIVE = 1,
-            .ZMQ_HAVE_TCP_KEEPALIVE = 1,
-            .ZMQ_HAVE_TCP_KEEPCNT = 1,
-            .ZMQ_HAVE_TCP_KEEPINTVL = 1,
-            .ZMQ_USE_BUILTIN_SHA1 = 1,
-            .ZMQ_IOTHREAD_POLLER_USE_KQEUE = 1,
-            .ZMQ_USE_CV_IMPL_STL11 = 1,
-            .HAVE_STRNLEN = 1,
-            .HAVE_FORK = 1,
+            .ZMQ_HAVE_CURVE = {},
+            .ZMQ_USE_TWEETNACL = {},
+            .ZMQ_HAVE_UIO = {},
+            .ZMQ_HAVE_IFADDRS = {},
+            .ZMQ_HAVE_OS_KEEPALIVE = {},
+            .ZMQ_HAVE_TCP_KEEPALIVE = {},
+            .ZMQ_HAVE_TCP_KEEPCNT = {},
+            .ZMQ_HAVE_TCP_KEEPINTVL = {},
+            .ZMQ_USE_BUILTIN_SHA1 = {},
+            .ZMQ_IOTHREAD_POLLER_USE_KQEUE = {},
+            .ZMQ_USE_CV_IMPL_STL11 = {},
+            .HAVE_STRNLEN = {},
+            .HAVE_FORK = {},
         }),
         else => b.addConfigHeader(.{}, .{}),
     };
@@ -105,11 +106,8 @@ pub fn build(b: *Builder) void {
         .optimize = optimize,
     });
     if (optimize == .Debug or optimize == .ReleaseSafe)
-        libzmq.bundle_compiler_rt = true
-    else if (shared) {
-        //libzmq.want_lto = true;
-        libzmq.force_pic = true;
-    }
+        libzmq.bundle_compiler_rt = true;
+
     libzmq.strip = true;
     libzmq.addConfigHeader(config_header);
     libzmq.addIncludePath("include");
@@ -123,21 +121,28 @@ pub fn build(b: *Builder) void {
         else => cxxSources,
     }, cxxFlags);
     libzmq.addCSourceFiles(extraCsources, cFlags);
+
     if (target.isWindows()) {
         libzmq.addCSourceFile("external/wepoll/wepoll.c", cFlags);
         // no pkg-config
-        libzmq.linkSystemLibraryName("kernel32");
-        libzmq.linkSystemLibraryName("ntdll");
         libzmq.linkSystemLibraryName("ws2_32");
         libzmq.linkSystemLibraryName("rpcrt4");
         libzmq.linkSystemLibraryName("iphlpapi");
+        // MinGW
+        if (target.getAbi() == .gnu) {
+            // Need winpthread header & lib (zig has not included)
+            libzmq.linkSystemLibraryName("pthread.dll"); // pthread.dll.a (pthread.a get link error)
+        }
     } else if (target.isDarwin()) {
         // TODO
         //libzmq.linkFramework("");
     } else {
+        // Linux
         libzmq.linkSystemLibrary("rt");
+        libzmq.linkSystemLibrary("dl");
     }
-    // TODO: No support MSVC libc
+    // TODO: No support MSVC libC++ (ucrt/msvcrt/vcruntime)
+    // https://github.com/ziglang/zig/issues/4785 - drop replacement for MSVC
     if (target.getAbi() != .msvc) {
         libzmq.linkLibCpp(); // LLVM libc++ (builtin)
         libzmq.linkLibC(); // OS libc
@@ -152,7 +157,6 @@ const cFlags: []const []const u8 = &.{
     "-pedantic",
     "-Wno-long-long",
     "-Wno-uninitialized",
-    "-fno-sanitize=all",
 };
 const cxxFlags = cFlags;
 const cxxSources: []const []const u8 = &.{
