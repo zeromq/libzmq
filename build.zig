@@ -3,6 +3,12 @@
 const std = @import("std");
 const Builder = std.Build.Builder;
 
+const pkgBuilder = struct {
+    mode: std.builtin.OptimizeMode,
+    target: std.zig.CrossTarget,
+    build: *std.Build.CompileStep,
+};
+
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -149,6 +155,36 @@ pub fn build(b: *Builder) void {
     }
     libzmq.install();
     libzmq.installHeadersDirectory("include", "");
+
+    buildSample(b, .{
+        .target = target,
+        .mode = optimize,
+        .build = libzmq,
+    }, "radix_benchtest", "perf/benchmark_radix_tree.cpp");
+}
+
+fn buildSample(b: *std.Build.Builder, lib: pkgBuilder, name: []const u8, file: []const u8) void {
+    const test_exe = b.addExecutable(.{
+        .name = name,
+        .optimize = lib.mode,
+        .target = lib.target,
+    });
+    test_exe.linkLibrary(lib.build);
+    test_exe.addSystemIncludePath("src");
+    test_exe.addCSourceFile(file, cFlags);
+    if (lib.target.isWindows())
+        test_exe.linkSystemLibraryName("ws2_32");
+    test_exe.linkLibCpp();
+    test_exe.install();
+
+    const run_cmd = test_exe.run();
+    run_cmd.step.dependOn(b.getInstallStep());
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
+
+    const run_step = b.step("run", b.fmt("Run the {s}", .{name}));
+    run_step.dependOn(&run_cmd.step);
 }
 
 const cFlags: []const []const u8 = &.{
