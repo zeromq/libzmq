@@ -856,11 +856,11 @@ int crypto_sign_open(u8 *m,u64 *mlen,const u8 *sm,u64 n,const u8 *pk)
 #ifdef ZMQ_HAVE_WINDOWS
 
 #include <windows.h>
-#include <wincrypt.h>
+#include <bcrypt.h>
 
-#define NCP ((HCRYPTPROV) 0)
+#define NCP ((BCRYPT_ALG_HANDLE) 0)
 
-HCRYPTPROV hProvider = NCP;
+BCRYPT_ALG_HANDLE hProvider = NCP;
 
 void randombytes(unsigned char *x,unsigned long long xlen)
 {
@@ -869,8 +869,7 @@ void randombytes(unsigned char *x,unsigned long long xlen)
 
     if (hProvider == NCP) {
         for (;;) {
-            ret = CryptAcquireContext(&hProvider, NULL, NULL,
-                                      PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT);
+            ret = BCryptOpenAlgorithmProvider(&hProvider, L"RNG", NULL, 0);
             if (ret != FALSE)
                 break;
             Sleep (1);
@@ -882,7 +881,7 @@ void randombytes(unsigned char *x,unsigned long long xlen)
         else
             i = 1048576;
 
-        ret = CryptGenRandom(hProvider, i, x);
+        ret = BCryptGenRandom(&hProvider, x, i, 0);
         if (ret == FALSE) {
             Sleep(1);
             continue;
@@ -895,7 +894,7 @@ void randombytes(unsigned char *x,unsigned long long xlen)
 int randombytes_close(void)
 {
     int rc = -1;
-    if ((hProvider != NCP) && (CryptReleaseContext(hProvider, 0) != FALSE)) {
+    if ((hProvider != NCP) && (BCryptCloseAlgorithmProvider(&hProvider, 0) != FALSE)) {
         hProvider = NCP;
         rc = 0;
     }

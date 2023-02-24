@@ -555,17 +555,20 @@ endif()
 
 if(ZMQ_HAVE_WINDOWS)
   # Cannot use check_library_exists because the symbol is always declared as char(*)(void)
-  set(CMAKE_REQUIRED_LIBRARIES "ws2_32.lib")
+  set(CMAKE_REQUIRED_LIBRARIES "ws2_32.lib" ${CMAKE_REQUIRED_LIBRARIES})
   check_cxx_symbol_exists(WSAStartup "winsock2.h" HAVE_WS2_32)
 
-  set(CMAKE_REQUIRED_LIBRARIES "rpcrt4.lib")
+  set(CMAKE_REQUIRED_LIBRARIES "rpcrt4.lib" ${CMAKE_REQUIRED_LIBRARIES})
   check_cxx_symbol_exists(UuidCreateSequential "rpc.h" HAVE_RPCRT4)
 
-  set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
+  set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib" ${CMAKE_REQUIRED_LIBRARIES})
   check_cxx_symbol_exists(GetAdaptersAddresses "winsock2.h;iphlpapi.h" HAVE_IPHLAPI)
   check_cxx_symbol_exists(if_nametoindex "iphlpapi.h" HAVE_IF_NAMETOINDEX)
 
-  set(CMAKE_REQUIRED_LIBRARIES "")
+  set(CMAKE_REQUIRED_LIBRARIES "bcrypt.lib" ${CMAKE_REQUIRED_LIBRARIES})
+  check_cxx_symbol_exists(BCryptOpenAlgorithmProvider "bcrypt.h" HAVE_BCRYPT)
+
+  # set(CMAKE_REQUIRED_LIBRARIES "")
   # TODO: This not the symbol we're looking for. What is the symbol?
   check_library_exists(ws2 fopen "" HAVE_WS2)
 else()
@@ -1491,6 +1494,10 @@ if(BUILD_SHARED)
     target_link_libraries(libzmq ws2)
   endif()
 
+  if(HAVE_BCRYPT)
+   target_link_libraries(libzmq bcrypt)
+  endif()
+
   if(HAVE_RPCRT4)
     target_link_libraries(libzmq rpcrt4)
   endif()
@@ -1534,6 +1541,10 @@ if(BUILD_STATIC)
     target_link_libraries(libzmq-static ws2_32)
   elseif(HAVE_WS2)
     target_link_libraries(libzmq-static ws2)
+  endif()
+
+  if(HAVE_BCRYPT)
+   target_link_libraries(libzmq-static bcrypt)
   endif()
 
   if(HAVE_RPCRT4)
