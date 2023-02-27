@@ -216,7 +216,10 @@ int zmq::tcp_connecter_t::open ()
         rc = setsockopt (_s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
         errno_assert (rc == 0);
 #endif
-
+#ifdef IP_BIND_ADDRESS_NO_PORT
+	setsockopt(_s, SOL_IP, IP_BIND_ADDRESS_NO_PORT, &flag, sizeof(int));
+	/* not an error if fails, kernel may be very old */
+#endif
 #if defined ZMQ_HAVE_VXWORKS
         rc = ::bind (_s, (sockaddr *) tcp_addr->src_addr (),
                      tcp_addr->src_addrlen ());
