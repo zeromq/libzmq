@@ -7,19 +7,21 @@ const pkgBuilder = struct {
     mode: std.builtin.OptimizeMode,
     target: std.zig.CrossTarget,
     build: *std.Build.CompileStep,
+    configH: *std.Build.ConfigHeaderStep,
 };
 
 pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Options - static library [default]
+    // Option - static library [default]
     const shared = b.option(bool, "shared", "Build the Shared Library [default: false]") orelse false;
+    const perf = b.option(bool, "perf", "Build perf-tools [default: false]") orelse false;
 
     // Generating "platform.hpp"
     const config_header = switch (target.getOsTag()) {
         .linux => b.addConfigHeader(.{
-            .style = .blank, //.{ .cmake = .{ .path = "builds/cmake/platform.hpp.in" } },
+            .style = .blank,
             .include_path = "platform.hpp",
         }, .{
             .ZMQ_HAVE_LINUX = {},
@@ -65,7 +67,7 @@ pub fn build(b: *Builder) void {
             .ZMQ_USE_TWEETNACL = {},
             .ZMQ_USE_SELECT = {},
             .ZMQ_USE_CV_IMPL_STL11 = {},
-            .ZMQ_CACHELINE_SIZE = 64,
+            .ZMQ_CACHELINE_SIZE = std.atomic.cache_line,
             .ZMQ_IOTHREAD_POLLER_USE_SELECT = {},
             .ZMQ_POLL_BASED_ON_SELECT = {},
             .ZMQ_USE_BUILTIN_SHA1 = {},
@@ -79,7 +81,7 @@ pub fn build(b: *Builder) void {
             .ZMQ_HAVE_OSX = {},
             .ZMQ_USE_KQUEUE = {},
             .ZMQ_POSIX_MEMALIGN = 1,
-            .ZMQ_CACHELINE_SIZE = 64,
+            .ZMQ_CACHELINE_SIZE = std.atomic.cache_line,
             .ZMQ_HAVE_CURVE = {},
             .ZMQ_USE_TWEETNACL = {},
             .ZMQ_HAVE_UIO = {},
@@ -147,20 +149,63 @@ pub fn build(b: *Builder) void {
         libzmq.linkSystemLibrary("rt");
         libzmq.linkSystemLibrary("dl");
     }
-    // TODO: No support MSVC libC++ (ucrt/msvcrt/vcruntime)
+    // TODO: MSVC support libC++ (need: ucrt/msvcrt/vcruntime)
     // https://github.com/ziglang/zig/issues/4785 - drop replacement for MSVC
-    if (target.getAbi() != .msvc) {
-        libzmq.linkLibCpp(); // LLVM libc++ (builtin)
-        libzmq.linkLibC(); // OS libc
-    }
+    libzmq.linkLibCpp(); // LLVM libc++ (builtin)
+    libzmq.linkLibC(); // OS libc
     libzmq.install();
     libzmq.installHeadersDirectory("include", "");
 
-    buildSample(b, .{
-        .target = target,
-        .mode = optimize,
-        .build = libzmq,
-    }, "radix_benchtest", "perf/benchmark_radix_tree.cpp");
+    if (perf) {
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "bench_rt", "perf/benchmark_radix_tree.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "inproc_lat", "perf/inproc_lat.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "inproc_thr", "perf/inproc_thr.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "local_lat", "perf/local_lat.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "local_thr", "perf/local_thr.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "proxy_thr", "perf/proxy_thr.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "remote_thr", "perf/remote_thr.cpp");
+        buildSample(b, .{
+            .target = target,
+            .mode = optimize,
+            .build = libzmq,
+            .configH = config_header,
+        }, "remote_lat", "perf/remote_lat.cpp");
+    }
 }
 
 fn buildSample(b: *std.Build.Builder, lib: pkgBuilder, name: []const u8, file: []const u8) void {
@@ -170,6 +215,8 @@ fn buildSample(b: *std.Build.Builder, lib: pkgBuilder, name: []const u8, file: [
         .target = lib.target,
     });
     test_exe.linkLibrary(lib.build);
+    test_exe.addConfigHeader(lib.configH);
+    test_exe.addIncludePath(lib.configH.include_path);
     test_exe.addSystemIncludePath("src");
     test_exe.addCSourceFile(file, cFlags);
     if (lib.target.isWindows())
@@ -183,7 +230,7 @@ fn buildSample(b: *std.Build.Builder, lib: pkgBuilder, name: []const u8, file: [
         run_cmd.addArgs(args);
     }
 
-    const run_step = b.step("run", b.fmt("Run the {s}", .{name}));
+    const run_step = b.step(b.fmt("{s}", .{name}), b.fmt("Run the {s}", .{name}));
     run_step.dependOn(&run_cmd.step);
 }
 
