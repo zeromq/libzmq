@@ -70,6 +70,8 @@
 
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_HAVE_NORM
+#cmakedefine ZMQ_HAVE_VMCI
+
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_HAVE_CURVE
