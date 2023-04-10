@@ -41,8 +41,10 @@ static void bounce_fail (void *server_, void *client_)
     char buffer[32];
 
     //  Send message from client to server
-    send_string_expect_success (client_, content, ZMQ_SNDMORE);
-    send_string_expect_success (client_, content, 0);
+    int rc = zmq_send (client_, content, 32, ZMQ_SNDMORE);
+    TEST_ASSERT_TRUE (rc == 32 || rc == -1);
+    rc = zmq_send (client_, content, 32, 0);
+    TEST_ASSERT_TRUE (rc == 32 || rc == -1);
 
     //  Receive message at server side (should not succeed)
     int timeout = SETTLE_TIME;
@@ -61,7 +63,7 @@ template <class T>
 static void
 run_test (int opt_, T optval_, int expected_error_, int bounce_test_)
 {
-    void *sb = test_context_socket (ZMQ_DEALER);
+    void *sb = test_context_socket (ZMQ_PAIR);
 
     if (opt_) {
         const int rc = zmq_setsockopt (sb, opt_, &optval_, sizeof (optval_));
@@ -72,7 +74,7 @@ run_test (int opt_, T optval_, int expected_error_, int bounce_test_)
         }
     }
 
-    void *sc = test_context_socket (ZMQ_DEALER);
+    void *sc = test_context_socket (ZMQ_PAIR);
 
     // If a test fails, don't hang for too long
     int timeout = 2500;
@@ -89,9 +91,9 @@ run_test (int opt_, T optval_, int expected_error_, int bounce_test_)
       zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int)));
 
     if (bounce_test_) {
-        const char *endpoint = "ipc://test_filter_ipc.sock";
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sb, endpoint));
-        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, endpoint));
+        char my_endpoint[256];
+        bind_loopback_ipc (sb, my_endpoint, sizeof my_endpoint);
+        TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sc, my_endpoint));
 
         if (bounce_test_ > 0)
             bounce (sb, sc);

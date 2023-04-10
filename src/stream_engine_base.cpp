@@ -255,8 +255,14 @@ bool zmq::stream_engine_base_t::in_event_internal ()
             //  Switch into the normal message flow.
             _handshaking = false;
 
-            if (_mechanism == NULL && _has_handshake_stage)
+            if (_mechanism == NULL && _has_handshake_stage) {
                 _session->engine_ready ();
+
+                if (_has_handshake_timer) {
+                    cancel_timer (handshake_timer_id);
+                    _has_handshake_timer = false;
+                }
+            }
         } else
             return false;
     }

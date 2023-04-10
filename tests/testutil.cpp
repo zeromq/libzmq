@@ -518,15 +518,15 @@ fd_t bind_socket_resolve_port (const char *address_,
         addr_len = sizeof (struct sockaddr_storage);
         TEST_ASSERT_SUCCESS_RAW_ERRNO (
           getsockname (s_pre, (struct sockaddr *) &addr, &addr_len));
-        sprintf (my_endpoint_, "%s://%s:%u",
-                 protocol_ == IPPROTO_TCP   ? "tcp"
-                 : protocol_ == IPPROTO_UDP ? "udp"
-                 : protocol_ == IPPROTO_WSS ? "wss"
-                                            : "ws",
-                 address_,
-                 af_ == AF_INET
-                   ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
-                   : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
+        snprintf (
+          my_endpoint_, 6 + strlen (address_) + 7 * sizeof (char), "%s://%s:%u",
+          protocol_ == IPPROTO_TCP   ? "tcp"
+          : protocol_ == IPPROTO_UDP ? "udp"
+          : protocol_ == IPPROTO_WSS ? "wss"
+                                     : "ws",
+          address_,
+          af_ == AF_INET ? ntohs ((*(struct sockaddr_in *) &addr).sin_port)
+                         : ntohs ((*(struct sockaddr_in6 *) &addr).sin6_port));
     }
 
     return s_pre;

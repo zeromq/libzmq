@@ -81,7 +81,7 @@ struct blob_t
         _size (size_),
         _owned (true)
     {
-        alloc_assert (_data);
+        alloc_assert (!_size || _data);
     }
 
     //  Creates a blob_t of a given size, an initializes content by copying
@@ -91,8 +91,10 @@ struct blob_t
         _size (size_),
         _owned (true)
     {
-        alloc_assert (_data);
-        memcpy (_data, data_, size_);
+        alloc_assert (!size_ || _data);
+        if (size_ && _data) {
+            memcpy (_data, data_, size_);
+        }
     }
 
     //  Creates a blob_t for temporary use that only references a
@@ -114,7 +116,7 @@ struct blob_t
     unsigned char *data () { return _data; }
 
     //  Defines an order relationship on blob_t.
-    bool operator< (blob_t const &other_) const
+    bool operator<(blob_t const &other_) const
     {
         const int cmpres =
           memcmp (_data, other_._data, std::min (_size, other_._size));
@@ -126,10 +128,12 @@ struct blob_t
     {
         clear ();
         _data = static_cast<unsigned char *> (malloc (other_._size));
-        alloc_assert (_data);
+        alloc_assert (!other_._size || _data);
         _size = other_._size;
         _owned = true;
-        memcpy (_data, other_._data, _size);
+        if (_size && _data) {
+            memcpy (_data, other_._data, _size);
+        }
     }
 
     //  Sets a blob_t to a copy of a given buffer.
@@ -137,10 +141,12 @@ struct blob_t
     {
         clear ();
         _data = static_cast<unsigned char *> (malloc (size_));
-        alloc_assert (_data);
+        alloc_assert (!size_ || _data);
         _size = size_;
         _owned = true;
-        memcpy (_data, data_, size_);
+        if (size_ && _data) {
+            memcpy (_data, data_, size_);
+        }
     }
 
     //  Empties a blob_t.
@@ -182,7 +188,10 @@ struct blob_t
         return *this;
     }
 #else
-    blob_t (const blob_t &other) : _owned (false) { set_deep_copy (other); }
+    blob_t (const blob_t &other) : _owned (false)
+    {
+        set_deep_copy (other);
+    }
     blob_t &operator= (const blob_t &other)
     {
         if (this != &other) {

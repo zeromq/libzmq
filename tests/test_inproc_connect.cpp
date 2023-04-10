@@ -155,7 +155,7 @@ void test_connect_before_bind_ctx_term ()
         void *connect_socket = test_context_socket (ZMQ_ROUTER);
 
         char ep[32];
-        sprintf (ep, "inproc://cbbrr%d", i);
+        snprintf (ep, 32 * sizeof (char), "inproc://cbbrr%d", i);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (connect_socket, ep));
 
         // Cleanup
@@ -233,7 +233,7 @@ void test_simultaneous_connect_bind_threads ()
     // Set up thread arguments: context followed by endpoint string
     for (unsigned int i = 0; i < no_of_times; ++i) {
         thr_args[i] = (void *) endpts[i];
-        sprintf (endpts[i], "inproc://foo_%d", i);
+        snprintf (endpts[i], 20 * sizeof (char), "inproc://foo_%d", i);
     }
 
     // Spawn all threads as simultaneously as possible

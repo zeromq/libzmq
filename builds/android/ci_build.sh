@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
+#
+#   Exit if any step fails
+set -e
 
-export NDK_VERSION=android-ndk-r22b
-export ANDROID_NDK_ROOT="/tmp/${NDK_VERSION}"
+# Use directory of current script as the working directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
-case $(uname | tr '[:upper:]' '[:lower:]') in
-  linux*)
-    HOST_PLATFORM=linux-x86_64
-    ;;
-  darwin*)
-    HOST_PLATFORM=darwin-x86_64
-    ;;
-  *)
-    echo "Unsupported platform"
-    exit 1
-    ;;
-esac
+# Configuration
+export NDK_VERSION="${NDK_VERSION:-android-ndk-r25}"
+export ANDROID_NDK_ROOT="${ANDROID_NDK_ROOT:-/tmp/${NDK_VERSION}}"
+export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
+export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}/.build}"
+export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-yes}"
+export ANDROID_DEPENDENCIES_DIR="${ANDROID_DEPENDENCIES_DIR:-${PWD}/.deps}"
 
-if [ ! -d "${ANDROID_NDK_ROOT}" ]; then
-    export FILENAME=$NDK_VERSION-$HOST_PLATFORM.zip
+# Cleanup.
+if [ "${ANDROID_BUILD_CLEAN}" = "yes" ] ; then
+    rm -rf   "${ANDROID_BUILD_DIR}/prefix"
+    mkdir -p "${ANDROID_BUILD_DIR}/prefix"
+    rm -rf   "${ANDROID_DEPENDENCIES_DIR}"
+    mkdir -p "${ANDROID_DEPENDENCIES_DIR}"
 
-    (cd '/tmp' \
-        && wget http://dl.google.com/android/repository/$FILENAME -O $FILENAME &> /dev/null \
-        && unzip -q $FILENAME) || exit 1
-    unset FILENAME
+    # Called shells MUST not clean after ourselves !
+    export ANDROID_BUILD_CLEAN="no"
 fi
 
 ./build.sh "arm"

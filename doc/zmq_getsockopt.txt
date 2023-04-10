@@ -983,6 +983,20 @@ Default value:: 8192
 Applicable socket types:: All, when using TCP, IPC, PGM or NORM transport.
 
 
+ZMQ_TOPICS_COUNT: Number of topic subscriptions received
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Gets the number of topic (prefix) subscriptions either 
+* received on a (X)PUB socket from all the connected (X)SUB sockets or 
+* acknowledged on an (X)SUB socket from all the connected (X)PUB sockets
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: N/A
+Default value:: 0
+Applicable socket types:: ZMQ_PUB, ZMQ_XPUB, ZMQ_SUB, ZMQ_XSUB
+
 
 RETURN VALUE
 ------------

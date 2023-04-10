@@ -1254,7 +1254,7 @@ AC_DEFUN([LIBZMQ_CHECK_CACHELINE], [{
     AC_CHECK_TOOL(libzmq_getconf, getconf)
     if ! test "x$libzmq_getconf" = "x"; then
         zmq_cacheline_size=$($libzmq_getconf LEVEL1_DCACHE_LINESIZE 2>/dev/null || echo 64)
-        if test "x$zmq_cacheline_size" = "x0" -o  "x$zmq_cacheline_size" = "x-1"; then
+        if test "x$zmq_cacheline_size" = "x0" -o  "x$zmq_cacheline_size" = "x-1" -o "x$zmq_cacheline_size" = "xundefined"; then
             # getconf on some architectures does not know the size, try to fallback to
             # the value the kernel knows on Linux
             zmq_cacheline_size=$(cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size 2>/dev/null || echo 64)

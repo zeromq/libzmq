@@ -121,6 +121,27 @@ int zmq::xsub_t::xsetsockopt (int option_,
     return -1;
 }
 
+int zmq::xsub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
+{
+    if (option_ == ZMQ_TOPICS_COUNT) {
+        // make sure to use a multi-thread safe function to avoid race conditions with I/O threads
+        // where subscriptions are processed:
+#ifdef ZMQ_USE_RADIX_TREE
+        uint64_t num_subscriptions = _subscriptions.size ();
+#else
+        uint64_t num_subscriptions = _subscriptions.num_prefixes ();
+#endif
+
+        return do_getsockopt<int> (optval_, optvallen_,
+                                   (int) num_subscriptions);
+    }
+
+    // room for future options here
+
+    errno = EINVAL;
+    return -1;
+}
+
 int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();

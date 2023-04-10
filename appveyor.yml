@@ -29,8 +29,8 @@ environment:
       ARTIFACT_NAME: v90
     - platform: Win32
       configuration: Release
-      WITH_LIBSODIUM: ON
-      ENABLE_CURVE: ON
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
       CMAKE_GENERATOR: "Visual Studio 10 2010"
       MSVCVERSION: "v100"
       MSVCYEAR: "vs2010"
@@ -274,19 +274,6 @@ test_script:
             set TEST_OPTIONS=%TEST_OPTIONS% -j5
          )
   - cmd: if "%APPVEYOR_REPO_TAG%"=="false" (ctest -C "%Configuration%" -V %TEST_OPTIONS%)
-
-deploy:
-  - provider: GitHub
-    tag: $(APPVEYOR_REPO_TAG_NAME)
-    release: libzmq $(APPVEYOR_REPO_TAG_NAME)
-    description: |
-        Windows binaries for libzmq $(APPVEYOR_REPO_TAG_NAME), uploaded from appveyor.
-        Edit after appveyor is done uploading.
-    auth_token:
-      secure: vmAeVtN2qiQgFBCB2I5FDDRtADQ7GUdR9NwAJJyakbiV5OHzLHExDcC/D9Oh5r67
-    draft: true
-    prerelease: false
-    force_update: true # adds files, clobbers release name and description
 
 
 # the analysis build is repeated; apparently appveyor only uses the first section that matches some branch

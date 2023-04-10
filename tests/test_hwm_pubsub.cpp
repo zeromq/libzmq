@@ -273,7 +273,10 @@ void test_blocking (const char *bind_endpoint_)
         test_defaults_small (bind_endpoint);                                   \
     }                                                                          \
                                                                                \
-    void test_blocking_##name () { test_blocking (bind_endpoint); }
+    void test_blocking_##name ()                                               \
+    {                                                                          \
+        test_blocking (bind_endpoint);                                         \
+    }
 
 #define RUN_REGULAR_TEST_CASES(name)                                           \
     RUN_TEST (test_defaults_large_##name);                                     \

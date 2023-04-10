@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/zeromq/libzmq/actions/workflows/CI.yaml/badge.svg)](https://github.com/zeromq/libzmq/actions/workflows/CI.yaml)
 [![Build status](https://ci.appveyor.com/api/projects/status/e2ks424yrs1un3wt?svg=true)](https://ci.appveyor.com/project/zeromq/libzmq)
 [![Coverage Status](https://coveralls.io/repos/github/zeromq/libzmq/badge.svg?branch=master)](https://coveralls.io/github/zeromq/libzmq?branch=master)
+[![Conan Center](https://shields.io/conan/v/zeromq)](https://conan.io/center/zeromq)
 
 ## Welcome
 
@@ -23,7 +24,7 @@ of platforms, where libzmq has been successfully compiled on.
 
 | OS and version                         | Architecture            | Compiler and version          | Build system | Remarks                                                                                                                               |
 |----------------------------------------|-------------------------|-------------------------------|--------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| Android NDK r20                        | arm, arm64, x86, x86_64 | llvm (see NDK)                | autotools    | DRAFT                                                                                                                                       |
+| Android NDK r25                        | arm, arm64, x86, x86_64 | llvm (see NDK)                | autotools    | DRAFT                                                                                                                                       |
 | Ubuntu 14.04.5 LTS (trusty)            | amd64                   | clang 5.0.0                   | autotools    | STABLE, extras: GSSAPI, PGM, NORM, C++98 mode only                                                                                    |
 | Ubuntu 14.04.5 LTS (trusty)            | amd64                   | gcc 4.8.4                     | autotools    | STABLE, DRAFT, extras: GSSAPI, PGM, NORM, TIPC, IPV6, also POLLER=poll, POLLER=select, also valgrind and address sanitizer executions |
 | Ubuntu 14.04.5 LTS (trusty)            | amd64                   | gcc 4.8.4                     | CMake 3.12.2 | STABLE                                                                                                                                |
@@ -153,6 +154,17 @@ avoid having them enabled.
 For OSX users, packages are available via brew.
 
     brew install zeromq
+
+## Installation of package manager <a name="package manager"/>
+
+### vcpkg
+
+vcpkg is a full platform package manager, you can easily install libzmq via vcpkg.
+
+    git clone https://github.com/microsoft/vcpkg.git
+    ./bootstrap-vcpkg.bat # For powershell
+    ./bootstrap-vcpkg.sh # For bash
+    ./vcpkg install zeromq
 
 ## Build from sources <a name="build"/>
 

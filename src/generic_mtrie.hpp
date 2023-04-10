@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "macros.hpp"
 #include "stdint.hpp"
+#include "atomic_counter.hpp"
 
 namespace zmq
 {
@@ -83,11 +84,17 @@ template <typename T> class generic_mtrie_t
                 void (*func_) (value_t *value_, Arg arg_),
                 Arg arg_);
 
+    //  Retrieve the number of prefixes stored in this trie (added - removed)
+    //  Note this is a multithread safe function.
+    uint32_t num_prefixes () const { return _num_prefixes.get (); }
+
   private:
     bool is_redundant () const;
 
     typedef std::set<value_t *> pipes_t;
     pipes_t *_pipes;
+
+    atomic_counter_t _num_prefixes;
 
     unsigned char _min;
     unsigned short _count;

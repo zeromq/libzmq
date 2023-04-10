@@ -124,6 +124,7 @@ foreign/openpgm/*
 zeromq-*.tar.gz
 zeromq-*.zip
 core
+mybuild
 
 #ingenuity
 builds/xcode

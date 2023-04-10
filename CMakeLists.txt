@@ -288,6 +288,7 @@ if(ENABLE_CURVE)
       if(SODIUM_FOUND)
         message(STATUS "Using libsodium for CURVE security")
         include_directories(${SODIUM_INCLUDE_DIRS})
+        link_directories(${SODIUM_LIBRARY_DIRS})
         if(WITH_LIBSODIUM_STATIC)
           add_compile_definitions(SODIUM_STATIC)
         endif()
@@ -423,9 +424,7 @@ if(NOT MSVC)
   endif()
 
   if(POLLER STREQUAL "")
-    set(CMAKE_EXTRA_INCLUDE_FILES sys/devpoll.h)
-    check_type_size("struct pollfd" DEVPOLL)
-    set(CMAKE_EXTRA_INCLUDE_FILES)
+    check_include_files("sys/devpoll.h" HAVE_DEVPOLL)
     if(HAVE_DEVPOLL)
       set(POLLER "devpoll")
     endif()
@@ -502,7 +501,8 @@ execute_process(
   ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CACHELINE_SIZE STREQUAL ""
    OR CACHELINE_SIZE EQUAL 0
-   OR CACHELINE_SIZE EQUAL -1)
+   OR CACHELINE_SIZE EQUAL -1
+   OR CACHELINE_SIZE EQUAL "undefined")
   set(ZMQ_CACHELINE_SIZE 64)
 else()
   set(ZMQ_CACHELINE_SIZE ${CACHELINE_SIZE})
@@ -1206,7 +1206,8 @@ set(readme-docs AUTHORS COPYING COPYING.LESSER NEWS)
 # optional modules
 
 if(WITH_OPENPGM)
-  add_definitions(-DZMQ_HAVE_OPENPGM)
+  message(STATUS "Building with OpenPGM")
+  set(ZMQ_HAVE_OPENPGM 1)
   include_directories(${OPENPGM_INCLUDE_DIRS})
   link_directories(${OPENPGM_LIBRARY_DIRS})
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
@@ -1223,7 +1224,8 @@ if(WITH_NORM)
 endif()
 
 if(WITH_VMCI)
-  add_definitions(-DZMQ_HAVE_VMCI)
+message(STATUS "Building with VMCI")
+  set(ZMQ_HAVE_VMCI 1)
   include_directories(${VMCI_INCLUDE_DIRS})
   list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
 endif()
@@ -1400,6 +1402,9 @@ else()
   if(NOT MINGW)
     add_library(objects OBJECT ${sources})
     set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+    if(GNUTLS_FOUND)
+      target_include_directories(objects PRIVATE "${GNUTLS_INCLUDE_DIR}")
+    endif()
   endif()
 
   if(BUILD_SHARED)
@@ -1487,6 +1492,7 @@ if(BUILD_SHARED)
   target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq ${GNUTLS_LIBRARIES})
+    target_include_directories(libzmq PRIVATE "${GNUTLS_INCLUDE_DIR}")
   endif()
 
   if(NSS3_FOUND)
@@ -1532,6 +1538,7 @@ if(BUILD_STATIC)
   target_link_libraries(libzmq-static ${CMAKE_THREAD_LIBS_INIT})
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq-static ${GNUTLS_LIBRARIES})
+    target_include_directories(libzmq-static PRIVATE "${GNUTLS_INCLUDE_DIR}")
   endif()
 
   if(LIBBSD_FOUND)
@@ -1600,6 +1607,7 @@ if(BUILD_SHARED)
 
       if(GNUTLS_FOUND)
         target_link_libraries(${perf-tool} ${GNUTLS_LIBRARIES})
+        target_include_directories(${perf-tool} PRIVATE "${GNUTLS_INCLUDE_DIR}")
       endif()
 
       if(LIBBSD_FOUND)
@@ -1647,7 +1655,11 @@ endif()
 # -----------------------------------------------------------------------------
 # tests
 
-option(BUILD_TESTS "Whether or not to build the tests" ON)
+if(${CMAKE_VERSION} VERSION_LESS 3.12.3)
+  option(BUILD_TESTS "Whether or not to build the tests" OFF)
+else()
+  option(BUILD_TESTS "Whether or not to build the tests" ON)
+endif()
 
 set(ZMQ_BUILD_TESTS
     ${BUILD_TESTS}

@@ -460,6 +460,12 @@ int zmq::socket_base_t::getsockopt (int option_,
         return -1;
     }
 
+    //  First, check whether specific socket type overloads the option.
+    int rc = xgetsockopt (option_, optval_, optvallen_);
+    if (rc == 0 || errno != EINVAL) {
+        return rc;
+    }
+
     if (option_ == ZMQ_RCVMORE) {
         return do_getsockopt<int> (optval_, optvallen_, _rcvmore ? 1 : 0);
     }
@@ -1498,14 +1504,16 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
     command_t cmd;
     int rc = _mailbox->recv (&cmd, timeout_);
 
+    if (rc != 0 && errno == EINTR)
+        return -1;
+
     //  Process all available commands.
-    while (rc == 0) {
-        cmd.destination->process_command (cmd);
+    while (rc == 0 || errno == EINTR) {
+        if (rc == 0) {
+            cmd.destination->process_command (cmd);
+        }
         rc = _mailbox->recv (&cmd, 0);
     }
-
-    if (errno == EINTR)
-        return -1;
 
     zmq_assert (errno == EAGAIN);
 
@@ -1614,6 +1622,12 @@ void zmq::socket_base_t::process_destroy ()
 }
 
 int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
+{
+    errno = EINVAL;
+    return -1;
+}
+
+int zmq::socket_base_t::xgetsockopt (int, void *, size_t *)
 {
     errno = EINVAL;
     return -1;

@@ -60,7 +60,11 @@ template <class T> struct secure_allocator_t
         alloc_assert (res);
         return res;
     }
-    void deallocate (T *p, std::size_t) ZMQ_NOEXCEPT { sodium_free (p); }
+    void deallocate (T *p, std::size_t) ZMQ_NOEXCEPT
+    {
+        if (p)
+            sodium_free (p);
+    }
 
     // the following is only required with C++98
     // TODO maybe make this conditionally compiled
@@ -95,6 +99,17 @@ bool operator!= (const secure_allocator_t<T> &, const secure_allocator_t<U> &)
 #else
 template <typename T> struct secure_allocator_t : std::allocator<T>
 {
+    secure_allocator_t () ZMQ_DEFAULT;
+
+    template <class U>
+    secure_allocator_t (const secure_allocator_t<U> &) ZMQ_NOEXCEPT
+    {
+    }
+
+    template <class U> struct rebind
+    {
+        typedef secure_allocator_t<U> other;
+    };
 };
 #endif
 }

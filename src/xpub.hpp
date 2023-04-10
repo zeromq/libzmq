@@ -62,6 +62,7 @@ class xpub_t : public socket_base_t
     void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
     int
     xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    int xgetsockopt (int option_, void *optval_, size_t *optvallen_) ZMQ_FINAL;
     void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 
   private:

@@ -88,7 +88,8 @@ static void client_task (void *db_)
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (endpoint, ZMQ_LINGER, &linger, sizeof (linger)));
     char endpoint_source[256];
-    sprintf (endpoint_source, "inproc://endpoint%d", databag->id);
+    snprintf (endpoint_source, 256 * sizeof (char), "inproc://endpoint%d",
+              databag->id);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (endpoint, endpoint_source));
     char *my_endpoint = s_recv (endpoint);
     TEST_ASSERT_NOT_NULL (my_endpoint);
@@ -107,7 +108,8 @@ static void client_task (void *db_)
     char content[CONTENT_SIZE_MAX] = {};
     // Set random routing id to make tracing easier
     char routing_id[ROUTING_ID_SIZE] = {};
-    sprintf (routing_id, "%04X-%04X", rand () % 0xFFFF, rand () % 0xFFFF);
+    snprintf (routing_id, ROUTING_ID_SIZE * sizeof (char), "%04X-%04X",
+              rand () % 0xFFFF, rand () % 0xFFFF);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
       client, ZMQ_ROUTING_ID, routing_id,
       ROUTING_ID_SIZE)); // includes '\0' as an helper for printf
@@ -164,7 +166,8 @@ static void client_task (void *db_)
         }
 
         if (keep_sending) {
-            sprintf (content, "request #%03d", ++request_nbr); // CONTENT_SIZE
+            snprintf (content, CONTENT_SIZE_MAX * sizeof (char),
+                      "request #%03d", ++request_nbr); // CONTENT_SIZE
             if (is_verbose)
                 printf ("client send - routing_id = %s    request #%03d\n",
                         routing_id, request_nbr);
@@ -228,7 +231,8 @@ void server_task (void * /*unused_*/)
         TEST_ASSERT_NOT_NULL (endpoint_receivers[i]);
         TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
           endpoint_receivers[i], ZMQ_LINGER, &linger, sizeof (linger)));
-        sprintf (endpoint_source, "inproc://endpoint%d", i);
+        snprintf (endpoint_source, 256 * sizeof (char), "inproc://endpoint%d",
+                  i);
         TEST_ASSERT_SUCCESS_ERRNO (
           zmq_bind (endpoint_receivers[i], endpoint_source));
     }

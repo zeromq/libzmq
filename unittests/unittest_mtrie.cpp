@@ -81,6 +81,8 @@ void test_add_single_entry_match_exact ()
     bool res = mtrie.add (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_TRUE (res);
 
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
+
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
     TEST_ASSERT_EQUAL_INT (1, count);
@@ -96,9 +98,11 @@ void test_add_single_entry_twice_match_exact ()
 
     bool res = mtrie.add (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     res = mtrie.add (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_FALSE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -115,9 +119,11 @@ void test_add_two_entries_with_same_name_match_exact ()
 
     bool res = mtrie.add (test_name, getlen (test_name), &pipe_1);
     TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     res = mtrie.add (test_name, getlen (test_name), &pipe_2);
     TEST_ASSERT_FALSE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -136,9 +142,11 @@ void test_add_two_entries_match_prefix_and_exact ()
 
     bool res = mtrie.add (test_name_prefix, getlen (test_name_prefix), &pipe_1);
     TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     res = mtrie.add (test_name_full, getlen (test_name_full), &pipe_2);
     TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL_INT (2, mtrie.num_prefixes ());
 
     int count = 0;
     mtrie.match (test_name_full, getlen (test_name_full), mtrie_count, &count);
@@ -153,9 +161,11 @@ void test_add_rm_single_entry_match_exact ()
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> ("foo");
 
     mtrie.add (test_name, getlen (test_name), &pipe);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
     zmq::generic_mtrie_t<int>::rm_result res =
       mtrie.rm (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
+    TEST_ASSERT_EQUAL_INT (0, mtrie.num_prefixes ());
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -169,6 +179,7 @@ void test_rm_nonexistent_0_size_empty ()
 
     zmq::generic_mtrie_t<int>::rm_result res = mtrie.rm (0, 0, &pipe);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
+    TEST_ASSERT_EQUAL_INT (0, mtrie.num_prefixes ());
 }
 
 void test_rm_nonexistent_empty ()
@@ -181,6 +192,7 @@ void test_rm_nonexistent_empty ()
     zmq::generic_mtrie_t<int>::rm_result res =
       mtrie.rm (test_name, getlen (test_name), &pipe);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
+    TEST_ASSERT_EQUAL_INT (0, mtrie.num_prefixes ());
 
     int count = 0;
     mtrie.match (test_name, getlen (test_name), mtrie_count, &count);
@@ -197,10 +209,12 @@ void test_add_and_rm_other (const char *add_name_, const char *rm_name_)
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (rm_name_);
 
     mtrie.add (add_name_data, getlen (add_name_data), &addpipe);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     zmq::generic_mtrie_t<int>::rm_result res =
       mtrie.rm (rm_name_data, getlen (rm_name_data), &rmpipe);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie.num_prefixes ());
 
     {
         int count = 0;
@@ -249,7 +263,9 @@ void add_indexed_expect_unique (zmq::generic_mtrie_t<int> &mtrie_,
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names_[i_]);
 
     bool res = mtrie_.add (name_data, getlen (name_data), &pipes_[i_]);
-    TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
+    TEST_ASSERT_EQUAL (
+      zmq::generic_mtrie_t<int>::last_value_removed,
+      res); // FIXME asserting equality between enum and bool? I think first arg for macro should be "true"
 }
 
 void test_rm_nonexistent_between ()
@@ -260,6 +276,7 @@ void test_rm_nonexistent_between ()
     zmq::generic_mtrie_t<int> mtrie;
     add_indexed_expect_unique (mtrie, pipes, names, 0);
     add_indexed_expect_unique (mtrie, pipes, names, 2);
+    TEST_ASSERT_EQUAL_INT (2, mtrie.num_prefixes ());
 
     const zmq::generic_mtrie_t<int>::prefix_t name_data =
       reinterpret_cast<zmq::generic_mtrie_t<int>::prefix_t> (names[1]);
@@ -267,6 +284,7 @@ void test_rm_nonexistent_between ()
     zmq::generic_mtrie_t<int>::rm_result res =
       mtrie.rm (name_data, getlen (name_data), &pipes[1]);
     TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::not_found, res);
+    TEST_ASSERT_EQUAL_INT (2, mtrie.num_prefixes ());
 }
 
 template <size_t N>
@@ -277,6 +295,7 @@ void add_entries (zmq::generic_mtrie_t<int> &mtrie_,
     for (size_t i = 0; i < N; ++i) {
         add_indexed_expect_unique (mtrie_, pipes_, names_, i);
     }
+    TEST_ASSERT_EQUAL_INT (N, mtrie_.num_prefixes ());
 }
 
 void test_add_multiple ()
@@ -306,6 +325,7 @@ void test_add_multiple_reverse ()
         add_indexed_expect_unique (mtrie, pipes, names,
                                    static_cast<size_t> (i));
     }
+    TEST_ASSERT_EQUAL_INT (3, mtrie.num_prefixes ());
 
     for (size_t i = 0; i < 3; ++i) {
         const zmq::generic_mtrie_t<int>::prefix_t name_data =
@@ -330,6 +350,7 @@ template <size_t N> void add_and_rm_entries (const char *(&names_)[N])
           mtrie.rm (name_data, getlen (name_data), &pipes[i]);
         TEST_ASSERT_EQUAL (zmq::generic_mtrie_t<int>::last_value_removed, res);
     }
+    TEST_ASSERT_EQUAL_INT (0, mtrie.num_prefixes ());
 }
 
 void test_rm_multiple_in_order ()
@@ -394,8 +415,10 @@ void add_duplicate_entry (zmq::generic_mtrie_t<int> &mtrie_, int (&pipes_)[2])
 
     bool res = mtrie_.add (name_data, getlen (name_data), &pipes_[0]);
     TEST_ASSERT_TRUE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie_.num_prefixes ());
     res = mtrie_.add (name_data, getlen (name_data), &pipes_[1]);
     TEST_ASSERT_FALSE (res);
+    TEST_ASSERT_EQUAL_INT (1, mtrie_.num_prefixes ());
 }
 
 void test_rm_with_callback_duplicate ()

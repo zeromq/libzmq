@@ -239,6 +239,8 @@ void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     norm_wrapper_thread_args_t *threadArgs = new norm_wrapper_thread_args_t;
     int rc = make_fdpair (&wrapper_read_fd, &threadArgs->wrapper_write_fd);
+    errno_assert (rc != -1);
+
     threadArgs->norm_descriptor = NormGetDescriptor (norm_instance);
     threadArgs->norm_instance_handle = norm_instance;
     norm_descriptor_handle = add_fd (wrapper_read_fd);
