@@ -306,6 +306,10 @@ foreach(test ${tests})
 
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
   set_tests_properties(${test} PROPERTIES SKIP_RETURN_CODE 77)
+
+  if(QNX)
+    install(TARGETS ${test} RUNTIME DESTINATION bin/)
+  endif()
 endforeach()
 
 # override timeout for these tests
