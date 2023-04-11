@@ -1468,6 +1468,11 @@ endforeach()
 
 if(BUILD_SHARED)
   target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+
+  if(QNX)
+    target_link_libraries(libzmq -lsocket)
+  endif()
+
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq ${GNUTLS_LIBRARIES})
     target_include_directories(libzmq PRIVATE "${GNUTLS_INCLUDE_DIR}")
