@@ -411,6 +411,30 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 #define ZMQ_SRCFD 2
 
 /******************************************************************************/
+/*  NORM transport configuration options                                      */
+/******************************************************************************/
+#ifdef ZMQ_HAVE_NORM
+
+/*  NORM socket options                                                       */
+#define ZMQ_NORM_MODE 150
+#define ZMQ_NORM_UNICAST_NACK 151
+#define ZMQ_NORM_BUFFER_SIZE 152
+#define ZMQ_NORM_SEGMENT_SIZE 153
+#define ZMQ_NORM_BLOCK_SIZE 154
+#define ZMQ_NORM_NUM_PARITY 155
+#define ZMQ_NORM_NUM_AUTOPARITY 156
+#define ZMQ_NORM_PUSH 157
+
+/*  NORM mode options                                                         */
+#define ZMQ_NORM_FIXED 0
+#define ZMQ_NORM_CC 1
+#define ZMQ_NORM_CCL 2
+#define ZMQ_NORM_CCE 3
+#define ZMQ_NORM_CCE_ECNONLY 4
+
+#endif // ZMQ_HAVE_NORM
+
+/******************************************************************************/
 /*  GSSAPI definitions                                                        */
 /******************************************************************************/
 
