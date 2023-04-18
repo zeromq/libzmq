@@ -194,13 +194,14 @@ macro(zmq_check_tcp_tipc)
 int main(int argc, char *argv [])
 {
     struct sockaddr_tipc topsrv;
-    int sd = socket(AF_TIPC, SOCK_SEQPACKET, 0);
+    int sd = socket(PF_TIPC, SOCK_SEQPACKET, 0);
     memset(&topsrv, 0, sizeof(topsrv));
     topsrv.family = AF_TIPC;
     topsrv.addrtype = TIPC_ADDR_NAME;
     topsrv.addr.name.name.type = TIPC_TOP_SRV;
     topsrv.addr.name.name.instance = TIPC_TOP_SRV;
     fcntl(sd, F_SETFL, O_NONBLOCK);
+    tipc_addr(0, 0, 0);
 }
 "
     ZMQ_HAVE_TIPC)
