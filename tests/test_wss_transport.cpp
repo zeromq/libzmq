@@ -124,7 +124,7 @@ const char *cert =
 
 void test_roundtrip ()
 {
-    char connect_address[MAX_SOCKET_STRING + strlen ("/roundtrip")];
+    char connect_address[MAX_SOCKET_STRING + sizeof ("/roundtrip") - 1];
     size_t addr_length = sizeof (connect_address);
     void *sb = test_context_socket (ZMQ_REP);
     zmq_setsockopt (sb, ZMQ_WSS_CERT_PEM, cert, strlen (cert));
