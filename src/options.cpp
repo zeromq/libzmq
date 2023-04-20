@@ -259,7 +259,7 @@ zmq::options_t::options_t () :
     can_recv_hiccup_msg (false),
     norm_mode (ZMQ_NORM_CC),
     norm_unicast_nacks (false),
-    norm_buffer_size(2048),
+    norm_buffer_size (2048),
     norm_segment_size (1400),
     norm_block_size (16),
     norm_num_parity (4),
@@ -842,7 +842,7 @@ int zmq::options_t::setsockopt (int option_,
 
 #ifdef ZMQ_HAVE_NORM
         case ZMQ_NORM_MODE:
-            if (is_int && value >= 0 && value <=4) {
+            if (is_int && value >= 0 && value <= 4) {
                 norm_mode = value;
                 return 0;
             }

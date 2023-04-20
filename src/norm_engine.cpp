@@ -152,14 +152,18 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
         NormSetDefaultUnicastNack (norm_session, true);
     }
     // Set TOS but check TOS ECN bit for CCE modes
-    if ((options.norm_mode == ZMQ_NORM_CCE || options.norm_mode == ZMQ_NORM_CCE_ECNONLY) && (options.tos % 4 == 0)) {
+    if ((options.norm_mode == ZMQ_NORM_CCE
+         || options.norm_mode == ZMQ_NORM_CCE_ECNONLY)
+        && (options.tos % 4 == 0)) {
         // ECN Capable Transport not set, so set it
-        NormSetTOS(norm_session, options.tos + 1);
-    } else if ((options.norm_mode == ZMQ_NORM_CCE || options.norm_mode == ZMQ_NORM_CCE_ECNONLY) && (options.tos % 4 == 3)) {
+        NormSetTOS (norm_session, options.tos + 1);
+    } else if ((options.norm_mode == ZMQ_NORM_CCE
+                || options.norm_mode == ZMQ_NORM_CCE_ECNONLY)
+               && (options.tos % 4 == 3)) {
         // Congestion Experienced is an invalid setting, remove one of the bits
-        NormSetTOS(norm_session, options.tos - 1);
+        NormSetTOS (norm_session, options.tos - 1);
     } else {
-        NormSetTOS(norm_session, options.tos);
+        NormSetTOS (norm_session, options.tos);
     }
 
     if (recv) {
@@ -167,7 +171,8 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
         // receiver sync to the sender's _current_ message transmission.
         // NORM_SYNC_STREAM tries to get everything the sender has cached/buffered
         NormSetDefaultSyncPolicy (norm_session, NORM_SYNC_STREAM);
-        if (!NormStartReceiver (norm_session, (unsigned long)options.norm_buffer_size * 1024)) {
+        if (!NormStartReceiver (
+              norm_session, (unsigned long) options.norm_buffer_size * 1024)) {
             // errno set by whatever failed
             int savedErrno = errno;
             NormDestroyInstance (norm_instance); // session gets closed, too
@@ -181,13 +186,21 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
 
     if (send) {
         // Handle invalid settings -- num_parity must be >= num_autoparity (which has a default of 0)
-        unsigned char numparity = (options.norm_num_parity >= options.norm_num_autoparity ? options.norm_num_parity : options.norm_num_autoparity);
+        unsigned char numparity =
+          (options.norm_num_parity >= options.norm_num_autoparity
+             ? options.norm_num_parity
+             : options.norm_num_autoparity);
         // Handle invalid settings -- block size must be > effective num_parity (which is <255)
-        unsigned char blocksize = (options.norm_block_size > numparity ? options.norm_block_size : numparity + 1);
+        unsigned char blocksize =
+          (options.norm_block_size > numparity ? options.norm_block_size
+                                               : numparity + 1);
         // Pick a random sender instance id (aka norm sender session id)
         NormSessionId instanceId = NormGetRandomSessionId ();
         // TBD - provide "options" for some NORM sender parameters
-        if (!NormStartSender (norm_session, instanceId, (unsigned long)options.norm_buffer_size * 1024, options.norm_segment_size, blocksize, numparity)) {
+        if (!NormStartSender (norm_session, instanceId,
+                              (unsigned long) options.norm_buffer_size * 1024,
+                              options.norm_segment_size, blocksize,
+                              numparity)) {
             // errno set by whatever failed
             int savedErrno = errno;
             NormDestroyInstance (norm_instance); // session gets closed, too
@@ -198,24 +211,27 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
         }
         // Handle NORM mode
         if (options.norm_mode == ZMQ_NORM_FIXED) {
-            NormSetTxRate(norm_session, (double)options.rate * 1000);
+            NormSetTxRate (norm_session, (double) options.rate * 1000);
         } else {
             NormSetCongestionControl (norm_session, true);
             if (options.norm_mode != ZMQ_NORM_CC) {
-                NormSetEcnSupport(norm_session, 
-                                  ((options.norm_mode == ZMQ_NORM_CCE) || (options.norm_mode == ZMQ_NORM_CCE_ECNONLY)), 
-                                  options.norm_mode == ZMQ_NORM_CCE_ECNONLY, 
-                                  options.norm_mode == ZMQ_NORM_CCL);
+                NormSetEcnSupport(
+                  norm_session, 
+                  ((options.norm_mode == ZMQ_NORM_CCE)
+                   || (options.norm_mode == ZMQ_NORM_CCE_ECNONLY)), 
+                  options.norm_mode == ZMQ_NORM_CCE_ECNONLY, 
+                  options.norm_mode == ZMQ_NORM_CCL);
             }
         }
         if (options.norm_num_autoparity > 0) {
-            NormSetAutoParity(norm_session, options.norm_num_autoparity);
+            NormSetAutoParity (norm_session, options.norm_num_autoparity);
         }
         norm_tx_ready = true;
         is_sender = true;
         if (NORM_OBJECT_INVALID
-            == (norm_tx_stream =
-                  NormStreamOpen (norm_session, (unsigned long)options.norm_buffer_size * 1024))) {
+            == (norm_tx_stream = NormStreamOpen (
+                  norm_session,
+                  (unsigned long) options.norm_buffer_size * 1024))) {
             // errno set by whatever failed
             int savedErrno = errno;
             NormDestroyInstance (norm_instance); // session gets closed, too
@@ -225,7 +241,7 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
             return -1;
         }
         // NORM Stream options
-	NormStreamSetPushEnable(norm_tx_stream, options.norm_push_enable);
+	NormStreamSetPushEnable (norm_tx_stream, options.norm_push_enable);
     }
 
     //NormSetMessageTrace(norm_session, true);
