@@ -1541,6 +1541,8 @@ TCP-friendly congestion control mode. Fixed rate mode (using datarate set by
 loss.  ECN modes will set one of the ECN Capable Transport bits in the given
 'ZMQ_TOS' if it is not set already.
 
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
 Option value unit:: 0, 1, 2, 3, 4
@@ -1555,6 +1557,8 @@ sender using unicast instead of multicast.  NORM transport endpoints specifying
 a unicast address will enable this by default, but it is disabled by default for
 multicast addresses.
 
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
 Option value unit:: boolean
@@ -1565,6 +1569,8 @@ Applicable socket types:: All, when using NORM transport.
 ZMQ_NORM_BUFFER_SIZE: Set NORM buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets NORM buffer size for NORM transport sender, receiver, and stream.
+
+NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int
@@ -1580,6 +1586,8 @@ individual NORM messages (ZMQ messages may be split over multiple NORM
 messages).  Ideally, this value should fit within the system/network maximum
 transmission unit (MTU) after accounting for additional NORM message headers
 (up to 48 bytes).
+
+NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int
@@ -1597,6 +1605,8 @@ of (255 - 'ZMQ_NORM_BLOCK_SIZE'). Minimum value is ('ZMQ_NORM_NUM_PARITY' + 1).
 Effective value may be different based on the settings of 'ZMQ_NORM_NUM_PARITY'
 and 'ZMQ_NORM_NUM_AUTOPARITY' if invalid settings are provided.
 
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
 Option value unit:: >0, <=255
@@ -1613,6 +1623,8 @@ Maximum value is 255, but is further limited to a value of
 Effective value may be different based on the setting of
 'ZMQ_NORM_NUM_AUTOPARITY' if invalid settings are provided.
 
+NOTE: in DRAFT state, not yet available in stable releases.
+
 [horizontal]
 Option value type:: int
 Option value unit:: >0, <255
@@ -1627,6 +1639,8 @@ send at the end of each FEC coding block. By default, no proactive parity
 segments will be sent; instead, parity segments will only be sent in response to
 repair requests (NACKs). Maximum value is 255, but is further limited to a 
 maximum value of 'ZMQ_NORM_NUM_PARITY'.
+
+NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int
@@ -1644,6 +1658,8 @@ discards the oldest data (which may be pending repair or may never have been
 transmitted) in favor of accepting new data. This may be useful in cases where
 it is more important to quickly deliver new data instead of reliably delivering
 older data.
+
+NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]
 Option value type:: int

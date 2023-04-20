@@ -257,7 +257,6 @@ zmq::options_t::options_t () :
     can_recv_disconnect_msg (false),
     hiccup_msg (),
     can_recv_hiccup_msg (false),
-#ifdef ZMQ_HAVE_NORM
     norm_mode (ZMQ_NORM_CC),
     norm_unicast_nacks (false),
     norm_buffer_size(2048),
@@ -266,7 +265,6 @@ zmq::options_t::options_t () :
     norm_num_parity (4),
     norm_num_autoparity (0),
     norm_push_enable (false),
-#endif // ZMQ_HAVE_NORM
     busy_poll (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
@@ -800,6 +798,48 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
                                                       &multicast_loop);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_IN_BATCH_SIZE:
+            if (is_int && value > 0) {
+                in_batch_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_OUT_BATCH_SIZE:
+            if (is_int && value > 0) {
+                out_batch_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_BUSY_POLL:
+            if (is_int) {
+                busy_poll = value;
+                return 0;
+            }
+            break;
+#ifdef ZMQ_HAVE_WSS
+        case ZMQ_WSS_KEY_PEM:
+            // TODO: check if valid certificate
+            wss_key_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_CERT_PEM:
+            // TODO: check if valid certificate
+            wss_cert_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_TRUST_PEM:
+            // TODO: check if valid certificate
+            wss_trust_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_HOSTNAME:
+            wss_hostname = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_TRUST_SYSTEM:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &wss_trust_system);
+#endif
+
 #ifdef ZMQ_HAVE_NORM
         case ZMQ_NORM_MODE:
             if (is_int && value >= 0 && value <=4) {
@@ -851,48 +891,6 @@ int zmq::options_t::setsockopt (int option_,
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &norm_push_enable);
 #endif //ZMQ_HAVE_NORM
-
-#ifdef ZMQ_BUILD_DRAFT_API
-        case ZMQ_IN_BATCH_SIZE:
-            if (is_int && value > 0) {
-                in_batch_size = value;
-                return 0;
-            }
-            break;
-
-        case ZMQ_OUT_BATCH_SIZE:
-            if (is_int && value > 0) {
-                out_batch_size = value;
-                return 0;
-            }
-            break;
-
-        case ZMQ_BUSY_POLL:
-            if (is_int) {
-                busy_poll = value;
-                return 0;
-            }
-            break;
-#ifdef ZMQ_HAVE_WSS
-        case ZMQ_WSS_KEY_PEM:
-            // TODO: check if valid certificate
-            wss_key_pem = std::string ((char *) optval_, optvallen_);
-            return 0;
-        case ZMQ_WSS_CERT_PEM:
-            // TODO: check if valid certificate
-            wss_cert_pem = std::string ((char *) optval_, optvallen_);
-            return 0;
-        case ZMQ_WSS_TRUST_PEM:
-            // TODO: check if valid certificate
-            wss_trust_pem = std::string ((char *) optval_, optvallen_);
-            return 0;
-        case ZMQ_WSS_HOSTNAME:
-            wss_hostname = std::string ((char *) optval_, optvallen_);
-            return 0;
-        case ZMQ_WSS_TRUST_SYSTEM:
-            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
-                                                     &wss_trust_system);
-#endif
 
         case ZMQ_HELLO_MSG:
             if (optvallen_ > 0) {
@@ -1340,6 +1338,41 @@ int zmq::options_t::getsockopt (int option_,
             }
             break;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_ROUTER_NOTIFY:
+            if (is_int) {
+                *value = router_notify;
+                return 0;
+            }
+            break;
+
+        case ZMQ_IN_BATCH_SIZE:
+            if (is_int) {
+                *value = in_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_OUT_BATCH_SIZE:
+            if (is_int) {
+                *value = out_batch_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_PRIORITY:
+            if (is_int) {
+                *value = priority;
+                return 0;
+            }
+            break;
+
+        case ZMQ_BUSY_POLL:
+            if (is_int) {
+                *value = busy_poll;
+            }
+            break;
+
 #ifdef ZMQ_HAVE_NORM
         case ZMQ_NORM_MODE:
             if (is_int) {
@@ -1398,40 +1431,6 @@ int zmq::options_t::getsockopt (int option_,
             break;
 #endif //ZMQ_HAVE_NORM
 
-#ifdef ZMQ_BUILD_DRAFT_API
-        case ZMQ_ROUTER_NOTIFY:
-            if (is_int) {
-                *value = router_notify;
-                return 0;
-            }
-            break;
-
-        case ZMQ_IN_BATCH_SIZE:
-            if (is_int) {
-                *value = in_batch_size;
-                return 0;
-            }
-            break;
-
-        case ZMQ_OUT_BATCH_SIZE:
-            if (is_int) {
-                *value = out_batch_size;
-                return 0;
-            }
-            break;
-
-        case ZMQ_PRIORITY:
-            if (is_int) {
-                *value = priority;
-                return 0;
-            }
-            break;
-
-        case ZMQ_BUSY_POLL:
-            if (is_int) {
-                *value = busy_poll;
-            }
-            break;
 #endif
 
 
