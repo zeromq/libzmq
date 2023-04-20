@@ -215,11 +215,11 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
         } else {
             NormSetCongestionControl (norm_session, true);
             if (options.norm_mode != ZMQ_NORM_CC) {
-                NormSetEcnSupport(
-                  norm_session, 
+                NormSetEcnSupport (
+                  norm_session,
                   ((options.norm_mode == ZMQ_NORM_CCE)
-                   || (options.norm_mode == ZMQ_NORM_CCE_ECNONLY)), 
-                  options.norm_mode == ZMQ_NORM_CCE_ECNONLY, 
+                   || (options.norm_mode == ZMQ_NORM_CCE_ECNONLY)),
+                  options.norm_mode == ZMQ_NORM_CCE_ECNONLY,
                   options.norm_mode == ZMQ_NORM_CCL);
             }
         }
@@ -241,7 +241,7 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
             return -1;
         }
         // NORM Stream options
-	NormStreamSetPushEnable (norm_tx_stream, options.norm_push_enable);
+        NormStreamSetPushEnable (norm_tx_stream, options.norm_push_enable);
     }
 
     //NormSetMessageTrace(norm_session, true);
