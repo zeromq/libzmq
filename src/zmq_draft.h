@@ -73,16 +73,14 @@
 #define ZMQ_HICCUP_MSG 114
 #define ZMQ_XSUB_VERBOSE_UNSUBSCRIBE 115
 #define ZMQ_TOPICS_COUNT 116
-
-/*  DRAFT NORM socket options                                                 */
-#define ZMQ_NORM_MODE 150
-#define ZMQ_NORM_UNICAST_NACK 151
-#define ZMQ_NORM_BUFFER_SIZE 152
-#define ZMQ_NORM_SEGMENT_SIZE 153
-#define ZMQ_NORM_BLOCK_SIZE 154
-#define ZMQ_NORM_NUM_PARITY 155
-#define ZMQ_NORM_NUM_AUTOPARITY 156
-#define ZMQ_NORM_PUSH 157
+#define ZMQ_NORM_MODE 117
+#define ZMQ_NORM_UNICAST_NACK 118
+#define ZMQ_NORM_BUFFER_SIZE 119
+#define ZMQ_NORM_SEGMENT_SIZE 120
+#define ZMQ_NORM_BLOCK_SIZE 121
+#define ZMQ_NORM_NUM_PARITY 122
+#define ZMQ_NORM_NUM_AUTOPARITY 123
+#define ZMQ_NORM_PUSH 124
 
 /*  DRAFT ZMQ_NORM_MODE options                                               */
 #define ZMQ_NORM_FIXED 0
