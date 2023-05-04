@@ -73,6 +73,21 @@
 #define ZMQ_HICCUP_MSG 114
 #define ZMQ_XSUB_VERBOSE_UNSUBSCRIBE 115
 #define ZMQ_TOPICS_COUNT 116
+#define ZMQ_NORM_MODE 117
+#define ZMQ_NORM_UNICAST_NACK 118
+#define ZMQ_NORM_BUFFER_SIZE 119
+#define ZMQ_NORM_SEGMENT_SIZE 120
+#define ZMQ_NORM_BLOCK_SIZE 121
+#define ZMQ_NORM_NUM_PARITY 122
+#define ZMQ_NORM_NUM_AUTOPARITY 123
+#define ZMQ_NORM_PUSH 124
+
+/*  DRAFT ZMQ_NORM_MODE options                                               */
+#define ZMQ_NORM_FIXED 0
+#define ZMQ_NORM_CC 1
+#define ZMQ_NORM_CCL 2
+#define ZMQ_NORM_CCE 3
+#define ZMQ_NORM_CCE_ECNONLY 4
 
 /*  DRAFT ZMQ_RECONNECT_STOP options                                          */
 #define ZMQ_RECONNECT_STOP_CONN_REFUSED 0x1

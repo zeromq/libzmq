@@ -1529,6 +1529,145 @@ Default value:: 8192
 Applicable socket types:: All, when using TCP, IPC, PGM or NORM transport.
 
 
+ZMQ_NORM_MODE: NORM Sender Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the NORM sender mode to control the operation of the NORM transport. NORM
+supports fixed rate operation (0='ZMQ_NORM_FIXED'), congestion control mode 
+(1='ZMQ_NORM_CC'), loss-tolerant congestion control (2='ZMQ_NORM_CCL'), explicit
+congestion notification (ECN)-enabled congestion control (3='ZMQ_NORM_CCE'), and
+ECN-only congestion control (4='ZMQ_NORM_CCE_ECNONLY'). The default value is 
+TCP-friendly congestion control mode. Fixed rate mode (using datarate set by
+'ZMQ_RATE') offers better performance, but care must be taken to prevent data
+loss.  ECN modes will set one of the ECN Capable Transport bits in the given
+'ZMQ_TOS' if it is not set already.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1, 2, 3, 4
+Default value:: 1 ('ZMQ_NORM_CC')
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_UNICAST_NACK: Set NORM Unicast NACK mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If set, NORM receiver will send Negative ACKnowledgements (NACKs) back to the
+sender using unicast instead of multicast.  NORM transport endpoints specifying
+a unicast address will enable this by default, but it is disabled by default for
+multicast addresses.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_BUFFER_SIZE: Set NORM buffer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets NORM buffer size for NORM transport sender, receiver, and stream.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: kilobytes
+Default value:: 2048
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_SEGMENT_SIZE: Set NORM segment size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets NORM sender segment size, which is the maximum message payload size of
+individual NORM messages (ZMQ messages may be split over multiple NORM
+messages).  Ideally, this value should fit within the system/network maximum
+transmission unit (MTU) after accounting for additional NORM message headers
+(up to 48 bytes).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Default value:: 1400
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_BLOCK_SIZE: Set NORM block size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets NORM sender block size, which is the number of segments in a NORM FEC
+coding block. NORM repair operations take place at block boundaries. Maximum
+value is 255, but parity packets ('ZMQ_NORM_NUM_PARITY') are limited to a value
+of (255 - 'ZMQ_NORM_BLOCK_SIZE'). Minimum value is ('ZMQ_NORM_NUM_PARITY' + 1).
+Effective value may be different based on the settings of 'ZMQ_NORM_NUM_PARITY'
+and 'ZMQ_NORM_NUM_AUTOPARITY' if invalid settings are provided.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0, <=255
+Default value:: 16
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_NUM_PARITY: Set number of NORM parity segments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the maximum number of NORM parity symbol segments that the sender is
+willing to calculate per FEC coding block for the purpose of reparing lost data.
+Maximum value is 255, but is further limited to a value of
+(255 - 'ZMQ_NORM_BLOCK_SIZE'). Minimum value is 'ZMQ_NORM_NUM_AUTOPARITY'.
+Effective value may be different based on the setting of
+'ZMQ_NORM_NUM_AUTOPARITY' if invalid settings are provided.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0, <255
+Default value:: 4
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_NUM_AUTOPARITY: Set number of proactive NORM parity segments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the number of NORM parity symbol segments that the sender will proactively
+send at the end of each FEC coding block. By default, no proactive parity
+segments will be sent; instead, parity segments will only be sent in response to
+repair requests (NACKs). Maximum value is 255, but is further limited to a 
+maximum value of 'ZMQ_NORM_NUM_PARITY'.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >=0, <255
+Default value:: 0
+Applicable socket types:: All, when using NORM transport.
+
+
+ZMQ_NORM_PUSH: Enable NORM push mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enables NORM stream push mode, which alters the behavior of the sender when
+enqueueing new data. By default, NORM will stop accepting new messages while
+waiting for old data to be transmitted and/or repaired. Enabling push mode
+discards the oldest data (which may be pending repair or may never have been
+transmitted) in favor of accepting new data. This may be useful in cases where
+it is more important to quickly deliver new data instead of reliably delivering
+older data.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: All, when using NORM transport.
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it

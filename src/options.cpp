@@ -257,6 +257,14 @@ zmq::options_t::options_t () :
     can_recv_disconnect_msg (false),
     hiccup_msg (),
     can_recv_hiccup_msg (false),
+    norm_mode (ZMQ_NORM_CC),
+    norm_unicast_nacks (false),
+    norm_buffer_size (2048),
+    norm_segment_size (1400),
+    norm_block_size (16),
+    norm_num_parity (4),
+    norm_num_autoparity (0),
+    norm_push_enable (false),
     busy_poll (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
@@ -832,6 +840,58 @@ int zmq::options_t::setsockopt (int option_,
                                                      &wss_trust_system);
 #endif
 
+#ifdef ZMQ_HAVE_NORM
+        case ZMQ_NORM_MODE:
+            if (is_int && value >= 0 && value <= 4) {
+                norm_mode = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_UNICAST_NACK:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &norm_unicast_nacks);
+
+        case ZMQ_NORM_BUFFER_SIZE:
+            if (is_int && value > 0) {
+                norm_buffer_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_SEGMENT_SIZE:
+            if (is_int && value > 0) {
+                norm_segment_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_BLOCK_SIZE:
+            if (is_int && value > 0 && value <= 255) {
+                norm_block_size = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_NUM_PARITY:
+            if (is_int && value >= 0 && value < 255) {
+                norm_num_parity = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_NUM_AUTOPARITY:
+            if (is_int && value >= 0 && value < 255) {
+                norm_num_autoparity = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_PUSH:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &norm_push_enable);
+#endif //ZMQ_HAVE_NORM
+
         case ZMQ_HELLO_MSG:
             if (optvallen_ > 0) {
                 unsigned char *bytes = (unsigned char *) optval_;
@@ -1312,6 +1372,65 @@ int zmq::options_t::getsockopt (int option_,
                 *value = busy_poll;
             }
             break;
+
+#ifdef ZMQ_HAVE_NORM
+        case ZMQ_NORM_MODE:
+            if (is_int) {
+                *value = norm_mode;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_UNICAST_NACK:
+            if (is_int) {
+                *value = norm_unicast_nacks;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_BUFFER_SIZE:
+            if (is_int) {
+                *value = norm_buffer_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_SEGMENT_SIZE:
+            if (is_int) {
+                *value = norm_segment_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_BLOCK_SIZE:
+            if (is_int) {
+                *value = norm_block_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_NUM_PARITY:
+            if (is_int) {
+                *value = norm_num_parity;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_NUM_AUTOPARITY:
+            if (is_int) {
+                *value = norm_num_autoparity;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NORM_PUSH:
+            if (is_int) {
+                *value = norm_push_enable;
+                return 0;
+            }
+            break;
+#endif //ZMQ_HAVE_NORM
+
 #endif
 
 
