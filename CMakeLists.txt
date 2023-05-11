@@ -1515,6 +1515,10 @@ if(BUILD_SHARED)
   if(norm_FOUND)
       target_link_libraries(libzmq norm::norm)
   endif()
+
+  if(OPENPGM_FOUND)
+      target_link_libraries(libzmq ${OPENPGM_LIBRARIES})
+  endif()
 endif()
 
 if(BUILD_STATIC)
@@ -1564,6 +1568,10 @@ if(BUILD_STATIC)
 
   if(norm_FOUND)
       target_link_libraries(libzmq-static norm::norm)
+  endif()
+
+  if(OPENPGM_FOUND)
+      target_link_libraries(libzmq-static ${OPENPGM_LIBRARIES})
   endif()
 endif()
 
