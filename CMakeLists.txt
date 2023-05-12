@@ -142,6 +142,7 @@ endif()
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
+set(pkg_config_defines "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 option(WITH_NORM "Build with support for NORM" OFF)
@@ -1463,6 +1464,7 @@ foreach(target ${build_targets})
 
   if(ENABLE_DRAFTS)
     target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
+    set(pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
   endif()
 endforeach()
 
