@@ -12,7 +12,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
-# Allow "configure --disable-maintainer-mode" to disable timestamp checking 
+# Allow "configure --disable-maintainer-mode" to disable timestamp checking
 AM_MAINTAINER_MODE([enable])
 
 m4_pattern_allow([AC_PROG_CC_C99])
@@ -53,9 +53,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.3.3: 7:3:2 (ABI version 5)
 # ZeroMQ version 4.3.4: 7:4:2 (ABI version 5)
 # ZeroMQ version 4.3.5: 7:5:2 (ABI version 5)
+# ZeroMQ version 4.4.0: 7:6:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:5:2"
+LTVER="7:6:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -367,8 +368,8 @@ case "${host_os}" in
             CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
             PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -liphlpapi"
         fi
-	# Set FD_SETSIZE to 16384
-	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
+    # Set FD_SETSIZE to 16384
+    CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
@@ -387,7 +388,7 @@ case "${host_os}" in
         fi
         AC_DEFINE(ZMQ_HAVE_GNU, 1, [Have GNU/Hurd OS])
         libzmq_on_gnu="yes"
-	AC_CHECK_LIB(rt, sem_init)
+    AC_CHECK_LIB(rt, sem_init)
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
@@ -827,30 +828,30 @@ AC_CHECK_HEADERS([alloca.h])
 # AC_CHECK_FUNCS(fork) fails on gcc 7
 AC_MSG_CHECKING([whether fork is available])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <unistd.h>]],
-		[[return fork();]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(HAVE_FORK, [1], [fork is available])
-		AM_CONDITIONAL(HAVE_FORK, true)
-	],[
-		AC_MSG_RESULT([no])
-		AM_CONDITIONAL(HAVE_FORK, false)
+    [AC_LANG_PROGRAM(
+        [[#include <unistd.h>]],
+        [[return fork();]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(HAVE_FORK, [1], [fork is available])
+        AM_CONDITIONAL(HAVE_FORK, true)
+    ],[
+        AC_MSG_RESULT([no])
+        AM_CONDITIONAL(HAVE_FORK, false)
 ])
 
 # string.h doesn't seem to be included by default in Fedora 30
 AC_MSG_CHECKING([whether strnlen is available])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <string.h>]],
-		[[size_t bar = strnlen ("foo", 1); (void)bar; return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(HAVE_STRNLEN, [1],
-		    [strnlen is available])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <string.h>]],
+        [[size_t bar = strnlen ("foo", 1); (void)bar; return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(HAVE_STRNLEN, [1],
+            [strnlen is available])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 
 AC_MSG_CHECKING([whether if_nametoindex is available])
@@ -912,66 +913,66 @@ AC_COMPILE_IFELSE(
 # pthread_setname is non-posix, and there are at least 4 different implementations
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <pthread.h>]],
-		[[pthread_setname_np ("foo"); return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_1, [1],
-		    [Whether pthread_setname_np() has 1 argument])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <pthread.h>]],
+        [[pthread_setname_np ("foo"); return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_1, [1],
+            [Whether pthread_setname_np() has 1 argument])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 2 arguments])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <pthread.h>]],
-		[[pthread_setname_np (pthread_self (), "foo"); return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_2, [1],
-		    [Whether pthread_setname_np() has 2 arguments])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <pthread.h>]],
+        [[pthread_setname_np (pthread_self (), "foo"); return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_2, [1],
+            [Whether pthread_setname_np() has 2 arguments])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 AC_MSG_CHECKING([whether signature of pthread_setname_np() has 3 arguments])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <pthread.h>]],
-		[[pthread_setname_np (pthread_self(), "foo", (void *)0); return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_3, [1],
-		    [Whether pthread_setname_np() has 3 arguments])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <pthread.h>]],
+        [[pthread_setname_np (pthread_self(), "foo", (void *)0); return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_3, [1],
+            [Whether pthread_setname_np() has 3 arguments])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 AC_MSG_CHECKING([whether pthread_set_name_np() exists])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <pthread.h>]],
-		[[pthread_set_name_np (pthread_self(), "foo"); return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_NAME, [1],
-		    [Whether pthread_set_name_np() exists])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <pthread.h>]],
+        [[pthread_set_name_np (pthread_self(), "foo"); return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_NAME, [1],
+            [Whether pthread_set_name_np() exists])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 
 
 # pthread_setaffinity_np is non-posix:
 AC_MSG_CHECKING([whether pthread_setaffinity_np() exists])
 AC_COMPILE_IFELSE(
-	[AC_LANG_PROGRAM(
-		[[#include <pthread.h>]],
-		[[cpu_set_t test; pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test); return 0;]])
-	],[
-		AC_MSG_RESULT([yes])
-		AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_AFFINITY, [1],
-		    [Whether pthread_setaffinity_np() exists])
-	],[
-		AC_MSG_RESULT([no])
+    [AC_LANG_PROGRAM(
+        [[#include <pthread.h>]],
+        [[cpu_set_t test; pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test); return 0;]])
+    ],[
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_AFFINITY, [1],
+            [Whether pthread_setaffinity_np() exists])
+    ],[
+        AC_MSG_RESULT([no])
 ])
 
 

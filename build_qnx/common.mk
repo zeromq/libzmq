@@ -11,7 +11,7 @@ NAME=libzmq
 #and USE_INSTALL_ROOT
 LIBZMQ_INSTALL_ROOT ?= $(INSTALL_ROOT_$(OS))
 
-LIBZMQ_VERSION = .4.3.4
+LIBZMQ_VERSION = .4.4.0
 
 #choose Release or Debug
 CMAKE_BUILD_TYPE ?= Release

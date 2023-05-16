@@ -1,3 +1,341 @@
+0MQ version 4.4.0 stable, released on 2023/05/??
+================================================
+
+cc12997a (HEAD -> release-candidate, origin/master, origin/HEAD, master) Merge pull request #4545 from panicgh/pc-file-fix
+2da2bd8f RELICENSE: add statement
+077dd926 Merge pull request #4546 from cdepillabout/link-openpgm-cmake-fresh
+a6c2f6ba Problem: no relicense agreement by cdepillabout
+5381be6c Problem: don't link to openpgm when building with cmake
+c079ca5c Add missing pkg_config_defines when built with CMake
+532b6127 Merge pull request #4542 from bjornstromberg/libzmq-patch-pr-4432
+f56a44d3 Problem: no relicense agreement by bjornstromberg
+47b2aec8 Problem: merged pr-4432 broke FindSodium on linux
+2d300206 Add NORM Transport configuration sockopts (#4541)
+be8af6f1 Merge pull request #4540 from keith-dev/master
+bf3d37b7 Add RELICENSE for Keith Williams
+abf2444f remove c99 extention from c++11  code
+27dda213 extend tipc check to support Android under Termux
+5a5f90e0 Merge pull request #4537 from chachoi/master
+c19d4c9b Add RELICENSE for James Choi
+10e5847f Add support for QNX 7.1 build
+1b52e19b Merge pull request #4533 from autoantwort/gnutls-include-dir
+08a6f8f8 license
+f5083949 Don't assume that GnuTLS is on the search path
+94bf58e4 Merge pull request #4522 from stephanlachnit/p-cmake-fix-devpoll
+3f5d915b Merge pull request #4523 from stephanlachnit/p-fix-cmake-pgm-vmci
+e6130935 Merge pull request #4521 from stephanlachnit/p-fix-pollset
+6147de01 RELICENSE: add statement
+87065068 CMake: properly set ZMQ_HAVE_OPENPGM and ZMQ_HAVE_VMCI
+6fc2a61d CMake: fix devpoll detection not working properly
+08d60dfd CMake: fix not defining pollset in platform.hpp
+8c725093 Merge pull request #4509 from sphaero/udploop
+b261f9a6 treat bind errors as a protocol_error instead of connection_error preventing an infinite loop of trying to create the udp socket as through the protocol_error the creation of the socket fails
+6e2d632b Merge pull request #4502 from casaroli/fix-for-nuttx
+52333da0 Add RELICENSE for Marco Casaroli
+d16db180 Do not break if malloc size is zero
+a666cb1b Merge pull request #4507 from daira/zmq_snprintf
+6dc559c0 #4494 added calls to snprintf, but did not take into account that snprintf can truncate, and then return the number of characters that would have been written without truncation.
+333c88e9 Merge pull request #4505 from barracuda156/darwin
+2438952f Add relicense statement
+74af53fd tests: use NOT APPLE instead of NOT MATCHES Clang
+f049edbf Use parenthesis for alloc_assert macro
+ce6d48c5 Merge pull request #4500 from bluca/ci
+bd0a3489 Problem: test_filter_ipc is flacky
+ccdc2f75 Problem: VMCI tests are not skipped outside VMs
+acfdf671 Merge pull request #4497 from MartinDelille/badge
+8850ccc4 Add relicense statement
+75e9a950 Add conan badge
+abb0ada5 Merge pull request #4494 from sphaero/depr_sprintf
+f7df6c85 deprecate sprint and replace with snprintf
+b674ce68 Merge pull request #4490 from bluca/ci
+a820627f Problem: test_zmq_ppoll_signals does not cleanup context
+7e0fdd82 Problem: test_zmq_ppol_signals uses fixed TCP port
+117cbe69 Problem: buffer overflow in new test case
+ee9c0919 Problem: address sanitizer complains about uninitialised func pointer
+3cafc0c2 Merge pull request #4489 from bluca/ci
+78777fb9 Problem: shipping binaries is a responsibility that requires time
+961206ab Problem: libsodium doesn't build anymore in VS2010
+7781dd1b Problem: formatting errors with clang-format-11
+47d0ecf6 Problem: missing VMCI can also return EPROTONOSUPPORT and the tests fail
+634cf9ee Problem: windows-2016 build no longer runs in CI
+39199565 Problem: build fails with PGM + CXX98 + clang++
+049f79f7 Merge pull request #4488 from ilkondr/ilkondr/poll_eintr
+04720b6b Problem: message can't be received due to signal
+8d0f6f35 Merge pull request #4486 from Rabenda/fix/qemu-user-build
+48960c22 fix: fix build on qemu-user
+bdd471fa Merge pull request #4480 from trofi/gcc-13-rebind-fix
+438d5d88 src/secure_allocator.hpp: define missing 'rebind' type
+dfbfc59c Merge pull request #4432 from Teebonne/patch-1
+da74015b Create Teebonne.md
+c59104a0 Add ZMQ_TOPICS_COUNT socket option (#4459)
+20de92ac Merge pull request #4466 from td-krzysiek/fix-missing-sodium-link-directory
+2eb9d59c add relicense note
+80e5bfea fix missing sodium link_directories
+037dd199 Merge pull request #4462 from stephan57160/master
+684ebb26 Problem: Main documentation refers to Android NDK 24, when 25 is currently in use.
+fcd519ba Android specific documentation update.
+117ddabd Android minor fix in documentation.
+9f47e064 Documentation update.
+ebe0edaa More enhancements and configuration variables to Android CI build scripts.
+40620f9b Android helpers minor fixes.
+30e950ab Problem: Android dependencies are downloaded in an hard-coded /tmp/tmp-deps.
+91bc18ee Enriched Android helpers
+3aeadbd1 Problem: android_build_library can be more robust & generic
+f91e3e41 Problem: android_clone_library() review
+308c94e9 Problem: android_download_ndk can be more 'autonomous'.
+7fad9599 Fix typo in zmq_socket_monitor_versioned docs (#4458)
+3ff3c6cd Merge pull request #4456 from djolemanojlovic/fix_4106
+aeea10c0 Add RELICENSE statement
+6cc694d8 Problem: Handshake timeout error with ZMTP_2_0
+8d4f4efe Merge pull request #4452 from stephan57160/master
+6d9c0b83 Problem: Android helpers have duplicate init code.
+1d3ad106 Merge pull request #4451 from stephan57160/master
+c1bcb53b Merge pull request #4450 from stephan57160/master
+8742763c Problem: Android build documentation to be updated.
+0e887a40 Problem: Android docker image is outdated.
+bfd50609 Merge pull request #4449 from stephan57160/master
+6fb3a58c Problem: Android helpers must provide build/clone functions.
+3dd2a696 Merge pull request #4448 from stephan57160/master
+69c237ef Problem: Android helpers should export more compilation chain related variables
+7ff35715 Merge pull request #4446 from stephan57160/master
+7c3a420b Problem: Android CI build tools does not support LIBSODIUM_ROOT
+34ae0626 Merge pull request #4445 from stephan57160/master
+e1078f2e Problem: Android CI build helper has no trace function.
+2b2fb9c7 Problem: Android NDK 22 download broken since support of NDK 23. (#4444)
+2a7c9efe Problem: Android build environment variables need clarifications. (#4443)
+e6e76096 Problem: Android APP fails to load ZMQ (ARM64 only) (#4442)
+ec1953e6 Merge pull request #4441 from stephan57160/master
+3c50bd65 Added RELICENSE statement
+a3f95107 Merge pull request #4439 from stephan57160/master
+3022e7e0 Regression: Android build fails with libsodium.
+c19f8302 Merge pull request #4438 from stephan57160/master
+863b329c Problem: Android CI build scripts need minor enhancements (traces & cleanup).
+65b33ebe Problem: Android APP fails to load ZMQ since NDK r25.x (#4437)
+1c923009 Merge pull request #4435 from stephan57160/master
+426985cb TAB -> SPACE
+a20527da Problem: Android build system needs some debug (./configure options)
+875c2b15 Merge pull request #4433 from stephan57160/master
+0d49eddf Problem: Android build script may fail silently
+8061a33e sodium, not Sodium
+a782d79d Merge pull request #4431 from stephan57160/master
+8b8fb6d8 Problem: Android helpers no not validate dependent libraries.
+e15fb044 Merge pull request #4430 from nyfix/test_spec_req_tmo
+25b3e7af avoid intermittent timeouts in test (esp. when run w/ASAN etc.)
+c73447b9 Merge pull request #4429 from benjdero/master
+1f1e8145 Problem: Default Android NDK version is not aligned with zproject
+ec6f3b1d Merge pull request #4427 from stephan57160/master
+d4dd8a54 Changed more git:gihub.com to https://github.com
+a7774e38 Problem: builds/android/build.sh fails with CURVE=libsodium
+9d4685d9 [document] add vcpkg instruction (#4425)
+0ec2178e Merge pull request #4422 from minrk/bind-can-fail
+bf906ee3 AF_UNIX support may fail on bind
+b2921d71 check rc in make_fdpair
+4e193f36 Problem: some tools misdetect null access or broken libsodium implementation
+05701e4a Merge pull request #4412 from caicaiking/master
+65eee935 Update tongsong-cai.md
+6d131718 Add RELICENSE statement
+717d1980 Problem: get_opt function read the options value maybe not thread safe
+0251be4d Merge pull request #4409 from nevalsar/master
+5a952322 Add relicense for nevalsar
+ea1962b8 Problem: Incorrect formatting of documentation in zmq_udp.txt
+8fd1ec05 Merge pull request #4406 from abaelhe/patch-2
+ceaccd7f Permission to Relicense under relevant approved license
+37224c93 Merge pull request #4383 from benjdero/master
+5f6f708f Revert "Problem: Libs crash at runtime on Android when built with NDK 23+"
+2d805026 Merge pull request #4382 from benjdero/master
+9c6f09cb Problem: Libs crash at runtime on Android when built with NDK 23+
+f7d49100 Merge pull request #4381 from benjdero/master
+a49a4d09 Problem: Accidentaly deleted a comment when updating Android build scripts
+ecfa5ecc Merge pull request #4380 from benjdero/master
+d1ee71a6 Problem: Android build scripts does not work with latest NDK versions
+edfbb1ce default to not building tests if cmake version can't handle skipped tests (#4376)
+572eb008 Merge pull request #4365 from bluca/obs
+c5d1bbf6 Problem: cannot use obs_scm which is faster than tar_scm
+2ab472e7 Problem: manual release OBS trigger is flaky
+e9e01faa Merge pull request #4360 from darkdragon-001/fix-pkgconfig
+58c2ac15 Add RELICENSE.
+ff2987d2 Fix pkgconfig
+f13f891c Merge pull request #4357 from ferdnyc/doc-spec-ref
+159bf0f3 Problem: Docs reference outdated spec
+81a8211e Merge pull request #4348 from rex4539/typos
+538fdb6e Add relicense statement
+6b8dd84a Fix typos
+ca6dc861 Merge pull request #4346 from Jasper-Bekkers/patch-2
+d01f244c Add relicense
+aea0665e Fix minor casing issue in include files
+a01d259d Merge pull request #4334 from bluca/gcc_fix
+176d72cc Problem: build fails with gcc 12
+f0339164 Add relicense statement for Cziken
+612170a5 Add relicense grant from hitstergtd
+36f3d50c Merge pull request #4328 from tranthamp/master
+e38a7f84 Add license file for tranthamp
+6473bf41 problem: kevent udata is now void* on NetBSD Current (10)
+8e98b79f Merge pull request #4325 from fanquake/fix_builtin_typo
+25d0a280 problem: typo in configure.ac output
+ee09926c Merge pull request #4323 from boscosiu/cmake-export-use-draft-api
+4d0f4ebd Problem: ZMQ_BUILD_DRAFT_API define is not propagated to dependent CMake projects
+7755c844 Merge pull request #4317 from tarmo/router-metadata-prefetch
+74529d97 Problem: ROUTER loses first frame metadata on message prefetch
+ab9c7add Merge pull request #4314 from ThalesGroup/issue-4312-epoll-invalid-null-pointer
+f6eb59c2 issue-4312 Add relicnce file.
+2c415b6f Problem: inside the event array, epoll return an event with invalid data pointer which create a segmentation fault
+1d363374 Merge pull request #4311 from myd7349/fix-sockaddr_un-redefinition
+471ea68c Problem: struct sockaddr_un redefinition
+5eb0b00c Problem: In rare cases, afunix.h doesn't contain a definition for struct sockaddr_un (#4310)
+5a9c174d Merge pull request #4309 from dgloe-hpe/3313-fork-detection
+72b53590 Problem: Missing relicense statement for dgloe-hpe
+240e36af Problem: Fix fork detection on gcc 7
+4b480079 add win/arm64 to supported platform list
+2375ca8b Merge pull request #4299 from nsait-linaro/enable_woa64
+0d86aa51 Fix linting error reported by clang-format
+c3b3ea7e add relicense for niyas sait
+e9f86fee Get cycle count from ARM64 PMCCNTR_EL0 register
+329824ca Merge pull request #4294 from thielepaul/master
+add81132 Problem: no relicense agreement by thielepaul
+6737d509 Problem: if ZMQ_XPUB_VERBOSER is used with proxies unsubscribe messages are lost
+d62fd1ac Problem: formatting broken
+bb7a1cc0 Update decoder_allocators.cpp
+8f238ae0 Create qzkLicense
+bddd0bc6 Merge pull request #4290 from thxkiwi/PR_issue_4287
+a6ed5b7a Adding missing RELICENSE file
+7c625afc Problem: (Windows) /GL /LTCG breaks builds when the compiler/linker of static library differs from compiler/linker of executable
+36d6b5d9 Problem: polling_util.hpp missing sys/select.h include (#4283)
+b2ab09bf Merge pull request #4285 from mjvankampen/fix/cmake_cxx_standard
+c036d662 Problem: newer cmake versions set CMAKE_C(XX)_FLAGS at a later stage not allowing a user to override the standard
+519e2bf1 Problem: Android build script isn't compatible with latest NDK version (#4278)
+7c2df78b Problem: Invalid and inconsistent poller docs
+e39a93e6 Problem: OBS CI config needs update following breaking change
+9fbfa40b Problem: when linking to libzmq in my project, I want zmq symbols to remain invisible to users of my library. There is no way to control this, since visibility is set automatically through ZMQ_EXPORT based on OS and compiler.
+5d8d8575 Merge pull request #4264 from analogist/master
+228edc92 fix test comparison between -1 and unsigned winsock2.h socket return
+de0b3e72 Merge pull request #4255 from egpbos/zmq_ppoll
+36e4c9b4 add zmq_ppoll
+f730e038 Merge pull request #4259 from bluca/ci
+cf8afcc4 Problem: Travis is no longer free for FLOSS projects
+6f200814 Problem: some tests occasionally fail on OBS
+2a954b30 Problem: test_security_curve always fails when run by CMake under Github Actions
+276bab8d Problem: test_socks and test_proxy hang under valgrind in Github Actions
+e3d37a82 Problem: some tests time out in CI under Valgrind
+0f706bdd Problem: formatting errors
+11f08029 Problem: VMCI might not be supported by CI
+37c548d6 Problem: test_pair_tcp_cap_net_admin requires privileges and might fail
+0eefa8b5 Problem: README.md does not mention Libera.chat
+2bfef9af epoll: add missing override statement
+ade334fa Merge pull request #4258 from timblechmann/feature/add-missing-override-statements
+51e97c54 add missing override statements
+5d04e20a relicense: add relicense statement for tim blechmann
+056f37f3 Problem: fast vector resize bug
+80fef559 Merge pull request #4246 from YunYe-Pu/yunye-patch-wss
+c8dfa369 Add relicense statement for Yunye Pu
+0e3073f4 Problem: WSS broken under contention
+bcb659e0 Problem: calling randombytes_close with libsodium can crash Contexts in other threads (#4242)
+f6e99e72 Merge pull request #4236 from ChrisThrasher/enable-drafts-messages
+4756c04d Correct messages about whether or not the draft API is being built
+c45750a2 Problem: formatting broken
+1caef95b Merge pull request #4235 from saschavv/fix_widechar_path_crash
+efd62e3e Add missing relicense agreement
+720ad055 Fix crash in context with wide characters in path
+a2d21f63 Merge pull request #4234 from sabotagebeats/fix/issues/4231
+430ffe61 fix: relicense
+06aba27b fix: building libzmq fails with error src/clock.cpp:131:16: error: unused variable 'nsecs_per_usec'
+72b03aa2 Merge pull request #4230 from bluca/ci
+ddfddf8f Problem: appveyor has broken libsodium cache
+0e795be8 Problem: OSX Travis builds using homebrew are timing out
+6f760265 Problem: Appveyor build fails to clone libsodium
+5cc67551 Merge pull request #4227 from ChrisThrasher/remove_language_extensions
+ef110f92 Add RELICENSE statement
+4fc83178 Use standard C11 and C++11
+1d2e9728 Merge pull request #4228 from bluca/update_wepoll
+c7edbea9 Problem: wepoll is out of date, known issues on Windows
+ca8e30ed fixes for UBSAN warnings (#4223)
+fb9fb00e Problem: formatting is broken
+9b2e1fa2 Merge pull request #4211 from egpbos/patch-1
+535bc2ab add relicense statement for egpbos
+3b9ef60f Merge pull request #4215 from bluca/test_inproc_connect
+de03c9a6 Problem: test_inproc_connect occasionally fails on slow archs
+d3d685bb Merge pull request #4214 from bluca/obs_pr
+6fc817a1 Problem: build/test breakages on various distros are discovered only after merge
+416b7aea Merge pull request #4213 from bluca/build
+92b2c38a Problem: build with curve fails on GCC 11
+ece244dd fix unused parameter warning when POLL_BASED_ON_SELECT
+b40a7931 Merge pull request #4207 from benjdero/master
+2af72796 Problem: Outdated Android build tools
+e86237da Merge pull request #4205 from somdoron/master
+1c6c5514 problem: no way to know when connection is temporarly dropped
+d7e439d3 Problem: travis badge points to old travis-ci.org
+2ac9755e Remove Windows-specific defines from zmq.h.
+78ea4ee7 Merge pull request #4193 from somdoron/master
+30a0c590 problem: outpipe can be null when sending disconnect msg
+e3c4ec24 Merge pull request #4192 from minrk/appveyor-gh-release
+60bf76a4 [appveyor] upload artifacts to GitHub releases
+0c5da25d Merge pull request #4190 from yitzchak/fix-poll-docs
+59040f8d Add RELICENSE for yitzchak
+d6e7ea44 Update fd slot type to zmq_fd_t
+04c37982 Support so_busy_poll (#4188)
+ceb5fa39 Merge pull request #4181 from neheb/patch-1
+a02cbd06 fix unused variables under windows
+497bcacb Merge pull request #4176 from nyfix/reconn-options
+6bf7728e ZMQ_RECONNECT_STOP options are intended to be inclusive (i.e., can be OR'ed together),  and so values must be powers of two
+2e932bb5 Merge pull request #4175 from mceSystems/master
+00d10005 Fix iOS build failure for x86_64
+
+b4f758da Merge pull request #4174 from jlsantiago0/build-fix-bsd
+
+895e976f Merge pull request #4173 from jlsantiago0/mingw-build-fix2
+43cb2600 Merge pull request #4172 from jlsantiago0/mingw-build-fix1
+7d8b1496 Fix Build BSD
+
+e6e68373 Fix MINGW with pthread cv
+23565469 MINGW Build Fix.
+
+3070a4b2 Merge pull request #4163 from bluca/gcc11
+b82777bf Problem: compiler error with GCC 11
+
+02be28e8 rpm: fix license shortname
+5a139a55 rpm: fix Group metadata
+347555f4 rpm: run make check in %check area
+
+4e8f02a8 Merge pull request #4156 from nyfix/clangtidy-new
+229fbeee Merge pull request #4155 from nyfix/clangtidy-format
+251a1558 add suppressions for clang-tidy-10 on ubuntu:
+dc2ee409 - fix formatting problems in .clang-tidy options
+
+bd5f5a10 Merge pull request #4148 from bluca/vmci
+4bb9a4cc Problem: no CI coverage for VMCI transport
+8fe5b54b Problem: VMCI build broken
+
+4ecb0454 Merge pull request #4149 from gummif/gfa/strtok
+
+c325ed12 Problem: strtok is not thread safe
+
+c515671b Merge pull request #4145 from gummif/gfa/malloc-vec
+
+31ebe351 Merge pull request #4146 from gummif/gfa/unused-vars
+
+fc6255ff Merge pull request #4143 from jlsantiago0/master
+
+4b61c67e Problem: C style malloc and free
+
+72c8cc39 Fix Fedora33 s390x build.
+
+8432cc37 Merge pull request #4137 from tarmo/xpub-manual-subscription-race
+
+2df7ab6a Problem: XPUB socket allows manual subscription on terminated pipe
+
+b3722cf9 Merge pull request #4132 from sab24/master
+
+
+15408f56 Fixes Firefox WebSocket upgrade request in WebSocket engine
+
+
+
+16af1bd6 Problem: test_pubsub broken everywhere
+
+
+2dd24d6d Problem: norm fails to compile under windows (#4123)
+https://github.com/zeromq/libzmq/pull/4123
+
+
 0MQ version 4.3.4 stable, released on 2021/01/17
 ================================================
 
@@ -1360,38 +1698,38 @@ Major changes
 
 * New wire level protocol, ZMTP/3.0, see http://rfc.zeromq.org/spec:23.
   Does not yet implement the SUBSCRIBE, CANCEL, PING, and PONG commands.
-  
-* New security framework, from plain user+password to strong encryption, 
+
+* New security framework, from plain user+password to strong encryption,
   see section below. See http://hintjens.com/blog:49 for a tutorial.
-  
-* New ZMQ_STREAM socket type for working as a TCP client or server. See: 
+
+* New ZMQ_STREAM socket type for working as a TCP client or server. See:
   tests/test_stream.cpp.
-  
+
 Improvements
 ------------
 
 * You can now connect to an inproc:// endpoint that does not already
   exist. This means inproc:// no longer needs careful set-up, but it may
-  break code that relied on the old behaviour. See: 
+  break code that relied on the old behaviour. See:
   tests/test_inproc_connect.cpp.
- 
-* Libzmq now checks socket types at connection time, so that trying to 
+
+* Libzmq now checks socket types at connection time, so that trying to
   connect a 'wrong' socket type will fail.
-  
+
 * New zmq_ctx_shutdown API method will shutdown a context and send ETERM
   to blocking calls, without blocking. Use zmq_ctx_term to finalise the
   process.
-  
+
 * The regression test suite has been significantly extended and improved.
-  
-* Contexts can now be terminated in forked child processes. See: 
+
+* Contexts can now be terminated in forked child processes. See:
   tests/test_fork.cpp.
-  
+
 * zmq_disconnect now respects the linger setting on sockets.
 
 * New zmq_send_const API method to send constant data (without copying).
   See: tests/test_inproc_connect.cpp.
-  
+
 * Added CMake support for static libraries.
 
 * Added test cases for socket semantics as defined in RFCs 28, 29, 30, 31.
@@ -1399,23 +1737,23 @@ Improvements
 
 * New socket option, ZMQ_PROBE_ROUTER triggers an empty message on connect.
   See: tests/test_probe_router.cpp.
-  
-* New socket option, ZMQ_REQ_CORRELATE allows for correlation of replies 
+
+* New socket option, ZMQ_REQ_CORRELATE allows for correlation of replies
   from a REP socket. See: tests/test_req_correlate.cpp.
-  
-* New socket option, ZMQ_REQ_RELAXED, lets you disable the state machine 
-  on a REQ socket, so you can send multiple requests without waiting for 
-  replies, and without getting an EFSM error. See: 
+
+* New socket option, ZMQ_REQ_RELAXED, lets you disable the state machine
+  on a REQ socket, so you can send multiple requests without waiting for
+  replies, and without getting an EFSM error. See:
   tests/test_req_relaxed.cpp.
-  
-* New socket option, ZMQ_CONFLATE restricts the outgoing and incoming 
+
+* New socket option, ZMQ_CONFLATE restricts the outgoing and incoming
   socket buffers to a single message. See: tests/test_conflate.cpp.
 
 Deprecated Options
 ------------------
 
 * ZMQ_IPV4ONLY deprecated and renamed to ZMQ_IPV6 so that options are
-  consistently "off" by default. 
+  consistently "off" by default.
 
 * ZMQ_DELAY_ATTACH_ON_CONNECT deprecated, and renamed to ZMQ_IMMEDIATE.
   See: tests/test_immediate.cpp.
@@ -1423,37 +1761,37 @@ Deprecated Options
 Security Framework
 ------------------
 
-Based on new ZMTP wire level protocol that negotiates a security 
+Based on new ZMTP wire level protocol that negotiates a security
 "mechanism" between client and server before exchanging any other data.
 
 Security mechanisms are extensible. ZMTP defines three by default:
 
-* NULL - classic ZeroMQ, with no authentication. See 
+* NULL - classic ZeroMQ, with no authentication. See
   http://rfc.zeromq.org/spec:23.
-  
+
 * PLAIN - plain-text username + password authentication. See
   http://rfc.zeromq.org/spec:24.
 
-* CURVE - secure authentication and encryption based on elliptic curve 
-  cryptography, using the Curve25519 algorithm from Daniel Bernstein and 
-  based on CurveCP's security handshake. See http://rfc.zeromq.org/spec:25, 
+* CURVE - secure authentication and encryption based on elliptic curve
+  cryptography, using the Curve25519 algorithm from Daniel Bernstein and
+  based on CurveCP's security handshake. See http://rfc.zeromq.org/spec:25,
   http://rfc.zeromq.org/spec:26, and http://curvecp.org.
-  
+
 Authentication is done by pluggable "authenticators" that connect to libzmq
 over an inproc endpoint, see http://rfc.zeromq.org/spec:27.
 
 Socket options to configure PLAIN security on client or server:
 
-* ZMQ_PLAIN_SERVER, ZMQ_PLAIN_USERNAME, ZMQ_PLAIN_PASSWORD. See 
+* ZMQ_PLAIN_SERVER, ZMQ_PLAIN_USERNAME, ZMQ_PLAIN_PASSWORD. See
   tests/test_security_plain.
-  
+
 Socket options to configure CURVE security on client or server:
 
-* ZMQ_CURVE_SERVER, ZMQ_CURVE_PUBLICKEY, ZMQ_CURVE_SECRETKEY, 
+* ZMQ_CURVE_SERVER, ZMQ_CURVE_PUBLICKEY, ZMQ_CURVE_SECRETKEY,
   ZMQ_CURVE_SERVERKEY. See tests/test_security_curve.cpp.
-  
+
 Socket options to configure "domain" for ZAP handler:
- 
+
 * ZMQ_ZAP_DOMAIN, see tests/test_security_null.cpp.
 
 Support for encoding/decoding CURVE binary keys to ASCII:
