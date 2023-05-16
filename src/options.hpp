@@ -313,6 +313,16 @@ struct options_t
     std::vector<unsigned char> hiccup_msg;
     bool can_recv_hiccup_msg;
 
+    // NORM Options
+    int norm_mode;
+    bool norm_unicast_nacks;
+    int norm_buffer_size;
+    int norm_segment_size;
+    int norm_block_size;
+    int norm_num_parity;
+    int norm_num_autoparity;
+    bool norm_push_enable;
+
     //  This option removes several delays caused by scheduling, interrupts and context switching.
     int busy_poll;
 };

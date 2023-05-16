@@ -149,6 +149,7 @@ endif()
 # Will be used to add flags to pkg-config useful when apps want to statically link
 set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
+set(pkg_config_defines "")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 option(WITH_NORM "Build with support for NORM" OFF)
@@ -1485,11 +1486,17 @@ foreach(target ${build_targets})
 
   if(ENABLE_DRAFTS)
     target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
+    set(pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
   endif()
 endforeach()
 
 if(BUILD_SHARED)
   target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+
+  if(QNX)
+    target_link_libraries(libzmq -lsocket)
+  endif()
+
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq ${GNUTLS_LIBRARIES})
     target_include_directories(libzmq PRIVATE "${GNUTLS_INCLUDE_DIR}")
@@ -1531,6 +1538,10 @@ if(BUILD_SHARED)
 
   if(norm_FOUND)
       target_link_libraries(libzmq norm::norm)
+  endif()
+
+  if(OPENPGM_FOUND)
+      target_link_libraries(libzmq ${OPENPGM_LIBRARIES})
   endif()
 endif()
 
@@ -1581,6 +1592,10 @@ if(BUILD_STATIC)
 
   if(norm_FOUND)
       target_link_libraries(libzmq-static norm::norm)
+  endif()
+
+  if(OPENPGM_FOUND)
+      target_link_libraries(libzmq-static ${OPENPGM_LIBRARIES})
   endif()
 endif()
 
