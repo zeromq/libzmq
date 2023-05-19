@@ -133,10 +133,7 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
     // There's many other useful NORM options that could be applied here
     if (!NormIsUnicastAddress (addr)) {
         // These only apply for multicast sessions
-        //NormSetTTL(norm_session, options.multicast_hops);  // ZMQ default is 1
-        NormSetTTL (
-          norm_session,
-          255); // since the ZMQ_MULTICAST_HOPS socket option isn't well-supported
+        NormSetTTL (norm_session, options.multicast_hops);
         NormSetRxPortReuse (
           norm_session,
           true); // port reuse doesn't work for non-connected unicast
