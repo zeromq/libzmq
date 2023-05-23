@@ -292,14 +292,12 @@ void zmq::thread_t::
     bool use_nice_instead_priority =
       (policy != SCHED_FIFO) && (policy != SCHED_RR);
 
-    if (_thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
-        if (use_nice_instead_priority)
-            param.sched_priority =
-              0; // this is the only supported priority for most scheduling policies
-        else
-            param.sched_priority =
-              _thread_priority; // user should provide a value between 1 and 99
-    }
+    if (use_nice_instead_priority)
+        param.sched_priority =
+          0; // this is the only supported priority for most scheduling policies
+    else if (_thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
+        param.sched_priority =
+          _thread_priority; // user should provide a value between 1 and 99
 
 #ifdef __NetBSD__
     if (policy == SCHED_OTHER)
@@ -318,7 +316,8 @@ void zmq::thread_t::
 
 #if !defined ZMQ_HAVE_VXWORKS
     if (use_nice_instead_priority
-        && _thread_priority != ZMQ_THREAD_PRIORITY_DFLT) {
+        && _thread_priority != ZMQ_THREAD_PRIORITY_DFLT
+        && _thread_priority > 0) {
         // assume the user wants to decrease the thread's nice value
         // i.e., increase the chance of this thread being scheduled: try setting that to
         // maximum priority.
