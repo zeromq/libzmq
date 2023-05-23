@@ -54,6 +54,7 @@
 #define ZMQ_NORM_NUM_PARITY 122
 #define ZMQ_NORM_NUM_AUTOPARITY 123
 #define ZMQ_NORM_PUSH 124
+#define ZMQ_BIND_RESOLVE_NIC 125
 
 /*  DRAFT ZMQ_NORM_MODE options                                               */
 #define ZMQ_NORM_FIXED 0

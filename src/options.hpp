@@ -298,6 +298,11 @@ struct options_t
 
     //  This option removes several delays caused by scheduling, interrupts and context switching.
     int busy_poll;
+
+    // Behaviour of name resolution when binding.
+    // If true, names should be resolved as network interfaces.
+    // If false, names should be resolved as host names.
+    bool bind_resolve_as_nic;
 };
 
 inline bool get_effective_conflate_option (const options_t &options)

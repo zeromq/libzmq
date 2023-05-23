@@ -238,7 +238,8 @@ zmq::options_t::options_t () :
     norm_num_parity (4),
     norm_num_autoparity (0),
     norm_push_enable (false),
-    busy_poll (0)
+    busy_poll (0),
+    bind_resolve_as_nic(true)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);
@@ -906,6 +907,9 @@ int zmq::options_t::setsockopt (int option_,
             return 0;
 
 
+        case ZMQ_BIND_RESOLVE_NIC:
+            return do_setsockopt_int_as_bool_relaxed (optval_, optvallen_,
+                                                      &bind_resolve_as_nic);
 #endif
 
         default:
