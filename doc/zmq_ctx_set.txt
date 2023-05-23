@@ -66,7 +66,8 @@ The 'ZMQ_THREAD_PRIORITY' argument sets scheduling priority for
 internal context's thread pool. This option is not available on windows.
 Supported values for this option depend on chosen scheduling policy.
 On Linux, when the scheduler policy is SCHED_OTHER, SCHED_IDLE or SCHED_BATCH, the OS scheduler
-will not use the thread priority but rather the thread "nice value"; in such cases
+will not use the thread priority but rather the thread "nice value"; in such cases,
+if 'ZMQ_THREAD_PRIORITY' is set to a strictly positive value,
 the system call "nice" will be used to set the nice value to -20 (max priority) instead of
 adjusting the thread priority (which must be zero for those scheduling policies).
 Details can be found in sched.h file, or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
