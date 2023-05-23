@@ -212,7 +212,7 @@ macro(zmq_check_pthread_setname)
   message(STATUS "Checking pthread_setname signature")
   set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
   set(CMAKE_REQUIRED_FLAGS "-D_GNU_SOURCE -Werror -pthread")
-  check_c_source_runs(
+  check_c_source_compiles(
     "
 #include <pthread.h>
 
@@ -223,7 +223,7 @@ int main(int argc, char *argv [])
 }
 "
     ZMQ_HAVE_PTHREAD_SETNAME_1)
-  check_c_source_runs(
+  check_c_source_compiles(
     "
 #include <pthread.h>
 
@@ -234,7 +234,7 @@ int main(int argc, char *argv [])
 }
 "
     ZMQ_HAVE_PTHREAD_SETNAME_2)
-  check_c_source_runs(
+  check_c_source_compiles(
     "
 #include <pthread.h>
 
@@ -245,7 +245,7 @@ int main(int argc, char *argv [])
 }
 "
     ZMQ_HAVE_PTHREAD_SETNAME_3)
-  check_c_source_runs(
+  check_c_source_compiles(
     "
 #include <pthread.h>
 
@@ -263,7 +263,7 @@ macro(zmq_check_pthread_setaffinity)
   message(STATUS "Checking pthread_setaffinity signature")
   set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
   set(CMAKE_REQUIRED_FLAGS "-D_GNU_SOURCE -Werror -pthread")
-  check_c_source_runs(
+  check_c_source_compiles(
     "
 #include <pthread.h>
 
