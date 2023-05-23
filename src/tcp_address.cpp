@@ -43,7 +43,7 @@ zmq::tcp_address_t::tcp_address_t (const sockaddr *sa_, socklen_t sa_len_) :
         memcpy (&_address.ipv6, sa_, sizeof (_address.ipv6));
 }
 
-int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
+int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, bool bind_)
 {
     // Test the ';' to know if we have a source address in name_
     const char *src_delimiter = strrchr (name_, ';');
@@ -74,7 +74,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
 
     ip_resolver_options_t resolver_opts;
 
-    resolver_opts.bindable (local_)
+    resolver_opts.bindable (bind_)
       .allow_dns (!local_)
       .allow_nic_name (local_)
       .ipv6 (ipv6_)

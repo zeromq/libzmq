@@ -331,12 +331,14 @@ void zmq::tune_tcp_busy_poll (fd_t socket_, int busy_poll_)
 
 zmq::fd_t zmq::tcp_open_socket (const char *address_,
                                 const zmq::options_t &options_,
-                                bool local_,
+                                bool bind_,
                                 bool fallback_to_ipv4_,
                                 zmq::tcp_address_t *out_tcp_addr_)
 {
+    //  Address resolved as local interface ?
+    bool local_ = bind_ && options_.bind_resolve_as_nic;
     //  Convert the textual address into address structure.
-    int rc = out_tcp_addr_->resolve (address_, local_, options_.ipv6);
+    int rc = out_tcp_addr_->resolve (address_, local_, options_.ipv6, bind_);
     if (rc != 0)
         return retired_fd;
 
@@ -347,7 +349,7 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
     if (s == retired_fd && fallback_to_ipv4_
         && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
         && options_.ipv6) {
-        rc = out_tcp_addr_->resolve (address_, local_, false);
+        rc = out_tcp_addr_->resolve (address_, local_, false, bind_);
         if (rc != 0) {
             return retired_fd;
         }
