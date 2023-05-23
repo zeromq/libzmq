@@ -1668,6 +1668,19 @@ Option value unit:: boolean
 Default value:: 0 (false)
 Applicable socket types:: All, when using NORM transport.
 
+ZMQ_BIND_RESOLVE_NIC: Configure name resolution of zmq_bind
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When binding sockets, names are by default resolved as network interface names.
+This option allow to change this behaviour to resolve names as hostname instead.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1 (true)
+Applicable socket types:: All, when using TCP transport.
+
 
 RETURN VALUE
 ------------
