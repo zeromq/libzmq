@@ -273,8 +273,8 @@ Main web site: <http://www.zeromq.org/>
 Report bugs to the 0MQ development mailing list: <zeromq-dev@lists.zeromq.org>
 
 
-COPYING
+LICENSE
 -------
-Free use of this software is granted under the terms of the GNU Lesser General
-Public License (LGPL). For details see the files `COPYING` and `COPYING.LESSER`
-included with the 0MQ distribution.
+Free use of this software is granted under the terms of the Mozilla Public
+License Version 2.0 (MPL-2.0). For details see the file `LICENSE` included with
+the 0MQ distribution.

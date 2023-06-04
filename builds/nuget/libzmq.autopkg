@@ -5,7 +5,7 @@ nuget{
     title: ZMQ - Code Connected;
     authors: { zeromq };
     owners: { phreed, jgoz };
-    licenseUrl: "https://www.gnu.org/licenses/lgpl.html";
+    licenseUrl: "https://www.mozilla.org/MPL/2.0/";
     projectUrl: "http://www.zeromq.org/";
     iconUrl: "http://www.zeromq.org/local--files/admin:css/logo.gif";
     requireLicenseAcceptance: false;

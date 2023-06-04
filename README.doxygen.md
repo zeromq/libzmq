@@ -38,7 +38,7 @@ Freenode network (irc.freenode.net).
 
 ## Copyright
 Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file.  
-The project license is specified in COPYING and COPYING.LESSER.
+The project license is specified in LICENSE.
 
 The names "ØMQ", "ZeroMQ", "0MQ", and the ØMQ logo are registered trademarks
 of iMatix Corporation ("iMatix") and refers to either (a) the original libzmq
