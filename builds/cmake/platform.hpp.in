@@ -75,7 +75,6 @@
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_HAVE_CURVE
-#cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
 #cmakedefine SODIUM_STATIC
 #cmakedefine ZMQ_USE_GNUTLS

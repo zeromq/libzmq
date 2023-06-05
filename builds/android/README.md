@@ -93,11 +93,10 @@ do not forget to disable [Android cleanup](#android-build-cleanup).
 
 ### Cryptographic configuration
 
-The variable CURVE accepts 3 different values: 
+The variable CURVE accepts 2 different values:
 
     ""          : LIBZMQ is built without any encryption support.
     "libsodium" : LIBZMQ is built with LIBSODIUM encryption support (see below).
-    "tweetnacl" : LIBZMQ is build with embedded encryption support.
 
 ### Other configuration variables
 

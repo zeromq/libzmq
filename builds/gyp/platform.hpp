@@ -40,7 +40,6 @@
 
 //  Set for all platforms
 #define ZMQ_HAVE_CURVE 1
-#define ZMQ_USE_TWEETNACL 1
 
 #if defined ZMQ_HAVE_WINDOWS
 #   define ZMQ_USE_SELECT 1

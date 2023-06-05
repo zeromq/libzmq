@@ -2,7 +2,6 @@
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
   <Rule Name="libzmq-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
     <Rule.Categories>
-      <Category Name="tweet" DisplayName="tweet" />
       <Category Name="sodium" DisplayName="sodium" />
       <Category Name="openpgm" DisplayName="openpgm" />
       <Category Name="gssapi" DisplayName="gssapi" />
@@ -12,10 +11,6 @@
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
-    <EnumProperty Name="Option-tweet" DisplayName="Enable Tweet NaCl" Description="Enable Tweet NaCl build option (overrides Sodium)" Category="tweet">
-      <EnumValue Name="" DisplayName="No" />
-      <EnumValue Name="true" DisplayName="Yes" />
-    </EnumProperty>
     <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable Sodium build option" Category="sodium">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />

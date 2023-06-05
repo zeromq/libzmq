@@ -619,23 +619,11 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
-ZMQ_RECONNECT_IVL_MAX: Retrieve maximum reconnection interval
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection
-interval for the specified 'socket'.  This is the maximum period 0MQ shall wait
-between attempts to reconnect. On each reconnect attempt, the previous interval
-shall be doubled until ZMQ_RECONNECT_IVL_MAX is reached. This allows for
-exponential backoff strategy. Default value means no exponential backoff is
-performed and reconnect interval calculations are only based on
-ZMQ_RECONNECT_IVL.
-
-NOTE:  Values less than ZMQ_RECONNECT_IVL will be ignored.
-
-[horizontal]
-Option value type:: int
-Option value unit:: milliseconds
-Default value:: 0 (only use ZMQ_RECONNECT_IVL)
-Applicable socket types:: all, only for connection-oriented transport
+ZMQ_RECONNECT_IVL_MAX: DEPRECATED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_IVL_MAX option is an empty stub that only returns an
+*EOPNOTSUPP* error, as the author did not provide a relicense agreement for
+the Mozilla Public License v2 relicense of libzmq.
 
 
 ZMQ_RECONNECT_STOP: Retrieve condition where reconnection will stop
@@ -985,8 +973,8 @@ Applicable socket types:: All, when using TCP, IPC, PGM or NORM transport.
 
 ZMQ_TOPICS_COUNT: Number of topic subscriptions received
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Gets the number of topic (prefix) subscriptions either 
-* received on a (X)PUB socket from all the connected (X)SUB sockets or 
+Gets the number of topic (prefix) subscriptions either
+* received on a (X)PUB socket from all the connected (X)SUB sockets or
 * acknowledged on an (X)SUB socket from all the connected (X)PUB sockets
 
 NOTE: in DRAFT state, not yet available in stable releases.

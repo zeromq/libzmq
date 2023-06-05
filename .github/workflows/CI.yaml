@@ -26,22 +26,18 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: default
             PACKAGES: asciidoc xmlto
-            CURVE: tweetnacl
             DRAFT: disabled
             POLLER: select
           - os: ubuntu-latest
             BUILD_TYPE: default
-            CURVE: tweetnacl
             DRAFT: disabled
             POLLER: poll
           - os: ubuntu-latest
             BUILD_TYPE: android
-            CURVE: tweetnacl
             DRAFT: disabled
           - os: ubuntu-latest
             BUILD_TYPE: coverage
             PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev lcov
-            CURVE: tweetnacl
             DRAFT: enabled
             GSSAPI: enabled
             PGM: enabled
@@ -52,7 +48,6 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: valgrind
             PACKAGES: valgrind libgnutls28-dev
-            CURVE: tweetnacl
             DRAFT: enabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
@@ -102,18 +97,15 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: abi-compliance-checker
             PACKAGES: abi-dumper abi-compliance-checker
-            CURVE: tweetnacl
             DRAFT: disabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
             PACKAGES: clang-tidy clang-tools
-            CURVE: tweetnacl
             DRAFT: enabled
             CXX: clang++
           - os: macos-latest
             BUILD_TYPE: default
             PACKAGES: automake autoconf
-            CURVE: tweetnacl
             DRAFT: enabled
           - os: macos-latest
             BUILD_TYPE: default

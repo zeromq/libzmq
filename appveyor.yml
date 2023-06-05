@@ -22,7 +22,7 @@ environment:
     - platform: Win32
       configuration: Release
       WITH_LIBSODIUM: OFF # unavailable build files for VS2008
-      ENABLE_CURVE: ON
+      ENABLE_CURVE: OFF
       CMAKE_GENERATOR: "Visual Studio 9 2008"
       MSVCVERSION: "v90"
       MSVCYEAR: "vs2008"
@@ -111,12 +111,12 @@ environment:
       ARTIFACT_NAME: v141-x64
     - platform: cygwin64
       WITH_LIBSODIUM: OFF
-      ENABLE_CURVE: ON
+      ENABLE_CURVE: OFF
       CMAKE_GENERATOR: "Unix Makefiles"
       ARTIFACT_NAME: cygwin64
     - platform: mingw64
       WITH_LIBSODIUM: OFF
-      ENABLE_CURVE: ON
+      ENABLE_CURVE: OFF
       CMAKE_GENERATOR: "MSYS Makefiles"
       ARTIFACT_NAME: mingw64
     - platform: Win32-uwp

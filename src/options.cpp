@@ -213,7 +213,6 @@ zmq::options_t::options_t () :
     tcp_maxrt (0),
     reconnect_stop (0),
     reconnect_ivl (100),
-    reconnect_ivl_max (0),
     backlog (100),
     maxmsgsize (-1),
     rcvtimeo (-1),
@@ -428,11 +427,11 @@ int zmq::options_t::setsockopt (int option_,
             break;
 
         case ZMQ_RECONNECT_IVL_MAX:
-            if (is_int && value >= 0) {
-                reconnect_ivl_max = value;
-                return 0;
-            }
-            break;
+#ifdef ZMQ_HAVE_WINDOWS
+            return WSAEOPNOTSUPP;
+#else
+            return -EOPNOTSUPP;
+#endif
 
         case ZMQ_BACKLOG:
             if (is_int && value >= 0) {
@@ -1076,11 +1075,11 @@ int zmq::options_t::getsockopt (int option_,
             break;
 
         case ZMQ_RECONNECT_IVL_MAX:
-            if (is_int) {
-                *value = reconnect_ivl_max;
-                return 0;
-            }
-            break;
+#ifdef ZMQ_HAVE_WINDOWS
+            return WSAEOPNOTSUPP;
+#else
+            return -EOPNOTSUPP;
+#endif
 
         case ZMQ_BACKLOG:
             if (is_int) {

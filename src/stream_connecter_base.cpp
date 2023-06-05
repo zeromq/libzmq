@@ -123,17 +123,6 @@ int zmq::stream_connecter_base_t::get_new_reconnect_ivl ()
         ? _current_reconnect_ivl + random_jitter
         : std::numeric_limits<int>::max ();
 
-    //  Only change the new current reconnect interval if the maximum reconnect
-    //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0
-        && options.reconnect_ivl_max > options.reconnect_ivl) {
-        //  Calculate the next interval
-        _current_reconnect_ivl =
-          _current_reconnect_ivl < std::numeric_limits<int>::max () / 2
-            ? std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max)
-            : options.reconnect_ivl_max;
-    }
-
     return interval;
 }
 

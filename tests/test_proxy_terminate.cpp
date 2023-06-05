@@ -32,7 +32,10 @@
 
 #include <stdlib.h>
 
-SETUP_TEARDOWN_TESTCONTEXT
+void setUp ()
+{
+    setup_test_context ();
+}
 
 // This is a test for issue #1382. The server thread creates a SUB-PUSH
 // steerable proxy. The main process then sends messages to the SUB
@@ -60,8 +63,7 @@ void server_task (void * /*unused_*/)
     send_string_expect_success (control, my_endpoint, 0);
 
     // Connect backend to frontend via a proxy
-    TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_proxy_steerable (frontend, backend, NULL, control));
+    zmq_proxy (frontend, backend, NULL);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (frontend));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (backend));
@@ -97,10 +99,10 @@ void test_proxy_terminate ()
 
     msleep (50);
     send_string_expect_success (publisher, "This is a test", 0);
-    send_string_expect_success (control, "TERMINATE", 0);
 
     test_context_socket_close (publisher);
     test_context_socket_close (control);
+    teardown_test_context ();
     free (my_endpoint);
 
     zmq_threadclose (thread);
