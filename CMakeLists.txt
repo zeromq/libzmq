@@ -1174,7 +1174,7 @@ endif()
 
 set(public_headers include/zmq.h include/zmq_utils.h)
 
-set(readme-docs AUTHORS COPYING COPYING.LESSER NEWS)
+set(readme-docs AUTHORS LICENSE NEWS)
 
 # -----------------------------------------------------------------------------
 # optional modules
@@ -1789,7 +1789,7 @@ if(MSVC AND ENABLE_CPACK)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
   set(CPACK_PACKAGE_VENDOR "Miru")
   set(CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_BINARY_DIR}\\\\COPYING.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_BINARY_DIR}\\\\LICENSE.txt")
   # set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt") set(CPACK_RESOURCE_FILE_WELCOME
   # "${CMAKE_CURRENT_BINARY_DIR}\\\\WELCOME.txt") There is a bug in NSI that does not handle full unix paths properly.
   # Make sure there is at least one set of four(4) backslashes.

@@ -5,44 +5,10 @@ Source: http://zeromq.org
 Files: *
 Copyright: 2009-2011, 250bpm s.r.o
  2007-2013, iMatix Corporation
- 2007-2011, Other contributors as noted in the AUTHORS file
-License: LGPL-3.0+
-
-Files: src/xreq.cpp
- src/xpub.cpp
- src/xsub.cpp
- tests/test_reqrep_device.cpp
- tests/test_invalid_rep.cpp
-Copyright: 2010-2011, 250bpm s.r.o
- 2011, VMware, Inc
- 2010-2011, Other contributors as noted in the AUTHORS file
-License: LGPL-3.0+
-
-Files: src/msg.hpp
- src/xrep.*
- src/options.*
- src/req.*
- src/socket_base.*
- src/pipe.*
- src/encoder.cpp
- src/lb.cpp
- src/session_base.*
- src/fq.cpp
- include/zmq.h
-Copyright: 2009-2011, 250bpm s.r.o
- 2007-2013, iMatix Corporation
- 2011, VMware, Inc
- 2007-2011, Other contributors as noted in the AUTHORS file
-License: LGPL-3.0+
-
-Files: src/pgm_receiver.*
- src/pgm_sender.*
- src/pgm_socket.*
-Copyright: 2009-2011, 250bpm s.r.o
- 2007-2013, iMatix Corporation
  2010-2011, Miru Limited
- 2007-2011, Other contributors as noted in the AUTHORS file
-License: LGPL-3.0+
+ 2011, VMware, Inc
+ 2007-2023, Other contributors as noted in the AUTHORS file
+License:  MPL-2.0
 
 Files: external/unity/*
 Copyright: 2007-2014 Mike Karlesky
@@ -93,24 +59,6 @@ License: LGPL-2.0+
  On Debian systems, the complete text of the GNU Lesser General
  Public License can be found in "/usr/share/common-licenses/LGPL-2".
 
-License: LGPL-3.0+
- This package is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 3 of the License, or (at your option) any later version.
- .
- This package is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
- .
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>.
- .
- On Debian systems, the complete text of the GNU Lesser General
- Public License can be found in "/usr/share/common-licenses/LGPL-3".BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- IN THE SOFTWARE.
+License: MPL-2.0
+ On Debian systems the full text of the MPL-2.0 can be found in
+ /usr/share/common-licenses/MPL-2.0.

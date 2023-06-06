@@ -19,7 +19,7 @@
         <title>$(package.id)</title>
         <authors>libzmq contributors</authors>
         <owners>Eric Voskuil</owners>
-        <licenseUrl>https://raw.github.com/zeromq/libzmq/master/COPYING.LESSER</licenseUrl>
+        <licenseUrl>https://raw.github.com/zeromq/libzmq/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/zeromq/libzmq</projectUrl>
         <iconUrl>https://avatars1.githubusercontent.com/u/109777?s=32</iconUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -27,7 +27,7 @@
         <description>The 0MQ lightweight messaging kernel is a library which extends the standard socket interfaces with features traditionally provided by specialised messaging middleware products. 0MQ sockets provide an abstraction of asynchronous message queues, multiple messaging patterns, message filtering (subscriptions), seamless access to multiple transport protocols and more.</description>
         <summary>The 0MQ lightweight messaging kernel, packaged for specific Visual Studio compiler.</summary>
         <releaseNotes>https://raw.github.com/zeromq/libzmq/master/NEWS</releaseNotes>
-        <copyright>GNU Lesser GPL v3</copyright>
+        <copyright>MPL-2.0</copyright>
         <tags>native, libzmq, zmq, 0MQ, messaging, sockets, C++</tags>
         <dependencies>
 .for dependency

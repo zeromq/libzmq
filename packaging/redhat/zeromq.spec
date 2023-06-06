@@ -14,7 +14,7 @@ Version:       4.3.5
 Release:       1%{?dist}
 Summary:       The ZeroMQ messaging library
 Group:         Development/Libraries/C and C++
-License:       LGPL-3.0-or-later
+License:       MPL-2.0
 URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
@@ -249,7 +249,7 @@ autoreconf -fi
 %defattr(-,root,root,-)
 
 # docs in the main package
-%doc AUTHORS COPYING COPYING.LESSER NEWS
+%doc AUTHORS LICENSE NEWS
 
 # libraries
 %{_libdir}/libzmq.so.*
