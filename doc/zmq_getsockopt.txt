@@ -619,11 +619,23 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
-ZMQ_RECONNECT_IVL_MAX: DEPRECATED
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX option is an empty stub that only returns an
-*EOPNOTSUPP* error, as the author did not provide a relicense agreement for
-the Mozilla Public License v2 relicense of libzmq.
+ZMQ_RECONNECT_IVL_MAX: Retrieve max reconnection interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the max reconnection interval
+for the specified 'socket'. 0MQ shall wait at most the configured interval between
+reconnection attempts. The interval grows exponentionally (i.e.: it is doubled)
+with each attempt until it reaches ZMQ_RECONNECT_IVL_MAX. Default value means
+that the reconnect interval is based exclusively on ZMQ_RECONNECT_IVL and no
+exponential backoff is performed.
+
+NOTE:  Value has to be greater or equal than ZMQ_RECONNECT_IVL, or else it will
+       be ignored.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0 (ZMQ_RECONNECT_IVL will be used)
+Applicable socket types:: all, only for connection-oriented transport
 
 
 ZMQ_RECONNECT_STOP: Retrieve condition where reconnection will stop
