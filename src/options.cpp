@@ -239,7 +239,7 @@ zmq::options_t::options_t () :
     norm_num_autoparity (0),
     norm_push_enable (false),
     busy_poll (0),
-    bind_resolve_as_nic(true)
+    bind_resolve_as_nic (true)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
     memset (curve_secret_key, 0, CURVE_KEYSIZE);

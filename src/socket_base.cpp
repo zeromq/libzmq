@@ -1110,7 +1110,9 @@ zmq::socket_base_t::resolve_tcp_addr (std::string endpoint_uri_pair_,
         if (rc == 0) {
             tcp_addr->to_string (endpoint_uri_pair_);
             if (_endpoints.find (endpoint_uri_pair_) == _endpoints.end ()) {
-                rc = tcp_addr->resolve (tcp_address_, options.bind_resolve_as_nic, options.ipv6, true);
+                rc =
+                  tcp_addr->resolve (tcp_address_, options.bind_resolve_as_nic,
+                                     options.ipv6, true);
                 if (rc == 0) {
                     tcp_addr->to_string (endpoint_uri_pair_);
                 }

@@ -43,7 +43,10 @@ zmq::tcp_address_t::tcp_address_t (const sockaddr *sa_, socklen_t sa_len_) :
         memcpy (&_address.ipv6, sa_, sizeof (_address.ipv6));
 }
 
-int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, bool bind_)
+int zmq::tcp_address_t::resolve (const char *name_,
+                                 bool local_,
+                                 bool ipv6_,
+                                 bool bind_)
 {
     // Test the ';' to know if we have a source address in name_
     const char *src_delimiter = strrchr (name_, ';');
