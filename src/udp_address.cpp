@@ -92,7 +92,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
     ip_resolver_options_t resolver_opts;
 
     resolver_opts.bindable (bind_)
-      .allow_dns (!bind_)
+      .allow_dns (true)
       .allow_nic_name (bind_)
       .expect_port (true)
       .ipv6 (ipv6_);

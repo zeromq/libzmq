@@ -75,7 +75,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     ip_resolver_options_t resolver_opts;
 
     resolver_opts.bindable (local_)
-      .allow_dns (!local_)
+      .allow_dns (true)
       .allow_nic_name (local_)
       .ipv6 (ipv6_)
       .expect_port (true);
