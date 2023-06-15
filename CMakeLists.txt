@@ -260,6 +260,7 @@ endif()
 
 option(WITH_LIBSODIUM "Use libsodium" OFF)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
+option(DOWNLOAD_LIBSODIUM "Download and build libsodium from the source" OFF)
 option(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "Automatically close libsodium randombytes. Not threadsafe without getrandom()" ON)
 option(ENABLE_CURVE "Enable CURVE security" OFF)
 
@@ -272,18 +273,13 @@ if(ENABLE_CURVE)
       set(sodium_USE_STATIC_LIBS OFF)
       set(CPM_LIBSODIUM_SHARED ON)
     endif()
-    find_package("sodium")
-    if (sodium_FOUND)
-      set(SODIUM_FOUND ON)
-      set(SODIUM_LIBRARIES sodium)
-      get_target_property(SODIUM_INCLUDE_DIRS sodium INTERFACE_INCLUDE_DIRECTORIES)
-      include_directories(${SODIUM_INCLUDE_DIRS})
-    elseif(NOT SODIUM_FOUND)
+    if (DOWNLOAD_LIBSODIUM)
       include(CPM)
       CPMAddPackage(
         NAME libsodium
-        GITHUB_REPOSITORY robinlinden/libsodium-cmake
-        GIT_TAG f568ff0
+        GITHUB_REPOSITORY zeromq/libsodium-cmake
+        GIT_TAG f568ff02f1bed155ea598c0e803ef3c9db2703d2
+        URL_HASH SHA256=4e9e745844f406c420d8b03658d30e0ea3647e31f8eb5e51687f5481251e21f8
         OPTIONS
           SODIUM_DISABLE_TESTS ON
           BUILD_SHARED_LIBS ${CPM_LIBSODIUM_SHARED}
@@ -298,8 +294,16 @@ if(ENABLE_CURVE)
       )
       include_directories($<BUILD_INTERFACE:${SODIUM_INCLUDE_DIRS}>)
     else()
-      include_directories(${SODIUM_INCLUDE_DIRS})
-      link_directories(${SODIUM_LIBRARY_DIRS})
+      find_package("sodium")
+      if (sodium_FOUND)
+        set(SODIUM_FOUND ON)
+        set(SODIUM_LIBRARIES sodium)
+        get_target_property(SODIUM_INCLUDE_DIRS sodium INTERFACE_INCLUDE_DIRECTORIES)
+        include_directories(${SODIUM_INCLUDE_DIRS})
+      else()
+        message(ERROR
+          "libsodium not installed, you may want to install libsodium or enable DOWNLOAD_LIBSODIUM and run cmake again")
+      endif()
     endif()
     message(STATUS "Using libsodium for CURVE security")
     if(WITH_LIBSODIUM_STATIC)

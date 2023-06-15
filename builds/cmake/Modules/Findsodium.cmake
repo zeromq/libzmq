@@ -1,4 +1,4 @@
-# From https://github.com/aminya/libsodium/blob/patch-1/contrib/Findsodium.cmake
+# From https://github.com/jedisct1/libsodium/blob/a1348978e6fd4df033f4a0a719c1aa196d18c842/contrib/Findsodium.cmake#L1
 
 # Written in 2016 by Henrik Steffen Gaßmann <henrik@gassmann.onl>
 #
