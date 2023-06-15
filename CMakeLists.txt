@@ -266,23 +266,42 @@ option(ENABLE_CURVE "Enable CURVE security" OFF)
 if(ENABLE_CURVE)
   if(WITH_LIBSODIUM)
     find_package("sodium")
-    if(SODIUM_FOUND)
-      message(STATUS "Using libsodium for CURVE security")
+    if(NOT SODIUM_FOUND)
+      include(CPM)
+      if (WITH_LIBSODIUM_STATIC)
+        set(CPM_LIBSODIUM_SHARED OFF)
+      else()
+        set(CPM_LIBSODIUM_SHARED ON)
+      endif()
+      CPMAddPackage(
+        NAME libsodium
+        GITHUB_REPOSITORY robinlinden/libsodium-cmake
+        GIT_TAG f568ff0
+        OPTIONS
+          SODIUM_DISABLE_TESTS ON
+          BUILD_SHARED_LIBS ${CPM_LIBSODIUM_SHARED}
+      )
+      set(SODIUM_FOUND ON)
+      set(SODIUM_LIBRARIES sodium)
+      list(APPEND target_outputs sodium)
+
+      get_target_property(SODIUM_INCLUDE_DIRS sodium INTERFACE_INCLUDE_DIRECTORIES)
+      set_target_properties(sodium PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+        "$<BUILD_INTERFACE:${SODIUM_INCLUDE_DIRS}>"
+      )
+      include_directories($<BUILD_INTERFACE:${SODIUM_INCLUDE_DIRS}>)
+    else()
       include_directories(${SODIUM_INCLUDE_DIRS})
       link_directories(${SODIUM_LIBRARY_DIRS})
-      if(WITH_LIBSODIUM_STATIC)
-        add_compile_definitions(SODIUM_STATIC)
-      endif()
-      set(ZMQ_USE_LIBSODIUM 1)
-      set(ZMQ_HAVE_CURVE 1)
-      if (ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE)
-        set(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE 1)
-      endif()
-    else()
-      message(
-        ERROR
-          "libsodium not installed, you may want to install libsodium and run cmake again"
-      )
+    endif()
+    message(STATUS "Using libsodium for CURVE security")
+    if(WITH_LIBSODIUM_STATIC)
+      add_compile_definitions(SODIUM_STATIC)
+    endif()
+    set(ZMQ_USE_LIBSODIUM 1)
+    set(ZMQ_HAVE_CURVE 1)
+    if (ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE)
+      set(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE 1)
     endif()
   endif()
 else()
