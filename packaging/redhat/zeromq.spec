@@ -226,7 +226,9 @@ autoreconf -fi
 
 %files -n libzmq-tools
 %defattr(-,root,root,-)
+%if %{with libsodium}
 %{_bindir}/curve_keygen
+%endif
 
 %changelog
 * Fri Oct 4 2019 Luca Boccassi <luca.boccassi@gmail.com>
