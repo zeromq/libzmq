@@ -64,6 +64,7 @@ set(tests
   test_srcfd
   test_stream_timeout
   test_xpub_manual
+  test_xpub_topic
   test_xpub_welcome_msg
   test_xpub_verbose
   test_base85
