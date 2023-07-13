@@ -414,13 +414,20 @@ perf_proxy_thr_SOURCES = perf/proxy_thr.cpp
 
 if ENABLE_STATIC
 noinst_PROGRAMS += \
-	perf/benchmark_radix_tree
+	perf/benchmark_radix_tree \
+	perf/benchmark_generic_mtrie
 
 perf_benchmark_radix_tree_DEPENDENCIES = src/libzmq.la
 perf_benchmark_radix_tree_CPPFLAGS = -I$(top_srcdir)/src
 perf_benchmark_radix_tree_LDADD = $(top_builddir)/src/.libs/libzmq.a \
 	${src_libzmq_la_LIBADD}
 perf_benchmark_radix_tree_SOURCES = perf/benchmark_radix_tree.cpp
+
+perf_benchmark_generic_mtrie_DEPENDENCIES = src/libzmq.la
+perf_benchmark_generic_mtrie_CPPFLAGS = -I$(top_srcdir)/src
+perf_benchmark_generic_mtrie_LDADD = $(top_builddir)/src/.libs/libzmq.a \
+	${src_libzmq_la_LIBADD}
+perf_benchmark_generic_mtrie_SOURCES = perf/benchmark_generic_mtrie.cpp
 endif
 endif
 
