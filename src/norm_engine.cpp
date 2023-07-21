@@ -557,8 +557,7 @@ void zmq::norm_engine_t::recv_data (NormObjectHandle object)
                 char syncFlag;
                 unsigned int numBytes = 1;
                 if (!NormStreamRead (stream, &syncFlag, &numBytes)) {
-                    // broken stream (shouldn't happen after seek msg start?)
-                    zmq_assert (false);
+                    // broken stream (can happen on late-joining subscriber)
                     continue;
                 }
                 if (0 == numBytes) {
