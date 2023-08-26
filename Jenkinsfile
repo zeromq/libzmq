@@ -443,7 +443,7 @@ pipeline {
                     echo "Used:     myDEPLOY_JOB_NAME:${myDEPLOY_JOB_NAME} myDEPLOY_BRANCH_PATTERN:${myDEPLOY_BRANCH_PATTERN} myDEPLOY_REPORT_RESULT:${myDEPLOY_REPORT_RESULT}"
                     if ( (myDEPLOY_JOB_NAME != "") && (myDEPLOY_BRANCH_PATTERN != "") ) {
                         if ( env.BRANCH_NAME =~ myDEPLOY_BRANCH_PATTERN ) {
-                            def GIT_URL = sh(returnStdout: true, script: """git remote -v | egrep '^origin' | awk '{print \$2}' | head -1""").trim()
+                            def GIT_URL = sh(returnStdout: true, script: """git remote -v | grep -E '^origin' | awk '{print \$2}' | head -1""").trim()
                             def GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --verify HEAD').trim()
                             def DIST_ARCHIVE = ""
                             if ( params.DO_DIST_DOCS ) { DIST_ARCHIVE = env.BUILD_URL + "artifact/__dist.tar.gz" }
