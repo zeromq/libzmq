@@ -81,6 +81,9 @@ void test_connect_null_fuzzer ()
 
 int main (int argc, char **argv)
 {
+    LIBZMQ_UNUSED (argc);
+    LIBZMQ_UNUSED (argv);
+
     setup_test_environment ();
 
     UNITY_BEGIN ();

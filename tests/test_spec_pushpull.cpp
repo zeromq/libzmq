@@ -126,6 +126,7 @@ void test_pull_fair_queue_in (const char *bind_address_)
 // available peers.
 void test_push_block_on_send_no_peers (const char *bind_address_)
 {
+    LIBZMQ_UNUSED (bind_address_);
     void *sc = test_context_socket (ZMQ_PUSH);
 
     int timeout = 250;

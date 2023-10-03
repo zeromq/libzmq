@@ -31,11 +31,9 @@ void test_roundtrip (zmq::msg_t *msg_)
                                            + msg_->size ());
 
     zmq::curve_encoding_t encoding_client ("CurveZMQMESSAGEC",
-                                           "CurveZMQMESSAGES",
-                                           false);
+                                           "CurveZMQMESSAGES", false);
     zmq::curve_encoding_t encoding_server ("CurveZMQMESSAGES",
-                                           "CurveZMQMESSAGEC",
-                                           false);
+                                           "CurveZMQMESSAGEC", false);
 
     uint8_t client_public[32];
     uint8_t client_secret[32];
@@ -67,6 +65,8 @@ void test_roundtrip (zmq::msg_t *msg_)
         TEST_ASSERT_EQUAL_UINT8_ARRAY (&original[0], msg_->data (),
                                        original.size ());
     }
+#else
+    LIBZMQ_UNUSED (msg_);
 #endif
 }
 

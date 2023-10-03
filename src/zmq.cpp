@@ -1739,6 +1739,8 @@ int zmq_proxy_steerable (void *frontend_,
                          void *capture_,
                          void *control_)
 {
+    LIBZMQ_UNUSED (capture_);
+    LIBZMQ_UNUSED (control_);
     if (!frontend_ || !backend_) {
         errno = EFAULT;
         return -1;

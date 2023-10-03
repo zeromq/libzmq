@@ -371,6 +371,9 @@ bool zmq::zmtp_engine_t::handshake_v3_x (const bool downgrade_sub_)
         error (protocol_error);
         return false;
     }
+#ifndef ZMQ_HAVE_CURVE
+    LIBZMQ_UNUSED (downgrade_sub_);
+#endif
     _next_msg = &zmtp_engine_t::next_handshake_command;
     _process_msg = &zmtp_engine_t::process_handshake_command;
 

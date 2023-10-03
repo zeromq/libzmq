@@ -141,6 +141,7 @@ void test_destroy_queue_on_disconnect (const char *bind_address_)
 // SHALL block on sending, or return a suitable error, when it has no connected peers.
 void test_block_on_send_no_peers (const char *bind_address_)
 {
+    LIBZMQ_UNUSED (bind_address_);
     void *sc = test_context_socket (ZMQ_DEALER);
 
     int timeout = 250;
