@@ -385,6 +385,9 @@ void check_count (zmq::generic_mtrie_t<int>::prefix_t data_,
                   size_t len_,
                   int *count_)
 {
+    LIBZMQ_UNUSED (data_);
+    LIBZMQ_UNUSED (len_);
+
     --(*count_);
     TEST_ASSERT_GREATER_OR_EQUAL (0, *count_);
 }

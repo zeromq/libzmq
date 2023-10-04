@@ -49,6 +49,7 @@ void reconnect_default ()
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
     assert (rc == -1);
+    LIBZMQ_UNUSED (rc);
 
     //  Close sub
     //  TODO why does this use zero_linger?
@@ -102,6 +103,7 @@ void reconnect_success ()
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              SETTLE_TIME);
     assert (rc == -1);
+    LIBZMQ_UNUSED (rc);
 
     //  Now re-bind pub socket and wait for re-connect
     pub = test_context_socket (ZMQ_PUB);

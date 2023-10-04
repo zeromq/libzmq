@@ -210,6 +210,9 @@ void zmq::set_socket_priority (fd_t s_, int priority_)
       setsockopt (s_, SOL_SOCKET, SO_PRIORITY,
                   reinterpret_cast<char *> (&priority_), sizeof (priority_));
     errno_assert (rc == 0);
+#else
+    LIBZMQ_UNUSED (s_);
+    LIBZMQ_UNUSED (priority_);
 #endif
 }
 
