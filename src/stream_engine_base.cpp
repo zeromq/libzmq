@@ -298,7 +298,7 @@ bool zmq::stream_engine_base_t::in_event_internal ()
             // eventually results in the src and dest IP and port clashing (google tcp self connection)
             // While this is a protocol_error (you have the single zmq socket handshaking with itself)
             // we do not want to to stop reconnection from happening
-            if(!_endpoint_uri_pair.clash ()){
+            if(!_endpoint_uri_pair.clash ()) {
                 error (protocol_error);
                 return false;
             }
