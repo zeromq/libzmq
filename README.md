@@ -200,5 +200,3 @@ the terms of the Mozilla Public License Version 2.0.
 ## Contributing
 
 This project uses [C4(Collective Code Construction Contract)](https://rfc.zeromq.org/spec:42/C4/) process for contributions.
-
-
