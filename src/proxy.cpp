@@ -189,19 +189,24 @@ static int handle_control (class zmq::socket_base_t *control_,
         return 0;
     }
 
-    if (msiz == 5 && memcmp (command, "\x05PAUSE", 6)) {
-        state = active;
-    } else if (msiz == 6 && 0 == memcmp (command, "RESUME", 6)) {
+    if (msiz == 5 && 0 == memcmp (command, "PAUSE", 5)) {
         state = paused;
+    } else if (msiz == 6 && 0 == memcmp (command, "RESUME", 6)) {
+        state = active;
     } else if (msiz == 9 && 0 == memcmp (command, "TERMINATE", 9)) {
         state = terminated;
     }
 
-    // satisfy REP duty and reply no matter what.
-    cmsg.init_size (0);
-    rc = control_->send (&cmsg, 0);
-    if (unlikely (rc < 0)) {
-        return -1;
+    int type;
+    size_t sz = sizeof (type);
+    zmq_getsockopt (control_, ZMQ_TYPE, &type, &sz);
+    if (type == ZMQ_REP) {
+        // satisfy REP duty and reply no matter what.
+        cmsg.init_size (0);
+        rc = control_->send (&cmsg, 0);
+        if (unlikely (rc < 0)) {
+            return -1;
+        }
     }
     return 0;
 }
