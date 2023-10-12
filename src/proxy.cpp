@@ -197,11 +197,16 @@ static int handle_control (class zmq::socket_base_t *control_,
         state = terminated;
     }
 
-    // satisfy REP duty and reply no matter what.
-    cmsg.init_size (0);
-    rc = control_->send (&cmsg, 0);
-    if (unlikely (rc < 0)) {
-        return -1;
+    int type;
+    size_t sz = sizeof (type);
+    zmq_getsockopt (control_, ZMQ_TYPE, &type, &sz);
+    if (type == ZMQ_REP) {
+        // satisfy REP duty and reply no matter what.
+        cmsg.init_size (0);
+        rc = control_->send (&cmsg, 0);
+        if (unlikely (rc < 0)) {
+            return -1;
+        }
     }
     return 0;
 }

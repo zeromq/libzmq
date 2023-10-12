@@ -19,21 +19,21 @@ The _zmq_proxy_steerable()_ function is a variant of the _zmq_proxy()_ function.
 It accepts a fourth _control_ socket.  When the _control_ socket is _NULL_ the
 two functions operate identically.
 
-When a _control_ socket of type _REP_ is provided to the proxy function the
+When a _control_ socket of type _REP_ or _PAIR_ is provided to the proxy function the
 application may send commands to the proxy.  The following commands are
 supported.
 
 _PAUSE_::
-    The proxy will cease transferring messages between its endpoints.
+    The proxy will cease transferring messages between its endpoints.  _REP_ control socket will reply with an empty message. No response otherwise.
 
 _RESUME_::
-    The proxy will resume transferring messages between its endpoints.
+    The proxy will resume transferring messages between its endpoints.  _REP_ control socket will reply with an empty message. No response otherwise. 
 
 _TERMINATE_::
-    The proxy function will exit with a return value of 0.
+    The proxy function will exit with a return value of 0.  _REP_ control socket will reply with an empty message. No response otherwise.
 
 _STATISTICS_::
-    The proxy behavior will remain unchanged and reply with a set of simple summary values of the messages that have been sent through the proxy as described next.
+    The proxy state will remain unchanged and reply with a set of simple summary values of the messages that have been sent through the proxy as described next. Control socket must support sending.
 
 There are eight statistics values, each of size _uint64_t_ in the multi-part
 message reply to the _STATISTICS_ command.  These are:
@@ -53,6 +53,8 @@ message reply to the _STATISTICS_ command.  These are:
 - number of messages sent by the backend socket
 
 - number of bytes sent by the backend socket
+
+Message totals count each part in a multipart message individually.
 
 
 RETURN VALUE
