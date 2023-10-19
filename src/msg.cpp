@@ -32,7 +32,7 @@ int zmq::msg_t::init (void *data_,
                       void *hint_,
                       content_t *content_)
 {
-    if (size_ < max_vsm_size) {
+    if (size_ <= max_vsm_size) {
         const int rc = init_size (size_);
 
         if (rc != -1) {
