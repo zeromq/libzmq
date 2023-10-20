@@ -13,7 +13,7 @@ Build-Depends: debhelper (>= 9),
  libgnutls28-dev | libgnutls-dev,
  libbsd-dev,
  pkg-config,
- asciidoc-base | asciidoc, xmlto,
+ asciidoctor,
 Standards-Version: 3.9.8
 Homepage: http://www.zeromq.org/
 

@@ -1,7 +1,8 @@
 #
 # documentation
 #
-MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect.3 zmq_close.3 \
+MAN3 = \
+    zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect.3 zmq_close.3 \
     zmq_ctx_new.3 zmq_ctx_term.3 zmq_ctx_get.3 zmq_ctx_set.3 zmq_ctx_shutdown.3 \
     zmq_msg_init.3 zmq_msg_init_data.3 zmq_msg_init_size.3 zmq_msg_init_buffer.3 \
     zmq_msg_move.3 zmq_msg_copy.3 zmq_msg_size.3 zmq_msg_data.3 zmq_msg_close.3 \
@@ -22,45 +23,58 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect.3
     zmq_atomic_counter_inc.3 zmq_atomic_counter_dec.3 \
     zmq_atomic_counter_value.3 zmq_atomic_counter_destroy.3
 
-MAN7 = zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
+MAN7 = \
+    zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
     zmq_gssapi.7
 
-MAN_DOC =
+# MAN_ADOC contains all original Asciidoc files from git repo
+MAN_ADOC = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
 
-MAN_TXT = $(MAN3:%.3=%.txt)
-MAN_TXT += $(MAN7:%.7=%.txt)
-MAN_HTML =
+# MAN_DOC contains all the MANUAL PAGES (generated from asciidoc files)
+MAN_DOC = $(MAN3) $(MAN7) 
+
+# MAN_HTML contains all the HTML PAGES (generated from asciidoc files)
+MAN_HTML = $(MAN_ADOC:%.adoc=%.html)
 
 MAINTAINERCLEANFILES =
+EXTRA_DIST = $(MAN_ADOC)
 
-EXTRA_DIST = asciidoc.conf $(MAN_TXT)
 
-if INSTALL_MAN
-MAN_DOC += $(MAN1) $(MAN3) $(MAN7)
-dist_man_MANS = $(MAN_DOC)
-MAINTAINERCLEANFILES += $(MAN_DOC)
-endif
-
+#
+# BUILD_DOC is set when Asciidoctor has been found
+# Declare here all the rules to produce documentation from .adoc files
+#
 if BUILD_DOC
-MAN_HTML += $(MAN_TXT:%.txt=%.html)
-EXTRA_DIST += $(MAN_HTML)
-MAINTAINERCLEANFILES += $(MAN_HTML)
 
-SUFFIXES=.html .txt .xml .3 .7
+EXTRA_DIST += $(MAN_HTML) $(MAN_DOC)
+MAINTAINERCLEANFILES += $(MAN_HTML) $(MAN_DOC)
+SUFFIXES=.html .adoc .3 .7
 
-.txt.html:
-	asciidoc -d manpage -b xhtml11 -f $(srcdir)/asciidoc.conf \
-		-azmq_version=@PACKAGE_VERSION@ -o$@ $<
-.txt.xml:
-	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
-		-azmq_version=@PACKAGE_VERSION@ -o$@ $<
-.xml.1:
-	xmlto man $<
-.xml.3:
-	xmlto man $<
-.xml.7:
-	xmlto man $<
-endif
+.adoc.html: 
+	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@  $<
+.adoc.3:
+	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
+.adoc.7:
+	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)
+
+# To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
+# that page contains a link to all other documentation pages
+all-local : $(MAN_DOC) $(MAN_HTML)
+	ln -sf zmq.html index.html
+
+clean-local :
+	rm -f $(MAN3) $(MAN7) $(MAN_HTML)
+
+endif
+
+
+
+#
+# INSTALL_MAN is set when BUILD_DOC was set and additionally the manpages need to be installed
+#
+if INSTALL_MAN
+dist_man_MANS = $(MAN_DOC)
+endif

@@ -89,7 +89,7 @@ dnl # Check whether to build documentation and install man-pages                
 dnl ##############################################################################
 AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
 
-    # Man pages are built/installed if asciidoc and xmlto are present
+    # Man pages are built/installed if asciidoctor and xmlto are present
     #   --with-docs=no overrides this
     AC_ARG_WITH([docs],
         AS_HELP_STRING([--without-docs],
@@ -109,14 +109,13 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
         libzmq_build_doc="yes"
         libzmq_install_man="yes"
         # Check for asciidoc and xmlto and don't build the docs if these are not installed.
-        AC_CHECK_PROG(libzmq_have_asciidoc, asciidoc, yes, no)
-        AC_CHECK_PROG(libzmq_have_xmlto, xmlto, yes, no)
-        if test "x$libzmq_have_asciidoc" = "xno" -o "x$libzmq_have_xmlto" = "xno"; then
+        AC_CHECK_PROG(libzmq_have_asciidoctor, asciidoctor, yes, no)
+        if test "x$libzmq_have_asciidoctor" = "xno"; then
             libzmq_build_doc="no"
             # Tarballs built with 'make dist' ship with prebuilt documentation.
             if ! test -f doc/zmq.7; then
                 libzmq_install_man="no"
-                AC_MSG_WARN([You are building an unreleased version of 0MQ and asciidoc or xmlto are not installed.])
+                AC_MSG_WARN([You are building an unreleased version of 0MQ and asciidoctor is not installed.])
                 AC_MSG_WARN([Documentation will not be built and manual pages will not be installed.])
             fi
         fi

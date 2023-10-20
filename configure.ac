@@ -76,10 +76,6 @@ PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([^PKG_[A-Z_]+$], [missing some pkg-config macros (pkg-config package)])
 
 # Libtool configuration for different targets. See acinclude.m4
-AC_ARG_VAR([XMLTO], [path to xmlto command])
-AC_PATH_PROG([XMLTO], [xmlto])
-AC_ARG_VAR([ASCIIDOC], [path to asciidoc command])
-AC_PATH_PROG([ASCIIDOC], [asciidoc])
 LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
