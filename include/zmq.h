@@ -31,7 +31,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdio.h>
 
-#include "zmq_sal.h"
+#include <zmq_sal.h>
 
 /*  Handle DSO symbol visibility                                             */
 
