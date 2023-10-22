@@ -1176,7 +1176,7 @@ if(MINGW)
   endif()
 endif()
 
-set(public_headers include/zmq.h include/zmq_utils.h)
+set(public_headers include/zmq.h include/zmq_utils.h include/zmq_sal.h)
 
 set(readme-docs AUTHORS LICENSE NEWS)
 
