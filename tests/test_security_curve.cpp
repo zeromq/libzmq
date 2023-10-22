@@ -477,6 +477,7 @@ void test_curve_security_invalid_initiate_command_encrypted_content ()
 
 void test_curve_security_invalid_keysize (void *ctx_)
 {
+#if !defined(ZMQ_ACT_MILITANT)
     //  Check return codes for invalid buffer sizes
     void *client = zmq_socket (ctx_, ZMQ_DEALER);
     TEST_ASSERT_NOT_NULL (client);
@@ -491,6 +492,10 @@ void test_curve_security_invalid_keysize (void *ctx_)
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, valid_client_secret, 123);
     assert (rc == -1 && errno == EINVAL);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_close (client));
+#else
+    TEST_IGNORE_MESSAGE ("libzmq with ZMQ_ACT_MILITANT, ignoring "
+                         "test_curve_security_invalid_keysize test");
+#endif
 }
 
 // TODO why isn't this const?
@@ -569,7 +574,7 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+    TEST_ASSERT_SUCCESS_ERRNO(zmq_ctx_term(ctx));
 
     zmq::random_close ();
 

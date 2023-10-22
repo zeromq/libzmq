@@ -259,7 +259,7 @@ void test_blocking (const char *bind_endpoint_)
 DEFINE_REGULAR_TEST_CASES (tcp, "tcp://127.0.0.1:*")
 DEFINE_REGULAR_TEST_CASES (inproc, "inproc://a")
 
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
+#if !defined(ZMQ_HAVE_GNU)
 DEFINE_REGULAR_TEST_CASES (ipc, "ipc://*")
 #endif
 
@@ -272,7 +272,7 @@ int main ()
     RUN_REGULAR_TEST_CASES (tcp);
     RUN_REGULAR_TEST_CASES (inproc);
 
-#if !defined(ZMQ_HAVE_WINDOWS) && !defined(ZMQ_HAVE_GNU)
+#if !defined(ZMQ_HAVE_GNU)
     RUN_REGULAR_TEST_CASES (ipc);
 #endif
     RUN_TEST (test_reset_hwm);

@@ -126,3 +126,6 @@ zeromq-*.zip
 core
 
 mybuild
+
+# VisualStudio artefacts
+/.vs

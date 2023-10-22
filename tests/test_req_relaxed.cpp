@@ -169,7 +169,7 @@ void test_case_4 ()
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int)));
 
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (req, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (req, ENDPOINT_7));
 
     //  Setup ROUTER socket as server but do not bind it just yet
     void *router = test_context_socket (ZMQ_ROUTER);
@@ -179,7 +179,7 @@ void test_case_4 ()
     s_send_seq (req, "TO_BE_ANSWERED", SEQ_END);
 
     //  Bind server allowing it to receive messages
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_0));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (router, ENDPOINT_7));
 
     //  Read the two messages and send them back as is
     bounce (router);

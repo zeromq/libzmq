@@ -370,6 +370,7 @@ void test_setsockopt_heartbeat_ttl_max ()
 
 void test_setsockopt_heartbeat_ttl_more_than_max_fails ()
 {
+#if !defined(ZMQ_ACT_MILITANT)
     void *const socket = test_context_socket (ZMQ_PAIR);
     const int value = heartbeat_ttl_max + 1;
     TEST_ASSERT_FAILURE_ERRNO (
@@ -377,6 +378,11 @@ void test_setsockopt_heartbeat_ttl_more_than_max_fails ()
       zmq_setsockopt (socket, ZMQ_HEARTBEAT_TTL, &value, sizeof (value)));
 
     test_context_socket_close (socket);
+#else
+    TEST_IGNORE_MESSAGE (
+      "libzmq with ZMQ_ACT_MILITANT, ignoring "
+      "test_setsockopt_heartbeat_ttl_more_than_max_fails test");
+#endif
 }
 
 void test_setsockopt_heartbeat_ttl_near_zero ()
