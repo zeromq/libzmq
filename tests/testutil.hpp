@@ -43,6 +43,7 @@
 #define ENDPOINT_4 "udp://127.0.0.1:5559"
 #define ENDPOINT_5 "udp://127.0.0.1:5560"
 #define PORT_6 5561
+#define ENDPOINT_7 "udp://127.0.0.1:5562"
 
 //  For tests that mock ZMTP
 const uint8_t zmtp_greeting_null[64] = {
