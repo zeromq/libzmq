@@ -126,3 +126,4 @@ zeromq-*.zip
 core
 
 mybuild
+/.vs

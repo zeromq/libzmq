@@ -214,6 +214,7 @@ autoreconf -fi
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/zmq.h
+%{_includedir}/zmq_sal.h
 %{_includedir}/zmq_utils.h
 
 %{_libdir}/libzmq.a
