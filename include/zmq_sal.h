@@ -13,6 +13,19 @@
     and by the IDE to provide better intellisense.
 
     Code analysis is enabled by adding /analyze to the compiler command line.
+    The compiler will then use the annotations to check for common errors.
+
+    More information:
+
+        Using SAL Annotations to Reduce C/C++ Code Defects
+        https://aka.ms/AAn6qoz
+
+        Understanding SAL
+        https://aka.ms/AAn6jkz
+
+        /analyze (Code analysis)
+        https://aka.ms/AAn6qp6
+
     *************************************************************************
 */
 
@@ -252,10 +265,6 @@ _Analysis_mode_ (_Analysis_local_leak_checks_)
 #undef _Lock_level_order_
 #endif
 #define _Lock_level_order_(n1, n2)
-#ifdef _Analysis_assume_
-#undef _Analysis_assume_
-#endif
-#define _Analysis_assume_(e)
 #ifdef _Analysis_assume_lock_acquired_
 #undef _Analysis_assume_lock_acquired_
 #endif
@@ -775,7 +784,7 @@ _Analysis_mode_ (_Analysis_local_leak_checks_)
 #ifdef _Analysis_assume_
 #undef _Analysis_assume_
 #endif
-#define _Analysis_assume_
+#define _Analysis_assume_(e)
 #ifdef _Analysis_assume_nullterminated_
 #undef _Analysis_assume_nullterminated_
 #endif

@@ -13,6 +13,19 @@
     and by the IDE to provide better intellisense.
 
     Code analysis is enabled by adding /analyze to the compiler command line.
+    The compiler will then use the annotations to check for common errors.
+
+    More information:
+
+        Using SAL Annotations to Reduce C/C++ Code Defects
+        https://aka.ms/AAn6qoz
+
+        Understanding SAL
+        https://aka.ms/AAn6jkz
+
+        /analyze (Code analysis)
+        https://aka.ms/AAn6qp6
+
     *************************************************************************
 */
 

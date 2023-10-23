@@ -3,6 +3,8 @@
 #ifndef __ZMQ_ERR_HPP_INCLUDED__
 #define __ZMQ_ERR_HPP_INCLUDED__
 
+#include "zmq_sal.h"
+
 #include <assert.h>
 #if defined _WIN32_WCE
 #include "..\builds\msvc\errno.hpp"
