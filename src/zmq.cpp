@@ -390,7 +390,8 @@ static inline int _Check_return_ s_sendmsg (_In_ zmq::socket_base_t *s_,
 }
 
 /*  To be deprecated once zmq_msg_send() is stable                           */
-ZMQ_EXPORT_IMPL (int) zmq_sendmsg (_In_ void *s_, _In_ zmq_msg_t *msg_, int flags_)
+ZMQ_EXPORT_IMPL (int)
+zmq_sendmsg (_In_ void *s_, _In_ zmq_msg_t *msg_, int flags_)
 {
     return zmq_msg_send (msg_, s_, flags_);
 }
@@ -499,7 +500,8 @@ zmq_sendiov (_In_ void *s_,
 
 // Receiving functions.
 
-static _Check_return_ int s_recvmsg (_In_ zmq::socket_base_t *s_, _In_ zmq_msg_t *msg_, int flags_)
+static _Check_return_ int
+s_recvmsg (_In_ zmq::socket_base_t *s_, _In_ zmq_msg_t *msg_, int flags_)
 {
     const int rc = s_->recv (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
     if (unlikely (rc < 0))
@@ -511,7 +513,8 @@ static _Check_return_ int s_recvmsg (_In_ zmq::socket_base_t *s_, _In_ zmq_msg_t
 }
 
 /*  To be deprecated once zmq_msg_recv() is stable                           */
-ZMQ_EXPORT_IMPL (int) zmq_recvmsg (_In_ void *s_, _Out_ zmq_msg_t *msg_, int flags_)
+ZMQ_EXPORT_IMPL (int)
+zmq_recvmsg (_In_ void *s_, _Out_ zmq_msg_t *msg_, int flags_)
 {
     return zmq_msg_recv (msg_, s_, flags_);
 }
@@ -639,18 +642,18 @@ _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)
   zmq_msg_init_buffer (_Out_ zmq_msg_t *msg_,
-                     _In_reads_bytes_ (size_) const void *buf_,
-                     size_t size_)
+                       _In_reads_bytes_ (size_) const void *buf_,
+                       size_t size_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->init_buffer (buf_, size_);
 }
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)
   zmq_msg_init_data (_Out_ zmq_msg_t *msg_,
-                   _In_reads_bytes_opt_ (size_) void *data_,
-                   size_t size_,
-                   _In_opt_ zmq_free_fn *ffn_,
-                   _In_opt_ void *hint_)
+                     _In_reads_bytes_opt_ (size_) void *data_,
+                     size_t size_,
+                     _In_opt_ zmq_free_fn *ffn_,
+                     _In_opt_ void *hint_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))
       ->init_data (data_, size_, ffn_, hint_);
@@ -783,7 +786,8 @@ zmq_msg_gets (_In_ const zmq_msg_t *msg_, _In_z_ const char *property_)
 // Polling.
 
 #if defined ZMQ_HAVE_POLLER
-static _Check_return_ int zmq_poller_poll (_In_ zmq_pollitem_t *items_, int nitems_, long timeout_)
+static _Check_return_ int
+zmq_poller_poll (_In_ zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
     // implement zmq_poll on top of zmq_poller
     int rc;
@@ -1481,7 +1485,7 @@ zmq_ppoll (_In_reads_ (nitems_) zmq_pollitem_t *items_,
 
     return nevents;
 #else
-    (void) nitems_, (void) timeout_, (void) sigmask_; 
+    (void) nitems_, (void) timeout_, (void) sigmask_;
     errno = ENOTSUP;
     return -1;
 #endif // ZMQ_HAVE_PPOLL
@@ -1535,7 +1539,8 @@ static _Check_return_ int check_events (const short events_)
     return 0;
 }
 
-static _Check_return_ int check_poller_registration_args (_In_ void *const poller_, _In_ void *const s_)
+static _Check_return_ int
+check_poller_registration_args (_In_ void *const poller_, _In_ void *const s_)
 {
     if (-1 == check_poller (poller_))
         return -1;
@@ -1550,7 +1555,7 @@ static _Check_return_ int check_poller_registration_args (_In_ void *const polle
 
 static _Check_return_ int
 check_poller_fd_registration_args (_In_ void *const poller_,
-                                              const zmq::fd_t fd_)
+                                   const zmq::fd_t fd_)
 {
     if (-1 == check_poller (poller_))
         return -1;

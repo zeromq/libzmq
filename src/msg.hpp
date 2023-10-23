@@ -79,7 +79,7 @@ class msg_t
     int init_size (size_t size_);
     int init_buffer (_In_reads_bytes_ (size_) const void *buf_, size_t size_);
     int init_data (_In_opt_ void *data_,
-                   _When_(data_ == NULL, _In_range_ (0,0)) size_t size_,
+                   _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
                    _In_opt_ msg_free_fn *ffn_,
                    _In_opt_ void *hint_);
     int init_external_storage (_In_ content_t *content_,

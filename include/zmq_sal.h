@@ -37,7 +37,7 @@
 #include <sal.h>
 
 _Analysis_mode_ (_Analysis_code_type_user_code_)
-_Analysis_mode_ (_Analysis_local_leak_checks_)
+  _Analysis_mode_ (_Analysis_local_leak_checks_)
 
 #else
 /* Redefine all SAL2 annotation macros to be harmless */

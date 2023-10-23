@@ -264,7 +264,8 @@ zmq_curve_public (_Out_writes_z_ (41) char *z85_public_key_,
 //  --------------------------------------------------------------------------
 //  Initialize a new atomic counter, which is set to zero
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::atomic_counter_t) zmq_atomic_counter_new (void)
+ZMQ_EXPORT_PTR_IMPL (void *, zmq::atomic_counter_t)
+zmq_atomic_counter_new (void)
 {
     zmq::atomic_counter_t *counter = new (std::nothrow) zmq::atomic_counter_t;
     alloc_assert (counter);
@@ -302,8 +303,8 @@ ZMQ_EXPORT_IMPL (int) zmq_atomic_counter_value (_In_ void *counter_)
 
 //  Destroy atomic counter, and set reference to NULL
 
-ZMQ_EXPORT_VOID_IMPL zmq_atomic_counter_destroy (
-  _Inout_ _Deref_post_null_ void **counter_p_)
+ZMQ_EXPORT_VOID_IMPL
+zmq_atomic_counter_destroy (_Inout_ _Deref_post_null_ void **counter_p_)
 {
     delete (static_cast<zmq::atomic_counter_t *> (*counter_p_));
     *counter_p_ = NULL;

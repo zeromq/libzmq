@@ -38,7 +38,7 @@ void zmq_abort (const char *errmsg_) __attribute__ ((analyzer_noreturn));
 void zmq_abort (const char *errmsg_);
 #endif
 #elif defined _MSC_VER
-__declspec(noreturn) _Analysis_noreturn_ void zmq_abort (const char *errmsg_);
+__declspec (noreturn) _Analysis_noreturn_ void zmq_abort (const char *errmsg_);
 #else
 void zmq_abort (const char *errmsg_);
 #endif
@@ -50,9 +50,8 @@ void print_backtrace ();
 namespace zmq
 {
 _Ret_z_ const char *wsa_error ();
-_Ret_z_ const char *
-wsa_error_no (int no_,
-              _In_ const char *wsae_wouldblock_string_ = "Operation would block");
+_Ret_z_ const char *wsa_error_no (
+  int no_, _In_ const char *wsae_wouldblock_string_ = "Operation would block");
 void win_error (_Out_writes_bytes_ (buffer_size_) char *buffer_,
                 size_t buffer_size_);
 int wsa_error_to_errno (int errcode_);
@@ -154,7 +153,7 @@ int wsa_error_to_errno (int errcode_);
             fflush (stderr);                                                   \
             zmq::zmq_abort ("FATAL ERROR: OUT OF MEMORY");                     \
         }                                                                      \
-        _Analysis_assume_(x != NULL);                                          \
+        _Analysis_assume_ (x != NULL);                                         \
     } while (false)
 
 #endif

@@ -136,9 +136,10 @@ int zmq::msg_t::init_external_storage (_In_ content_t *content_,
 }
 
 int zmq::msg_t::init_data (_In_opt_ void *data_,
-               _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
-               _In_opt_ msg_free_fn *ffn_,
-               _In_opt_ void *hint_)
+                           _When_ (data_ == NULL, _In_range_ (0, 0))
+                             size_t size_,
+                           _In_opt_ msg_free_fn *ffn_,
+                           _In_opt_ void *hint_)
 {
     //  If data is NULL and size is not 0, a segfault
     //  would occur once the data is accessed
