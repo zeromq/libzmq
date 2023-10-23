@@ -252,6 +252,10 @@ _Analysis_mode_ (_Analysis_local_leak_checks_)
 #undef _Lock_level_order_
 #endif
 #define _Lock_level_order_(n1, n2)
+#ifdef _Analysis_assume_
+#undef _Analysis_assume_
+#endif
+#define _Analysis_assume_(e)
 #ifdef _Analysis_assume_lock_acquired_
 #undef _Analysis_assume_lock_acquired_
 #endif
