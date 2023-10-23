@@ -33,7 +33,7 @@ extern "C" {
 
 /* Include Microsoft SAL header, or no-nothing macros depending on platform */
 
-#include <zmq_sal.h>
+#include "zmq_sal.h"
 
 /*  Handle DSO symbol visibility                                             */
 
