@@ -574,7 +574,7 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
-    TEST_ASSERT_SUCCESS_ERRNO(zmq_ctx_term(ctx));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
 
     zmq::random_close ();
 

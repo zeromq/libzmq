@@ -1,8 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-#include "../include/zmq.h"
-
-#if (defined __cplusplus && __cplusplus >= 201103L) || (defined _MSC_VER && _MSC_VER >= 1900)
+#if (defined __cplusplus && __cplusplus >= 201103L)                            \
+  || (defined _MSC_VER && _MSC_VER >= 1900)
 
 #include "radix_tree.hpp"
 #include "trie.hpp"
