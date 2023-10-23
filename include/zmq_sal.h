@@ -34,13 +34,17 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1700)
 
+#pragma once
+
 #include <sal.h>
 
 _Analysis_mode_ (_Analysis_code_type_user_code_)
   _Analysis_mode_ (_Analysis_local_leak_checks_)
 
-#else
+#elif !defined(_SAL_VERSION) || (_SAL_VERSION < 20)
+
 /* Redefine all SAL2 annotation macros to be harmless */
+
 #ifdef _When_
 #undef _When_
 #endif
@@ -1073,6 +1077,6 @@ _Analysis_mode_ (_Analysis_code_type_user_code_)
     _Post_ _Valid_
 #undef _Post_writable_byte_size_
 #define _Post_writable_byte_size_(s) _Post_ _Writable_bytes_ (s)
-#endif // _MSC_VER
+#endif
 
 #endif // __ZMQ_SAL_H_INCLUDED__
