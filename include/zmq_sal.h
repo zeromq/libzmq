@@ -32,7 +32,7 @@
 #ifndef __ZMQ_SAL_H_INCLUDED__
 #define __ZMQ_SAL_H_INCLUDED__
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (_MSC_VER >= 1700)
 
 #include <sal.h>
 
