@@ -40,6 +40,10 @@ _Analysis_mode_ (_Analysis_local_leak_checks_)
 #undef _Deref_
 #endif
 #define _Deref_
+#ifdef _Deref_post_null_
+#undef _Deref_post_null_
+#endif
+#define _Deref_post_null_
 #ifdef _Null_
 #undef _Null_
 #endif
