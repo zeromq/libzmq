@@ -153,7 +153,7 @@ int wsa_error_to_errno (int errcode_);
             fflush (stderr);                                                   \
             zmq::zmq_abort ("FATAL ERROR: OUT OF MEMORY");                     \
         }                                                                      \
-        _Analysis_assume_ (x != NULL);                                         \
+        _Analysis_assume_ ((x) != NULL);                                       \
     } while (false)
 
 #endif

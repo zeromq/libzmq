@@ -32,7 +32,7 @@ extern "C" {
 #include <stddef.h>
 #include <stdio.h>
 
-/* Include Microsoft SAL header, or no-nothing macros depending on platform */
+/* Include Microsoft SAL header, or no-nothing macros depending on platform  */
 
 #include "zmq_sal.h"
 
