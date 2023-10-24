@@ -361,7 +361,7 @@ int zmq::msg_t::copy (msg_t &src_)
     return 0;
 }
 
-void *zmq::msg_t::data ()
+ZMQ_FORCEINLINE void *zmq::msg_t::data ()
 {
     //  Check the validity of the message.
     zmq_assert (check ());
@@ -381,7 +381,7 @@ void *zmq::msg_t::data ()
     }
 }
 
-size_t zmq::msg_t::size () const
+ZMQ_FORCEINLINE size_t zmq::msg_t::size () const
 {
     //  Check the validity of the message.
     zmq_assert (check ());

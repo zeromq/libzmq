@@ -11,7 +11,7 @@ SETUP_TEARDOWN_TESTCONTEXT
 #define ZMQ_PREPARE_STRING(msg, data, size)                                    \
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));                           \
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, size + 1));            \
-    memcpy (zmq_msg_data (&msg), data, size + 1);
+    memcpy (zmqp_msg_data (&msg), data, size + 1);
 
 static int publicationsReceived = 0;
 static bool isSubscribed = false;
@@ -42,7 +42,7 @@ void test_disconnect_inproc ()
                 zmq_msg_init (&msg);
                 TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pub_socket, 0));
                 const char *const buffer =
-                  static_cast<const char *> (zmq_msg_data (&msg));
+                  static_cast<const char *> (zmqp_msg_data (&msg));
 
                 if (buffer[0] == 0) {
                     TEST_ASSERT_TRUE (isSubscribed);

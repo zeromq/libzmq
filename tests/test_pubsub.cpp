@@ -39,9 +39,30 @@ void test (const char *address)
 void test_norm ()
 {
 #if defined ZMQ_HAVE_NORM
-    test ("norm://224.1.2.3:5556");
+    test (
+      "norm://224.0.1.20:6210"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without NORM, ignoring test");
+#endif
+}
+
+void test_pgm ()
+{
+#if defined ZMQ_HAVE_OPENPGM
+    test (
+      "pgm://10.0.0.104;224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
+#endif
+}
+
+void test_epgm ()
+{
+#if defined ZMQ_HAVE_OPENPGM
+    test (
+      "epgm://10.0.0.104;224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
 }
 
@@ -51,5 +72,7 @@ int main ()
 
     UNITY_BEGIN ();
     RUN_TEST (test_norm);
+    RUN_TEST (test_pgm);
+    RUN_TEST (test_epgm);
     return UNITY_END ();
 }

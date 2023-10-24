@@ -59,7 +59,7 @@ void test_fair_queue_in (const char *bind_address_)
     for (unsigned char peer = 0; peer < services; ++peer) {
         TEST_ASSERT_EQUAL_INT (
           2, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, receiver, 0)));
-        const char *id = static_cast<const char *> (zmq_msg_data (&msg));
+        const char *id = static_cast<const char *> (zmqp_msg_data (&msg));
         sum -= id[0];
 
         s_recv_seq (receiver, "M", SEQ_END);

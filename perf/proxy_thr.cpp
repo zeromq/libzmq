@@ -141,7 +141,7 @@ static void publisher_thread_main (void *pvoid)
     zmq_msg_t msg_orig;
     rc = zmq_msg_init_size (&msg_orig, message_size);
     assert (rc == 0);
-    memset (zmq_msg_data (&msg_orig), 'A', zmq_msg_size (&msg_orig));
+    memset (zmqp_msg_data (&msg_orig), 'A', zmqp_msg_size (&msg_orig));
 
     uint64_t send_count = 0;
     while (send_count < message_count) {

@@ -91,8 +91,8 @@ class msg_t
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
-    void *data ();
-    size_t size () const;
+    ZMQ_FORCEINLINE void *data ();
+    ZMQ_FORCEINLINE size_t size () const;
     unsigned char flags () const;
     void set_flags (unsigned char flags_);
     void reset_flags (unsigned char flags_);

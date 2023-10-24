@@ -67,7 +67,7 @@ void test_stream_disconnect ()
     zmq_msg_t peer_frame;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&peer_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&peer_frame, sockets[SERVER], 0));
-    TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&peer_frame));
+    TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&peer_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&peer_frame));
     TEST_ASSERT_TRUE (has_more (sockets[SERVER]));
 
@@ -75,20 +75,20 @@ void test_stream_disconnect ()
     zmq_msg_t data_frame;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&data_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&data_frame, sockets[SERVER], 0));
-    TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&data_frame));
+    TEST_ASSERT_EQUAL_INT (0, zmqp_msg_size (&data_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&data_frame));
 
     // Client: Grab the 1st frame (peer routing id).
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&peer_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&peer_frame, sockets[CLIENT], 0));
-    TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&peer_frame));
+    TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&peer_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&peer_frame));
     TEST_ASSERT_TRUE (has_more (sockets[CLIENT]));
 
     // Client: Grab the 2nd frame (actual payload).
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&data_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&data_frame, sockets[CLIENT], 0));
-    TEST_ASSERT_EQUAL_INT (0, zmq_msg_size (&data_frame));
+    TEST_ASSERT_EQUAL_INT (0, zmqp_msg_size (&data_frame));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&data_frame));
 
     // Send initial message.
@@ -99,13 +99,13 @@ void test_stream_disconnect ()
     TEST_ASSERT_GREATER_THAN (0, blob_size);
     zmq_msg_t msg;
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, blob_size));
-    memcpy (zmq_msg_data (&msg), blob_data, blob_size);
+    memcpy (zmqp_msg_data (&msg), blob_data, blob_size);
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_msg_send (&msg, sockets[dialog[0].turn], ZMQ_SNDMORE));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_msg_init_size (&msg, strlen (dialog[0].text)));
-    memcpy (zmq_msg_data (&msg), dialog[0].text, strlen (dialog[0].text));
+    memcpy (zmqp_msg_data (&msg), dialog[0].text, strlen (dialog[0].text));
     TEST_ASSERT_SUCCESS_ERRNO (
       zmq_msg_send (&msg, sockets[dialog[0].turn], ZMQ_SNDMORE));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
@@ -131,7 +131,7 @@ void test_stream_disconnect ()
             TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&peer_frame));
             TEST_ASSERT_SUCCESS_ERRNO (
               zmq_msg_recv (&peer_frame, sockets[SERVER], 0));
-            TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&peer_frame));
+            TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&peer_frame));
             TEST_ASSERT_TRUE (has_more (sockets[SERVER]));
 
             // Grab the 2nd frame (actual payload).
@@ -142,8 +142,8 @@ void test_stream_disconnect ()
 
             // Make sure payload matches what we expect.
             const char *const data =
-              static_cast<const char *> (zmq_msg_data (&data_frame));
-            const size_t size = zmq_msg_size (&data_frame);
+              static_cast<const char *> (zmqp_msg_data (&data_frame));
+            const size_t size = zmqp_msg_size (&data_frame);
             // 0-length frame is a disconnection notification.  The server
             // should receive it as the last step in the dialogue.
             if (size == 0) {
@@ -161,8 +161,8 @@ void test_stream_disconnect ()
                 TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&data_frame));
                 TEST_ASSERT_SUCCESS_ERRNO (
                   zmq_msg_init_size (&data_frame, strlen (dialog[step].text)));
-                memcpy (zmq_msg_data (&data_frame), dialog[step].text,
-                        zmq_msg_size (&data_frame));
+                memcpy (zmqp_msg_data (&data_frame), dialog[step].text,
+                        zmqp_msg_size (&data_frame));
 
                 // Send the response.
                 TEST_ASSERT_SUCCESS_ERRNO (
@@ -185,7 +185,7 @@ void test_stream_disconnect ()
             TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&peer_frame));
             TEST_ASSERT_SUCCESS_ERRNO (
               zmq_msg_recv (&peer_frame, sockets[CLIENT], 0));
-            TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&peer_frame));
+            TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&peer_frame));
             TEST_ASSERT_TRUE (has_more (sockets[CLIENT]));
 
             // Grab the 2nd frame (actual payload).
@@ -193,12 +193,12 @@ void test_stream_disconnect ()
             TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&data_frame));
             TEST_ASSERT_SUCCESS_ERRNO (
               zmq_msg_recv (&data_frame, sockets[CLIENT], 0));
-            TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&data_frame));
+            TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&data_frame));
 
             // Make sure payload matches what we expect.
             const char *const data =
-              static_cast<const char *> (zmq_msg_data (&data_frame));
-            const size_t size = zmq_msg_size (&data_frame);
+              static_cast<const char *> (zmqp_msg_data (&data_frame));
+            const size_t size = zmqp_msg_size (&data_frame);
             TEST_ASSERT_EQUAL_INT (strlen (dialog[step].text), size);
             TEST_ASSERT_EQUAL_STRING_LEN (dialog[step].text, data, size);
 
@@ -209,8 +209,8 @@ void test_stream_disconnect ()
             TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&data_frame));
             TEST_ASSERT_SUCCESS_ERRNO (
               zmq_msg_init_size (&data_frame, strlen (dialog[step].text)));
-            memcpy (zmq_msg_data (&data_frame), dialog[step].text,
-                    zmq_msg_size (&data_frame));
+            memcpy (zmqp_msg_data (&data_frame), dialog[step].text,
+                    zmqp_msg_size (&data_frame));
 
             // Send the response.
             TEST_ASSERT_SUCCESS_ERRNO (

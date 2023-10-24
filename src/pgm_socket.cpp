@@ -287,8 +287,8 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     //  Set IP level parameters.
     {
-        // Multicast loopback disabled by default
-        const int multicast_loop = 0;
+        // Multicast loopback
+        const int multicast_loop = options.multicast_loop;
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_LOOP,
                              &multicast_loop, sizeof (multicast_loop)))
             goto err_abort;

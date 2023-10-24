@@ -100,7 +100,7 @@ void test_pull_fair_queue_in (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         TEST_ASSERT_EQUAL_INT (
           2, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pull, 0)));
-        const char *str = static_cast<const char *> (zmq_msg_data (&msg));
+        const char *str = static_cast<const char *> (zmqp_msg_data (&msg));
         first_half -= str[0];
     }
     TEST_ASSERT_EQUAL_INT (0, first_half);
@@ -109,7 +109,7 @@ void test_pull_fair_queue_in (const char *bind_address_)
     for (size_t peer = 0; peer < services; ++peer) {
         TEST_ASSERT_EQUAL_INT (
           2, TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, pull, 0)));
-        const char *str = static_cast<const char *> (zmq_msg_data (&msg));
+        const char *str = static_cast<const char *> (zmqp_msg_data (&msg));
         second_half -= str[0];
     }
     TEST_ASSERT_EQUAL_INT (0, second_half);
@@ -244,7 +244,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     send_string_expect_success (push, "0", ZMQ_SNDMORE);
     send_string_expect_success (push, "0", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));
-    memset (zmq_msg_data (&msg_data), 'a', len);
+    memset (zmqp_msg_data (&msg_data), 'a', len);
     TEST_ASSERT_EQUAL_INT (len, zmq_msg_send (&msg_data, push, 0));
 
     recv_string_expect_success (pull, "0", 0);
@@ -259,7 +259,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     send_string_expect_success (push, "2", ZMQ_SNDMORE);
     send_string_expect_success (push, "2", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));
-    memset (zmq_msg_data (&msg_data), 'b', len);
+    memset (zmqp_msg_data (&msg_data), 'b', len);
     TEST_ASSERT_EQUAL_INT (len, zmq_msg_send (&msg_data, push, 0));
 
     // Disconnect and simulate a poll (doesn't work on Windows) to
@@ -282,7 +282,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     send_string_expect_success (push, "3", ZMQ_SNDMORE);
     send_string_expect_success (push, "3", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));
-    memset (zmq_msg_data (&msg_data), 'c', len);
+    memset (zmqp_msg_data (&msg_data), 'c', len);
     if (block_) {
         TEST_ASSERT_EQUAL_INT (len,
                                zmq_msg_send (&msg_data, push, ZMQ_SNDMORE));
@@ -308,7 +308,7 @@ void test_push_multipart_atomic_drop (const char *bind_address_,
     send_string_expect_success (push, "5", ZMQ_SNDMORE);
     send_string_expect_success (push, "5", ZMQ_SNDMORE);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg_data, len));
-    memset (zmq_msg_data (&msg_data), 'd', len);
+    memset (zmqp_msg_data (&msg_data), 'd', len);
     TEST_ASSERT_EQUAL_INT (len, zmq_msg_send (&msg_data, push, 0));
 
     // On very slow machines the message will not be lost, as it will

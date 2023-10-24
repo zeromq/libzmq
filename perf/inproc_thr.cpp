@@ -48,7 +48,7 @@ static void *worker (void *ctx_)
             exit (1);
         }
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
-        memset (zmq_msg_data (&msg), 0, message_size);
+        memset (zmqp_msg_data (&msg), 0, message_size);
 #endif
 
         rc = zmq_sendmsg (s, &msg, 0);
@@ -147,7 +147,7 @@ int main (int argc, char *argv[])
         printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
         return -1;
     }
-    if (zmq_msg_size (&msg) != message_size) {
+    if (zmqp_msg_size (&msg) != message_size) {
         printf ("message of incorrect size received\n");
         return -1;
     }
@@ -160,7 +160,7 @@ int main (int argc, char *argv[])
             printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
-        if (zmq_msg_size (&msg) != message_size) {
+        if (zmqp_msg_size (&msg) != message_size) {
             printf ("message of incorrect size received\n");
             return -1;
         }

@@ -1972,7 +1972,7 @@ void zmq::socket_base_t::monitor_event (
                 const uint16_t event = static_cast<uint16_t> (event_);
                 const uint32_t value = static_cast<uint32_t> (values_[0]);
                 zmq_msg_init_size (&msg, sizeof (event) + sizeof (value));
-                uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
+                uint8_t *data = static_cast<uint8_t *> (zmqp_msg_data (&msg));
                 //  Avoid dereferencing uint32_t on unaligned address
                 memcpy (data + 0, &event, sizeof (event));
                 memcpy (data + sizeof (event), &value, sizeof (value));
@@ -1983,39 +1983,39 @@ void zmq::socket_base_t::monitor_event (
 
                 //  Send address in second frame
                 zmq_msg_init_size (&msg, endpoint_uri.size ());
-                memcpy (zmq_msg_data (&msg), endpoint_uri.c_str (),
+                memcpy (zmqp_msg_data (&msg), endpoint_uri.c_str (),
                         endpoint_uri.size ());
                 zmq_msg_send (&msg, _monitor_socket, 0);
             } break;
             case 2: {
                 //  Send event in first frame (64bit unsigned)
                 zmq_msg_init_size (&msg, sizeof (event_));
-                memcpy (zmq_msg_data (&msg), &event_, sizeof (event_));
+                memcpy (zmqp_msg_data (&msg), &event_, sizeof (event_));
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
                 //  Send number of values that will follow in second frame
                 zmq_msg_init_size (&msg, sizeof (values_count_));
-                memcpy (zmq_msg_data (&msg), &values_count_,
+                memcpy (zmqp_msg_data (&msg), &values_count_,
                         sizeof (values_count_));
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
                 //  Send values in third-Nth frames (64bit unsigned)
                 for (uint64_t i = 0; i < values_count_; ++i) {
                     zmq_msg_init_size (&msg, sizeof (values_[i]));
-                    memcpy (zmq_msg_data (&msg), &values_[i],
+                    memcpy (zmqp_msg_data (&msg), &values_[i],
                             sizeof (values_[i]));
                     zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
                 }
 
                 //  Send local endpoint URI in second-to-last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.local.size ());
-                memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.local.c_str (),
+                memcpy (zmqp_msg_data (&msg), endpoint_uri_pair_.local.c_str (),
                         endpoint_uri_pair_.local.size ());
                 zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
 
                 //  Send remote endpoint URI in last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.remote.size ());
-                memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.remote.c_str (),
+                memcpy (zmqp_msg_data (&msg), endpoint_uri_pair_.remote.c_str (),
                         endpoint_uri_pair_.remote.size ());
                 zmq_msg_send (&msg, _monitor_socket, 0);
             } break;

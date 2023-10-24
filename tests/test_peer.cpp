@@ -21,7 +21,7 @@ void test_peer ()
         zmq_msg_t msg;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
-        char *data = static_cast<char *> (zmq_msg_data (&msg));
+        char *data = static_cast<char *> (zmqp_msg_data (&msg));
         data[0] = 1;
 
         TEST_ASSERT_SUCCESS_ERRNO (
@@ -49,7 +49,7 @@ void test_peer ()
         zmq_msg_t msg;
         TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, 1));
 
-        char *data = static_cast<char *> (zmq_msg_data (&msg));
+        char *data = static_cast<char *> (zmqp_msg_data (&msg));
         data[0] = 2;
 
         TEST_ASSERT_SUCCESS_ERRNO (

@@ -275,7 +275,8 @@ src_libzmq_la_SOURCES = \
 	src/zap_client.hpp \
 	src/zmtp_engine.cpp \
 	src/zmtp_engine.hpp \
-	src/zmq_draft.h
+	src/zmq_draft.h \
+	src/zmqp.h
 
 if USE_WEPOLL
 src_libzmq_la_SOURCES += \
