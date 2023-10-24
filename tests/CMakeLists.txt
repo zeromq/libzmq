@@ -75,6 +75,7 @@ set(tests
   test_reconnect_ivl
   test_reconnect_options
   test_tcp_accept_filter
+  test_pubsub
   test_mock_pub_sub)
 
 if(NOT WIN32)
