@@ -1,10 +1,15 @@
 # CMake build script for ZeroMQ tests
-cmake_minimum_required(VERSION "2.8.1")
+cmake_minimum_required(VERSION 3.5..3.27)
 
 # On Windows: solution file will be called tests.sln
 project(tests)
 
 set(tests
+  test_bind_stream_fuzzer
+  test_bind_ws_fuzzer
+  test_connect_stream_fuzzer
+  test_connect_ws_fuzzer
+  test_socket_options_fuzzer
   test_ancillaries
   test_system
   test_pair_inproc

@@ -1,11 +1,6 @@
 # CMake build script for ZeroMQ
+cmake_minimum_required(VERSION 3.5..3.27)
 project(ZeroMQ)
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
-  cmake_minimum_required(VERSION 3.0.2)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
 
 include(CheckIncludeFiles)
 include(CheckCCompilerFlag)
