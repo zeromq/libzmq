@@ -770,7 +770,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   add_definitions(-D_DARWIN_C_SOURCE)
 endif()
 
-find_package(AsciiDoc)
+find_package(AsciiDoctor)
 
 cmake_dependent_option(WITH_DOC "Build Reference Guide documentation(requires DocBook)" ON "ASCIIDOC_FOUND;NOT WIN32"
                        OFF) # Do not build docs on Windows due to issues with symlinks
@@ -1256,25 +1256,16 @@ option(WITH_DOCS "Build html docs" ON)
 if(WITH_DOCS)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
   file(
-    GLOB docs
+    GLOB asciidoc_files
     RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/
-    "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
-  set(html-docs)
-  foreach(txt ${docs})
-    string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
-    set(src ${txt})
-    set(dst doc/${html})
-    if(WITH_DOC)
-      add_custom_command(
-        OUTPUT ${dst}
-        COMMAND ${ASCIIDOC_EXECUTABLE} -d manpage -b xhtml11 -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
-                -azmq_version=${ZMQ_VERSION} -o ${dst} ${src}
-        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating ${html}")
-      list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
-    endif()
-  endforeach()
+    "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.adoc")
+  string(REPLACE ".txt" ".html" html_files ${asciidoc_files})
+  add_custom_command(
+    OUTPUT ${html_files}
+    COMMAND asciidoctor -b html -azmq_version=${ZMQ_VERSION} *.adoc
+    DEPENDS ${asciidoc_files}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating ${html}")
 endif()
 
 if(ZMQ_BUILD_FRAMEWORK)

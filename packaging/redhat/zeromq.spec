@@ -67,7 +67,18 @@ BuildRequires:  gnutls-devel
 %else
 %define TLS no
 %endif
-BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
+%if 0%{?rhel_version}
+%if 0%{?rhel_version} >= 800
+# note1: on OBS the RHEL7 target for some reason is unable to find the asciidoctor package, so on RHEL7 docs are not built
+# note2: on RHEL8/Centos8 the asciidoctor package depends from the ruby module; this might require some extra config on the
+#        build farm where this .spec file is used
+BuildRequires:  asciidoctor
+%endif
+%else
+# on non-RHEL targets, listing asciidoctor in BuildRequires works just fine:
+BuildRequires:  rubygem(asciidoctor)
+%endif
+BuildRequires: gcc, make, gcc-c++, libstdc++-devel
 Requires:      libstdc++
 
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
