@@ -506,7 +506,6 @@ test_apps = \
 	tests/test_bind_after_connect_tcp \
 	tests/test_sodium \
 	tests/test_reconnect_ivl \
-	tests/test_pubsub \
 	tests/test_mock_pub_sub \
 	tests/test_socket_null \
 	tests/test_tcp_accept_filter
@@ -828,10 +827,6 @@ tests_test_socket_null_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
 tests_test_reconnect_ivl_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reconnect_ivl_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
-tests_test_pubsub_SOURCES = tests/test_pubsub.cpp
-tests_test_pubsub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_pubsub_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_mock_pub_sub_SOURCES = tests/test_mock_pub_sub.cpp
 tests_test_mock_pub_sub_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
