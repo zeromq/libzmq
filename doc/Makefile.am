@@ -60,6 +60,15 @@ SUFFIXES=.html .adoc .3 .7
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)
 
+__pagelist.adoc:
+	# code to automatically produce the index page:
+	echo >__pagelist.adoc
+	for adocfile in $(ls *.adoc); do \
+		noext=${adocfile//.adoc/}; \
+		echo "* xref:${adocfile}[${noext}]" >> __pagelist.adoc; \
+	done
+
+
 # To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
 # that page contains a link to all other documentation pages
 all-local : $(MAN_DOC) $(MAN_HTML)
