@@ -62,11 +62,11 @@ dist-hook : $(MAN_DOC) $(HTML_DOC)
 
 # the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
 __pagelist:
-	echo >__pagelist
+	echo >$(srcdir)/$@
 	for adocfile in $(ASCIIDOC_DOC); do \
         if [ "$${adocfile}" != "index.adoc" ]; then \
 		    noext=$${adocfile//.adoc/}; \
-		    echo "* xref:$${adocfile}[$${noext}]" >> __pagelist; \
+		    echo "* xref:$${adocfile}[$${noext}]" >> $(srcdir)/$@; \
         fi ; \
 	done
 
@@ -77,7 +77,7 @@ index.html : __pagelist
 all-local : __pagelist $(MAN_DOC) $(HTML_DOC)
 
 clean-local :
-	rm -f $(MAN_DOC) $(HTML_DOC)
+	rm -f $(MAN_DOC) $(HTML_DOC) __pagelist
 
 endif
 
