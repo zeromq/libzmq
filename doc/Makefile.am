@@ -77,8 +77,6 @@ index.html:
 	$(MAKE) $(builddir)/__pagelist
 	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@ -azmq_pagelist_dir=$(abs_builddir) $(srcdir)/index.adoc
 
-# To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
-# that page contains a link to all other documentation pages
 all-local : $(MAN_DOC) $(HTML_DOC)
 
 clean-local :
