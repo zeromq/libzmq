@@ -28,17 +28,17 @@ MAN7 = \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
     zmq_gssapi.7
 
-# ASCIIDOC_DOC contains all the Asciidoc files checked into the git repo
-ASCIIDOC_DOC = index.adoc $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
+# ASCIIDOC_DOC_WITHOUT_INDEX contains all the Asciidoc files checked into the git repo, except for index.adoc
+ASCIIDOC_DOC_WITHOUT_INDEX = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
 
 # MAN_DOC contains all the MANPAGE documentation (generated from asciidoc files)
 MAN_DOC = $(MAN3) $(MAN7) 
 
 # HTML_DOC contains all the HTML documentation (generated from asciidoc files)
-HTML_DOC = $(ASCIIDOC_DOC:%.adoc=%.html)
+HTML_DOC = index.html $(ASCIIDOC_DOC_WITHOUT_INDEX:%.adoc=%.html)
 
 MAINTAINERCLEANFILES =
-EXTRA_DIST = $(ASCIIDOC_DOC)
+EXTRA_DIST = $(ASCIIDOC_DOC_WITHOUT_INDEX)
 
 
 #
@@ -61,24 +61,28 @@ SUFFIXES=.html .adoc .3 .7
 dist-hook : $(MAN_DOC) $(HTML_DOC)
 
 # the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
-__pagelist:
-	sudo touch $(srcdir)/$@
-	sudo chmod a+w $(srcdir)/$@
-	for adocfile in $(ASCIIDOC_DOC); do \
-		if [ "$${adocfile}" != "index.adoc" ]; then \
-			noext=$${adocfile//.adoc/}; \
-			echo "* xref:$${adocfile}[$${noext}]" >> $(srcdir)/$@; \
-		fi ; \
+$(builddir)/__pagelist:
+	echo >$@
+	for adocfile in $(ASCIIDOC_DOC_WITHOUT_INDEX); do \
+		noext=$${adocfile//.adoc/}; \
+		echo "* xref:$${adocfile}[$${noext}]" >> $@; \
 	done
 
-index.html : __pagelist
+# there are a number of constraints in auto-generating files for Asciidoctor:
+# - out-of-tree builds
+# - read-only source tree
+# - target being invoked into RPM buildroot
+# etc, so we have special rules to build the index.html page, which requires auto-generated list of doc pages
+index.html:
+	$(MAKE) $(builddir)/__pagelist
+	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@ -azmq_pagelist_dir=$(abs_builddir) $(srcdir)/index.adoc
 
 # To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
 # that page contains a link to all other documentation pages
-all-local : __pagelist $(MAN_DOC) $(HTML_DOC)
+all-local : $(MAN_DOC) $(HTML_DOC)
 
 clean-local :
-	rm -f $(MAN_DOC) $(HTML_DOC) __pagelist
+	rm -f $(MAN_DOC) $(HTML_DOC) $(builddir)/__pagelist
 
 endif
 
