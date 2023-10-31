@@ -28,17 +28,17 @@ MAN7 = \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
     zmq_gssapi.7
 
-# MAN_ADOC contains all original Asciidoc files from git repo
-MAN_ADOC = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
+# ASCIIDOC_DOC contains all the Asciidoc files checked into the git repo
+ASCIIDOC_DOC = index.adoc $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
 
-# MAN_DOC contains all the MANUAL PAGES (generated from asciidoc files)
+# MAN_DOC contains all the MANPAGE documentation (generated from asciidoc files)
 MAN_DOC = $(MAN3) $(MAN7) 
 
-# MAN_HTML contains all the HTML PAGES (generated from asciidoc files)
-MAN_HTML = $(MAN_ADOC:%.adoc=%.html)
+# HTML_DOC contains all the HTML documentation (generated from asciidoc files)
+HTML_DOC = $(ASCIIDOC_DOC:%.adoc=%.html)
 
 MAINTAINERCLEANFILES =
-EXTRA_DIST = $(MAN_ADOC)
+EXTRA_DIST = $(ASCIIDOC_DOC)
 
 
 #
@@ -47,35 +47,37 @@ EXTRA_DIST = $(MAN_ADOC)
 #
 if BUILD_DOC
 
-EXTRA_DIST += $(MAN_HTML) $(MAN_DOC)
-MAINTAINERCLEANFILES += $(MAN_HTML) $(MAN_DOC)
+EXTRA_DIST += $(HTML_DOC) $(MAN_DOC)
+MAINTAINERCLEANFILES += $(HTML_DOC) $(MAN_DOC)
 SUFFIXES=.html .adoc .3 .7
 
-.adoc.html: 
+.adoc.html:
 	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@  $<
 .adoc.3:
 	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
 .adoc.7:
 	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
 
-dist-hook : $(MAN_DOC) $(MAN_HTML)
+dist-hook : $(MAN_DOC) $(HTML_DOC)
 
-__pagelist.adoc:
-	# code to automatically produce the index page:
-	echo >__pagelist.adoc
-	for adocfile in $(ls *.adoc); do \
-		noext=${adocfile//.adoc/}; \
-		echo "* xref:${adocfile}[${noext}]" >> __pagelist.adoc; \
+# the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
+__pagelist:
+	echo >__pagelist
+	for adocfile in $$(ls *.adoc); do \
+        if [ "$${adocfile}" != "index.adoc" ]; then \
+		    noext=$${adocfile//.adoc/}; \
+		    echo "* xref:$${adocfile}[$${noext}]" >> __pagelist; \
+        fi ; \
 	done
 
+index.html : __pagelist
 
 # To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
 # that page contains a link to all other documentation pages
-all-local : $(MAN_DOC) $(MAN_HTML)
-	ln -sf zmq.html index.html
+all-local : __pagelist $(MAN_DOC) $(HTML_DOC)
 
 clean-local :
-	rm -f $(MAN3) $(MAN7) $(MAN_HTML)
+	rm -f $(MAN_DOC) $(HTML_DOC)
 
 endif
 
