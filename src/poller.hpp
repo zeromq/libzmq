@@ -7,7 +7,7 @@
     + defined ZMQ_IOTHREAD_POLLER_USE_EPOLL                                    \
     + defined ZMQ_IOTHREAD_POLLER_USE_DEVPOLL                                  \
     + defined ZMQ_IOTHREAD_POLLER_USE_POLLSET                                  \
-    + defined ZMQ_IOTHREAD_POLLER_POLL                                         \
+    + defined ZMQ_IOTHREAD_POLLER_USE_POLL                                     \
     + defined ZMQ_IOTHREAD_POLLER_USE_SELECT                                   \
   > 1
 #error More than one of the ZMQ_IOTHREAD_POLLER_USE_* macros defined
