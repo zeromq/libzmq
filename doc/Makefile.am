@@ -62,7 +62,8 @@ dist-hook : $(MAN_DOC) $(HTML_DOC)
 
 # the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
 __pagelist:
-	echo >$(srcdir)/$@
+	sudo touch $(srcdir)/$@
+    sudo chmod a+w $(srcdir)/$@
 	for adocfile in $(ASCIIDOC_DOC); do \
         if [ "$${adocfile}" != "index.adoc" ]; then \
 		    noext=$${adocfile//.adoc/}; \
