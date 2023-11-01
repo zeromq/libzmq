@@ -15,6 +15,6 @@ for adocfile in $(ls ${ASCIIDOC_DIR}/*.txt); do
     # this script is used to produce an Asciidoc snippet that goes inside index.adoc... avoid listing index.adoc itself!
     if [ "${adocfile_basename}" != "index.txt" ]; then
         adocfile_basename_noext=${adocfile_basename//.txt/}
-        echo "* xref:${adocfile_basename}[${adocfile_basename_noext}]" >>$OUTPUT_FILE
+        echo "* link:${adocfile_basename_noext}.html[${adocfile_basename_noext}]" >>$OUTPUT_FILE
     fi
 done
