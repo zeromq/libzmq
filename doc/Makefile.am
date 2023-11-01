@@ -28,17 +28,17 @@ MAN7 = \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
     zmq_gssapi.7
 
-# MAN_ADOC contains all original Asciidoc files from git repo
-MAN_ADOC = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
+# ASCIIDOC_DOC_WITHOUT_INDEX contains all the Asciidoc files checked into the git repo, except for index.adoc
+ASCIIDOC_DOC_WITHOUT_INDEX = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
 
-# MAN_DOC contains all the MANUAL PAGES (generated from asciidoc files)
+# MAN_DOC contains all the MANPAGE documentation (generated from asciidoc files)
 MAN_DOC = $(MAN3) $(MAN7) 
 
-# MAN_HTML contains all the HTML PAGES (generated from asciidoc files)
-MAN_HTML = $(MAN_ADOC:%.adoc=%.html)
+# HTML_DOC contains all the HTML documentation (generated from asciidoc files)
+HTML_DOC = index.html $(ASCIIDOC_DOC_WITHOUT_INDEX:%.adoc=%.html)
 
 MAINTAINERCLEANFILES =
-EXTRA_DIST = $(MAN_ADOC)
+EXTRA_DIST = $(ASCIIDOC_DOC_WITHOUT_INDEX)
 
 
 #
@@ -47,26 +47,40 @@ EXTRA_DIST = $(MAN_ADOC)
 #
 if BUILD_DOC
 
-EXTRA_DIST += $(MAN_HTML) $(MAN_DOC)
-MAINTAINERCLEANFILES += $(MAN_HTML) $(MAN_DOC)
+EXTRA_DIST += $(HTML_DOC) $(MAN_DOC)
+MAINTAINERCLEANFILES += $(HTML_DOC) $(MAN_DOC)
 SUFFIXES=.html .adoc .3 .7
 
-.adoc.html: 
+.adoc.html:
 	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@  $<
 .adoc.3:
 	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
 .adoc.7:
 	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
 
-dist-hook : $(MAN_DOC) $(MAN_HTML)
+dist-hook : $(MAN_DOC) $(HTML_DOC)
 
-# To help publishing HTML files into github Pages, we indicate github that the "zmq.html" page is the index page;
-# that page contains a link to all other documentation pages
-all-local : $(MAN_DOC) $(MAN_HTML)
-	ln -sf zmq.html index.html
+# the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
+$(builddir)/__pagelist:
+	echo >$@
+	for adocfile in $(ASCIIDOC_DOC_WITHOUT_INDEX); do \
+		noext=$${adocfile//.adoc/}; \
+		echo "* xref:$${adocfile}[$${noext}]" >> $@; \
+	done
+
+# there are a number of constraints in auto-generating files for Asciidoctor:
+# - out-of-tree builds
+# - read-only source tree
+# - target being invoked into RPM buildroot
+# etc, so we have special rules to build the index.html page, which requires auto-generated list of doc pages
+index.html:
+	$(MAKE) $(builddir)/__pagelist
+	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@ -azmq_pagelist_dir=$(abs_builddir) $(srcdir)/index.adoc
+
+all-local : $(MAN_DOC) $(HTML_DOC)
 
 clean-local :
-	rm -f $(MAN3) $(MAN7) $(MAN_HTML)
+	rm -f $(MAN_DOC) $(HTML_DOC) $(builddir)/__pagelist
 
 endif
 

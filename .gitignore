@@ -6,6 +6,7 @@ syntax: glob # for hg-git users
 builds/Makefile
 builds/deprecated-msvc/Makefile
 doc/Makefile
+doc/__pagelist
 libtool
 ### automake
 Makefile.in
