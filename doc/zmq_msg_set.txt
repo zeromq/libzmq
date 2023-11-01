@@ -36,8 +36,8 @@ The requested property _property_ is unknown.
 
 SEE ALSO
 --------
-linkzmq:zmq_msg_get[3]
-linkzmq:zmq[7]
+link:zmq_msg_get.html[zmq_msg_get]
+link:zmq.html[zmq]
 
 
 AUTHORS

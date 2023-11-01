@@ -35,25 +35,25 @@ you exit your application you must destroy the 'context'. These functions let
 you work with 'contexts':
 
 Create a new 0MQ context::
-    linkzmq:zmq_ctx_new[3]
+    link:zmq_ctx_new.html[zmq_ctx_new]
 
 Work with context properties::
-    linkzmq:zmq_ctx_set[3]
-    linkzmq:zmq_ctx_get[3]
+    link:zmq_ctx_set.html[zmq_ctx_set]
+    link:zmq_ctx_get.html[zmq_ctx_get]
 
 Destroy a 0MQ context::
-    linkzmq:zmq_ctx_destroy[3]
+    link:zmq_ctx_destroy.html[zmq_ctx_destroy]
 
 Monitor a 0MQ context::
-    linkzmq:zmq_ctx_set_monitor[3]
+    link:zmq_ctx_set_monitor.html[zmq_ctx_set_monitor]
 
 These deprecated functions let you create and destroy 'contexts':
 
 Initialise 0MQ context::
-    linkzmq:zmq_init[3]
+    link:zmq_init.html[zmq_init]
 
 Terminate 0MQ context::
-    linkzmq:zmq_term[3]
+    link:zmq_term.html[zmq_term]
 
 
 Thread safety
@@ -88,64 +88,64 @@ data.
 The following functions are provided to work with messages:
 
 Initialise a message::
-    linkzmq:zmq_msg_init[3]
-    linkzmq:zmq_msg_init_size[3]
-    linkzmq:zmq_msg_init_data[3]
+    link:zmq_msg_init.html[zmq_msg_init]
+    link:zmq_msg_init_size.html[zmq_msg_init_size]
+    link:zmq_msg_init_data.html[zmq_msg_init_data]
 
 Sending and receiving a message::
-    linkzmq:zmq_msg_send[3]
-    linkzmq:zmq_msg_recv[3]
+    link:zmq_msg_send.html[zmq_msg_send]
+    link:zmq_msg_recv.html[zmq_msg_recv]
 
 Release a message::
-    linkzmq:zmq_msg_close[3]
+    link:zmq_msg_close.html[zmq_msg_close]
 
 Access message content::
-    linkzmq:zmq_msg_data[3]
-    linkzmq:zmq_msg_size[3]
-    linkzmq:zmq_msg_more[3]
+    link:zmq_msg_data.html[zmq_msg_data]
+    link:zmq_msg_size.html[zmq_msg_size]
+    link:zmq_msg_more.html[zmq_msg_more]
 
 Work with message properties::
-    linkzmq:zmq_msg_get[3]
-    linkzmq:zmq_msg_set[3]
+    link:zmq_msg_get.html[zmq_msg_get]
+    link:zmq_msg_set.html[zmq_msg_set]
 
 Message manipulation::
-    linkzmq:zmq_msg_copy[3]
-    linkzmq:zmq_msg_move[3]
+    link:zmq_msg_copy.html[zmq_msg_copy]
+    link:zmq_msg_move.html[zmq_msg_move]
 
 
 Sockets
 ~~~~~~~
 0MQ sockets present an abstraction of a asynchronous _message queue_, with the
 exact queueing semantics depending on the socket type in use. See
-linkzmq:zmq_socket[3] for the socket types provided.
+link:zmq_socket.html[zmq_socket] for the socket types provided.
 
 The following functions are provided to work with sockets:
 
 Creating a socket::
-    linkzmq:zmq_socket[3]
+    link:zmq_socket.html[zmq_socket]
 
 Closing a socket::
-    linkzmq:zmq_close[3]
+    link:zmq_close.html[zmq_close]
 
 Manipulating socket options::
-    linkzmq:zmq_getsockopt[3]
-    linkzmq:zmq_setsockopt[3]
+    link:zmq_getsockopt.html[zmq_getsockopt]
+    link:zmq_setsockopt.html[zmq_setsockopt]
 
 Establishing a message flow::
-    linkzmq:zmq_bind[3]
-    linkzmq:zmq_connect[3]
+    link:zmq_bind.html[zmq_bind]
+    link:zmq_connect.html[zmq_connect]
 
 Sending and receiving messages::
-    linkzmq:zmq_msg_send[3]
-    linkzmq:zmq_msg_recv[3]
-    linkzmq:zmq_send[3]
-    linkzmq:zmq_recv[3]
+    link:zmq_msg_send.html[zmq_msg_send]
+    link:zmq_msg_recv.html[zmq_msg_recv]
+    link:zmq_send.html[zmq_send]
+    link:zmq_recv.html[zmq_recv]
 
 .Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over
 a set containing both 0MQ sockets and standard sockets. This mechanism mirrors
 the standard _poll()_ system call, and is described in detail in
-linkzmq:zmq_poll[3].
+link:zmq_poll.html[zmq_poll].
 
 
 Transports
@@ -157,16 +157,16 @@ advantages and drawbacks.
 The following transport mechanisms are provided:
 
 Unicast transport using TCP::
-    linkzmq:zmq_tcp[7]
+    link:zmq_tcp.html[zmq_tcp]
 
 Reliable multicast transport using PGM::
-    linkzmq:zmq_pgm[7]
+    link:zmq_pgm.html[zmq_pgm]
 
 Local inter-process communication transport::
-    linkzmq:zmq_ipc[7]
+    link:zmq_ipc.html[zmq_ipc]
 
 Local in-process (inter-thread) communication transport::
-    linkzmq:zmq_inproc[7]
+    link:zmq_inproc.html[zmq_inproc]
 
 
 Proxies
@@ -174,7 +174,7 @@ Proxies
 0MQ provides 'proxies' to create fanout and fan-in topologies. A proxy connects
 a 'frontend' socket to a 'backend' socket and switches all messages between the
 two sockets, opaquely. A proxy may optionally capture all traffic to a third
-socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
+socket. To start a proxy in an application thread, use link:zmq_proxy.html[zmq_proxy].
 
 
 ERROR HANDLING
@@ -187,10 +187,10 @@ shall return either a NULL value (if returning a pointer) or a negative value
 
 On non-POSIX systems some users may experience issues with retrieving the
 correct value of the 'errno' variable. The _zmq_errno()_ function is provided
-to assist in these cases; for details refer to linkzmq:zmq_errno[3].
+to assist in these cases; for details refer to link:zmq_errno.html[zmq_errno].
 
 The _zmq_strerror()_ function is provided to translate 0MQ-specific error codes
-into error message strings; for details refer to linkzmq:zmq_strerror[3].
+into error message strings; for details refer to link:zmq_strerror.html[zmq_strerror].
 
 
 MISCELLANEOUS
@@ -198,7 +198,7 @@ MISCELLANEOUS
 The following miscellaneous functions are provided:
 
 Report 0MQ library version::
-    linkzmq:zmq_version[3]
+    link:zmq_version.html[zmq_version]
 
 
 LANGUAGE BINDINGS

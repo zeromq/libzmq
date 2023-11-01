@@ -18,7 +18,7 @@ The _zmq_disconnect()_ function shall disconnect a socket specified
 by the 'socket' argument from the endpoint specified by the 'endpoint'
 argument. 
 
-The 'endpoint' argument is as described in linkzmq:zmq_connect[3]
+The 'endpoint' argument is as described in link:zmq_connect.html[zmq_connect]
 
 
 RETURN VALUE
@@ -56,9 +56,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_connect[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_connect.html[zmq_connect]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

@@ -41,12 +41,12 @@ Invalid message.
 
 SEE ALSO
 --------
-linkzmq:zmq_msg_init[3]
-linkzmq:zmq_msg_init_size[3]
-linkzmq:zmq_msg_init_data[3]
-linkzmq:zmq_msg_data[3]
-linkzmq:zmq_msg_size[3]
-linkzmq:zmq[7]
+link:zmq_msg_init.html[zmq_msg_init]
+link:zmq_msg_init_size.html[zmq_msg_init_size]
+link:zmq_msg_init_data.html[zmq_msg_init_data]
+link:zmq_msg_data.html[zmq_msg_data]
+link:zmq_msg_size.html[zmq_msg_size]
+link:zmq.html[zmq]
 
 
 AUTHORS

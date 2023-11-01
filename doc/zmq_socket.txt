@@ -21,9 +21,9 @@ communication over the socket.
 
 The newly created socket is initially unbound, and not associated with any
 endpoints. In order to establish a message flow a socket must first be
-connected to at least one endpoint with linkzmq:zmq_connect[3], or at least one
+connected to at least one endpoint with link:zmq_connect.html[zmq_connect], or at least one
 endpoint must be created for accepting incoming connections with
-linkzmq:zmq_bind[3].
+link:zmq_bind.html[zmq_bind].
 
 .Key differences to conventional sockets
 Generally speaking, conventional sockets present a _synchronous_ interface to
@@ -73,7 +73,7 @@ matched with the last issued request.
 
 When a 'ZMQ_REQ' socket enters the 'mute' state due to having reached the
 high water mark for all _services_, or if there are no _services_ at all, then
-any linkzmq:zmq_send[3] operations on the socket shall block until the
+any link:zmq_send.html[zmq_send] operations on the socket shall block until the
 'mute' state ends or at least one _service_ becomes available for sending;
 messages are not discarded.
 
@@ -118,7 +118,7 @@ peers, and each message received is fair-queued from all connected peers.
 
 When a 'ZMQ_DEALER' socket enters the 'mute' state due to having reached the
 high water mark for all peers, or if there are no peers at all, then any
-linkzmq:zmq_send[3] operations on the socket shall block until the mute
+link:zmq_send.html[zmq_send] operations on the socket shall block until the mute
 state ends or at least one peer becomes available for sending; messages are not
 discarded.
 
@@ -184,7 +184,7 @@ ZMQ_PUB
 ^^^^^^^
 A socket of type 'ZMQ_PUB' is used by a _publisher_ to distribute data.
 Messages sent are distributed in a fan out fashion to all connected peers.
-The linkzmq:zmq_recv[3] function is not implemented for this socket type.
+The link:zmq_recv.html[zmq_recv] function is not implemented for this socket type.
 
 When a 'ZMQ_PUB' socket enters the 'mute' state due to having reached the
 high water mark for a _subscriber_, then any messages that would be sent to the
@@ -205,7 +205,7 @@ ZMQ_SUB
 ^^^^^^^
 A socket of type 'ZMQ_SUB' is used by a _subscriber_ to subscribe to data
 distributed by a _publisher_. Initially a 'ZMQ_SUB' socket is not subscribed to
-any messages, use the 'ZMQ_SUBSCRIBE' option of linkzmq:zmq_setsockopt[3] to
+any messages, use the 'ZMQ_SUBSCRIBE' option of link:zmq_setsockopt.html[zmq_setsockopt] to
 specify which messages to subscribe to. The _zmq_send()_ function is not
 implemented for this socket type.
 
@@ -269,7 +269,7 @@ socket type.
 
 When a 'ZMQ_PUSH' socket enters the 'mute' state due to having reached the
 high water mark for all downstream _nodes_, or if there are no downstream
-_nodes_ at all, then any linkzmq:zmq_send[3] operations on the socket shall
+_nodes_ at all, then any link:zmq_send.html[zmq_send] operations on the socket shall
 block until the mute state ends or at least one downstream _node_
 becomes available for sending; messages are not discarded.
 
@@ -315,11 +315,11 @@ time.  No message routing or filtering is performed on messages sent over a
 
 When a 'ZMQ_PAIR' socket enters the 'mute' state due to having reached the
 high water mark for the connected peer, or if no peer is connected, then
-any linkzmq:zmq_send[3] operations on the socket shall block until the peer
+any link:zmq_send.html[zmq_send] operations on the socket shall block until the peer
 becomes available for sending; messages are not discarded.
 
 NOTE: 'ZMQ_PAIR' sockets are designed for inter-thread communication across
-the linkzmq:zmq_inproc[7] transport and do not implement functionality such
+the link:zmq_inproc.html[zmq_inproc] transport and do not implement functionality such
 as auto-reconnection. 'ZMQ_PAIR' sockets are considered experimental and may
 have other missing or broken aspects.
 
@@ -353,14 +353,14 @@ The context specified was terminated.
 
 SEE ALSO
 --------
-linkzmq:zmq_init[3]
-linkzmq:zmq_setsockopt[3]
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_send[3]
-linkzmq:zmq_recv[3]
-linkzmq:zmq_inproc[7]
-linkzmq:zmq[7]
+link:zmq_init.html[zmq_init]
+link:zmq_setsockopt.html[zmq_setsockopt]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_send.html[zmq_send]
+link:zmq_recv.html[zmq_recv]
+link:zmq_inproc.html[zmq_inproc]
+link:zmq.html[zmq]
 
 
 AUTHORS
