@@ -18,12 +18,12 @@ The _zmq_unbind()_ function shall unbind a socket specified
 by the 'socket' argument from the endpoint specified by the 'endpoint'
 argument. 
 
-The 'endpoint' argument is as described in linkzmq:zmq_bind[3]
+The 'endpoint' argument is as described in link:zmq_bind.html[zmq_bind]
 
 Unbinding wild-card addres from a socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When wild-card `*` 'endpoint' (described in linkzmq:zmq_tcp[7] and 
-linkzmq:zmq_ipc[7]) was used in _zmq_bind()_, the caller should use 
+When wild-card `*` 'endpoint' (described in link:zmq_tcp.html[zmq_tcp] and 
+link:zmq_ipc.html[zmq_ipc]) was used in _zmq_bind()_, the caller should use 
 real 'endpoind' obtained from the ZMQ_LAST_ENDPOINT socket option 
 to unbind this 'endpoint' from a socket.
 
@@ -77,9 +77,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_bind[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_bind.html[zmq_bind]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

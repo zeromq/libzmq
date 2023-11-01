@@ -23,17 +23,17 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 
 0MQ provides the the following transports:
 
-'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
-'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
-'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
-'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'tcp':: unicast transport using TCP, see link:zmq_tcp.html[zmq_tcp]
+'ipc':: local inter-process communication transport, see link:zmq_ipc.html[zmq_ipc]
+'inproc':: local in-process (inter-thread) communication transport, see link:zmq_inproc.html[zmq_inproc]
+'pgm', 'epgm':: reliable multicast transport using PGM, see link:zmq_pgm.html[zmq_pgm]
 
 Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
-linkzmq:zmq_socket[3].
+link:zmq_socket.html[zmq_socket].
 
-The 'ipc' and 'tcp' transports accept wildcard addresses: see linkzmq:zmq_ipc[7]
-and linkzmq:zmq_tcp[7] for details.
+The 'ipc' and 'tcp' transports accept wildcard addresses: see link:zmq_ipc.html[zmq_ipc]
+and link:zmq_tcp.html[zmq_tcp] for details.
 
 NOTE: the address syntax may be different for _zmq_bind()_ and _zmq_connect()_
 especially for the 'tcp', 'pgm' and 'epgm' transports.
@@ -41,7 +41,7 @@ especially for the 'tcp', 'pgm' and 'epgm' transports.
 NOTE: following a _zmq_bind()_, the socket enters a 'mute' state unless or
 until at least one incoming or outgoing connection is made, at which point
 the socket enters a 'ready' state. In the mute state, the socket blocks or
-drops messages according to the socket type, as defined in linkzmq:zmq_socket[3].
+drops messages according to the socket type, as defined in link:zmq_socket.html[zmq_socket].
 By contrast, following a libzmq:zmq_connect[3], the socket enters the 'ready' state.
 
 
@@ -91,9 +91,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_connect[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_connect.html[zmq_connect]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

@@ -18,7 +18,6 @@ autom4te.cache
 *.html
 *.pdf
 *.ps
-.*
 *~
 .*~
 tools/curve_keygen

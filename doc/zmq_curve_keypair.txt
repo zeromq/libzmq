@@ -17,7 +17,7 @@ DESCRIPTION
 The _zmq_curve_keypair()_ function shall return a newly generated random
 keypair consisting of a public key and a secret key. The caller provides
 two buffers, each at least 41 octets large, in which this method will
-store the keys. The keys are encoded using linkzmq:zmq_z85_encode[3].
+store the keys. The keys are encoded using link:zmq_z85_encode.html[zmq_z85_encode].
 
 
 RETURN VALUE
@@ -45,9 +45,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_z85_decode[3]
-linkzmq:zmq_z85_encode[3]
-linkzmq:zmq_curve[7]
+link:zmq_z85_decode.html[zmq_z85_decode]
+link:zmq_z85_encode.html[zmq_z85_encode]
+link:zmq_curve.html[zmq_curve]
 
 
 AUTHORS

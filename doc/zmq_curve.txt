@@ -78,12 +78,12 @@ secret:
 
 SEE ALSO
 --------
-linkzmq:zmq_z85_encode[3]
-linkzmq:zmq_z85_decode[3]
-linkzmq:zmq_setsockopt[3]
-linkzmq:zmq_null[7]
-linkzmq:zmq_plain[7]
-linkzmq:zmq[7]
+link:zmq_z85_encode.html[zmq_z85_encode]
+link:zmq_z85_decode.html[zmq_z85_decode]
+link:zmq_setsockopt.html[zmq_setsockopt]
+link:zmq_null.html[zmq_null]
+link:zmq_plain.html[zmq_plain]
+link:zmq.html[zmq]
 
 
 AUTHORS

@@ -58,7 +58,7 @@ ZMQ_MAX_SOCKETS: Set maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed
 on the context. You can query the maximal allowed value with
-linkzmq:zmq_ctx_get[3] using the 'ZMQ_SOCKET_LIMIT' option.
+link:zmq_ctx_get.html[zmq_ctx_get] using the 'ZMQ_SOCKET_LIMIT' option.
 
 [horizontal]
 Default value:: 1024
@@ -100,8 +100,8 @@ assert (max_sockets == 256);
 
 SEE ALSO
 --------
-linkzmq:zmq_ctx_get[3]
-linkzmq:zmq[7]
+link:zmq_ctx_get.html[zmq_ctx_get]
+link:zmq.html[zmq]
 
 
 AUTHORS

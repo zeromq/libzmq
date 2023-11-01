@@ -34,9 +34,9 @@ Context termination is performed in the following steps:
      option has expired.
 
 For further details regarding socket linger behaviour refer to the _ZMQ_LINGER_
-option in linkzmq:zmq_setsockopt[3].
+option in link:zmq_setsockopt.html[zmq_setsockopt].
 
-This function is deprecated by linkzmq:zmq_ctx_term[3].
+This function is deprecated by link:zmq_ctx_term.html[zmq_ctx_term].
 
 RETURN VALUE
 ------------
@@ -54,10 +54,10 @@ Termination was interrupted by a signal. It can be restarted if needed.
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
-linkzmq:zmq_init[3]
-linkzmq:zmq_close[3]
-linkzmq:zmq_setsockopt[3]
+link:zmq.html[zmq]
+link:zmq_init.html[zmq_init]
+link:zmq_close.html[zmq_close]
+link:zmq_setsockopt.html[zmq_setsockopt]
 
 
 AUTHORS
