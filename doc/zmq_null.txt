@@ -16,9 +16,9 @@ for ZeroMQ sockets.
 
 SEE ALSO
 --------
-linkzmq:zmq_plain[7]
-linkzmq:zmq_curve[7]
-linkzmq:zmq[7]
+link:zmq_plain.html[zmq_plain]
+link:zmq_curve.html[zmq_curve]
+link:zmq.html[zmq]
 
 
 AUTHORS

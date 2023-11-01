@@ -29,8 +29,8 @@ If the control socket is NULL, the function behave exactly as if zmq_proxy
 had been called.
 
 
-Refer to linkzmq:zmq_socket[3] for a description of the available socket types.
-Refer to linkzmq:zmq_proxy[3] for a description of the zmq_proxy.
+Refer to link:zmq_socket.html[zmq_socket] for a description of the available socket types.
+Refer to link:zmq_proxy.html[zmq_proxy] for a description of the zmq_proxy.
 
 EXAMPLE USAGE
 -------------
@@ -86,11 +86,11 @@ assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_proxy[3]
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_proxy.html[zmq_proxy]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

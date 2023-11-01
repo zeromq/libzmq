@@ -23,7 +23,7 @@ _ZMQ_LINGER_ socket option for the specified 'socket'.
 
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
 this behaviour may cause the application to block when calling _zmq_term()_.
-For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_term[3].
+For details refer to link:zmq_setsockopt.html[zmq_setsockopt] and link:zmq_term.html[zmq_term].
 
 
 RETURN VALUE
@@ -40,10 +40,10 @@ The provided 'socket' was invalid.
 
 SEE ALSO
 --------
-linkzmq:zmq_socket[3]
-linkzmq:zmq_term[3]
-linkzmq:zmq_setsockopt[3]
-linkzmq:zmq[7]
+link:zmq_socket.html[zmq_socket]
+link:zmq_term.html[zmq_term]
+link:zmq_setsockopt.html[zmq_setsockopt]
+link:zmq.html[zmq]
 
 
 AUTHORS

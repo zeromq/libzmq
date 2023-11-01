@@ -43,7 +43,7 @@ The TCP port number may be specified by:
 * The wild-card `*`, meaning a system-assigned ephemeral port.
 
 When using ephemeral ports, the caller should retrieve the actual assigned
-port using the ZMQ_LAST_ENDPOINT socket option. See linkzmq:zmq_getsockopt[3]
+port using the ZMQ_LAST_ENDPOINT socket option. See link:zmq_getsockopt.html[zmq_getsockopt]
 for details.
 
 
@@ -89,12 +89,12 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_pgm[7]
-linkzmq:zmq_ipc[7]
-linkzmq:zmq_inproc[7]
-linkzmq:zmq[7]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_pgm.html[zmq_pgm]
+link:zmq_ipc.html[zmq_ipc]
+link:zmq_inproc.html[zmq_inproc]
+link:zmq.html[zmq]
 
 
 AUTHORS

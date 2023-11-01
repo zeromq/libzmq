@@ -15,7 +15,7 @@ sharing a single 0MQ 'context'.
 NOTE: No I/O threads are involved in passing messages using the 'inproc'
 transport. Therefore, if you are using a 0MQ 'context' for in-process messaging
 only you can initialise the 'context' with zero I/O threads. See
-linkzmq:zmq_init[3] for details.
+link:zmq_init.html[zmq_init] for details.
 
 
 ADDRESSING
@@ -71,12 +71,12 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_ipc[7]
-linkzmq:zmq_tcp[7]
-linkzmq:zmq_pgm[7]
-linkzmq:zmq[7]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_ipc.html[zmq_ipc]
+link:zmq_tcp.html[zmq_tcp]
+link:zmq_pgm.html[zmq_pgm]
+link:zmq.html[zmq]
 
 
 AUTHORS
