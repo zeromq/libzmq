@@ -27,7 +27,7 @@ build:
     # HTML docs
     # ---------
     - doc/create_page_list.sh "$(pwd)/doc/__pagelist" "$(pwd)/doc"
-    - asciidoctor --backend html --destination-dir $READTHEDOCS_OUTPUT/html --attribute zmq_version='4.0.10' --attribute zmq_pagelist_dir=$(pwd)/doc doc/*.txt
+    - asciidoctor --backend html --destination-dir $READTHEDOCS_OUTPUT/html --attribute zmq_version='4.1.8' --attribute zmq_pagelist_dir=$(pwd)/doc doc/*.txt
 
     # HTMLZIP docs
     # ------------
