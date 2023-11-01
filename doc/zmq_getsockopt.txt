@@ -45,7 +45,7 @@ The 'ZMQ_RCVMORE' option shall return True (1) if the message part last
 received from the 'socket' was a data part with more parts to follow. If there
 are no data parts to follow, this option shall return False (0).
 
-Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
+Refer to link:zmq_send.html[zmq_send] and link:zmq_recv.html[zmq_recv] for a detailed description
 of multi-part messages.
 
 [horizontal]
@@ -66,7 +66,7 @@ limit.
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+in link:zmq_socket.html[zmq_socket] for details on the exact action taken for each socket
 type.
 
 [horizontal]
@@ -87,7 +87,7 @@ limit.
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+in link:zmq_socket.html[zmq_socket] for details on the exact action taken for each socket
 type.
 
 [horizontal]
@@ -110,7 +110,7 @@ corresponds to thread 1, second lowest bit to thread 2 and so on.  For example,
 a value of 3 specifies that subsequent connections on 'socket' shall be handled
 exclusively by I/O threads 1 and 2.
 
-See also linkzmq:zmq_init[3] for details on allocating the number of I/O
+See also link:zmq_init.html[zmq_init] for details on allocating the number of I/O
 threads for a specific _context_.
 
 [horizontal]
@@ -196,8 +196,8 @@ ZMQ_LINGER: Retrieve linger period for socket shutdown
 The 'ZMQ_LINGER' option shall retrieve the linger period for the specified
 'socket'.  The linger period determines how long pending messages which have
 yet to be sent to a peer shall linger in memory after a socket is closed with
-linkzmq:zmq_close[3], and further affects the termination of the socket's
-context with linkzmq:zmq_term[3]. The following outlines the different
+link:zmq_close.html[zmq_close], and further affects the termination of the socket's
+context with link:zmq_term.html[zmq_term]. The following outlines the different
 behaviours:
 
 * The default value of '-1' specifies an infinite linger period. Pending
@@ -630,9 +630,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_setsockopt[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_setsockopt.html[zmq_setsockopt]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

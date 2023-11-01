@@ -41,7 +41,7 @@ limit.
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+in link:zmq_socket.html[zmq_socket] for details on the exact action taken for each socket
 type.
 
 NOTE: 0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM
@@ -66,7 +66,7 @@ limit.
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
 blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+in link:zmq_socket.html[zmq_socket] for details on the exact action taken for each socket
 type.
 
 [horizontal]
@@ -89,7 +89,7 @@ corresponds to thread 1, second lowest bit to thread 2 and so on.  For example,
 a value of 3 specifies that subsequent connections on 'socket' shall be handled
 exclusively by I/O threads 1 and 2.
 
-See also linkzmq:zmq_init[3] for details on allocating the number of I/O
+See also link:zmq_init.html[zmq_init] for details on allocating the number of I/O
 threads for a specific _context_.
 
 [horizontal]
@@ -153,7 +153,7 @@ Applicable socket types:: ZMQ_REQ, ZMQ_REP, ZMQ_ROUTER, ZMQ_DEALER.
 ZMQ_RATE: Set multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall set the maximum send or receive data rate for
-multicast transports such as linkzmq:zmq_pgm[7] using the specified 'socket'.
+multicast transports such as link:zmq_pgm.html[zmq_pgm] using the specified 'socket'.
 
 [horizontal]
 Option value type:: int
@@ -213,8 +213,8 @@ ZMQ_LINGER: Set linger period for socket shutdown
 The 'ZMQ_LINGER' option shall set the linger period for the specified 'socket'.
 The linger period determines how long pending messages which have yet to be
 sent to a peer shall linger in memory after a socket is closed with
-linkzmq:zmq_close[3], and further affects the termination of the socket's
-context with linkzmq:zmq_term[3]. The following outlines the different
+link:zmq_close.html[zmq_close], and further affects the termination of the socket's
+context with link:zmq_term.html[zmq_term]. The following outlines the different
 behaviours:
 
 * The default value of '-1' specifies an infinite linger period. Pending
@@ -571,7 +571,7 @@ ZMQ_PLAIN_SERVER: Set PLAIN server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Defines whether the socket will act as server for PLAIN security, see
-linkzmq:zmq_plain[7]. A value of '1' means the socket will act as
+link:zmq_plain.html[zmq_plain]. A value of '1' means the socket will act as
 PLAIN server. A value of '0' means the socket will not act as PLAIN
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL.
@@ -588,8 +588,8 @@ ZMQ_PLAIN_USERNAME: Set PLAIN security username
 
 Sets the username for outgoing connections over TCP or IPC. If you set this
 to a non-null value, the security mechanism used for connections shall be
-PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security
-mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
+PLAIN, see link:zmq_plain.html[zmq_plain]. If you set this to a null value, the security
+mechanism used for connections shall be NULL, see link:zmq_null.html[zmq_null].
 
 [horizontal]
 Option value type:: character string
@@ -603,8 +603,8 @@ ZMQ_PLAIN_PASSWORD: Set PLAIN security password
 
 Sets the password for outgoing connections over TCP or IPC. If you set this
 to a non-null value, the security mechanism used for connections shall be
-PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security
-mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
+PLAIN, see link:zmq_plain.html[zmq_plain]. If you set this to a null value, the security
+mechanism used for connections shall be NULL, see link:zmq_null.html[zmq_null].
 
 [horizontal]
 Option value type:: character string
@@ -617,7 +617,7 @@ ZMQ_CURVE_SERVER: Set CURVE server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Defines whether the socket will act as server for CURVE security, see
-linkzmq:zmq_curve[7]. A value of '1' means the socket will act as
+link:zmq_curve.html[zmq_curve]. A value of '1' means the socket will act as
 CURVE server. A value of '0' means the socket will not act as CURVE
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL. When you
@@ -636,10 +636,10 @@ ZMQ_CURVE_PUBLICKEY: Set CURVE public key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term public key. You must set this on CURVE client
-sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
+sockets, see link:zmq_curve.html[zmq_curve]. You can provide the key as 32 binary
 bytes, or as a 40-character string encoded in the Z85 encoding format.
 The public key must always be used with the matching secret key. To
-generate a public/secret key pair, use linkzmq:zmq_curve_keypair[3].
+generate a public/secret key pair, use link:zmq_curve_keypair.html[zmq_curve_keypair].
 
 [horizontal]
 Option value type:: binary data or Z85 text string
@@ -652,10 +652,10 @@ ZMQ_CURVE_SECRETKEY: Set CURVE secret key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term secret key. You must set this on both CURVE
-client and server sockets, see linkzmq:zmq_curve[7]. You can provide the
+client and server sockets, see link:zmq_curve.html[zmq_curve]. You can provide the
 key as 32 binary bytes, or as a 40-character string encoded in the Z85
 encoding format. To generate a public/secret key pair, use
-linkzmq:zmq_curve_keypair[3].
+link:zmq_curve_keypair.html[zmq_curve_keypair].
 
 [horizontal]
 Option value type:: binary data or Z85 text string
@@ -668,7 +668,7 @@ ZMQ_CURVE_SERVERKEY: Set CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term server key. You must set this on CURVE client
-sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
+sockets, see link:zmq_curve.html[zmq_curve]. You can provide the key as 32 binary
 bytes, or as a 40-character string encoded in the Z85 encoding format.
 This key must have been generated together with the server's secret key.
 
@@ -760,11 +760,11 @@ assert (rc);
 
 SEE ALSO
 --------
-linkzmq:zmq_getsockopt[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq_plain[7]
-linkzmq:zmq_curve[7]
-linkzmq:zmq[7]
+link:zmq_getsockopt.html[zmq_getsockopt]
+link:zmq_socket.html[zmq_socket]
+link:zmq_plain.html[zmq_plain]
+link:zmq_curve.html[zmq_curve]
+link:zmq.html[zmq]
 
 
 AUTHORS

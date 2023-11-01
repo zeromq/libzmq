@@ -21,7 +21,7 @@ sockets open within 'context' to return immediately with an error code of ETERM.
 With the exception of _zmq_close()_, any further operations on sockets open within
 'context' shall fail with an error code of ETERM.
 
-This function is optional, client code is still required to call the linkzmq:zmq_ctx_term[3]
+This function is optional, client code is still required to call the link:zmq_ctx_term.html[zmq_ctx_term]
 function to free all resources allocated by zeromq.
 
 
@@ -39,11 +39,11 @@ The provided 'context' was invalid.
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
-linkzmq:zmq_init[3]
-linkzmq:zmq_ctx_term[3]
-linkzmq:zmq_close[3]
-linkzmq:zmq_setsockopt[3]
+link:zmq.html[zmq]
+link:zmq_init.html[zmq_init]
+link:zmq_ctx_term.html[zmq_ctx_term]
+link:zmq_close.html[zmq_close]
+link:zmq_setsockopt.html[zmq_setsockopt]
 
 
 AUTHORS

@@ -62,8 +62,8 @@ assert (max_sockets == 256);
 
 SEE ALSO
 --------
-linkzmq:zmq_ctx_set[3]
-linkzmq:zmq[7]
+link:zmq_ctx_set.html[zmq_ctx_set]
+link:zmq.html[zmq]
 
 
 AUTHORS
