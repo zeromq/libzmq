@@ -17,7 +17,6 @@ autom4te.cache
 *.html
 *.pdf
 *.ps
-.*
 *~
 .*~
 tests/test_term_endpoint
