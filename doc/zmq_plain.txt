@@ -25,10 +25,10 @@ options. Which peer binds, and which connects, is not relevant.
 
 SEE ALSO
 --------
-linkzmq:zmq_setsockopt[3]
-linkzmq:zmq_null[7]
-linkzmq:zmq_curve[7]
-linkzmq:zmq[7]
+link:zmq_setsockopt.html[zmq_setsockopt]
+link:zmq_null.html[zmq_null]
+link:zmq_curve.html[zmq_curve]
+link:zmq.html[zmq]
 
 
 AUTHORS

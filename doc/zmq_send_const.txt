@@ -63,7 +63,7 @@ The _zmq_send_const()_ operation is not supported by this socket type.
 The _zmq_send_const()_ operation cannot be performed on this socket at the moment
 due to the socket not being in the appropriate state.  This error may occur with
 socket types that switch between several states, such as ZMQ_REP.  See the
-_messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
+_messaging patterns_ section of link:zmq_socket.html[zmq_socket] for more information.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
 *ENOTSOCK*::
@@ -91,10 +91,10 @@ assert (rc == 2);
 
 SEE ALSO
 --------
-linkzmq:zmq_send[3]
-linkzmq:zmq_recv[3]
-linkzmq:zmq_socket[7]
-linkzmq:zmq[7]
+link:zmq_send.html[zmq_send]
+link:zmq_recv.html[zmq_recv]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

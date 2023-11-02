@@ -22,11 +22,11 @@ behaviour for discarding messages sent by the application with _zmq_send()_ but
 not yet physically transferred to the network depends on the value of the
 _ZMQ_LINGER_ socket option for the specified 'socket'.
 
-The 'endpoint' argument is as described in linkzmq:zmq_connect[3]
+The 'endpoint' argument is as described in link:zmq_connect.html[zmq_connect]
 
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
 this behaviour may cause the application to block when calling _zmq_term()_.
-For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_term[3].
+For details refer to link:zmq_setsockopt.html[zmq_setsockopt] and link:zmq_term.html[zmq_term].
 
 
 RETURN VALUE
@@ -64,9 +64,9 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_connect[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_connect.html[zmq_connect]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

@@ -37,7 +37,7 @@ any restrictions placed by the operating system on the format and length of a
 
 When the address is `*`, _zmq_bind()_ shall generate a unique temporary
 pathname. The caller should retrieve this pathname using the ZMQ_LAST_ENDPOINT
-socket option. See linkzmq:zmq_getsockopt[3] for details.
+socket option. See link:zmq_getsockopt.html[zmq_getsockopt] for details.
 
 NOTE: any existing binding to the same endpoint shall be overridden. That is,
 if a second process binds to an endpoint already bound by a process, this
@@ -90,13 +90,13 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_inproc[7]
-linkzmq:zmq_tcp[7]
-linkzmq:zmq_pgm[7]
-linkzmq:zmq_getsockopt[3]
-linkzmq:zmq[7]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_inproc.html[zmq_inproc]
+link:zmq_tcp.html[zmq_tcp]
+link:zmq_pgm.html[zmq_pgm]
+link:zmq_getsockopt.html[zmq_getsockopt]
+link:zmq.html[zmq]
 
 
 AUTHORS
