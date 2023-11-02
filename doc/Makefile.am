@@ -52,21 +52,17 @@ MAINTAINERCLEANFILES += $(HTML_DOC) $(MAN_DOC)
 SUFFIXES=.html .adoc .3 .7
 
 .adoc.html:
-	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@  $<
+	asciidoctor --backend html --attribute zmq_version=@PACKAGE_VERSION@  $<
 .adoc.3:
-	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
+	asciidoctor --backend manpage --attribute zmq_version=@PACKAGE_VERSION@  $<
 .adoc.7:
-	asciidoctor -b manpage -azmq_version=@PACKAGE_VERSION@  $<
+	asciidoctor --backend manpage --attribute zmq_version=@PACKAGE_VERSION@  $<
 
 dist-hook : $(MAN_DOC) $(HTML_DOC)
 
 # the following Bash snippet is used to automatically generate an alphabetical list included by index.adoc:
 $(builddir)/__pagelist:
-	echo >$@
-	for adocfile in $(ASCIIDOC_DOC_WITHOUT_INDEX); do \
-		noext=$${adocfile//.adoc/}; \
-		echo "* xref:$${adocfile}[$${noext}]" >> $@; \
-	done
+	$(srcdir)/create_page_list.sh "$@" "$(abs_srcdir)"
 
 # there are a number of constraints in auto-generating files for Asciidoctor:
 # - out-of-tree builds
@@ -75,7 +71,9 @@ $(builddir)/__pagelist:
 # etc, so we have special rules to build the index.html page, which requires auto-generated list of doc pages
 index.html:
 	$(MAKE) $(builddir)/__pagelist
-	asciidoctor -b html -azmq_version=@PACKAGE_VERSION@ -azmq_pagelist_dir=$(abs_builddir) $(srcdir)/index.adoc
+	asciidoctor --backend html \
+        --attribute zmq_version=@PACKAGE_VERSION@ --attribute zmq_pagelist_dir=$(abs_builddir) \
+            $(srcdir)/index.adoc
 
 all-local : $(MAN_DOC) $(HTML_DOC)
 
