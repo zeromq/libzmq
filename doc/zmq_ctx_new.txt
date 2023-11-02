@@ -16,7 +16,7 @@ DESCRIPTION
 -----------
 The _zmq_ctx_new()_ function creates a new 0MQ 'context'.
 
-This function replaces the deprecated function linkzmq:zmq_init[3].
+This function replaces the deprecated function link:zmq_init.html[zmq_init].
 
 .Thread safety
 A 0MQ 'context' is thread safe and may be shared among as many application
@@ -38,10 +38,10 @@ No error values are defined for this function.
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
-linkzmq:zmq_ctx_set[3]
-linkzmq:zmq_ctx_get[3]
-linkzmq:zmq_ctx_destroy[3]
+link:zmq.html[zmq]
+link:zmq_ctx_set.html[zmq_ctx_set]
+link:zmq_ctx_get.html[zmq_ctx_get]
+link:zmq_ctx_destroy.html[zmq_ctx_destroy]
 
 
 AUTHORS

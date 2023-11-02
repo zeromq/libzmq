@@ -46,7 +46,7 @@ if (!ctx) {
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
+link:zmq.html[zmq]
 
 
 AUTHORS

@@ -25,7 +25,7 @@ A 0MQ 'context' is thread safe and may be shared among as many application
 threads as necessary, without any additional locking required on the part of
 the caller.
 
-This function is deprecated by linkzmq:zmq_ctx_new[3].
+This function is deprecated by link:zmq_ctx_new.html[zmq_ctx_new].
 
 RETURN VALUE
 ------------
@@ -42,8 +42,8 @@ An invalid number of 'io_threads' was requested.
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
-linkzmq:zmq_term[3]
+link:zmq.html[zmq]
+link:zmq_term.html[zmq_term]
 
 
 AUTHORS

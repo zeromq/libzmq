@@ -31,7 +31,7 @@ If the capture socket is not NULL, the proxy shall send all messages, received
 on both frontend and backend, to the capture socket. The capture socket should
 be a 'ZMQ_PUB', 'ZMQ_DEALER', 'ZMQ_PUSH', or 'ZMQ_PAIR' socket.
 
-Refer to linkzmq:zmq_socket[3] for a description of the available socket types.
+Refer to link:zmq_socket.html[zmq_socket] for a description of the available socket types.
 
 EXAMPLE USAGE
 -------------
@@ -86,10 +86,10 @@ zmq_proxy (frontend, backend, NULL);
 
 SEE ALSO
 --------
-linkzmq:zmq_bind[3]
-linkzmq:zmq_connect[3]
-linkzmq:zmq_socket[3]
-linkzmq:zmq[7]
+link:zmq_bind.html[zmq_bind]
+link:zmq_connect.html[zmq_connect]
+link:zmq_socket.html[zmq_socket]
+link:zmq.html[zmq]
 
 
 AUTHORS

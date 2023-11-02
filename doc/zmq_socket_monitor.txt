@@ -280,7 +280,7 @@ zmq_term (ctx);
 
 SEE ALSO
 --------
-linkzmq:zmq[7]
+link:zmq.html[zmq]
 
 
 AUTHORS
