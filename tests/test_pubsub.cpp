@@ -25,10 +25,14 @@ void test (const char *address)
     //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
 
-    //  Send an empty message
+    //  Send three messages
+    send_string_expect_success (publisher, "test", 0);
+    send_string_expect_success (publisher, "test", 0);
     send_string_expect_success (publisher, "test", 0);
 
-    //  Receive the message in the subscriber
+    //  Receive the messages
+    recv_string_expect_success (subscriber, "test", 0);
+    recv_string_expect_success (subscriber, "test", 0);
     recv_string_expect_success (subscriber, "test", 0);
 
     //  Clean up.
@@ -45,11 +49,27 @@ void test_norm ()
 #endif
 }
 
+void test_OpenPGM ()
+{
+#if defined ZMQ_HAVE_OPENPGM
+#if defined(ZMQ_HAVE_WINDOWS)
+#define NETWORK_ADAPTER "127.0.0.1"
+#else
+#define NETWORK_ADAPTER "eth0"
+#endif
+    test ("epgm://" NETWORK_ADAPTER ";224.0.0.1:23130");
+    test ("pgm://" NETWORK_ADAPTER ";224.0.0.1:23130");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
+#endif
+}
+
 int main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
     RUN_TEST (test_norm);
+    RUN_TEST (test_OpenPGM);
     return UNITY_END ();
 }
