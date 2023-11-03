@@ -45,11 +45,11 @@ while (true) {
 
 
 == SEE ALSO
-xref:zmq_msg_get.adoc[zmq_msg_get]
-xref:zmq_msg_set.adoc[zmq_msg_set]
-xref:zmq_msg_init.adoc[zmq_msg_init]
-xref:zmq_msg_close.adoc[zmq_msg_close]
-xref:zmq.adoc[zmq]
+* xref:zmq_msg_get.adoc[zmq_msg_get]
+* xref:zmq_msg_set.adoc[zmq_msg_set]
+* xref:zmq_msg_init.adoc[zmq_msg_init]
+* xref:zmq_msg_close.adoc[zmq_msg_close]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

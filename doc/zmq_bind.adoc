@@ -28,11 +28,11 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 
 Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
-xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq_socket.adoc[zmq_socket]
 
 The 'ipc', 'tcp', 'vmci' and 'udp' transports accept wildcard addresses: see
-xref:zmq_ipc.adoc[zmq_ipc], xref:zmq_tcp.adoc[zmq_tcp], xref:zmq_vmci.adoc[zmq_vmci] and
-xref:zmq_udp.adoc[zmq_udp] for details.
+* xref:zmq_ipc.adoc[zmq_ipc], xref:zmq_tcp.adoc[zmq_tcp], xref:zmq_vmci.adoc[zmq_vmci] and
+* xref:zmq_udp.adoc[zmq_udp] for details.
 
 NOTE: the address syntax may be different for _zmq_bind()_ and _zmq_connect()_
 especially for the 'tcp', 'pgm' and 'epgm' transports.
@@ -86,9 +86,9 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

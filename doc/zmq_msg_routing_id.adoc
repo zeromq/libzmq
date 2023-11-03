@@ -45,7 +45,7 @@ assert (routing_id);
 
 
 == SEE ALSO
-xref:zmq_msg_set_routing_id.adoc[zmq_msg_set_routing_id]
+* xref:zmq_msg_set_routing_id.adoc[zmq_msg_set_routing_id]
 
 
 == AUTHORS

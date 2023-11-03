@@ -57,9 +57,9 @@ assert (rc == 0);
 ----
 
 == SEE ALSO
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

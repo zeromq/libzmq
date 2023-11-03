@@ -34,7 +34,7 @@ No errors are defined.
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

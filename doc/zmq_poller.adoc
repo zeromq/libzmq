@@ -312,10 +312,10 @@ zmq_poller_destroy (&poller);
 
 
 == SEE ALSO
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq_send.adoc[zmq_send]
-xref:zmq_recv.adoc[zmq_recv]
-xref:zmq.adoc[zmq]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

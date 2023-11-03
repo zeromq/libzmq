@@ -111,11 +111,11 @@ rc = zmq_msg_send (&part3, socket, 0);
 
 
 == SEE ALSO
-xref:zmq_recv.adoc[zmq_recv]
-xref:zmq_send.adoc[zmq_send]
-xref:zmq_msg_recv.adoc[zmq_msg_recv]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_msg_recv.adoc[zmq_msg_recv]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

@@ -42,11 +42,11 @@ return 0;
 
 
 == SEE ALSO
-xref:zmq_atomic_counter_new.adoc[zmq_atomic_counter_new]
-xref:zmq_atomic_counter_set.adoc[zmq_atomic_counter_set]
-xref:zmq_atomic_counter_inc.adoc[zmq_atomic_counter_inc]
-xref:zmq_atomic_counter_dec.adoc[zmq_atomic_counter_dec]
-xref:zmq_atomic_counter_value.adoc[zmq_atomic_counter_value]
+* xref:zmq_atomic_counter_new.adoc[zmq_atomic_counter_new]
+* xref:zmq_atomic_counter_set.adoc[zmq_atomic_counter_set]
+* xref:zmq_atomic_counter_inc.adoc[zmq_atomic_counter_inc]
+* xref:zmq_atomic_counter_dec.adoc[zmq_atomic_counter_dec]
+* xref:zmq_atomic_counter_value.adoc[zmq_atomic_counter_value]
 
 
 == AUTHORS

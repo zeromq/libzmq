@@ -103,9 +103,9 @@ rc = zmq_sendmsg (socket, &part3, 0);
 
 
 == SEE ALSO
-xref:zmq_recv.adoc[zmq_recv]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

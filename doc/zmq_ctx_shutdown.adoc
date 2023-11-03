@@ -34,11 +34,11 @@ The provided 'context' was invalid.
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
-xref:zmq_init.adoc[zmq_init]
-xref:zmq_ctx_term.adoc[zmq_ctx_term]
-xref:zmq_close.adoc[zmq_close]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq.adoc[zmq]
+* xref:zmq_init.adoc[zmq_init]
+* xref:zmq_ctx_term.adoc[zmq_ctx_term]
+* xref:zmq_close.adoc[zmq_close]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
 
 
 == AUTHORS

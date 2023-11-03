@@ -45,7 +45,7 @@ NOTE: in DRAFT state, not yet available in stable releases.
 ZMQ_SOCKET_LIMIT: Get largest configurable number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SOCKET_LIMIT' argument returns the largest number of sockets that
-xref:zmq_ctx_set.adoc[zmq_ctx_set] will accept.
+* xref:zmq_ctx_set.adoc[zmq_ctx_set] will accept.
 
 
 ZMQ_IPV6: Set IPv6 option
@@ -107,8 +107,8 @@ zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
 
 
 == SEE ALSO
-xref:zmq_ctx_set.adoc[zmq_ctx_set]
-xref:zmq.adoc[zmq]
+* xref:zmq_ctx_set.adoc[zmq_ctx_set]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

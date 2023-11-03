@@ -380,7 +380,7 @@ ZMQ_LINGER: Retrieve linger period for socket shutdown
 The 'ZMQ_LINGER' option shall retrieve the linger period for the specified
 'socket'.  The linger period determines how long pending messages which have
 yet to be sent to a peer shall linger in memory after a socket is closed with
-xref:zmq_close.adoc[zmq_close], and further affects the termination of the socket's
+* xref:zmq_close.adoc[zmq_close], and further affects the termination of the socket's
 context with xref:zmq_ctx_term.adoc[zmq_ctx_term] The following outlines the different
 behaviours:
 
@@ -1164,9 +1164,9 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

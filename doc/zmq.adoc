@@ -107,7 +107,7 @@ Sockets
 ~~~~~~~
 0MQ sockets present an abstraction of an asynchronous _message queue_, with the
 exact queueing semantics depending on the socket type in use. See
-xref:zmq_socket.adoc[zmq_socket] for the socket types provided.
+* xref:zmq_socket.adoc[zmq_socket] for the socket types provided.
 
 The following functions are provided to work with sockets:
 
@@ -139,7 +139,7 @@ Monitoring socket events::
 0MQ provides a mechanism for applications to multiplex input/output events over
 a set containing both 0MQ sockets and standard sockets. This mechanism mirrors
 the standard _poll()_ system call, and is described in detail in
-xref:zmq_poll.adoc[zmq_poll] This API is deprecated, however.
+* xref:zmq_poll.adoc[zmq_poll] This API is deprecated, however.
 
 There is a new DRAFT API with multiple zmq_poller_* function, which is described
 in xref:zmq_poller.adoc[zmq_poller]

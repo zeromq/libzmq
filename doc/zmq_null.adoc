@@ -12,9 +12,9 @@ for ZeroMQ sockets.
 
 
 == SEE ALSO
-xref:zmq_plain.adoc[zmq_plain]
-xref:zmq_curve.adoc[zmq_curve]
-xref:zmq.adoc[zmq]
+* xref:zmq_plain.adoc[zmq_plain]
+* xref:zmq_curve.adoc[zmq_curve]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS
