@@ -130,7 +130,7 @@ The 'ZMQ_ZERO_COPY_RECV' argument specifies whether the message decoder should
 use a zero copy strategy when receiving messages. The zero copy strategy can
 lead to increased memory usage in some cases. This option allows you to use the
 older copying strategy. You can query the value of this option with
-* xref:zmq_ctx_get.adoc[zmq_ctx_get] using the 'ZMQ_ZERO_COPY_RECV' option.
+xref:zmq_ctx_get.adoc[zmq_ctx_get] using the 'ZMQ_ZERO_COPY_RECV' option.
 NOTE: in DRAFT state, not yet available in stable releases.
 
 [horizontal]

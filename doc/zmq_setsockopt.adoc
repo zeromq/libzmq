@@ -171,7 +171,7 @@ sockets, see xref:zmq_curve.adoc[zmq_curve] You can provide the key as 32 binary
 bytes, or as a 40-character string encoded in the Z85 encoding format and
 terminated in a null byte. The public key must always be used with the
 matching secret key. To generate a public/secret key pair, use
-* xref:zmq_curve_keypair.adoc[zmq_curve_keypair] To derive the public key from a secret key,
+xref:zmq_curve_keypair.adoc[zmq_curve_keypair] To derive the public key from a secret key,
 use xref:zmq_curve_public.adoc[zmq_curve_public]
 
 NOTE: an option value size of 40 is supported for backwards compatibility,
@@ -206,7 +206,7 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_CURVE_SERVER: Set CURVE server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defines whether the socket will act as server for CURVE security, see
-* xref:zmq_curve.adoc[zmq_curve] A value of '1' means the socket will act as
+xref:zmq_curve.adoc[zmq_curve] A value of '1' means the socket will act as
 CURVE server. A value of '0' means the socket will not act as CURVE
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL. When you
@@ -228,7 +228,7 @@ sockets, see xref:zmq_curve.adoc[zmq_curve] You can provide the key as 32 binary
 bytes, or as a 40-character string encoded in the Z85 encoding format and
 terminated in a null byte. This key must have been generated together with
 the server's secret key. To generate a public/secret key pair, use
-* xref:zmq_curve_keypair.adoc[zmq_curve_keypair]
+xref:zmq_curve_keypair.adoc[zmq_curve_keypair]
 
 NOTE: an option value size of 40 is supported for backwards compatibility,
 though is deprecated.
@@ -270,7 +270,7 @@ Applicable socket types:: ZMQ_DEALER, ZMQ_CLIENT and ZMQ_PEER
 ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defines whether communications on the socket will be encrypted, see
-* xref:zmq_gssapi.adoc[zmq_gssapi] A value of '1' means  that communications will be
+xref:zmq_gssapi.adoc[zmq_gssapi] A value of '1' means  that communications will be
 plaintext.  A value of '0' means communications will be encrypted.
 
 [horizontal]
@@ -294,7 +294,7 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_GSSAPI_SERVER: Set GSSAPI server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defines whether the socket will act as server for GSSAPI security, see
-* xref:zmq_gssapi.adoc[zmq_gssapi] A value of '1' means the socket will act as GSSAPI
+xref:zmq_gssapi.adoc[zmq_gssapi] A value of '1' means the socket will act as GSSAPI
 server. A value of '0' means the socket will act as GSSAPI client.
 
 [horizontal]
@@ -482,7 +482,7 @@ ZMQ_LINGER: Set linger period for socket shutdown
 The 'ZMQ_LINGER' option shall set the linger period for the specified 'socket'.
 The linger period determines how long pending messages which have yet to be
 sent to a peer shall linger in memory after a socket is disconnected with
-* xref:zmq_disconnect.adoc[zmq_disconnect] or closed with xref:zmq_close.adoc[zmq_close], and further
+xref:zmq_disconnect.adoc[zmq_disconnect] or closed with xref:zmq_close.adoc[zmq_close], and further
 affects the termination of the socket's context with xref:zmq_ctx_term.adoc[zmq_ctx_term]
 The following outlines the different behaviours:
 
@@ -585,7 +585,7 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_PLAIN_SERVER: Set PLAIN server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Defines whether the socket will act as server for PLAIN security, see
-* xref:zmq_plain.adoc[zmq_plain] A value of '1' means the socket will act as
+xref:zmq_plain.adoc[zmq_plain] A value of '1' means the socket will act as
 PLAIN server. A value of '0' means the socket will not act as PLAIN
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL.

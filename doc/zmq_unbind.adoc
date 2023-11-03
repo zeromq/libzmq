@@ -24,7 +24,7 @@ The 'endpoint' argument is as described in xref:zmq_bind.adoc[zmq_bind]
 Unbinding wild-card address from a socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When wild-card `*` 'endpoint' (described in xref:zmq_tcp.adoc[zmq_tcp],
-* xref:zmq_ipc.adoc[zmq_ipc], xref:zmq_udp.adoc[zmq_udp] and xref:zmq_vmci.adoc[zmq_vmci]) was used in
+xref:zmq_ipc.adoc[zmq_ipc], xref:zmq_udp.adoc[zmq_udp] and xref:zmq_vmci.adoc[zmq_vmci]) was used in
 _zmq_bind()_, the caller should use real 'endpoint' obtained from the 
 ZMQ_LAST_ENDPOINT socket option to unbind this 'endpoint' from a socket.
 

@@ -12,7 +12,7 @@ sharing a single 0MQ 'context'.
 NOTE: No I/O threads are involved in passing messages using the 'inproc'
 transport. Therefore, if you are using a 0MQ 'context' for in-process messaging
 only you can initialise the 'context' with zero I/O threads. See
-* xref:zmq_init.adoc[zmq_init] for details.
+xref:zmq_init.adoc[zmq_init] for details.
 
 
 == ADDRESSING

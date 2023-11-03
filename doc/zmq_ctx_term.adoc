@@ -33,7 +33,7 @@ For further details regarding socket linger behaviour refer to the _ZMQ_LINGER_
 option in xref:zmq_setsockopt.adoc[zmq_setsockopt]
 
 This function replaces the deprecated functions xref:zmq_term.adoc[zmq_term] and
-* xref:zmq_ctx_destroy.adoc[zmq_ctx_destroy]
+xref:zmq_ctx_destroy.adoc[zmq_ctx_destroy]
 
 
 == RETURN VALUE

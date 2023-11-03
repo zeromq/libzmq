@@ -19,7 +19,7 @@ The newly created socket is initially unbound, and not associated with any
 endpoints. In order to establish a message flow a socket must first be
 connected to at least one endpoint with xref:zmq_connect.adoc[zmq_connect], or at least one
 endpoint must be created for accepting incoming connections with
-* xref:zmq_bind.adoc[zmq_bind]
+xref:zmq_bind.adoc[zmq_bind]
 
 .Key differences to conventional sockets
 Generally speaking, conventional sockets present a _synchronous_ interface to
@@ -85,7 +85,7 @@ will accept messages, queue them, and send them as rapidly as the network
 allows. The outgoing buffer limit is defined by the high water mark for the
 socket. If the outgoing buffer is full, or, for connection-oriented transports,
 if the ZMQ_IMMEDIATE option is set and there is no connected peer,
-* xref:zmq_send.adoc[zmq_send] will block.
+xref:zmq_send.adoc[zmq_send] will block.
 The 'ZMQ_CLIENT' socket will not drop messages.
 
 When a 'ZMQ_CLIENT' socket is connected to multiple 'ZMQ_SERVER' sockets,
@@ -616,7 +616,7 @@ peers, and each message received is fair-queued from all connected peers.
 When a 'ZMQ_DEALER' socket enters the 'mute' state due to having reached the
 high water mark for all peers, or, for connection-oriented transports, if the
 ZMQ_IMMEDIATE option is set and there are no peers at all, then any
-* xref:zmq_send.adoc[zmq_send] operations on the socket shall block until the mute state
+xref:zmq_send.adoc[zmq_send] operations on the socket shall block until the mute state
 ends or at least one peer becomes available for sending; messages are not discarded.
 
 When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent

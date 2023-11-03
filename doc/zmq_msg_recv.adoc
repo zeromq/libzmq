@@ -36,7 +36,7 @@ message or none at all. The total number of message parts is unlimited except
 by available memory.
 
 An application that processes multi-part messages must use the _ZMQ_RCVMORE_
-* xref:zmq_getsockopt.adoc[zmq_getsockopt] option after calling _zmq_msg_recv()_ to determine if
+xref:zmq_getsockopt.adoc[zmq_getsockopt] option after calling _zmq_msg_recv()_ to determine if
 there are further parts to receive.
 
 

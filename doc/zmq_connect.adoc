@@ -28,7 +28,7 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 
 Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in
-* xref:zmq_socket.adoc[zmq_socket]
+xref:zmq_socket.adoc[zmq_socket]
 
 NOTE: for most transports and socket types the connection is not performed
 immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
@@ -42,7 +42,7 @@ NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,
 the socket enters its normal 'ready' state. By contrast, following a
 _zmq_bind()_ alone, the socket enters a 'mute' state in which the socket
 blocks or drops messages according to the socket type, as defined in
-* xref:zmq_socket.adoc[zmq_socket] A ZMQ_ROUTER socket enters its normal 'ready' state
+xref:zmq_socket.adoc[zmq_socket] A ZMQ_ROUTER socket enters its normal 'ready' state
 for a specific peer only when handshaking is complete for that peer, which
 may take an arbitrary time.
 
