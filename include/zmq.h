@@ -288,7 +288,7 @@ _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_)
                      _In_opt_ void *hint_);
 ZMQ_EXPORT (int) zmq_msg_send (_In_ zmq_msg_t *msg_, _In_ void *s_, int flags_);
 ZMQ_EXPORT (int)
-zmq_msg_recv (_Out_ zmq_msg_t *msg_, _In_ void *s_, int flags_);
+zmq_msg_recv (_Inout_ zmq_msg_t *msg_, _In_ void *s_, int flags_);
 ZMQ_EXPORT (int) zmq_msg_close (_Inout_ zmq_msg_t *msg_);
 ZMQ_EXPORT (int)
 zmq_msg_move (_Inout_ zmq_msg_t *dest_, _Inout_ zmq_msg_t *src_);
@@ -599,7 +599,8 @@ ZMQ_EXPORT (int) zmq_has (_In_z_ const char *capability_);
 ZMQ_EXPORT (int)
 zmq_device (int type_, _In_ void *frontend_, _In_ void *backend_);
 ZMQ_EXPORT (int) zmq_sendmsg (_In_ void *s_, _In_ zmq_msg_t *msg_, int flags_);
-ZMQ_EXPORT (int) zmq_recvmsg (_In_ void *s_, _Out_ zmq_msg_t *msg_, int flags_);
+ZMQ_EXPORT (int)
+zmq_recvmsg (_In_ void *s_, _Inout_ zmq_msg_t *msg_, int flags_);
 struct iovec;
 ZMQ_EXPORT (int)
 zmq_sendiov (_In_ void *s_,
@@ -857,7 +858,7 @@ ZMQ_EXPORT (int) zmq_poller_fd (_In_ void *poller_, _In_ zmq_fd_t *fd_);
 ZMQ_EXPORT (int)
 zmq_poller_add_fd (_In_ void *poller_,
                    zmq_fd_t fd_,
-                   _In_ void *user_data_,
+                   _In_opt_ void *user_data_,
                    short events_);
 ZMQ_EXPORT (int)
 zmq_poller_modify_fd (_In_ void *poller_, zmq_fd_t fd_, short events_);
