@@ -107,7 +107,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
         if (!_tmp_socket_dirname.empty ()) {
             // We need to preserve errno to return to the user
             const int tmp_errno = errno;
-            ::rmdir (_tmp_socket_dirname.c_str ());
+            (void)::rmdir (_tmp_socket_dirname.c_str ());
             _tmp_socket_dirname.clear ();
             errno = tmp_errno;
         }
@@ -125,7 +125,7 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
             if (!_tmp_socket_dirname.empty ()) {
                 // We need to preserve errno to return to the user
                 const int tmp_errno = errno;
-                ::rmdir (_tmp_socket_dirname.c_str ());
+                (void) ::rmdir (_tmp_socket_dirname.c_str ());
                 _tmp_socket_dirname.clear ();
                 errno = tmp_errno;
             }

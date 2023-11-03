@@ -24,7 +24,10 @@ class req_t ZMQ_FINAL : public dealer_t
     int xrecv (zmq::msg_t *msg_);
     bool xhas_in ();
     bool xhas_out ();
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    int xsetsockopt (int option_,
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 
   protected:

@@ -17,9 +17,14 @@
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
 //  and private representation of the message (zmq::msg_t) match.
 
+#if __cplusplus >= 199711L
+static_assert (sizeof (zmq::msg_t) == sizeof (zmq_msg_t),
+               "zmq::msg_t and zmq_msg_t sizes do not match");
+#else
 typedef char
   zmq_msg_size_check[2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0)
                      - 1];
+#endif
 
 bool zmq::msg_t::check () const
 {
@@ -213,7 +218,7 @@ int zmq::msg_t::init_leave ()
 
 int zmq::msg_t::init_subscribe (_When_ (topic_ == NULL, _In_range_ (0, 0))
                                   const size_t size_,
-                                _In_reads_bytes_ (size_)
+                                _In_reads_bytes_opt_ (size_)
                                   const unsigned char *topic_)
 {
     int rc = init_size (size_);

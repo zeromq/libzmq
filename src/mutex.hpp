@@ -155,7 +155,7 @@ struct scoped_lock_t
 
 struct scoped_optional_lock_t
 {
-    scoped_optional_lock_t (mutex_t *mutex_) : _mutex (mutex_)
+    scoped_optional_lock_t (_In_opt_ mutex_t *mutex_) : _mutex (mutex_)
     {
         if (_mutex != NULL)
             _mutex->lock ();

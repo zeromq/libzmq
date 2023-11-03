@@ -210,8 +210,8 @@ zmq_curve_keypair (_Out_writes_z_ (41) char *z85_public_key_,
     zmq::random_open ();
 
     const int res = crypto_box_keypair (public_key, secret_key);
-    zmq_z85_encode (z85_public_key_, public_key, 32);
-    zmq_z85_encode (z85_secret_key_, secret_key, 32);
+    (void) zmq_z85_encode (z85_public_key_, public_key, 32);
+    (void) zmq_z85_encode (z85_secret_key_, secret_key, 32);
 
     zmq::random_close ();
 

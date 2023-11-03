@@ -395,7 +395,7 @@ bool zmq::ctx_t::start ()
     const int slot_count = mazmq + ios + term_and_reaper_threads_count;
     try {
         _slots.reserve (slot_count);
-        _empty_slots.reserve (slot_count - term_and_reaper_threads_count);
+        _empty_slots.reserve (slot_count - (size_t) term_and_reaper_threads_count);
     }
     catch (const std::bad_alloc &) {
         errno = ENOMEM;
@@ -599,6 +599,9 @@ int zmq::thread_ctx_t::set (int option_, const void *optval_, size_t optvallen_)
                 return 0;
             }
             break;
+
+        default:
+            zmq_abort ("Invalid option");
     }
 
     errno = EINVAL;
@@ -633,6 +636,9 @@ int zmq::thread_ctx_t::get (int option_,
                 return 0;
             }
             break;
+
+        default:
+            zmq_abort ("Invalid option");
     }
 
     errno = EINVAL;

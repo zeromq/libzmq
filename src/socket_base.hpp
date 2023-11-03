@@ -156,8 +156,11 @@ class socket_base_t : public own_t,
     //  The default implementation assumes there are no specific socket
     //  options for the particular socket type. If not so, ZMQ_FINAL this
     //  method.
-    virtual int
-    xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    virtual int xsetsockopt (int option_,
+                             _In_reads_bytes_opt_ (optvallen_)
+                               const void *optval_,
+                             _When_ (optval_ == NULL, _In_range_ (0, 0))
+                               const size_t optvallen_);
 
     //  The default implementation assumes there are no specific socket
     //  options for the particular socket type. If not so, ZMQ_FINAL this
@@ -327,7 +330,7 @@ class socket_base_t : public own_t,
     ZMQ_NON_COPYABLE_NOR_MOVABLE (socket_base_t)
 
     // Add a flag for mark disconnect action
-    bool _disconnected;
+    bool _disconnected{};
 };
 
 class routing_socket_base_t : public socket_base_t

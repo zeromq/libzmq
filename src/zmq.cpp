@@ -205,6 +205,7 @@ zmq_init (_In_range_ (0, INT_MAX) int io_threads_)
 {
     if (io_threads_ >= 0) {
         void *ctx = zmq_ctx_new ();
+        alloc_assert (ctx);
         zmq_ctx_set (ctx, ZMQ_IO_THREADS, io_threads_);
         return ctx;
     }
@@ -501,7 +502,7 @@ zmq_sendiov (_In_ void *s_,
 // Receiving functions.
 
 static _Check_return_ int
-s_recvmsg (_In_ zmq::socket_base_t *s_, _In_ zmq_msg_t *msg_, int flags_)
+s_recvmsg (_In_ zmq::socket_base_t *s_, _Inout_ zmq_msg_t *msg_, int flags_)
 {
     const int rc = s_->recv (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
     if (unlikely (rc < 0))
@@ -514,7 +515,7 @@ s_recvmsg (_In_ zmq::socket_base_t *s_, _In_ zmq_msg_t *msg_, int flags_)
 
 /*  To be deprecated once zmq_msg_recv() is stable                           */
 ZMQ_EXPORT_IMPL (int)
-zmq_recvmsg (_In_ void *s_, _Out_ zmq_msg_t *msg_, int flags_)
+zmq_recvmsg (_In_ void *s_, _Inout_ zmq_msg_t *msg_, int flags_)
 {
     return zmq_msg_recv (msg_, s_, flags_);
 }
@@ -669,7 +670,7 @@ zmq_msg_send (_In_ zmq_msg_t *msg_, _In_ void *s_, int flags_)
 }
 
 ZMQ_EXPORT_IMPL (int)
-zmq_msg_recv (_Out_ zmq_msg_t *msg_, _In_ void *s_, int flags_)
+zmq_msg_recv (_Inout_ zmq_msg_t *msg_, _In_ void *s_, int flags_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
@@ -1595,7 +1596,7 @@ zmq_poller_add (_In_ void *poller_,
 ZMQ_EXPORT_IMPL (int)
 zmq_poller_add_fd (_In_ void *poller_,
                    zmq_fd_t fd_,
-                   _In_ void *user_data_,
+                   _In_opt_ void *user_data_,
                    short events_)
 {
     if (-1 == check_poller_fd_registration_args (poller_, fd_)

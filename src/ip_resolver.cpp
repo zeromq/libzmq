@@ -65,7 +65,8 @@ void zmq::ip_addr_t::set_port (uint16_t port_)
 }
 
 //  Construct an "ANY" address for the given family
-zmq::ip_addr_t zmq::ip_addr_t::any (int family_)
+zmq::ip_addr_t zmq::ip_addr_t::any (
+  _Pre_satisfies_ (family_ == AF_INET || family_ == AF_INET6) int family_)
 {
     ip_addr_t addr;
 
@@ -86,7 +87,7 @@ zmq::ip_addr_t zmq::ip_addr_t::any (int family_)
         memcpy (&ip6_addr->sin6_addr, &in6addr_any, sizeof (in6addr_any));
 #endif
     } else {
-        assert (0 == "unsupported address family");
+        zmq_assert (0 == "unsupported address family");
     }
 
     return addr;

@@ -352,7 +352,7 @@ void zmq::norm_engine_t::send_data ()
             // Get more data from encoder
             size_t space = BUFFER_SIZE;
             unsigned char *bufPtr = (unsigned char *) tx_buffer;
-            tx_len = zmq_encoder.encode (&bufPtr, space);
+            tx_len = (unsigned int) zmq_encoder.encode (&bufPtr, space);
             if (0 == tx_len) {
                 if (tx_first_msg) {
                     // We don't need to mark eom/flush until a message is sent
@@ -390,7 +390,7 @@ void zmq::norm_engine_t::send_data ()
                 // Go ahead an get a first chunk of the message
                 bufPtr++;
                 space--;
-                tx_len = 1 + zmq_encoder.encode (&bufPtr, space);
+                tx_len = 1 + (unsigned int) zmq_encoder.encode (&bufPtr, space);
                 tx_index = 0;
             }
         }
@@ -580,7 +580,7 @@ void zmq::norm_engine_t::recv_data (NormObjectHandle object)
             }
             // Now we're actually ready to read data from the NORM stream to the zmq_decoder
             // the underlying zmq_decoder->get_buffer() call sets how much is needed.
-            unsigned int numBytes = rxState->GetBytesNeeded ();
+            unsigned int numBytes = (unsigned int) rxState->GetBytesNeeded ();
             if (!NormStreamRead (stream, rxState->AccessBuffer (), &numBytes)) {
                 // broken NORM stream, so re-sync
                 rxState->Init (); // TBD - check result
@@ -730,6 +730,9 @@ int zmq::norm_engine_t::NormRxStreamState::Decode ()
             case 0:
                 // need more data, keep decoding until buffer exhausted
                 break;
+
+            default:
+                zmq_abort ("Unexpected value returned from zmq_decoder->decode()");
         }
     }
     // Reset buffer pointer/count for next read

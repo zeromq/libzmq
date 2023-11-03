@@ -50,8 +50,7 @@ void print_backtrace ();
 namespace zmq
 {
 _Ret_z_ const char *wsa_error ();
-_Ret_z_ const char *wsa_error_no (
-  int no_, _In_ const char *wsae_wouldblock_string_ = "Operation would block");
+_Ret_z_ const char *wsa_error_no (int no_);
 void win_error (_Out_writes_bytes_ (buffer_size_) char *buffer_,
                 size_t buffer_size_);
 int wsa_error_to_errno (int errcode_);

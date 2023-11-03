@@ -94,7 +94,7 @@ template <> class dbuffer_t<msg_t>
 
 
   private:
-    msg_t _storage[2];
+    msg_t _storage[2]{};
     msg_t *_back, *_front;
 
     mutex_t _sync;

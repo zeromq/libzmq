@@ -42,10 +42,10 @@ class curve_server_t ZMQ_FINAL : public zap_client_common_handshake_t,
     uint8_t _cn_secret[crypto_box_SECRETKEYBYTES];
 
     //  Client's short-term public key (C')
-    uint8_t _cn_client[crypto_box_PUBLICKEYBYTES];
+    uint8_t _cn_client[crypto_box_PUBLICKEYBYTES]{};
 
     //  Key used to produce cookie
-    uint8_t _cookie_key[crypto_secretbox_KEYBYTES];
+    uint8_t _cookie_key[crypto_secretbox_KEYBYTES]{};
 
     int process_hello (msg_t *msg_);
     int produce_welcome (msg_t *msg_);

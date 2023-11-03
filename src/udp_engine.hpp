@@ -78,12 +78,12 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 
     options_t _options;
 
-    sockaddr_in _raw_address;
-    const struct sockaddr *_out_address;
-    zmq_socklen_t _out_address_len;
+    sockaddr_in _raw_address{};
+    const struct sockaddr *_out_address{};
+    zmq_socklen_t _out_address_len{};
 
-    char _out_buffer[MAX_UDP_MSG];
-    char _in_buffer[MAX_UDP_MSG];
+    char _out_buffer[MAX_UDP_MSG]{};
+    char _in_buffer[MAX_UDP_MSG]{};
     bool _send_enabled;
     bool _recv_enabled;
 };

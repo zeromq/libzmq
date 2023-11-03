@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-zmq::mailbox_safe_t::mailbox_safe_t (mutex_t *sync_) : _sync (sync_)
+zmq::mailbox_safe_t::mailbox_safe_t (_In_ mutex_t *sync_) : _sync (sync_)
 {
     //  Get the pipe into passive state. That way, if the users starts by
     //  polling on the associated file descriptor it will get woken up when
@@ -76,6 +76,11 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
     //  and immediately relock it.
     if (timeout_ == 0) {
         _sync->unlock ();
+#if defined ZMQ_HAVE_WINDOWS
+        // For this to have any chance of actually doing
+        // anything the timeslice must be yielded.
+        Sleep (0); 
+#endif
         _sync->lock ();
     } else {
         //  Wait for signal from the command sender.

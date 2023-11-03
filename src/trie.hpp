@@ -50,7 +50,7 @@ class trie_t
     {
         class trie_t *node;
         class trie_t **table;
-    } _next;
+    } _next{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (trie_t)
 };

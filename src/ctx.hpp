@@ -30,7 +30,7 @@ class pipe_t;
 //  for synchronisation, handshaking or similar.
 struct endpoint_t
 {
-    socket_base_t *socket;
+    socket_base_t *socket{};
     options_t options;
 };
 

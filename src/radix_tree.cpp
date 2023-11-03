@@ -276,7 +276,7 @@ bool zmq::radix_tree_t::add (const unsigned char *key_, size_t key_size_)
 
             // Reallocate for one more edge.
             current_node.resize (current_node.prefix_length (),
-                                 current_node.edgecount () + 1);
+                                 current_node.edgecount () + (size_t) 1);
 
             // Make room for the new edge. We need to shift the chunk
             // of node pointers one byte to the right. Since resize()
@@ -419,7 +419,8 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         // keep the old prefix length since resize() will overwrite
         // it.
         const uint32_t old_prefix_length = current_node.prefix_length ();
-        current_node.resize (old_prefix_length + child.prefix_length (),
+        current_node.resize (old_prefix_length
+                               + (size_t) child.prefix_length (),
                              child.edgecount ());
 
         // Append the child node's prefix to the current node.
@@ -448,7 +449,8 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         // keep the old prefix length since resize() will overwrite
         // it.
         const uint32_t old_prefix_length = parent_node.prefix_length ();
-        parent_node.resize (old_prefix_length + other_child.prefix_length (),
+        parent_node.resize (old_prefix_length
+                              + (size_t) other_child.prefix_length (),
                             other_child.edgecount ());
 
         // Append the child node's prefix to the current node.

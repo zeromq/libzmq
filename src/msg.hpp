@@ -92,7 +92,8 @@ class msg_t
     int init_leave ();
     int init_subscribe (_When_ (topic_ == NULL, _In_range_ (0, 0))
                           const size_t size_,
-                        _In_reads_bytes_ (size_) const unsigned char *topic_);
+                        _In_reads_bytes_opt_ (size_)
+                          const unsigned char *topic_);
     int init_cancel (_When_ (topic_ == NULL, _In_range_ (0, 0))
                        const size_t size_,
                      _In_reads_bytes_ (size_) const unsigned char *topic_);

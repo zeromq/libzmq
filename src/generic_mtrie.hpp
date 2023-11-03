@@ -76,7 +76,7 @@ template <typename T> class generic_mtrie_t
     {
         class generic_mtrie_t<value_t> *node;
         class generic_mtrie_t<value_t> **table;
-    } _next;
+    } _next{};
 
     struct iter
     {

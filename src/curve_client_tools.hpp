@@ -276,10 +276,10 @@ struct curve_client_tools_t
     uint8_t server_key[crypto_box_PUBLICKEYBYTES];
 
     //  Server's short-term public key (S')
-    uint8_t cn_server[crypto_box_PUBLICKEYBYTES];
+    uint8_t cn_server[crypto_box_PUBLICKEYBYTES]{};
 
     //  Cookie received from server
-    uint8_t cn_cookie[16 + 80];
+    uint8_t cn_cookie[16 + 80]{};
 
   private:
     template <size_t N>

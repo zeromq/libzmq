@@ -28,7 +28,10 @@ class stream_t ZMQ_FINAL : public routing_socket_base_t
     bool xhas_out ();
     void xread_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    int xsetsockopt (int option_,
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_);
 
   private:
     //  Generate peer's id and update lookup map

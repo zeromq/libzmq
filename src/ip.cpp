@@ -864,7 +864,8 @@ char *widechar_to_utf8 (const wchar_t *widestring)
     char *utf8 = 0;
     nch = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, 0, 0, NULL, NULL);
     if (nch > 0) {
-        utf8 = (char *) malloc ((nch + 1) * sizeof (char));
+        utf8 = (char *) malloc ((nch + (size_t) 1) * sizeof (char));
+        alloc_assert (utf8);
         n = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, utf8, nch, NULL,
                                  NULL);
         utf8[nch] = 0;

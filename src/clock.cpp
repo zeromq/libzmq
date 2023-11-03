@@ -61,6 +61,8 @@ ULONGLONG compatible_get_tick_count64 ()
 
     static DWORD s_wrap = 0;
     static DWORD s_last_tick = 0;
+
+#pragma warning (suppress : 28159) // Consider GetTickCount64 instead of GetTickCount
     const DWORD current_tick = ::GetTickCount ();
 
     if (current_tick < s_last_tick)

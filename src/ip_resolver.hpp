@@ -28,7 +28,8 @@ union ip_addr_t
 
     void set_port (uint16_t);
 
-    static ip_addr_t any (int family_);
+    static ip_addr_t any (_Pre_satisfies_ (family_ == AF_INET
+                                           || family_ == AF_INET6) int family_);
 };
 
 class ip_resolver_options_t

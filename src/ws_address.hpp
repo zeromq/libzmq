@@ -15,7 +15,7 @@ namespace zmq
 class ws_address_t
 {
   public:
-    ws_address_t ();
+    ws_address_t () noexcept;
     ws_address_t (const sockaddr *sa_, socklen_t sa_len_);
 
     //  This function translates textual WS address into an address

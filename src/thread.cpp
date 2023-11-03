@@ -125,6 +125,7 @@ void zmq::thread_t::
                         sizeof (thread_info) / sizeof (ULONG_PTR),
                         (ULONG_PTR *) &thread_info);
     }
+#pragma warning(suppress : 6312) // Execution restarts in the protected block.
     __except (EXCEPTION_CONTINUE_EXECUTION) {
     }
 

@@ -51,7 +51,7 @@ struct options_t
 
     //  Socket routing id.
     unsigned char routing_id_size;
-    unsigned char routing_id[256];
+    unsigned char routing_id[256]{};
 
     //  Maximum transfer rate [kb/s]. Default 100kb/s.
     int rate;

@@ -34,7 +34,10 @@ class radio_t ZMQ_FINAL : public socket_base_t
     bool xhas_in ();
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
-    int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+    int xsetsockopt (int option_,
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
 
   private:
@@ -77,7 +80,7 @@ class radio_session_t ZMQ_FINAL : public session_base_t
         body
     } _state;
 
-    msg_t _pending_msg;
+    msg_t _pending_msg{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (radio_session_t)
 };

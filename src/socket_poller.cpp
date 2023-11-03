@@ -132,7 +132,9 @@ int zmq::socket_poller_t::add (socket_base_t *socket_,
     return 0;
 }
 
-int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
+int zmq::socket_poller_t::add_fd (fd_t fd_,
+                                  _In_opt_ void *user_data_,
+                                  short events_)
 {
     if (find_if2 (_items.begin (), _items.end (), fd_, &is_fd)
         != _items.end ()) {

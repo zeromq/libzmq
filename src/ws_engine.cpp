@@ -76,10 +76,6 @@ zmq::ws_engine_t::ws_engine_t (fd_t fd_,
     _header_connection_upgrade (false),
     _heartbeat_timeout (0)
 {
-    memset (_websocket_key, 0, MAX_HEADER_VALUE_LENGTH + 1);
-    memset (_websocket_accept, 0, MAX_HEADER_VALUE_LENGTH + 1);
-    memset (_websocket_protocol, 0, 256);
-
     _next_msg = &ws_engine_t::next_handshake_command;
     _process_msg = &ws_engine_t::process_handshake_command;
     _close_msg.init ();
