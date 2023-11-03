@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="msvc_code_analysis" ToolsVersion="17.0">
+  <Include Path="concurrencycheckrules.ruleset" Action="Default" />
+  <Include Path="concurrencyrules.ruleset" Action="Default" />
+  <Include Path="nativerecommendedrules.ruleset" Action="Default" />
+</RuleSet>
