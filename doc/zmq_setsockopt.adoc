@@ -1711,11 +1711,11 @@ assert (rc);
 
 
 == SEE ALSO
-xref:zmq_getsockopt.adoc[zmq_getsockopt]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq_plain.adoc[zmq_plain]
-xref:zmq_curve.adoc[zmq_curve]
-xref:zmq.adoc[zmq]
+* xref:zmq_getsockopt.adoc[zmq_getsockopt]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq_plain.adoc[zmq_plain]
+* xref:zmq_curve.adoc[zmq_curve]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

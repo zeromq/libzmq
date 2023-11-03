@@ -37,7 +37,7 @@ printf ("Current 0MQ version is %d.%d.%d\n", major, minor, patch);
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

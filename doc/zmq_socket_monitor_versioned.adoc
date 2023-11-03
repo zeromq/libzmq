@@ -385,7 +385,7 @@ int main (void)
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

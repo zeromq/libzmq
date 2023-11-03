@@ -29,8 +29,8 @@ The requested property _property_ is unknown.
 
 
 == SEE ALSO
-xref:zmq_msg_get.adoc[zmq_msg_get]
-xref:zmq.adoc[zmq]
+* xref:zmq_msg_get.adoc[zmq_msg_get]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

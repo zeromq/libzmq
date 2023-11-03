@@ -103,12 +103,12 @@ do {
 
 
 == SEE ALSO
-xref:zmq_recv.adoc[zmq_recv]
-xref:zmq_send.adoc[zmq_send]
-xref:zmq_getsockopt.adoc[zmq_getsockopt]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_getsockopt.adoc[zmq_getsockopt]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

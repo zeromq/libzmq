@@ -38,7 +38,7 @@ if (!ctx) {
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

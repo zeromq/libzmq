@@ -49,10 +49,10 @@ Termination was interrupted by a signal. It can be restarted if needed.
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
-xref:zmq_init.adoc[zmq_init]
-xref:zmq_close.adoc[zmq_close]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq.adoc[zmq]
+* xref:zmq_init.adoc[zmq_init]
+* xref:zmq_close.adoc[zmq_close]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
 
 
 == AUTHORS

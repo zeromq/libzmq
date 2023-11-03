@@ -144,7 +144,7 @@ _timer_id_ did not exist or was already cancelled.
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

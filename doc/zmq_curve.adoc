@@ -71,12 +71,12 @@ secret:
 ----
 
 == SEE ALSO
-xref:zmq_z85_encode.adoc[zmq_z85_encode]
-xref:zmq_z85_decode.adoc[zmq_z85_decode]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_null.adoc[zmq_null]
-xref:zmq_plain.adoc[zmq_plain]
-xref:zmq.adoc[zmq]
+* xref:zmq_z85_encode.adoc[zmq_z85_encode]
+* xref:zmq_z85_decode.adoc[zmq_z85_decode]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_null.adoc[zmq_null]
+* xref:zmq_plain.adoc[zmq_plain]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

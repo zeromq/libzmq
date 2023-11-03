@@ -734,14 +734,14 @@ zmq_ctx_destroy (ctx);
 
 
 == SEE ALSO
-xref:zmq_init.adoc[zmq_init]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_bind.adoc[zmq_bind]
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_send.adoc[zmq_send]
-xref:zmq_recv.adoc[zmq_recv]
-xref:zmq_inproc.adoc[zmq_inproc]
-xref:zmq.adoc[zmq]
+* xref:zmq_init.adoc[zmq_init]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_inproc.adoc[zmq_inproc]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

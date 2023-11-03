@@ -36,10 +36,10 @@ and it wasn't possible to create a new context.
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
-xref:zmq_ctx_set.adoc[zmq_ctx_set]
-xref:zmq_ctx_get.adoc[zmq_ctx_get]
-xref:zmq_ctx_term.adoc[zmq_ctx_term]
+* xref:zmq.adoc[zmq]
+* xref:zmq_ctx_set.adoc[zmq_ctx_set]
+* xref:zmq_ctx_get.adoc[zmq_ctx_get]
+* xref:zmq_ctx_term.adoc[zmq_ctx_term]
 
 
 == AUTHORS

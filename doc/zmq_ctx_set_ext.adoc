@@ -70,8 +70,8 @@ assert (buffLen == prefixLen);
 
 
 == SEE ALSO
-xref:zmq_ctx_set.adoc[zmq_ctx_set]
-xref:zmq.adoc[zmq]
+* xref:zmq_ctx_set.adoc[zmq_ctx_set]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

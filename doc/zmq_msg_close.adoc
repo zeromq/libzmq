@@ -35,13 +35,13 @@ Invalid message.
 
 
 == SEE ALSO
-xref:zmq_msg_init.adoc[zmq_msg_init]
-xref:zmq_msg_init_size.adoc[zmq_msg_init_size]
-xref:zmq_msg_init_buffer.adoc[zmq_msg_init_buffer]
-xref:zmq_msg_init_data.adoc[zmq_msg_init_data]
-xref:zmq_msg_data.adoc[zmq_msg_data]
-xref:zmq_msg_size.adoc[zmq_msg_size]
-xref:zmq.adoc[zmq]
+* xref:zmq_msg_init.adoc[zmq_msg_init]
+* xref:zmq_msg_init_size.adoc[zmq_msg_init_size]
+* xref:zmq_msg_init_buffer.adoc[zmq_msg_init_buffer]
+* xref:zmq_msg_init_data.adoc[zmq_msg_init_data]
+* xref:zmq_msg_data.adoc[zmq_msg_data]
+* xref:zmq_msg_size.adoc[zmq_msg_size]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

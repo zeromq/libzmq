@@ -67,13 +67,13 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_bind.adoc[zmq_bind]
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_ipc.adoc[zmq_ipc]
-xref:zmq_tcp.adoc[zmq_tcp]
-xref:zmq_pgm.adoc[zmq_pgm]
-xref:zmq_vmci.adoc[zmq_vmci]
-xref:zmq.adoc[zmq]
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_ipc.adoc[zmq_ipc]
+* xref:zmq_tcp.adoc[zmq_tcp]
+* xref:zmq_pgm.adoc[zmq_pgm]
+* xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

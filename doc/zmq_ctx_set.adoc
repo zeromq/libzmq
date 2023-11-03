@@ -180,8 +180,8 @@ assert (max_sockets == 256);
 
 
 == SEE ALSO
-xref:zmq_ctx_get.adoc[zmq_ctx_get]
-xref:zmq.adoc[zmq]
+* xref:zmq_ctx_get.adoc[zmq_ctx_get]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

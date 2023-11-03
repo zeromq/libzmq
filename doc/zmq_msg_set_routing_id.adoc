@@ -29,8 +29,8 @@ The provided 'routing_id' is zero.
 
 
 == SEE ALSO
-xref:zmq_msg_routing_id.adoc[zmq_msg_routing_id]
-xref:zmq.adoc[zmq]
+* xref:zmq_msg_routing_id.adoc[zmq_msg_routing_id]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

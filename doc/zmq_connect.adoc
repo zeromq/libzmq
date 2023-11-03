@@ -90,9 +90,9 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_bind.adoc[zmq_bind]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

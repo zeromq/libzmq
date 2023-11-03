@@ -40,10 +40,10 @@ The provided 'socket' was NULL.
 
 
 == SEE ALSO
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq_ctx_term.adoc[zmq_ctx_term]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq.adoc[zmq]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq_ctx_term.adoc[zmq_ctx_term]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

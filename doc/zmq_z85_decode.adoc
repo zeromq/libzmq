@@ -32,10 +32,10 @@ zmq_z85_decode (public_key, decoded);
 
 
 == SEE ALSO
-xref:zmq_z85_encode.adoc[zmq_z85_encode]
-xref:zmq_curve_keypair.adoc[zmq_curve_keypair]
-xref:zmq_curve_public.adoc[zmq_curve_public]
-xref:zmq_curve.adoc[zmq_curve]
+* xref:zmq_z85_encode.adoc[zmq_z85_encode]
+* xref:zmq_curve_keypair.adoc[zmq_curve_keypair]
+* xref:zmq_curve_public.adoc[zmq_curve_public]
+* xref:zmq_curve.adoc[zmq_curve]
 
 
 == AUTHORS

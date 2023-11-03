@@ -94,13 +94,13 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_tcp.adoc[zmq_tcp]
-xref:zmq_ipc.adoc[zmq_ipc]
-xref:zmq_inproc.adoc[zmq_inproc]
-xref:zmq_vmci.adoc[zmq_vmci]
-xref:zmq.adoc[zmq]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_tcp.adoc[zmq_tcp]
+* xref:zmq_ipc.adoc[zmq_ipc]
+* xref:zmq_inproc.adoc[zmq_inproc]
+* xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

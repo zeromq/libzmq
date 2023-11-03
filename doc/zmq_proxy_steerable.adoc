@@ -109,11 +109,11 @@ zmq_close(control);
 
 
 == SEE ALSO
-xref:zmq_proxy.adoc[zmq_proxy]
-xref:zmq_bind.adoc[zmq_bind]
-xref:zmq_connect.adoc[zmq_connect]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_proxy.adoc[zmq_proxy]
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

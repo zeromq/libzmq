@@ -66,8 +66,8 @@ zmq_msg_close (&msg);
 
 
 == SEE ALSO
-xref:zmq.adoc[zmq]
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq.adoc[zmq]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
 
 == AUTHORS
 This page was written by the 0MQ community. To make a change please

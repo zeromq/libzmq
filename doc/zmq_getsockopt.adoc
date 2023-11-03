@@ -1164,9 +1164,9 @@ assert (rc == 0);
 
 
 == SEE ALSO
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

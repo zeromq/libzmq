@@ -20,10 +20,10 @@ options. Which peer binds, and which connects, is not relevant.
 
 
 == SEE ALSO
-xref:zmq_setsockopt.adoc[zmq_setsockopt]
-xref:zmq_null.adoc[zmq_null]
-xref:zmq_curve.adoc[zmq_curve]
-xref:zmq.adoc[zmq]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_null.adoc[zmq_null]
+* xref:zmq_curve.adoc[zmq_curve]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS

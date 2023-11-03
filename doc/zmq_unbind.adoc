@@ -83,9 +83,9 @@ interchangeably. Bound sockets should be unbound, and connected sockets should
 be disconnected.
 
 == SEE ALSO
-xref:zmq_bind.adoc[zmq_bind]
-xref:zmq_socket.adoc[zmq_socket]
-xref:zmq.adoc[zmq]
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
 
 
 == AUTHORS
