@@ -1,0 +1,16 @@
+/* SPDX-License-Identifier: MPL-2.0 */
+
+/* 
+  CSS file for Asciidoctor HTML documentation
+  See https://docs.asciidoctor.org/asciidoctor/latest/html-backend/default-stylesheet/#customize-extend
+  See also https://github.com/darshandsoni/asciidoctor-skins/ for custom "skins"
+
+/* import the default Asciidoctor CSS file */
+@import "https://cdn.jsdelivr.net/gh/asciidoctor/asciidoctor@2.0/data/stylesheets/asciidoctor-default.css";
+
+/* just make the default HTML list more compact: */
+.ulist p {
+  padding: 0;
+  margin-right: -4px;
+  margin-bottom: -4px;
+}
