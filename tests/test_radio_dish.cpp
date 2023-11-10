@@ -321,7 +321,7 @@ static bool is_multicast_available (int ipv6_)
         struct sockaddr_in *mcast_ipv4 = &mcast.ipv4;
 
         any_ipv4->sin_family = AF_INET;
-        any_ipv4->sin_port = htons (5555);
+        any_ipv4->sin_port = htons (port);
 
         rc = test_inet_pton (AF_INET, "0.0.0.0", &any_ipv4->sin_addr);
         if (rc == 0) {
@@ -403,7 +403,7 @@ static bool is_multicast_available (int ipv6_)
 
     msleep (SETTLE_TIME);
 
-    rc = recvfrom (bind_sock, buf, sizeof (buf) - 1, 0, NULL, 0);
+    rc = recvfrom (bind_sock, buf, sizeof (buf) - 1, ZMQ_DONTWAIT, NULL, 0);
     if (rc < 0) {
         goto out;
     }
