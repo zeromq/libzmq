@@ -85,7 +85,7 @@ class dish_session_t ZMQ_FINAL : public session_base_t
         body
     } _state;
 
-    msg_t _group_msg;
+    msg_t _group_msg{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (dish_session_t)
 };

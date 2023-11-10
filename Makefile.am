@@ -17,6 +17,7 @@ lib_LTLIBRARIES = src/libzmq.la
 
 include_HEADERS = \
 	include/zmq.h \
+	include/zmq_sal.h \
 	include/zmq_utils.h
 
 src_libzmq_la_SOURCES = \
@@ -275,6 +276,7 @@ src_libzmq_la_SOURCES = \
 	src/zap_client.hpp \
 	src/zmtp_engine.cpp \
 	src/zmtp_engine.hpp \
+	src/zmq_sal.h \
 	src/zmq_draft.h \
 	src/zmqp.h
 

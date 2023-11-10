@@ -180,8 +180,10 @@ bool zmq::req_t::xhas_out ()
 }
 
 int zmq::req_t::xsetsockopt (int option_,
-                             const void *optval_,
-                             size_t optvallen_)
+                             _In_reads_bytes_opt_ (optvallen_)
+                               const void *optval_,
+                             _When_ (optval_ == NULL, _In_range_ (0, 0))
+                               const size_t optvallen_)
 {
     const bool is_int = (optvallen_ == sizeof (int));
     int value = 0;

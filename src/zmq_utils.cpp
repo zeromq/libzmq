@@ -20,7 +20,7 @@
 #include "sodium.h"
 #endif
 
-void zmq_sleep (int seconds_)
+ZMQ_EXPORT_VOID_IMPL zmq_sleep (int seconds_)
 {
 #if defined ZMQ_HAVE_WINDOWS
     Sleep (seconds_ * 1000);
@@ -29,7 +29,7 @@ void zmq_sleep (int seconds_)
 #endif
 }
 
-void *zmq_stopwatch_start ()
+ZMQ_EXPORT_PTR_IMPL (void *, uint64_t) zmq_stopwatch_start (void)
 {
     uint64_t *watch = static_cast<uint64_t *> (malloc (sizeof (uint64_t)));
     alloc_assert (watch);
@@ -37,21 +37,23 @@ void *zmq_stopwatch_start ()
     return static_cast<void *> (watch);
 }
 
-unsigned long zmq_stopwatch_intermediate (void *watch_)
+ZMQ_EXPORT_IMPL (unsigned long) zmq_stopwatch_intermediate (_In_ void *watch_)
 {
     const uint64_t end = zmq::clock_t::now_us ();
     const uint64_t start = *static_cast<uint64_t *> (watch_);
     return static_cast<unsigned long> (end - start);
 }
 
-unsigned long zmq_stopwatch_stop (void *watch_)
+ZMQ_EXPORT_IMPL (unsigned long)
+zmq_stopwatch_stop (_In_ _Post_invalid_ void *watch_)
 {
     const unsigned long res = zmq_stopwatch_intermediate (watch_);
     free (watch_);
     return res;
 }
 
-void *zmq_threadstart (zmq_thread_fn *func_, void *arg_)
+ZMQ_EXPORT_IMPL (void *)
+zmq_threadstart (_In_ zmq_thread_fn *func_, _In_opt_ void *arg_)
 {
     zmq::thread_t *thread = new (std::nothrow) zmq::thread_t;
     alloc_assert (thread);
@@ -59,7 +61,7 @@ void *zmq_threadstart (zmq_thread_fn *func_, void *arg_)
     return thread;
 }
 
-void zmq_threadclose (void *thread_)
+ZMQ_EXPORT_VOID_IMPL zmq_threadclose (_In_ _Post_invalid_ void *thread_)
 {
     zmq::thread_t *p_thread = static_cast<zmq::thread_t *> (thread_);
     p_thread->stop ();
@@ -98,7 +100,10 @@ static uint8_t decoder[96] = {
 //  dest. Size must be a multiple of 4.
 //  Returns NULL and sets errno = EINVAL for invalid input.
 
-char *zmq_z85_encode (char *dest_, const uint8_t *data_, size_t size_)
+ZMQ_EXPORT_STR_SIZE_IMPL (char *, size_ * 4 / 5 + 1)
+zmq_z85_encode (_Out_writes_z_ (size_ * 4 / 5 + 1) char *dest_,
+                _In_reads_bytes_ (size_) const uint8_t *data_,
+                size_t size_)
 {
     if (size_ % 4 != 0) {
         errno = EINVAL;
@@ -132,7 +137,10 @@ char *zmq_z85_encode (char *dest_, const uint8_t *data_, size_t size_)
 //  must be a multiple of 5.
 //  Returns NULL and sets errno = EINVAL for invalid input.
 
-uint8_t *zmq_z85_decode (uint8_t *dest_, const char *string_)
+ZMQ_EXPORT_BUF_SIZE (uint8_t *, _String_length_ (string_) * 4 / 5)
+zmq_z85_decode (_Out_writes_bytes_ (_String_length_ (string_) * 4 / 5)
+                  uint8_t *dest_,
+                _In_z_ const char *string_)
 {
     unsigned int byte_nbr = 0;
     unsigned int char_nbr = 0;
@@ -187,7 +195,9 @@ error_inval:
 //  Returns 0 on success, -1 on failure, setting errno.
 //  Sets errno = ENOTSUP in the absence of a CURVE library.
 
-int zmq_curve_keypair (char *z85_public_key_, char *z85_secret_key_)
+ZMQ_EXPORT_IMPL (int)
+zmq_curve_keypair (_Out_writes_z_ (41) char *z85_public_key_,
+                   _Out_writes_z_ (41) char *z85_secret_key_)
 {
 #if defined(ZMQ_HAVE_CURVE)
 #if crypto_box_PUBLICKEYBYTES != 32 || crypto_box_SECRETKEYBYTES != 32
@@ -200,8 +210,8 @@ int zmq_curve_keypair (char *z85_public_key_, char *z85_secret_key_)
     zmq::random_open ();
 
     const int res = crypto_box_keypair (public_key, secret_key);
-    zmq_z85_encode (z85_public_key_, public_key, 32);
-    zmq_z85_encode (z85_secret_key_, secret_key, 32);
+    (void) zmq_z85_encode (z85_public_key_, public_key, 32);
+    (void) zmq_z85_encode (z85_secret_key_, secret_key, 32);
 
     zmq::random_close ();
 
@@ -219,7 +229,9 @@ int zmq_curve_keypair (char *z85_public_key_, char *z85_secret_key_)
 //  Returns 0 on success, -1 on failure, setting errno.
 //  Sets errno = ENOTSUP in the absence of a CURVE library.
 
-int zmq_curve_public (char *z85_public_key_, const char *z85_secret_key_)
+ZMQ_EXPORT_IMPL (int)
+zmq_curve_public (_Out_writes_z_ (41) char *z85_public_key_,
+                  _In_reads_z_ (41) const char *z85_secret_key_)
 {
 #if defined(ZMQ_HAVE_CURVE)
 #if crypto_box_PUBLICKEYBYTES != 32 || crypto_box_SECRETKEYBYTES != 32
@@ -252,7 +264,8 @@ int zmq_curve_public (char *z85_public_key_, const char *z85_secret_key_)
 //  --------------------------------------------------------------------------
 //  Initialize a new atomic counter, which is set to zero
 
-void *zmq_atomic_counter_new (void)
+ZMQ_EXPORT_PTR_IMPL (void *, zmq::atomic_counter_t)
+zmq_atomic_counter_new (void)
 {
     zmq::atomic_counter_t *counter = new (std::nothrow) zmq::atomic_counter_t;
     alloc_assert (counter);
@@ -261,14 +274,14 @@ void *zmq_atomic_counter_new (void)
 
 //  Se the value of the atomic counter
 
-void zmq_atomic_counter_set (void *counter_, int value_)
+ZMQ_EXPORT_VOID_IMPL zmq_atomic_counter_set (_Inout_ void *counter_, int value_)
 {
     (static_cast<zmq::atomic_counter_t *> (counter_))->set (value_);
 }
 
 //  Increment the atomic counter, and return the old value
 
-int zmq_atomic_counter_inc (void *counter_)
+ZMQ_EXPORT_IMPL (int) zmq_atomic_counter_inc (_Inout_ void *counter_)
 {
     return (static_cast<zmq::atomic_counter_t *> (counter_))->add (1);
 }
@@ -276,21 +289,22 @@ int zmq_atomic_counter_inc (void *counter_)
 //  Decrement the atomic counter and return 1 (if counter >= 1), or
 //  0 if counter hit zero.
 
-int zmq_atomic_counter_dec (void *counter_)
+ZMQ_EXPORT_IMPL (int) zmq_atomic_counter_dec (_Inout_ void *counter_)
 {
     return (static_cast<zmq::atomic_counter_t *> (counter_))->sub (1) ? 1 : 0;
 }
 
 //  Return actual value of atomic counter
 
-int zmq_atomic_counter_value (void *counter_)
+ZMQ_EXPORT_IMPL (int) zmq_atomic_counter_value (_In_ void *counter_)
 {
     return (static_cast<zmq::atomic_counter_t *> (counter_))->get ();
 }
 
 //  Destroy atomic counter, and set reference to NULL
 
-void zmq_atomic_counter_destroy (void **counter_p_)
+ZMQ_EXPORT_VOID_IMPL
+zmq_atomic_counter_destroy (_Inout_ _Deref_post_null_ void **counter_p_)
 {
     delete (static_cast<zmq::atomic_counter_t *> (*counter_p_));
     *counter_p_ = NULL;

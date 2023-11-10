@@ -4,7 +4,7 @@
 #include "err.hpp"
 #include "macros.hpp"
 
-const char *zmq::errno_to_string (int errno_)
+_Ret_z_ const char *zmq::errno_to_string (int errno_)
 {
     switch (errno_) {
 #if defined ZMQ_HAVE_WINDOWS
@@ -47,7 +47,7 @@ const char *zmq::errno_to_string (int errno_)
     }
 }
 
-void zmq::zmq_abort (const char *errmsg_)
+_Analysis_noreturn_ void zmq::zmq_abort (const char *errmsg_)
 {
 #if defined ZMQ_HAVE_WINDOWS
 
@@ -64,12 +64,12 @@ void zmq::zmq_abort (const char *errmsg_)
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-const char *zmq::wsa_error ()
+_Ret_z_ const char *zmq::wsa_error ()
 {
-    return wsa_error_no (WSAGetLastError (), NULL);
+    return wsa_error_no (WSAGetLastError ());
 }
 
-const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
+_Ret_z_ const char *zmq::wsa_error_no (int no_)
 {
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
@@ -90,7 +90,7 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
         case WSAEMFILE:
             return "Too many open files";
         case WSAEWOULDBLOCK:
-            return wsae_wouldblock_string_;
+            return "A non-blocking socket operation could not be completed immediately";
         case WSAEINPROGRESS:
             return "Operation now in progress";
         case WSAEALREADY:
@@ -182,7 +182,8 @@ const char *zmq::wsa_error_no (int no_, const char *wsae_wouldblock_string_)
     }
 }
 
-void zmq::win_error (char *buffer_, size_t buffer_size_)
+void zmq::win_error (_Out_writes_bytes_ (buffer_size_) char *buffer_,
+                     size_t buffer_size_)
 {
     const DWORD errcode = GetLastError ();
 #if defined _WIN32_WCE

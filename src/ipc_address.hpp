@@ -36,7 +36,7 @@ class ipc_address_t
 
   private:
     struct sockaddr_un _address;
-    socklen_t _addrlen;
+    socklen_t _addrlen{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_address_t)
 };

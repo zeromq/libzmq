@@ -39,7 +39,7 @@ class socket_poller_t
     int modify (const socket_base_t *socket_, short events_);
     int remove (socket_base_t *socket_);
 
-    int add_fd (fd_t fd_, void *user_data_, short events_);
+    int add_fd (fd_t fd_, _In_opt_ void *user_data_, short events_);
     int modify_fd (fd_t fd_, short events_);
     int remove_fd (fd_t fd_);
     // Returns the signaler's fd if there is one, otherwise errors.

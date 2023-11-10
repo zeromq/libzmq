@@ -31,7 +31,7 @@ class peer_t ZMQ_FINAL : public server_t
     uint32_t connect_peer (const char *endpoint_uri_);
 
   private:
-    uint32_t _peer_last_routing_id;
+    uint32_t _peer_last_routing_id{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (peer_t)
 };

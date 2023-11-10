@@ -30,7 +30,7 @@ class socks_greeting_encoder_t
   private:
     size_t _bytes_encoded;
     size_t _bytes_written;
-    uint8_t _buf[2 + UINT8_MAX];
+    uint8_t _buf[2 + UINT8_MAX]{};
 };
 
 struct socks_choice_t
@@ -50,7 +50,7 @@ class socks_choice_decoder_t
     void reset ();
 
   private:
-    unsigned char _buf[2];
+    unsigned char _buf[2]{};
     size_t _bytes_read;
 };
 
@@ -76,7 +76,7 @@ class socks_basic_auth_request_encoder_t
   private:
     size_t _bytes_encoded;
     size_t _bytes_written;
-    uint8_t _buf[1 + 1 + UINT8_MAX + 1 + UINT8_MAX];
+    uint8_t _buf[1 + 1 + UINT8_MAX + 1 + UINT8_MAX]{};
 };
 
 struct socks_auth_response_t
@@ -95,7 +95,7 @@ class socks_auth_response_decoder_t
     void reset ();
 
   private:
-    int8_t _buf[2];
+    int8_t _buf[2]{};
     size_t _bytes_read;
 };
 
@@ -120,7 +120,7 @@ class socks_request_encoder_t
   private:
     size_t _bytes_encoded;
     size_t _bytes_written;
-    uint8_t _buf[4 + UINT8_MAX + 1 + 2];
+    uint8_t _buf[4 + UINT8_MAX + 1 + 2]{};
 };
 
 struct socks_response_t
@@ -143,7 +143,7 @@ class socks_response_decoder_t
     void reset ();
 
   private:
-    int8_t _buf[4 + UINT8_MAX + 1 + 2];
+    int8_t _buf[4 + UINT8_MAX + 1 + 2]{};
     size_t _bytes_read;
 };
 }

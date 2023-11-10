@@ -20,7 +20,7 @@ namespace zmq
 class mailbox_safe_t ZMQ_FINAL : public i_mailbox
 {
   public:
-    mailbox_safe_t (mutex_t *sync_);
+    mailbox_safe_t (_In_ mutex_t *sync_);
     ~mailbox_safe_t ();
 
     void send (const command_t &cmd_);

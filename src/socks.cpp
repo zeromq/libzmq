@@ -295,9 +295,9 @@ int zmq::socks_response_decoder_t::input (fd_t fd_)
         if (atyp == 0x01)
             n = 3 + 2;
         else if (atyp == 0x03)
-            n = _buf[4] + 2;
+            n = _buf[4] + (size_t) 2;
         else if (atyp == 0x04)
-            n = 15 + 2;
+            n = 15 + (size_t) 2;
     }
     const int rc = tcp_read (fd_, _buf + _bytes_read, n);
     if (rc > 0) {
@@ -329,7 +329,8 @@ bool zmq::socks_response_decoder_t::message_ready () const
     if (atyp == 0x01)
         return _bytes_read == 10;
     if (atyp == 0x03)
-        return _bytes_read > 4 && _bytes_read == 4 + 1 + _buf[4] + 2u;
+        return (_bytes_read > 4)
+               && (_bytes_read == (4 + (size_t) 1 + _buf[4] + 2));
 
     return _bytes_read == 22;
 }

@@ -25,11 +25,15 @@ void test (const char *address)
     //  Wait a bit till the subscription gets to the publisher
     msleep (SETTLE_TIME);
 
-    //  Send an empty message
-    send_string_expect_success (publisher, "test", 0);
+    //  Send three messages
+    send_string_expect_success (publisher, "test1", 0);
+    send_string_expect_success (publisher, "test2", 0);
+    send_string_expect_success (publisher, "test3", 0);
 
-    //  Receive the message in the subscriber
-    recv_string_expect_success (subscriber, "test", 0);
+    //  Receive the messages
+    recv_string_expect_success (subscriber, "test1", 0);
+    recv_string_expect_success (subscriber, "test2", 0);
+    recv_string_expect_success (subscriber, "test3", 0);
 
     //  Clean up.
     test_context_socket_close (publisher);
@@ -46,11 +50,18 @@ void test_norm ()
 #endif
 }
 
+#if defined ZMQ_HAVE_OPENPGM
+#if defined(ZMQ_HAVE_WINDOWS)
+#define NETWORK_ADAPTER "127.0.0.1"
+#else
+#define NETWORK_ADAPTER "eth0"
+#endif
+
 void test_pgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
     test (
-      "pgm://10.0.0.104;224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
+      "pgm://" NETWORK_ADAPTER "224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
@@ -60,7 +71,7 @@ void test_epgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
     test (
-      "epgm://10.0.0.104;224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+      "epgm://" NETWORK_ADAPTER ";224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif

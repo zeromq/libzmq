@@ -3,6 +3,8 @@
 #ifndef __ZMQ_ERR_HPP_INCLUDED__
 #define __ZMQ_ERR_HPP_INCLUDED__
 
+#include "zmq_sal.h"
+
 #include <assert.h>
 #if defined _WIN32_WCE
 #include "..\builds\msvc\errno.hpp"
@@ -28,15 +30,15 @@
 
 namespace zmq
 {
-const char *errno_to_string (int errno_);
+_Ret_z_ const char *errno_to_string (int errno_);
 #if defined __clang__
 #if __has_feature(attribute_analyzer_noreturn)
 void zmq_abort (const char *errmsg_) __attribute__ ((analyzer_noreturn));
 #else
 void zmq_abort (const char *errmsg_);
 #endif
-#elif defined __MSCVER__
-__declspec(noreturn) void zmq_abort (const char *errmsg_);
+#elif defined _MSC_VER
+__declspec(noreturn) _Analysis_noreturn_ void zmq_abort (const char *errmsg_);
 #else
 void zmq_abort (const char *errmsg_);
 #endif
@@ -47,11 +49,10 @@ void print_backtrace ();
 
 namespace zmq
 {
-const char *wsa_error ();
-const char *
-wsa_error_no (int no_,
-              const char *wsae_wouldblock_string_ = "Operation would block");
-void win_error (char *buffer_, size_t buffer_size_);
+_Ret_z_ const char *wsa_error ();
+_Ret_z_ const char *wsa_error_no (int no_);
+void win_error (_Out_writes_bytes_ (buffer_size_) char *buffer_,
+                size_t buffer_size_);
 int wsa_error_to_errno (int errcode_);
 }
 
@@ -151,6 +152,7 @@ int wsa_error_to_errno (int errcode_);
             fflush (stderr);                                                   \
             zmq::zmq_abort ("FATAL ERROR: OUT OF MEMORY");                     \
         }                                                                      \
+        _Analysis_assume_ ((x) != NULL);                                       \
     } while (false)
 
 #endif

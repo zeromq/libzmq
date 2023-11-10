@@ -1594,7 +1594,11 @@ void zmq::socket_base_t::process_destroy ()
     _destroyed = true;
 }
 
-int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
+int zmq::socket_base_t::xsetsockopt (int option_,
+                                     _In_reads_bytes_opt_ (optvallen_)
+                                       const void *optval_,
+                                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                                       const size_t optvallen_)
 {
     errno = EINVAL;
     return -1;

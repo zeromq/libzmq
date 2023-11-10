@@ -259,9 +259,10 @@ bool zmq::xsub_t::match (msg_t *msg_)
     return matching ^ options.invert_matching;
 }
 
-void zmq::xsub_t::send_subscription (unsigned char *data_,
-                                     size_t size_,
-                                     void *arg_)
+void zmq::xsub_t::send_subscription (
+  _In_reads_bytes_opt_ (size_) unsigned char *data_,
+  _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
+  _In_ void *arg_)
 {
     pipe_t *pipe = static_cast<pipe_t *> (arg_);
 

@@ -164,7 +164,7 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     session_base_t *zmq_session;
     options_t options;
     NormInstanceHandle norm_instance;
-    handle_t norm_descriptor_handle;
+    handle_t norm_descriptor_handle{};
     NormSessionHandle norm_session;
     bool is_sender;
     bool is_receiver;
@@ -177,7 +177,7 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     bool zmq_output_ready; // zmq has msg(s) to send
     bool norm_tx_ready;    // norm has tx queue vacancy
     // TBD - maybe don't need buffer if can access zmq message buffer directly?
-    char tx_buffer[BUFFER_SIZE];
+    char tx_buffer[BUFFER_SIZE]{};
     unsigned int tx_index;
     unsigned int tx_len;
 
@@ -193,9 +193,9 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     fd_t
-      wrapper_read_fd; // filedescriptor used to read norm events through the wrapper
-    DWORD wrapper_thread_id;
-    HANDLE wrapper_thread_handle;
+      wrapper_read_fd{}; // filedescriptor used to read norm events through the wrapper
+    DWORD wrapper_thread_id{};
+    HANDLE wrapper_thread_handle{};
 #endif
 
 }; // end class norm_engine_t

@@ -134,18 +134,18 @@ class ws_engine_t : public stream_engine_base_t
     ws_client_handshake_state_t _client_handshake_state;
     ws_server_handshake_state_t _server_handshake_state;
 
-    unsigned char _read_buffer[WS_BUFFER_SIZE];
-    unsigned char _write_buffer[WS_BUFFER_SIZE];
-    char _header_name[MAX_HEADER_NAME_LENGTH + 1];
+    unsigned char _read_buffer[WS_BUFFER_SIZE]{};
+    unsigned char _write_buffer[WS_BUFFER_SIZE]{};
+    char _header_name[MAX_HEADER_NAME_LENGTH + 1]{};
     int _header_name_position;
-    char _header_value[MAX_HEADER_VALUE_LENGTH + 1];
+    char _header_value[MAX_HEADER_VALUE_LENGTH + 1]{};
     int _header_value_position;
 
     bool _header_upgrade_websocket;
     bool _header_connection_upgrade;
-    char _websocket_protocol[256];
-    char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1];
-    char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1];
+    char _websocket_protocol[256]{};
+    char _websocket_key[MAX_HEADER_VALUE_LENGTH + 1]{};
+    char _websocket_accept[MAX_HEADER_VALUE_LENGTH + 1]{};
 
     int _heartbeat_timeout;
     msg_t _close_msg;

@@ -42,7 +42,7 @@ template <typename T, size_t S> class fast_vector_t
     }
 
   private:
-    T _static_buf[S];
+    T _static_buf[S]{};
     T *_buf;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (fast_vector_t)

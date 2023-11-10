@@ -30,6 +30,7 @@ class thread_t
         _tfn (NULL),
         _arg (NULL),
         _started (false),
+        _descriptor(NULL),
         _thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
         _thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
@@ -83,7 +84,7 @@ class thread_t
 #if defined _WIN32_WCE
     DWORD _thread_id;
 #else
-    unsigned int _thread_id;
+    unsigned int _thread_id{};
 #endif
 #elif defined ZMQ_HAVE_VXWORKS
     int _descriptor;

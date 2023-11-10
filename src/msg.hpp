@@ -19,7 +19,8 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void (msg_free_fn) (void *data_, void *hint_);
+typedef void (msg_free_fn) (_Pre_maybenull_ _Post_invalid_ void *data_,
+                            _In_opt_ void *hint_);
 }
 
 namespace zmq
@@ -69,25 +70,33 @@ class msg_t
     bool check () const;
     int init ();
 
-    int init (void *data_,
+    int init (_In_reads_bytes_ (size_) void *data_,
               size_t size_,
-              msg_free_fn *ffn_,
-              void *hint_,
-              content_t *content_ = NULL);
+              _In_opt_ msg_free_fn *ffn_,
+              _In_opt_ void *hint_,
+              _In_opt_ content_t *content_);
 
     int init_size (size_t size_);
-    int init_buffer (const void *buf_, size_t size_);
-    int init_data (void *data_, size_t size_, msg_free_fn *ffn_, void *hint_);
-    int init_external_storage (content_t *content_,
-                               void *data_,
+    int init_buffer (_In_reads_bytes_ (size_) const void *buf_, size_t size_);
+    int init_data (_In_opt_ void *data_,
+                   _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
+                   _In_opt_ msg_free_fn *ffn_,
+                   _In_opt_ void *hint_);
+    int init_external_storage (_In_ content_t *content_,
+                               _In_ void *data_,
                                size_t size_,
-                               msg_free_fn *ffn_,
-                               void *hint_);
+                               _In_opt_ msg_free_fn *ffn_,
+                               _In_opt_ void *hint_);
     int init_delimiter ();
     int init_join ();
     int init_leave ();
-    int init_subscribe (const size_t size_, const unsigned char *topic);
-    int init_cancel (const size_t size_, const unsigned char *topic);
+    int init_subscribe (_When_ (topic_ == NULL, _In_range_ (0, 0))
+                          const size_t size_,
+                        _In_reads_bytes_opt_ (size_)
+                          const unsigned char *topic_);
+    int init_cancel (_When_ (topic_ == NULL, _In_range_ (0, 0))
+                       const size_t size_,
+                     _In_reads_bytes_ (size_) const unsigned char *topic_);
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
@@ -97,7 +106,7 @@ class msg_t
     void set_flags (unsigned char flags_);
     void reset_flags (unsigned char flags_);
     metadata_t *metadata () const;
-    void set_metadata (metadata_t *metadata_);
+    void set_metadata (_In_ metadata_t *metadata_);
     void reset_metadata ();
     bool is_routing_id () const;
     bool is_credential () const;
@@ -129,9 +138,11 @@ class msg_t
     uint32_t get_routing_id () const;
     int set_routing_id (uint32_t routing_id_);
     int reset_routing_id ();
-    const char *group () const;
-    int set_group (const char *group_);
-    int set_group (const char *, size_t length_);
+    _Ret_z_ const char *group () const;
+    int set_group (_In_z_ const char *group_);
+    int set_group (_In_reads_ (length_) const char *group_,
+                   _Pre_satisfies_ (length_ <= ZMQ_GROUP_MAX_LENGTH)
+                     size_t length_);
 
     //  After calling this function you can copy the message in POD-style
     //  refs_ times. No need to call copy.
@@ -297,7 +308,7 @@ class msg_t
     } _u;
 };
 
-inline int close_and_return (zmq::msg_t *msg_, int echo_)
+inline int close_and_return (_Inout_ zmq::msg_t *msg_, int echo_)
 {
     // Since we abort on close failure we preserve errno for success case.
     const int err = errno;
@@ -307,7 +318,9 @@ inline int close_and_return (zmq::msg_t *msg_, int echo_)
     return echo_;
 }
 
-inline int close_and_return (zmq::msg_t msg_[], int count_, int echo_)
+inline int close_and_return (_Inout_updates_all_ (count_) zmq::msg_t msg_[],
+                             int count_,
+                             int echo_)
 {
     for (int i = 0; i < count_; i++)
         close_and_return (&msg_[i], 0);

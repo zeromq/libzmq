@@ -19,7 +19,7 @@ class v1_encoder_t ZMQ_FINAL : public encoder_base_t<v1_encoder_t>
     void size_ready ();
     void message_ready ();
 
-    unsigned char _tmpbuf[11];
+    unsigned char _tmpbuf[11]{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (v1_encoder_t)
 };

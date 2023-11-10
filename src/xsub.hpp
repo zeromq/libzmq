@@ -50,7 +50,9 @@ class xsub_t : public socket_base_t
     //  Function to be applied to the trie to send all the subsciptions
     //  upstream.
     static void
-    send_subscription (unsigned char *data_, size_t size_, void *arg_);
+    send_subscription (_In_reads_bytes_opt_ (size_) unsigned char *data_,
+                       _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
+                       _In_ void *arg_);
 
     //  Fair queueing object for inbound pipes.
     fq_t _fq;

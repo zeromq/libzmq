@@ -19,11 +19,11 @@ class ws_encoder_t ZMQ_FINAL : public encoder_base_t<ws_encoder_t>
     void size_ready ();
     void message_ready ();
 
-    unsigned char _tmp_buf[16];
     bool _must_mask;
-    unsigned char _mask[4];
+    bool _is_binary{};
+    unsigned char _tmp_buf[16]{};
+    unsigned char _mask[4]{};
     msg_t _masked_msg;
-    bool _is_binary;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_encoder_t)
 };

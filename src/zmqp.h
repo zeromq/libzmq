@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
+/*****************************************
+* zmqp.h -- private header for libzmq.dll
+*****************************************/
+
 #ifndef __ZMQP_H_INCLUDED__
 #define __ZMQP_H_INCLUDED__
 

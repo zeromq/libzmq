@@ -289,12 +289,12 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
     int offset;
 
     if (msg_->is_join ()) {
-        rc = command.init_size (group_length + 5);
+        rc = command.init_size (group_length + (size_t) 5);
         errno_assert (rc == 0);
         offset = 5;
         memcpy (command.data (), "\4JOIN", 5);
     } else {
-        rc = command.init_size (group_length + 6);
+        rc = command.init_size (group_length + (size_t) 6);
         errno_assert (rc == 0);
         offset = 6;
         memcpy (command.data (), "\5LEAVE", 6);

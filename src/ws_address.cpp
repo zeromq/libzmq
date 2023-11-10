@@ -23,7 +23,7 @@
 
 #include <limits.h>
 
-zmq::ws_address_t::ws_address_t ()
+zmq::ws_address_t::ws_address_t () noexcept
 {
     memset (&_address, 0, sizeof (_address));
 }

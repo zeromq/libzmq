@@ -44,8 +44,8 @@ class ws_decoder_t ZMQ_FINAL
     const int64_t _max_msg_size;
     const bool _must_mask;
     uint64_t _size;
-    zmq::ws_protocol_t::opcode_t _opcode;
-    unsigned char _mask[4];
+    zmq::ws_protocol_t::opcode_t _opcode{};
+    unsigned char _mask[4]{};
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_decoder_t)
 };

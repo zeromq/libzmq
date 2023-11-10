@@ -79,7 +79,7 @@ void zmq::zmtp_engine_t::plug_internal ()
     //  The 'length' field is encoded in the long format.
     _outpos = _greeting_send;
     _outpos[_outsize++] = UCHAR_MAX;
-    put_uint64 (&_outpos[_outsize], _options.routing_id_size + 1);
+    put_uint64 (&_outpos[_outsize], _options.routing_id_size + (size_t) 1);
     _outsize += 8;
     _outpos[_outsize++] = 0x7f;
 

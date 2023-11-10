@@ -49,6 +49,9 @@ template <typename T> class encoder_base_t : public i_encoder
         unsigned char *buffer = !*data_ ? _buf : *data_;
         const size_t buffersize = !*data_ ? _buf_size : size_;
 
+        _Analysis_assume_ (buffer != nullptr);
+        _Analysis_assume_ (buffersize > 0);
+
         if (in_progress () == NULL)
             return 0;
 

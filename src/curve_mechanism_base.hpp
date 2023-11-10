@@ -51,7 +51,7 @@ class curve_encoding_t
     nonce_t _cn_peer_nonce;
 
     //  Intermediary buffer used to speed up boxing and unboxing.
-    uint8_t _cn_precom[crypto_box_BEFORENMBYTES];
+    uint8_t _cn_precom[crypto_box_BEFORENMBYTES]{};
 
     const bool _downgrade_sub;
 
