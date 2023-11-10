@@ -50,7 +50,7 @@ void test_pgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
     test (
-      "pgm://10.0.0.104;224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+      "pgm://10.0.0.104;224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
@@ -60,7 +60,7 @@ void test_epgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
     test (
-      "epgm://10.0.0.104;224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
+      "epgm://10.0.0.104;224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
