@@ -25,7 +25,7 @@ jobs:
             ENABLE_DRAFTS: ON
           - os: ubuntu-latest
             BUILD_TYPE: default
-            PACKAGES: asciidoc xmlto
+            PACKAGES: asciidoctor
             DRAFT: disabled
             POLLER: select
           - os: ubuntu-latest

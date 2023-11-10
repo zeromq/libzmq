@@ -483,6 +483,7 @@ test_apps = \
 	tests/test_issue_566 \
 	tests/test_proxy_hwm \
 	tests/test_proxy_single_socket \
+	tests/test_proxy_steerable \
 	tests/test_proxy_terminate \
 	tests/test_getsockopt_memset \
 	tests/test_setsockopt \
@@ -731,6 +732,10 @@ tests_test_proxy_hwm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
 tests_test_proxy_single_socket_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_single_socket_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_proxy_steerable_SOURCES = tests/test_proxy_steerable.cpp
+tests_test_proxy_steerable_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_proxy_steerable_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

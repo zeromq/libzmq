@@ -77,6 +77,7 @@ int remote_connect (int socket, uint32_t addr, uint16_t port)
 void *setup_socks_server (char *socks_server_address,
                           int socks_server_address_len)
 {
+    LIBZMQ_UNUSED (socks_server_address_len);
     fprintf (stderr, "socks_server: setup socks server\n");
     int server_fd =
       bind_socket_resolve_port ("127.0.0.1", "0", socks_server_address);

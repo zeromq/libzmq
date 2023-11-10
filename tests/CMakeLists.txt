@@ -116,6 +116,7 @@ if(NOT WIN32)
     test_proxy
     test_proxy_hwm
     test_proxy_single_socket
+    test_proxy_steerable
     test_proxy_terminate
     test_getsockopt_memset
     test_filter_ipc

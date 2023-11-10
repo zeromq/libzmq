@@ -53,9 +53,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.3.3: 7:3:2 (ABI version 5)
 # ZeroMQ version 4.3.4: 7:4:2 (ABI version 5)
 # ZeroMQ version 4.3.5: 7:5:2 (ABI version 5)
+# ZeroMQ version 4.3.6: 7:6:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:5:2"
+LTVER="7:6:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -75,10 +76,6 @@ PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([^PKG_[A-Z_]+$], [missing some pkg-config macros (pkg-config package)])
 
 # Libtool configuration for different targets. See acinclude.m4
-AC_ARG_VAR([XMLTO], [path to xmlto command])
-AC_PATH_PROG([XMLTO], [xmlto])
-AC_ARG_VAR([ASCIIDOC], [path to asciidoc command])
-AC_PATH_PROG([ASCIIDOC], [asciidoc])
 LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL

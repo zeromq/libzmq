@@ -1,3 +1,40 @@
+0MQ version 4.3.5 stable, released on 2023/10/09
+================================================
+
+* Relicensing from LGPL-3.0+ (with custom exceptions) to MPL-2.0 is now complete.
+  libzmq is now distributed under the Mozilla Public License 2.0. Relicensing
+  grants have been collected from all relevant authors, and some functionality
+  has been clean-room reimplemented where that was not possible. In layman terms,
+  the new license provides the same rights and obligations as before. Source
+  files are now tagged using the SPDX license identifier format.
+  Details of the relicensing process can be seen at:
+  https://github.com/zeromq/libzmq/issues/2376
+  Relicensing grants have been archived at:
+  https://github.com/rlenferink/libzmq-relicense
+  A special thanks to everybody who helped with this long and difficult task,
+  with the process, the reimplementations, the collections and everything else.
+
+* New DRAFT (see NEWS for 4.2.0) socket options:
+  - ZMQ_BUSY_POLL will set the SO_BUSY_POLL socket option on the underlying
+    sockets, if it is supported.
+  - ZMQ_HICCUP_MSG will send a message when the peer has been disconnected.
+  - ZMQ_XSUB_VERBOSE_UNSUBSCRIBE will configure a socket to pass all
+    unsubscription messages, including duplicated ones.
+  - ZMQ_TOPICS_COUNT will return the number of subscribed topics on a
+    PUB/SUB socket.
+  - ZMQ_NORM_MODE, ZMQ_NORM_UNICAST_NACK, ZMQ_NORM_BUFFER_SIZE,
+    ZMQ_NORM_SEGMENT_SIZE, ZMQ_NORM_BLOCK_SIZE, ZMQ_NORM_NUM_PARITY,
+    ZMQ_NORM_NUM_AUTOPARITY and ZMQ_NORM_PUSH to control various aspect of
+    NORM sockets.
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* New DRAFT (see NEWS for 4.2.0) zmq_ppoll APIs was added that differs from
+  zmq_poll in the same way that ppoll differs from poll.
+  See doc/zmq_ppoll.txt for details.
+
+* Various bug fixes and performance improvements.
+
+
 0MQ version 4.3.4 stable, released on 2021/01/17
 ================================================
 
