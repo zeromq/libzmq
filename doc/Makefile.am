@@ -52,7 +52,7 @@ MAINTAINERCLEANFILES += $(HTML_DOC) $(MAN_DOC)
 SUFFIXES=.html .adoc .3 .7
 
 .adoc.html:
-	asciidoctor --backend html --attribute zmq_version=@PACKAGE_VERSION@  $<
+	asciidoctor --backend html  --attribute stylesheet=asciidoctor.css --attribute zmq_version=@PACKAGE_VERSION@  $<
 .adoc.3:
 	asciidoctor --backend manpage --attribute zmq_version=@PACKAGE_VERSION@  $<
 .adoc.7:
@@ -72,7 +72,7 @@ $(builddir)/__pagelist:
 index.html:
 	$(MAKE) $(builddir)/__pagelist
 	asciidoctor --backend html \
-        --attribute zmq_version=@PACKAGE_VERSION@ --attribute zmq_pagelist_dir=$(abs_builddir) \
+        --attribute zmq_version=@PACKAGE_VERSION@ --attribute zmq_pagelist_dir=$(abs_builddir) --attribute stylesheet=asciidoctor.css \
             $(srcdir)/index.adoc
 
 all-local : $(MAN_DOC) $(HTML_DOC)
