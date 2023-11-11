@@ -205,14 +205,16 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                     //  post-children iterations.
                     if (it.current_child == 0) {
                         //  New min non-null character in the node table after the removal
-                        it.new_min = it.node->_min + it.node->_count - 1;
+                        it.new_min =
+                          (unsigned char) (it.node->_min + it.node->_count - 1);
                         //  New max non-null character in the node table after the removal
                         it.new_max = it.node->_min;
                     }
 
                     //  Mark this node as pre-processed and push it, so that the next
                     //  visit after the operation on the child can do the removals.
-                    buff[it.size] = it.node->_min + it.current_child;
+                    buff[it.size] =
+                      it.node->_min + (unsigned char) it.current_child;
                     it.processed_for_removal = true;
                     stack.push_back (it);
                     if (it.node->_next.table[it.current_child]) {
@@ -273,11 +275,13 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                                 if (it.current_child + it.node->_min
                                     < it.new_min)
                                     it.new_min =
-                                      it.current_child + it.node->_min;
+                                      (unsigned char) (it.current_child
+                                                       + it.node->_min);
                                 if (it.current_child + it.node->_min
                                     > it.new_max)
                                     it.new_max =
-                                      it.current_child + it.node->_min;
+                                      (unsigned char) (it.current_child
+                                      + it.node->_min);
                             }
                         }
 
@@ -462,7 +466,7 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                                 break;
 
                         zmq_assert (i < it.node->_count);
-                        it.node->_min += i;
+                        it.node->_min += (unsigned char) i;
                         it.node->_count = 1;
                         generic_mtrie_t *oldp = it.node->_next.table[i];
                         free (it.node->_next.table);
@@ -476,7 +480,7 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                                 break;
 
                         zmq_assert (i < it.node->_count);
-                        it.node->_min += i;
+                        it.node->_min += (unsigned char) i;
                         it.node->_count -= i;
                         generic_mtrie_t **old_table = it.node->_next.table;
                         it.node->_next.table =

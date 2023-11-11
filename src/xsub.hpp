@@ -31,8 +31,9 @@ class xsub_t : public socket_base_t
                        bool subscribe_to_all_,
                        bool locally_initiated_) ZMQ_FINAL;
     int xsetsockopt (int option_,
-                     const void *optval_,
-                     size_t optvallen_) ZMQ_OVERRIDE;
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_) ZMQ_OVERRIDE;
     int xgetsockopt (int option_, void *optval_, size_t *optvallen_) ZMQ_FINAL;
     int xsend (zmq::msg_t *msg_) ZMQ_OVERRIDE;
     bool xhas_out () ZMQ_OVERRIDE;

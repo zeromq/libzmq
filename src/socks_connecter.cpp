@@ -108,7 +108,7 @@ void zmq::socks_connecter_t::in_event ()
                 rm_handle ();
                 create_engine (
                   _s, get_socket_name<tcp_address_t> (_s, socket_end_local));
-                _s = -1;
+                _s = (zmq_fd_t) -1;
                 _status = unplugged;
             }
         }
@@ -146,7 +146,7 @@ void zmq::socks_connecter_t::out_event ()
         if (rc == -1)
             error ();
         else {
-            _greeting_encoder.encode (socks_greeting_t (_auth_method));
+            _greeting_encoder.encode (socks_greeting_t ((unsigned char)_auth_method));
             _status = sending_greeting;
         }
     } else if (_status == sending_greeting) {
@@ -340,7 +340,7 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection () const
                     || err == WSAENETUNREACH || err == WSAENETDOWN
                     || err == WSAEACCES || err == WSAEINVAL
                     || err == WSAEADDRINUSE);
-        return -1;
+        return (zmq_fd_t) -1;
     }
 #else
     //  Following code should handle both Berkeley-derived socket
@@ -363,7 +363,7 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection () const
            _s, options.tcp_keepalive, options.tcp_keepalive_cnt,
            options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     if (rc != 0)
-        return -1;
+        return (zmq_fd_t) -1;
 
     return 0;
 }

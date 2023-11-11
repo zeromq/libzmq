@@ -47,7 +47,7 @@ class socks_connecter_t ZMQ_FINAL : public stream_connecter_base_t
     };
 
     //  Method ID
-    enum
+    enum uint8_t
     {
         socks_no_auth_required = 0x00,
         socks_basic_auth = 0x02,

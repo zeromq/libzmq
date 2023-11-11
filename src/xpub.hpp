@@ -33,8 +33,10 @@ class xpub_t : public socket_base_t
     bool xhas_in () ZMQ_OVERRIDE;
     void xread_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
     void xwrite_activated (zmq::pipe_t *pipe_) ZMQ_FINAL;
-    int
-    xsetsockopt (int option_, const void *optval_, size_t optvallen_) ZMQ_FINAL;
+    int xsetsockopt (int option_,
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_) ZMQ_FINAL;
     int xgetsockopt (int option_, void *optval_, size_t *optvallen_) ZMQ_FINAL;
     void xpipe_terminated (zmq::pipe_t *pipe_) ZMQ_FINAL;
 

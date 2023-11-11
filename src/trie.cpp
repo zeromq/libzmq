@@ -145,7 +145,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                     //  The pruned node is the left-most node ptr in the
                     //  node table => keep the right-most node
                     node = _next.table[_count - 1];
-                    _min += _count - 1;
+                    _min += (unsigned char) (_count - 1);
                 } else if (c == _min + _count - 1) {
                     //  The pruned node is the right-most node ptr in the
                     //  node table => keep the left-most node
@@ -162,7 +162,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                 unsigned char new_min = _min;
                 for (unsigned short i = 1; i < _count; ++i) {
                     if (_next.table[i]) {
-                        new_min = i + _min;
+                        new_min = (unsigned char) (i + _min);
                         break;
                     }
                 }
@@ -283,7 +283,7 @@ void zmq::trie_t::apply_helper (unsigned char **buff_,
 
     //  If there are multiple subnodes.
     for (unsigned short c = 0; c != _count; c++) {
-        (*buff_)[buffsize_] = _min + c;
+        (*buff_)[buffsize_] = (unsigned char) (_min + c);
         if (_next.table[c])
             _next.table[c]->apply_helper (buff_, buffsize_ + 1, maxbuffsize_,
                                           func_, arg_);

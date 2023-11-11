@@ -448,11 +448,11 @@ int zmq::options_t::setsockopt (int option_,
 
         /*  Deprecated in favor of ZMQ_IPV6  */
         case ZMQ_IPV4ONLY: {
-            bool value;
-            const int rc =
-              do_setsockopt_int_as_bool_strict (optval_, optvallen_, &value);
+            bool boolValue;
+            const int rc = do_setsockopt_int_as_bool_strict (
+              optval_, optvallen_, &boolValue);
             if (rc == 0)
-                ipv6 = !value;
+                ipv6 = !boolValue;
             return rc;
         }
 

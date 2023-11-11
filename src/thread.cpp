@@ -116,7 +116,7 @@ void zmq::thread_t::
     thread_info_t thread_info;
     thread_info._type = 0x1000;
     thread_info._name = _name;
-    thread_info._thread_id = -1;
+    thread_info._thread_id = (DWORD) -1;
     thread_info._flags = 0;
 
     __try {

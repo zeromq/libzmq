@@ -175,8 +175,10 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 }
 
 int zmq::xpub_t::xsetsockopt (int option_,
-                              const void *optval_,
-                              size_t optvallen_)
+                              _In_reads_bytes_opt_ (optvallen_)
+                                const void *optval_,
+                              _When_ (optval_ == NULL, _In_range_ (0, 0))
+                                const size_t optvallen_)
 {
     if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSER
         || option_ == ZMQ_XPUB_MANUAL_LAST_VALUE || option_ == ZMQ_XPUB_NODROP

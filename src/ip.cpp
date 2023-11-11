@@ -354,6 +354,10 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
     //  Otherwise use Mutex implementation.
     const int event_signaler_port = 5905;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127) // Conditional expression is constant
+#endif
     if (zmq::signaler_port == event_signaler_port) {
 #if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         sync =
@@ -387,6 +391,9 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
 
         win_assert (sync != NULL);
     }
+#if defined _MSC_VER
+#pragma warning(pop)
+#endif
 
     //  Windows has no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
@@ -497,7 +504,16 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
     if (sync != NULL) {
         //  Exit the critical section.
         BOOL brc;
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(                                                               \
+    disable : 4127) // conditional expression is constant
+#endif
         if (zmq::signaler_port == event_signaler_port)
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
             brc = SetEvent (sync);
         else
             brc = ReleaseMutex (sync);

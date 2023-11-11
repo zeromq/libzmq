@@ -20,7 +20,7 @@
 
 #include "ip_resolver.hpp"
 
-int zmq::ip_addr_t::family () const
+unsigned short zmq::ip_addr_t::family () const
 {
     return generic.sa_family;
 }
@@ -68,7 +68,7 @@ void zmq::ip_addr_t::set_port (uint16_t port_)
 zmq::ip_addr_t zmq::ip_addr_t::any (
   _Pre_satisfies_ (family_ == AF_INET || family_ == AF_INET6) int family_)
 {
-    ip_addr_t addr;
+    ip_addr_t addr{};
 
     if (family_ == AF_INET) {
         sockaddr_in *ip4_addr = &addr.ipv4;
@@ -87,7 +87,15 @@ zmq::ip_addr_t zmq::ip_addr_t::any (
         memcpy (&ip6_addr->sin6_addr, &in6addr_any, sizeof (in6addr_any));
 #endif
     } else {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(                                                               \
+    disable : 4130) // '==': logical operation on address of string constant
+#endif
         zmq_assert (0 == "unsupported address family");
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     }
 
     return addr;
