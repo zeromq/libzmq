@@ -649,12 +649,6 @@ if(MSVC)
   else()
     zmq_check_cxx_flag_prepend("/W3")
   endif()
-
-  if(MSVC_IDE)
-    set(MSVC_TOOLSET "-${CMAKE_VS_PLATFORM_TOOLSET}")
-  else()
-    set(MSVC_TOOLSET "")
-  endif()
 else()
   zmq_check_cxx_flag_prepend("-Wall")
 endif()
@@ -798,12 +792,7 @@ if(MSVC)
       message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
     endif()
     set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
-    set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
-    set(OPENPGM_LIBRARIES
-        optimized
-        libpgm${MSVC_TOOLSET}-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib debug
-        libpgm${MSVC_TOOLSET}-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
-  endif()
+endif()
 else()
   if(WITH_OPENPGM)
     # message(FATAL_ERROR "WITH_OPENPGM not implemented")
@@ -1183,14 +1172,12 @@ set(readme-docs AUTHORS LICENSE NEWS)
 # -----------------------------------------------------------------------------
 # optional modules
 
-if(WITH_OPENPGM)
+  if(WITH_OPENPGM)
   message(STATUS "Building with OpenPGM")
   set(ZMQ_HAVE_OPENPGM 1)
   include_directories(${OPENPGM_INCLUDE_DIRS})
   link_directories(${OPENPGM_LIBRARY_DIRS})
-  set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
-endif()
-
+  endif()
 if(WITH_NORM)
   find_package(norm)
     if(norm_FOUND)
@@ -1302,7 +1289,7 @@ if(MSVC)
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
   set(PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
   set(PDB_NAME
-      "lib${ZMQ_OUTPUT_BASENAME}${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+      "libzmq")
   function(enable_vs_guideline_checker target)
     set_target_properties(
       ${target} PROPERTIES VS_GLOBAL_EnableCppCoreCheck true VS_GLOBAL_CodeAnalysisRuleSet CppCoreCheckRules.ruleset
@@ -1338,14 +1325,14 @@ if(MSVC)
     set_target_properties(
       libzmq
       PROPERTIES PUBLIC_HEADER "${public_headers}"
-                 RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 RELEASE_POSTFIX ""
                  RELWITHDEBINFO_POSTFIX
-                 "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 MINSIZEREL_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 ""
+                 MINSIZEREL_POSTFIX ""
+                 DEBUG_POSTFIX "d"
                  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
                  COMPILE_DEFINITIONS "DLL_EXPORT"
-                 OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
+                 OUTPUT_NAME "libzmq")
     if(ZMQ_HAVE_WINDOWS_UWP)
       set_target_properties(libzmq PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
     endif()
@@ -1356,14 +1343,14 @@ if(MSVC)
     set_target_properties(
       libzmq-static
       PROPERTIES PUBLIC_HEADER "${public_headers}"
-                 RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 RELEASE_POSTFIX ""
                  RELWITHDEBINFO_POSTFIX
-                 "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 ""
                  MINSIZEREL_POSTFIX
-                 "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 ""
+                 DEBUG_POSTFIX "d"
                  COMPILE_FLAGS "/DZMQ_STATIC"
-                 OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
+                 OUTPUT_NAME "libzmq")
   endif()
 else()
   # avoid building everything twice for shared + static only on *nix, as Windows needs different preprocessor defines in
@@ -1457,6 +1444,18 @@ foreach(target ${build_targets})
   endif()
 endforeach()
 
+if(MSVC)
+  if(WITH_OPENPGM)
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/.vs/out/lib/Debug)
+        set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgmd.lib)
+    else()
+        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/.vs/out/lib/Release)
+        set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgm.lib)
+    endif()
+  endif()
+endif()
+
 if(BUILD_SHARED)
   target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
 
@@ -1547,6 +1546,10 @@ if(BUILD_STATIC)
 
   if(HAVE_IPHLAPI)
     target_link_libraries(libzmq-static iphlpapi)
+  endif()
+
+  if(ZMQ_HAVE_OPENPGM)
+    target_link_libraries(libzmq ${OPENPGM_LIBRARIES})
   endif()
 
   if(RT_LIBRARY)
@@ -1874,3 +1877,4 @@ if(ENABLE_NO_EXPORT)
   message(STATUS "Building with empty ZMQ_EXPORT macro")
   add_definitions(-DZMQ_NO_EXPORT)
 endif()
+

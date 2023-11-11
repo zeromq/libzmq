@@ -128,3 +128,4 @@ core
 
 mybuild
 /.vs
+/.out
