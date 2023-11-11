@@ -52,26 +52,29 @@ void test_norm ()
 
 #if defined ZMQ_HAVE_OPENPGM
 #if defined(ZMQ_HAVE_WINDOWS)
-#define NETWORK_ADAPTER "127.0.0.1"
+#define NETWORK_ADAPTER "xxx.xxx.xxx.xxx"
 #else
 #define NETWORK_ADAPTER "eth0"
 #endif
-
-void test_pgm ()
-{
-#if defined ZMQ_HAVE_OPENPGM
-    test (
-      "pgm://" NETWORK_ADAPTER "224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
-#else
-    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
-}
 
 void test_epgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
     test (
-      "epgm://" NETWORK_ADAPTER ";224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+      "epgm://" NETWORK_ADAPTER
+      ";224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
+#endif
+}
+
+void test_pgm ()
+{
+#if defined ZMQ_HAVE_OPENPGM
+    test (
+      "pgm://" NETWORK_ADAPTER
+      "224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
 #else
     TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
 #endif
@@ -83,7 +86,7 @@ int main ()
 
     UNITY_BEGIN ();
     RUN_TEST (test_norm);
-    RUN_TEST (test_pgm);
     RUN_TEST (test_epgm);
+    RUN_TEST (test_pgm);
     return UNITY_END ();
 }

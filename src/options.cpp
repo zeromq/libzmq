@@ -238,6 +238,7 @@ zmq::options_t::options_t () :
     norm_num_parity (4),
     norm_num_autoparity (0),
     norm_push_enable (false),
+    norm_multicast_loop(-1),
     busy_poll (0)
 {
     memset (curve_public_key, 0, CURVE_KEYSIZE);
@@ -863,6 +864,13 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_NORM_PUSH:
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &norm_push_enable);
+        case ZMQ_NORM_MULTICAST_LOOP:
+            if (is_int && value >= 0 && value <= 1) {
+                norm_multicast_loop = value;
+                return 0;
+            }
+            break;
+
 #endif //ZMQ_HAVE_NORM
 
         case ZMQ_HELLO_MSG:
