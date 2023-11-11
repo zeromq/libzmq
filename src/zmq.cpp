@@ -750,6 +750,11 @@ ZMQ_EXPORT_IMPL (int)
 zmq_msg_set (_Inout_ zmq_msg_t *msg_, int property_, int optval_)
 {
     //  No properties supported at present
+
+    LIBZMQ_UNUSED (msg_);
+    LIBZMQ_UNUSED (property_);
+    LIBZMQ_UNUSED (optval_);
+
     errno = EINVAL;
     return -1;
 }
@@ -1496,7 +1501,11 @@ zmq_ppoll (_In_reads_ (nitems_) zmq_pollitem_t *items_,
 
     return nevents;
 #else
-    (void) nitems_, (void) timeout_, (void) sigmask_;
+    LIBZMQ_UNUSED (items_);
+    LIBZMQ_UNUSED (nitems_);
+    LIBZMQ_UNUSED (timeout_);
+    LIBZMQ_UNUSED (sigmask_);
+
     errno = ENOTSUP;
     return -1;
 #endif // ZMQ_HAVE_PPOLL
@@ -1854,6 +1863,8 @@ zmq_proxy_steerable (_In_ void *frontend_,
 ZMQ_EXPORT_IMPL (int)
 zmq_device (int type_, _In_ void *frontend_, _In_ void *backend_)
 {
+    LIBZMQ_UNUSED (type_);
+
     return zmq::proxy (static_cast<zmq::socket_base_t *> (frontend_),
                        static_cast<zmq::socket_base_t *> (backend_), NULL);
 }

@@ -30,7 +30,7 @@
 
 zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     _plugged (false),
-    _fd (-1),
+    _fd ((zmq_fd_t) -1),
     _session (NULL),
     _handle (static_cast<handle_t> (NULL)),
     _address (NULL),
@@ -274,6 +274,8 @@ int zmq::udp_engine_t::set_udp_reuse_address (fd_t s_, bool on_)
 int zmq::udp_engine_t::set_udp_reuse_port (fd_t s_, bool on_)
 {
 #ifndef SO_REUSEPORT
+    LIBZMQ_UNUSED (s_);
+    LIBZMQ_UNUSED (on_);
     return 0;
 #else
     int on = on_ ? 1 : 0;

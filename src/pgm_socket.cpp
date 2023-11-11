@@ -44,21 +44,30 @@ int zmq::pgm_socket_t::init_address (const char *network_,
                                      struct pgm_addrinfo_t **res,
                                      uint16_t *port_number)
 {
+    char network[256]{};
+
     //  Parse port number, start from end for IPv6
     const char *port_delim = strrchr (network_, ':');
+
     if (!port_delim) {
         errno = EINVAL;
         return -1;
     }
 
-    *port_number = atoi (port_delim + 1);
+    int portNum = atoi (port_delim + 1);
 
-    char network[256];
+    if (portNum > UINT16_MAX || portNum < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    *port_number = (uint16_t) portNum;
+
     if (port_delim - network_ >= (int) sizeof (network) - 1) {
         errno = EINVAL;
         return -1;
     }
-    memset (network, '\0', sizeof (network));
+
     memcpy (network, network_, port_delim - network_);
 
     pgm_error_t *pgm_error = NULL;
@@ -66,6 +75,7 @@ int zmq::pgm_socket_t::init_address (const char *network_,
 
     memset (&hints, 0, sizeof (hints));
     hints.ai_family = AF_UNSPEC;
+
     if (!pgm_getaddrinfo (network, NULL, res, &pgm_error)) {
         //  Invalid parameters don't set pgm_error_t.
         zmq_assert (pgm_error != NULL);

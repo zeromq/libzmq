@@ -341,8 +341,9 @@ class routing_socket_base_t : public socket_base_t
 
     // methods from socket_base_t
     int xsetsockopt (int option_,
-                     const void *optval_,
-                     size_t optvallen_) ZMQ_OVERRIDE;
+                     _In_reads_bytes_opt_ (optvallen_) const void *optval_,
+                     _When_ (optval_ == NULL, _In_range_ (0, 0))
+                       const size_t optvallen_) ZMQ_OVERRIDE;
     void xwrite_activated (pipe_t *pipe_) ZMQ_FINAL;
 
     // own methods

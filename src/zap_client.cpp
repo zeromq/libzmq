@@ -17,8 +17,10 @@ const size_t id_len = sizeof (id) - 1;
 zap_client_t::zap_client_t (session_base_t *const session_,
                             const std::string &peer_address_,
                             const options_t &options_) :
-    mechanism_base_t (session_, options_), peer_address (peer_address_)
+    peer_address (peer_address_)
 {
+    LIBZMQ_UNUSED (session_);
+    LIBZMQ_UNUSED (options_);
 }
 
 void zap_client_t::send_zap_request (const char *mechanism_,
@@ -233,7 +235,6 @@ zap_client_common_handshake_t::zap_client_common_handshake_t (
   const std::string &peer_address_,
   const options_t &options_,
   state_t zap_reply_ok_state_) :
-    mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
     state (waiting_for_hello),
     _zap_reply_ok_state (zap_reply_ok_state_)

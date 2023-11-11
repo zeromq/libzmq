@@ -19,7 +19,7 @@ union ip_addr_t
     sockaddr_in ipv4;
     sockaddr_in6 ipv6;
 
-    int family () const;
+    unsigned short family () const;
     bool is_multicast () const;
     uint16_t port () const;
 

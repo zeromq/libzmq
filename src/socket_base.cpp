@@ -456,7 +456,7 @@ int zmq::socket_base_t::getsockopt (int option_,
     }
 
     if (option_ == ZMQ_EVENTS) {
-        const int rc = process_commands (0, false);
+        rc = process_commands (0, false);
         if (rc != 0 && (errno == EINTR || errno == ETERM)) {
             return -1;
         }
@@ -680,7 +680,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         ipc_listener_t *listener =
           new (std::nothrow) ipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_local_address (address.c_str ());
+        rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
             event_bind_failed (make_unconnected_bind_endpoint_pair (address),
@@ -702,7 +702,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         tipc_listener_t *listener =
           new (std::nothrow) tipc_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_local_address (address.c_str ());
+        rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
             event_bind_failed (make_unconnected_bind_endpoint_pair (address),
@@ -725,7 +725,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_local_address (address.c_str ());
+        rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (listener);
             event_bind_failed (make_unconnected_bind_endpoint_pair (address),
@@ -967,7 +967,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
     else if (protocol == protocol_name::ipc) {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);
-        int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
+        rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -998,8 +998,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
     if (protocol == protocol_name::pgm || protocol == protocol_name::epgm) {
         struct pgm_addrinfo_t *res = NULL;
         uint16_t port_number = 0;
-        int rc =
-          pgm_socket_t::init_address (address.c_str (), &res, &port_number);
+        rc = pgm_socket_t::init_address (address.c_str (), &res, &port_number);
         if (res != NULL)
             pgm_freeaddrinfo (res);
         if (rc != 0 || port_number == 0) {
@@ -1600,6 +1599,10 @@ int zmq::socket_base_t::xsetsockopt (int option_,
                                      _When_ (optval_ == NULL, _In_range_ (0, 0))
                                        const size_t optvallen_)
 {
+    LIBZMQ_UNUSED (option_);
+    LIBZMQ_UNUSED (optval_);
+    LIBZMQ_UNUSED (optvallen_);
+
     errno = EINVAL;
     return -1;
 }

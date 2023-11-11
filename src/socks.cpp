@@ -246,8 +246,8 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req_)
     if (rc == 0)
         freeaddrinfo (res);
 
-    *ptr++ = req_.port / 256;
-    *ptr++ = req_.port % 256;
+    *ptr++ = (unsigned char) (req_.port / 256);
+    *ptr++ = (unsigned char) (req_.port % 256);
 
     _bytes_encoded = ptr - _buf;
     _bytes_written = 0;
