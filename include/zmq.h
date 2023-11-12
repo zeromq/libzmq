@@ -103,12 +103,6 @@ extern "C" {
 #define ZMQ_EXPORT_STR_SIZE(__returntype__, __underlyingsize__)                \
     ZMQ_LINKAGE ZMQ_EXPORT_STR_SIZE_IMPL (__returntype__, __underlyingsize__)
 
-#if defined _MSC_VER
-#define ZMQ_FORCEINLINE __forceinline
-#else
-#define ZMQ_FORCEINLINE
-#endif
-
 /*  Define integer types needed for event interface                          */
 #define ZMQ_DEFINED_STDINT 1
 #if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS

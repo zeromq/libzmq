@@ -11,6 +11,7 @@
 #include "fd.hpp"
 #include "atomic_counter.hpp"
 #include "metadata.hpp"
+#include "zmqp.h"
 
 //  bits 2-5
 #define CMD_TYPE_MASK 0x1c
@@ -67,7 +68,7 @@ class msg_t
         shared = 128
     };
 
-    bool check () const;
+    LIBZMQ_FORCEINLINE bool check () const;
     int init ();
 
     int init (_In_reads_bytes_ (size_) void *data_,
@@ -100,8 +101,8 @@ class msg_t
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
-    ZMQ_FORCEINLINE void *data ();
-    ZMQ_FORCEINLINE size_t size () const;
+    LIBZMQ_FORCEINLINE void *data ();
+    LIBZMQ_FORCEINLINE size_t size () const;
     unsigned char flags () const;
     void set_flags (unsigned char flags_);
     void reset_flags (unsigned char flags_);

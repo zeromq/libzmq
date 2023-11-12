@@ -26,7 +26,7 @@ typedef char
                      - 1];
 #endif
 
-bool zmq::msg_t::check () const
+LIBZMQ_FORCEINLINE bool zmq::msg_t::check () const
 {
     return _u.base.type >= type_min && _u.base.type <= type_max;
 }
@@ -374,7 +374,7 @@ int zmq::msg_t::copy (msg_t &src_)
     return 0;
 }
 
-ZMQ_FORCEINLINE void *zmq::msg_t::data ()
+LIBZMQ_FORCEINLINE void *zmq::msg_t::data ()
 {
     //  Check the validity of the message.
     zmq_assert (check ());
@@ -394,7 +394,7 @@ ZMQ_FORCEINLINE void *zmq::msg_t::data ()
     }
 }
 
-ZMQ_FORCEINLINE size_t zmq::msg_t::size () const
+LIBZMQ_FORCEINLINE size_t zmq::msg_t::size () const
 {
     //  Check the validity of the message.
     zmq_assert (check ());

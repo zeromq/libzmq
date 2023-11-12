@@ -702,7 +702,7 @@ ZMQ_EXPORT_VOID_PTR_IMPL zmq_msg_data (_In_ zmq_msg_t *msg_)
     return zmqp_msg_data (msg_);
 }
 
-ZMQ_FORCEINLINE void *zmqp_msg_data (_In_ zmq_msg_t *msg_)
+LIBZMQ_FORCEINLINE void *zmqp_msg_data (_In_ zmq_msg_t *msg_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))->data ();
 }
@@ -712,7 +712,7 @@ ZMQ_EXPORT_IMPL(size_t) zmq_msg_size (_In_ const zmq_msg_t *msg_)
     return zmqp_msg_size (msg_);
 }
 
-ZMQ_FORCEINLINE size_t zmqp_msg_size (_In_ const zmq_msg_t *msg_)
+LIBZMQ_FORCEINLINE size_t zmqp_msg_size (_In_ const zmq_msg_t *msg_)
 {
     return ((zmq::msg_t *) msg_)->size ();
 }
