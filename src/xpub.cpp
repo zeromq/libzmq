@@ -54,7 +54,7 @@ void zmq::xpub_t::xattach_pipe (pipe_t *pipe_,
         _subscriptions.add (NULL, 0, pipe_);
 
     // if welcome message exists, send a copy of it
-    if (_welcome_msg.size () > 0) {
+    if (_welcome_msg.sizep () > 0) {
         msg_t copy;
         copy.init ();
         const int rc = copy.copy (_welcome_msg);
@@ -75,7 +75,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
     msg_t msg;
     while (pipe_->read (&msg)) {
         metadata_t *metadata = msg.metadata ();
-        unsigned char *msg_data = static_cast<unsigned char *> (msg.data ()),
+        unsigned char *msg_data = static_cast<unsigned char *> (msg.datap ()),
                       *data = NULL;
         size_t size = 0;
         bool subscribe = false;
@@ -83,7 +83,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         bool notify = false;
 
         const bool first_part = !_more_recv;
-        _more_recv = (msg.flags () & msg_t::more) != 0;
+        _more_recv = (msg.flagsp () & msg_t::more) != 0;
 
         if (first_part || _process_subscribe) {
             //  Apply the subscription to the trie
@@ -92,9 +92,9 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 size = msg.command_body_size ();
                 subscribe = msg.is_subscribe ();
                 is_subscribe_or_cancel = true;
-            } else if (msg.size () > 0 && (*msg_data == 0 || *msg_data == 1)) {
+            } else if (msg.sizep () > 0 && (*msg_data == 0 || *msg_data == 1)) {
                 data = msg_data + 1;
-                size = msg.size () - 1;
+                size = msg.sizep () - 1;
                 subscribe = *msg_data == 1;
                 is_subscribe_or_cancel = true;
             }
@@ -158,11 +158,11 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             //  Process user message coming upstream from xsub socket,
             //  but not if the type is PUB, which never processes user
             //  messages
-            _pending_data.push_back (blob_t (msg_data, msg.size ()));
+            _pending_data.push_back (blob_t (msg_data, msg.sizep ()));
             if (metadata)
                 metadata->add_ref ();
             _pending_metadata.push_back (metadata);
-            _pending_flags.push_back (msg.flags ());
+            _pending_flags.push_back (msg.flagsp ());
         }
 
         msg.close ();
@@ -219,7 +219,7 @@ int zmq::xpub_t::xsetsockopt (int option_,
             errno_assert (rc == 0);
 
             unsigned char *data =
-              static_cast<unsigned char *> (_welcome_msg.data ());
+              static_cast<unsigned char *> (_welcome_msg.datap ());
             memcpy (data, optval_, optvallen_);
         } else
             _welcome_msg.init ();
@@ -291,7 +291,7 @@ void zmq::xpub_t::mark_last_pipe_as_matching (pipe_t *pipe_, xpub_t *self_)
 
 int zmq::xpub_t::xsend (msg_t *msg_)
 {
-    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flagsp () & msg_t::more) != 0;
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!_more_send) {
@@ -299,13 +299,13 @@ int zmq::xpub_t::xsend (msg_t *msg_)
         _dist.unmatch ();
 
         if (unlikely (_manual && _last_pipe && _send_last_pipe)) {
-            _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
-                                  msg_->size (), mark_last_pipe_as_matching,
+            _subscriptions.match (static_cast<unsigned char *> (msg_->datap ()),
+                                  msg_->sizep (), mark_last_pipe_as_matching,
                                   this);
             _last_pipe = NULL;
         } else
-            _subscriptions.match (static_cast<unsigned char *> (msg_->data ()),
-                                  msg_->size (), mark_as_matching, this);
+            _subscriptions.match (static_cast<unsigned char *> (msg_->datap ()),
+                                  msg_->sizep (), mark_as_matching, this);
         // If inverted matching is used, reverse the selection now
         if (options.invert_matching) {
             _dist.reverse_match ();
@@ -356,7 +356,7 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
     errno_assert (rc == 0);
     rc = msg_->init_size (_pending_data.front ().size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (), _pending_data.front ().data (),
+    memcpy (msg_->datap (), _pending_data.front ().data (),
             _pending_data.front ().size ());
 
     // set metadata only if there is some

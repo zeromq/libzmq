@@ -58,8 +58,8 @@ int zmq::curve_client_t::next_handshake_command (msg_t *msg_)
 int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
 {
     const unsigned char *msg_data =
-      static_cast<unsigned char *> (msg_->data ());
-    const size_t msg_size = msg_->size ();
+      static_cast<unsigned char *> (msg_->datap ());
+    const size_t msg_size = msg_->sizep ();
 
     int rc = 0;
     if (curve_client_tools_t::is_handshake_command_welcome (msg_data, msg_size))
@@ -114,7 +114,7 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
     int rc = msg_->init_size (200);
     errno_assert (rc == 0);
 
-    rc = _tools.produce_hello (msg_->data (), get_and_inc_nonce ());
+    rc = _tools.produce_hello (msg_->datap (), get_and_inc_nonce ());
     if (rc == -1) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
@@ -162,7 +162,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
     int rc = msg_->init_size (msg_size);
     errno_assert (rc == 0);
 
-    rc = _tools.produce_initiate (msg_->data (), msg_size, get_and_inc_nonce (),
+    rc = _tools.produce_initiate (msg_->datap (), msg_size, get_and_inc_nonce (),
                                   &metadata_plaintext[0], metadata_length);
 
     if (-1 == rc) {

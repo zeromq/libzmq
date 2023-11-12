@@ -168,15 +168,15 @@ int zmq::router_t::xsend (msg_t *msg_)
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
         //  TODO: The connections should be killed instead.
-        if (msg_->flags () & msg_t::more) {
+        if (msg_->flagsp () & msg_t::more) {
             _more_out = true;
 
             //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe just silently ignore the message, unless
             //  router_mandatory is set.
             out_pipe_t *out_pipe = lookup_out_pipe (
-              blob_t (static_cast<unsigned char *> (msg_->data ()),
-                      msg_->size (), zmq::reference_tag_t ()));
+              blob_t (static_cast<unsigned char *> (msg_->datap ()),
+                      msg_->sizep (), zmq::reference_tag_t ()));
 
             if (out_pipe) {
                 _current_out = out_pipe->pipe;
@@ -216,14 +216,14 @@ int zmq::router_t::xsend (msg_t *msg_)
         msg_->reset_flags (msg_t::more);
 
     //  Check whether this is the last part of the message.
-    _more_out = (msg_->flags () & msg_t::more) != 0;
+    _more_out = (msg_->flagsp () & msg_t::more) != 0;
 
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (_current_out) {
         // Close the remote connection if user has asked to do so
         // by sending zero length message.
         // Pending messages in the pipe will be dropped (on receiving term- ack)
-        if (_raw_socket && msg_->size () == 0) {
+        if (_raw_socket && msg_->sizep () == 0) {
             _current_out->terminate (false);
             int rc = msg_->close ();
             errno_assert (rc == 0);
@@ -272,7 +272,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
             errno_assert (rc == 0);
             _prefetched = false;
         }
-        _more_in = (msg_->flags () & msg_t::more) != 0;
+        _more_in = (msg_->flagsp () & msg_t::more) != 0;
 
         if (!_more_in) {
             if (_terminate_current_in) {
@@ -300,7 +300,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
 
     //  If we are in the middle of reading a message, just return the next part.
     if (_more_in) {
-        _more_in = (msg_->flags () & msg_t::more) != 0;
+        _more_in = (msg_->flagsp () & msg_t::more) != 0;
 
         if (!_more_in) {
             if (_terminate_current_in) {
@@ -321,7 +321,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
         const blob_t &routing_id = pipe->get_routing_id ();
         rc = msg_->init_size (routing_id.size ());
         errno_assert (rc == 0);
-        memcpy (msg_->data (), routing_id.data (), routing_id.size ());
+        memcpy (msg_->datap (), routing_id.data (), routing_id.size ());
         msg_->set_flags (msg_t::more);
         if (_prefetched_msg.metadata ())
             msg_->set_metadata (_prefetched_msg.metadata ());
@@ -372,7 +372,7 @@ bool zmq::router_t::xhas_in ()
     const blob_t &routing_id = pipe->get_routing_id ();
     rc = _prefetched_id.init_size (routing_id.size ());
     errno_assert (rc == 0);
-    memcpy (_prefetched_id.data (), routing_id.data (), routing_id.size ());
+    memcpy (_prefetched_id.datap (), routing_id.data (), routing_id.size ());
     _prefetched_id.set_flags (msg_t::more);
     if (_prefetched_msg.metadata ())
         _prefetched_id.set_metadata (_prefetched_msg.metadata ());
@@ -450,7 +450,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
         if (!ok)
             return false;
 
-        if (msg.size () == 0) {
+        if (msg.sizep () == 0) {
             //  Fall back on the auto-generation
             unsigned char buf[5];
             buf[0] = 0;
@@ -458,8 +458,8 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
             routing_id.set (buf, sizeof buf);
             msg.close ();
         } else {
-            routing_id.set (static_cast<unsigned char *> (msg.data ()),
-                            msg.size ());
+            routing_id.set (static_cast<unsigned char *> (msg.datap ()),
+                            msg.sizep ());
             msg.close ();
 
             //  Try to remove an existing routing id entry to allow the new

@@ -29,7 +29,7 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 {
     const int rc = msg_->init_size (_routing_id.size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (), _routing_id.data (), _routing_id.size ());
+    memcpy (msg_->datap (), _routing_id.data (), _routing_id.size ());
     msg_->set_flags (msg_t::routing_id);
 }
 
@@ -197,14 +197,14 @@ void zmq::mechanism_t::make_command_with_basic_properties (
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
-    unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
+    unsigned char *ptr = static_cast<unsigned char *> (msg_->datap ());
 
     //  Add prefix
     memcpy (ptr, prefix_, prefix_len_);
     ptr += prefix_len_;
 
     add_basic_properties (
-      ptr, command_size - (ptr - static_cast<unsigned char *> (msg_->data ())));
+      ptr, command_size - (ptr - static_cast<unsigned char *> (msg_->datap ())));
 }
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,

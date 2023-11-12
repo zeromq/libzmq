@@ -11,7 +11,14 @@
 #include "fd.hpp"
 #include "atomic_counter.hpp"
 #include "metadata.hpp"
-#include "zmqp.h"
+
+#ifndef LIBZMQ_FORCEINLINE
+#ifdef _MSC_VER
+#define LIBZMQ_FORCEINLINE __forceinline
+#else
+#define LIBZMQ_FORCEINLINE
+#endif
+#endif
 
 //  bits 2-5
 #define CMD_TYPE_MASK 0x1c
@@ -68,7 +75,66 @@ class msg_t
         shared = 128
     };
 
-    LIBZMQ_FORCEINLINE bool check () const;
+    LIBZMQ_FORCEINLINE bool zmq::msg_t::check () const
+    {
+        return (_u.base.type >= type_min) && (_u.base.type <= type_max);
+    }
+
+    LIBZMQ_FORCEINLINE void *zmq::msg_t::datap ()
+    {
+#ifndef NDEBUG
+        //  Check the validity of the message.
+        zmq_assert (check ());
+#endif
+
+        switch (_u.base.type) {
+            case type_vsm:
+                return _u.vsm.data;
+            case type_lmsg:
+                return _u.lmsg.content->data;
+            case type_cmsg:
+                return _u.cmsg.data;
+            case type_zclmsg:
+                return _u.zclmsg.content->data;
+#ifndef NDEBUG
+            default:
+                zmq_assert (false);
+#endif
+        }
+
+        return NULL;
+    }
+
+    LIBZMQ_FORCEINLINE size_t zmq::msg_t::sizep () const
+    {
+#ifndef NDEBUG
+        //  Check the validity of the message.
+        zmq_assert (check ());
+#endif
+
+        switch (_u.base.type) {
+            case type_vsm:
+                return _u.vsm.size;
+            case type_lmsg:
+                return _u.lmsg.content->size;
+            case type_zclmsg:
+                return _u.zclmsg.content->size;
+            case type_cmsg:
+                return _u.cmsg.size;
+#ifndef NDEBUG
+            default:
+                zmq_assert (false);
+#endif
+        }
+
+        return 0;
+    }
+
+    LIBZMQ_FORCEINLINE unsigned char zmq::msg_t::flagsp () const
+    {
+        return _u.base.flags;
+    }
+
     int init ();
 
     int init (_In_reads_bytes_ (size_) void *data_,
@@ -78,48 +144,108 @@ class msg_t
               _In_opt_ content_t *content_);
 
     int init_size (size_t size_);
+
     int init_buffer (_In_reads_bytes_ (size_) const void *buf_, size_t size_);
+
     int init_data (_In_opt_ void *data_,
                    _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
                    _In_opt_ msg_free_fn *ffn_,
                    _In_opt_ void *hint_);
+
     int init_external_storage (_In_ content_t *content_,
                                _In_ void *data_,
                                size_t size_,
                                _In_opt_ msg_free_fn *ffn_,
                                _In_opt_ void *hint_);
+
     int init_delimiter ();
     int init_join ();
     int init_leave ();
+
     int init_subscribe (_When_ (topic_ == NULL, _In_range_ (0, 0))
                           const size_t size_,
                         _In_reads_bytes_opt_ (size_)
                           const unsigned char *topic_);
+
     int init_cancel (_When_ (topic_ == NULL, _In_range_ (0, 0))
                        const size_t size_,
                      _In_reads_bytes_ (size_) const unsigned char *topic_);
+
     int close ();
     int move (msg_t &src_);
     int copy (msg_t &src_);
-    LIBZMQ_FORCEINLINE void *data ();
-    LIBZMQ_FORCEINLINE size_t size () const;
+    void *data ();
+    size_t size () const;
     unsigned char flags () const;
     void set_flags (unsigned char flags_);
     void reset_flags (unsigned char flags_);
     metadata_t *metadata () const;
     void set_metadata (_In_ metadata_t *metadata_);
     void reset_metadata ();
-    bool is_routing_id () const;
-    bool is_credential () const;
-    bool is_delimiter () const;
-    bool is_join () const;
-    bool is_leave () const;
-    bool is_ping () const;
-    bool is_pong () const;
-    bool is_close_cmd () const;
+
+    bool zmq::msg_t::is_routing_id () const
+    {
+        return (_u.base.flags & routing_id) == routing_id;
+    }
+
+    bool zmq::msg_t::is_credential () const
+    {
+        return (_u.base.flags & credential) == credential;
+    }
+
+    bool zmq::msg_t::is_delimiter () const
+    {
+        return _u.base.type == type_delimiter;
+    }
+
+    bool is_vsm () const
+    {
+        return _u.base.type == type_vsm;
+    }
+
+    bool is_cmsg () const
+    {
+        return _u.base.type == type_cmsg;
+    }
+
+    bool is_lmsg () const
+    {
+        return _u.base.type == type_lmsg;
+    }
+
+    bool is_zcmsg () const
+    {
+        return _u.base.type == type_zclmsg;
+    }
+
+    bool is_join () const
+    {
+        return _u.base.type == type_join;
+    }
+
+    bool is_leave () const
+    {
+        return _u.base.type == type_leave;
+    }
+
+    bool is_ping () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == ping;
+    }
+
+    bool zmq::msg_t::is_pong () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == pong;
+    }
+
+    bool zmq::msg_t::is_close_cmd () const
+    {
+        return (_u.base.flags & CMD_TYPE_MASK) == close_cmd;
+    }
 
     //  These are called on each message received by the session_base class,
     //  so get them inlined to avoid the overhead of 2 function calls per msg
+
     bool is_subscribe () const
     {
         return (_u.base.flags & CMD_TYPE_MASK) == subscribe;
@@ -132,14 +258,22 @@ class msg_t
 
     size_t command_body_size () const;
     void *command_body ();
-    bool is_vsm () const;
-    bool is_cmsg () const;
-    bool is_lmsg () const;
-    bool is_zcmsg () const;
-    uint32_t get_routing_id () const;
+
+    uint32_t zmq::msg_t::get_routing_id () const
+    {
+        return _u.base.routing_id;
+    }
+
     int set_routing_id (uint32_t routing_id_);
     int reset_routing_id ();
-    _Ret_z_ const char *group () const;
+    
+    _Ret_z_ const char *zmq::msg_t::group () const
+    {
+        if (_u.base.group.type == group_type_long)
+            return _u.base.group.lgroup.content->group;
+        return _u.base.group.sgroup.group;
+    }
+
     int set_group (_In_z_ const char *group_);
     int set_group (_In_reads_ (length_) const char *group_,
                    _Pre_satisfies_ (length_ <= ZMQ_GROUP_MAX_LENGTH)
@@ -147,25 +281,30 @@ class msg_t
 
     //  After calling this function you can copy the message in POD-style
     //  refs_ times. No need to call copy.
+
     void add_refs (int refs_);
 
     //  Removes references previously added by add_refs. If the number of
     //  references drops to 0, the message is closed and false is returned.
+
     bool rm_refs (int refs_);
 
     void shrink (size_t new_size_);
 
     //  Size in bytes of the largest message that is still copied around
     //  rather than being reference-counted.
+
     enum
     {
         msg_t_size = 64
     };
+
     enum
     {
         max_vsm_size =
           msg_t_size - (sizeof (metadata_t *) + 3 + 16 + sizeof (uint32_t))
     };
+
     enum
     {
         ping_cmd_name_size = 5,   // 4PING
@@ -174,18 +313,24 @@ class msg_t
     };
 
   private:
+
     zmq::atomic_counter_t *refcnt ();
 
-    //  Different message types.
+    //  Message types.
+
     enum type_t
     {
         type_min = 101,
+
         //  VSM messages store the content in the message itself
         type_vsm = 101,
+
         //  LMSG messages store the content in malloc-ed memory
         type_lmsg = 102,
+
         //  Delimiter messages are used in envelopes
         type_delimiter = 103,
+
         //  CMSG messages point to constant data
         type_cmsg = 104,
 
@@ -216,11 +361,13 @@ class msg_t
     union group_t
     {
         unsigned char type;
+
         struct
         {
             unsigned char type;
             char group[15];
         } sgroup;
+
         struct
         {
             unsigned char type;
@@ -232,6 +379,7 @@ class msg_t
     //  moved to the parent class (msg_t). This way we get tighter packing
     //  of the data. Shared fields can be accessed via 'base' member of
     //  the union.
+
     union
     {
         struct
@@ -245,6 +393,7 @@ class msg_t
             uint32_t routing_id;
             group_t group;
         } base;
+
         struct
         {
             metadata_t *metadata;
@@ -255,6 +404,7 @@ class msg_t
             uint32_t routing_id;
             group_t group;
         } vsm;
+
         struct
         {
             metadata_t *metadata;
@@ -268,6 +418,7 @@ class msg_t
             uint32_t routing_id;
             group_t group;
         } lmsg;
+
         struct
         {
             metadata_t *metadata;
@@ -281,6 +432,7 @@ class msg_t
             uint32_t routing_id;
             group_t group;
         } zclmsg;
+
         struct
         {
             metadata_t *metadata;
@@ -295,6 +447,7 @@ class msg_t
             uint32_t routing_id;
             group_t group;
         } cmsg;
+
         struct
         {
             metadata_t *metadata;

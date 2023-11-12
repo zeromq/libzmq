@@ -45,8 +45,8 @@ int zmq::plain_client_t::next_handshake_command (msg_t *msg_)
 int zmq::plain_client_t::process_handshake_command (msg_t *msg_)
 {
     const unsigned char *cmd_data =
-      static_cast<unsigned char *> (msg_->data ());
-    const size_t data_size = msg_->size ();
+      static_cast<unsigned char *> (msg_->datap ());
+    const size_t data_size = msg_->sizep ();
 
     int rc = 0;
     if (data_size >= welcome_prefix_len
@@ -102,7 +102,7 @@ void zmq::plain_client_t::produce_hello (msg_t *msg_) const
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
-    unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
+    unsigned char *ptr = static_cast<unsigned char *> (msg_->datap ());
     memcpy (ptr, hello_prefix, hello_prefix_len);
     ptr += hello_prefix_len;
 

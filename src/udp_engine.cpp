@@ -355,7 +355,7 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
 
     //  use memcpy instead of strcpy/strcat, since this is more efficient when
     //  we already know the lengths, which we calculated above
-    char *address = static_cast<char *> (msg_->data ());
+    char *address = static_cast<char *> (msg_->datap ());
     memcpy (address, name, name_len);
     address += name_len;
     *address++ = ':';
@@ -421,12 +421,12 @@ void zmq::udp_engine_t::out_event ()
         //  If there's a group, there should also be a body
         errno_assert (rc == 0);
 
-        const size_t group_size = group_msg.size ();
-        const size_t body_size = body_msg.size ();
+        const size_t group_size = group_msg.sizep ();
+        const size_t body_size = body_msg.sizep ();
         size_t size;
 
         if (_options.raw_socket) {
-            rc = resolve_raw_address (static_cast<char *> (group_msg.data ()),
+            rc = resolve_raw_address (static_cast<char *> (group_msg.datap ()),
                                       group_size);
 
             //  We discard the message if address is not valid
@@ -442,14 +442,14 @@ void zmq::udp_engine_t::out_event ()
 
             size = body_size;
 
-            memcpy (_out_buffer, body_msg.data (), body_size);
+            memcpy (_out_buffer, body_msg.datap (), body_size);
         } else {
             size = group_size + body_size + 1;
 
             // TODO: check if larger than maximum size
             _out_buffer[0] = static_cast<unsigned char> (group_size);
-            memcpy (_out_buffer + 1, group_msg.data (), group_size);
-            memcpy (_out_buffer + 1 + group_size, body_msg.data (), body_size);
+            memcpy (_out_buffer + 1, group_msg.datap (), group_size);
+            memcpy (_out_buffer + 1 + group_size, body_msg.datap (), body_size);
         }
 
         rc = group_msg.close ();
@@ -548,7 +548,7 @@ void zmq::udp_engine_t::in_event ()
         rc = msg.init_size (group_size);
         errno_assert (rc == 0);
         msg.set_flags (msg_t::more);
-        memcpy (msg.data (), group_buffer, group_size);
+        memcpy (msg.datap (), group_buffer, group_size);
 
         //  This doesn't fit, just ignore
         if (nbytes - 1 < group_size)
@@ -574,7 +574,7 @@ void zmq::udp_engine_t::in_event ()
     errno_assert (rc == 0);
     rc = msg.init_size (body_size);
     errno_assert (rc == 0);
-    memcpy (msg.data (), _in_buffer + body_offset, body_size);
+    memcpy (msg.datap (), _in_buffer + body_offset, body_size);
 
     // Push message body to session
     rc = _session->push_msg (&msg);

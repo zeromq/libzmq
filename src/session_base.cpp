@@ -148,7 +148,7 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
         return -1;
     }
 
-    _incomplete_in = (msg_->flags () & msg_t::more) != 0;
+    _incomplete_in = (msg_->flagsp () & msg_t::more) != 0;
 
     return 0;
 }
@@ -156,7 +156,7 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
 int zmq::session_base_t::push_msg (msg_t *msg_)
 {
     //  pass subscribe/cancel to the sockets
-    if ((msg_->flags () & msg_t::command) && !msg_->is_subscribe ()
+    if ((msg_->flagsp () & msg_t::command) && !msg_->is_subscribe ()
         && !msg_->is_cancel ())
         return 0;
     if (_pipe && _pipe->write (msg_)) {
@@ -191,7 +191,7 @@ int zmq::session_base_t::write_zap_msg (msg_t *msg_)
         return -1;
     }
 
-    if ((msg_->flags () & msg_t::more) == 0)
+    if ((msg_->flagsp () & msg_t::more) == 0)
         _zap_pipe->flush ();
 
     const int rc = msg_->init ();

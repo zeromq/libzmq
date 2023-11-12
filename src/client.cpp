@@ -34,7 +34,7 @@ void zmq::client_t::xattach_pipe (pipe_t *pipe_,
 int zmq::client_t::xsend (msg_t *msg_)
 {
     //  CLIENT sockets do not allow multipart data (ZMQ_SNDMORE)
-    if (msg_->flags () & msg_t::more) {
+    if (msg_->flagsp () & msg_t::more) {
         errno = EINVAL;
         return -1;
     }
@@ -46,11 +46,11 @@ int zmq::client_t::xrecv (msg_t *msg_)
     int rc = _fq.recvpipe (msg_, NULL);
 
     // Drop any messages with more flag
-    while (rc == 0 && msg_->flags () & msg_t::more) {
+    while (rc == 0 && msg_->flagsp () & msg_t::more) {
         // drop all frames of the current multi-frame message
         rc = _fq.recvpipe (msg_, NULL);
 
-        while (rc == 0 && msg_->flags () & msg_t::more)
+        while (rc == 0 && msg_->flagsp () & msg_t::more)
             rc = _fq.recvpipe (msg_, NULL);
 
         // get the new message

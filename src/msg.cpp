@@ -26,11 +26,6 @@ typedef char
                      - 1];
 #endif
 
-LIBZMQ_FORCEINLINE bool zmq::msg_t::check () const
-{
-    return _u.base.type >= type_min && _u.base.type <= type_max;
-}
-
 int zmq::msg_t::init (_In_reads_bytes_ (size_) void *data_,
                       size_t size_,
                       _In_opt_ msg_free_fn *ffn_,
@@ -41,7 +36,7 @@ int zmq::msg_t::init (_In_reads_bytes_ (size_) void *data_,
         const int rc = init_size (size_);
 
         if (rc != -1) {
-            memcpy (data (), data_, size_);
+            memcpy (datap (), data_, size_);
             return 0;
         }
         return -1;
@@ -109,7 +104,7 @@ int zmq::msg_t::init_buffer (_In_reads_bytes_ (size_) const void *buf_,
     if (size_) {
         // NULL and zero size is allowed
         assert (NULL != buf_);
-        memcpy (data (), buf_, size_);
+        memcpy (datap (), buf_, size_);
     }
     return 0;
 }
@@ -228,7 +223,7 @@ int zmq::msg_t::init_subscribe (_When_ (topic_ == NULL, _In_range_ (0, 0))
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
             assert (topic_);
-            memcpy (data (), topic_, size_);
+            memcpy (datap (), topic_, size_);
         }
     }
     return rc;
@@ -246,7 +241,7 @@ int zmq::msg_t::init_cancel (_When_ (topic_ == NULL, _In_range_ (0, 0))
         //  We explicitly allow a NULL subscription with size zero
         if (size_) {
             assert (topic_);
-            memcpy (data (), topic_, size_);
+            memcpy (datap (), topic_, size_);
         }
     }
     return rc;
@@ -355,7 +350,7 @@ int zmq::msg_t::copy (msg_t &src_)
     if (src_.is_lmsg () || src_.is_zcmsg ()) {
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages.
-        if (src_.flags () & msg_t::shared)
+        if (src_.flagsp () & msg_t::shared)
             src_.refcnt ()->add (1);
         else {
             src_.set_flags (msg_t::shared);
@@ -374,51 +369,20 @@ int zmq::msg_t::copy (msg_t &src_)
     return 0;
 }
 
-LIBZMQ_FORCEINLINE void *zmq::msg_t::data ()
+void *zmq::msg_t::data ()
 {
-    //  Check the validity of the message.
-    zmq_assert (check ());
-
-    switch (_u.base.type) {
-        case type_vsm:
-            return _u.vsm.data;
-        case type_lmsg:
-            return _u.lmsg.content->data;
-        case type_cmsg:
-            return _u.cmsg.data;
-        case type_zclmsg:
-            return _u.zclmsg.content->data;
-        default:
-            zmq_assert (false);
-            return NULL;
-    }
+    return datap ();
 }
 
-LIBZMQ_FORCEINLINE size_t zmq::msg_t::size () const
+size_t zmq::msg_t::size () const
 {
-    //  Check the validity of the message.
-    zmq_assert (check ());
-
-    switch (_u.base.type) {
-        case type_vsm:
-            return _u.vsm.size;
-        case type_lmsg:
-            return _u.lmsg.content->size;
-        case type_zclmsg:
-            return _u.zclmsg.content->size;
-        case type_cmsg:
-            return _u.cmsg.size;
-        default:
-            zmq_assert (false);
-            return 0;
-    }
+    return sizep ();
 }
 
 void zmq::msg_t::shrink (size_t new_size_)
 {
-    //  Check the validity of the message.
     zmq_assert (check ());
-    zmq_assert (new_size_ <= size ());
+    zmq_assert (new_size_ <= sizep ());
 
     switch (_u.base.type) {
         case type_vsm:
@@ -440,7 +404,7 @@ void zmq::msg_t::shrink (size_t new_size_)
 
 unsigned char zmq::msg_t::flags () const
 {
-    return _u.base.flags;
+    return flagsp();
 }
 
 void zmq::msg_t::set_flags (unsigned char flags_)
@@ -476,77 +440,17 @@ void zmq::msg_t::reset_metadata ()
     }
 }
 
-bool zmq::msg_t::is_routing_id () const
-{
-    return (_u.base.flags & routing_id) == routing_id;
-}
-
-bool zmq::msg_t::is_credential () const
-{
-    return (_u.base.flags & credential) == credential;
-}
-
-bool zmq::msg_t::is_delimiter () const
-{
-    return _u.base.type == type_delimiter;
-}
-
-bool zmq::msg_t::is_vsm () const
-{
-    return _u.base.type == type_vsm;
-}
-
-bool zmq::msg_t::is_cmsg () const
-{
-    return _u.base.type == type_cmsg;
-}
-
-bool zmq::msg_t::is_lmsg () const
-{
-    return _u.base.type == type_lmsg;
-}
-
-bool zmq::msg_t::is_zcmsg () const
-{
-    return _u.base.type == type_zclmsg;
-}
-
-bool zmq::msg_t::is_join () const
-{
-    return _u.base.type == type_join;
-}
-
-bool zmq::msg_t::is_leave () const
-{
-    return _u.base.type == type_leave;
-}
-
-bool zmq::msg_t::is_ping () const
-{
-    return (_u.base.flags & CMD_TYPE_MASK) == ping;
-}
-
-bool zmq::msg_t::is_pong () const
-{
-    return (_u.base.flags & CMD_TYPE_MASK) == pong;
-}
-
-bool zmq::msg_t::is_close_cmd () const
-{
-    return (_u.base.flags & CMD_TYPE_MASK) == close_cmd;
-}
-
 size_t zmq::msg_t::command_body_size () const
 {
-    if (this->is_ping () || this->is_pong ())
-        return this->size () - ping_cmd_name_size;
-    else if (!(this->flags () & msg_t::command)
-             && (this->is_subscribe () || this->is_cancel ()))
-        return this->size ();
-    else if (this->is_subscribe ())
-        return this->size () - sub_cmd_name_size;
-    else if (this->is_cancel ())
-        return this->size () - cancel_cmd_name_size;
+    if (is_ping () || is_pong ())
+        return sizep () - ping_cmd_name_size;
+    else if (!(flags () & msg_t::command)
+             && (is_subscribe () || is_cancel ()))
+        return sizep ();
+    else if (is_subscribe ())
+        return sizep () - sub_cmd_name_size;
+    else if (is_cancel ())
+        return sizep () - cancel_cmd_name_size;
 
     return 0;
 }
@@ -555,18 +459,18 @@ void *zmq::msg_t::command_body ()
 {
     unsigned char *data = NULL;
 
-    if (this->is_ping () || this->is_pong ())
+    if (is_ping () || is_pong ())
         data =
-          static_cast<unsigned char *> (this->data ()) + ping_cmd_name_size;
+          static_cast<unsigned char *> (datap ()) + ping_cmd_name_size;
     //  With inproc, command flag is not set for sub/cancel
-    else if (!(this->flags () & msg_t::command)
-             && (this->is_subscribe () || this->is_cancel ()))
-        data = static_cast<unsigned char *> (this->data ());
-    else if (this->is_subscribe ())
-        data = static_cast<unsigned char *> (this->data ()) + sub_cmd_name_size;
-    else if (this->is_cancel ())
+    else if (!(flags () & msg_t::command)
+             && (is_subscribe () || is_cancel ()))
+        data = static_cast<unsigned char *> (datap ());
+    else if (is_subscribe ())
+        data = static_cast<unsigned char *> (datap ()) + sub_cmd_name_size;
+    else if (is_cancel ())
         data =
-          static_cast<unsigned char *> (this->data ()) + cancel_cmd_name_size;
+          static_cast<unsigned char *> (datap ()) + cancel_cmd_name_size;
 
     return data;
 }
@@ -638,11 +542,6 @@ bool zmq::msg_t::rm_refs (int refs_)
     return true;
 }
 
-uint32_t zmq::msg_t::get_routing_id () const
-{
-    return _u.base.routing_id;
-}
-
 int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 {
     if (routing_id_) {
@@ -657,13 +556,6 @@ int zmq::msg_t::reset_routing_id ()
 {
     _u.base.routing_id = 0;
     return 0;
-}
-
-_Ret_z_ const char *zmq::msg_t::group () const
-{
-    if (_u.base.group.type == group_type_long)
-        return _u.base.group.lgroup.content->group;
-    return _u.base.group.sgroup.group;
 }
 
 int zmq::msg_t::set_group (_In_z_ const char *group_)

@@ -58,7 +58,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (_dropping) {
-        _more = (msg_->flags () & msg_t::more) != 0;
+        _more = (msg_->flagsp () & msg_t::more) != 0;
         _dropping = _more;
 
         int rc = msg_->close ();
@@ -94,7 +94,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
             // can't really fix it without breaking backward compatibility.
             // -2/EAGAIN will make sure socket_base caller does not re-enter
             // immediately or after a short sleep in blocking mode.
-            _dropping = (msg_->flags () & msg_t::more) != 0;
+            _dropping = (msg_->flagsp () & msg_t::more) != 0;
             _more = false;
             errno = EAGAIN;
             return -2;
@@ -115,7 +115,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 
     //  If it's final part of the message we can flush it downstream and
     //  continue round-robining (load balance).
-    _more = (msg_->flags () & msg_t::more) != 0;
+    _more = (msg_->flagsp () & msg_t::more) != 0;
     if (!_more) {
         _pipes[_current]->flush ();
 

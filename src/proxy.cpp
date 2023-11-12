@@ -108,7 +108,7 @@ static int forward (class zmq::socket_base_t *from_,
                 return -1;
             }
 
-            size_t nbytes = msg_->size ();
+            size_t nbytes = msg_->sizep ();
             recving.count += 1;
             recving.bytes += nbytes;
 
@@ -158,8 +158,8 @@ static int handle_control (class zmq::socket_base_t *control_,
     if (rc < 0) {
         return -1;
     }
-    uint8_t *const command = static_cast<uint8_t *> (cmsg.data ());
-    const size_t msiz = cmsg.size ();
+    uint8_t *const command = static_cast<uint8_t *> (cmsg.datap ());
+    const size_t msiz = cmsg.sizep ();
 
     if (msiz == 10 && 0 == memcmp (command, "STATISTICS", 10)) {
         // The stats are a cross product:
@@ -180,7 +180,7 @@ static int handle_control (class zmq::socket_base_t *control_,
 
         for (size_t ind = 0; ind < 8; ++ind) {
             cmsg.init_size (sizeof (uint64_t));
-            memcpy (cmsg.data (), stat_vals + ind, sizeof (uint64_t));
+            memcpy (cmsg.datap (), stat_vals + ind, sizeof (uint64_t));
             rc = control_->send (&cmsg, ind < 7 ? ZMQ_SNDMORE : 0);
             if (unlikely (rc < 0)) {
                 return -1;

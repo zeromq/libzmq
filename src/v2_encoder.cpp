@@ -23,15 +23,15 @@ zmq::v2_encoder_t::~v2_encoder_t ()
 void zmq::v2_encoder_t::message_ready ()
 {
     //  Encode flags.
-    size_t size = in_progress ()->size ();
+    size_t size = in_progress ()->sizep ();
     size_t header_size = 2; // flags byte + size byte
     unsigned char &protocol_flags = _tmp_buf[0];
     protocol_flags = 0;
-    if (in_progress ()->flags () & msg_t::more)
+    if (in_progress ()->flagsp () & msg_t::more)
         protocol_flags |= v2_protocol_t::more_flag;
-    if (in_progress ()->size () > UCHAR_MAX)
+    if (in_progress ()->sizep () > UCHAR_MAX)
         protocol_flags |= v2_protocol_t::large_flag;
-    if (in_progress ()->flags () & msg_t::command)
+    if (in_progress ()->flagsp () & msg_t::command)
         protocol_flags |= v2_protocol_t::command_flag;
     if (in_progress ()->is_subscribe () || in_progress ()->is_cancel ())
         ++size;
@@ -64,6 +64,6 @@ void zmq::v2_encoder_t::message_ready ()
 void zmq::v2_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    next_step (in_progress ()->data (), in_progress ()->size (),
+    next_step (in_progress ()->datap (), in_progress ()->sizep (),
                &v2_encoder_t::message_ready, true);
 }

@@ -127,7 +127,7 @@ int zmq::dist_t::send_to_all (msg_t *msg_)
 int zmq::dist_t::send_to_matching (msg_t *msg_)
 {
     //  Is this end of a multipart message?
-    const bool msg_more = (msg_->flags () & msg_t::more) != 0;
+    const bool msg_more = (msg_->flagsp () & msg_t::more) != 0;
 
     //  Push the message to matching pipes.
     distribute (msg_);
@@ -204,7 +204,7 @@ bool zmq::dist_t::write (pipe_t *pipe_, msg_t *msg_)
         _eligible--;
         return false;
     }
-    if (!(msg_->flags () & msg_t::more))
+    if (!(msg_->flagsp () & msg_t::more))
         pipe_->flush ();
     return true;
 }

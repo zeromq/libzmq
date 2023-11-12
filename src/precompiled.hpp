@@ -32,11 +32,10 @@
 // 0MQ DRAFT definitions and exported functions
 #include "zmq_draft.h"
 
-// 0MQ privates
-#include "zmqp.h"
-
 // TODO: expand pch implementation to non-windows builds.
 #ifdef _MSC_VER
+
+#pragma intrinsic(memcmp, memcpy, memset, strcat, strcpy, strcmp, strlen)
 
 // standard C headers
 #include <assert.h>

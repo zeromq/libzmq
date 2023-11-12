@@ -56,7 +56,7 @@ void zmq::channel_t::xwrite_activated (pipe_t *)
 int zmq::channel_t::xsend (msg_t *msg_)
 {
     //  CHANNEL sockets do not allow multipart data (ZMQ_SNDMORE)
-    if (msg_->flags () & msg_t::more) {
+    if (msg_->flagsp () & msg_t::more) {
         errno = EINVAL;
         return -1;
     }
@@ -92,10 +92,10 @@ int zmq::channel_t::xrecv (msg_t *msg_)
 
     // Drop any messages with more flag
     bool read = _pipe->read (msg_);
-    while (read && msg_->flags () & msg_t::more) {
+    while (read && msg_->flagsp () & msg_t::more) {
         // drop all frames of the current multi-frame message
         read = _pipe->read (msg_);
-        while (read && msg_->flags () & msg_t::more)
+        while (read && msg_->flagsp () & msg_t::more)
             read = _pipe->read (msg_);
 
         // get the new message

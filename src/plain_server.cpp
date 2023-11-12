@@ -89,8 +89,8 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (rc == -1)
         return -1;
 
-    const char *ptr = static_cast<char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
+    const char *ptr = static_cast<char *> (msg_->datap ());
+    size_t bytes_left = msg_->sizep ();
 
     if (bytes_left < hello_prefix_len
         || memcmp (ptr, hello_prefix, hello_prefix_len) != 0) {
@@ -169,13 +169,13 @@ void zmq::plain_server_t::produce_welcome (msg_t *msg_)
 {
     const int rc = msg_->init_size (welcome_prefix_len);
     errno_assert (rc == 0);
-    memcpy (msg_->data (), welcome_prefix, welcome_prefix_len);
+    memcpy (msg_->datap (), welcome_prefix, welcome_prefix_len);
 }
 
 int zmq::plain_server_t::process_initiate (msg_t *msg_)
 {
-    const unsigned char *ptr = static_cast<unsigned char *> (msg_->data ());
-    const size_t bytes_left = msg_->size ();
+    const unsigned char *ptr = static_cast<unsigned char *> (msg_->datap ());
+    const size_t bytes_left = msg_->sizep ();
 
     if (bytes_left < initiate_prefix_len
         || memcmp (ptr, initiate_prefix, initiate_prefix_len) != 0) {
@@ -205,7 +205,7 @@ void zmq::plain_server_t::produce_error (msg_t *msg_) const
     const int rc = msg_->init_size (error_prefix_len + status_code_len_size
                                     + expected_status_code_len);
     zmq_assert (rc == 0);
-    char *msg_data = static_cast<char *> (msg_->data ());
+    char *msg_data = static_cast<char *> (msg_->datap ());
     memcpy (msg_data, error_prefix, error_prefix_len);
     msg_data[error_prefix_len] = expected_status_code_len;
     memcpy (msg_data + error_prefix_len + status_code_len_size,

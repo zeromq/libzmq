@@ -22,7 +22,7 @@ zmq::v1_encoder_t::~v1_encoder_t ()
 void zmq::v1_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    next_step (in_progress ()->data (), in_progress ()->size (),
+    next_step (in_progress ()->datap (), in_progress ()->sizep (),
                &v1_encoder_t::message_ready, true);
 }
 
@@ -30,7 +30,7 @@ void zmq::v1_encoder_t::message_ready ()
 {
     size_t header_size = 2; // flags byte + size byte
     //  Get the message size.
-    size_t size = in_progress ()->size ();
+    size_t size = in_progress ()->sizep ();
 
     //  Account for the 'flags' byte.
     size++;
@@ -44,11 +44,11 @@ void zmq::v1_encoder_t::message_ready ()
     //  message size. In both cases 'flags' field follows.
     if (size < UCHAR_MAX) {
         _tmpbuf[0] = static_cast<unsigned char> (size);
-        _tmpbuf[1] = (in_progress ()->flags () & msg_t::more);
+        _tmpbuf[1] = (in_progress ()->flagsp () & msg_t::more);
     } else {
         _tmpbuf[0] = UCHAR_MAX;
         put_uint64 (_tmpbuf + 1, size);
-        _tmpbuf[9] = (in_progress ()->flags () & msg_t::more);
+        _tmpbuf[9] = (in_progress ()->flagsp () & msg_t::more);
         header_size = 10;
     }
 

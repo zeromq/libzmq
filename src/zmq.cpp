@@ -377,7 +377,7 @@ static inline int _Check_return_ s_sendmsg (_In_ zmq::socket_base_t *s_,
                                             _In_ zmq_msg_t *msg_,
                                             int flags_)
 {
-    size_t sz = zmqp_msg_size (msg_);
+    size_t sz = ((zmq::msg_t *) msg_)->size ();
     const int rc = s_->send (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
     if (unlikely (rc < 0))
         return -1;
@@ -483,7 +483,7 @@ zmq_sendiov (_In_ void *s_,
             rc = -1;
             break;
         }
-        memcpy (zmqp_msg_data (&msg), iov_[i].iov_base, iov_[i].iov_len);
+        memcpy (((zmq::msg_t *) &msg)->datap (), iov_[i].iov_base, iov_[i].iov_len);
         if (i == count_ - 1)
             flags_ = flags_ & ~ZMQ_SNDMORE;
         rc = s_sendmsg (s, &msg, flags_);
@@ -509,7 +509,7 @@ s_recvmsg (_In_ zmq::socket_base_t *s_, _Inout_ zmq_msg_t *msg_, int flags_)
         return -1;
 
     //  Truncate returned size to INT_MAX to avoid overflow to negative values
-    const size_t sz = zmqp_msg_size (msg_);
+    const size_t sz = ((zmq::msg_t *) msg_)->size ();
     return static_cast<int> (sz < INT_MAX ? sz : INT_MAX);
 }
 
@@ -549,7 +549,7 @@ zmq_recv (_In_ void *s_,
     //  We explicitly allow a null buffer argument if len is zero
     if (to_copy) {
         assert (buf_);
-        memcpy (buf_, zmqp_msg_data (&msg), to_copy);
+        memcpy (buf_, ((zmq::msg_t *) &msg)->datap (), to_copy);
     }
     rc = zmq_msg_close (&msg);
     errno_assert (rc == 0);
@@ -608,17 +608,17 @@ zmq_recviov (_In_ void *s_,
             break;
         }
 
-        iov_[i].iov_len = zmqp_msg_size (&msg);
+        iov_[i].iov_len = ((zmq::msg_t *) &msg)->sizep ();
         iov_[i].iov_base = static_cast<char *> (malloc (iov_[i].iov_len));
         if (unlikely (!iov_[i].iov_base)) {
             errno = ENOMEM;
             return -1;
         }
-        memcpy (iov_[i].iov_base, static_cast<char *> (zmqp_msg_data (&msg)),
+        memcpy (iov_[i].iov_base, static_cast<char *> (((zmq::msg_t *) &msg)->datap ()),
                 iov_[i].iov_len);
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
         const zmq::msg_t *p_msg = reinterpret_cast<const zmq::msg_t *> (&msg);
-        recvmore = p_msg->flags () & zmq::msg_t::more;
+        recvmore = p_msg->flagsp () & zmq::msg_t::more;
         rc = zmq_msg_close (&msg);
         errno_assert (rc == 0);
         ++*count_;
@@ -699,20 +699,10 @@ zmq_msg_copy (_Inout_ zmq_msg_t *dest_, _Inout_ zmq_msg_t *src_)
 
 ZMQ_EXPORT_VOID_PTR_IMPL zmq_msg_data (_In_ zmq_msg_t *msg_)
 {
-    return zmqp_msg_data (msg_);
+    return ((zmq::msg_t *) msg_)->data ();
 }
 
-LIBZMQ_FORCEINLINE void *zmqp_msg_data (_In_ zmq_msg_t *msg_)
-{
-    return (reinterpret_cast<zmq::msg_t *> (msg_))->data ();
-}
-
-ZMQ_EXPORT_IMPL(size_t) zmq_msg_size (_In_ const zmq_msg_t *msg_)
-{
-    return zmqp_msg_size (msg_);
-}
-
-LIBZMQ_FORCEINLINE size_t zmqp_msg_size (_In_ const zmq_msg_t *msg_)
+ZMQ_EXPORT_IMPL (size_t) zmq_msg_size (_In_ const zmq_msg_t *msg_)
 {
     return ((zmq::msg_t *) msg_)->size ();
 }
@@ -728,7 +718,7 @@ ZMQ_EXPORT_IMPL (int) zmq_msg_get (_In_ const zmq_msg_t *msg_, int property_)
 
     switch (property_) {
         case ZMQ_MORE:
-            return (((zmq::msg_t *) msg_)->flags () & zmq::msg_t::more) ? 1 : 0;
+            return (((zmq::msg_t *) msg_)->flagsp () & zmq::msg_t::more) ? 1 : 0;
         case ZMQ_SRCFD:
             fd_string = zmq_msg_gets (msg_, "__fd");
             if (fd_string == NULL)
@@ -737,7 +727,7 @@ ZMQ_EXPORT_IMPL (int) zmq_msg_get (_In_ const zmq_msg_t *msg_, int property_)
             return atoi (fd_string);
         case ZMQ_SHARED:
             return (((zmq::msg_t *) msg_)->is_cmsg ())
-                       || (((zmq::msg_t *) msg_)->flags () & zmq::msg_t::shared)
+                       || (((zmq::msg_t *) msg_)->flagsp () & zmq::msg_t::shared)
                      ? 1
                      : 0;
         default:

@@ -42,7 +42,7 @@ void zmq::ws_encoder_t::message_ready ()
 
     _tmp_buf[offset] = _must_mask ? 0x80 : 0x00;
 
-    size_t size = in_progress ()->size ();
+    size_t size = in_progress ()->sizep ();
     if (_is_binary)
         size++;
     //  TODO: create an opcode for subscribe/cancel
@@ -72,9 +72,9 @@ void zmq::ws_encoder_t::message_ready ()
     if (_is_binary) {
         //  Encode flags.
         unsigned char protocol_flags = 0;
-        if (in_progress ()->flags () & msg_t::more)
+        if (in_progress ()->flagsp () & msg_t::more)
             protocol_flags |= ws_protocol_t::more_flag;
-        if (in_progress ()->flags () & msg_t::command)
+        if (in_progress ()->flagsp () & msg_t::command)
             protocol_flags |= ws_protocol_t::command_flag;
 
         _tmp_buf[offset++] =
@@ -95,18 +95,18 @@ void zmq::ws_encoder_t::size_ready ()
 {
     if (_must_mask) {
         assert (in_progress () != &_masked_msg);
-        const size_t size = in_progress ()->size ();
+        const size_t size = in_progress ()->sizep ();
 
         unsigned char *src =
-          static_cast<unsigned char *> (in_progress ()->data ());
+          static_cast<unsigned char *> (in_progress ()->datap ());
         unsigned char *dest = src;
 
         //  If msg is shared or data is constant we cannot mask in-place, allocate a new msg for it
-        if (in_progress ()->flags () & msg_t::shared
+        if (in_progress ()->flagsp () & msg_t::shared
             || in_progress ()->is_cmsg ()) {
             _masked_msg.close ();
             _masked_msg.init_size (size);
-            dest = static_cast<unsigned char *> (_masked_msg.data ());
+            dest = static_cast<unsigned char *> (_masked_msg.datap ());
         }
 
         int mask_index = 0;
@@ -120,7 +120,7 @@ void zmq::ws_encoder_t::size_ready ()
 
         next_step (dest, size, &ws_encoder_t::message_ready, true);
     } else {
-        next_step (in_progress ()->data (), in_progress ()->size (),
+        next_step (in_progress ()->datap (), in_progress ()->sizep (),
                    &ws_encoder_t::message_ready, true);
     }
 }

@@ -117,11 +117,11 @@ int zmq::xsub_t::xgetsockopt (int option_, void *optval_, size_t *optvallen_)
 
 int zmq::xsub_t::xsend (msg_t *msg_)
 {
-    size_t size = msg_->size ();
-    unsigned char *data = static_cast<unsigned char *> (msg_->data ());
+    size_t size = msg_->sizep ();
+    unsigned char *data = static_cast<unsigned char *> (msg_->datap ());
 
     const bool first_part = !_more_send;
-    _more_send = (msg_->flags () & msg_t::more) != 0;
+    _more_send = (msg_->flagsp () & msg_t::more) != 0;
 
     if (first_part) {
         _process_subscribe = !_only_first_subscribe;
@@ -180,7 +180,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
         const int rc = msg_->move (_message);
         errno_assert (rc == 0);
         _has_message = false;
-        _more_recv = (msg_->flags () & msg_t::more) != 0;
+        _more_recv = (msg_->flagsp () & msg_t::more) != 0;
         return 0;
     }
 
@@ -199,13 +199,13 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed
         if (_more_recv || !options.filter || match (msg_)) {
-            _more_recv = (msg_->flags () & msg_t::more) != 0;
+            _more_recv = (msg_->flagsp () & msg_t::more) != 0;
             return 0;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (msg_->flags () & msg_t::more) {
+        while (msg_->flagsp () & msg_t::more) {
             rc = _fq.recv (msg_);
             errno_assert (rc == 0);
         }
@@ -244,7 +244,7 @@ bool zmq::xsub_t::xhas_in ()
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (_message.flags () & msg_t::more) {
+        while (_message.flagsp () & msg_t::more) {
             rc = _fq.recv (&_message);
             errno_assert (rc == 0);
         }
@@ -254,7 +254,7 @@ bool zmq::xsub_t::xhas_in ()
 bool zmq::xsub_t::match (msg_t *msg_)
 {
     const bool matching = _subscriptions.check (
-      static_cast<unsigned char *> (msg_->data ()), msg_->size ());
+      static_cast<unsigned char *> (msg_->datap ()), msg_->sizep ());
 
     return matching ^ options.invert_matching;
 }

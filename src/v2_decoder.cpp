@@ -125,7 +125,7 @@ int zmq::v2_decoder_t::size_ready (uint64_t msg_size_,
     // or
     // to the current start address in the buffer because the message
     // was constructed to use n bytes from the address passed as argument
-    next_step (_in_progress.data (), _in_progress.size (),
+    next_step (_in_progress.datap (), _in_progress.sizep (),
                &v2_decoder_t::message_ready);
 
     return 0;

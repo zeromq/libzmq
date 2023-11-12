@@ -61,7 +61,7 @@ int zmq::pair_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    if (!(msg_->flags () & msg_t::more))
+    if (!(msg_->flagsp () & msg_t::more))
         _pipe->flush ();
 
     //  Detach the original message from the data buffer.

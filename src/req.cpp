@@ -48,7 +48,7 @@ int zmq::req_t::xsend (msg_t *msg_)
 
             msg_t id;
             int rc = id.init_size (sizeof (uint32_t));
-            memcpy (id.data (), &_request_id, sizeof (uint32_t));
+            memcpy (id.datap (), &_request_id, sizeof (uint32_t));
             errno_assert (rc == 0);
             id.set_flags (msg_t::more);
 
@@ -86,7 +86,7 @@ int zmq::req_t::xsend (msg_t *msg_)
         }
     }
 
-    bool more = (msg_->flags () & msg_t::more) != 0;
+    bool more = (msg_->flagsp () & msg_t::more) != 0;
 
     int rc = dealer_t::xsend (msg_);
     if (rc != 0)
@@ -117,12 +117,12 @@ int zmq::req_t::xrecv (msg_t *msg_)
             if (rc != 0)
                 return rc;
 
-            if (unlikely (!(msg_->flags () & msg_t::more)
-                          || msg_->size () != sizeof (_request_id)
-                          || *static_cast<uint32_t *> (msg_->data ())
+            if (unlikely (!(msg_->flagsp () & msg_t::more)
+                          || msg_->sizep () != sizeof (_request_id)
+                          || *static_cast<uint32_t *> (msg_->datap ())
                                != _request_id)) {
                 //  Skip the remaining frames and try the next message
-                while (msg_->flags () & msg_t::more) {
+                while (msg_->flagsp () & msg_t::more) {
                     rc = recv_reply_pipe (msg_);
                     errno_assert (rc == 0);
                 }
@@ -136,9 +136,9 @@ int zmq::req_t::xrecv (msg_t *msg_)
         if (rc != 0)
             return rc;
 
-        if (unlikely (!(msg_->flags () & msg_t::more) || msg_->size () != 0)) {
+        if (unlikely (!(msg_->flagsp () & msg_t::more) || msg_->sizep () != 0)) {
             //  Skip the remaining frames and try the next message
-            while (msg_->flags () & msg_t::more) {
+            while (msg_->flagsp () & msg_t::more) {
                 rc = recv_reply_pipe (msg_);
                 errno_assert (rc == 0);
             }
@@ -153,7 +153,7 @@ int zmq::req_t::xrecv (msg_t *msg_)
         return rc;
 
     //  If the reply is fully received, flip the FSM into request-sending state.
-    if (!(msg_->flags () & msg_t::more)) {
+    if (!(msg_->flagsp () & msg_t::more)) {
         _receiving_reply = false;
         _message_begins = true;
     }
@@ -249,35 +249,35 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
 {
     //  Ignore commands, they are processed by the engine and should not
     //  affect the state machine.
-    if (unlikely (msg_->flags () & msg_t::command))
+    if (unlikely (msg_->flagsp () & msg_t::command))
         return 0;
 
     switch (_state) {
         case bottom:
-            if (msg_->flags () == msg_t::more) {
+            if (msg_->flagsp () == msg_t::more) {
                 //  In case option ZMQ_CORRELATE is on, allow request_id to be
                 //  transferred as first frame (would be too cumbersome to check
                 //  whether the option is actually on or not).
-                if (msg_->size () == sizeof (uint32_t)) {
+                if (msg_->sizep () == sizeof (uint32_t)) {
                     _state = request_id;
                     return session_base_t::push_msg (msg_);
                 }
-                if (msg_->size () == 0) {
+                if (msg_->sizep () == 0) {
                     _state = body;
                     return session_base_t::push_msg (msg_);
                 }
             }
             break;
         case request_id:
-            if (msg_->flags () == msg_t::more && msg_->size () == 0) {
+            if (msg_->flagsp () == msg_t::more && msg_->sizep () == 0) {
                 _state = body;
                 return session_base_t::push_msg (msg_);
             }
             break;
         case body:
-            if (msg_->flags () == msg_t::more)
+            if (msg_->flagsp () == msg_t::more)
                 return session_base_t::push_msg (msg_);
-            if (msg_->flags () == 0) {
+            if (msg_->flagsp () == 0) {
                 _state = bottom;
                 return session_base_t::push_msg (msg_);
             }

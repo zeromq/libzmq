@@ -80,7 +80,7 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
               error_command_name_len + error_reason_len_size + status_code_len);
             zmq_assert (rc == 0);
             unsigned char *msg_data =
-              static_cast<unsigned char *> (msg_->data ());
+              static_cast<unsigned char *> (msg_->datap ());
             memcpy (msg_data, error_command_name, error_command_name_len);
             msg_data += error_command_name_len;
             *msg_data = status_code_len;
@@ -110,8 +110,8 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     }
 
     const unsigned char *cmd_data =
-      static_cast<unsigned char *> (msg_->data ());
-    const size_t data_size = msg_->size ();
+      static_cast<unsigned char *> (msg_->datap ());
+    const size_t data_size = msg_->sizep ();
 
     int rc = 0;
     if (data_size >= ready_command_name_len

@@ -252,7 +252,7 @@ bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
     zmq_assert (rc == 0);
     rc = _routing_id_msg.init_size (_options.routing_id_size);
     zmq_assert (rc == 0);
-    memcpy (_routing_id_msg.data (), _options.routing_id,
+    memcpy (_routing_id_msg.datap (), _options.routing_id,
             _options.routing_id_size);
     _encoder->load_msg (&_routing_id_msg);
     const size_t buffer_size = _encoder->encode (&bufferp, header_size);
@@ -409,7 +409,7 @@ int zmq::zmtp_engine_t::routing_id_msg (msg_t *msg_)
     const int rc = msg_->init_size (_options.routing_id_size);
     errno_assert (rc == 0);
     if (_options.routing_id_size > 0)
-        memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
+        memcpy (msg_->datap (), _options.routing_id, _options.routing_id_size);
     _next_msg = &zmtp_engine_t::pull_msg_from_session;
     return 0;
 }
@@ -434,7 +434,7 @@ int zmq::zmtp_engine_t::process_routing_id_msg (msg_t *msg_)
         //  ZMQ 2.x peers receive published messages.
         int rc = subscription.init_size (1);
         errno_assert (rc == 0);
-        *static_cast<unsigned char *> (subscription.data ()) = 1;
+        *static_cast<unsigned char *> (subscription.datap ()) = 1;
         rc = session ()->push_msg (&subscription);
         errno_assert (rc == 0);
     }
@@ -454,10 +454,10 @@ int zmq::zmtp_engine_t::produce_ping_message (msg_t *msg_)
     errno_assert (rc == 0);
     msg_->set_flags (msg_t::command);
     // Copy in the command message
-    memcpy (msg_->data (), "\4PING", msg_t::ping_cmd_name_size);
+    memcpy (msg_->datap (), "\4PING", msg_t::ping_cmd_name_size);
 
     uint16_t ttl_val = htons (_options.heartbeat_ttl);
-    memcpy (static_cast<uint8_t *> (msg_->data ()) + msg_t::ping_cmd_name_size,
+    memcpy (static_cast<uint8_t *> (msg_->datap ()) + msg_t::ping_cmd_name_size,
             &ttl_val, sizeof (ttl_val));
 
     rc = _mechanism->encode (msg_);
@@ -491,7 +491,7 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
 
         // Get the remote heartbeat TTL to setup the timer
         memcpy (&remote_heartbeat_ttl,
-                static_cast<uint8_t *> (msg_->data ())
+                static_cast<uint8_t *> (msg_->datap ())
                   + msg_t::ping_cmd_name_size,
                 ping_ttl_len - msg_t::ping_cmd_name_size);
         remote_heartbeat_ttl = ntohs (remote_heartbeat_ttl);
@@ -510,16 +510,16 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
         //  Given the engine goes straight to out_event, sequential PINGs will
         //  not be a problem.
         const size_t context_len =
-          std::min (msg_->size () - ping_ttl_len, ping_max_ctx_len);
+          std::min (msg_->sizep () - ping_ttl_len, ping_max_ctx_len);
         const int rc =
           _pong_msg.init_size (msg_t::ping_cmd_name_size + context_len);
         errno_assert (rc == 0);
         _pong_msg.set_flags (msg_t::command);
-        memcpy (_pong_msg.data (), "\4PONG", msg_t::ping_cmd_name_size);
+        memcpy (_pong_msg.datap (), "\4PONG", msg_t::ping_cmd_name_size);
         if (context_len > 0)
-            memcpy (static_cast<uint8_t *> (_pong_msg.data ())
+            memcpy (static_cast<uint8_t *> (_pong_msg.datap ())
                       + msg_t::ping_cmd_name_size,
-                    static_cast<uint8_t *> (msg_->data ()) + ping_ttl_len,
+                    static_cast<uint8_t *> (msg_->datap ()) + ping_ttl_len,
                     context_len);
 
         _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
@@ -533,16 +533,16 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
 int zmq::zmtp_engine_t::process_command_message (msg_t *msg_)
 {
     const uint8_t cmd_name_size =
-      *(static_cast<const uint8_t *> (msg_->data ()));
+      *(static_cast<const uint8_t *> (msg_->datap ()));
     const size_t ping_name_size = msg_t::ping_cmd_name_size - 1;
     const size_t sub_name_size = msg_t::sub_cmd_name_size - 1;
     const size_t cancel_name_size = msg_t::cancel_cmd_name_size - 1;
     //  Malformed command
-    if (unlikely (msg_->size () < cmd_name_size + sizeof (cmd_name_size)))
+    if (unlikely (msg_->sizep () < cmd_name_size + sizeof (cmd_name_size)))
         return -1;
 
     const uint8_t *const cmd_name =
-      static_cast<const uint8_t *> (msg_->data ()) + 1;
+      static_cast<const uint8_t *> (msg_->datap ()) + 1;
     if (cmd_name_size == ping_name_size
         && memcmp (cmd_name, "PING", cmd_name_size) == 0)
         msg_->set_flags (zmq::msg_t::ping);

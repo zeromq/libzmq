@@ -152,7 +152,7 @@ int zmq::ws_engine_t::routing_id_msg (msg_t *msg_)
     const int rc = msg_->init_size (_options.routing_id_size);
     errno_assert (rc == 0);
     if (_options.routing_id_size > 0)
-        memcpy (msg_->data (), _options.routing_id, _options.routing_id_size);
+        memcpy (msg_->datap (), _options.routing_id, _options.routing_id_size);
     _next_msg = &ws_engine_t::pull_msg_from_session;
 
     return 0;
@@ -895,7 +895,7 @@ int zmq::ws_engine_t::decode_and_push (msg_t *msg_)
         cancel_timer (heartbeat_timeout_timer_id);
     }
 
-    if (msg_->flags () & msg_t::command && !msg_->is_ping ()
+    if (msg_->flagsp () & msg_t::command && !msg_->is_ping ()
         && !msg_->is_pong () && !msg_->is_close_cmd ())
         process_command_message (msg_);
 

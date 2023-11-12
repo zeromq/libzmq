@@ -54,7 +54,7 @@ void zmq::send_routing_id (pipe_t *pipe_, const options_t &options_)
     zmq::msg_t id;
     const int rc = id.init_size (options_.routing_id_size);
     errno_assert (rc == 0);
-    memcpy (id.data (), options_.routing_id, options_.routing_id_size);
+    memcpy (id.datap (), options_.routing_id, options_.routing_id_size);
     id.set_flags (zmq::msg_t::routing_id);
     const bool written = pipe_->write (&id);
     zmq_assert (written);
@@ -195,7 +195,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags () & msg_t::more) && !msg_->is_routing_id ())
+    if (!(msg_->flagsp () & msg_t::more) && !msg_->is_routing_id ())
         _msgs_read++;
 
     if (_lwm > 0 && _msgs_read % _lwm == 0)
@@ -224,7 +224,7 @@ bool zmq::pipe_t::write (const msg_t *msg_)
     if (unlikely (!check_write ()))
         return false;
 
-    const bool more = (msg_->flags () & msg_t::more) != 0;
+    const bool more = (msg_->flagsp () & msg_t::more) != 0;
     const bool is_routing_id = msg_->is_routing_id ();
     _out_pipe->write (*msg_, more);
     if (!more && !is_routing_id)
@@ -239,7 +239,7 @@ void zmq::pipe_t::rollback () const
     msg_t msg;
     if (_out_pipe) {
         while (_out_pipe->unwrite (&msg)) {
-            zmq_assert (msg.flags () & msg_t::more);
+            zmq_assert (msg.flagsp () & msg_t::more);
             const int rc = msg.close ();
             errno_assert (rc == 0);
         }
@@ -283,7 +283,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
     _out_pipe->flush ();
     msg_t msg;
     while (_out_pipe->read (&msg)) {
-        if (!(msg.flags () & msg_t::more))
+        if (!(msg.flagsp () & msg_t::more))
             _msgs_written--;
         const int rc = msg.close ();
         errno_assert (rc == 0);
@@ -570,7 +570,7 @@ void zmq::pipe_t::process_pipe_peer_stats (uint64_t queue_count_,
 
 void zmq::pipe_t::send_disconnect_msg ()
 {
-    if (_disconnect_msg.size () > 0 && _out_pipe) {
+    if (_disconnect_msg.sizep () > 0 && _out_pipe) {
         // Rollback any incomplete message in the pipe, and push the disconnect message.
         rollback ();
 

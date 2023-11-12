@@ -25,7 +25,7 @@ int zmq::rep_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    const bool more = (msg_->flags () & msg_t::more) != 0;
+    const bool more = (msg_->flagsp () & msg_t::more) != 0;
 
     //  Push message to the reply pipe.
     const int rc = router_t::xsend (msg_);
@@ -55,9 +55,9 @@ int zmq::rep_t::xrecv (msg_t *msg_)
             if (rc != 0)
                 return rc;
 
-            if ((msg_->flags () & msg_t::more)) {
+            if ((msg_->flagsp () & msg_t::more)) {
                 //  Empty message part delimits the traceback stack.
-                const bool bottom = (msg_->size () == 0);
+                const bool bottom = (msg_->sizep () == 0);
 
                 //  Push it to the reply pipe.
                 rc = router_t::xsend (msg_);
@@ -81,7 +81,7 @@ int zmq::rep_t::xrecv (msg_t *msg_)
         return rc;
 
     //  If whole request is read, flip the FSM to reply-sending state.
-    if (!(msg_->flags () & msg_t::more)) {
+    if (!(msg_->flagsp () & msg_t::more)) {
         _sending_reply = true;
         _request_begins = true;
     }

@@ -120,8 +120,8 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     if (rc == -1)
         return -1;
 
-    const size_t size = msg_->size ();
-    const uint8_t *const hello = static_cast<uint8_t *> (msg_->data ());
+    const size_t size = msg_->sizep ();
+    const uint8_t *const hello = static_cast<uint8_t *> (msg_->datap ());
 
     if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -245,7 +245,7 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     rc = msg_->init_size (168);
     errno_assert (rc == 0);
 
-    uint8_t *const welcome = static_cast<uint8_t *> (msg_->data ());
+    uint8_t *const welcome = static_cast<uint8_t *> (msg_->datap ());
     memcpy (welcome, "\x07WELCOME", 8);
     memcpy (welcome + 8, welcome_nonce + 8, 16);
     memcpy (welcome + 24, welcome_ciphertext + crypto_box_BOXZEROBYTES, 144);
@@ -259,8 +259,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     if (rc == -1)
         return -1;
 
-    const size_t size = msg_->size ();
-    const uint8_t *initiate = static_cast<uint8_t *> (msg_->data ());
+    const size_t size = msg_->sizep ();
+    const uint8_t *initiate = static_cast<uint8_t *> (msg_->datap ());
 
     if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -445,7 +445,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     rc = msg_->init_size (14 + mlen - crypto_box_BOXZEROBYTES);
     errno_assert (rc == 0);
 
-    uint8_t *ready = static_cast<uint8_t *> (msg_->data ());
+    uint8_t *ready = static_cast<uint8_t *> (msg_->datap ());
 
     memcpy (ready, "\x05READY", 6);
     //  Short nonce, prefixed by "CurveZMQREADY---"
@@ -463,7 +463,7 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     zmq_assert (status_code.length () == 3);
     const int rc = msg_->init_size (6 + 1 + expected_status_code_length);
     zmq_assert (rc == 0);
-    char *msg_data = static_cast<char *> (msg_->data ());
+    char *msg_data = static_cast<char *> (msg_->datap ());
     memcpy (msg_data, "\5ERROR", 6);
     msg_data[6] = expected_status_code_length;
     memcpy (msg_data + 7, status_code.c_str (), expected_status_code_length);

@@ -24,7 +24,6 @@ zmq::curve_mechanism_base_t::curve_mechanism_base_t (
   const char *encode_nonce_prefix_,
   const char *decode_nonce_prefix_,
   const bool downgrade_sub_) :
-    mechanism_base_t (session_, options_),
     curve_encoding_t (
       encode_nonce_prefix_, decode_nonce_prefix_, downgrade_sub_)
 {
@@ -79,8 +78,8 @@ static const size_t crypto_box_MACBYTES = 16;
 
 int zmq::curve_encoding_t::check_validity (msg_t *msg_, int *error_event_code_)
 {
-    const size_t size = msg_->size ();
-    const uint8_t *const message = static_cast<uint8_t *> (msg_->data ());
+    const size_t size = msg_->sizep ();
+    const uint8_t *const message = static_cast<uint8_t *> (msg_->datap ());
 
     if (size < message_command_len
         || 0 != memcmp (message, message_command, message_command_len)) {
@@ -125,11 +124,11 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
     }
 
 #ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
-    const size_t mlen = flags_len + sub_cancel_len + msg_->size ();
+    const size_t mlen = flags_len + sub_cancel_len + msg_->sizep ();
     std::vector<uint8_t> message_plaintext (mlen);
 #else
     const size_t mlen =
-      crypto_box_ZEROBYTES + flags_len + sub_cancel_len + msg_->size ();
+      crypto_box_ZEROBYTES + flags_len + sub_cancel_len + msg_->sizep ();
     std::vector<uint8_t> message_plaintext_with_zerobytes (mlen);
     uint8_t *const message_plaintext =
       &message_plaintext_with_zerobytes[crypto_box_ZEROBYTES];
@@ -139,7 +138,7 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
                0);
 #endif
 
-    const uint8_t flags = msg_->flags () & flag_mask;
+    const uint8_t flags = msg_->flagsp () & flag_mask;
     message_plaintext[0] = flags;
 
     // For backward compatibility subscribe/cancel command messages are not stored with
@@ -159,9 +158,9 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
 
     // this is copying the data from insecure memory, so there is no point in
     // using secure_allocator_t for message_plaintext
-    if (msg_->size () > 0)
-        memcpy (&message_plaintext[flags_len + sub_cancel_len], msg_->data (),
-                msg_->size ());
+    if (msg_->sizep () > 0)
+        memcpy (&message_plaintext[flags_len + sub_cancel_len], msg_->datap (),
+                msg_->sizep ());
 
 #ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
     msg_t msg_box;
@@ -170,13 +169,13 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
     zmq_assert (rc == 0);
 
     rc = crypto_box_easy_afternm (
-      static_cast<uint8_t *> (msg_box.data ()) + message_header_len,
+      static_cast<uint8_t *> (msg_box.datap ()) + message_header_len,
       &message_plaintext[0], mlen, message_nonce, _cn_precom);
     zmq_assert (rc == 0);
 
     msg_->move (msg_box);
 
-    uint8_t *const message = static_cast<uint8_t *> (msg_->data ());
+    uint8_t *const message = static_cast<uint8_t *> (msg_->datap ());
 #else
     std::vector<uint8_t> message_box (mlen);
 
@@ -191,7 +190,7 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
     rc = msg_->init_size (16 + mlen - crypto_box_BOXZEROBYTES);
     zmq_assert (rc == 0);
 
-    uint8_t *const message = static_cast<uint8_t *> (msg_->data ());
+    uint8_t *const message = static_cast<uint8_t *> (msg_->datap ());
 
     memcpy (message + message_header_len, &message_box[crypto_box_BOXZEROBYTES],
             mlen - crypto_box_BOXZEROBYTES);
@@ -211,7 +210,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
         return rc;
     }
 
-    uint8_t *const message = static_cast<uint8_t *> (msg_->data ());
+    uint8_t *const message = static_cast<uint8_t *> (msg_->datap ());
 
     uint8_t message_nonce[crypto_box_NONCEBYTES];
     memcpy (message_nonce, _decode_nonce_prefix, nonce_prefix_len);
@@ -219,7 +218,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
             sizeof (nonce_t));
 
 #ifdef ZMQ_HAVE_CRYPTO_BOX_EASY_FNS
-    const size_t clen = msg_->size () - message_header_len;
+    const size_t clen = msg_->sizep () - message_header_len;
 
     uint8_t *const message_plaintext = message + message_header_len;
 
@@ -228,7 +227,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
                                        message_nonce, _cn_precom);
 #else
     const size_t clen =
-      crypto_box_BOXZEROBYTES + msg_->size () - message_header_len;
+      crypto_box_BOXZEROBYTES + msg_->sizep () - message_header_len;
 
     std::vector<uint8_t> message_plaintext_with_zerobytes (clen);
     std::vector<uint8_t> message_box (clen);
@@ -236,7 +235,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
     std::fill (message_box.begin (),
                message_box.begin () + crypto_box_BOXZEROBYTES, 0);
     memcpy (&message_box[crypto_box_BOXZEROBYTES], message + message_header_len,
-            msg_->size () - message_header_len);
+            msg_->sizep () - message_header_len);
 
     rc = crypto_box_open_afternm (&message_plaintext_with_zerobytes[0],
                                   &message_box[0], clen, message_nonce,
@@ -253,7 +252,7 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
         const size_t plaintext_size = clen - flags_len - crypto_box_MACBYTES;
 
         if (plaintext_size > 0) {
-            memmove (msg_->data (), &message_plaintext[flags_len],
+            memmove (msg_->datap (), &message_plaintext[flags_len],
                      plaintext_size);
         }
 
@@ -267,9 +266,9 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
 
         // this is copying the data to insecure memory, so there is no point in
         // using secure_allocator_t for message_plaintext
-        if (msg_->size () > 0) {
-            memcpy (msg_->data (), &message_plaintext[flags_len],
-                    msg_->size ());
+        if (msg_->sizep () > 0) {
+            memcpy (msg_->datap (), &message_plaintext[flags_len],
+                    msg_->sizep ());
         }
 #endif
 

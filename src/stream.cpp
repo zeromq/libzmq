@@ -67,13 +67,13 @@ int zmq::stream_t::xsend (msg_t *msg_)
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
         //  TODO: The connections should be killed instead.
-        if (msg_->flags () & msg_t::more) {
+        if (msg_->flagsp () & msg_t::more) {
             //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe return an error
 
             out_pipe_t *out_pipe = lookup_out_pipe (
-              blob_t (static_cast<unsigned char *> (msg_->data ()),
-                      msg_->size (), reference_tag_t ()));
+              blob_t (static_cast<unsigned char *> (msg_->datap ()),
+                      msg_->sizep (), reference_tag_t ()));
 
             if (out_pipe) {
                 _current_out = out_pipe->pipe;
@@ -110,7 +110,7 @@ int zmq::stream_t::xsend (msg_t *msg_)
         // Close the remote connection if user has asked to do so
         // by sending zero length message.
         // Pending messages in the pipe will be dropped (on receiving term- ack)
-        if (msg_->size () == 0) {
+        if (msg_->sizep () == 0) {
             _current_out->terminate (false);
             int rc = msg_->close ();
             errno_assert (rc == 0);
@@ -173,7 +173,7 @@ int zmq::stream_t::xrecv (msg_t *msg_)
         return -1;
 
     zmq_assert (pipe != NULL);
-    zmq_assert ((_prefetched_msg.flags () & msg_t::more) == 0);
+    zmq_assert ((_prefetched_msg.flagsp () & msg_t::more) == 0);
 
     //  We have received a frame with TCP data.
     //  Rather than sending this frame, we keep it in prefetched
@@ -189,7 +189,7 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     if (metadata)
         msg_->set_metadata (metadata);
 
-    memcpy (msg_->data (), routing_id.data (), routing_id.size ());
+    memcpy (msg_->datap (), routing_id.data (), routing_id.size ());
     msg_->set_flags (msg_t::more);
 
     _prefetched = true;
@@ -212,7 +212,7 @@ bool zmq::stream_t::xhas_in ()
         return false;
 
     zmq_assert (pipe != NULL);
-    zmq_assert ((_prefetched_msg.flags () & msg_t::more) == 0);
+    zmq_assert ((_prefetched_msg.flagsp () & msg_t::more) == 0);
 
     const blob_t &routing_id = pipe->get_routing_id ();
     rc = _prefetched_routing_id.init_size (routing_id.size ());
@@ -223,7 +223,7 @@ bool zmq::stream_t::xhas_in ()
     if (metadata)
         _prefetched_routing_id.set_metadata (metadata);
 
-    memcpy (_prefetched_routing_id.data (), routing_id.data (),
+    memcpy (_prefetched_routing_id.datap (), routing_id.data (),
             routing_id.size ());
     _prefetched_routing_id.set_flags (msg_t::more);
 

@@ -167,7 +167,7 @@ void zmq::pgm_sender_t::out_event ()
             int rc = session->pull_msg (&msg);
             if (rc == -1)
                 break;
-            more_flag = msg.flags () & msg_t::more;
+            more_flag = msg.flagsp () & msg_t::more;
             encoder.load_msg (&msg);
             bf = out_buffer + sizeof (uint16_t) + bytes;
             bytes += encoder.encode (&bf, bfsz - bytes);

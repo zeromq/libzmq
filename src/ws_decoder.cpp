@@ -225,7 +225,7 @@ int zmq::ws_decoder_t::size_ready (unsigned char const *read_pos_)
     // or
     // to the current start address in the buffer because the message
     // was constructed to use n bytes from the address passed as argument
-    next_step (_in_progress.data (), _in_progress.size (),
+    next_step (_in_progress.datap (), _in_progress.sizep (),
                &ws_decoder_t::message_ready);
 
     return 0;
@@ -237,7 +237,7 @@ int zmq::ws_decoder_t::message_ready (unsigned char const *)
         int mask_index = _opcode == ws_protocol_t::opcode_binary ? 1 : 0;
 
         unsigned char *data =
-          static_cast<unsigned char *> (_in_progress.data ());
+          static_cast<unsigned char *> (_in_progress.datap ());
         for (size_t i = 0; i < _size; ++i, mask_index++)
             data[i] = data[i] ^ _mask[mask_index % 4];
     }

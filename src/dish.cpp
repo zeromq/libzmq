@@ -227,12 +227,12 @@ zmq::dish_session_t::~dish_session_t ()
 int zmq::dish_session_t::push_msg (msg_t *msg_)
 {
     if (_state == group) {
-        if ((msg_->flags () & msg_t::more) != msg_t::more) {
+        if ((msg_->flagsp () & msg_t::more) != msg_t::more) {
             errno = EFAULT;
             return -1;
         }
 
-        if (msg_->size () > ZMQ_GROUP_MAX_LENGTH) {
+        if (msg_->sizep () > ZMQ_GROUP_MAX_LENGTH) {
             errno = EFAULT;
             return -1;
         }
@@ -250,8 +250,8 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
         goto has_group;
 
     //  Set the message group
-    rc = msg_->set_group (static_cast<char *> (_group_msg.data ()),
-                          _group_msg.size ());
+    rc = msg_->set_group (static_cast<char *> (_group_msg.datap ()),
+                          _group_msg.sizep ());
     errno_assert (rc == 0);
 
     //  We set the group, so we don't need the group_msg anymore
@@ -259,7 +259,7 @@ int zmq::dish_session_t::push_msg (msg_t *msg_)
     errno_assert (rc == 0);
 has_group:
     //  Thread safe socket doesn't support multipart messages
-    if ((msg_->flags () & msg_t::more) == msg_t::more) {
+    if ((msg_->flagsp () & msg_t::more) == msg_t::more) {
         errno = EFAULT;
         return -1;
     }
@@ -292,16 +292,16 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
         rc = command.init_size (group_length + (size_t) 5);
         errno_assert (rc == 0);
         offset = 5;
-        memcpy (command.data (), "\4JOIN", 5);
+        memcpy (command.datap (), "\4JOIN", 5);
     } else {
         rc = command.init_size (group_length + (size_t) 6);
         errno_assert (rc == 0);
         offset = 6;
-        memcpy (command.data (), "\5LEAVE", 6);
+        memcpy (command.datap (), "\5LEAVE", 6);
     }
 
     command.set_flags (msg_t::command);
-    char *command_data = static_cast<char *> (command.data ());
+    char *command_data = static_cast<char *> (command.datap ());
 
     //  Copy the group
     memcpy (command_data + offset, msg_->group (), group_length);

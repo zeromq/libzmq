@@ -54,7 +54,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Version frame
     rc = msg.init_size (zap_version_len);
     errno_assert (rc == 0);
-    memcpy (msg.data (), zap_version, zap_version_len);
+    memcpy (msg.datap (), zap_version, zap_version_len);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -62,7 +62,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Request ID frame
     rc = msg.init_size (id_len);
     errno_assert (rc == 0);
-    memcpy (msg.data (), id, id_len);
+    memcpy (msg.datap (), id, id_len);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -70,7 +70,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
     errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (),
+    memcpy (msg.datap (), options.zap_domain.c_str (),
             options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
@@ -79,7 +79,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Address frame
     rc = msg.init_size (peer_address.length ());
     errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
+    memcpy (msg.datap (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -87,7 +87,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Routing id frame
     rc = msg.init_size (options.routing_id_size);
     errno_assert (rc == 0);
-    memcpy (msg.data (), options.routing_id, options.routing_id_size);
+    memcpy (msg.datap (), options.routing_id, options.routing_id_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -95,7 +95,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
     //  Mechanism frame
     rc = msg.init_size (mechanism_length_);
     errno_assert (rc == 0);
-    memcpy (msg.data (), mechanism_, mechanism_length_);
+    memcpy (msg.datap (), mechanism_, mechanism_length_);
     if (credentials_count_)
         msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
@@ -107,7 +107,7 @@ void zap_client_t::send_zap_request (const char *mechanism_,
         errno_assert (rc == 0);
         if (i < credentials_count_ - 1)
             msg.set_flags (msg_t::more);
-        memcpy (msg.data (), credentials_[i], credentials_sizes_[i]);
+        memcpy (msg.datap (), credentials_[i], credentials_sizes_[i]);
         rc = session->write_zap_msg (&msg);
         errno_assert (rc == 0);
     }
@@ -133,7 +133,7 @@ int zap_client_t::receive_and_process_zap_reply ()
             }
             return close_and_return (msg, -1);
         }
-        if ((msg[i].flags () & msg_t::more)
+        if ((msg[i].flagsp () & msg_t::more)
             == (i < zap_reply_frame_count - 1 ? 0 : msg_t::more)) {
             session->get_socket ()->event_handshake_failed_protocol (
               session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
@@ -143,7 +143,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Address delimiter frame
-    if (msg[0].size () > 0) {
+    if (msg[0].sizep () > 0) {
         //  TODO can a ZAP handler produce such a message at all?
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_UNSPECIFIED);
@@ -152,8 +152,8 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Version frame
-    if (msg[1].size () != zap_version_len
-        || memcmp (msg[1].data (), zap_version, zap_version_len)) {
+    if (msg[1].sizep () != zap_version_len
+        || memcmp (msg[1].datap (), zap_version, zap_version_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
         errno = EPROTO;
@@ -161,7 +161,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Request id frame
-    if (msg[2].size () != id_len || memcmp (msg[2].data (), id, id_len)) {
+    if (msg[2].sizep () != id_len || memcmp (msg[2].datap (), id, id_len)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
         errno = EPROTO;
@@ -169,8 +169,8 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Status code frame, only 200, 300, 400 and 500 are valid status codes
-    const char *status_code_data = static_cast<const char *> (msg[3].data ());
-    if (msg[3].size () != 3 || status_code_data[0] < '2'
+    const char *status_code_data = static_cast<const char *> (msg[3].datap ());
+    if (msg[3].sizep () != 3 || status_code_data[0] < '2'
         || status_code_data[0] > '5' || status_code_data[1] != '0'
         || status_code_data[2] != '0') {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -180,14 +180,14 @@ int zap_client_t::receive_and_process_zap_reply ()
     }
 
     //  Save status code
-    status_code.assign (static_cast<char *> (msg[3].data ()), 3);
+    status_code.assign (static_cast<char *> (msg[3].datap ()), 3);
 
     //  Save user id
-    set_user_id (msg[5].data (), msg[5].size ());
+    set_user_id (msg[5].datap (), msg[5].sizep ());
 
     //  Process metadata frame
-    rc = parse_metadata (static_cast<const unsigned char *> (msg[6].data ()),
-                         msg[6].size (), true);
+    rc = parse_metadata (static_cast<const unsigned char *> (msg[6].datap ()),
+                         msg[6].sizep (), true);
 
     if (rc != 0) {
         session->get_socket ()->event_handshake_failed_protocol (

@@ -591,7 +591,7 @@ int zmq::stream_engine_base_t::write_credential (msg_t *msg_)
         msg_t msg;
         int rc = msg.init_size (credential.size ());
         zmq_assert (rc == 0);
-        memcpy (msg.data (), credential.data (), credential.size ());
+        memcpy (msg.datap (), credential.data (), credential.size ());
         msg.set_flags (msg_t::credential);
         rc = _session->push_msg (&msg);
         if (rc == -1) {
@@ -632,7 +632,7 @@ int zmq::stream_engine_base_t::decode_and_push (msg_t *msg_)
         cancel_timer (heartbeat_ttl_timer_id);
     }
 
-    if (msg_->flags () & msg_t::command) {
+    if (msg_->flagsp () & msg_t::command) {
         process_command_message (msg_);
     }
 

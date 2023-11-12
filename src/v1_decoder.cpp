@@ -113,7 +113,7 @@ int zmq::v1_decoder_t::flags_ready (unsigned char const *)
     //  Store the flags from the wire into the message structure.
     _in_progress.set_flags (_tmpbuf[0] & msg_t::more);
 
-    next_step (_in_progress.data (), _in_progress.size (),
+    next_step (_in_progress.datap (), _in_progress.sizep (),
                &v1_decoder_t::message_ready);
 
     return 0;
