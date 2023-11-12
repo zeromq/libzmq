@@ -1,6 +1,12 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
-#if __cplusplus >= 201103L
+#ifdef _MSC_VER
+#define MIN_CPP_VERSION 199711L
+#else
+#define MIN_CPP_VERSION 201103L
+#endif
+
+#if __cplusplus >= MIN_CPP_VERSION
 
 #include "radix_tree.hpp"
 #include "trie.hpp"
@@ -29,8 +35,12 @@ void benchmark_lookup (T &subscriptions_,
     samples_vec.reserve (samples);
 
     for (std::size_t run = 0; run < warmup_runs; ++run) {
-        for (auto &query : queries_)
-            subscriptions_.check (query, key_length);
+        for (auto &query : queries_) {
+            if (!subscriptions_.check (query, key_length)) {
+                std::puts ("Key not found error :(");
+                return;
+            }
+        }
     }
 
     for (std::size_t run = 0; run < samples; ++run) {
@@ -51,10 +61,14 @@ void benchmark_lookup (T &subscriptions_,
                  static_cast<double> (sum) / samples);
 }
 
-int main ()
+int
+#ifdef _MSC_VER
+__cdecl
+#endif
+main ()
 {
     // Generate input set.
-    std::minstd_rand rng (123456789);
+    std::minstd_rand rng;
     std::vector<unsigned char *> input_set;
     std::vector<unsigned char *> queries;
     input_set.reserve (nkeys);
