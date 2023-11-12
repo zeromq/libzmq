@@ -188,7 +188,7 @@ void test_poller_exists_with_socket_on_zmq_ctx_term (const int socket_type_)
 
     zmq_atomic_counter_destroy (&poller_test_data.counter);
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without zmq_poller_* support, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq without zmq_poller_* support, ignoring test.");
 #endif
 }
 
@@ -197,7 +197,7 @@ void test_poller_exists_with_socket_on_zmq_ctx_term_thread_safe_socket ()
 #ifdef ZMQ_BUILD_DRAFT_API
     test_poller_exists_with_socket_on_zmq_ctx_term (ZMQ_CLIENT);
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq without DRAFT support, ignoring test.");
 #endif
 }
 

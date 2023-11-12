@@ -51,7 +51,7 @@ void test_ppoll_fd ()
     close (send_socket);
     close (recv_socket);
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without zmq_ppoll, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq without zmq_ppoll, ignoring test.");
 #endif // ZMQ_HAVE_PPOLL
 }
 

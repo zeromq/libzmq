@@ -258,10 +258,15 @@ void test_ctx_option_blocky ()
 
 void test_ctx_option_invalid ()
 {
+#ifdef ZMQ_ACT_MILITANT
+    TEST_IGNORE_MESSAGE ("libzmq with ZMQ_ACT_MILITANT, ignoring test as the "
+                         "test binary would bugcheck.");
+#else
     TEST_ASSERT_EQUAL_INT (-1, zmq_ctx_set (get_test_context (), -1, 0));
     TEST_ASSERT_EQUAL_INT (EINVAL, errno);
     TEST_ASSERT_EQUAL_INT (-1, zmq_ctx_get (get_test_context (), -1));
     TEST_ASSERT_EQUAL_INT (EINVAL, errno);
+#endif
 }
 
 int main (void)
