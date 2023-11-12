@@ -46,13 +46,13 @@ void test_norm ()
     test (
       "norm://224.0.1.20:6210"); // IANA: experiment.mcast.net (any private experiment)
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without NORM, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq without NORM, ignoring test.");
 #endif
 }
 
 #if defined ZMQ_HAVE_OPENPGM
 #if defined(ZMQ_HAVE_WINDOWS)
-#define NETWORK_ADAPTER "xxx.xxx.xxx.xxx"
+// #define NETWORK_ADAPTER "xxx.xxx.xxx.xxx"
 #else
 #define NETWORK_ADAPTER "eth0"
 #endif
@@ -61,22 +61,31 @@ void test_norm ()
 void test_epgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
+#ifdef NETWORK_ADAPTER
     test (
       "epgm://" NETWORK_ADAPTER
-      ";224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
+      ";224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq with OpenPGM, but NETWORK_ADAPTER wasn't set, ignoring test.");
+#endif
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test.");
 #endif
 }
 
 void test_pgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
+#ifdef NETWORK_ADAPTER
     test (
       "pgm://" NETWORK_ADAPTER
-      "224.0.1.20:6211"); // IANA: experiment.mcast.net (any private experiment)
+      ";224.0.1.20:6212"); // IANA: experiment.mcast.net (any private experiment)
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test");
+    TEST_IGNORE_MESSAGE (
+      "libzmq with OpenPGM, but NETWORK_ADAPTER wasn't set, ignoring test.");
+#endif
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without OpenPGM, ignoring test.");
 #endif
 }
 

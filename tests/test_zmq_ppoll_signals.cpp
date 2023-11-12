@@ -154,7 +154,7 @@ void test_ppoll_signals ()
         _Exit (0);
     }
 #else
-    TEST_IGNORE_MESSAGE ("libzmq without zmq_ppoll, ignoring test");
+    TEST_IGNORE_MESSAGE ("libzmq without zmq_ppoll, ignoring test.");
 #endif // ZMQ_HAVE_PPOLL
 }
 
