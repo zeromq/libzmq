@@ -567,9 +567,15 @@ int main (void)
     shutdown_context_and_server_side (zap_thread, server, server_mon, handler);
     teardown_test_context ();
 
+#ifdef ZMQ_ACT_MILITANT
+    fprintf (stderr, "libzmq with ZMQ_ACT_MILITANT, ignoring "
+                     "test_curve_security_invalid_keysize as the test "
+                     "binary would bugcheck.\n");
+#else
     void *ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_term (ctx));
+#endif
 
     zmq::random_close ();
 
