@@ -116,7 +116,7 @@ void test_req_message_format (const char *bind_address_)
 
     // Receive peer routing id
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
-    TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&msg));
+    TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&msg));
     zmq_msg_t peer_id_msg;
     zmq_msg_init (&peer_id_msg);
     zmq_msg_copy (&peer_id_msg, &msg);

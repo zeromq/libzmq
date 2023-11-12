@@ -40,57 +40,66 @@ extern "C" {
 
 #if defined ZMQ_NO_EXPORT
 #define ZMQ_LINKAGE
+#define ZMQ_CALLCONV
 #else
 #if defined _WIN32
 #if defined ZMQ_STATIC
 #define ZMQ_LINKAGE
+#define ZMQ_CALLCONV __cdecl
 #elif defined DLL_EXPORT
-#define ZMQ_LINKAGE __declspec(dllexport)
+#define ZMQ_LINKAGE __declspec (dllexport)
+#define ZMQ_CALLCONV __cdecl
 #else
-#define ZMQ_LINKAGE __declspec(dllimport)
+#define ZMQ_LINKAGE __declspec (dllimport)
+#define ZMQ_CALLCONV __cdecl
 #endif
 #else
 #if defined __SUNPRO_C || defined __SUNPRO_CC
 #define ZMQ_LINKAGE __global
+#define ZMQ_CALLCONV
 #elif (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #define ZMQ_LINKAGE __attribute__ ((visibility ("default")))
+#define ZMQ_CALLCONV
 #else
 #define ZMQ_LINKAGE
+#define ZMQ_CALLCONV
 #endif
 #endif
 #endif
 
 #define ZMQ_EXPORT_IMPL(__returntype__)                                        \
-    _Check_return_ _Success_ (return == 0) __returntype__
+    _Check_return_ _Success_ (return == 0) __returntype__ ZMQ_CALLCONV
 #define ZMQ_EXPORT(__returntype__) ZMQ_LINKAGE ZMQ_EXPORT_IMPL (__returntype__)
 
-#define ZMQ_EXPORT_VOID_IMPL void
+#define ZMQ_EXPORT_VOID_IMPL void ZMQ_CALLCONV
 #define ZMQ_EXPORT_VOID ZMQ_LINKAGE ZMQ_EXPORT_VOID_IMPL
 
-#define ZMQ_EXPORT_VOID_PTR_IMPL void *
+#define ZMQ_EXPORT_VOID_PTR_IMPL                                               \
+    _Must_inspect_result_ _Success_ (return != nullptr) void *ZMQ_CALLCONV
 #define ZMQ_EXPORT_VOID_PTR ZMQ_LINKAGE ZMQ_EXPORT_VOID_PTR_IMPL
 
 #define ZMQ_EXPORT_PTR_IMPL(__returntype__, __underlyingtype__)                \
-    _Must_inspect_result_ _Success_ (return != NULL)                           \
-      _Ret_writes_bytes_ (sizeof (__underlyingtype__)) __returntype__
+    _Must_inspect_result_ _Success_ (return != nullptr)                        \
+      _Ret_writes_bytes_ (sizeof (__underlyingtype__))                         \
+        __returntype__ ZMQ_CALLCONV
 #define ZMQ_EXPORT_PTR(__returntype__, __underlyingtype__)                     \
     ZMQ_LINKAGE ZMQ_EXPORT_PTR_IMPL (__returntype__, __underlyingtype__)
 
 #define ZMQ_EXPORT_BUF_SIZE_IMPL(__returntype__, __underlyingsize__)           \
-    _Must_inspect_result_ _Success_ (return != NULL)                           \
-      _Ret_writes_bytes_ (__underlyingsize__) __returntype__
+    _Must_inspect_result_ _Success_ (return != nullptr)                        \
+      _Ret_writes_bytes_ (__underlyingsize__) __returntype__ ZMQ_CALLCONV
 #define ZMQ_EXPORT_BUF_SIZE(__returntype__, __underlyingsize__)                \
     ZMQ_LINKAGE ZMQ_EXPORT_BUF_SIZE_IMPL (__returntype__, __underlyingsize__)
 
 #define ZMQ_EXPORT_STR_IMPL(__returntype__)                                    \
-    _Must_inspect_result_ _Success_ (return != NULL)                           \
-      _When_ (return != NULL, _Ret_z_) __returntype__
+    _Must_inspect_result_ _Success_ (return != nullptr)                        \
+      _When_ (return != nullptr, _Ret_z_) __returntype__ ZMQ_CALLCONV
 #define ZMQ_EXPORT_STR(__returntype__)                                         \
     ZMQ_LINKAGE ZMQ_EXPORT_STR_IMPL (__returntype__)
 
 #define ZMQ_EXPORT_STR_SIZE_IMPL(__returntype__, __underlyingsize__)           \
-    _Must_inspect_result_ _Success_ (return != NULL)                           \
-      _Ret_writes_z_ (__underlyingsize__) __returntype__
+    _Must_inspect_result_ _Success_ (return != nullptr)                        \
+      _Ret_writes_z_ (__underlyingsize__) __returntype__ ZMQ_CALLCONV
 #define ZMQ_EXPORT_STR_SIZE(__returntype__, __underlyingsize__)                \
     ZMQ_LINKAGE ZMQ_EXPORT_STR_SIZE_IMPL (__returntype__, __underlyingsize__)
 
@@ -135,7 +144,6 @@ typedef unsigned __int8 uint8_t;
 #ifdef ZMQ_HAVE_AIX
 #include <poll.h>
 #endif
-
 
 /******************************************************************************/
 /*  0MQ errors.                                                               */
@@ -242,15 +250,15 @@ zmq_version (_Out_ int *major_, _Out_ int *minor_, _Out_ int *patch_);
 #define ZMQ_THREAD_PRIORITY_DFLT -1
 #define ZMQ_THREAD_SCHED_POLICY_DFLT -1
 
-ZMQ_EXPORT_PTR (void *, zmq::ctx_t) zmq_ctx_new (void);
+ZMQ_EXPORT_VOID_PTR zmq_ctx_new (void);
 ZMQ_EXPORT (int) zmq_ctx_term (_In_ _Post_invalid_ void *context_);
 ZMQ_EXPORT (int) zmq_ctx_shutdown (_Inout_ void *context_);
 ZMQ_EXPORT (int) zmq_ctx_set (_Inout_ void *context_, int option_, int optval_);
 ZMQ_EXPORT (int) zmq_ctx_get (_In_ void *context_, int option_);
 
 /*  Old (legacy) API                                                          */
-ZMQ_EXPORT_PTR (void *, zmq::ctx_t)
-zmq_init (_In_range_ (0, INT_MAX) int io_threads_);
+ZMQ_EXPORT_VOID_PTR
+zmq_init (_Pre_satisfies_ (io_threads_ >= 0) int io_threads_);
 ZMQ_EXPORT (int) zmq_term (_In_ _Post_invalid_ void *context_);
 ZMQ_EXPORT (int) zmq_ctx_destroy (_In_ _Post_invalid_ void *context_);
 
@@ -285,8 +293,7 @@ _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init (_Out_ zmq_msg_t *msg_);
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init_size (_Out_ zmq_msg_t *msg_, size_t size_);
-ZMQ_EXPORT (int)
-_At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_)
+_At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init_data (_Out_ zmq_msg_t *msg_,
                      _In_reads_bytes_opt_ (size_) void *data_,
                      size_t size_,
@@ -503,7 +510,7 @@ zmq_msg_gets (_In_ const zmq_msg_t *msg_, _In_z_ const char *property_);
 #define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
 #define ZMQ_PROTOCOL_ERROR_WS_UNSPECIFIED 0x30000000
 
-ZMQ_EXPORT_PTR (void *, zmq::socket_base_t)
+ZMQ_EXPORT_VOID_PTR
 zmq_socket (_In_ void *context_, int type_);
 ZMQ_EXPORT (int) zmq_close (_In_ void *s_);
 ZMQ_EXPORT (int)
@@ -651,7 +658,7 @@ zmq_curve_public (_Out_writes_z_ (41) char *z85_public_key_,
 /*  Atomic utility methods                                                    */
 /******************************************************************************/
 
-ZMQ_EXPORT_PTR (void *, zmq::atomic_counter_t) zmq_atomic_counter_new (void);
+ZMQ_EXPORT_VOID_PTR zmq_atomic_counter_new (void);
 ZMQ_EXPORT_VOID zmq_atomic_counter_set (_Inout_ void *counter_, int value_);
 ZMQ_EXPORT (int) zmq_atomic_counter_inc (_Inout_ void *counter_);
 ZMQ_EXPORT (int) zmq_atomic_counter_dec (_Inout_ void *counter_);
@@ -667,7 +674,7 @@ zmq_atomic_counter_destroy (_Inout_ _Deref_post_null_ void **counter_p_);
 
 typedef void (zmq_timer_fn) (int timer_id_, _In_opt_ void *arg_);
 
-ZMQ_EXPORT_PTR (void *, zmq::timers_t) zmq_timers_new (void);
+ZMQ_EXPORT_VOID_PTR zmq_timers_new (void);
 ZMQ_EXPORT (int)
 zmq_timers_destroy (_Inout_ _Deref_post_null_ void **timers_p_);
 ZMQ_EXPORT (int)
@@ -710,7 +717,7 @@ ZMQ_EXPORT_VOID zmq_sleep (int seconds_);
 typedef void (zmq_thread_fn) (_In_opt_ void *);
 
 /* Start a thread. Returns a handle to the thread.                            */
-ZMQ_EXPORT (void *)
+ZMQ_EXPORT_VOID_PTR
 zmq_threadstart (_In_ zmq_thread_fn *func_, _In_opt_ void *arg_);
 
 /* Wait for thread to complete then free up resources.                        */
@@ -839,7 +846,7 @@ typedef struct zmq_poller_event_t
     short events;
 } zmq_poller_event_t;
 
-ZMQ_EXPORT_PTR (void *, zmq::socket_poller_t) zmq_poller_new (void);
+ZMQ_EXPORT_VOID_PTR zmq_poller_new (void);
 ZMQ_EXPORT (int)
 zmq_poller_destroy (_Inout_ _Deref_post_null_ void **poller_p_);
 ZMQ_EXPORT (int) zmq_poller_size (_In_ void *poller_);

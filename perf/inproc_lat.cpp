@@ -140,7 +140,7 @@ int main (int argc, char *argv[])
         printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
         return -1;
     }
-    memset (zmqp_msg_data (&msg), 0, message_size);
+    memset (zmq_msg_data (&msg), 0, message_size);
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
@@ -158,7 +158,7 @@ int main (int argc, char *argv[])
             printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
-        if (zmqp_msg_size (&msg) != message_size) {
+        if (zmq_msg_size (&msg) != message_size) {
             printf ("message of incorrect size received\n");
             return -1;
         }

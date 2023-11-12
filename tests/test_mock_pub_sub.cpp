@@ -24,7 +24,7 @@ static int get_monitor_event (void *monitor_)
         }
         TEST_ASSERT_TRUE (zmq_msg_more (&msg));
 
-        uint8_t *data = static_cast<uint8_t *> (zmqp_msg_data (&msg));
+        uint8_t *data = static_cast<uint8_t *> (zmq_msg_data (&msg));
         uint16_t event = *reinterpret_cast<uint16_t *> (data);
 
         //  Second frame in message contains event address

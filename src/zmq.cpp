@@ -107,7 +107,7 @@ ZMQ_EXPORT_IMPL (int) zmq_errno (void)
 
 //  New context API
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::ctx_t) zmq_ctx_new (void)
+ZMQ_EXPORT_VOID_PTR_IMPL zmq_ctx_new (void)
 {
     //  We do this before the ctx constructor since its embedded mailbox_t
     //  object needs the network to be up and running (at least on Windows).
@@ -200,8 +200,8 @@ zmq_ctx_get_ext (_In_ void *context_,
 
 //  Stable/legacy context API
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::ctx_t)
-zmq_init (_In_range_ (0, INT_MAX) int io_threads_)
+ZMQ_EXPORT_VOID_PTR_IMPL
+zmq_init (_Pre_satisfies_ (io_threads_ >= 0) int io_threads_)
 {
     if (io_threads_ >= 0) {
         void *ctx = zmq_ctx_new ();
@@ -236,7 +236,7 @@ static zmq::socket_base_t *as_socket_base_t (_In_ void *s_)
     return s;
 }
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::socket_base_t)
+ZMQ_EXPORT_VOID_PTR_IMPL
 zmq_socket (_In_ void *context_, int type_)
 {
     if (!context_ || !(static_cast<zmq::ctx_t *> (context_))->check_tag ()) {
@@ -1513,7 +1513,7 @@ zmq_ppoll (_In_reads_ (nitems_) zmq_pollitem_t *items_,
 
 //  The poller functionality
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::socket_poller_t) zmq_poller_new (void)
+ZMQ_EXPORT_VOID_PTR_IMPL zmq_poller_new (void)
 {
     zmq::socket_poller_t *poller = new (std::nothrow) zmq::socket_poller_t;
     if (!poller) {
@@ -1740,7 +1740,7 @@ zmq_socket_get_peer_state (_In_ void *socket_,
 
 //  Timers
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::timers_t) zmq_timers_new (void)
+ZMQ_EXPORT_VOID_PTR_IMPL zmq_timers_new (void)
 {
     zmq::timers_t *timers = new (std::nothrow) zmq::timers_t;
     alloc_assert (timers);

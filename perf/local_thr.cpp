@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
         printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
         return -1;
     }
-    if (zmqp_msg_size (&msg) != message_size) {
+    if (zmq_msg_size (&msg) != message_size) {
         printf ("message of incorrect size received\n");
         return -1;
     }
@@ -94,7 +94,7 @@ int main (int argc, char *argv[])
             printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
-        if (zmqp_msg_size (&msg) != message_size) {
+        if (zmq_msg_size (&msg) != message_size) {
             printf ("message of incorrect size received\n");
             return -1;
         }

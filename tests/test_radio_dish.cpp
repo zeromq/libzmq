@@ -35,7 +35,7 @@ void msg_send_expect_success (void *s_, const char *group_, const char *body_)
     const size_t len = strlen (body_);
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init_size (&msg, len));
 
-    memcpy (zmqp_msg_data (&msg), body_, len);
+    memcpy (zmq_msg_data (&msg), body_, len);
 
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_set_group (&msg, group_));
 
@@ -57,7 +57,7 @@ void msg_recv_cmp (void *s_, const char *group_, const char *body_)
 
     TEST_ASSERT_EQUAL_STRING (group_, zmq_msg_group (&msg));
 
-    TEST_ASSERT_EQUAL_STRING_LEN (body_, zmqp_msg_data (&msg), len);
+    TEST_ASSERT_EQUAL_STRING_LEN (body_, zmq_msg_data (&msg), len);
 
     zmq_msg_close (&msg);
 }

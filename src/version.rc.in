@@ -69,7 +69,7 @@ BEGIN
 		BLOCK "080904b0"
 		BEGIN
 			VALUE "CompanyName",      "iMatix Corporation"
-			VALUE "FileDescription",  "ZeroMQ lightweight messaging kernel"
+			VALUE "FileDescription",  "ZeroMQ Lightweight Messaging Kernel"
 			VALUE "FileVersion",      VER_FILEVERSION_STR
 			VALUE "InternalName",     "zeromq"
 			VALUE "LegalCopyright",   "Copyright (c) 2012 The ZeroMQ Authors."

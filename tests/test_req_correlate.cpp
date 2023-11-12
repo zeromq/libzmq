@@ -27,7 +27,7 @@ void test_req_correlate ()
 
     // Receive peer routing id
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
-    TEST_ASSERT_GREATER_THAN_INT (0, zmqp_msg_size (&msg));
+    TEST_ASSERT_GREATER_THAN_INT (0, zmq_msg_size (&msg));
     zmq_msg_t peer_id_msg;
     zmq_msg_init (&peer_id_msg);
     zmq_msg_copy (&peer_id_msg, &msg);
@@ -40,8 +40,8 @@ void test_req_correlate ()
 
     // Receive request id 1
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_recv (&msg, router, 0));
-    TEST_ASSERT_EQUAL_UINT (sizeof (uint32_t), zmqp_msg_size (&msg));
-    const uint32_t req_id = *static_cast<uint32_t *> (zmqp_msg_data (&msg));
+    TEST_ASSERT_EQUAL_UINT (sizeof (uint32_t), zmq_msg_size (&msg));
+    const uint32_t req_id = *static_cast<uint32_t *> (zmq_msg_data (&msg));
     zmq_msg_t req_id_msg;
     zmq_msg_init (&req_id_msg);
     zmq_msg_copy (&req_id_msg, &msg);

@@ -39,7 +39,7 @@ void test_srcfd ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg));
 
     zmq_recvmsg (rep, &msg, 0);
-    TEST_ASSERT_EQUAL_UINT (MSG_SIZE, zmqp_msg_size (&msg));
+    TEST_ASSERT_EQUAL_UINT (MSG_SIZE, zmq_msg_size (&msg));
 
     // get the messages source file descriptor
     int src_fd = zmq_msg_get (&msg, ZMQ_SRCFD);

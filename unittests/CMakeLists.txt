@@ -34,6 +34,10 @@ foreach(test ${unittests})
 
   target_link_libraries(${test} testutil-static)
 
+  if(WITH_OPENPGM)
+    target_link_libraries(${test} ${OPENPGM_LIBRARIES})
+  endif()
+
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()

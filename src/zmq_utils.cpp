@@ -52,7 +52,7 @@ zmq_stopwatch_stop (_In_ _Post_invalid_ void *watch_)
     return res;
 }
 
-ZMQ_EXPORT_IMPL (void *)
+ZMQ_EXPORT_VOID_PTR_IMPL
 zmq_threadstart (_In_ zmq_thread_fn *func_, _In_opt_ void *arg_)
 {
     zmq::thread_t *thread = new (std::nothrow) zmq::thread_t;
@@ -264,8 +264,7 @@ zmq_curve_public (_Out_writes_z_ (41) char *z85_public_key_,
 //  --------------------------------------------------------------------------
 //  Initialize a new atomic counter, which is set to zero
 
-ZMQ_EXPORT_PTR_IMPL (void *, zmq::atomic_counter_t)
-zmq_atomic_counter_new (void)
+ZMQ_EXPORT_VOID_PTR_IMPL zmq_atomic_counter_new (void)
 {
     zmq::atomic_counter_t *counter = new (std::nothrow) zmq::atomic_counter_t;
     alloc_assert (counter);
