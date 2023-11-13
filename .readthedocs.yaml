@@ -33,5 +33,6 @@ build:
     # ------------
     # Note that for usability we make sure zip will create a zipfile containing just a flat list of HTML files; 
     # to achieve that it's important to avoid storing absolute paths when invoking "zip", thus we use -j
+    # Also note that the archive name should match exactly the project slug, "libzmq" in this case.
     - mkdir -p $READTHEDOCS_OUTPUT/htmlzip/
-    - cd $READTHEDOCS_OUTPUT/html && zip -j ../htmlzip/zeromq.zip *.html
+    - cd $READTHEDOCS_OUTPUT/html && zip -j ../htmlzip/libzmq.zip *.html
