@@ -63,63 +63,94 @@ int GetAdapterIpAddress (
   _Out_writes_bytes_ (ipAddressBufferSizeBytes) char *ipAddressBuffer,
   size_t ipAddressBufferSizeBytes)
 {
-    ULONG bufferSizeBytes = 0;
+    *ipAddressBuffer = 0;
 
     if (ipAddressBufferSizeBytes < 8) {
         return -1;
     }
     
-    *ipAddressBuffer = 0;
-
     //
-    // First call retrieves the needed buffer size in bytes
+    // Alocate memory for up to 8 adapters
     //
 
-    if (GetAdaptersInfo (NULL, &bufferSizeBytes) != ERROR_BUFFER_OVERFLOW) {
-        return -1;
-    }
-
-    void* buffer = malloc (bufferSizeBytes);
-
-    if (!buffer) {
-        return -1;
-    }
-
+    ULONG bufferSizeBytes = 8 * sizeof (IP_ADAPTER_INFO);
+    void *buffer = malloc (bufferSizeBytes);
     PIP_ADAPTER_INFO pAdapterInfo = (IP_ADAPTER_INFO *) buffer;
 
     //
     // Retrieve information for all adapters
     //
 
-    if (GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes) != ERROR_SUCCESS) {
+    if (GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes) == ERROR_BUFFER_OVERFLOW) {
+
+        //
+        // Buffer was too small
+        //
+
         free (buffer);
-        return -1;
+        buffer = malloc (bufferSizeBytes);
+        if (!buffer) {
+            return -1;
+        }
+
+        //
+        // Try again
+        //
+
+        pAdapterInfo = (IP_ADAPTER_INFO *) buffer;
+        if (GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes) != ERROR_SUCCESS) {
+            free (buffer);
+            return -1;
+        }
     }
 
     //
-    // Find the first Ethernet adapter with an IP address assigned that is not private
+    // Find the best(?) Ethernet adapter
     //
 
-    while (pAdapterInfo) {
-        if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET) {
-            if (pAdapterInfo->IpAddressList.IpAddress.String[0] != '0'
-                && strncmp (pAdapterInfo->IpAddressList.IpAddress.String, "172",
-                            3)
-                && strncmp (pAdapterInfo->IpAddressList.IpAddress.String, "192",
-                            3)) {
-                strcpy_s (ipAddressBuffer, ipAddressBufferSizeBytes,
-                          pAdapterInfo->IpAddressList.IpAddress.String);
-                free (buffer);
-                return 0;
+    int result = -1;
+    int bestAdapterScore = 0;
+
+    while (pAdapterInfo && bestAdapterScore < 3)
+    {
+        if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET)
+        {
+            char c = pAdapterInfo->IpAddressList.IpAddress.String[0];
+
+            if ((c != 0) && (c != '0'))
+            {
+                int currentAdapterScore = 1; // Has IP address!
+
+                c = pAdapterInfo->GatewayList.IpAddress.String[0];
+
+                if ((c != 0) && (c != '0'))
+                {
+                    ++currentAdapterScore; // Has gateway?
+                }
+
+                c = pAdapterInfo->DhcpServer.IpAddress.String[0];
+
+                if ((c != 0) && (c != '0'))
+                {
+                    ++currentAdapterScore; // Has DHCP server?
+                }
+
+                if (currentAdapterScore > bestAdapterScore)
+                {
+                    result = 0;
+                    bestAdapterScore = currentAdapterScore;
+                    strcpy_s (ipAddressBuffer, ipAddressBufferSizeBytes,
+                              pAdapterInfo->IpAddressList.IpAddress.String);
+                }
             }
         }
+
         pAdapterInfo = pAdapterInfo->Next;
     }
 
     free (buffer);
-    return -1;
+    return result;
 }
-
 #else
 #define NETWORK_ADAPTER "eth0"
 #endif
