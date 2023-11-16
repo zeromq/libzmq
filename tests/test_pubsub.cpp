@@ -72,7 +72,6 @@ int GetAdapterIpAddress (
     }
 
     if (ipAddressBufferSizeBytes < 8) {
-        printf ("Invalid parameter: ipAddressBufferSizeBytes < 8\n");
         return -1;
     }
 
@@ -99,7 +98,6 @@ int GetAdapterIpAddress (
         buffer = malloc (bufferSizeBytes);
 
         if (!buffer) {
-            printf ("Out of memory allocating %u bytes.\n", bufferSizeBytes);
             return -1;
         }
 
@@ -112,7 +110,6 @@ int GetAdapterIpAddress (
     }
 
     if (result != ERROR_SUCCESS) {
-        printf ("GetAdaptersInfo() returned %d\n", result);
         free (buffer);
         return -1;
     }
@@ -170,10 +167,6 @@ int GetAdapterIpAddress (
         }
 
         pAdapterInfo = pAdapterInfo->Next;
-    }
-
-    if (result == -1) {
-        printf ("Could not find a suitable adapter.\n");
     }
 
     free (buffer);
