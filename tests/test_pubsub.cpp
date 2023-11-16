@@ -254,6 +254,15 @@ void test_ws ()
 #endif
 }
 
+void test_wss ()
+{
+#if defined ZMQ_HAVE_WSS
+    test ("wss://localhost:6214");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without WSS WebSockets, ignoring test.");
+#endif
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -266,5 +275,6 @@ int main ()
     RUN_TEST (test_ipc);
     RUN_TEST (test_inproc);
     RUN_TEST (test_ws);
+    RUN_TEST (test_wss);
     return UNITY_END ();
 }
