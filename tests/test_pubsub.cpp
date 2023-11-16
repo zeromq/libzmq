@@ -181,8 +181,8 @@ void test_epgm ()
 {
 #if defined ZMQ_HAVE_OPENPGM
 #ifdef ZMQ_HAVE_WINDOWS
-    char network[256];
-    char ip_address[64];
+    char network[64];
+    char ip_address[16];
     TEST_ASSERT_EQUAL_INT (
       0, GetAdapterIpAddress (ip_address, _countof (ip_address)));
     sprintf_s (network, _countof (network), "epgm://%s;224.0.1.20:6211",
@@ -209,8 +209,8 @@ void test_pgm ()
         TEST_IGNORE_MESSAGE (
           "libzmq with OpenPGM, but user is not an admin, ignoring test.");
     } else {
-        char network[256];
-        char ip_address[64];
+        char network[64];
+        char ip_address[16];
         TEST_ASSERT_EQUAL_INT (
           0, GetAdapterIpAddress (ip_address, _countof (ip_address)));
         sprintf_s (network, _countof (network), "pgm://%s;224.0.1.20:6212",
@@ -230,6 +230,30 @@ void test_pgm ()
 #endif
 }
 
+void test_tcp ()
+{
+    test ("tcp://localhost:6213");
+}
+
+void test_ipc ()
+{
+    test ("ipc://test_pubsub");
+}
+
+void test_inproc ()
+{
+    test ("inproc://test_pubsub");
+}
+
+void test_ws ()
+{
+#if defined ZMQ_HAVE_WS
+    test ("ws://localhost:6214");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without WebSockets, ignoring test.");
+#endif
+}
+
 int main ()
 {
     setup_test_environment ();
@@ -238,5 +262,9 @@ int main ()
     RUN_TEST (test_norm);
     RUN_TEST (test_epgm);
     RUN_TEST (test_pgm);
+    RUN_TEST (test_tcp);
+    RUN_TEST (test_ipc);
+    RUN_TEST (test_inproc);
+    RUN_TEST (test_ws);
     return UNITY_END ();
 }
