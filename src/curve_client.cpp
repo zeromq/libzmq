@@ -195,7 +195,7 @@ int zmq::curve_client_t::process_ready (const uint8_t *msg_data_,
     std::vector<uint8_t> ready_box (crypto_box_BOXZEROBYTES + 16 + clen);
 
     std::fill (ready_box.begin (), ready_box.begin () + crypto_box_BOXZEROBYTES,
-               0);
+               static_cast<uint8_t> (0));
     memcpy (&ready_box[crypto_box_BOXZEROBYTES], msg_data_ + 14,
             clen - crypto_box_BOXZEROBYTES);
 

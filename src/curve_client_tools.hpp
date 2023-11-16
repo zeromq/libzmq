@@ -128,7 +128,8 @@ struct curve_client_tools_t
 
         //  Create vouch = Box [C',S](C->S')
         std::fill (vouch_plaintext.begin (),
-                   vouch_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+                   vouch_plaintext.begin () + crypto_box_ZEROBYTES,
+                   static_cast<uint8_t> (0));
         memcpy (&vouch_plaintext[crypto_box_ZEROBYTES], cn_public_, 32);
         memcpy (&vouch_plaintext[crypto_box_ZEROBYTES + 32], server_key_, 32);
 
@@ -150,7 +151,8 @@ struct curve_client_tools_t
 
         //  Create Box [C + vouch + metadata](C'->S')
         std::fill (initiate_plaintext.begin (),
-                   initiate_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+                   initiate_plaintext.begin () + crypto_box_ZEROBYTES,
+                   static_cast<uint8_t> (0));
 
         //  False positives due to https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
 #if __GNUC__ >= 11
