@@ -61,14 +61,21 @@ void test_norm ()
 #if defined ZMQ_HAVE_WINDOWS
 int GetAdapterIpAddress (
   _Out_writes_bytes_ (ipAddressBufferSizeBytes) char *ipAddressBuffer,
-  size_t ipAddressBufferSizeBytes)
+  size_t ipAddressBufferSizeBytes,
+  _Out_writes_bytes_opt_ (adapterNameBufferSizeBytes) char *adapterNameBuffer = nullptr,
+  size_t adapterNameBufferSizeBytes = 0)
 {
     *ipAddressBuffer = 0;
 
+    if ((adapterNameBuffer != nullptr) && (adapterNameBufferSizeBytes > 0)) {
+        *adapterNameBuffer = 0;
+    }
+
     if (ipAddressBufferSizeBytes < 8) {
+        printf ("Invalid parameter: ipAddressBufferSizeBytes < 8\n");
         return -1;
     }
-    
+
     //
     // Alocate memory for up to 8 adapters
     //
@@ -81,15 +88,18 @@ int GetAdapterIpAddress (
     // Retrieve information for all adapters
     //
 
-    if (GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes) == ERROR_BUFFER_OVERFLOW) {
+    int result = GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes);
 
+    if (result == ERROR_BUFFER_OVERFLOW) {
         //
         // Buffer was too small
         //
 
         free (buffer);
         buffer = malloc (bufferSizeBytes);
+
         if (!buffer) {
+            printf ("Out of memory allocating %u bytes.\n", bufferSizeBytes);
             return -1;
         }
 
@@ -98,55 +108,72 @@ int GetAdapterIpAddress (
         //
 
         pAdapterInfo = (IP_ADAPTER_INFO *) buffer;
-        if (GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes) != ERROR_SUCCESS) {
-            free (buffer);
-            return -1;
-        }
+        result = GetAdaptersInfo (pAdapterInfo, &bufferSizeBytes);
+    }
+
+    if (result != ERROR_SUCCESS) {
+        printf ("GetAdaptersInfo() returned %d\n", result);
+        free (buffer);
+        return -1;
     }
 
     //
     // Find the best(?) Ethernet adapter
     //
 
-    int result = -1;
+    result = -1;
     int bestAdapterScore = 0;
 
-    while (pAdapterInfo && bestAdapterScore < 3)
-    {
+    while (pAdapterInfo && bestAdapterScore < 4) {
         if ((pAdapterInfo->Type == IF_TYPE_ETHERNET_CSMACD)
-            || (pAdapterInfo->Type == IF_TYPE_IEEE80211))
-        {
+            || (pAdapterInfo->Type == IF_TYPE_IEEE80211)) {
             char c = pAdapterInfo->IpAddressList.IpAddress.String[0];
 
-            if ((c != 0) && (c != '0'))
-            {
+            if ((c != 0) && (c != '0')) {
                 int currentAdapterScore = 1; // Has IP address!
+
+                if (pAdapterInfo->Type == IF_TYPE_ETHERNET_CSMACD) {
+                    ++currentAdapterScore; // Is Ethernet?
+                }
 
                 c = pAdapterInfo->GatewayList.IpAddress.String[0];
 
-                if ((c != 0) && (c != '0'))
-                {
+                if ((c != 0) && (c != '0')) {
                     ++currentAdapterScore; // Has gateway?
                 }
 
                 c = pAdapterInfo->DhcpServer.IpAddress.String[0];
 
-                if ((c != 0) && (c != '0'))
-                {
+                if ((c != 0) && (c != '0')) {
                     ++currentAdapterScore; // Has DHCP server?
                 }
 
-                if (currentAdapterScore > bestAdapterScore)
-                {
+                if (currentAdapterScore > bestAdapterScore) {
                     result = 0;
                     bestAdapterScore = currentAdapterScore;
+
+                    memset (ipAddressBuffer, 0, ipAddressBufferSizeBytes);
                     strcpy_s (ipAddressBuffer, ipAddressBufferSizeBytes,
                               pAdapterInfo->IpAddressList.IpAddress.String);
+
+                    if ((adapterNameBuffer != nullptr)
+                        && (adapterNameBufferSizeBytes > 0)) {
+                        memset (adapterNameBuffer, 0,
+                                adapterNameBufferSizeBytes);
+                        strncpy_s (adapterNameBuffer,
+                                   adapterNameBufferSizeBytes,
+                                   pAdapterInfo->Description,
+                                   _countof (pAdapterInfo->Description));
+                    }
                 }
             }
         }
 
         pAdapterInfo = pAdapterInfo->Next;
+    }
+
+    if (result == -1) {
+        printf ("Could not find a suitable adapter.\n");
     }
 
     free (buffer);
