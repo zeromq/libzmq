@@ -113,7 +113,8 @@ int GetAdapterIpAddress (
 
     while (pAdapterInfo && bestAdapterScore < 3)
     {
-        if (pAdapterInfo->Type == MIB_IF_TYPE_ETHERNET)
+        if ((pAdapterInfo->Type == IF_TYPE_ETHERNET_CSMACD)
+            || (pAdapterInfo->Type == IF_TYPE_IEEE80211))
         {
             char c = pAdapterInfo->IpAddressList.IpAddress.String[0];
 
