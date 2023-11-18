@@ -1868,7 +1868,8 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_OPENPGM)
-    if (strcmp (capability_, zmq::protocol_name::pgm) == 0)
+    if ((strcmp (capability_, zmq::protocol_name::pgm) == 0)
+        || strcmp (capability_, zmq::protocol_name::epgm) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_TIPC)
@@ -1896,11 +1897,11 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WS)
-    if (strcmp (capability_, "WS") == 0)
+    if (strcmpi (capability_, zmq::protocol_name::ws) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WSS)
-    if (strcmp (capability_, "WSS") == 0)
+    if (strcmpi (capability_, zmq::protocol_name::wss) == 0)
         return true;
 #endif
     //  Whatever the application asked for, we don't have

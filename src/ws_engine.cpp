@@ -5,6 +5,8 @@
 #ifdef ZMQ_USE_NSS
 #include <secoid.h>
 #include <sechash.h>
+#elif defined ZMQ_USE_MBEDTLS
+#include <mbedtls/sha1.h>
 #elif defined ZMQ_USE_BUILTIN_SHA1
 #include "../external/sha1/sha1.h"
 #elif defined ZMQ_USE_GNUTLS
@@ -1027,8 +1029,11 @@ encode_base64 (const unsigned char *in_, int in_len_, char *out_, int out_len_)
 
 static void compute_accept_key (char *key_, unsigned char *hash_)
 {
-    unsigned int salt_bytes = 36; // = strlen(salt);
-    const unsigned char *salt = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    unsigned int cbsalt = 36; // = strlen(salt);
+    const char *salt = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+#ifndef NDEBUG
+    zmq_assert (cbsalt == strlen(salt));
+#endif
 #ifdef ZMQ_USE_NSS
     unsigned int len;
     HASH_HashType type = HASH_GetHashTypeByOidTag (SEC_OID_SHA1);
@@ -1036,29 +1041,29 @@ static void compute_accept_key (char *key_, unsigned char *hash_)
     assert (ctx);
     HASH_Begin (ctx);
     HASH_Update (ctx, (unsigned char *) key_, (unsigned int) strlen (key_));
-    HASH_Update (ctx, salt, salt_bytes);
+    HASH_Update (ctx, (unsigned char *) salt, cbsalt);
     HASH_End (ctx, hash_, &len, SHA_DIGEST_LENGTH);
     HASH_Destroy (ctx);
+#elif defined ZMQ_USE_MBEDTLS
+    mbedtls_sha1_context ctx;
+    mbedtls_sha1_init (&ctx);
+    mbedtls_sha1_starts (&ctx);
+    mbedtls_sha1_update (&ctx, (unsigned char*) key_, strlen (key_));
+    mbedtls_sha1_update (&ctx, (unsigned char *) salt, cbsalt);
+    mbedtls_sha1_finish (&ctx, hash_);
+    mbedtls_sha1_free (&ctx);
 #elif defined ZMQ_USE_BUILTIN_SHA1
     sha1_ctxt ctx;
     SHA1_Init (&ctx);
     SHA1_Update (&ctx, (unsigned char *) key_, strlen (key_));
-    SHA1_Update (&ctx, salt, salt_bytes);
+    SHA1_Update (&ctx, (unsigned char *) salt, cbsalt);
     SHA1_Final (hash_, &ctx);
 #elif defined ZMQ_USE_GNUTLS
     gnutls_hash_hd_t hd;
     gnutls_hash_init (&hd, GNUTLS_DIG_SHA1);
     gnutls_hash (hd, key_, strlen (key_));
-    gnutls_hash (hd, salt, salt_bytes);
+    gnutls_hash (hd, salt, cbsalt);
     gnutls_hash_deinit (hd, hash_);
-#elif defined ZMQ_USE_MBEDTLS
-    mbedtls_sha1_context ctx;
-    mbedtls_sha1_init (&ctx);
-    mbedtls_sha1_starts (&ctx);
-    mbedtls_sha1_update (&ctx, key_, strlen (key_));
-    mbedtls_sha1_update (&ctx, salt, salt_bytes);
-    mbedtls_sha1_finish (&ctx, hash_, SHA_DIGEST_LENGTH);
-    mbedtls_sha1_free (&ctx);
 #else
 #error "No sha1 implementation set"
 #endif

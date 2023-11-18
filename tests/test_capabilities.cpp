@@ -21,8 +21,10 @@ void test_capabilities ()
 
 #if defined(ZMQ_HAVE_OPENPGM)
     TEST_ASSERT_TRUE (zmq_has ("pgm"));
+    TEST_ASSERT_TRUE (zmq_has ("epgm"));
 #else
     TEST_ASSERT_TRUE (!zmq_has ("pgm"));
+    TEST_ASSERT_TRUE (!zmq_has ("epgm"));
 #endif
 
 #if defined(ZMQ_HAVE_TIPC)
@@ -47,6 +49,18 @@ void test_capabilities ()
     TEST_ASSERT_TRUE (zmq_has ("gssapi"));
 #else
     TEST_ASSERT_TRUE (!zmq_has ("gssapi"));
+#endif
+
+#if defined(ZMQ_HAVE_WS)
+    TEST_ASSERT_TRUE (zmq_has ("ws"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("ws"));
+#endif
+
+#if defined(ZMQ_HAVE_WSS)
+    TEST_ASSERT_TRUE (zmq_has ("wss"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("wss"));
 #endif
 
 #if defined(ZMQ_HAVE_VMCI)
