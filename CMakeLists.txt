@@ -225,11 +225,14 @@ if(ENABLE_WS)
       list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
-
       message(STATUS "Enable WSS transport with MbedTLS")
+      set(MBEDTLS_FOUND 1)
       set(ZMQ_USE_MBEDTLS 1)
       set(ZMQ_HAVE_WSS 1)
       set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
+      set(MBEDTLS_LIBRARY_DIRS ${MBEDTLS_ROOT}/bin/lib/Release)
+      set(MBEDTLS_LIBRARIES ${MBEDTLS_LIBRARY_DIRS}/mbedtls.lib ${MBEDTLS_LIBRARY_DIRS}/mbedcrypto.lib
+                             ${MBEDTLS_LIBRARY_DIRS}/mbedx509.lib)
       include_directories(${MBEDTLS_INCLUDE_DIRS})
     else()
       message(WARNING "No WSS support, you may want to install OTLS and run cmake again")
@@ -899,12 +902,6 @@ if(MSVC)
   # Parallel make.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-
-  # Compile the static lib with debug information included note: we assume here that the default flags contain some /Z
-  # flag
-  string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
-  string(REGEX REPLACE "/Z.[^:]" "/Z7 " CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-
 endif()
 
 # -----------------------------------------------------------------------------
@@ -1309,9 +1306,6 @@ option(BUILD_STATIC "Whether or not to build the static archive" ON)
 if(MSVC)
   # Suppress linker warnings caused by #ifdef omission of file content.
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
-  set(PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-  set(PDB_NAME
-      "libzmq")
   function(enable_vs_guideline_checker target)
     set_target_properties(
       ${target} PROPERTIES VS_GLOBAL_EnableCppCoreCheck true VS_GLOBAL_CodeAnalysisRuleSet CppCoreCheckRules.ruleset
@@ -1355,9 +1349,7 @@ if(MSVC)
                  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
                  COMPILE_DEFINITIONS "DLL_EXPORT"
                  OUTPUT_NAME "libzmq")
-    if(ZMQ_HAVE_WINDOWS_UWP)
-      set_target_properties(libzmq PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
-    endif()
+    set_target_properties(libzmq PROPERTIES LINK_FLAGS_DEBUG "/OPT:NOICF /OPT:NOREF")
   endif()
 
   if(BUILD_STATIC)
@@ -1471,11 +1463,6 @@ if(MSVC)
     set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/bin/lib/Release)
     set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgm.lib)
   endif()
-  if(ZMQ_USE_MBEDTLS)
-    set(MBEDTLS_LIBRARY_DIRS ${MBEDTLS_ROOT}/bin/lib/Release)
-    set(MBEDTLS_LIBRARIES ${MBEDTLS_LIBRARY_DIRS}/mbedtls.lib ${MBEDTLS_LIBRARY_DIRS}/mbedcrypto.lib
-                          ${MBEDTLS_LIBRARY_DIRS}/mbedx509.lib)
-  endif()
 endif()
 
 if(BUILD_SHARED)
@@ -1488,6 +1475,10 @@ if(BUILD_SHARED)
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq ${GNUTLS_LIBRARIES})
     target_include_directories(libzmq PRIVATE "${GNUTLS_INCLUDE_DIR}")
+  endif()
+
+  if(MBEDTLS_FOUND)
+    target_link_libraries(libzmq ${MBEDTLS_LIBRARIES})
   endif()
 
   if(NSS3_FOUND)
@@ -1538,6 +1529,10 @@ if(BUILD_STATIC)
   if(GNUTLS_FOUND)
     target_link_libraries(libzmq-static ${GNUTLS_LIBRARIES})
     target_include_directories(libzmq-static PRIVATE "${GNUTLS_INCLUDE_DIR}")
+  endif()
+
+  if(MBEDTLS_FOUND)
+    target_link_libraries(libzmq-static ${MBEDTLS_LIBRARIES})
   endif()
 
   if(LIBBSD_FOUND)
@@ -1899,4 +1894,3 @@ if(ENABLE_NO_EXPORT)
   message(STATUS "Building with empty ZMQ_EXPORT macro")
   add_definitions(-DZMQ_NO_EXPORT)
 endif()
-

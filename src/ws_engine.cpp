@@ -2,7 +2,9 @@
 
 #include "precompiled.hpp"
 
-#ifdef ZMQ_USE_NSS
+#if defined ZMQ_USE_MBEDTLS
+#include <mbedtls/sha1.h>
+#elif defined ZMQ_USE_NSS
 #include <secoid.h>
 #include <sechash.h>
 #elif defined ZMQ_USE_MBEDTLS
@@ -1034,7 +1036,15 @@ static void compute_accept_key (char *key_, unsigned char *hash_)
 #ifndef NDEBUG
     zmq_assert (cbsalt == strlen(salt));
 #endif
-#ifdef ZMQ_USE_NSS
+#if defined ZMQ_USE_MBEDTLS
+    mbedtls_sha1_context ctx;
+    mbedtls_sha1_init (&ctx);
+    mbedtls_sha1_starts (&ctx);
+    mbedtls_sha1_update (&ctx, (unsigned char *) key_, strlen (key_));
+    mbedtls_sha1_update (&ctx, (unsigned char *) salt, cbsalt);
+    mbedtls_sha1_finish (&ctx, hash_);
+    mbedtls_sha1_free (&ctx);
+#elif defined ZMQ_USE_NSS
     unsigned int len;
     HASH_HashType type = HASH_GetHashTypeByOidTag (SEC_OID_SHA1);
     HASHContext *ctx = HASH_Create (type);
@@ -1044,14 +1054,6 @@ static void compute_accept_key (char *key_, unsigned char *hash_)
     HASH_Update (ctx, (unsigned char *) salt, cbsalt);
     HASH_End (ctx, hash_, &len, SHA_DIGEST_LENGTH);
     HASH_Destroy (ctx);
-#elif defined ZMQ_USE_MBEDTLS
-    mbedtls_sha1_context ctx;
-    mbedtls_sha1_init (&ctx);
-    mbedtls_sha1_starts (&ctx);
-    mbedtls_sha1_update (&ctx, (unsigned char*) key_, strlen (key_));
-    mbedtls_sha1_update (&ctx, (unsigned char *) salt, cbsalt);
-    mbedtls_sha1_finish (&ctx, hash_);
-    mbedtls_sha1_free (&ctx);
 #elif defined ZMQ_USE_BUILTIN_SHA1
     sha1_ctxt ctx;
     SHA1_Init (&ctx);
