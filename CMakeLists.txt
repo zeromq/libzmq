@@ -193,25 +193,46 @@ if(ENABLE_WS)
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_protocol.hpp)
   set(ZMQ_HAVE_WS 1)
-
   message(STATUS "Enable WebSocket transport")
+  option(WITH_GNUTLS "Use GnuTLS for WSS support" ON)
+  option(WITH_MBEDTLS "Use MbedTLS for WSS support" OFF)
+  option(WITH_NSS "Use NSS instead of builtin SHA-1" OFF)
+  if(WITH_GNUTLS)
+      find_package("GnuTLS" 3.6.7)
+      if(GNUTLS_FOUND)
+        set(pkg_config_names_private "${pkg_config_names_private} gnutls")
+        list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
 
-  option(WITH_TLS "Use TLS for WSS support" ON)
-  option(WITH_NSS "Use NSS instead of builtin sha1" OFF)
+        message(STATUS "Enable WSS transport with GnuTLS")
+        set(ZMQ_USE_GNUTLS 1)
+        set(ZMQ_HAVE_WSS 1)
+      else()
+        message(WARNING "No WSS support, you may want to install GnuTLS and run cmake again")
+      endif()
+    elseif(WITH_MBEDTLS)
+      find_path(
+        MBEDTLS_ROOT include/mbedtls/mbedtls_config.h
+        PATHS
+          "../mbedtls"
+        NO_DEFAULT_PATH)
+      set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
 
-  if(WITH_TLS)
-    find_package("GnuTLS" 3.6.7)
-    if(GNUTLS_FOUND)
-      set(pkg_config_names_private "${pkg_config_names_private} gnutls")
+    if(MBEDTLS_ROOT)
+      message(STATUS "MbedTLS detected! - ${MBEDTLS_ROOT}")
+      set(pkg_config_names_private "${pkg_config_names_private} mbedtls")
       list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
-           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
-           ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
+          ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
 
-      message(STATUS "Enable WSS transport")
-      set(ZMQ_USE_GNUTLS 1)
+      message(STATUS "Enable WSS transport with MbedTLS")
+      set(ZMQ_USE_MBEDTLS 1)
       set(ZMQ_HAVE_WSS 1)
+      set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
+      include_directories(${MBEDTLS_INCLUDE_DIRS})
     else()
-      message(WARNING "No WSS support, you may want to install GnuTLS and run cmake again")
+      message(WARNING "No WSS support, you may want to install OTLS and run cmake again")
     endif()
   endif()
 endif()
@@ -291,7 +312,7 @@ endif()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
-option(WITH_MILITANT "Enable militant assertions" OFF)
+option(WITH_MILITANT "Enable militant (aka strict) assertions" OFF)
 if(WITH_MILITANT)
   add_definitions(-DZMQ_ACT_MILITANT)
 endif()
@@ -792,7 +813,7 @@ if(MSVC)
       message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
     endif()
     set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
-endif()
+  endif()
 else()
   if(WITH_OPENPGM)
     # message(FATAL_ERROR "WITH_OPENPGM not implemented")
@@ -1447,13 +1468,13 @@ endforeach()
 
 if(MSVC)
   if(WITH_OPENPGM)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/out/lib/Debug)
-        set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgmd.lib)
-    else()
-        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/out/lib/Release)
-        set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgm.lib)
-    endif()
+    set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/bin/lib/Release)
+    set(OPENPGM_LIBRARIES ${OPENPGM_LIBRARY_DIRS}/libpgm.lib)
+  endif()
+  if(ZMQ_USE_MBEDTLS)
+    set(MBEDTLS_LIBRARY_DIRS ${MBEDTLS_ROOT}/bin/lib/Release)
+    set(MBEDTLS_LIBRARIES ${MBEDTLS_LIBRARY_DIRS}/mbedtls.lib ${MBEDTLS_LIBRARY_DIRS}/mbedcrypto.lib
+                          ${MBEDTLS_LIBRARY_DIRS}/mbedx509.lib)
   endif()
 endif()
 

@@ -3,7 +3,14 @@
 #ifndef __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 #define __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 
+#ifdef ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
+#elseif ZMQ_USE_MBEDTLS
+#include <gnutls/gnutls.h>
+#else
+#pragma message("Needs either ZMQ_USE_GNUTLS or ZMQ_USE_MBEDTLS")
+#endif
+
 #include "ws_engine.hpp"
 
 #define WSS_BUFFER_SIZE 8192
