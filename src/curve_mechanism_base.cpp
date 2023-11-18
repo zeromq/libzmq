@@ -27,6 +27,8 @@ zmq::curve_mechanism_base_t::curve_mechanism_base_t (
     curve_encoding_t (
       encode_nonce_prefix_, decode_nonce_prefix_, downgrade_sub_)
 {
+    LIBZMQ_UNUSED (session_);
+    LIBZMQ_UNUSED (options_);
 }
 
 int zmq::curve_mechanism_base_t::encode (msg_t *msg_)
@@ -135,7 +137,7 @@ int zmq::curve_encoding_t::encode (msg_t *msg_)
 
     std::fill (message_plaintext_with_zerobytes.begin (),
                message_plaintext_with_zerobytes.begin () + crypto_box_ZEROBYTES,
-               0);
+               static_cast<uint8_t> (0));
 #endif
 
     const uint8_t flags = msg_->flagsp () & flag_mask;
@@ -233,7 +235,8 @@ int zmq::curve_encoding_t::decode (msg_t *msg_, int *error_event_code_)
     std::vector<uint8_t> message_box (clen);
 
     std::fill (message_box.begin (),
-               message_box.begin () + crypto_box_BOXZEROBYTES, 0);
+               message_box.begin () + crypto_box_BOXZEROBYTES,
+               static_cast<uint8_t> (0));
     memcpy (&message_box[crypto_box_BOXZEROBYTES], message + message_header_len,
             msg_->sizep () - message_header_len);
 

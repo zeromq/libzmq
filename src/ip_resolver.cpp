@@ -349,7 +349,10 @@ int zmq::ip_resolver_t::resolve_getaddrinfo (ip_addr_t *ip_addr_,
     }
 
     if (!_options.allow_dns ()) {
-        req.ai_flags |= AI_NUMERICHOST;
+        // Still allow localhost to be resolved
+        if (strcmp (addr_, "localhost")) {
+            req.ai_flags |= AI_NUMERICHOST;
+        }
     }
 
 #if defined AI_V4MAPPED
@@ -632,29 +635,25 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 {
     int rc;
     bool found = false;
-    const int max_attempts = 10;
+    unsigned long out_buf_len = 32 * sizeof (IP_ADAPTER_ADDRESSES);
+    constexpr DWORD gaaFlags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST
+                               | GAA_FLAG_SKIP_DNS_SERVER;
 
-    int iterations = 0;
-    IP_ADAPTER_ADDRESSES *addresses;
-    unsigned long out_buf_len = sizeof (IP_ADAPTER_ADDRESSES);
+    IP_ADAPTER_ADDRESSES *addresses =
+      static_cast<IP_ADAPTER_ADDRESSES *> (malloc (out_buf_len));
 
-    do {
+    alloc_assert (addresses);
+
+    rc =
+      GetAdaptersAddresses (AF_UNSPEC, gaaFlags, NULL, addresses, &out_buf_len);
+
+    if (rc == ERROR_BUFFER_OVERFLOW) {
+        free (addresses);
         addresses = static_cast<IP_ADAPTER_ADDRESSES *> (malloc (out_buf_len));
         alloc_assert (addresses);
-
-        rc =
-          GetAdaptersAddresses (AF_UNSPEC,
-                                GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST
-                                  | GAA_FLAG_SKIP_DNS_SERVER,
-                                NULL, addresses, &out_buf_len);
-        if (rc == ERROR_BUFFER_OVERFLOW) {
-            free (addresses);
-            addresses = NULL;
-        } else {
-            break;
-        }
-        iterations++;
-    } while ((rc == ERROR_BUFFER_OVERFLOW) && (iterations < max_attempts));
+        rc = GetAdaptersAddresses (AF_UNSPEC, gaaFlags, NULL, addresses,
+                                   &out_buf_len);
+    }
 
     if (rc == 0) {
         for (const IP_ADAPTER_ADDRESSES *current_addresses = addresses;

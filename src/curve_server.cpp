@@ -195,7 +195,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
     //  Generate cookie = Box [C' + s'](t)
     std::fill (cookie_plaintext.begin (),
-               cookie_plaintext.begin () + crypto_secretbox_ZEROBYTES, 0);
+               cookie_plaintext.begin () + crypto_secretbox_ZEROBYTES,
+               static_cast<uint8_t> (0));
     memcpy (&cookie_plaintext[crypto_secretbox_ZEROBYTES], _cn_client, 32);
     memcpy (&cookie_plaintext[crypto_secretbox_ZEROBYTES + 32], _cn_secret, 32);
 
@@ -222,7 +223,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
     //  Create 144-byte Box [S' + cookie](S->C')
     std::fill (welcome_plaintext.begin (),
-               welcome_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+               welcome_plaintext.begin () + crypto_box_ZEROBYTES,
+               static_cast<uint8_t> (0));
     memcpy (&welcome_plaintext[crypto_box_ZEROBYTES], _cn_public, 32);
     memcpy (&welcome_plaintext[crypto_box_ZEROBYTES + 32], cookie_nonce + 8,
             16);
@@ -321,7 +323,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  Open Box [C + vouch + metadata](C'->S')
     std::fill (initiate_box.begin (),
-               initiate_box.begin () + crypto_box_BOXZEROBYTES, 0);
+               initiate_box.begin () + crypto_box_BOXZEROBYTES,
+               static_cast<uint8_t> (0));
     memcpy (&initiate_box[crypto_box_BOXZEROBYTES], initiate + 113,
             clen - crypto_box_BOXZEROBYTES);
 
@@ -426,7 +429,8 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
 
     //  Create Box [metadata](S'->C')
     std::fill (ready_plaintext.begin (),
-               ready_plaintext.begin () + crypto_box_ZEROBYTES, 0);
+               ready_plaintext.begin () + crypto_box_ZEROBYTES,
+               static_cast<uint8_t> (0));
     uint8_t *ptr = &ready_plaintext[crypto_box_ZEROBYTES];
 
     ptr += add_basic_properties (ptr, metadata_length);
