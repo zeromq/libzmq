@@ -29,7 +29,7 @@ struct endpoint_uri_pair_t
         return local_type == endpoint_type_bind ? local : remote;
     }
 
-    const bool clash () const { return local == remote; }
+    bool clash () const { return local == remote; }
 
     std::string local, remote;
     endpoint_type_t local_type;
