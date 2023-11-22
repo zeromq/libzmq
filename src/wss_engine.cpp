@@ -12,15 +12,19 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
                                  const endpoint_uri_pair_t &endpoint_uri_pair_,
                                  ws_address_t &address_,
                                  bool client_,
+#if defined ZMQ_USE_MBEDTLS
+                                 std::unique_ptr<mbedtls_ssl_context>& _ssl,
+#else
                                  void *tls_server_cred_,
+#endif
                                  const std::string &hostname_) :
     ws_engine_t (fd_, options_, endpoint_uri_pair_, address_, client_),
-    _established (false),
-    _tls_client_cred (NULL)
+    _established (false)
 {
     int rc = 0;
 
     if (client_) {
+        _tls_client_cred = zmq::make_unique_nothrow<mbedtls_x509_crt> ();
     } else {
     }
 }

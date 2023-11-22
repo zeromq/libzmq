@@ -8,7 +8,10 @@
 #include "stream_listener_base.hpp"
 
 #if defined ZMQ_USE_MBEDTLS
+#include <mbedtls/ssl.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/ctr_drbg.h>
+#pragma comment(lib, "bcrypt.lib")
 #elif defined ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
 #endif
@@ -50,9 +53,15 @@ class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
     bool _wss;
 #ifdef ZMQ_HAVE_WSS
 #if defined ZMQ_USE_MBEDTLS
-    mbedtls_x509_crt* _tls_cred;
+    std::unique_ptr<mbedtls_entropy_context> _entropy;
+    std::unique_ptr<mbedtls_ctr_drbg_context> _rng;
+    std::unique_ptr<mbedtls_ssl_context> _ssl;
+    std::unique_ptr<mbedtls_ssl_config> _ssl_config;
+    std::unique_ptr<mbedtls_x509_crt> _ssl_ca_cert;
+    std::unique_ptr<mbedtls_x509_crt> _ssl_server_cert;
+    std::unique_ptr<mbedtls_pk_context> _ssl_server_pkey;
 #elif defined ZMQ_USE_GNUTLS
-    gnutls_certificate_credentials_t _tls_cred;
+    gnutls_certificate_credentials_t _ssl;
 #else
 #error "No TLS implementation set"
 #endif

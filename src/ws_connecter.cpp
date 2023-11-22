@@ -257,9 +257,14 @@ void zmq::ws_connecter_t::create_engine (fd_t fd_,
     i_engine *engine = NULL;
     if (_wss) {
 #ifdef ZMQ_HAVE_WSS
-        engine = new (std::nothrow)
-          wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
-                        true, NULL, _hostname);
+        engine = new (std::nothrow) wss_engine_t (
+          fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true,
+#if defined ZMQ_USE_MBEDTLS
+          std::unique_ptr<mbedtls_ssl_context> (),
+#else
+          NULL,
+#endif
+          _hostname);
 #else
         LIBZMQ_UNUSED (_hostname);
         assert (false);

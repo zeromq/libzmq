@@ -49,20 +49,109 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
     if (_wss) {
 #if defined ZMQ_USE_MBEDTLS
 
-        // TODO: add support for mbedTLS
+        _entropy = zmq::make_unique_nothrow<mbedtls_entropy_context> ();
+        zmq_assert (_entropy.get ());
 
-        // Server creds
+        _rng = zmq::make_unique_nothrow<mbedtls_ctr_drbg_context> ();
+        zmq_assert (_rng.get ());
+
+        _ssl = zmq::make_unique_nothrow<mbedtls_ssl_context> ();
+        zmq_assert (_ssl.get ());
+
+        _ssl_config = zmq::make_unique_nothrow<mbedtls_ssl_config> ();
+        zmq_assert (_ssl_config.get ());
+
+        _ssl_ca_cert = zmq::make_unique_nothrow<mbedtls_x509_crt> ();
+        zmq_assert (_ssl_ca_cert.get ());
+
+        _ssl_server_cert = zmq::make_unique_nothrow<mbedtls_x509_crt> ();
+        zmq_assert (_ssl_server_cert.get ());
+
+        _ssl_server_pkey = zmq::make_unique_nothrow<mbedtls_pk_context> ();
+        zmq_assert (_ssl_server_pkey.get ());
+
+        mbedtls_entropy_init (_entropy.get ());
+        mbedtls_ctr_drbg_init (_rng.get ());
+        mbedtls_ssl_init (_ssl.get ());
+        mbedtls_ssl_config_init (_ssl_config.get ());
+        mbedtls_x509_crt_init (_ssl_ca_cert.get ());
+        mbedtls_x509_crt_init (_ssl_server_cert.get ());
+        mbedtls_pk_init (_ssl_server_pkey.get ());
+
+        int rc = mbedtls_ctr_drbg_seed (
+          _rng.get (), mbedtls_entropy_func, _entropy.get (),
+          (const unsigned char *) "zmq_wss_listener", 16);
+        
+        zmq_assert (rc == 0);
+
+        mbedtls_ssl_conf_rng (_ssl_config.get (), mbedtls_ctr_drbg_random,
+                              _rng.get ());
+
+        if (options_.wss_trust_pem.length () > 0) {
+            rc = mbedtls_x509_crt_parse (
+              _ssl_ca_cert.get (),
+              (const unsigned char *) options_.wss_trust_pem.c_str (),
+              options_.wss_trust_pem.length () + 1);
+
+            zmq_assert (rc == 0);
+        }
+
+        if (options_.wss_cert_pem.length () > 0) {
+            rc = mbedtls_x509_crt_parse (
+              _ssl_server_cert.get (),
+              (const unsigned char *) options_.wss_cert_pem.c_str (),
+              options_.wss_cert_pem.length () + 1);
+
+            zmq_assert (rc == 0);
+            zmq_assert (options_.wss_key_pem.length () > 0);
+
+            rc = mbedtls_pk_parse_key (
+              _ssl_server_pkey.get (),
+              (const unsigned char *) options_.wss_key_pem.c_str (),
+              options_.wss_key_pem.length () + 1, nullptr, 0,
+              mbedtls_ctr_drbg_random, _rng.get ());
+
+            zmq_assert (rc == 0);
+        }
+
+        rc = mbedtls_ssl_config_defaults (
+          _ssl_config.get (), MBEDTLS_SSL_IS_SERVER,
+          MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
+
+        zmq_assert (rc == 0);
+
+        mbedtls_ssl_conf_authmode (_ssl_config.get (),
+                                   MBEDTLS_SSL_VERIFY_OPTIONAL);
+
+        if (options_.wss_trust_pem.length () > 0) {
+            mbedtls_ssl_conf_ca_chain (_ssl_config.get (), _ssl_ca_cert.get (),
+                                       nullptr);
+        }
+
+        if (options_.wss_cert_pem.length () > 0) {
+            rc = mbedtls_ssl_conf_own_cert (_ssl_config.get (),
+                                            _ssl_server_cert.get (),
+                                   _ssl_server_pkey.get ());
+            zmq_assert (rc == 0);
+        }
+
+        mbedtls_ssl_conf_min_tls_version (_ssl_config.get (),
+                                          MBEDTLS_SSL_VERSION_TLS1_2);
+
+        rc = mbedtls_ssl_setup (_ssl.get (), _ssl_config.get ());
+
+        zmq_assert (rc == 0);
 
 #elif defined ZMQ_USE_GNUTLS
 
-        int rc = gnutls_certificate_allocate_credentials (&_tls_cred);
+        int rc = gnutls_certificate_allocate_credentials (&_ssl);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
 
         gnutls_datum_t cert = {(unsigned char *) options_.wss_cert_pem.c_str (),
                                (unsigned int) options_.wss_cert_pem.length ()};
         gnutls_datum_t key = {(unsigned char *) options_.wss_key_pem.c_str (),
                               (unsigned int) options_.wss_key_pem.length ()};
-        rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
+        rc = gnutls_certificate_set_x509_key_mem (_ssl, &cert, &key,
                                                   GNUTLS_X509_FMT_PEM);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
 
@@ -80,7 +169,7 @@ zmq::ws_listener_t::~ws_listener_t ()
 #if defined ZMQ_USE_MBEDTLS
         // TODO: add support for mbedTLS
 #elif defined ZMQ_USE_GNUTLS
-        gnutls_certificate_free_credentials (_tls_cred);
+        gnutls_certificate_free_credentials (_ssl);
 #else
 #error "No TLS implementation set"
 #endif
@@ -301,9 +390,8 @@ void zmq::ws_listener_t::create_engine (fd_t fd_)
     i_engine *engine = NULL;
     if (_wss)
 #ifdef ZMQ_HAVE_WSS
-        engine = new (std::nothrow)
-          wss_engine_t (fd_, options, endpoint_pair, _address, false, _tls_cred,
-                        std::string ());
+        engine = new (std::nothrow) wss_engine_t (
+          fd_, options, endpoint_pair, _address, false, _ssl, std::string ());
 #else
         zmq_assert (false);
 #endif
