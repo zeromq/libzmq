@@ -1897,11 +1897,11 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WS)
-    if (strcmpi (capability_, zmq::protocol_name::ws) == 0)
+    if (strcmp (capability_, zmq::protocol_name::ws) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WSS)
-    if (strcmpi (capability_, zmq::protocol_name::wss) == 0)
+    if (strcmp (capability_, zmq::protocol_name::wss) == 0)
         return true;
 #endif
     //  Whatever the application asked for, we don't have
