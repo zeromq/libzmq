@@ -153,7 +153,7 @@ void test_destroy_queue_on_disconnect (const char *bind_address_)
 TEST_SUITE (inproc, "inproc://a")
 TEST_SUITE (tcp, "tcp://127.0.0.1:*")
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

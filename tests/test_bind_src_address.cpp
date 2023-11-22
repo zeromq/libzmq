@@ -19,7 +19,7 @@ void test_x ()
     test_context_socket_close (sock);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

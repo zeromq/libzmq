@@ -256,7 +256,7 @@ void tearDown ()
     teardown_test_context ();
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

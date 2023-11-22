@@ -28,7 +28,7 @@ void test_last_endpoint ()
     test_context_socket_close (sb);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -55,7 +55,7 @@ void test_write_complete_and_flush_and_check_read_and_read ()
     TEST_ASSERT_EQUAL_INT (value, read_value);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

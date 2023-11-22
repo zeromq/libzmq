@@ -471,7 +471,7 @@ void test_manual_last_value ()
     test_context_socket_close (sub2);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

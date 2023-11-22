@@ -159,7 +159,7 @@ void test_vanilla_socket ()
     test_context_socket_close_zero_linger (server);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

@@ -59,7 +59,7 @@ void test_shutdown_stress_tipc ()
     }
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     if (!is_tipc_available ()) {
         printf ("TIPC environment unavailable, skipping test\n");

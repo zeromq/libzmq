@@ -111,7 +111,7 @@ main ()
 
 #else
 
-int main ()
+int ZMQ_CDECL main ()
 {
 }
 

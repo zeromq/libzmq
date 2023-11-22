@@ -81,7 +81,7 @@ void test_srcfd ()
       expected_errno, getpeername (src_fd, (struct sockaddr *) &ss, &addrlen));
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

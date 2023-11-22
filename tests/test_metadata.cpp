@@ -150,7 +150,7 @@ void test_router_prefetch_metadata ()
 }
 
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
     UNITY_BEGIN ();

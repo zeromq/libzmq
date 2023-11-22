@@ -96,7 +96,7 @@ void test_routing_id ()
     test_context_socket_close (client);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -411,7 +411,7 @@ void test_monitor_versioned_stats_ipc ()
 #endif // ZMQ_EVENT_PIPES_STATS
 #endif
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

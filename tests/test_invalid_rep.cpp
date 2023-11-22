@@ -54,7 +54,7 @@ void test_invalid_rep ()
     test_context_socket_close (req_socket);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

@@ -149,7 +149,7 @@ void test_wildcard_unbind_fails ()
     test_context_socket_close (push);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

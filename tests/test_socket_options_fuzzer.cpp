@@ -59,7 +59,7 @@ void test_socket_options_fuzzer ()
     free (len);
 }
 
-int main (int argc, char **argv)
+int ZMQ_CDECL main (int argc, char **argv)
 {
     setup_test_environment ();
 

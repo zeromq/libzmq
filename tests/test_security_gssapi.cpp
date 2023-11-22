@@ -230,7 +230,7 @@ void test_vanilla_socket ()
     close (s);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     // Avoid entanglements with user's credential cache
     setenv ("KRB5CCNAME", "MEMORY", 1);

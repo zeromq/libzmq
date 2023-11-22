@@ -55,7 +55,7 @@ void test_stream_exceeds_buffer ()
     TEST_ASSERT_EQUAL_UINT (0xde, rcvbuf[0]);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test_stream_exceeds_buffer);

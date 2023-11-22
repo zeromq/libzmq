@@ -193,7 +193,7 @@ void test_basic ()
     test_context_socket_close (dealer);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

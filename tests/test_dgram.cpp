@@ -69,7 +69,7 @@ void test_roundtrip ()
     test_context_socket_close (listener);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

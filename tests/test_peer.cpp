@@ -76,7 +76,7 @@ void test_peer ()
     test_context_socket_close (peer2);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

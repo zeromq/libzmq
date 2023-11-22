@@ -22,7 +22,7 @@ void test_busy_poll ()
     test_context_socket_close (socket);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
     UNITY_BEGIN ();

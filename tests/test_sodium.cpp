@@ -74,7 +74,7 @@ void test__zmq_curve_public__invalid__failure_long ()
       "0123456789012345678901234567890123456789.");
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test__zmq_curve_keypair__always__success);

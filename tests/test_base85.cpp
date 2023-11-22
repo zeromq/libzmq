@@ -151,7 +151,7 @@ def_test__encode__zmq_z85_decode__roundtrip (min, test_data_min)
 
 def_test__decode__zmq_z85_encode__roundtrip (regular, test_data_regular)
 
-  int main ()
+  int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test__zmq_z85_encode__valid__success);

@@ -44,7 +44,7 @@ void test_zmq_send_const ()
     recv_string_expect_success (sc, "foobar", 0);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

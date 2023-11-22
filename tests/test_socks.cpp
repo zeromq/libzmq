@@ -843,7 +843,7 @@ void test_socks_userpass_options (void)
 #endif
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment (180);
 

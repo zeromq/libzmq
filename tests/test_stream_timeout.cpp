@@ -129,7 +129,7 @@ static void test_stream_handshake_timeout_connect ()
     test_context_socket_close (stream);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

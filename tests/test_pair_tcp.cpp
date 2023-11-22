@@ -116,7 +116,7 @@ void test_io_completion_port ()
 }
 #endif
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

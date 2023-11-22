@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <zmq.h>
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     puts ("This tool generates a CurveZMQ keypair, as two printable strings "
           "you can");

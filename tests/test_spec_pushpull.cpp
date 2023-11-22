@@ -370,7 +370,7 @@ def_test_spec_pushpull (inproc, "inproc://a")
 
   def_test_spec_pushpull (tcp, "tcp://127.0.0.1:*")
 
-    int main ()
+    int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

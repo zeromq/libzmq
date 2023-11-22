@@ -187,7 +187,7 @@ void test_delay_attach_on_connect_3 ()
     test_context_socket_close (frontend);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
     UNITY_BEGIN ();

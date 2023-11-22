@@ -272,7 +272,7 @@ static void test_resolve_ipv6_mcast_src_connect_bad ()
     test_resolve_connect (AF_INET6, "[::1];[fe00:1]:5555", NULL);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     zmq::initialize_network ();
     setup_test_environment ();

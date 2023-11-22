@@ -118,7 +118,7 @@ void test_roundtrip ()
     test_context_socket_close (sb);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 
@@ -127,7 +127,7 @@ int main ()
     return UNITY_END ();
 }
 #else
-int main ()
+int ZMQ_CDECL main ()
 {
     printf ("WSS unavailable, skipping test\n");
     return 77;

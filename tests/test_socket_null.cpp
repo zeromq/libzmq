@@ -96,7 +96,7 @@ void test_zmq_disconnect_null_socket ()
     TEST_ASSERT_EQUAL_INT (ENOTSOCK, errno); // TODO use EINVAL instead?
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     UNITY_BEGIN ();
     RUN_TEST (test_zmq_socket_null_context);

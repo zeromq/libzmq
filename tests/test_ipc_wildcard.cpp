@@ -20,7 +20,7 @@ void test_ipc_wildcard ()
     test_context_socket_close (sb);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

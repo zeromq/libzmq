@@ -334,7 +334,7 @@ void test_proxy ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_ctx_destroy (control_context));
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment (360);
 

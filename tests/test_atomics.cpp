@@ -30,7 +30,7 @@ void test ()
     zmq_atomic_counter_destroy (&counter);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test);

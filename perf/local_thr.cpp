@@ -7,7 +7,7 @@
 // keys are arbitrary but must match remote_lat.cpp
 const char server_prvkey[] = "{X}#>t#jRGaQ}gMhv=30r(Mw+87YGs+5%kh=i@f8";
 
-int main (int argc, char *argv[])
+int ZMQ_CDECL main (int argc, char *argv[])
 {
     const char *bind_to;
     int message_count;

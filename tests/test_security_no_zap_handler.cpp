@@ -44,7 +44,7 @@ void test_no_zap_handler_enforce_domain ()
 #endif
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

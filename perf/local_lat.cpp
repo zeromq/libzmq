@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main (int argc, char *argv[])
+int ZMQ_CDECL main (int argc, char *argv[])
 {
     const char *bind_to;
     int roundtrip_count;

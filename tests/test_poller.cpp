@@ -690,7 +690,7 @@ void test_poll_client_server ()
 #endif
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

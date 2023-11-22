@@ -33,7 +33,7 @@ void test_strerrror ()
     TEST_ASSERT_NOT_NULL (zmq_strerror (EINVAL));
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

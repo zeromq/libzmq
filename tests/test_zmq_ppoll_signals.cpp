@@ -165,7 +165,7 @@ void test_ppoll_signals ()
 // check of sigterm_received's value, but even then a race condition can occur,
 // see the explanation given here: https://250bpm.com/blog:12/
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test_ppoll_signals);

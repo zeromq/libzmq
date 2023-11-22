@@ -74,7 +74,7 @@ void test_xpub_subscribe_long_topic ()
     test_context_socket_close (sub);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

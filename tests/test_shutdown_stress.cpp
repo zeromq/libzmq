@@ -60,7 +60,7 @@ void test_shutdown_stress ()
     }
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment (180);
 

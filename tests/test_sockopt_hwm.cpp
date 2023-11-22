@@ -160,7 +160,7 @@ void test_decrease_when_full ()
 }
 
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

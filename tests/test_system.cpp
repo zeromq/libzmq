@@ -79,7 +79,7 @@ void test_max_sockets ()
 //  problems. We're direct system calls when necessary. Some code may
 //  need wrapping to be properly portable.
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     initialise_network ();
 

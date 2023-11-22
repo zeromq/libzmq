@@ -206,7 +206,7 @@ void test_poller_exists_with_socket_on_zmq_ctx_term_non_thread_safe_socket ()
     test_poller_exists_with_socket_on_zmq_ctx_term (ZMQ_DEALER);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -67,7 +67,7 @@ void test_term_endpoint_disconnect_tipc ()
     test_context_socket_close (push);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     UNITY_BEGIN ();
     RUN_TEST (test_term_endpoint_unbind_tipc);

@@ -171,7 +171,7 @@ void test_block_on_send_no_peers (const char *bind_address_)
 TEST_CASES (inproc, "inproc://a")
 TEST_CASES (tcp, "tcp://127.0.0.1:*")
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

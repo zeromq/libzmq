@@ -308,7 +308,7 @@ void test_shutdown_during_pend ()
     test_context_socket_close (connect_socket);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

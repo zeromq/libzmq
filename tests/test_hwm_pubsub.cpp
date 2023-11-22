@@ -263,7 +263,7 @@ DEFINE_REGULAR_TEST_CASES (inproc, "inproc://a")
 DEFINE_REGULAR_TEST_CASES (ipc, "ipc://*")
 #endif
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

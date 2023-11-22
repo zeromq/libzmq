@@ -62,7 +62,7 @@ void test_invalid_proto_fails ()
     TEST_ASSERT_EQUAL_INT (EPROTONOSUPPORT, errno);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

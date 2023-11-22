@@ -40,66 +40,66 @@ extern "C" {
 
 #if defined ZMQ_NO_EXPORT
 #define ZMQ_LINKAGE
-#define ZMQ_CALLCONV
+#define ZMQ_CDECL
 #else
 #if defined _WIN32
 #if defined ZMQ_STATIC
 #define ZMQ_LINKAGE
-#define ZMQ_CALLCONV __cdecl
+#define ZMQ_CDECL __cdecl
 #elif defined DLL_EXPORT
 #define ZMQ_LINKAGE __declspec (dllexport)
-#define ZMQ_CALLCONV __cdecl
+#define ZMQ_CDECL __cdecl
 #else
 #define ZMQ_LINKAGE __declspec (dllimport)
-#define ZMQ_CALLCONV __cdecl
+#define ZMQ_CDECL __cdecl
 #endif
 #else
 #if defined __SUNPRO_C || defined __SUNPRO_CC
 #define ZMQ_LINKAGE __global
-#define ZMQ_CALLCONV
+#define ZMQ_CDECL
 #elif (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
 #define ZMQ_LINKAGE __attribute__ ((visibility ("default")))
-#define ZMQ_CALLCONV
+#define ZMQ_CDECL
 #else
 #define ZMQ_LINKAGE
-#define ZMQ_CALLCONV
+#define ZMQ_CDECL
 #endif
 #endif
 #endif
 
 #define ZMQ_EXPORT_IMPL(__returntype__)                                        \
-    _Check_return_ _Success_ (return == 0) __returntype__ ZMQ_CALLCONV
+    _Check_return_ _Success_ (return == 0) __returntype__ ZMQ_CDECL
 #define ZMQ_EXPORT(__returntype__) ZMQ_LINKAGE ZMQ_EXPORT_IMPL (__returntype__)
 
-#define ZMQ_EXPORT_VOID_IMPL void ZMQ_CALLCONV
+#define ZMQ_EXPORT_VOID_IMPL void ZMQ_CDECL
 #define ZMQ_EXPORT_VOID ZMQ_LINKAGE ZMQ_EXPORT_VOID_IMPL
 
 #define ZMQ_EXPORT_VOID_PTR_IMPL                                               \
-    _Must_inspect_result_ _Success_ (return != nullptr) void *ZMQ_CALLCONV
+    _Must_inspect_result_ _Success_ (return != nullptr) void *ZMQ_CDECL
 #define ZMQ_EXPORT_VOID_PTR ZMQ_LINKAGE ZMQ_EXPORT_VOID_PTR_IMPL
 
 #define ZMQ_EXPORT_PTR_IMPL(__returntype__, __underlyingtype__)                \
     _Must_inspect_result_ _Success_ (return != nullptr)                        \
       _Ret_writes_bytes_ (sizeof (__underlyingtype__))                         \
-        __returntype__ ZMQ_CALLCONV
+        __returntype__ ZMQ_CDECL
 #define ZMQ_EXPORT_PTR(__returntype__, __underlyingtype__)                     \
     ZMQ_LINKAGE ZMQ_EXPORT_PTR_IMPL (__returntype__, __underlyingtype__)
 
 #define ZMQ_EXPORT_BUF_SIZE_IMPL(__returntype__, __underlyingsize__)           \
     _Must_inspect_result_ _Success_ (return != nullptr)                        \
-      _Ret_writes_bytes_ (__underlyingsize__) __returntype__ ZMQ_CALLCONV
+      _Ret_writes_bytes_ (__underlyingsize__) __returntype__ ZMQ_CDECL
 #define ZMQ_EXPORT_BUF_SIZE(__returntype__, __underlyingsize__)                \
     ZMQ_LINKAGE ZMQ_EXPORT_BUF_SIZE_IMPL (__returntype__, __underlyingsize__)
 
 #define ZMQ_EXPORT_STR_IMPL(__returntype__)                                    \
     _Must_inspect_result_ _Success_ (return != nullptr)                        \
-      _When_ (return != nullptr, _Ret_z_) __returntype__ ZMQ_CALLCONV
+      _When_ (return != nullptr, _Ret_z_) __returntype__ ZMQ_CDECL
 #define ZMQ_EXPORT_STR(__returntype__)                                         \
     ZMQ_LINKAGE ZMQ_EXPORT_STR_IMPL (__returntype__)
 
 #define ZMQ_EXPORT_STR_SIZE_IMPL(__returntype__, __underlyingsize__)           \
     _Must_inspect_result_ _Success_ (return != nullptr)                        \
-      _Ret_writes_z_ (__underlyingsize__) __returntype__ ZMQ_CALLCONV
+      _Ret_writes_z_ (__underlyingsize__) __returntype__ ZMQ_CDECL
 #define ZMQ_EXPORT_STR_SIZE(__returntype__, __underlyingsize__)                \
     ZMQ_LINKAGE ZMQ_EXPORT_STR_SIZE_IMPL (__returntype__, __underlyingsize__)
 

@@ -65,7 +65,7 @@ void test_server_getsockopt_thread_safe ()
     test_context_socket_close (server);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

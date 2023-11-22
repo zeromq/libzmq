@@ -273,7 +273,7 @@ void test_pub_sub ()
 }
 
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

@@ -83,7 +83,7 @@ void test_router_mandatory_hwm ()
     test_context_socket_close (dealer);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

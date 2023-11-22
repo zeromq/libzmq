@@ -79,7 +79,7 @@ static void *worker (void *ctx_)
 #endif
 }
 
-int main (int argc, char *argv[])
+int ZMQ_CDECL main (int argc, char *argv[])
 {
 #if defined ZMQ_HAVE_WINDOWS
     HANDLE local_thread;

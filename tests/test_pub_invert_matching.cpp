@@ -83,7 +83,7 @@ void test ()
     test_context_socket_close (sub2);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

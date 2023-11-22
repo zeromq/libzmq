@@ -93,7 +93,7 @@ void test_xsub_verbose_unsubscribe ()
     test_context_socket_close (sub);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

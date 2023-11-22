@@ -116,7 +116,7 @@ void test_envelope_tcp ()
     test_envelope (bind_tcp);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

@@ -51,7 +51,7 @@ void test_poll_fd ()
     close (recv_socket);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test_poll_fd);

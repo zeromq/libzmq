@@ -212,7 +212,7 @@ void test_router_2_router_named ()
     test_router_2_router (true);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

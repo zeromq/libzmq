@@ -35,7 +35,7 @@ void test_router_mandatory_tipc ()
     test_context_socket_close (sa);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     UNITY_BEGIN ();
     RUN_TEST (test_router_mandatory_tipc);

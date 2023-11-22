@@ -279,7 +279,7 @@ void test_error_during_multipart ()
 }
 
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

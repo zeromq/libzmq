@@ -62,7 +62,7 @@ void test_tipc_bad_addresses ()
 }
 
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

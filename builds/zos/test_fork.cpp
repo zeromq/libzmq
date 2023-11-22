@@ -8,7 +8,7 @@ const char *address = "tcp://127.0.0.1:6571";
 #define NUM_MESSAGES 5
 #define TIMEOUT_SECS 5        // Global timeout
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
     void *ctx = zmq_ctx_new ();

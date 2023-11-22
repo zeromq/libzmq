@@ -160,7 +160,7 @@ void test_filter_with_zero_pid_fails ()
 }
 #endif // defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
 #if !defined(ZMQ_HAVE_WINDOWS)
     setup_test_environment ();

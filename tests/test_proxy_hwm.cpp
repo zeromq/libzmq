@@ -274,7 +274,7 @@ static void proxy_thread_main (void *pvoid_)
 // The main thread simply starts several clients and a server, and then
 // waits for the server to finish.
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

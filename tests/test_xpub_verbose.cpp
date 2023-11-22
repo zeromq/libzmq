@@ -289,7 +289,7 @@ void test_xpub_verboser_two_subs ()
     test_context_socket_close (sub1);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

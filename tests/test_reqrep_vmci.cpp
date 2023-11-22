@@ -33,7 +33,7 @@ void test_reqrep_vmci ()
     test_context_socket_close_zero_linger (sb);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

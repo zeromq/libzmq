@@ -212,7 +212,7 @@ void test_mock_pub_legacy ()
     test_mock_pub_sub (false, true);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

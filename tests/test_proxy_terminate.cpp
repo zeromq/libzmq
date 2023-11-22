@@ -81,7 +81,7 @@ void test_proxy_terminate ()
     zmq_threadclose (thread);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -69,7 +69,7 @@ void test_reconnect_ivl_tcp_ipv6 ()
     }
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -100,7 +100,7 @@ void test_disconnect_inproc ()
     test_context_socket_close (sub_socket);
 }
 
-int main (int, char **)
+int ZMQ_CDECL main (int, char **)
 {
     setup_test_environment ();
 

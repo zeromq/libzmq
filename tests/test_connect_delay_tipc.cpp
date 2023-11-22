@@ -204,7 +204,7 @@ void test_send_disconnected_with_delay ()
     test_context_socket_close (frontend);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     if (!is_tipc_available ()) {
         printf ("TIPC environment unavailable, skipping test\n");

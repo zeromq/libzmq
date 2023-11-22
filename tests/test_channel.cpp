@@ -43,7 +43,7 @@ void test_sndmore_fails ()
     TEST_ASSERT_EQUAL_INT (EINVAL, errno);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

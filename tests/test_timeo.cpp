@@ -48,7 +48,7 @@ void test_timeo ()
     test_context_socket_close (frontend);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

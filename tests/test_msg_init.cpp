@@ -47,7 +47,7 @@ void test_msg_init_buffer ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

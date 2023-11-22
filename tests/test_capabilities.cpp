@@ -76,7 +76,7 @@ void test_capabilities ()
 #endif
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

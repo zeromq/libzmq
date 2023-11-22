@@ -43,7 +43,7 @@ void test_endpoint_too_long ()
 }
 
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

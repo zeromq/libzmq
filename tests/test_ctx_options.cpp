@@ -269,7 +269,7 @@ void test_ctx_option_invalid ()
 #endif
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

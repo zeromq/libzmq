@@ -192,7 +192,7 @@ void test_req_only_listens_to_current_peer_tcp ()
     test_req_only_listens_to_current_peer (bind_tcp);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

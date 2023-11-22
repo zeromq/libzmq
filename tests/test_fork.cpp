@@ -66,7 +66,7 @@ void test_fork ()
 #endif
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

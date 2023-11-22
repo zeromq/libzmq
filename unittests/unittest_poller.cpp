@@ -242,7 +242,7 @@ void test_add_fd_with_pending_failing_connect ()
 }
 #endif
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     UNITY_BEGIN ();
 

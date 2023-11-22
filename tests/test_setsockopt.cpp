@@ -144,7 +144,7 @@ void test_setsockopt_priority ()
 #endif
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

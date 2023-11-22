@@ -856,7 +856,7 @@ static void test_addr_multicast_ipv4_over ()
     test_addr (AF_INET, "240.0.0.0", false);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     zmq::initialize_network ();
     setup_test_environment ();

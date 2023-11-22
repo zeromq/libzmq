@@ -168,7 +168,7 @@ void test_client_server_ipc ()
 #endif
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 
@@ -184,7 +184,7 @@ int main ()
     return UNITY_END ();
 }
 #else
-int main ()
+int ZMQ_CDECL main ()
 {
     return 0;
 }

@@ -50,7 +50,7 @@ void test_scatter_gather ()
     test_context_socket_close (gather2);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

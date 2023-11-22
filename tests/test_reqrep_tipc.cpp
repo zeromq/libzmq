@@ -19,7 +19,7 @@ void test_roundtrip ()
     test_context_socket_close (sb);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     if (!is_tipc_available ()) {
         printf ("TIPC environment unavailable, skipping test\n");

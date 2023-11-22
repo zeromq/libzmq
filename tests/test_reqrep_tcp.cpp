@@ -181,7 +181,7 @@ void test_multi_connect_same_port_ipv6 ()
     test_multi_connect_same_port (true);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

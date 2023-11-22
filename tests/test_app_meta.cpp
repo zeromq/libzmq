@@ -131,7 +131,7 @@ void test_app_meta_reqrep ()
 }
 
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

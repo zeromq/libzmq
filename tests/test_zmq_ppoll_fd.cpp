@@ -55,7 +55,7 @@ void test_ppoll_fd ()
 #endif // ZMQ_HAVE_PPOLL
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test_ppoll_fd);

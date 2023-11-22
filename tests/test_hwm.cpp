@@ -253,7 +253,7 @@ void test_infinite_recv_bind_and_close_first ()
     // TEST_ASSERT_EQUAL_INT (1, count);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

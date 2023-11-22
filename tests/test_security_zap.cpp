@@ -427,7 +427,7 @@ DEFINE_ZAP_ERROR_TESTS (curve,
         RUN_TEST (test_zap_unsuccessful_do_not_send_##name_);                  \
     }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

@@ -129,7 +129,7 @@ void test_roundtrip_empty_more ()
     msg.close ();
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
     zmq::random_open ();

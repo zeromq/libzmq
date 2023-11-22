@@ -201,7 +201,7 @@ get_monitor_event (void *monitor, int *value, char **address)
     return event;
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);

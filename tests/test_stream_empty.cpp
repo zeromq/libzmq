@@ -34,7 +34,7 @@ void test_stream_empty ()
     test_context_socket_close_zero_linger (stream);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

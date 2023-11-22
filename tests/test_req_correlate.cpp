@@ -83,7 +83,7 @@ void test_req_correlate ()
     test_context_socket_close_zero_linger (router);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

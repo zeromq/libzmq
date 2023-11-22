@@ -78,7 +78,7 @@ void test_shared_const ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg_a));
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

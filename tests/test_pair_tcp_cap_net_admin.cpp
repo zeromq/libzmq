@@ -48,7 +48,7 @@ void test_pair_tcp_bind_to_device ()
     test_pair_tcp (set_sockopt_bind_to_device);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

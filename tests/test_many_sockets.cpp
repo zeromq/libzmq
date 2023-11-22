@@ -60,7 +60,7 @@ void test_zmq_default_max ()
         TEST_ASSERT_SUCCESS_ERRNO (zmq_close (sockets[i]));
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

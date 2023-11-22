@@ -61,7 +61,7 @@ void test_issue_566 ()
     zmq_ctx_destroy (ctx2);
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

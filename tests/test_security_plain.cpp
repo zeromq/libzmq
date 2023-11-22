@@ -171,7 +171,7 @@ void test_plain_vanilla_socket ()
     close (s);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

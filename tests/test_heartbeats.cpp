@@ -389,7 +389,7 @@ void test_setsockopt_heartbeat_ttl_near_zero ()
     test_setsockopt_heartbeat_success (deciseconds_per_millisecond - 1);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     //  The test cases are very long-running. The default timeout of 60 seconds
     //  is not always enough.

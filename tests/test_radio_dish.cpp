@@ -503,7 +503,7 @@ static void test_radio_dish_no_loop (int ipv6_)
 }
 MAKE_TEST_V4V6 (test_radio_dish_no_loop)
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 

@@ -521,7 +521,7 @@ void test_null_client_secret_key ()
 }
 
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     if (!zmq_has ("curve")) {
         printf ("CURVE encryption not installed, skipping test\n");

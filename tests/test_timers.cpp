@@ -183,7 +183,7 @@ void test_timers ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_timers_destroy (&timers));
 }
 
-int main ()
+int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 

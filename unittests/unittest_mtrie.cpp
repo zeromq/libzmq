@@ -431,7 +431,7 @@ void test_rm_with_callback_duplicate_uniq_only ()
     mtrie.rm (&pipes[1], check_count, &count, true);
 }
 
-int main (void)
+int ZMQ_CDECL main (void)
 {
     setup_test_environment ();
 
