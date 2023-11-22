@@ -192,7 +192,7 @@ zmq::options_t::options_t () :
     rcvtimeo (-1),
     sndtimeo (-1),
     ipv6 (false),
-    immediate (0),
+    delay_attach_on_connect (false),
     filter (false),
     invert_matching (false),
     recv_routing_id (false),
@@ -511,13 +511,9 @@ int zmq::options_t::setsockopt (int option_,
             }
             break;
 
-        case ZMQ_IMMEDIATE:
-            // TODO why is immediate not bool (and called non_immediate, as its meaning appears to be reversed)
-            if (is_int && (value == 0 || value == 1)) {
-                immediate = value;
-                return 0;
-            }
-            break;
+        case ZMQ_DELAY_ATTACH_ON_CONNECT:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &delay_attach_on_connect);
 
         case ZMQ_TCP_ACCEPT_FILTER: {
             std::string filter_str;
@@ -1120,9 +1116,9 @@ int zmq::options_t::getsockopt (int option_,
             }
             break;
 
-        case ZMQ_IMMEDIATE:
+        case ZMQ_DELAY_ATTACH_ON_CONNECT:
             if (is_int) {
-                *value = immediate;
+                *value = delay_attach_on_connect ? 1 : 0;
                 return 0;
             }
             break;

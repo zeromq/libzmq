@@ -119,7 +119,7 @@ struct options_t
 
     //  If 1, connecting pipes are not attached immediately, meaning a send()
     //  on a socket with only connecting pipes would block
-    int immediate;
+    bool delay_attach_on_connect;
 
     //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
     bool filter;

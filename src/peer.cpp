@@ -22,8 +22,8 @@ uint32_t zmq::peer_t::connect_peer (const char *endpoint_uri_)
 {
     scoped_optional_lock_t sync_lock (&_sync);
 
-    // connect_peer cannot work with immediate enabled
-    if (options.immediate == 1) {
+    // connect_peer cannot work with delay_attach_on_connect enabled
+    if (options.delay_attach_on_connect) {
         errno = EFAULT;
         return 0;
     }

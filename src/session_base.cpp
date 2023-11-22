@@ -542,7 +542,7 @@ void zmq::session_base_t::reconnect ()
 {
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (_pipe && options.immediate == 1
+    if (_pipe && options.delay_attach_on_connect
 #ifdef ZMQ_HAVE_OPENPGM
         && _addr->protocol != protocol_name::pgm
         && _addr->protocol != protocol_name::epgm

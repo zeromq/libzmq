@@ -1063,7 +1063,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 #endif
     pipe_t *newpipe = NULL;
 
-    if (options.immediate != 1 || subscribe_to_all) {
+    if (options.delay_attach_on_connect == false || subscribe_to_all) {
         //  Create a bi-directional pipe.
         object_t *parents[2] = {this, session};
         pipe_t *new_pipes[2] = {NULL, NULL};
@@ -1721,7 +1721,7 @@ void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
 {
-    if (options.immediate == 1)
+    if (options.delay_attach_on_connect)
         pipe_->terminate (false);
     else
         // Notify derived sockets of the hiccup

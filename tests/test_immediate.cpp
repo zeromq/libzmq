@@ -5,7 +5,7 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
-void test_immediate_1 ()
+void test_delay_attach_on_connect_1 ()
 {
     int val;
     int rc;
@@ -70,7 +70,7 @@ void test_immediate_1 ()
 }
 
 
-void test_immediate_2 ()
+void test_delay_attach_on_connect_2 ()
 {
     // This time we will do the same thing, connect two pipes,
     // one of which will succeed in connecting to a bound
@@ -99,7 +99,7 @@ void test_immediate_2 ()
     // Set the key flag
     val = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (from, ZMQ_IMMEDIATE, &val, sizeof (val)));
+      zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof (val)));
 
     // Connect to the invalid socket
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (from, "tcp://localhost:5561"));
@@ -128,7 +128,7 @@ void test_immediate_2 ()
     test_context_socket_close (to);
 }
 
-void test_immediate_3 ()
+void test_delay_attach_on_connect_3 ()
 {
     // This time we want to validate that the same blocking behaviour
     // occurs with an existing connection that is broken. We will send
@@ -146,7 +146,7 @@ void test_immediate_3 ()
     //  Frontend connects to backend using IMMEDIATE
     int on = 1;
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_setsockopt (frontend, ZMQ_IMMEDIATE, &on, sizeof (on)));
+      zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on)));
 
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -191,8 +191,8 @@ int main (void)
 {
     setup_test_environment ();
     UNITY_BEGIN ();
-    RUN_TEST (test_immediate_1);
-    RUN_TEST (test_immediate_2);
-    RUN_TEST (test_immediate_3);
+    RUN_TEST (test_delay_attach_on_connect_1);
+    RUN_TEST (test_delay_attach_on_connect_2);
+    RUN_TEST (test_delay_attach_on_connect_3);
     return UNITY_END ();
 }
