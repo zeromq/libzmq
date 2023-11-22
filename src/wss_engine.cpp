@@ -3,6 +3,34 @@
 #include "precompiled.hpp"
 #include "wss_engine.hpp"
 
+#if defined ZMQ_USE_MBEDTLS
+
+// TODO: add support for mbedTLS
+
+zmq::wss_engine_t::wss_engine_t (fd_t fd_,
+                                 const options_t &options_,
+                                 const endpoint_uri_pair_t &endpoint_uri_pair_,
+                                 ws_address_t &address_,
+                                 bool client_,
+                                 void *tls_server_cred_,
+                                 const std::string &hostname_) :
+    ws_engine_t (fd_, options_, endpoint_uri_pair_, address_, client_),
+    _established (false),
+    _tls_client_cred (NULL)
+{
+    int rc = 0;
+
+    if (client_) {
+    } else {
+    }
+}
+
+zmq::wss_engine_t::~wss_engine_t ()
+{
+}
+
+#elif defined ZMQ_USE_GNUTLS
+
 static int verify_certificate_callback (gnutls_session_t session)
 {
     unsigned int status;
@@ -197,3 +225,7 @@ int zmq::wss_engine_t::write (const void *data_, size_t size_)
     // TODO: change return type to ssize_t (signed)
     return rc;
 }
+
+#else
+#error "No TLS implementation set"
+#endif

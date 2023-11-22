@@ -805,9 +805,19 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_WSS_HOSTNAME:
             wss_hostname = std::string ((char *) optval_, optvallen_);
             return 0;
-        case ZMQ_WSS_TRUST_SYSTEM:
-            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
-                                                     &wss_trust_system);
+        case ZMQ_WSS_TRUST_SYSTEM: {
+            int ret = do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                        &wss_trust_system);
+#if defined ZMQ_USE_MBEDTLS && !defined ZMQ_HAVE_WINDOWS
+            if (wss_trust_system) {
+                // "System trust" for WSS over MbedTLS is only implemented
+                // for Windows at this time. See wss_engine.cpp for details.
+                break;
+            }
+#else
+            return ret;
+#endif
+        }
 #endif
 
 #ifdef ZMQ_HAVE_NORM

@@ -7,15 +7,11 @@
 #elif defined ZMQ_USE_NSS
 #include <secoid.h>
 #include <sechash.h>
-#elif defined ZMQ_USE_MBEDTLS
-#include <mbedtls/sha1.h>
 #elif defined ZMQ_USE_BUILTIN_SHA1
 #include "../external/sha1/sha1.h"
 #elif defined ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
 #include <gnutls/crypto.h>
-#elif defined ZMQ_USE_MBEDTLS
-#include <mbedtls/sha1.h>
 #endif
 
 #ifndef SHA_DIGEST_LENGTH
@@ -1067,6 +1063,6 @@ static void compute_accept_key (char *key_, unsigned char *hash_)
     gnutls_hash (hd, salt, cbsalt);
     gnutls_hash_deinit (hd, hash_);
 #else
-#error "No sha1 implementation set"
+#error "No SHA-1 implementation set"
 #endif
 }

@@ -230,7 +230,7 @@ if(ENABLE_WS)
       set(ZMQ_USE_MBEDTLS 1)
       set(ZMQ_HAVE_WSS 1)
       set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
-      set(MBEDTLS_LIBRARY_DIRS ${MBEDTLS_ROOT}/bin/lib/Release)
+      set(MBEDTLS_LIBRARY_DIRS ${MBEDTLS_ROOT}/bin/library/Release)
       set(MBEDTLS_LIBRARIES ${MBEDTLS_LIBRARY_DIRS}/mbedtls.lib ${MBEDTLS_LIBRARY_DIRS}/mbedcrypto.lib
                              ${MBEDTLS_LIBRARY_DIRS}/mbedx509.lib)
       include_directories(${MBEDTLS_INCLUDE_DIRS})

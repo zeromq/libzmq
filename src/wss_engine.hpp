@@ -3,12 +3,10 @@
 #ifndef __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 #define __ZMQ_WSS_ENGINE_HPP_INCLUDED__
 
-#ifdef ZMQ_USE_GNUTLS
+#if defined ZMQ_USE_MBEDTLS
+#include <mbedtls/ssl.h>
+#elif defined ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
-#elseif ZMQ_USE_MBEDTLS
-#include <gnutls/gnutls.h>
-#else
-#pragma message("Needs either ZMQ_USE_GNUTLS or ZMQ_USE_MBEDTLS")
 #endif
 
 #include "ws_engine.hpp"
@@ -29,20 +27,32 @@ class wss_engine_t : public ws_engine_t
                   const std::string &hostname_);
     ~wss_engine_t ();
 
+#if !defined ZMQ_USE_MBEDTLS
     void out_event ();
+#endif
 
   protected:
+#if !defined ZMQ_USE_MBEDTLS
     bool handshake ();
     void plug_internal ();
     int read (void *data, size_t size_);
     int write (const void *data_, size_t size_);
+#endif
 
   private:
     bool do_handshake ();
 
     bool _established;
+
+#if defined ZMQ_USE_MBEDTLS
+    mbedtls_ssl_context ssl;
+    mbedtls_x509_crt* _tls_client_cred;
+#elif defined ZMQ_USE_GNUTLS
     gnutls_certificate_credentials_t _tls_client_cred;
     gnutls_session_t _tls_session;
+#else
+#error "No TLS implementation set"
+#endif
 };
 }
 

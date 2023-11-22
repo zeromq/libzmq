@@ -47,6 +47,14 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
 {
 #ifdef ZMQ_HAVE_WSS
     if (_wss) {
+#if defined ZMQ_USE_MBEDTLS
+
+        // TODO: add support for mbedTLS
+
+        // Server creds
+
+#elif defined ZMQ_USE_GNUTLS
+
         int rc = gnutls_certificate_allocate_credentials (&_tls_cred);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
 
@@ -57,6 +65,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
         rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
                                                   GNUTLS_X509_FMT_PEM);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
+
+#else
+#error "No TLS implementation set"
+#endif
     }
 #endif
 }
@@ -64,8 +76,15 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
 zmq::ws_listener_t::~ws_listener_t ()
 {
 #ifdef ZMQ_HAVE_WSS
-    if (_wss)
+    if (_wss) {
+#if defined ZMQ_USE_MBEDTLS
+        // TODO: add support for mbedTLS
+#elif defined ZMQ_USE_GNUTLS
         gnutls_certificate_free_credentials (_tls_cred);
+#else
+#error "No TLS implementation set"
+#endif
+    }
 #endif
 }
 

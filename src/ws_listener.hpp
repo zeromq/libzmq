@@ -7,7 +7,9 @@
 #include "ws_address.hpp"
 #include "stream_listener_base.hpp"
 
-#ifdef ZMQ_USE_GNUTLS
+#if defined ZMQ_USE_MBEDTLS
+#include <mbedtls/x509_crt.h>
+#elif defined ZMQ_USE_GNUTLS
 #include <gnutls/gnutls.h>
 #endif
 
@@ -47,7 +49,13 @@ class ws_listener_t ZMQ_FINAL : public stream_listener_base_t
 
     bool _wss;
 #ifdef ZMQ_HAVE_WSS
+#if defined ZMQ_USE_MBEDTLS
+    mbedtls_x509_crt* _tls_cred;
+#elif defined ZMQ_USE_GNUTLS
     gnutls_certificate_credentials_t _tls_cred;
+#else
+#error "No TLS implementation set"
+#endif
 #endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ws_listener_t)
