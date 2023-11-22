@@ -120,4 +120,4 @@ rc = zmq_msg_send (&part3, socket, 0);
 
 == AUTHORS
 This page was written by the 0MQ community. To make a change please
-read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.
