@@ -163,13 +163,6 @@ int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
         NormSetTOS (norm_session, options.tos);
     }
 
-    // Set multicast loopback mode if it was set explicitely
-    // through zmq_setsockopt(s, ZMQ_NORM_MULTICAST_LOOP, ...);
-    if (options.norm_multicast_loop != -1)
-    {
-        NormSetLoopback (norm_session, options.norm_multicast_loop != 0);
-    }
-
     if (recv) {
         // The alternative NORM_SYNC_CURRENT here would provide "instant"
         // receiver sync to the sender's _current_ message transmission.

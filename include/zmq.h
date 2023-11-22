@@ -769,7 +769,6 @@ ZMQ_EXPORT_VOID zmq_threadclose (_In_ _Post_invalid_ void *thread_);
 #define ZMQ_NORM_NUM_PARITY 122
 #define ZMQ_NORM_NUM_AUTOPARITY 123
 #define ZMQ_NORM_PUSH 124
-#define ZMQ_NORM_MULTICAST_LOOP 125
 
 /*  DRAFT ZMQ_NORM_MODE options                                               */
 #define ZMQ_NORM_FIXED 0
