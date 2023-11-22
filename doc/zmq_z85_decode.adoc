@@ -40,4 +40,4 @@ zmq_z85_decode (public_key, decoded);
 
 == AUTHORS
 This page was written by the 0MQ community. To make a change please
-read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.
