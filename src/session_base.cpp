@@ -641,8 +641,10 @@ void zmq::session_base_t::start_connecting (bool wait_)
           io_thread, this, options, _addr, wait_, true, _wss_hostname);
     }
 #endif
+
+    alloc_assert (connecter);
+
     if (connecter != NULL) {
-        alloc_assert (connecter);
         launch_child (connecter);
         return;
     }

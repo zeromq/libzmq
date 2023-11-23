@@ -49,6 +49,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
     if (_wss) {
 #if defined ZMQ_USE_MBEDTLS
 
+        //
+        // Allocate MbedTLS structures.
+        //
+
         _entropy = zmq::make_unique_nothrow<mbedtls_entropy_context> ();
         zmq_assert (_entropy.get ());
 
@@ -70,6 +74,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
         _ssl_server_pkey = zmq::make_unique_nothrow<mbedtls_pk_context> ();
         zmq_assert (_ssl_server_pkey.get ());
 
+        //
+        // Initialize MbedTLS structures.
+        //
+
         mbedtls_entropy_init (_entropy.get ());
         mbedtls_ctr_drbg_init (_rng.get ());
         mbedtls_ssl_init (_ssl.get ());
@@ -77,6 +85,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
         mbedtls_x509_crt_init (_ssl_ca_cert.get ());
         mbedtls_x509_crt_init (_ssl_server_cert.get ());
         mbedtls_pk_init (_ssl_server_pkey.get ());
+
+        //
+        // Prime the RNG.
+        //
 
         int rc = mbedtls_ctr_drbg_seed (
           _rng.get (), mbedtls_entropy_func, _entropy.get (),
@@ -86,6 +98,12 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
 
         mbedtls_ssl_conf_rng (_ssl_config.get (), mbedtls_ctr_drbg_random,
                               _rng.get ());
+
+        //
+        // Parse the certificates and key. MbedTLS as of 3.5.1 expects
+        // null-terminated PEM strings with the z included in the length.
+        // See https://github.com/Mbed-TLS/mbedtls/issues/8555
+        //
 
         if (options_.wss_trust_pem.length () > 0) {
             rc = mbedtls_x509_crt_parse (
@@ -114,6 +132,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
             zmq_assert (rc == 0);
         }
 
+        //
+        // Configure the TLS context.
+        //
+
         rc = mbedtls_ssl_config_defaults (
           _ssl_config.get (), MBEDTLS_SSL_IS_SERVER,
           MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
@@ -137,6 +159,10 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
 
         mbedtls_ssl_conf_min_tls_version (_ssl_config.get (),
                                           MBEDTLS_SSL_VERSION_TLS1_2);
+
+        //
+        // Finish setting up the TLS context.
+        //
 
         rc = mbedtls_ssl_setup (_ssl.get (), _ssl_config.get ());
 
@@ -167,7 +193,13 @@ zmq::ws_listener_t::~ws_listener_t ()
 #ifdef ZMQ_HAVE_WSS
     if (_wss) {
 #if defined ZMQ_USE_MBEDTLS
-        // TODO: add support for mbedTLS
+        mbedtls_pk_free (_ssl_server_pkey.get ());
+        mbedtls_x509_crt_free (_ssl_server_cert.get ());
+        mbedtls_x509_crt_free (_ssl_ca_cert.get ());
+        mbedtls_ssl_config_free (_ssl_config.get ());
+        mbedtls_ssl_free (_ssl.get ());
+        mbedtls_ctr_drbg_free (_rng.get ());
+        mbedtls_entropy_free (_entropy.get ());
 #elif defined ZMQ_USE_GNUTLS
         gnutls_certificate_free_credentials (_ssl);
 #else

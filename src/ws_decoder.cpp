@@ -93,7 +93,6 @@ int zmq::ws_decoder_t::size_first_byte_ready (unsigned char const *read_from_)
     return 0;
 }
 
-
 int zmq::ws_decoder_t::short_size_ready (unsigned char const *read_from_)
 {
     _size = (_tmpbuf[0] << 8) | _tmpbuf[1];
@@ -161,7 +160,6 @@ int zmq::ws_decoder_t::flags_ready (unsigned char const *read_from_)
 
     return size_ready (read_from_);
 }
-
 
 int zmq::ws_decoder_t::size_ready (unsigned char const *read_pos_)
 {
