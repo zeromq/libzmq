@@ -11,6 +11,8 @@
 #pragma comment(lib, "iphlpapi.lib")
 #endif
 
+#define PRIVATE_EXPERIMENT_MULTICAST "224.0.1.20"
+
 SETUP_TEARDOWN_TESTCONTEXT
 
 void test (const char *address)
@@ -51,7 +53,7 @@ void test (const char *address)
 void test_norm ()
 {
 #if defined ZMQ_HAVE_NORM
-    test ("norm://224.0.1.20:6210");
+    test ("norm://" PRIVATE_EXPERIMENT_MULTICAST ":6210");
 #else
     TEST_IGNORE_MESSAGE ("libzmq without NORM, ignoring test.");
 #endif
@@ -185,12 +187,12 @@ void test_epgm ()
     char ip_address[16];
     TEST_ASSERT_EQUAL_INT (
       0, GetAdapterIpAddress (ip_address, _countof (ip_address)));
-    sprintf_s (network, _countof (network), "epgm://%s;224.0.1.20:6211",
+    sprintf_s (network, _countof (network), "epgm://%s;" PRIVATE_EXPERIMENT_MULTICAST ":6211",
                ip_address);
     test (network);
 #else
 #ifdef NETWORK_ADAPTER
-    test ("epgm://" NETWORK_ADAPTER ";224.0.1.20:6211");
+    test ("epgm://" NETWORK_ADAPTER ";" PRIVATE_EXPERIMENT_MULTICAST ":6211");
 #else
     TEST_IGNORE_MESSAGE (
       "libzmq with OpenPGM, but NETWORK_ADAPTER wasn't set, ignoring test.");
@@ -213,13 +215,13 @@ void test_pgm ()
         char ip_address[16];
         TEST_ASSERT_EQUAL_INT (
           0, GetAdapterIpAddress (ip_address, _countof (ip_address)));
-        sprintf_s (network, _countof (network), "pgm://%s;224.0.1.20:6212",
+        sprintf_s (network, _countof (network), "pgm://%s;" PRIVATE_EXPERIMENT_MULTICAST ":6212",
                    ip_address);
         test (network);
     }
 #else
 #ifdef NETWORK_ADAPTER
-    test ("pgm://" NETWORK_ADAPTER ";224.0.1.20:6212");
+    test ("pgm://" NETWORK_ADAPTER ";" PRIVATE_EXPERIMENT_MULTICAST ":6212");
 #else
     TEST_IGNORE_MESSAGE (
       "libzmq with OpenPGM, but NETWORK_ADAPTER wasn't set, ignoring test.");
