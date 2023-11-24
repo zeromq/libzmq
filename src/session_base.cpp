@@ -642,8 +642,6 @@ void zmq::session_base_t::start_connecting (bool wait_)
     }
 #endif
 
-    alloc_assert (connecter);
-
     if (connecter != NULL) {
         launch_child (connecter);
         return;

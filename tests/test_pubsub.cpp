@@ -257,7 +257,7 @@ void test_ws ()
 void test_wss ()
 {
 #if defined ZMQ_HAVE_WSS
-    test ("wss://localhost:6214");
+    test ("wss://localhost:6215");
 #else
     TEST_IGNORE_MESSAGE ("libzmq without WSS WebSockets, ignoring test.");
 #endif

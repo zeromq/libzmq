@@ -257,21 +257,20 @@ void zmq::ws_connecter_t::create_engine (fd_t fd_,
     i_engine *engine = NULL;
     if (_wss) {
 #ifdef ZMQ_HAVE_WSS
-        engine = new (std::nothrow) wss_engine_t (
-          fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true,
 #if defined ZMQ_USE_MBEDTLS
-          std::unique_ptr<mbedtls_ssl_context> (),
+        auto nullContext = std::unique_ptr<mbedtls_ssl_context> ();
 #else
-          NULL,
+        void *nullContext = NULL;
 #endif
-          _hostname);
-#else
-        LIBZMQ_UNUSED (_hostname);
-        assert (false);
+        engine = new (std::nothrow)
+          wss_engine_t (fd_, options, endpoint_pair, *_addr->resolved.ws_addr,
+                        true, nullContext, _hostname);
 #endif
-    } else
+    } else {
         engine = new (std::nothrow) ws_engine_t (
           fd_, options, endpoint_pair, *_addr->resolved.ws_addr, true);
+    }
+
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
