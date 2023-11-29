@@ -19,21 +19,29 @@
 
 void zmq::seed_random ()
 {
+#if !defined(_CRT_RAND_S)
 #if defined ZMQ_HAVE_WINDOWS
     const int pid = static_cast<int> (GetCurrentProcessId ());
 #else
     int pid = static_cast<int> (getpid ());
 #endif
     srand (static_cast<unsigned int> (clock_t::now_us () + pid));
+#endif
 }
 
 uint32_t zmq::generate_random ()
 {
+#if !defined(_CRT_RAND_S)
     //  Compensate for the fact that rand() returns signed integer.
     const uint32_t low = static_cast<uint32_t> (rand ());
     uint32_t high = static_cast<uint32_t> (rand ());
     high <<= (sizeof (int) * 8 - 1);
     return high | low;
+#else
+    uint32_t rnd;
+    rand_s (&rnd);
+    return rnd;
+#endif
 }
 
 static void manage_random (bool init_)

@@ -3,6 +3,10 @@
 #ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__
 #define __ZMQ_PRECOMPILED_HPP_INCLUDED__
 
+#if _MSC_VER >= 1700
+#define _CRT_RAND_S
+#endif
+
 //  On AIX platform, poll.h has to be included first to get consistent
 //  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
