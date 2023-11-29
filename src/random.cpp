@@ -15,6 +15,7 @@
 
 #if defined(ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
+#include "atomic_counter.hpp"
 #endif
 
 void zmq::seed_random ()
@@ -44,19 +45,29 @@ uint32_t zmq::generate_random ()
 #endif
 }
 
+#if defined(ZMQ_USE_LIBSODIUM) && defined(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE)
+static zmq::atomic_counter_t cryptolib_refcount;
+#endif
+
 static void manage_random (bool init_)
 {
 #if defined(ZMQ_USE_LIBSODIUM)
     if (init_) {
-        //  sodium_init() is now documented as thread-safe in recent versions
-        int rc = sodium_init ();
-        zmq_assert (rc != -1);
 #if defined(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE)
+        if (cryptolib_refcount.add (1) == 0) {`
+#endif
+            // sodium_init() is thread-safe and idempotent
+            int rc = sodium_init ();
+            zmq_assert (rc != -1);
+#if defined(ZMQ_LIBSODIUM_RANDOMBYTES_CLOSE)
+        }
     } else {
-        // randombytes_close either a no-op or not threadsafe
-        // doing this without refcounting can cause crashes
-        // if called while a context is active
-        randombytes_close ();
+        if (cryptolib_refcount.sub (1) == false) {
+            // randombytes_close either a no-op or not threadsafe
+            // doing this without refcounting can cause crashes
+            // if called while a context is active
+            randombytes_close ();
+        }
 #endif
     }
 #else
