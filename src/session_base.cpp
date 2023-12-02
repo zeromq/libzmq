@@ -12,7 +12,17 @@
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
+
+#if defined ZMQ_HAVE_VMCI
 #include "vmci_connecter.hpp"
+#endif
+#if defined ZMQ_HAVE_VSOCK
+#include "vsock_connecter.hpp"
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+#include "hvsocket_connecter.hpp"
+#endif
+
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"

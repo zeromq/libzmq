@@ -97,6 +97,14 @@ src_libzmq_la_SOURCES = \
 	src/ipc_connecter.hpp \
 	src/ipc_listener.cpp \
 	src/ipc_listener.hpp \
+	src/hvsocket.cpp \
+	src/hvsocket.hpp \
+	src/hvsocket_address.cpp \
+	src/hvsocket_address.hpp \
+	src/hvsocket_connecter.cpp \
+	src/hvsocket_connecter.hpp \
+	src/hvsocket_listener.cpp \
+	src/hvsocket_listener.hpp \
 	src/kqueue.cpp \
 	src/kqueue.hpp \
 	src/lb.cpp \
