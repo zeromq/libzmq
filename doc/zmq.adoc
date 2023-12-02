@@ -168,6 +168,9 @@ Local in-process (inter-thread) communication transport::
 Virtual Machine Communications Interface (VMC) transport::
  * xref:zmq_vmci.adoc[zmq_vmci]
 
+Linux vsock(7) and Microsoft Hyper-V transport::
+ * xref:zmq_vsock.adoc[zmq_vsock]
+
 Unreliable unicast and multicast using UDP::
  * xref:zmq_udp.adoc[zmq_udp]
 

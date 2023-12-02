@@ -147,6 +147,7 @@ set(pkg_config_defines "")
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 option(WITH_NORM "Build with support for NORM" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
+option(WITH_VSOCK "Build with support for vsock and hyperv sockets" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
@@ -1046,6 +1047,10 @@ set(cxx-sources
     gssapi_client.hpp
     gssapi_mechanism_base.hpp
     gssapi_server.hpp
+    vsock.hpp
+    vsock_address.hpp
+    vsock_connecter.hpp
+    vsock_listener.hpp
     i_decoder.hpp
     i_encoder.hpp
     i_engine.hpp
@@ -1216,6 +1221,13 @@ endif()
 
 if(ZMQ_HAVE_TIPC)
   list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
+endif()
+
+if(WITH_VSOCK)
+  message(STATUS "Building with VM sockets (vsock(7) & Hyper-V)")
+  set(ZMQ_HAVE_VSOCK 1)
+  include_directories(${VSOCK_INCLUDE_DIRS})
+  list(APPEND cxx-sources vsock_address.cpp vsock_connecter.cpp vsock_listener.cpp vsock.cpp)
 endif()
 
 # -----------------------------------------------------------------------------
