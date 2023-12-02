@@ -25,6 +25,14 @@
 #include <vmci_sockets.h>
 #endif
 
+#ifdef ZMQ_HAVE_VSOCK
+#include <vsock_sockets.h>
+#endif
+
+#ifdef ZMQ_HAVE_HVSOCKET
+#include <hvsocket_sockets.h>
+#endif
+
 #ifdef ZMQ_USE_NSS
 #include <nss.h>
 #endif

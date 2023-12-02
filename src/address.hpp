@@ -34,6 +34,9 @@ class vmci_address_t;
 #if defined ZMQ_HAVE_VSOCK
 class vsock_address_t;
 #endif
+#if defined ZMQ_HAVE_HVSOCKET
+class hvsocket_address_t;
+#endif
 
 namespace protocol_name
 {
@@ -64,6 +67,9 @@ static const char vmci[] = "vmci";
 #endif
 #if defined ZMQ_HAVE_VSOCK
 static const char vsock[] = "vsock";
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+static const char hvsocket[] = "hvsocket";
 #endif
 }
 
@@ -103,6 +109,9 @@ struct address_t
 #endif
 #if defined ZMQ_HAVE_VSOCK
         vsock_address_t *vsock_addr;
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+        hvsocket_address_t *hvsocket_addr;
 #endif
     } resolved;
 

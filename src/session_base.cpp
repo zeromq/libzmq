@@ -629,6 +629,18 @@ void zmq::session_base_t::start_connecting (bool wait_)
           vmci_connecter_t (io_thread, this, options, _addr, wait_);
     }
 #endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (_addr->protocol == protocol_name::vsock) {
+        connecter = new (std::nothrow)
+          vsock_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+    else if (_addr->protocol == protocol_name::hvsocket) {
+        connecter = new (std::nothrow)
+          hvsocket_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
 #if defined ZMQ_HAVE_WS
     else if (_addr->protocol == protocol_name::ws) {
         connecter = new (std::nothrow) ws_connecter_t (

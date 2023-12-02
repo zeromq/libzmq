@@ -1863,6 +1863,19 @@ zmq_device (int type_, _In_ void *frontend_, _In_ void *backend_)
 
 ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
 {
+    //
+    // Built-in transports
+    //
+
+    if (strcmp (capability_, zmq::protocol_name::inproc) == 0
+        || strcmp (capability_, zmq::protocol_name::tcp) == 0
+        || strcmp (capability_, zmq::protocol_name::udp) == 0)
+        return true;
+
+    //
+    // Optional transports (config/build time)
+    //
+
 #if defined(ZMQ_HAVE_IPC)
     if (strcmp (capability_, zmq::protocol_name::ipc) == 0)
         return true;
@@ -1880,20 +1893,16 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
     if (strcmp (capability_, zmq::protocol_name::norm) == 0)
         return true;
 #endif
-#if defined(ZMQ_HAVE_CURVE)
-    if (strcmp (capability_, "curve") == 0)
-        return true;
-#endif
-#if defined(HAVE_LIBGSSAPI_KRB5)
-    if (strcmp (capability_, "gssapi") == 0)
-        return true;
-#endif
 #if defined(ZMQ_HAVE_VMCI)
     if (strcmp (capability_, zmq::protocol_name::vmci) == 0)
         return true;
 #endif
-#if defined(ZMQ_BUILD_DRAFT_API)
-    if (strcmp (capability_, "draft") == 0)
+#if defined(ZMQ_HAVE_VSOCK)
+    if (strcmp (capability_, zmq::protocol_name::vsock) == 0)
+        return true;
+#endif
+#if defined(ZMQ_HAVE_HVSOCKET)
+    if (strcmp (capability_, zmq::protocol_name::hvsocket) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WS)
@@ -1904,7 +1913,33 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
     if (strcmp (capability_, zmq::protocol_name::wss) == 0)
         return true;
 #endif
+
+    //
+    // Security
+    //
+
+#if defined(ZMQ_HAVE_CURVE)
+    if (strcmp (capability_, "curve") == 0)
+        return true;
+#endif
+#if defined(HAVE_LIBGSSAPI_KRB5)
+    if (strcmp (capability_, "gssapi") == 0)
+        return true;
+#endif
+
+    //
+    // Draft APIs
+    //
+
+#if defined(ZMQ_BUILD_DRAFT_API)
+    if (strcmp (capability_, "draft") == 0)
+        return true;
+#endif
+
+    //
     //  Whatever the application asked for, we don't have
+    //
+
     return false;
 }
 

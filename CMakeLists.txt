@@ -144,10 +144,11 @@ set(pkg_config_libs_private "")
 set(pkg_config_names_private "")
 set(pkg_config_defines "")
 
-option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
-option(WITH_NORM "Build with support for NORM" OFF)
-option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
-option(WITH_VSOCK "Build with support for vsock and hyperv sockets" OFF)
+option(WITH_OPENPGM "Build with support for OpenPGM (reliable multicast)" OFF)
+option(WITH_NORM "Build with support for NORM (reliable multicast)" OFF)
+option(WITH_VMCI "Build with support for VMware VMCI (host<->guests sockets)" OFF)
+option(WITH_HVSOCKET "Build with support for Microsoft Hyper-V (host<->guests sockets)" OFF)
+option(WITH_VSOCK "Build with support for VSOCK (hvsocket, virtio, vmci) (host<->guests sockets)" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
@@ -1219,15 +1220,22 @@ if(WITH_VMCI)
   list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
 endif()
 
-if(ZMQ_HAVE_TIPC)
-  list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
-endif()
-
 if(WITH_VSOCK)
-  message(STATUS "Building with VM sockets (vsock(7) & Hyper-V)")
+  message(STATUS "Building with VSOCK")
   set(ZMQ_HAVE_VSOCK 1)
   include_directories(${VSOCK_INCLUDE_DIRS})
   list(APPEND cxx-sources vsock_address.cpp vsock_connecter.cpp vsock_listener.cpp vsock.cpp)
+endif()
+
+if(WITH_HVSOCKET)
+  message(STATUS "Building with HVSOCKET")
+  set(ZMQ_HAVE_HVSOCKET 1)
+  include_directories(${HVSOCKET_INCLUDE_DIRS})
+  list(APPEND cxx-sources hvsocket_address.cpp hvsocket_connecter.cpp hvsocket_listener.cpp hvsocket.cpp)
+endif()
+
+if(ZMQ_HAVE_TIPC)
+  list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
 endif()
 
 # -----------------------------------------------------------------------------
