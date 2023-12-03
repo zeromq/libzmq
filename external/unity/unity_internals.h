@@ -7,6 +7,12 @@
 #ifndef UNITY_INTERNALS_H
 #define UNITY_INTERNALS_H
 
+#ifndef _MSC_VER
+#ifndef _Analysis_assume_
+#define _Analysis_assume_(expr)
+#endif
+#endif
+
 #ifdef UNITY_INCLUDE_CONFIG_H
 #include "unity_config.h"
 #endif
@@ -651,7 +657,7 @@ int UnityTestMatches(void);
  * Test Asserts
  *-------------------------------------------------------*/
 
-#define UNITY_TEST_ASSERT(condition, line, message)                                              if (condition) {} else {UNITY_TEST_FAIL((UNITY_LINE_TYPE)(line), (message));}
+#define UNITY_TEST_ASSERT(condition, line, message)                                              if (condition) { _Analysis_assume_(condition); } else {UNITY_TEST_FAIL((UNITY_LINE_TYPE)(line), (message));}
 #define UNITY_TEST_ASSERT_NULL(pointer, line, message)                                           UNITY_TEST_ASSERT(((pointer) == NULL),  (UNITY_LINE_TYPE)(line), (message))
 #define UNITY_TEST_ASSERT_NOT_NULL(pointer, line, message)                                       UNITY_TEST_ASSERT(((pointer) != NULL),  (UNITY_LINE_TYPE)(line), (message))
 

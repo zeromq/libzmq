@@ -30,7 +30,7 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     ~norm_engine_t () ZMQ_FINAL;
 
     // create NORM instance, session, etc
-    int init (const char *network_, bool send, bool recv);
+    int init (_In_z_ const char *network_, bool send, bool recv);
     void shutdown ();
 
     bool has_handshake_stage () ZMQ_FINAL { return false; };
