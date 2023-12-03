@@ -178,22 +178,6 @@ if(ENABLE_RADIX_TREE)
 endif()
 
 if(ENABLE_WS)
-  list(
-    APPEND
-    sources
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_address.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_connecter.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_decoder.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_encoder.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_engine.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_listener.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ws_protocol.hpp)
   set(ZMQ_HAVE_WS 1)
   message(STATUS "Enable WebSocket transport")
   option(WITH_GNUTLS "Use GnuTLS for WSS support" ON)
@@ -206,21 +190,15 @@ if(ENABLE_WS)
         list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_address.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/wss_engine.cpp)
-
         message(STATUS "Enable WSS transport with GnuTLS")
         set(ZMQ_USE_GNUTLS 1)
         set(ZMQ_HAVE_WSS 1)
       else()
         message(WARNING "No WSS support, you may want to install GnuTLS and run cmake again")
       endif()
-    elseif(WITH_MBEDTLS)
-      find_path(
-        MBEDTLS_ROOT include/mbedtls/mbedtls_config.h
-        PATHS
-          "../mbedtls"
-        NO_DEFAULT_PATH)
-      set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
-
+  elseif(WITH_MBEDTLS)
+    find_path(MBEDTLS_ROOT include/mbedtls/mbedtls_config.h PATHS "../mbedtls" NO_DEFAULT_PATH)
+    set(MBEDTLS_INCLUDE_DIRS ${MBEDTLS_ROOT}/include)
     if(MBEDTLS_ROOT)
       message(STATUS "MbedTLS detected! - ${MBEDTLS_ROOT}")
       set(pkg_config_names_private "${pkg_config_names_private} mbedtls")
@@ -284,6 +262,7 @@ endif()
 # Select curve encryption library, defaults to disabled To use libsodium instead, use --with-libsodium(must be
 # installed) To disable curve, use --disable-curve
 
+option(WITH_GSSAPI "Use GSS API" OFF)
 option(WITH_LIBSODIUM "Use libsodium" OFF)
 option(WITH_LIBSODIUM_STATIC "Use static libsodium library" OFF)
 option(ENABLE_LIBSODIUM_RANDOMBYTES_CLOSE "Automatically close libsodium randombytes. Not threadsafe without getrandom()" ON)
@@ -313,6 +292,10 @@ if(ENABLE_CURVE)
   endif()
 else()
   message(STATUS "CURVE security is disabled")
+endif()
+
+if (WITH_GSSAPI)
+  set(HAVE_LIBGSSAPI_KRB5 1)
 endif()
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -910,253 +893,217 @@ endif()
 # source files
 
 set(cxx-sources
-    precompiled.cpp
     address.cpp
-    channel.cpp
-    client.cpp
-    clock.cpp
-    ctx.cpp
-    curve_mechanism_base.cpp
-    curve_client.cpp
-    curve_server.cpp
-    dealer.cpp
-    devpoll.cpp
-    dgram.cpp
-    dist.cpp
-    endpoint.cpp
-    epoll.cpp
-    err.cpp
-    fq.cpp
-    io_object.cpp
-    io_thread.cpp
-    ip.cpp
-    ipc_address.cpp
-    ipc_connecter.cpp
-    ipc_listener.cpp
-    kqueue.cpp
-    lb.cpp
-    mailbox.cpp
-    mailbox_safe.cpp
-    mechanism.cpp
-    mechanism_base.cpp
-    metadata.cpp
-    msg.cpp
-    mtrie.cpp
-    norm_engine.cpp
-    object.cpp
-    options.cpp
-    own.cpp
-    null_mechanism.cpp
-    pair.cpp
-    peer.cpp
-    pgm_receiver.cpp
-    pgm_sender.cpp
-    pgm_socket.cpp
-    pipe.cpp
-    plain_client.cpp
-    plain_server.cpp
-    poll.cpp
-    poller_base.cpp
-    polling_util.cpp
-    pollset.cpp
-    proxy.cpp
-    pub.cpp
-    pull.cpp
-    push.cpp
-    random.cpp
-    raw_encoder.cpp
-    raw_decoder.cpp
-    raw_engine.cpp
-    reaper.cpp
-    rep.cpp
-    req.cpp
-    router.cpp
-    select.cpp
-    server.cpp
-    session_base.cpp
-    signaler.cpp
-    socket_base.cpp
-    socks.cpp
-    socks_connecter.cpp
-    stream.cpp
-    stream_engine_base.cpp
-    sub.cpp
-    tcp.cpp
-    tcp_address.cpp
-    tcp_connecter.cpp
-    tcp_listener.cpp
-    thread.cpp
-    trie.cpp
-    radix_tree.cpp
-    v1_decoder.cpp
-    v1_encoder.cpp
-    v2_decoder.cpp
-    v2_encoder.cpp
-    v3_1_encoder.cpp
-    xpub.cpp
-    xsub.cpp
-    zmq.cpp
-    zmq_utils.cpp
-    decoder_allocators.cpp
-    socket_poller.cpp
-    timers.cpp
-    config.hpp
-    radio.cpp
-    dish.cpp
-    udp_engine.cpp
-    udp_address.cpp
-    scatter.cpp
-    gather.cpp
-    ip_resolver.cpp
-    zap_client.cpp
-    zmtp_engine.cpp
-    # at least for VS, the header files must also be listed
     address.hpp
     array.hpp
     atomic_counter.hpp
     atomic_ptr.hpp
     blob.hpp
+    channel.cpp
     channel.hpp
+    client.cpp
     client.hpp
+    clock.cpp
     clock.hpp
     command.hpp
     compat.hpp
     condition_variable.hpp
     config.hpp
+    config.hpp
+    ctx.cpp
     ctx.hpp
-    curve_client.hpp
-    curve_client_tools.hpp
-    curve_mechanism_base.hpp
-    curve_server.hpp
     dbuffer.hpp
+    dealer.cpp
     dealer.hpp
     decoder.hpp
+    decoder_allocators.cpp
     decoder_allocators.hpp
+    devpoll.cpp
     devpoll.hpp
+    dgram.cpp
     dgram.hpp
+    dish.cpp
     dish.hpp
+    dist.cpp
     dist.hpp
     encoder.hpp
+    endpoint.cpp
     endpoint.hpp
+    epoll.cpp
     epoll.hpp
+    err.cpp
     err.hpp
     fd.hpp
+    fq.cpp
     fq.hpp
+    gather.cpp
     gather.hpp
     generic_mtrie.hpp
     generic_mtrie_impl.hpp
-    gssapi_client.hpp
-    gssapi_mechanism_base.hpp
-    gssapi_server.hpp
-    vsock.hpp
-    vsock_address.hpp
-    vsock_connecter.hpp
-    vsock_listener.hpp
     i_decoder.hpp
     i_encoder.hpp
     i_engine.hpp
     i_mailbox.hpp
     i_poll_events.hpp
+    io_object.cpp
     io_object.hpp
+    io_thread.cpp
     io_thread.hpp
+    ip.cpp
     ip.hpp
-    ipc_address.hpp
-    ipc_connecter.hpp
-    ipc_listener.hpp
+    ip_resolver.cpp
+    kqueue.cpp
     kqueue.hpp
+    lb.cpp
     lb.hpp
     likely.hpp
     macros.hpp
+    mailbox.cpp
     mailbox.hpp
+    mailbox_safe.cpp
     mailbox_safe.hpp
+    mechanism.cpp
     mechanism.hpp
+    mechanism_base.cpp
     mechanism_base.hpp
+    metadata.cpp
     metadata.hpp
+    msg.cpp
     msg.hpp
+    mtrie.cpp
     mtrie.hpp
     mutex.hpp
-    norm_engine.hpp
+    null_mechanism.cpp
     null_mechanism.hpp
+    object.cpp
     object.hpp
+    options.cpp
     options.hpp
+    own.cpp
     own.hpp
+    pair.cpp
     pair.hpp
+    peer.cpp
     peer.hpp
-    pgm_receiver.hpp
-    pgm_sender.hpp
-    pgm_socket.hpp
+    pipe.cpp
     pipe.hpp
+    plain_client.cpp
     plain_client.hpp
     plain_common.hpp
+    plain_server.cpp
     plain_server.hpp
+    poll.cpp
     poll.hpp
     poller.hpp
+    poller_base.cpp
     poller_base.hpp
+    polling_util.cpp
     polling_util.hpp
+    pollset.cpp
     pollset.hpp
+    precompiled.cpp
     precompiled.hpp
+    proxy.cpp
     proxy.hpp
+    pub.cpp
     pub.hpp
+    pull.cpp
     pull.hpp
+    push.cpp
     push.hpp
+    radio.cpp
     radio.hpp
+    radix_tree.cpp
+    random.cpp
     random.hpp
+    raw_decoder.cpp
     raw_decoder.hpp
+    raw_encoder.cpp
     raw_encoder.hpp
+    raw_engine.cpp
     raw_engine.hpp
+    reaper.cpp
     reaper.hpp
+    rep.cpp
     rep.hpp
+    req.cpp
     req.hpp
+    router.cpp
     router.hpp
+    scatter.cpp
     scatter.hpp
     secure_allocator.hpp
+    select.cpp
     select.hpp
+    server.cpp
     server.hpp
+    session_base.cpp
     session_base.hpp
+    signaler.cpp
     signaler.hpp
+    socket_base.cpp
     socket_base.hpp
+    socket_poller.cpp
     socket_poller.hpp
+    socks.cpp
     socks.hpp
+    socks_connecter.cpp
     socks_connecter.hpp
     stdint.hpp
+    stream.cpp
     stream.hpp
-    stream_engine_base.hpp
-    stream_connecter_base.hpp
     stream_connecter_base.cpp
-    stream_listener_base.hpp
+    stream_connecter_base.hpp
+    stream_engine_base.cpp
+    stream_engine_base.hpp
     stream_listener_base.cpp
+    stream_listener_base.hpp
+    sub.cpp
     sub.hpp
+    tcp.cpp
     tcp.hpp
+    tcp_address.cpp
     tcp_address.hpp
+    tcp_connecter.cpp
     tcp_connecter.hpp
+    tcp_listener.cpp
     tcp_listener.hpp
+    thread.cpp
     thread.hpp
+    timers.cpp
     timers.hpp
-    tipc_address.hpp
-    tipc_connecter.hpp
-    tipc_listener.hpp
+    trie.cpp
     trie.hpp
+    udp_address.cpp
     udp_address.hpp
+    udp_engine.cpp
     udp_engine.hpp
+    v1_decoder.cpp
     v1_decoder.hpp
+    v1_encoder.cpp
     v1_encoder.hpp
+    v2_decoder.cpp
     v2_decoder.hpp
+    v2_encoder.cpp
     v2_encoder.hpp
-    v3_1_encoder.hpp
     v2_protocol.hpp
-    vmci.hpp
-    vmci_address.hpp
-    vmci_connecter.hpp
-    vmci_listener.hpp
+    v3_1_encoder.cpp
+    v3_1_encoder.hpp
     windows.hpp
     wire.hpp
+    xpub.cpp
     xpub.hpp
+    xsub.cpp
     xsub.hpp
     ypipe.hpp
     ypipe_base.hpp
     ypipe_conflate.hpp
     yqueue.hpp
+    zap_client.cpp
     zap_client.hpp
+    zmq.cpp
+    zmq_utils.cpp
+    zmtp_engine.cpp
     zmtp_engine.hpp)
 
 if(MINGW)
@@ -1194,48 +1141,71 @@ set(public_headers include/zmq.h include/zmq_utils.h include/zmq_sal.h)
 set(readme-docs AUTHORS LICENSE NEWS)
 
 # -----------------------------------------------------------------------------
-# optional modules
+# Optional modules
+
+if(ZMQ_HAVE_CURVE)
+  message(STATUS "Building with optional CURVE encryption.")
+  list(APPEND cxx-sources curve_client.cpp curve_client.hpp curve_client_tools.hpp curve_mechanism_base.cpp curve_mechanism_base.hpp curve_server.cpp curve_server.hpp)
+endif()
+
+if (HAVE_LIBGSSAPI_KRB5)
+  message(STATUS "Building with optional GSS API support.")
+   list(APPEND cxx-sources gssapi_client.cpp gssapi_client.hpp gssapi_mechanism_base.cpp gssapi_mechanism_base.hpp gssapi_server.cpp gssapi_server.hpp)
+endif()
+
+if(ZMQ_HAVE_IPC)
+  message(STATUS "Building with optional IPC transport.")
+  list(APPEND cxx-sources ipc_address.cpp ipc_address.hpp ipc_connecter.cpp ipc_connecter.hpp ipc_listener.cpp ipc_listener.hpp)
+endif()
 
 if(WITH_OPENPGM)
-  message(STATUS "Building with OpenPGM")
+  message(STATUS "Building with optional PGM/EPGM transports.")
   set(ZMQ_HAVE_OPENPGM 1)
   include_directories(${OPENPGM_INCLUDE_DIRS})
   link_directories(${OPENPGM_LIBRARY_DIRS})
+  list(APPEND cxx-sources pgm_receiver.cpp pgm_receiver.hpp pgm_sender.cpp pgm_sender.hpp pgm_socket.cpp pgm_socket.hpp)
 endif()
 
 if(WITH_NORM)
   find_package(norm)
     if(norm_FOUND)
-      message(STATUS "Building with NORM")
+      message(STATUS "Building with optional NORM transport.")
       set(ZMQ_HAVE_NORM 1)
+      list(APPEND cxx-sources norm_engine.cpp norm_engine.hpp)
     else()
       message(FATAL_ERROR "NORM not found")
     endif()
 endif()
 
 if(WITH_VMCI)
-  message(STATUS "Building with VMCI")
+  message(STATUS "Building with optional VMCI transport.")
   set(ZMQ_HAVE_VMCI 1)
   include_directories(${VMCI_INCLUDE_DIRS})
-  list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
+  list(APPEND cxx-sources vmci.cpp vmci.hpp vmci_address.cpp vmci_address.hpp vmci_connecter.cpp vmci_connecter.hpp vmci_listener.cpp vmci_listener.hpp)
 endif()
 
 if(WITH_VSOCK)
-  message(STATUS "Building with VSOCK")
+  message(STATUS "Building with optional VSOCK transport.")
   set(ZMQ_HAVE_VSOCK 1)
   include_directories(${VSOCK_INCLUDE_DIRS})
-  list(APPEND cxx-sources vsock_address.cpp vsock_connecter.cpp vsock_listener.cpp vsock.cpp)
+  list(APPEND cxx-sources vsock.cpp vsock.hpp vsock_address.cpp vsock_address.hpp vsock_connecter.cpp vsock_connecter.hpp vsock_listener.cpp vsock_listener.hpp)
 endif()
 
 if(WITH_HVSOCKET)
-  message(STATUS "Building with HVSOCKET")
+  message(STATUS "Building with optional HVSOCKET transport.")
   set(ZMQ_HAVE_HVSOCKET 1)
   include_directories(${HVSOCKET_INCLUDE_DIRS})
-  list(APPEND cxx-sources hvsocket_address.cpp hvsocket_connecter.cpp hvsocket_listener.cpp hvsocket.cpp)
+  list(APPEND cxx-sources hvsocket.cpp hvsocket.hpp hvsocket_address.cpp hvsocket_address.hpp hvsocket_connecter.cpp hvsocket_connecter.hpp hvsocket_listener.cpp hvsocket_listener.hpp)
 endif()
 
 if(ZMQ_HAVE_TIPC)
-  list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
+  message(STATUS "Building with optional TIPC transport.")
+  list(APPEND cxx-sources tipc_address.cpp tipc_address.hpp tipc_connecter.cpp tipc_connecter.hpp tipc_listener.cpp tipc_listener.hpp)
+endif()
+
+if(ZMQ_HAVE_WS)
+  message(STATUS "Building with optional WebSocket transport.")
+  list(APPEND cxx-sources ws_address.cpp ws_address.hpp ws_connecter.cpp ws_connecter.hpp ws_decoder.cpp ws_decoder.hpp ws_encoder.cpp ws_encoder.hpp ws_engine.cpp ws_engine.hpp ws_listener.cpp ws_listener.hpp ws_protocol.hpp)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -1278,7 +1248,7 @@ if(MSVC)
     DEPENDS ${nsis-template})
 endif()
 
-option(WITH_DOCS "Build html docs" ON)
+option(WITH_DOCS "Build HTML docs" ON)
 if(WITH_DOCS)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
   file(

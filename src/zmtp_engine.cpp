@@ -24,10 +24,14 @@
 #include "null_mechanism.hpp"
 #include "plain_client.hpp"
 #include "plain_server.hpp"
+#if defined HAVE_LIBGSSAPI_KRB5
 #include "gssapi_client.hpp"
 #include "gssapi_server.hpp"
+#endif
+#if defined ZMQ_HAVE_CURVE
 #include "curve_client.hpp"
 #include "curve_server.hpp"
+#endif
 #include "raw_decoder.hpp"
 #include "raw_encoder.hpp"
 #include "config.hpp"

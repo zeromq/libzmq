@@ -84,7 +84,6 @@ struct iovec
 typedef char
   check_msg_t_size[sizeof (zmq::msg_t) == sizeof (zmq_msg_t) ? 1 : -1];
 
-
 ZMQ_EXPORT_VOID_IMPL
 zmq_version (_Out_ int *major_, _Out_ int *minor_, _Out_ int *patch_)
 {
@@ -92,7 +91,6 @@ zmq_version (_Out_ int *major_, _Out_ int *minor_, _Out_ int *patch_)
     *minor_ = ZMQ_VERSION_MINOR;
     *patch_ = ZMQ_VERSION_PATCH;
 }
-
 
 ZMQ_EXPORT_STR_IMPL (const char *) zmq_strerror (int errnum_)
 {
@@ -197,7 +195,6 @@ zmq_ctx_get_ext (_In_ void *context_,
       ->get (option_, optval_, optvallen_);
 }
 
-
 //  Stable/legacy context API
 
 ZMQ_EXPORT_VOID_PTR_IMPL
@@ -222,7 +219,6 @@ ZMQ_EXPORT_IMPL (int) zmq_ctx_destroy (_In_ _Post_invalid_ void *context_)
 {
     return zmq_ctx_term (context_);
 }
-
 
 // Sockets
 
@@ -354,7 +350,6 @@ zmq_connect_peer (_In_ void *s_, _In_z_ const char *addr_)
     return s->connect_peer (addr_);
 }
 
-
 ZMQ_EXPORT_IMPL (int) zmq_unbind (_In_ void *s_, _In_z_ const char *addr_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
@@ -452,14 +447,13 @@ zmq_send_const (_In_ void *s_,
     return rc;
 }
 
-
 // Send multiple messages.
 // TODO: this function has no man page
 //
 // If flag bit ZMQ_SNDMORE is set the vector is treated as
 // a single multi-part message, i.e. the last message has
 // ZMQ_SNDMORE bit switched off.
-//
+
 ZMQ_EXPORT_IMPL (int)
 zmq_sendiov (_In_ void *s_,
              _In_reads_ (count_) struct iovec *iov_,
