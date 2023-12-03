@@ -1069,7 +1069,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
     else if (protocol == protocol_name::tipc) {
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
-        int rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
+        rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -1092,7 +1092,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         paddr->resolved.vmci_addr =
           new (std::nothrow) vmci_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vmci_addr);
-        int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
+        rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -1105,7 +1105,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         paddr->resolved.vsock_addr =
           new (std::nothrow) vsock_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vsock_addr);
-        int rc = paddr->resolved.vsock_addr->resolve (address.c_str ());
+        rc = paddr->resolved.vsock_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -1118,7 +1118,7 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         paddr->resolved.hvsocket_addr =
           new (std::nothrow) hvsocket_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.hvsocket_addr);
-        int rc = paddr->resolved.hvsocket_addr->resolve (address.c_str ());
+        rc = paddr->resolved.hvsocket_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
