@@ -11,6 +11,26 @@
 
 #if defined(ZMQ_HAVE_HVSOCKET)
 
+#ifndef HVSOCKET_CONNECT_TIMEOUT
+#define HVSOCKET_CONNECT_TIMEOUT 0x01
+#endif
+
+#ifndef HVSOCKET_CONTAINER_PASSTHRU
+#define HVSOCKET_CONTAINER_PASSTHRU 0x02
+#endif
+
+#ifndef HVSOCKET_CONNECTED_SUSPEND
+#define HVSOCKET_CONNECTED_SUSPEND 0x04
+#endif
+
+#ifndef HVSOCKET_HIGH_VTL
+#define HVSOCKET_HIGH_VTL 0x08
+#endif
+
+#ifndef HVSOCKET_CONNECT_TIMEOUT_MAX
+#define HVSOCKET_CONNECT_TIMEOUT_MAX 300000 // 5 minutes
+#endif
+
 namespace zmq
 {
 class hvsocket_address_t

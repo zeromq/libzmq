@@ -88,16 +88,86 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
 
     _s = open_socket (this->get_ctx ()->get_hvsocket_socket_family (),
                       SOCK_STREAM, HV_PROTOCOL_RAW);
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
+
+    //
+    // Best effort to set socket options.
+    //
+
+    const int non_zero_value = 1;
+
+    if (options.hvsocket_container_passthru) {
+        rc =
+          setsockopt (_s, HV_PROTOCOL_RAW, HVSOCKET_CONTAINER_PASSTHRU,
+                      (const char *) &non_zero_value, sizeof (non_zero_value));
+#ifndef NDEBUG
+        zmq_assert (rc == 0);
+#else
+        LIBZMQ_UNUSED (rc);
+#endif
+    }
+
+    if (options.hvsocket_connected_suspend) {
+        rc =
+          setsockopt (_s, HV_PROTOCOL_RAW, HVSOCKET_CONNECTED_SUSPEND,
+                      (const char *) &non_zero_value, sizeof (non_zero_value));
+#ifndef NDEBUG
+        zmq_assert (rc == 0);
+#else
+        LIBZMQ_UNUSED (rc);
+#endif
+    }
+
+    if (options.hvsocket_high_vtl) {
+        rc =
+          setsockopt (_s, HV_PROTOCOL_RAW, HVSOCKET_HIGH_VTL,
+                      (const char *) &non_zero_value, sizeof (non_zero_value));
+#ifndef NDEBUG
+        zmq_assert (rc == 0);
+#else
+        LIBZMQ_UNUSED (rc);
+#endif
+    }
+
+    if (options.connect_timeout > 0) {
+        rc = setsockopt (_s, HV_PROTOCOL_RAW, HVSOCKET_CONNECT_TIMEOUT,
+                         (const char *) &options.connect_timeout,
+                         sizeof (options.connect_timeout));
+#ifndef NDEBUG
+        zmq_assert (rc == 0);
+#endif
+    }
+
+    //
+    // Ensure the socket is not inherited by child processes.
+    //
+
     BOOL brc = SetHandleInformation ((HANDLE) _s, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
 #else
-    if (_s == -1)
+    if (_s == -1) {
         return -1;
+    }
+
+    //
+    // Best effort to set the socket options: socket will
+    // not disconnect on VM pause.
+    //
+
+    const int value = 1;
+    rc = setsockopt (s, HV_PROTOCOL_RAW, HVSOCKET_CONNECTED_SUSPEND,
+                     (const char *) &value, sizeof (value));
+
+#ifndef NDEBUG
+    zmq_assert (rc == 0);
+#else
+    LIBZMQ_UNUSED (rc);
+#endif
 #endif
 
     address.to_string (_endpoint);
