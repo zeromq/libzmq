@@ -232,6 +232,11 @@ void test_pgm ()
 #endif
 }
 
+void test_inproc ()
+{
+    test ("inproc://test_pubsub");
+}
+
 void test_tcp ()
 {
     test ("tcp://localhost:6213");
@@ -239,12 +244,11 @@ void test_tcp ()
 
 void test_ipc ()
 {
+#if defined ZMQ_HAVE_IPC
     test ("ipc://test_pubsub");
-}
-
-void test_inproc ()
-{
-    test ("inproc://test_pubsub");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without WebSockets, ignoring test.");
+#endif
 }
 
 void test_ws ()
@@ -265,17 +269,47 @@ void test_wss ()
 #endif
 }
 
+void test_vmci ()
+{
+#if defined ZMQ_HAVE_VMCI
+    test ("vmci://*:*");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without VMCI, ignoring test.");
+#endif
+}
+
+void test_vsock ()
+{
+#if defined ZMQ_HAVE_VSOCK
+    test ("vsock://2:22222");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without VSOCK, ignoring test.");
+#endif
+}
+
+void test_hvsocket ()
+{
+#if defined ZMQ_HAVE_HVSOCKET
+    test ("hvsocket://E0E16197-DD56-4A10-9195-5EE7A155A838:*");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without HVSOCKET, ignoring test.");
+#endif
+}
+
 int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_norm);
-    RUN_TEST (test_epgm);
-    RUN_TEST (test_pgm);
+    RUN_TEST (test_inproc);
     RUN_TEST (test_tcp);
     RUN_TEST (test_ipc);
-    RUN_TEST (test_inproc);
+    RUN_TEST (test_pgm);
+    RUN_TEST (test_epgm);
+    RUN_TEST (test_norm);
+    RUN_TEST (test_vmci);
+    RUN_TEST (test_vsock);
+    RUN_TEST (test_hvsocket);
     RUN_TEST (test_ws);
     RUN_TEST (test_wss);
     return UNITY_END ();

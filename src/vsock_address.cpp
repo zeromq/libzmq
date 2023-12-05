@@ -95,7 +95,7 @@ int zmq::vsock_address_t::resolve (const char *path_)
     }
 
     address.svm_family =
-      static_cast<UINT16> (parent->get_vsock_socket_family ());
+      static_cast<unsigned short> (parent->get_vsock_socket_family ());
     address.svm_cid = cid;
     address.svm_port = port;
 
@@ -148,7 +148,7 @@ unsigned short zmq::vsock_address_t::family () const
 sa_family_t zmq::vsock_address_t::family () const
 #endif
 {
-    /*Dummy*/ return AF_HYPERV;
+    return AF_VSOCK;
 }
 
 #endif

@@ -65,18 +65,29 @@ zmq::vsock_listener_t::get_socket_name (zmq::fd_t fd_,
 
 int zmq::vsock_listener_t::set_local_address (const char *addr_)
 {
+    //
     //  Create addr on stack for auto-cleanup
+    //
+
     std::string addr (addr_);
 
+    //
     //  Initialise the address structure.
+    //
+
     vsock_address_t address (this->get_ctx ());
     int rc = address.resolve (addr.c_str ());
-    if (rc != 0)
-        return -1;
 
+    if (rc != 0) {
+        return -1;
+    }
+
+    //
     //  Create a listening socket.
-//    _s =
-//      open_socket (this->get_ctx ()->get_vsock_socket_family (), SOCK_STREAM, 0);
+    //
+
+    _s =
+      open_socket (this->get_ctx ()->get_vsock_socket_family (), SOCK_STREAM, 0);
 #ifdef ZMQ_HAVE_WINDOWS
     if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());

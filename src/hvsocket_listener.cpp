@@ -65,28 +65,36 @@ zmq::hvsocket_listener_t::get_socket_name (zmq::fd_t fd_,
 
 int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
 {
+    //
     //  Create addr on stack for auto-cleanup
+    //
+
     std::string addr (addr_);
 
+    //
     //  Initialise the address structure.
+    //
+
     hvsocket_address_t address (this->get_ctx ());
     int rc = address.resolve (addr.c_str ());
-    if (rc != 0)
-        return -1;
 
+    if (rc != 0) {
+        return -1;
+    }
+
+    //
     //  Create a listening socket.
-//    _s =
-//      open_socket (this->get_ctx ()->get_hvsocket_socket_family (), SOCK_STREAM, 0);
+    //
+
+    _s = open_socket (this->get_ctx ()->get_hvsocket_socket_family (),
+                      SOCK_STREAM, HV_PROTOCOL_RAW);
 #ifdef ZMQ_HAVE_WINDOWS
     if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
-#if !defined _WIN32_WCE
-    //  On Windows, preventing sockets to be inherited by child processes.
     BOOL brc = SetHandleInformation ((HANDLE) _s, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
-#endif
 #else
     if (_s == -1)
         return -1;
