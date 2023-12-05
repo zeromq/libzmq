@@ -4,6 +4,7 @@
 #define __ZMQ_HVSOCKET_ADDRESS_HPP_INCLUDED__
 
 #include <string>
+#include <hvsocket.h>
 
 #include "platform.hpp"
 #include "ctx.hpp"
@@ -34,7 +35,8 @@ class hvsocket_address_t
     socklen_t addrlen () const;
 
   private:
-    struct sockaddr address;
+
+    SOCKADDR_HV address;
     ctx_t *parent;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (hvsocket_address_t)

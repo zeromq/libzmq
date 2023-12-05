@@ -25,6 +25,10 @@
 #include <vmci_sockets.h>
 #endif
 
+#ifdef ZMQ_HAVE_VSOCK
+#include "vsock_address.hpp"
+#endif
+
 #ifdef ZMQ_USE_NSS
 #include <nss.h>
 #endif
@@ -871,6 +875,20 @@ int zmq::ctx_t::get_vmci_socket_family ()
     return _vmci_family;
 }
 
+#endif
+
+#ifdef ZMQ_HAVE_VSOCK
+int zmq::ctx_t::get_vsock_socket_family () const
+{
+    return AF_VSOCK;
+}
+#endif
+
+#ifdef ZMQ_HAVE_HVSOCKET
+int zmq::ctx_t::get_hvsocket_socket_family () const
+{
+    return AF_HYPERV;
+}
 #endif
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this

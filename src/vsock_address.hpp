@@ -10,6 +10,41 @@
 
 #if defined(ZMQ_HAVE_VSOCK)
 
+#ifndef AF_VSOCK
+#define AF_VSOCK 40
+#endif
+
+#if defined ZMQ_HAVE_WINDOWS
+#ifndef _UAPI_VM_SOCKETS_H
+struct sockaddr_vsock
+{
+#if (_WIN32_WINNT < 0x0600)
+    UINT16 svm_family;
+#else
+    ADDRESS_FAMILY svm_family;
+#endif
+    UINT16 svm_reserved1;
+    UINT32 svm_port;
+    UINT32 svm_cid;
+    UINT8 svm_flags;
+    UINT8 svm_zero[sizeof (struct sockaddr) - sizeof (svm_family)
+                   - sizeof (svm_reserved1) - sizeof (svm_port)
+                   - sizeof (svm_cid) - sizeof (svm_flags)];
+};
+
+#ifndef VMADDR_CID_ANY
+#define VMADDR_CID_ANY (~(0U))
+#endif
+
+#ifndef VMADDR_PORT_ANY
+#define VMADDR_PORT_ANY (~(0U))
+#endif
+
+#endif
+#else
+#include <linux/vm_sockets.h>
+#endif
+
 namespace zmq
 {
 class vsock_address_t
@@ -34,7 +69,8 @@ class vsock_address_t
     socklen_t addrlen () const;
 
   private:
-    struct sockaddr address;
+
+    struct sockaddr_vsock address;
     ctx_t *parent;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (vsock_address_t)

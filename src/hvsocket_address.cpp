@@ -28,28 +28,36 @@ zmq::hvsocket_address_t::hvsocket_address_t (const sockaddr *sa,
     parent (parent_)
 {
     zmq_assert (sa && sa_len > 0);
-#if 0
-    memset (&address, 0, sizeof address);
-    if (sa->sa_family == parent->get_hvsocket_socket_family ())
+
+    memset (&address, 0, sizeof (address));
+
+    if (sa->sa_family == parent->get_hvsocket_socket_family ()) {
+        zmq_assert (sa_len <= sizeof (address));
         memcpy (&address, sa, sa_len);
-#endif
+    }
 }
 
 int zmq::hvsocket_address_t::resolve (const char *path_)
 {
-    //  Find the ':' at end that separates address from the port number.
+    //
+    //  Find the ':' at end that separates the VM ID from the Service ID.
+    //
+
     const char *delimiter = strrchr (path_, ':');
+    
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
 
-#if 0
+    //
+    //  Separate the VM ID / Service ID.
+    //
 
-    //  Separate the address/port.
     std::string addr_str (path_, delimiter - path_);
     std::string port_str (delimiter + 1);
 
+#if 0
     unsigned int cid = VMADDR_CID_ANY;
     unsigned int port = VMADDR_PORT_ANY;
 
@@ -106,40 +114,24 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
 
 int zmq::hvsocket_address_t::to_string (std::string &addr_) const
 {
-#if 0
-    if (address.svm_family != parent->get_hvsocket_socket_family ()) {
+    if (address.Family != parent->get_hvsocket_socket_family ()) {
         addr_.clear ();
         return -1;
     }
 
     std::stringstream s;
-
-    s << "hvsocket://";
-
-    if (address.svm_cid == VMADDR_CID_ANY) {
-        s << "*";
-    } else {
-        s << address.svm_cid;
-    }
-
+    s << protocol_name::hvsocket << "://";
+//    s << address.VmId;
     s << ":";
-
-    if (address.svm_port == VMADDR_PORT_ANY) {
-        s << "*";
-    } else {
-        s << address.svm_port;
-    }
-
+//    s << address.ServiceId;
     addr_ = s.str ();
-#endif
 
-    addr_ = "Not implemented";
     return 0;
 }
 
 const sockaddr *zmq::hvsocket_address_t::addr () const
 {
-    return static_cast<const sockaddr *> (&address);
+    return reinterpret_cast<const sockaddr *> (&address);
 }
 
 socklen_t zmq::hvsocket_address_t::addrlen () const

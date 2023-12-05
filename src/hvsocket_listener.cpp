@@ -145,11 +145,9 @@ zmq::fd_t zmq::hvsocket_listener_t::accept ()
                     || WSAGetLastError () == WSAENOBUFS);
         return retired_fd;
     }
-#if !defined _WIN32_WCE
-    //  On Windows, preventing sockets to be inherited by child processes.
+
     BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
-#endif
 #else
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR
