@@ -291,6 +291,7 @@ void test_hvsocket ()
 {
 #if defined ZMQ_HAVE_HVSOCKET
     test ("hvsocket://E0E16197-DD56-4A10-9195-5EE7A155A838:*");
+    test ("hvsocket://loopback:33333");
 #else
     TEST_IGNORE_MESSAGE ("libzmq without HVSOCKET, ignoring test.");
 #endif
