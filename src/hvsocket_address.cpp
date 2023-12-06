@@ -31,6 +31,8 @@
 // https://github.com/axelriet/tiny-json.git
 //
 
+#define _TINY_JSON_USE_WCHAR_
+
 #include "..\external\tiny-json\tiny-json.h"
 #include "..\external\tiny-json\tiny-json.c"
 
@@ -59,7 +61,62 @@ zmq::hvsocket_address_t::hvsocket_address_t (const sockaddr *sa,
     }
 }
 
-static bool GuidFromString (_In_z_ const char *str, _Out_ GUID *guid)
+static bool GuidFromStringW (_In_z_ const wchar_t *str, _Out_ GUID *guid)
+{
+    //
+    // "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    //
+
+    *guid = GUID_NULL;
+
+    const size_t len = wcslen (str);
+
+    if (len != 36) {
+        return false;
+    }
+
+    //
+    // Validate the string format
+    //
+
+    for (int i = 0; i < len; ++i) {
+        const wchar_t g = str[i];
+        if ((i == 8) || (i == 13) || (i == 18) || (i == 23)) {
+            if (g != L'-') {
+                return false;
+            }
+        } else if (!std::isxdigit (g)) {
+            return false;
+        }
+    }
+
+    wchar_t *pEnd;
+
+    guid->Data1 = wcstoul (str, &pEnd, 16);
+    guid->Data2 = (unsigned short) wcstoul (str + 9, &pEnd, 16);
+    guid->Data3 = (unsigned short) wcstoul (str + 14, &pEnd, 16);
+
+    wchar_t b[3]{};
+
+    b[0] = str[19];
+    b[1] = str[20];
+
+    guid->Data4[0] = (unsigned char) wcstoul (b, &pEnd, 16);
+
+    b[0] = str[21];
+    b[1] = str[22];
+
+    guid->Data4[1] = (unsigned char) wcstoul (b, &pEnd, 16);
+
+    for (int i = 0; i < 6; ++i) {
+        memcpy (b, str + 24 + i * 2, 2 * sizeof (b[0]));
+        guid->Data4[2 + i] = (unsigned char) wcstoul (b, &pEnd, 16);
+    }
+
+    return true;
+}
+
+static bool GuidFromStringA (_In_z_ const char *str, _Out_ GUID *guid)
 {
     //
     // "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -153,6 +210,25 @@ std::ostream &operator<< (std::ostream &os, REFGUID guid)
     return os;
 }
 
+static std::wstring WideStringFromString (_In_z_ const char *str)
+{
+    std::wstring retVal;
+
+    if (str && *str) {
+        const int cchSource = static_cast<int> (strlen (str));
+        const int cchNeeded =
+          MultiByteToWideChar (CP_UTF8, 0, str, cchSource, nullptr, 0);
+
+        if (cchNeeded > 0) {
+            retVal.resize (cchNeeded);
+            MultiByteToWideChar (CP_UTF8, 0, str, cchSource,
+                                 &retVal[0], cchNeeded);
+        }
+    }
+
+    return retVal;
+}
+
 static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
                                             _Out_ GUID *guid)
 {
@@ -160,6 +236,7 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     PWSTR result{};
     json_t buf[64]{};
     HCS_OPERATION op{};
+    std::wstring nameOrIndexW = WideStringFromString (nameOrIndex);
 
     *guid = GUID_NULL;
 
@@ -182,106 +259,86 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     HcsCloseOperation (op);
     op = nullptr;
 
+    // The Json looks like this (an array of objects)
     //
-    // Json wants UTF-8 :/
+    // [{
+    //     "Id" : "AF5F35E3-FD7A-4573-9449-E47223939979",
+    //     "SystemType" : "VirtualMachine",
+    //     "Name" : "WinDev2311Eval",
+    //     "Owner" : "VMMS",
+    //     "RuntimeId" : "af5f35e3-fd7a-4573-9449-e47223939979"
+    // }]
+    //
+    // We only care about "Id" and "Name"
     //
 
-    const int resultLen = (int) wcslen (result);
-    const int sizeNeeded = WideCharToMultiByte (CP_UTF8, 0, result, resultLen,
-                                                nullptr, 0, nullptr, nullptr);
+    json_t const *json = json_create (result, buf, _countof (buf));
 
-    if (sizeNeeded > 0) {
-        std::string jsonText (sizeNeeded, 0);
+    if (!json) {
+        goto cleanup;
+    }
 
-        if (!WideCharToMultiByte (CP_UTF8, 0, result, resultLen, &jsonText[0],
-                                  sizeNeeded, nullptr, nullptr)) {
+    //
+    // Minimally validate that we got what we exoected.
+    //
+
+    if (json_getType (json) != JSON_ARRAY) {
+        goto cleanup;
+    }
+
+    unsigned long i{};
+    char *end{nullptr};
+    bool indexLookup{};
+    const char *begin{nameOrIndex};
+    const unsigned long index{strtoul (begin, &end, 10)};
+
+    if (end != begin && !*end) {
+        //
+        // The whole "name" is a number, so it is an index.
+        // There is a small risk that someone names their
+        // containers/vm with a number, and this will be
+        // wrongly interpreted as an index. The alternative
+        // is to pollute the connection string syntax and
+        // introduce a special notation, like #0 to mean
+        // index 0 and not name "0" - not worth it.
+        //
+
+        indexLookup = true;
+    }
+
+    for (json_t const *entry{json_getChild (json)}; entry != nullptr;
+            entry = json_getSibling (entry), i++) {
+        //
+        // Minimally validate again that we got what we exoected.
+        //
+
+        if (json_getType (entry) != JSON_OBJ) {
             goto cleanup;
         }
 
         //
-        // Optional, but we no longer need the UTF-16 text past this point
+        // Compare the names, convert the Id to a GUID if there is
+        // a match. Some entries don't have a name and must be skipped
+        // unless we are doing an index lookup.
         //
 
-        LocalFree (result);
-        result = nullptr;
+        auto nameValue = json_getPropertyValue (entry, L"Name");
 
-        // The Json looks like this (an array of objects)
-        //
-        // [{
-        //     "Id" : "AF5F35E3-FD7A-4573-9449-E47223939979",
-        //     "SystemType" : "VirtualMachine",
-        //     "Name" : "WinDev2311Eval",
-        //     "Owner" : "VMMS",
-        //     "RuntimeId" : "af5f35e3-fd7a-4573-9449-e47223939979"
-        // }]
-        //
-        // We only care about "Id" and "Name"
-        //
+        if ((indexLookup && (i == index))
+            || (nameValue && !_wcsicmp (nameValue, nameOrIndexW.c_str ()))) {
 
-        json_t const *json = json_create (
-          const_cast<char *> (jsonText.c_str ()), buf, _countof (buf));
+            auto idValue = json_getPropertyValue (entry, L"Id");
 
-        if (!json) {
-            goto cleanup;
-        }
-
-        //
-        // Minimally validate that we got what we exoected.
-        //
-
-        if (json_getType (json) != JSON_ARRAY) {
-            goto cleanup;
-        }
-
-        unsigned long i{};
-        char *end{nullptr};
-        bool indexLookup{};
-        const char *begin{nameOrIndex};
-        const unsigned long index{strtoul (begin, &end, 10)};
-
-        if (end != begin && !*end) {
-            //
-            // The whole "name" is a number, so it is an index.
-            // There is a small risk that someone names their
-            // containers/vm with a number, and this will be
-            // wrongly interpreted as an index. The alternative
-            // is to pollute the connection string syntax and
-            // introduce a special notation, like #0 to mean
-            // index 0 and not name "0" - not worth it.
-            //
-
-            indexLookup = true;
-        }
-
-        for (json_t const *entry{json_getChild (json)}; entry != nullptr;
-             entry = json_getSibling (entry), i++) {
-            //
-            // Minimally validate again that we got what we exoected.
-            //
-
-            if (json_getType (entry) != JSON_OBJ) {
+            if (!idValue || !GuidFromStringW (idValue, guid)) {
                 goto cleanup;
             }
 
             //
-            // Compare the names, convert the Id to a GUID if there is a match.
+            // Done.
             //
 
-            if ((indexLookup && (i == index))
-                || !_stricmp (json_getPropertyValue (entry, "Name"),
-                              nameOrIndex)) {
-                if (!GuidFromString (json_getPropertyValue (entry, "Id"),
-                                     guid)) {
-                    goto cleanup;
-                }
-
-                //
-                // Done.
-                //
-
-                retVal = true;
-                break;
-            }
+            retVal = true;
+            break;
         }
     }
 
@@ -307,12 +364,12 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
     DWORD dwIndex{};
     LSTATUS status{};
     char subkeyName[37]{};
-    const size_t nameLenght{strlen (name)};
-    auto valueName{std::make_unique<char[]> (nameLenght + 1)};
+    const size_t nameLength{strlen (name)};
+    auto valueName{std::make_unique<char[]> (nameLength + 1)};
 
     *guid = GUID_NULL;
 
-    if (!nameLenght || !valueName) {
+    if (!nameLength || !valueName) {
         //
         // The name cannot be empty.
         //
@@ -320,10 +377,10 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
         goto cleanup;
     }
 
-    status = RegOpenKeyExA (
+    status = RegOpenKeyExW (
       HKEY_LOCAL_MACHINE,
-      "SOFTWARE\\Microsoft\\Windows "
-      "NT\\CurrentVersion\\Virtualization\\GuestCommunicationServices",
+      L"SOFTWARE\\Microsoft\\Windows "
+      L"NT\\CurrentVersion\\Virtualization\\GuestCommunicationServices",
       0, KEY_READ, &hKey);
 
     if (status != ERROR_SUCCESS) {
@@ -352,7 +409,7 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
             continue;
         }
 
-        DWORD valueNameSize{static_cast<DWORD> (nameLenght + 1)};
+        DWORD valueNameSize{static_cast<DWORD> (nameLength + 1)};
         status = RegGetValueA (hKey, subkeyName, "ElementName", RRF_RT_REG_SZ,
                                nullptr, valueName.get (), &valueNameSize);
 
@@ -374,7 +431,7 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
             // The key name is the service id.
             //
 
-            if (!GuidFromString (subkeyName, guid)) {
+            if (!GuidFromStringA (subkeyName, guid)) {
                 goto cleanup;
             }
 
@@ -401,11 +458,19 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
 {
 #ifndef NDEBUG
     // TODO: Move this into a test?
-    GUID guid{};
-    zmq_assert (GuidFromString ("C0B6B7FC-0D90-4812-A606-9E8E13709825", &guid));
-    std::stringstream s;
-    s << guid;
-    zmq_assert (s.str () == "C0B6B7FC-0D90-4812-A606-9E8E13709825");
+    GUID guid1{};
+    zmq_assert (
+      GuidFromStringA ("C0B6B7FC-0D90-4812-A606-9E8E13709825", &guid1));
+    std::stringstream s1;
+    s1 << guid1;
+    zmq_assert (s1.str () == "C0B6B7FC-0D90-4812-A606-9E8E13709825");
+    GUID guid2{};
+    zmq_assert (
+      GuidFromStringW (L"C0B6B7FC-0D90-4812-A606-9E8E13709825", &guid2));
+    std::stringstream s2;
+    s2 << guid2;
+    zmq_assert (s2.str () == "C0B6B7FC-0D90-4812-A606-9E8E13709825");
+    zmq_assert (guid1 == guid2);
 #endif
 
     //
@@ -441,7 +506,7 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
         // Try guid conversion first
         //
 
-        if (!GuidFromString (addr_str.c_str (), &address.VmId)) {
+        if (!GuidFromStringA (addr_str.c_str (), &address.VmId)) {
             //
             // GuidFromString failed. Check for well-known aliases.
             //
@@ -487,7 +552,7 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
         // Try guid conversion first
         //
 
-        if (!GuidFromString (port_str.c_str (), &address.ServiceId)) {
+        if (!GuidFromStringA (port_str.c_str (), &address.ServiceId)) {
             //
             // GuidFromString failed. See if it is a numeric port.
             //
