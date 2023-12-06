@@ -81,7 +81,7 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
     if (rc != 0) {
         return -1;
     }
-
+                          
     //
     //  Create a listening socket.
     //
@@ -94,6 +94,18 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
         errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
+
+    //
+    // Ensure the socket is not inherited by child processes.
+    //
+
+    BOOL brc = SetHandleInformation ((HANDLE) _s, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+#else
+    if (_s == -1) {
+        return -1;
+    }
+#endif
 
     //
     // Best effort to set socket options.
@@ -143,36 +155,12 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
 #endif
     }
 
-    //
-    // Ensure the socket is not inherited by child processes.
-    //
-
-    BOOL brc = SetHandleInformation ((HANDLE) _s, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#else
-    if (_s == -1) {
-        return -1;
-    }
-
-    //
-    // Best effort to set the socket options: socket will
-    // not disconnect on VM pause.
-    //
-
-    const int value = 1;
-    rc = setsockopt (s, HV_PROTOCOL_RAW, HVSOCKET_CONNECTED_SUSPEND,
-                     (const char *) &value, sizeof (value));
-
-#ifndef NDEBUG
-    zmq_assert (rc == 0);
-#else
-    LIBZMQ_UNUSED (rc);
-#endif
-#endif
-
     address.to_string (_endpoint);
 
-    //  Bind the socket.
+    //
+    // Bind the socket.
+    //
+
     rc = bind (_s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -184,7 +172,10 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
         goto error;
 #endif
 
-    //  Listen for incoming connections.
+    //
+    // Listen for incoming connections.
+    //
+
     rc = listen (_s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -209,9 +200,12 @@ error:
 
 zmq::fd_t zmq::hvsocket_listener_t::accept ()
 {
+    //
     //  Accept one connection and deal with different failure modes.
     //  The situation where connection cannot be accepted due to insufficient
     //  resources is considered valid and treated by ignoring the connection.
+    //
+
     zmq_assert (_s != retired_fd);
     fd_t sock = ::accept (_s, NULL, NULL);
 
@@ -236,8 +230,11 @@ zmq::fd_t zmq::hvsocket_listener_t::accept ()
     }
 #endif
 
+    //
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
+    //
+
 #ifdef FD_CLOEXEC
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
