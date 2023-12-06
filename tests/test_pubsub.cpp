@@ -354,21 +354,21 @@ int ZMQ_CDECL main ()
 
     UNITY_BEGIN ();
 
-//    RUN_TEST (test_inproc);
-//    RUN_TEST (test_tcp);
+    RUN_TEST (test_inproc);
+    RUN_TEST (test_tcp);
     
-//    RUN_TEST (test_ipc);
+    RUN_TEST (test_ipc);
     
-//    RUN_TEST (test_pgm);
-//    RUN_TEST (test_epgm);
-//    RUN_TEST (test_norm);
+    RUN_TEST (test_pgm);
+    RUN_TEST (test_epgm);
+    RUN_TEST (test_norm);
 
-//    RUN_TEST (test_vmci);
-//    RUN_TEST (test_vsock);
+    RUN_TEST (test_vmci);
+    RUN_TEST (test_vsock);
     RUN_TEST (test_hvsocket);
 
-//    RUN_TEST (test_ws);
-//    RUN_TEST (test_wss);
+    RUN_TEST (test_ws);
+    RUN_TEST (test_wss);
     
     return UNITY_END ();
 }

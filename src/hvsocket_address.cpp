@@ -269,7 +269,8 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     //     "RuntimeId" : "af5f35e3-fd7a-4573-9449-e47223939979"
     // }]
     //
-    // We only care about "Id" and "Name"
+    // We only care about "Id" and "Name" and sometimes
+    // there is no Name, so we must skip those entries.
     //
 
     json_t const *json = json_create (result, buf, _countof (buf));
