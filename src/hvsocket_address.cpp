@@ -31,7 +31,7 @@
 // https://github.com/axelriet/tiny-json.git
 //
 
-#define _TINY_JSON_USE_WCHAR_
+#define TINY_JSON_USE_WCHAR
 
 #include "..\external\tiny-json\tiny-json.h"
 #include "..\external\tiny-json\tiny-json.c"
