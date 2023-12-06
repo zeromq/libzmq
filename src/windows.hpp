@@ -28,6 +28,8 @@
 #include <windows.h>
 #include <mswsock.h>
 #include <iphlpapi.h>
+#include <string>
+#include <vector>
 
 #if !defined __MINGW32__
 #include <mstcpip.h>
@@ -63,6 +65,43 @@ static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 #ifndef AI_NUMERICSERV
 #define AI_NUMERICSERV 0x0400
 #endif
+
+//  Need unlink() and rmdir() functions that take utf-8 encoded file path.
+static inline std::wstring utf8_to_utf16 (const char *utf8_string)
+{
+    std::wstring retVal;
+
+    if (utf8_string && *utf8_string) {
+        const int utf16_length = ::MultiByteToWideChar (
+          CP_UTF8, MB_ERR_INVALID_CHARS, utf8_string,
+          -1, // assume the input string is null-terminated
+          NULL, 0);
+
+        if (utf16_length > 0) {
+            retVal.resize (utf16_length);
+
+            const int conversion_result = ::MultiByteToWideChar (
+              CP_UTF8, MB_ERR_INVALID_CHARS, utf8_string,
+              -1, // assume the input string is null-terminated
+              &retVal[0], static_cast<int> (retVal.size ()));
+
+            if (conversion_result == 0)
+                retVal.clear ();
+        }
+    }
+
+    return retVal;
+}
+
+static inline int unlink_utf8 (const char *filename)
+{
+    return _wunlink (utf8_to_utf16 (filename).c_str ());
+}
+
+static inline int rmdir_utf8 (const char *filename)
+{
+    return _wrmdir (utf8_to_utf16 (filename).c_str ());
+}
 
 //  In MSVC prior to v14, snprintf is not available
 //  The closest implementation is the _snprintf_s function

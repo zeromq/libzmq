@@ -25,8 +25,8 @@
 #include <afunix.h>
 #include <direct.h>
 
-#define rmdir _rmdir
-#define unlink _unlink
+#define rmdir rmdir_utf8
+#define unlink unlink_utf8
 
 #else
 #include <unistd.h>
