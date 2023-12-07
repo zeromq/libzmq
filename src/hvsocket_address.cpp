@@ -235,12 +235,14 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     bool retVal{};
     PWSTR result{};
     json_t buf[64]{};
-    HCS_OPERATION op{};
+    GUID indexMatchGuid{};
     std::wstring nameOrIndexW = WideStringFromString (nameOrIndex);
 
     *guid = GUID_NULL;
 
-    if (!(op = HcsCreateOperation (nullptr, nullptr))) {
+    HCS_OPERATION op = HcsCreateOperation (nullptr, nullptr);
+
+    if (!op) {
         goto cleanup;
     }
 
@@ -290,7 +292,6 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     unsigned long i{};
     char *end{nullptr};
     bool indexLookup{};
-    GUID indexMatchGuid{};
     const char *begin{nameOrIndex};
     const unsigned long index{strtoul (begin, &end, 10)};
 
