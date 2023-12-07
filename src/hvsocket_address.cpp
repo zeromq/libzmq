@@ -554,6 +554,17 @@ static bool RegisterNamedHvSocketServiceId (_In_z_ const char *name,
         goto cleanup;
     }
 
+    //
+    // There might be a race between us registering a new service id
+    // and them noticing that we did. Flush the regkey and yield the
+    // current timeslice just in case, so their registry watcher has
+    // a chance to notice the change (assuming they have one).
+    //
+
+    RegFlushKey (hSubKey);
+    RegFlushKey (hKey);
+    Sleep (0);
+
     retVal = true;
 
 cleanup:
