@@ -69,7 +69,7 @@ static const char vmci[] = "vmci";
 static const char vsock[] = "vsock";
 #endif
 #if defined ZMQ_HAVE_HVSOCKET
-static const char hvsocket[] = "hvsocket";
+static const char hvsocket[] = "hv";
 #endif
 }
 

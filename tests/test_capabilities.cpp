@@ -63,10 +63,10 @@ void test_capabilities ()
     TEST_ASSERT_FALSE (zmq_has ("vsock"));
 #endif
 
-#if defined(ZMQ_HAVE_VSOCK)
-    TEST_ASSERT_TRUE (zmq_has ("hvsocket"));
+#if defined(ZMQ_HAVE_HVSOCKET)
+    TEST_ASSERT_TRUE (zmq_has ("hv"));
 #else
-    TEST_ASSERT_FALSE (zmq_has ("hvsocket"));
+    TEST_ASSERT_FALSE (zmq_has ("hv"));
 #endif
 
 #if defined(ZMQ_HAVE_WS)
