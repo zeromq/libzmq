@@ -1,20 +1,18 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
-
 #include "hvsocket_address.hpp"
 
 #if defined(ZMQ_HAVE_HVSOCKET)
 
+#ifdef ZMQ_HAVE_WINDOWS
 #include <ComputeCore.h>
 #pragma comment(lib, "ComputeCore")
-
-//
-// Windows Registry Editor Version 5.00
-//
-// [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization\GuestCommunicationServices\xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx]
-// "ElementName"="Your Channel Name"
-//
+const wchar_t GuestCommunicationServicesKeyPath[] =
+  L"SOFTWARE\\Microsoft\\Windows "
+  L"NT\\CurrentVersion\\Virtualization\\GuestCommunicationServices";
+const char ElementName[] = "ElementName";
+#endif
 
 #include <climits>
 #include <string>
@@ -221,16 +219,17 @@ static std::wstring WideStringFromString (_In_z_ const char *str)
 
         if (cchNeeded > 0) {
             retVal.resize (cchNeeded);
-            MultiByteToWideChar (CP_UTF8, 0, str, cchSource,
-                                 &retVal[0], cchNeeded);
+            MultiByteToWideChar (CP_UTF8, 0, str, cchSource, &retVal[0],
+                                 cchNeeded);
         }
     }
 
     return retVal;
 }
 
-static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
-                                            _Out_ GUID *guid)
+#ifdef ZMQ_HAVE_WINDOWS
+static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
+                                               _Out_ GUID *guid)
 {
     bool retVal{};
     PWSTR result{};
@@ -253,7 +252,7 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     }
 
     //
-    // Optional, but we no longer need the operation past this point
+    // Optional now, but we no longer need the operation past this point
     //
 
     HcsCloseOperation (op);
@@ -280,7 +279,7 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     }
 
     //
-    // Minimally validate that we got what we exoected.
+    // Minimally validate that we got what we expected.
     //
 
     if (json_getType (json) != JSON_ARRAY) {
@@ -308,9 +307,9 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     }
 
     for (json_t const *entry{json_getChild (json)}; entry != nullptr;
-            entry = json_getSibling (entry), i++) {
+         entry = json_getSibling (entry), i++) {
         //
-        // Minimally validate again that we got what we exoected.
+        // Minimally validate again that we got what we expected.
         //
 
         if (json_getType (entry) != JSON_OBJ) {
@@ -327,7 +326,6 @@ static bool ComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
 
         if ((indexLookup && (i == index))
             || (nameValue && !_wcsicmp (nameValue, nameOrIndexW.c_str ()))) {
-
             auto idValue = json_getPropertyValue (entry, L"Id");
 
             if (!idValue || !GuidFromStringW (idValue, guid)) {
@@ -358,7 +356,8 @@ cleanup:
     return retVal;
 }
 
-static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
+static bool GetHvSocketServiceIdFromName (_In_z_ const char *name,
+                                          _Out_ GUID *guid)
 {
     HKEY hKey{};
     bool retVal{};
@@ -378,11 +377,9 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
         goto cleanup;
     }
 
-    status = RegOpenKeyExW (
-      HKEY_LOCAL_MACHINE,
-      L"SOFTWARE\\Microsoft\\Windows "
-      L"NT\\CurrentVersion\\Virtualization\\GuestCommunicationServices",
-      0, KEY_READ, &hKey);
+    status =
+      RegOpenKeyExW (HKEY_LOCAL_MACHINE, GuestCommunicationServicesKeyPath, 0,
+                     KEY_READ, &hKey);
 
     if (status != ERROR_SUCCESS) {
         //
@@ -411,7 +408,7 @@ static bool ServiceIdFromName (_In_z_ const char *name, _Out_ GUID *guid)
         }
 
         DWORD valueNameSize{static_cast<DWORD> (nameLength + 1)};
-        status = RegGetValueA (hKey, subkeyName, "ElementName", RRF_RT_REG_SZ,
+        status = RegGetValueA (hKey, subkeyName, ElementName, RRF_RT_REG_SZ,
                                nullptr, valueName.get (), &valueNameSize);
 
         if (status != ERROR_SUCCESS) {
@@ -454,6 +451,95 @@ cleanup:
 
     return retVal;
 }
+
+//
+// Attempts to register the HvSocket Service Id in the registry.
+//
+
+static bool RegisterNamedHvSocketServiceId (_In_z_ const char *name,
+                                            _In_ REFGUID guid,
+                                            _In_ BOOL volatileKey)
+{
+    HKEY hKey{};
+    bool retVal{};
+    HKEY hSubKey{};
+    LSTATUS status{};
+    std::stringstream s;
+    std::string subKeyName;
+
+    status =
+      RegOpenKeyExW (HKEY_LOCAL_MACHINE, GuestCommunicationServicesKeyPath, 0,
+                     KEY_WRITE, &hKey);
+
+    if (status != ERROR_SUCCESS) {
+        //
+        // Maybe there is no Hyper-V on this machine.
+        //
+
+        goto cleanup;
+    }
+
+    //
+    // See if the service id subkey is already registered.
+    //
+
+    s << guid;
+    subKeyName = s.str ();
+
+    status = RegOpenKeyExA (hKey, subKeyName.c_str (), 0, KEY_READ, &hSubKey);
+
+    if (status == ERROR_SUCCESS) {
+        //
+        // It is, bail out.
+        //
+
+        retVal = true;
+        goto cleanup;
+    }
+
+    status = RegCreateKeyExA (hKey, subKeyName.c_str (), 0, nullptr,
+                              volatileKey ? REG_OPTION_VOLATILE
+                                          : REG_OPTION_NON_VOLATILE,
+                              KEY_ALL_ACCESS, nullptr, &hSubKey, nullptr);
+
+    if (status != ERROR_SUCCESS) {
+        //
+        // Cannot create the subkey.
+        //
+
+        goto cleanup;
+    }
+
+    status =
+      RegSetValueExA (hSubKey, ElementName, 0, REG_SZ,
+                      (const unsigned char *) name, (DWORD) strlen (name) + 1);
+
+    if (status != ERROR_SUCCESS) {
+        //
+        // Cannot write the value.
+        //
+
+        goto cleanup;
+    }
+
+    retVal = true;
+
+cleanup:
+
+    if (hSubKey) {
+        RegCloseKey (hSubKey);
+        hSubKey = nullptr;
+    }
+
+    if (hKey) {
+        RegCloseKey (hKey);
+        hKey = nullptr;
+    }
+
+    return retVal;
+}
+
+#endif
 
 int zmq::hvsocket_address_t::resolve (const char *path_)
 {
@@ -523,12 +609,13 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
             } else if (addr_str == "silohost") {
                 address.VmId = HV_GUID_SILOHOST;
             } else {
+#ifdef ZMQ_HAVE_WINDOWS
                 //
                 // Try resolving the string as a VM/Container name or index.
                 //
 
-                if (!ComputeSystemIdFromNameOrIndex (addr_str.c_str (),
-                                                     &address.VmId)) {
+                if (!GetComputeSystemIdFromNameOrIndex (addr_str.c_str (),
+                                                        &address.VmId)) {
                     //
                     // ComputeSystemIdFromNameOrIndex failed. This was our last hope :(
                     //
@@ -536,6 +623,10 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
                     errno = EINVAL;
                     return -1;
                 }
+#else
+                errno = EINVAL;
+                return -1;
+#endif
             }
         }
     }
@@ -589,13 +680,23 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
 
                 address.ServiceId = HV_GUID_VSOCK_TEMPLATE;
                 address.ServiceId.Data1 = portNumber;
+
+#ifdef ZMQ_HAVE_WINDOWS
+                //
+                // On Windows, we also register the service id (best effort)
+                //
+
+                (void) RegisterNamedHvSocketServiceId (port_str.c_str (),
+                                                       address.ServiceId, TRUE);
+#endif
             } else {
+#ifdef ZMQ_HAVE_WINDOWS
                 //
                 // Try resolving the string as a registered service name.
                 //
 
-                if (!ServiceIdFromName (port_str.c_str (),
-                                        &address.ServiceId)) {
+                if (!GetHvSocketServiceIdFromName (port_str.c_str (),
+                                                   &address.ServiceId)) {
                     //
                     // ServiceIdFromName failed. This was our last hope :(
                     //
@@ -603,7 +704,20 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
                     errno = EINVAL;
                     return -1;
                 }
+#else
+                errno = EINVAL;
+                return -1;
+#endif
             }
+        } else {
+#ifdef ZMQ_HAVE_WINDOWS
+            //
+            // On Windows, we also register the service id as a courtesy.
+            //
+
+            (void) RegisterNamedHvSocketServiceId (
+              ("Service-" + port_str).c_str (), address.ServiceId, TRUE);
+#endif
         }
     }
 
