@@ -162,6 +162,7 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
     //
 
     rc = bind (_s, address.addr (), address.addrlen ());
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -177,6 +178,7 @@ int zmq::hvsocket_listener_t::set_local_address (const char *addr_)
     //
 
     rc = listen (_s, options.backlog);
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());

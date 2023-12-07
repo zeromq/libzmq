@@ -21,9 +21,10 @@ const char ElementName[] = "ElementName";
 
 #include "err.hpp"
 
+//
 // TinyJson by Rafa García (https://github.com/rafagafe/tiny-json)
 //
-// Included below is a fork, to be modified to handle
+// Included below is a fork modified to handle
 // UTF-16 directly as this is what HCS returns.
 //
 // https://github.com/axelriet/tiny-json.git
@@ -208,6 +209,7 @@ std::ostream &operator<< (std::ostream &os, REFGUID guid)
     return os;
 }
 
+#ifdef ZMQ_HAVE_WINDOWS
 static std::wstring WideStringFromString (_In_z_ const char *str)
 {
     std::wstring retVal;
@@ -227,7 +229,6 @@ static std::wstring WideStringFromString (_In_z_ const char *str)
     return retVal;
 }
 
-#ifdef ZMQ_HAVE_WINDOWS
 static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
                                                _Out_ GUID *guid)
 {
@@ -252,7 +253,7 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     }
 
     //
-    // Optional now, but we no longer need the operation past this point
+    // Optional now, but we no longer need the operation.
     //
 
     HcsCloseOperation (op);
@@ -289,18 +290,17 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     unsigned long i{};
     char *end{nullptr};
     bool indexLookup{};
+    GUID indexMatchGuid{};
     const char *begin{nameOrIndex};
     const unsigned long index{strtoul (begin, &end, 10)};
 
     if (end != begin && !*end) {
         //
-        // The whole "name" is a number, so it is an index.
-        // There is a small risk that someone names their
-        // containers/vm with a number, and this will be
-        // wrongly interpreted as an index. The alternative
-        // is to pollute the connection string syntax and
-        // introduce a special notation, like #0 to mean
-        // index 0 and not name "0" - not worth it.
+        // The whole "name" is a number, so it may be an index. There
+        // is a chance that someone named their containers/vms with a
+        // number. To avoid mistaking a vm/container name's that is a
+        // number we iterate the whole list and compare the names and
+        // ensure that name matching takes precedence over index.
         //
 
         indexLookup = true;
@@ -317,28 +317,59 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
         }
 
         //
-        // Compare the names, convert the Id to a GUID if there is
-        // a match. Some entries don't have a name and must be skipped
-        // unless we are doing an index lookup.
+        // Some entries don't have a name and must be skipped, unless
+        // we are doing an index lookup.
         //
 
         auto nameValue = json_getPropertyValue (entry, L"Name");
 
-        if ((indexLookup && (i == index))
-            || (nameValue && !_wcsicmp (nameValue, nameOrIndexW.c_str ()))) {
+        const bool indexMatch = (indexLookup && (i == index));
+
+        const bool nameMatch =
+          (nameValue && !_wcsicmp (nameValue, nameOrIndexW.c_str ()));
+
+        if (indexMatch || nameMatch) {
+            //
+            // Retrieve the Id property and convert it to a GUID.
+            //
+
             auto idValue = json_getPropertyValue (entry, L"Id");
 
-            if (!idValue || !GuidFromStringW (idValue, guid)) {
+            GUID tempGuid{};
+
+            if (!idValue || !GuidFromStringW (idValue, &tempGuid)) {
                 goto cleanup;
             }
 
-            //
-            // Done.
-            //
+            if (nameMatch) {
+                //
+                // Name match gets the prize, we are done.
+                //
 
-            retVal = true;
-            break;
+                *guid = tempGuid;
+                retVal = true;
+                goto cleanup;
+            }
+
+            if (indexMatch) {
+                //
+                // Index match. Store it and continue.
+                //
+
+                indexMatchGuid = tempGuid;
+            }
         }
+    }
+
+    //
+    // If we get there then there was no name matching. If
+    // they passed a name that looks like an indice and we
+    // stored an index match, return that.
+    //
+
+    if (indexLookup && (indexMatchGuid != GUID_NULL)) {
+        *guid = indexMatchGuid;
+        retVal = true;
     }
 
 cleanup:
@@ -572,7 +603,7 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
     }
 
     //
-    // Separate the VM ID / Service ID.
+    // Separate the vm id and service id.
     //
 
     std::string addr_str (path_, delimiter - path_);
@@ -590,44 +621,45 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
         return -1;
     } else if (addr_str != "*") {
         //
-        // Try guid conversion first
+        // Try GUID conversion first
         //
 
         if (!GuidFromStringA (addr_str.c_str (), &address.VmId)) {
-            //
-            // GuidFromString failed. Check for well-known aliases.
-            //
-
-            if (addr_str == "broadcast") {
-                address.VmId = HV_GUID_BROADCAST;
-            } else if (addr_str == "children") {
-                address.VmId = HV_GUID_CHILDREN;
-            } else if (addr_str == "loopback") {
-                address.VmId = HV_GUID_LOOPBACK;
-            } else if (addr_str == "parent") {
-                address.VmId = HV_GUID_PARENT;
-            } else if (addr_str == "silohost") {
-                address.VmId = HV_GUID_SILOHOST;
-            } else {
 #ifdef ZMQ_HAVE_WINDOWS
-                //
-                // Try resolving the string as a VM/Container name or index.
-                //
+            //
+            // Not a GUID. Try resolving the string as a vm/container
+            // name or index.
+            //
 
-                if (!GetComputeSystemIdFromNameOrIndex (addr_str.c_str (),
-                                                        &address.VmId)) {
+            if (!GetComputeSystemIdFromNameOrIndex (addr_str.c_str (),
+                                                    &address.VmId)) {
+                //
+                // Name/index resolution failed. Try aliases last.
+                //
+#endif
+                if (addr_str == "any") {
+                    address.VmId = HV_GUID_WILDCARD;
+                } else if (addr_str == "broadcast") {
+                    address.VmId = HV_GUID_BROADCAST;
+                } else if (addr_str == "children") {
+                    address.VmId = HV_GUID_CHILDREN;
+                } else if (addr_str == "loopback") {
+                    address.VmId = HV_GUID_LOOPBACK;
+                } else if (addr_str == "parent") {
+                    address.VmId = HV_GUID_PARENT;
+                } else if (addr_str == "silohost") {
+                    address.VmId = HV_GUID_SILOHOST;
+                } else {
                     //
-                    // ComputeSystemIdFromNameOrIndex failed. This was our last hope :(
+                    // We are having a bad day.
                     //
 
                     errno = EINVAL;
                     return -1;
                 }
-#else
-                errno = EINVAL;
-                return -1;
-#endif
+#ifdef ZMQ_HAVE_WINDOWS
             }
+#endif
         }
     }
 
@@ -645,78 +677,70 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
         //
 
         if (!GuidFromStringA (port_str.c_str (), &address.ServiceId)) {
-            //
-            // GuidFromString failed. See if it is a numeric port.
-            //
-
-            char *end{nullptr};
-            const char *begin{port_str.c_str ()};
-            const unsigned long portNumber{strtoul (begin, &end, 10)};
-
-            if (end != begin && !*end) {
-                //
-                // The whole "serviceId" is a number, so it is port number.
-                // There is a small risk that someone names their
-                // service id's with numbera, and this will be
-                // wrongly interpreted as port. The alternative
-                // is to pollute the connection string syntax and
-                // introduce a special notation, like #5555 to mean
-                // port 5555 and not service name "5555" - not worth it.
-                //
-
-                if (portNumber & 0x80000000) {
-                    //
-                    // Port numbers must be <= 0x7fffffff
-                    //
-                    errno = EINVAL;
-                    return -1;
-                }
-
-                //
-                // It looks like a number that can be used as port number,
-                // stuff it into the VSOCK template. This franken-GUID is
-                // given special treatment by the underlying transport.
-                //
-
-                address.ServiceId = HV_GUID_VSOCK_TEMPLATE;
-                address.ServiceId.Data1 = portNumber;
-
 #ifdef ZMQ_HAVE_WINDOWS
-                //
-                // On Windows, we also register the service id (best effort)
-                //
+            //
+            // Try resolving the string as a registered service name first.
+            //
 
-                (void) RegisterNamedHvSocketServiceId (port_str.c_str (),
-                                                       address.ServiceId, TRUE);
+            if (!GetHvSocketServiceIdFromName (port_str.c_str (),
+                                               &address.ServiceId)) {
+                //
+                // Service name resolution failed. See if it's a numeric port.
+                //
 #endif
-            } else {
-#ifdef ZMQ_HAVE_WINDOWS
-                //
-                // Try resolving the string as a registered service name.
-                //
+                char *end{nullptr};
+                const char *begin{port_str.c_str ()};
+                const unsigned long portNumber{strtoul (begin, &end, 10)};
 
-                if (!GetHvSocketServiceIdFromName (port_str.c_str (),
-                                                   &address.ServiceId)) {
+                if (end != begin && !*end) {
                     //
-                    // ServiceIdFromName failed. This was our last hope :(
+                    // The whole "serviceId" is a number, so it must be
+                    // a port number.
+                    //
+
+                    if (portNumber & 0x80000000) {
+                        //
+                        // Port numbers must be <= 0x7fffffff
+                        //
+
+                        errno = EINVAL;
+                        return -1;
+                    }
+
+                    //
+                    // It looks like a number that can be used as port number,
+                    // stuff it into the VSOCK template. This franken-GUID is
+                    // given special treatment by the underlying transport.
+                    //
+
+                    address.ServiceId = HV_GUID_VSOCK_TEMPLATE;
+                    address.ServiceId.Data1 = portNumber;
+
+#ifdef ZMQ_HAVE_WINDOWS
+                    //
+                    // On Windows, we auto-register the service id port number.
+                    //
+
+                    (void) RegisterNamedHvSocketServiceId (port_str.c_str (),
+                        address.ServiceId, TRUE);
+#endif
+                } else {
+                    //
+                    // Port number resolution failed. Nothing worked.
                     //
 
                     errno = EINVAL;
                     return -1;
                 }
-#else
-                errno = EINVAL;
-                return -1;
-#endif
+#ifdef ZMQ_HAVE_WINDOWS
             }
         } else {
-#ifdef ZMQ_HAVE_WINDOWS
             //
-            // On Windows, we also register the service id as a courtesy.
+            // On Windows, we auto-register the service id.
             //
 
-            (void) RegisterNamedHvSocketServiceId (
-              ("Service-" + port_str).c_str (), address.ServiceId, TRUE);
+            (void) RegisterNamedHvSocketServiceId (("Service-" + port_str).c_str (),
+                address.ServiceId, TRUE);
 #endif
         }
     }
