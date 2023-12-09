@@ -210,19 +210,16 @@ std::ostream &operator<< (std::ostream &os, REFGUID guid)
 }
 
 #ifdef ZMQ_HAVE_WINDOWS
-static std::wstring WideStringFromString (_In_z_ const char *str)
+static std::wstring ToUtf16 (_In_z_ const char *str)
 {
     std::wstring retVal;
 
     if (str && *str) {
-        const int cchSource = static_cast<int> (strlen (str));
         const int cchNeeded =
-          MultiByteToWideChar (CP_UTF8, 0, str, cchSource, nullptr, 0);
-
+          MultiByteToWideChar (CP_UTF8, 0, str, -1, NULL, 0);
         if (cchNeeded > 0) {
             retVal.resize (cchNeeded);
-            MultiByteToWideChar (CP_UTF8, 0, str, cchSource, &retVal[0],
-                                 cchNeeded);
+            MultiByteToWideChar (CP_UTF8, 0, str, -1, &retVal[0], cchNeeded);
         }
     }
 
@@ -236,7 +233,7 @@ static bool GetComputeSystemIdFromNameOrIndex (_In_z_ const char *nameOrIndex,
     PWSTR result{};
     json_t buf[64]{};
     GUID indexMatchGuid{};
-    std::wstring nameOrIndexW = WideStringFromString (nameOrIndex);
+    std::wstring nameOrIndexW = ToUtf16 (nameOrIndex);
 
     *guid = GUID_NULL;
 
