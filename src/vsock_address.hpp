@@ -36,6 +36,18 @@ struct sockaddr_vsock
 #define VMADDR_CID_ANY (~(0U))
 #endif
 
+#ifndef VMADDR_CID_HYPERVISOR
+#define VMADDR_CID_HYPERVISOR (0U)
+#endif
+
+#ifndef VMADDR_CID_LOCAL
+#define VMADDR_CID_LOCAL (1U)
+#endif
+
+#ifndef VMADDR_CID_HOST
+#define VMADDR_CID_HOST (2U)
+#endif
+
 #ifndef VMADDR_PORT_ANY
 #define VMADDR_PORT_ANY (~(0U))
 #endif

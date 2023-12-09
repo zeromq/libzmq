@@ -52,12 +52,14 @@ zmq::vsock_listener_t::get_socket_name (zmq::fd_t fd_,
 {
     struct sockaddr_storage ss;
     const zmq_socklen_t sl = get_socket_address (fd_, socket_end_, &ss);
+
     if (sl == 0) {
         return std::string ();
     }
 
     const vsock_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl,
                                this->get_ctx ());
+
     std::string address_string;
     addr.to_string (address_string);
     return address_string;
@@ -88,6 +90,7 @@ int zmq::vsock_listener_t::set_local_address (const char *addr_)
 
     _s =
       open_socket (this->get_ctx ()->get_vsock_socket_family (), SOCK_STREAM, 0);
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -107,6 +110,7 @@ int zmq::vsock_listener_t::set_local_address (const char *addr_)
 
     //  Bind the socket.
     rc = bind (_s, address.addr (), address.addrlen ());
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -118,6 +122,7 @@ int zmq::vsock_listener_t::set_local_address (const char *addr_)
 #endif
 
     //  Listen for incoming connections.
+
     rc = listen (_s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -131,9 +136,11 @@ int zmq::vsock_listener_t::set_local_address (const char *addr_)
 
     _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
                               _s);
+
     return 0;
 
 error:
+
     int err = errno;
     close ();
     errno = err;
@@ -173,6 +180,7 @@ zmq::fd_t zmq::vsock_listener_t::accept ()
 
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
+
 #ifdef FD_CLOEXEC
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);

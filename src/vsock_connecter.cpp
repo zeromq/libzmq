@@ -93,12 +93,14 @@ zmq::vsock_connecter_t::get_socket_name (zmq::fd_t fd_,
 {
     struct sockaddr_storage ss;
     const zmq_socklen_t sl = get_socket_address (fd_, socket_end_, &ss);
+
     if (sl == 0) {
         return std::string ();
     }
 
     const vsock_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl,
                                this->get_ctx ());
+
     std::string address_string;
     addr.to_string (address_string);
     return address_string;
@@ -164,15 +166,19 @@ int zmq::vsock_connecter_t::open ()
 
     _addr->resolved.vsock_addr =
       new (std::nothrow) vsock_address_t (this->get_ctx ());
+
     alloc_assert (_addr->resolved.vsock_addr);
+
     _s = vsock_open_socket (_addr->address.c_str (), options,
                            _addr->resolved.vsock_addr);
+
     if (_s == retired_fd) {
         //  TODO we should emit some event in this case!
 
         LIBZMQ_DELETE (_addr->resolved.vsock_addr);
         return -1;
     }
+
     zmq_assert (_addr->resolved.vsock_addr != NULL);
 
     // Set the socket to non-blocking mode so that we get async connect().

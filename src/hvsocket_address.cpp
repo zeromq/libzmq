@@ -603,6 +603,8 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
     zmq_assert (guid1 == guid2);
 #endif
 
+    memset (&address, 0, sizeof (address));
+
     //
     // Find the ':' at end that separates the VM ID from the Service ID.
     //
@@ -631,6 +633,7 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
 
         errno = EINVAL;
         return -1;
+
     } else if (addr_str != "*") {
         //
         // Try GUID conversion first
@@ -650,12 +653,13 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
                 //
 #endif
                 if (addr_str == "any") {
-                    address.VmId = HV_GUID_WILDCARD;
+                    ; // Already HV_GUID_WILDCARD;
                 } else if (addr_str == "broadcast") {
                     address.VmId = HV_GUID_BROADCAST;
                 } else if (addr_str == "children") {
                     address.VmId = HV_GUID_CHILDREN;
-                } else if (addr_str == "loopback") {
+                } else if ((addr_str == "local") || (addr_str == "localhost")
+                           || (addr_str == "loopback")) {
                     address.VmId = HV_GUID_LOOPBACK;
                 } else if (addr_str == "parent") {
                     address.VmId = HV_GUID_PARENT;
@@ -773,9 +777,20 @@ int zmq::hvsocket_address_t::to_string (std::string &addr_) const
     std::stringstream s;
 
     s << protocol_name::hvsocket << "://";
-    s << address.VmId;
+
+    if (address.VmId == HV_GUID_WILDCARD) {
+        s << "*";
+    } else {
+        s << address.VmId;
+    }
+
     s << ":";
-    s << address.ServiceId;
+
+    if (address.ServiceId == HV_GUID_WILDCARD) {
+        s << "*";
+    } else {
+        s << address.ServiceId;
+    }
 
     addr_ = s.str ();
 

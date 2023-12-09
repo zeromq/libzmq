@@ -39,6 +39,8 @@ zmq::vsock_address_t::vsock_address_t (const sockaddr *sa,
 
 int zmq::vsock_address_t::resolve (const char *path_)
 {
+    memset(&address, 0, sizeof(address));
+
     //
     //  Find the ':' at end that separates address from the port number.
     //
@@ -61,29 +63,62 @@ int zmq::vsock_address_t::resolve (const char *path_)
     unsigned int port = VMADDR_PORT_ANY;
 
     if (!addr_str.length ()) {
+        //
+        // Address cannot be empty.
+        //
+
         errno = EINVAL;
         return -1;
+
     } else if (addr_str != "*") {
-        char *end = NULL;
-        const char *begin = addr_str.c_str ();
-        unsigned long l = strtoul (begin, &end, 10);
+        //
+        // Test for well-known aliases first.
+        //
 
-        if ((l == 0 && end == begin) || (l == ULONG_MAX && errno == ERANGE)
-            || l > UINT_MAX) {
-            errno = EINVAL;
-            return -1;
+        if (addr_str == "any") {
+            ; // Already VMADDR_CID_ANY;
+        } else if (addr_str == "hypervisor") {
+            cid = VMADDR_CID_HYPERVISOR;
+        } else if ((addr_str == "local") || (addr_str == "localhost")
+                   || (addr_str == "loopback")) {
+            cid = VMADDR_CID_LOCAL;
+        } else if (addr_str == "host") {
+            cid = VMADDR_CID_HOST;
+        } else {
+            //
+            // Not an alias, fall back to numeric interpretation.
+            //
+
+            char *end = nullptr;
+            const char *begin = addr_str.c_str ();
+            const unsigned long p = strtoul (begin, &end, 10);
+
+            if ((p == 0 && end == begin)
+                || (p == ULONG_MAX && errno == ERANGE) || p > UINT_MAX) {
+                errno = EINVAL;
+                return -1;
+            }
+
+            cid = static_cast<unsigned int> (p);
         }
-
-        cid = static_cast<unsigned int> (l);
     }
 
     if (!port_str.length ()) {
+        //
+        // Port cannot be empty.
+        //
+
         errno = EINVAL;
         return -1;
+
     } else if (port_str != "*") {
+        //
+        // Numeric interpretation.
+        //
+
         char *end = NULL;
         const char *begin = port_str.c_str ();
-        unsigned long l = strtoul (begin, &end, 10);
+        const unsigned long l = strtoul (begin, &end, 10);
 
         if ((l == 0 && end == begin) || (l == ULONG_MAX && errno == ERANGE)
             || l > UINT_MAX) {
@@ -96,6 +131,7 @@ int zmq::vsock_address_t::resolve (const char *path_)
 
     address.svm_family =
       static_cast<unsigned short> (parent->get_vsock_socket_family ());
+
     address.svm_cid = cid;
     address.svm_port = port;
 
