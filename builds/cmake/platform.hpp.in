@@ -71,6 +71,8 @@
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_HAVE_NORM
 #cmakedefine ZMQ_HAVE_VMCI
+#cmakedefine ZMQ_HAVE_VSOCK
+#cmakedefine ZMQ_HAVE_HVSOCKET
 
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 

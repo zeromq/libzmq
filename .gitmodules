@@ -1,0 +1,6 @@
+[submodule "external/external/tiny-json"]
+	path = external/external/tiny-json
+	url = https://github.com/axelriet/tiny-json.git
+[submodule "external/tiny-json"]
+	path = external/tiny-json
+	url = https://github.com/axelriet/tiny-json.git

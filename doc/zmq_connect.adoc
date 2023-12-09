@@ -24,6 +24,7 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 'inproc':: local in-process (inter-thread) communication transport, see xref:zmq_inproc.adoc[zmq_inproc]
 'pgm', 'epgm':: reliable multicast transport using PGM, see xref:zmq_pgm.adoc[zmq_pgm]
 'vmci':: virtual machine communications interface (VMCI), see xref:zmq_vmci.adoc[zmq_vmci]
+'vsock':: Linux vsock(7) and Microsoft Hyper-V sockets, see xref:zmq_vsock.adoc[zmq_vsock]
 'udp':: unreliable unicast and multicast using UDP, see xref:zmq_udp.adoc[zmq_udp]
 
 Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one

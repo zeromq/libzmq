@@ -410,6 +410,11 @@ zmq_msg_gets (_In_ const zmq_msg_t *msg_, _In_z_ const char *property_);
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 #define ZMQ_BINDTODEVICE 92
 
+/*  HvSocket options.                                                         */
+#define ZMQ_HVSOCKET_CONTAINER_PASSTHRU 1000
+#define ZMQ_HVSOCKET_CONNECTED_SUSPEND 1001
+#define ZMQ_HVSOCKET_HIGH_VTL 1002
+
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SHARED 3

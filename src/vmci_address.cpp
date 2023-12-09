@@ -29,9 +29,12 @@ zmq::vmci_address_t::vmci_address_t (const sockaddr *sa,
 {
     zmq_assert (sa && sa_len > 0);
 
-    memset (&address, 0, sizeof address);
-    if (sa->sa_family == parent->get_vmci_socket_family ())
+    memset (&address, 0, sizeof (address));
+
+    if (sa->sa_family == parent->get_vmci_socket_family ()) {
+        zmq_assert (sa_len <= sizeof (address));
         memcpy (&address, sa, sa_len);
+    }
 }
 
 int zmq::vmci_address_t::resolve (const char *path_)
@@ -108,7 +111,7 @@ int zmq::vmci_address_t::to_string (std::string &addr_) const
 
     std::stringstream s;
 
-    s << "vmci://";
+    s << protocol_name::vmci << "://";
 
     if (address.svm_cid == VMADDR_CID_ANY) {
         s << "*";

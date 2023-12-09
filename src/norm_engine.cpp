@@ -13,6 +13,11 @@
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
+#ifdef _MSC_VER
+// Disable truncations and hiding
+// warnings, this code needs work :(
+#pragma warning (disable : 4244 4245 4310 4456)
+#endif
 
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
 
@@ -55,7 +60,7 @@ zmq::norm_engine_t::~norm_engine_t ()
 }
 
 
-int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
+int zmq::norm_engine_t::init (_In_z_ const char *network_, bool send, bool recv)
 {
     // Parse the "network_" address int "iface", "addr", and "port"
     // norm endpoint format: [id,][<iface>;]<addr>:<port>
@@ -276,7 +281,7 @@ void zmq::norm_engine_t::shutdown ()
     }
 } // end zmq::norm_engine_t::shutdown()
 
-void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
+void zmq::norm_engine_t::plug (io_thread_t */*io_thread_*/,
                                session_base_t *session_)
 {
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER

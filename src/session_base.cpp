@@ -12,7 +12,17 @@
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
+
+#if defined ZMQ_HAVE_VMCI
 #include "vmci_connecter.hpp"
+#endif
+#if defined ZMQ_HAVE_VSOCK
+#include "vsock_connecter.hpp"
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+#include "hvsocket_connecter.hpp"
+#endif
+
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
@@ -627,6 +637,18 @@ void zmq::session_base_t::start_connecting (bool wait_)
     else if (_addr->protocol == protocol_name::vmci) {
         connecter = new (std::nothrow)
           vmci_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (_addr->protocol == protocol_name::vsock) {
+        connecter = new (std::nothrow)
+          vsock_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+    else if (_addr->protocol == protocol_name::hvsocket) {
+        connecter = new (std::nothrow)
+          hvsocket_connecter_t (io_thread, this, options, _addr, wait_);
     }
 #endif
 #if defined ZMQ_HAVE_WS

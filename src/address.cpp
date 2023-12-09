@@ -15,6 +15,14 @@
 #include "vmci_address.hpp"
 #endif
 
+#if defined ZMQ_HAVE_VSOCK
+#include "vsock_address.hpp"
+#endif
+
+#if defined ZMQ_HAVE_HVSOCKET
+#include "hvsocket_address.hpp"
+#endif
+
 #include <string>
 #include <sstream>
 
@@ -60,6 +68,16 @@ zmq::address_t::~address_t ()
         LIBZMQ_DELETE (resolved.vmci_addr);
     }
 #endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (protocol == protocol_name::vsock) {
+        LIBZMQ_DELETE (resolved.vsock_addr);
+    }
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+    else if (protocol == protocol_name::hvsocket) {
+        LIBZMQ_DELETE (resolved.hvsocket_addr);
+    }
+#endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
@@ -87,6 +105,14 @@ int zmq::address_t::to_string (std::string &addr_) const
 #if defined ZMQ_HAVE_VMCI
     if (protocol == protocol_name::vmci && resolved.vmci_addr)
         return resolved.vmci_addr->to_string (addr_);
+#endif
+#if defined ZMQ_HAVE_VSOCK
+    if (protocol == protocol_name::vsock && resolved.vsock_addr)
+        return resolved.vsock_addr->to_string (addr_);
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+    if (protocol == protocol_name::hvsocket && resolved.hvsocket_addr)
+        return resolved.hvsocket_addr->to_string (addr_);
 #endif
 
     if (!protocol.empty () && !address.empty ()) {

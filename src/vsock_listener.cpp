@@ -2,20 +2,20 @@
 
 #include "precompiled.hpp"
 
-#include "vmci_listener.hpp"
+#include "vsock_listener.hpp"
 
-#if defined ZMQ_HAVE_VMCI
+#if defined ZMQ_HAVE_VSOCK
 
 #include <new>
 
-#include "vmci_address.hpp"
+#include "vsock_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 #include "socket_base.hpp"
-#include "vmci.hpp"
+#include "vsock.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -24,14 +24,14 @@
 #include <fcntl.h>
 #endif
 
-zmq::vmci_listener_t::vmci_listener_t (io_thread_t *io_thread_,
+zmq::vsock_listener_t::vsock_listener_t (io_thread_t *io_thread_,
                                        socket_base_t *socket_,
                                        const options_t &options_) :
     stream_listener_base_t (io_thread_, socket_, options_)
 {
 }
 
-void zmq::vmci_listener_t::in_event ()
+void zmq::vsock_listener_t::in_event ()
 {
     fd_t fd = accept ();
 
@@ -42,55 +42,55 @@ void zmq::vmci_listener_t::in_event ()
         return;
     }
 
-    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size,
-                           options.vmci_buffer_min_size,
-                           options.vmci_buffer_max_size);
-
-    if (options.vmci_connect_timeout > 0) {
-#if defined ZMQ_HAVE_WINDOWS
-        tune_vmci_connect_timeout (this->get_ctx (), fd,
-                                   options.vmci_connect_timeout);
-#else
-        struct timeval timeout = {0, options.vmci_connect_timeout * 1000};
-        tune_vmci_connect_timeout (this->get_ctx (), fd, timeout);
-#endif
-    }
-
     //  Create the engine object for this connection.
     create_engine (fd);
 }
 
 std::string
-zmq::vmci_listener_t::get_socket_name (zmq::fd_t fd_,
+zmq::vsock_listener_t::get_socket_name (zmq::fd_t fd_,
                                        socket_end_t socket_end_) const
 {
     struct sockaddr_storage ss;
     const zmq_socklen_t sl = get_socket_address (fd_, socket_end_, &ss);
+
     if (sl == 0) {
         return std::string ();
     }
 
-    const vmci_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl,
+    const vsock_address_t addr (reinterpret_cast<struct sockaddr *> (&ss), sl,
                                this->get_ctx ());
+
     std::string address_string;
     addr.to_string (address_string);
     return address_string;
 }
 
-int zmq::vmci_listener_t::set_local_address (const char *addr_)
+int zmq::vsock_listener_t::set_local_address (const char *addr_)
 {
+    //
     //  Create addr on stack for auto-cleanup
+    //
+
     std::string addr (addr_);
 
+    //
     //  Initialise the address structure.
-    vmci_address_t address (this->get_ctx ());
-    int rc = address.resolve (addr.c_str ());
-    if (rc != 0)
-        return -1;
+    //
 
+    vsock_address_t address (this->get_ctx ());
+    int rc = address.resolve (addr.c_str ());
+
+    if (rc != 0) {
+        return -1;
+    }
+
+    //
     //  Create a listening socket.
+    //
+
     _s =
-      open_socket (this->get_ctx ()->get_vmci_socket_family (), SOCK_STREAM, 0);
+      open_socket (this->get_ctx ()->get_vsock_socket_family (), SOCK_STREAM, 0);
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -110,6 +110,7 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
 
     //  Bind the socket.
     rc = bind (_s, address.addr (), address.addrlen ());
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
@@ -121,6 +122,7 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
 #endif
 
     //  Listen for incoming connections.
+
     rc = listen (_s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -134,16 +136,18 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
 
     _socket->event_listening (make_unconnected_bind_endpoint_pair (_endpoint),
                               _s);
+
     return 0;
 
 error:
+
     int err = errno;
     close ();
     errno = err;
     return -1;
 }
 
-zmq::fd_t zmq::vmci_listener_t::accept ()
+zmq::fd_t zmq::vsock_listener_t::accept ()
 {
     //  Accept one connection and deal with different failure modes.
     //  The situation where connection cannot be accepted due to insufficient
@@ -176,6 +180,7 @@ zmq::fd_t zmq::vmci_listener_t::accept ()
 
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
+
 #ifdef FD_CLOEXEC
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);

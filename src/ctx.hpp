@@ -123,6 +123,16 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     int get_vmci_socket_family ();
 #endif
 
+#ifdef ZMQ_HAVE_VSOCK
+    // Return family for the VSOCK socket.
+    int get_vsock_socket_family () const;
+#endif
+
+#ifdef ZMQ_HAVE_HVSOCKET
+    // Return family for the HVSOCKET socket.
+    int get_hvsocket_socket_family () const;
+#endif
+
     enum
     {
         term_tid = 0,
