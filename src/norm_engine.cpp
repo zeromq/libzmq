@@ -442,10 +442,18 @@ void zmq::norm_engine_t::in_event ()
         case NORM_RX_OBJECT_NEW:
             //break;
         case NORM_RX_OBJECT_UPDATED:
+#ifndef NDEBUG
+            // See https://github.com/axelriet/norm/pull/1
+            zmq_assert (event.object != NULL);
+#endif
             recv_data (event.object);
             break;
 
         case NORM_RX_OBJECT_ABORTED: {
+#ifndef NDEBUG
+            // See https://github.com/axelriet/norm/pull/1
+            zmq_assert (event.object != NULL);
+#endif
             NormRxStreamState *rxState =
               (NormRxStreamState *) NormObjectGetUserData (event.object);
             if (NULL != rxState) {
