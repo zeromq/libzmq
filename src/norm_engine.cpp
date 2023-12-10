@@ -446,7 +446,9 @@ void zmq::norm_engine_t::in_event ()
             // See https://github.com/axelriet/norm/pull/1
             zmq_assert (event.object != NULL);
 #endif
-            recv_data (event.object);
+            if (event.object != NULL) {
+                recv_data (event.object);
+            }
             break;
 
         case NORM_RX_OBJECT_ABORTED: {
@@ -454,17 +456,19 @@ void zmq::norm_engine_t::in_event ()
             // See https://github.com/axelriet/norm/pull/1
             zmq_assert (event.object != NULL);
 #endif
-            NormRxStreamState *rxState =
-              (NormRxStreamState *) NormObjectGetUserData (event.object);
-            if (NULL != rxState) {
-                // Remove the state from the list it's in
-                // This is now unnecessary since deletion takes care of list removal
-                // but in the interest of being clear ...
-                NormRxStreamState::List *list = rxState->AccessList ();
-                if (NULL != list)
-                    list->Remove (*rxState);
+            if (event.object != NULL) {
+                NormRxStreamState *rxState =
+                  (NormRxStreamState *) NormObjectGetUserData (event.object);
+                if (NULL != rxState) {
+                    // Remove the state from the list it's in
+                    // This is now unnecessary since deletion takes care of list removal
+                    // but in the interest of being clear ...
+                    NormRxStreamState::List *list = rxState->AccessList ();
+                    if (NULL != list)
+                        list->Remove (*rxState);
+                }
+                delete rxState;
             }
-            delete rxState;
             break;
         }
         case NORM_REMOTE_SENDER_INACTIVE:
