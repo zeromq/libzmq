@@ -43,7 +43,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
         return rc;
 
     out_buffer_size = pgm_socket.get_max_tsdu_size ();
-    out_buffer = (unsigned char *) malloc (out_buffer_size);
+    out_buffer = (unsigned char *) std::malloc (out_buffer_size);
     alloc_assert (out_buffer);
 
     return rc;
@@ -127,7 +127,7 @@ zmq::pgm_sender_t::~pgm_sender_t ()
     errno_assert (rc == 0);
 
     if (out_buffer) {
-        free (out_buffer);
+        std::free (out_buffer);
         out_buffer = NULL;
     }
 }

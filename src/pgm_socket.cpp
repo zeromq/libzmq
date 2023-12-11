@@ -336,7 +336,8 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
             pgm_msgv_len++;
         zmq_assert (pgm_msgv_len);
 
-        pgm_msgv = (pgm_msgv_t *) malloc (sizeof (pgm_msgv_t) * pgm_msgv_len);
+        pgm_msgv =
+          (pgm_msgv_t *) std::malloc (sizeof (pgm_msgv_t) * pgm_msgv_len);
         alloc_assert (pgm_msgv);
     }
 
@@ -362,7 +363,7 @@ err_abort:
 zmq::pgm_socket_t::~pgm_socket_t ()
 {
     if (pgm_msgv)
-        free (pgm_msgv);
+        std::free (pgm_msgv);
     if (sock)
         pgm_close (sock, TRUE);
 }

@@ -875,7 +875,7 @@ DWORD WINAPI normWrapperThread (LPVOID lpParam)
     }
     // Free resources
     rc = closesocket (norm_wrapper_thread_args->wrapper_write_fd);
-    free (norm_wrapper_thread_args);
+    std::free (norm_wrapper_thread_args);
     errno_assert (rc != -1);
 
     return exitCode;

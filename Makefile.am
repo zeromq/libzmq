@@ -406,6 +406,9 @@ noinst_PROGRAMS = \
 	perf/remote_lat \
 	perf/local_thr \
 	perf/remote_thr \
+
+remote_thr_custom_alloc
+
 	perf/inproc_lat \
 	perf/inproc_thr \
 	perf/proxy_thr

@@ -149,6 +149,7 @@ option(WITH_NORM "Build with support for NORM (reliable multicast)" OFF)
 option(WITH_VMCI "Build with support for VMware VMCI (host<->guests sockets)" OFF)
 option(WITH_HVSOCKET "Build with support for Microsoft Hyper-V (host<->guests sockets)" OFF)
 option(WITH_VSOCK "Build with support for VSOCK (hvsocket, virtio, vmci) (host<->guests sockets)" OFF)
+option(WITH_CUSTOM_MESSAGE_ALLOCATOR "Build with support for custom message allocators" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
@@ -1143,6 +1144,11 @@ set(readme-docs AUTHORS LICENSE NEWS)
 # -----------------------------------------------------------------------------
 # Optional modules
 
+if(WITH_CUSTOM_MESSAGE_ALLOCATOR)
+  message(STATUS "Building with with support for custom message allocators.")
+  set(ZMQ_HAVE_CUSTOM_ALLOCATOR 1)
+endif()
+
 if(ZMQ_HAVE_CURVE)
   message(STATUS "Building with optional CURVE encryption.")
   list(APPEND cxx-sources curve_client.cpp curve_client.hpp curve_client_tools.hpp curve_mechanism_base.cpp curve_mechanism_base.hpp curve_server.cpp curve_server.hpp)
@@ -1158,8 +1164,13 @@ if(ZMQ_HAVE_IPC)
   list(APPEND cxx-sources ipc_address.cpp ipc_address.hpp ipc_connecter.cpp ipc_connecter.hpp ipc_listener.cpp ipc_listener.hpp)
 endif()
 
+if(ZMQ_HAVE_WS)
+  message(STATUS "Building with optional WebSocket transport.")
+  list(APPEND cxx-sources ws_address.cpp ws_address.hpp ws_connecter.cpp ws_connecter.hpp ws_decoder.cpp ws_decoder.hpp ws_encoder.cpp ws_encoder.hpp ws_engine.cpp ws_engine.hpp ws_listener.cpp ws_listener.hpp ws_protocol.hpp)
+endif()
+
 if(WITH_OPENPGM)
-  message(STATUS "Building with optional PGM/EPGM transports.")
+  message(STATUS "Building with optional PGM/EPGM transport adapters.")
   set(ZMQ_HAVE_OPENPGM 1)
   include_directories(${OPENPGM_INCLUDE_DIRS})
   link_directories(${OPENPGM_LIBRARY_DIRS})
@@ -1169,7 +1180,7 @@ endif()
 if(WITH_NORM)
   find_package(norm)
     if(norm_FOUND)
-      message(STATUS "Building with optional NORM transport.")
+      message(STATUS "Building with optional NORM transport adapter.")
       set(ZMQ_HAVE_NORM 1)
       list(APPEND cxx-sources norm_engine.cpp norm_engine.hpp)
     else()
@@ -1178,7 +1189,7 @@ if(WITH_NORM)
 endif()
 
 if(WITH_VMCI)
-  message(STATUS "Building with optional VMCI transport.")
+  message(STATUS "Building with optional VMCI transport adapter.")
   set(ZMQ_HAVE_VMCI 1)
   find_path(VMCI_INCLUDE_DIRS vmci_sockets.h PATHS "../vmci" NO_DEFAULT_PATH)
   include_directories(${VMCI_INCLUDE_DIRS})
@@ -1186,27 +1197,22 @@ if(WITH_VMCI)
 endif()
 
 if(WITH_VSOCK)
-  message(STATUS "Building with optional VSOCK transport.")
+  message(STATUS "Building with optional VSOCK transport adapter.")
   set(ZMQ_HAVE_VSOCK 1)
   include_directories(${VSOCK_INCLUDE_DIRS})
   list(APPEND cxx-sources vsock.cpp vsock.hpp vsock_address.cpp vsock_address.hpp vsock_connecter.cpp vsock_connecter.hpp vsock_listener.cpp vsock_listener.hpp)
 endif()
 
 if(WITH_HVSOCKET)
-  message(STATUS "Building with optional HVSOCKET transport.")
+  message(STATUS "Building with optional HVSOCKET transport adapter.")
   set(ZMQ_HAVE_HVSOCKET 1)
   include_directories(${HVSOCKET_INCLUDE_DIRS})
   list(APPEND cxx-sources hvsocket.cpp hvsocket.hpp hvsocket_address.cpp hvsocket_address.hpp hvsocket_connecter.cpp hvsocket_connecter.hpp hvsocket_listener.cpp hvsocket_listener.hpp)
 endif()
 
 if(ZMQ_HAVE_TIPC)
-  message(STATUS "Building with optional TIPC transport.")
+  message(STATUS "Building with optional TIPC transport adapter.")
   list(APPEND cxx-sources tipc_address.cpp tipc_address.hpp tipc_connecter.cpp tipc_connecter.hpp tipc_listener.cpp tipc_listener.hpp)
-endif()
-
-if(ZMQ_HAVE_WS)
-  message(STATUS "Building with optional WebSocket transport.")
-  list(APPEND cxx-sources ws_address.cpp ws_address.hpp ws_connecter.cpp ws_connecter.hpp ws_decoder.cpp ws_decoder.hpp ws_encoder.cpp ws_encoder.hpp ws_engine.cpp ws_engine.hpp ws_listener.cpp ws_listener.hpp ws_protocol.hpp)
 endif()
 
 # -----------------------------------------------------------------------------
@@ -1586,6 +1592,10 @@ if(BUILD_SHARED)
       inproc_lat
       inproc_thr
       proxy_thr)
+
+      if (WITH_CUSTOM_MESSAGE_ALLOCATOR)
+        list(APPEND perf-tools remote_thr_ca)
+      endif()
 
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     option(WITH_PERF_TOOL "Build with perf-tools" ON)

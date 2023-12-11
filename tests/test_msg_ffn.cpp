@@ -7,11 +7,13 @@
 
 SETUP_TEARDOWN_TESTCONTEXT
 
-void ffn (void *data_, void *hint_)
+void ZMQ_CDECL ffn (_Pre_maybenull_ _Post_invalid_ void *data_,
+                    _In_opt_ void *hint_)
 {
     // Signal that ffn has been called by writing "freed" to hint
     (void) data_; //  Suppress 'unused' warnings at compile time
-    memcpy (hint_, (void *) "freed", 5);
+    if (hint_ != NULL)
+        memcpy (hint_, (void *) "freed", 5);
 }
 
 void test_msg_init_ffn ()

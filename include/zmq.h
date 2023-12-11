@@ -280,12 +280,31 @@ typedef struct zmq_msg_t
 #endif
 } zmq_msg_t;
 
-typedef void (zmq_free_fn) (_Pre_maybenull_ _Post_invalid_ void *data_,
-                            _In_opt_ void *hint_);
+typedef void (ZMQ_CDECL zmq_free_fn) (
+  _Pre_maybenull_ _Post_invalid_ void *data_, _In_opt_ void *hint_);
+
+typedef enum _ZMQ_MSG_ALLOC_HINT
+{
+    ZMQ_MSG_ALLOC_HINT_NONE = 0,
+    ZMQ_MSG_ALLOC_HINT_OUTGOING = 1,
+    ZMQ_MSG_ALLOC_HINT_INCOMING = 2,
+    ZMQ_MSG_ALLOC_HINT_FIXED_SIZE = 3,
+    ZMQ_MSG_ALLOC_HINT_MAX = ZMQ_MSG_ALLOC_HINT_FIXED_SIZE
+} ZMQ_MSG_ALLOC_HINT;
+
+typedef _Must_inspect_result_ _Ret_opt_bytecap_ (cb) void *(
+  ZMQ_CDECL zmq_custom_msg_alloc_fn) (_In_ size_t cb,
+                                      _In_ ZMQ_MSG_ALLOC_HINT hint);
+typedef void (ZMQ_CDECL zmq_custom_msg_free_fn) (
+  _Pre_maybenull_ _Post_invalid_ void *ptr_, _In_ ZMQ_MSG_ALLOC_HINT hint);
+
+ZMQ_EXPORT (bool)
+zmq_set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
+                              _In_ zmq_custom_msg_free_fn *free_);
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init (_Out_ zmq_msg_t *msg_);
-_At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
+  _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init_size (_Out_ zmq_msg_t *msg_, size_t size_);
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT (int)
   zmq_msg_init_data (_Out_ zmq_msg_t *msg_,

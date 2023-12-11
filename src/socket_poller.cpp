@@ -60,7 +60,7 @@ zmq::socket_poller_t::~socket_poller_t ()
 
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (_pollfds) {
-        free (_pollfds);
+        std::free (_pollfds);
         _pollfds = NULL;
     }
 #endif
@@ -243,7 +243,7 @@ int zmq::socket_poller_t::rebuild ()
 #if defined ZMQ_POLL_BASED_ON_POLL
 
     if (_pollfds) {
-        free (_pollfds);
+        std::free (_pollfds);
         _pollfds = NULL;
     }
 
@@ -263,7 +263,7 @@ int zmq::socket_poller_t::rebuild ()
     if (_pollset_size == 0)
         return 0;
 
-    _pollfds = static_cast<pollfd *> (malloc (_pollset_size * sizeof (pollfd)));
+    _pollfds = static_cast<pollfd *> (std::malloc (_pollset_size * sizeof (pollfd)));
 
     if (!_pollfds) {
         errno = ENOMEM;
