@@ -409,7 +409,7 @@ void zmq::print_backtrace (void)
 
         printf ("#%u  %p in %s (%s+0x%lx)\n", frame_n++, addr, file_name,
                 rc ? func_name : demangled_name, (unsigned long) offset);
-        free (demangled_name);
+        std::free (demangled_name);
     }
     puts ("");
 

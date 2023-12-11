@@ -27,12 +27,22 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void (msg_free_fn) (_Pre_maybenull_ _Post_invalid_ void *data_,
-                            _In_opt_ void *hint_);
+typedef void (ZMQ_CDECL msg_free_fn) (
+  _In_ _Pre_maybenull_ _Post_invalid_ void *ptr_, _In_opt_ void *hint_);
 }
 
 namespace zmq
 {
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+_Check_return_ bool
+set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
+                          _In_ zmq_custom_msg_free_fn *free_);
+_Must_inspect_result_
+  _Ret_opt_bytecap_ (cb) void *malloc (_In_ size_t cb, ZMQ_MSG_ALLOC_HINT hint);
+void free (_In_ _Pre_maybenull_ _Post_invalid_ void *ptr,
+           ZMQ_MSG_ALLOC_HINT hint);
+#endif
+
 //  Note that this structure needs to be explicitly constructed
 //  (init functions) and destructed (close function).
 
@@ -55,6 +65,9 @@ class msg_t
         size_t size;
         msg_free_fn *ffn;
         void *hint;
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        ZMQ_MSG_ALLOC_HINT custom_allocation_hint;
+#endif
         zmq::atomic_counter_t refcnt;
     };
 

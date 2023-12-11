@@ -54,7 +54,7 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
         flags |= 0x02;
 
     uint8_t *plaintext_buffer =
-      static_cast<uint8_t *> (malloc (msg_->size () + 1));
+      static_cast<uint8_t *> (std::malloc (msg_->size () + 1));
     alloc_assert (plaintext_buffer);
 
     plaintext_buffer[0] = flags;
@@ -137,7 +137,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     }
     // TODO: instead of malloc/memcpy, can we just do: wrapped.value = ptr;
     const size_t alloc_length = wrapped.length ? wrapped.length : 1;
-    wrapped.value = static_cast<char *> (malloc (alloc_length));
+    wrapped.value = static_cast<char *> (std::malloc (alloc_length));
     alloc_assert (wrapped.value);
 
     if (wrapped.length) {
@@ -154,7 +154,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
 
     if (maj_stat != GSS_S_COMPLETE) {
         gss_release_buffer (&min_stat, &plaintext);
-        free (wrapped.value);
+        std::free (wrapped.value);
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
@@ -179,7 +179,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
             plaintext.length - 1);
 
     gss_release_buffer (&min_stat, &plaintext);
-    free (wrapped.value);
+    std::free (wrapped.value);
 
     if (bytes_left > 0) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -266,7 +266,7 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_,
     }
 
     *token_value_ =
-      static_cast<char *> (malloc (token_length_ ? token_length_ : 1));
+      static_cast<char *> (std::malloc (token_length_ ? token_length_ : 1));
     alloc_assert (*token_value_);
 
     if (token_length_) {

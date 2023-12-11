@@ -603,7 +603,7 @@ zmq_recviov (_In_ void *s_,
         }
 
         iov_[i].iov_len = ((zmq::msg_t *) &msg)->sizep ();
-        iov_[i].iov_base = static_cast<char *> (malloc (iov_[i].iov_len));
+        iov_[i].iov_base = static_cast<char *> (std::malloc (iov_[i].iov_len));
         if (unlikely (!iov_[i].iov_base)) {
             errno = ENOMEM;
             return -1;
@@ -622,6 +622,13 @@ zmq_recviov (_In_ void *s_,
 }
 
 // Message manipulators.
+
+ZMQ_EXPORT_IMPL (bool)
+zmq_set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
+                              _In_ zmq_custom_msg_free_fn *free_)
+{
+    return zmq::set_custom_msg_allocator (malloc_, free_);
+}
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)
   zmq_msg_init (_Out_ zmq_msg_t *msg_)

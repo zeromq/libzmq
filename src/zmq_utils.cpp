@@ -31,7 +31,7 @@ ZMQ_EXPORT_VOID_IMPL zmq_sleep (int seconds_)
 
 ZMQ_EXPORT_PTR_IMPL (void *, uint64_t) zmq_stopwatch_start (void)
 {
-    uint64_t *watch = static_cast<uint64_t *> (malloc (sizeof (uint64_t)));
+    uint64_t *watch = static_cast<uint64_t *> (std::malloc (sizeof (uint64_t)));
     alloc_assert (watch);
     *watch = zmq::clock_t::now_us ();
     return static_cast<void *> (watch);
@@ -48,7 +48,7 @@ ZMQ_EXPORT_IMPL (unsigned long)
 zmq_stopwatch_stop (_In_ _Post_invalid_ void *watch_)
 {
     const unsigned long res = zmq_stopwatch_intermediate (watch_);
-    free (watch_);
+    std::free (watch_);
     return res;
 }
 

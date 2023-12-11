@@ -26,6 +26,88 @@ typedef char
                      - 1];
 #endif
 
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+namespace zmq
+{
+_Must_inspect_result_ _Ret_opt_bytecap_ (
+  cb) static void * ZMQ_CDECL default_msg_alloc (_In_ size_t cb,
+                                                ZMQ_MSG_ALLOC_HINT hint)
+{
+#ifndef NDEBUG
+    if (hint < ZMQ_MSG_ALLOC_HINT_NONE || hint > ZMQ_MSG_ALLOC_HINT_MAX) {
+        zmq_assert (false);
+    }
+#endif
+
+    return std::malloc (cb);
+}
+
+static void ZMQ_CDECL default_msg_free (
+  _In_ _Pre_maybenull_ _Post_invalid_ void *ptr, ZMQ_MSG_ALLOC_HINT hint)
+{
+#ifndef NDEBUG
+    if (hint < ZMQ_MSG_ALLOC_HINT_NONE || hint > ZMQ_MSG_ALLOC_HINT_MAX) {
+        zmq_assert (false);
+    }
+#endif
+
+    std::free (ptr);
+}
+
+#ifndef NDEBUG
+volatile bool _messages_allocated{false};
+static bool _custom_allocator_set{false};
+#endif
+
+static zmq_custom_msg_alloc_fn *_custom_malloc = default_msg_alloc;
+static zmq_custom_msg_free_fn *_custom_free = default_msg_free;
+
+_Check_return_ bool
+set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
+                          _In_ zmq_custom_msg_free_fn *free_)
+{
+#ifndef NDEBUG
+    if (_custom_allocator_set || _messages_allocated) {
+        //
+        // Either the allocator was already set, or messages
+        // were already allocated.  In either case, we cannot
+        // allow the allocator to be changed.
+        //
+
+        zmq_assert (false);
+    }
+#endif
+
+    if (malloc_ && free_) {
+#ifndef NDEBUG
+        _custom_allocator_set = true;
+#endif
+        _custom_malloc = malloc_;
+        _custom_free = free_;
+        return true;
+    }
+
+#ifndef NDEBUG
+    zmq_assert (false);
+#endif
+
+    return false;
+}
+
+_Must_inspect_result_
+_Ret_opt_bytecap_ (cb) void *malloc (_In_ size_t cb, ZMQ_MSG_ALLOC_HINT hint)
+{
+    return _custom_malloc (cb, hint);
+}
+
+void free (_In_ _Pre_maybenull_ _Post_invalid_ void *ptr,
+           ZMQ_MSG_ALLOC_HINT hint)
+{
+    _custom_free (ptr, hint);
+}
+} // namespace zmq
+#endif
+
 int zmq::msg_t::init (_In_reads_bytes_ (size_) void *data_,
                       size_t size_,
                       _In_opt_ msg_free_fn *ffn_,
@@ -76,10 +158,16 @@ int zmq::msg_t::init_size (size_t size_)
         _u.lmsg.group.sgroup.group[0] = '\0';
         _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
-        _u.lmsg.content = NULL;
-        if (sizeof (content_t) + size_ > size_)
-            _u.lmsg.content =
-              static_cast<content_t *> (malloc (sizeof (content_t) + size_));
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _u.lmsg.content = static_cast<content_t *> (zmq::malloc (
+          sizeof (content_t) + size_, ZMQ_MSG_ALLOC_HINT_OUTGOING));
+#ifndef NDEBUG
+        _messages_allocated = true;
+#endif
+#else
+        _u.lmsg.content =
+          static_cast<content_t *> (std::malloc (sizeof (content_t) + size_));
+#endif
         if (unlikely (!_u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
@@ -89,6 +177,11 @@ int zmq::msg_t::init_size (size_t size_)
         _u.lmsg.content->size = size_;
         _u.lmsg.content->ffn = NULL;
         _u.lmsg.content->hint = NULL;
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_OUTGOING;
+#else
+        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_NONE;
+#endif
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -162,8 +255,16 @@ int zmq::msg_t::init_data (_In_opt_ void *data_,
         _u.lmsg.group.sgroup.group[0] = '\0';
         _u.lmsg.group.type = group_type_short;
         _u.lmsg.routing_id = 0;
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _u.lmsg.content = static_cast<content_t *> (
+          zmq::malloc (sizeof (content_t), ZMQ_MSG_ALLOC_HINT_FIXED_SIZE));
+#ifndef NDEBUG
+        _messages_allocated = true;
+#endif
+#else
         _u.lmsg.content =
-          static_cast<content_t *> (malloc (sizeof (content_t)));
+          static_cast<content_t *> (std::malloc (sizeof (content_t)));
+#endif
         if (!_u.lmsg.content) {
             errno = ENOMEM;
             return -1;
@@ -173,6 +274,11 @@ int zmq::msg_t::init_data (_In_opt_ void *data_,
         _u.lmsg.content->size = size_;
         _u.lmsg.content->ffn = ffn_;
         _u.lmsg.content->hint = hint_;
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_FIXED_SIZE;
+#else
+        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_NONE;
+#endif
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -267,7 +373,11 @@ int zmq::msg_t::close ()
             if (_u.lmsg.content->ffn)
                 _u.lmsg.content->ffn (_u.lmsg.content->data,
                                       _u.lmsg.content->hint);
-            free (_u.lmsg.content);
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+            zmq::free (_u.lmsg.content, _u.lmsg.content->custom_allocation_hint);
+#else
+            std::free (_u.lmsg.content);
+#endif
         }
     }
 
@@ -299,8 +409,7 @@ int zmq::msg_t::close ()
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
             _u.base.group.lgroup.content->refcnt.~atomic_counter_t ();
-
-            free (_u.base.group.lgroup.content);
+            std::free (_u.base.group.lgroup.content);
         }
     }
 
@@ -521,11 +630,14 @@ bool zmq::msg_t::rm_refs (int refs_)
         //  We used "placement new" operator to initialize the reference
         //  counter so we call the destructor explicitly now.
         _u.lmsg.content->refcnt.~atomic_counter_t ();
-
-        if (_u.lmsg.content->ffn)
+        if (_u.lmsg.content->ffn) {
             _u.lmsg.content->ffn (_u.lmsg.content->data, _u.lmsg.content->hint);
-        free (_u.lmsg.content);
-
+        }
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        zmq::free (_u.lmsg.content, _u.lmsg.content->custom_allocation_hint);
+#else
+        std::free (_u.lmsg.content);
+#endif
         return false;
     }
 
@@ -535,7 +647,6 @@ bool zmq::msg_t::rm_refs (int refs_)
             _u.zclmsg.content->ffn (_u.zclmsg.content->data,
                                     _u.zclmsg.content->hint);
         }
-
         return false;
     }
 
@@ -577,7 +688,7 @@ int zmq::msg_t::set_group (_In_reads_ (length_) const char *group_,
     if (length_ > 14) {
         _u.base.group.lgroup.type = group_type_long;
         _u.base.group.lgroup.content =
-          (long_group_t *) malloc (sizeof (long_group_t));
+          (long_group_t *) std::malloc (sizeof (long_group_t));
         assert (_u.base.group.lgroup.content);
         new (&_u.base.group.lgroup.content->refcnt) zmq::atomic_counter_t ();
         _u.base.group.lgroup.content->refcnt.set (1);

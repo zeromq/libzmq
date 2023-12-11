@@ -74,6 +74,8 @@
 #cmakedefine ZMQ_HAVE_VSOCK
 #cmakedefine ZMQ_HAVE_HVSOCKET
 
+#cmakedefine ZMQ_HAVE_CUSTOM_ALLOCATOR
+
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_HAVE_CURVE

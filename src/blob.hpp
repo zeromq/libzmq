@@ -50,7 +50,7 @@ struct blob_t
 
     //  Creates a blob_t of a given size, with uninitialized content.
     explicit blob_t (const size_t size_) :
-        _data (static_cast<unsigned char *> (malloc (size_))),
+        _data (static_cast<unsigned char *> (std::malloc (size_))),
         _size (size_),
         _owned (true)
     {
@@ -60,7 +60,7 @@ struct blob_t
     //  Creates a blob_t of a given size, an initializes content by copying
     // from another buffer.
     blob_t (const unsigned char *const data_, const size_t size_) :
-        _data (static_cast<unsigned char *> (malloc (size_))),
+        _data (static_cast<unsigned char *> (std::malloc (size_))),
         _size (size_),
         _owned (true)
     {
@@ -100,7 +100,7 @@ struct blob_t
     void set_deep_copy (blob_t const &other_)
     {
         clear ();
-        _data = static_cast<unsigned char *> (malloc (other_._size));
+        _data = static_cast<unsigned char *> (std::malloc (other_._size));
         alloc_assert (!other_._size || _data);
         _size = other_._size;
         _owned = true;
@@ -113,7 +113,7 @@ struct blob_t
     void set (const unsigned char *const data_, const size_t size_)
     {
         clear ();
-        _data = static_cast<unsigned char *> (malloc (size_));
+        _data = static_cast<unsigned char *> (std::malloc (size_));
         alloc_assert (!size_ || _data);
         _size = size_;
         _owned = true;
@@ -126,7 +126,7 @@ struct blob_t
     void clear ()
     {
         if (_owned) {
-            free (_data);
+            std::free (_data);
         }
         _data = 0;
         _size = 0;
@@ -135,7 +135,7 @@ struct blob_t
     ~blob_t ()
     {
         if (_owned) {
-            free (_data);
+            std::free (_data);
         }
     }
 
