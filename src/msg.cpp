@@ -43,7 +43,7 @@ _Must_inspect_result_ _Ret_opt_bytecap_ (
 }
 
 static void ZMQ_CDECL default_msg_free (
-  _In_ _Pre_maybenull_ _Post_invalid_ void *ptr, ZMQ_MSG_ALLOC_HINT hint)
+  _Pre_maybenull_ _Post_invalid_ void *ptr, ZMQ_MSG_ALLOC_HINT hint)
 {
 #ifndef NDEBUG
     if (hint < ZMQ_MSG_ALLOC_HINT_NONE || hint > ZMQ_MSG_ALLOC_HINT_MAX) {
@@ -100,8 +100,7 @@ _Ret_opt_bytecap_ (cb) void *malloc (_In_ size_t cb, ZMQ_MSG_ALLOC_HINT hint)
     return _custom_malloc (cb, hint);
 }
 
-void free (_In_ _Pre_maybenull_ _Post_invalid_ void *ptr,
-           ZMQ_MSG_ALLOC_HINT hint)
+void free (_Pre_maybenull_ _Post_invalid_ void *ptr, ZMQ_MSG_ALLOC_HINT hint)
 {
     _custom_free (ptr, hint);
 }
@@ -110,7 +109,7 @@ void free (_In_ _Pre_maybenull_ _Post_invalid_ void *ptr,
 
 int zmq::msg_t::init (_In_reads_bytes_ (size_) void *data_,
                       size_t size_,
-                      _In_opt_ msg_free_fn *ffn_,
+                      _In_opt_ zmq_free_fn *ffn_,
                       _In_opt_ void *hint_,
                       _In_opt_ content_t *content_)
 {
@@ -205,7 +204,7 @@ int zmq::msg_t::init_buffer (_In_reads_bytes_ (size_) const void *buf_,
 int zmq::msg_t::init_external_storage (_In_ content_t *content_,
                                        _In_ void *data_,
                                        size_t size_,
-                                       _In_opt_ msg_free_fn *ffn_,
+                                       _In_opt_ zmq_free_fn *ffn_,
                                        _In_opt_ void *hint_)
 {
     zmq_assert (NULL != data_);
@@ -231,7 +230,7 @@ int zmq::msg_t::init_external_storage (_In_ content_t *content_,
 int zmq::msg_t::init_data (_In_opt_ void *data_,
                            _When_ (data_ == NULL, _In_range_ (0, 0))
                              size_t size_,
-                           _In_opt_ msg_free_fn *ffn_,
+                           _In_opt_ zmq_free_fn *ffn_,
                            _In_opt_ void *hint_)
 {
     //  If data is NULL and size is not 0, a segfault

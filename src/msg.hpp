@@ -27,8 +27,8 @@
 //  Note that it has to be declared as "C" so that it is the same as
 //  zmq_free_fn defined in zmq.h.
 extern "C" {
-typedef void (ZMQ_CDECL msg_free_fn) (
-  _In_ _Pre_maybenull_ _Post_invalid_ void *ptr_, _In_opt_ void *hint_);
+typedef void (ZMQ_CDECL zmq_free_fn) (
+  _Pre_maybenull_ _Post_invalid_ void *data_, _In_opt_ void *hint_);
 }
 
 namespace zmq
@@ -39,8 +39,7 @@ set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
                           _In_ zmq_custom_msg_free_fn *free_);
 _Must_inspect_result_
   _Ret_opt_bytecap_ (cb) void *malloc (_In_ size_t cb, ZMQ_MSG_ALLOC_HINT hint);
-void free (_In_ _Pre_maybenull_ _Post_invalid_ void *ptr,
-           ZMQ_MSG_ALLOC_HINT hint);
+void free (_Pre_maybenull_ _Post_invalid_ void *ptr, ZMQ_MSG_ALLOC_HINT hint);
 #endif
 
 //  Note that this structure needs to be explicitly constructed
@@ -63,7 +62,7 @@ class msg_t
     {
         void *data;
         size_t size;
-        msg_free_fn *ffn;
+        zmq_free_fn *ffn;
         void *hint;
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         ZMQ_MSG_ALLOC_HINT custom_allocation_hint;
@@ -152,7 +151,7 @@ class msg_t
 
     int init (_In_reads_bytes_ (size_) void *data_,
               size_t size_,
-              _In_opt_ msg_free_fn *ffn_,
+              _In_opt_ zmq_free_fn *ffn_,
               _In_opt_ void *hint_,
               _In_opt_ content_t *content_);
 
@@ -162,13 +161,13 @@ class msg_t
 
     int init_data (_In_opt_ void *data_,
                    _When_ (data_ == NULL, _In_range_ (0, 0)) size_t size_,
-                   _In_opt_ msg_free_fn *ffn_,
+                   _In_opt_ zmq_free_fn *ffn_,
                    _In_opt_ void *hint_);
 
     int init_external_storage (_In_ content_t *content_,
                                _In_ void *data_,
                                size_t size_,
-                               _In_opt_ msg_free_fn *ffn_,
+                               _In_opt_ zmq_free_fn *ffn_,
                                _In_opt_ void *hint_);
 
     int init_delimiter ();

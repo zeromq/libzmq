@@ -1593,6 +1593,10 @@ if(BUILD_SHARED)
       inproc_thr
       proxy_thr)
 
+      if (WITH_CUSTOM_MESSAGE_ALLOCATOR)
+        list(APPEND perf-tools remote_thr_ca)
+      endif()
+
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     option(WITH_PERF_TOOL "Build with perf-tools" ON)
   else()
