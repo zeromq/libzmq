@@ -44,23 +44,61 @@ const char *HintToString (_In_ ZMQ_MSG_ALLOC_HINT hint)
 // list instead of returning them to the heap. This is an
 // example of a possible application of the custom allocator.
 // 
-// Note: This is not a  good example of perf improvement
-// in the sense that nothing else is allocating anything
-// in the process and the CRT heap is very good. There is
-// therefore no fragmentation and the heap is very fast.
+// Note: This test app is not a good example to demonstrate
+// perf improvements in the sense that nothing else is
+// allocating anything within the process and the CRT heap is
+// very good. There is therefore not much fragmentation.
 // 
-// The gain is marginal (maybe 6-7%) at messages sizes 128
+// The gain is marginal (maybe 6-7%) at messages size 128
 // and number of messages in the 100M to 1B range over IPC.
+// 
+// For most uses, a custom allocator is not worth the pain. Now,
+// if you wrote a doctoral thesis on heaps, low fragmentation, and
+// fized-block allocators, then you might be able to squeeze out
+// some performance gains.
 //
 // Extensive perf testing in real-world workloads is required
-// to determine if this approach is worth it or not.
+// to determine if the approach is worth it or not. As a first
+// step, the message sizes should be recorded, for example
+// using performance counters. From there, statistics will
+// reveal the distribution of message sizes and their frequency.
+// 
+// The time it takes to allocate/free also must be recorded and
+// a real-world workload on a real system should run for a long time
+// (days/weeks) with many millions of messages exchanged together
+// with normal system use. This is why you need to use perfcounters
+// as the data collection cannot be intrusive.
+// 
+// Armed with the numbers, it is possible to deternine if there is
+// anything to gain in speeding up the heap, and where to put the
+// size breaks to cover the most common message sizes, as well as
+// the peak number of messages in flight, to decide how to shape
+// a fixed-block allocator pool.
+// 
+// This article is a good starting point for a possible allocator
+// implementation in C:
+// 
+// https://www.codeproject.com/Articles/1272619/A-Fixed-Block-Memory-Allocator-in-C
+//
+// Another approach could be to extend the lookaside idea presented here
+// to multiple block sizes. Hint: HeapSize() knows the size of a block given
+// a pointer. The strategy is to round the size up and serve all requests
+// fitting into that bucket with blocks of the same size, going to
+// the same lookaside list. 3-4 buckets should be enough, the last one is
+// "everything above". You can have a different HWM's for each bucket
+// depending on what you learned about frequencies, and how much you want
+// to spend for the lookasides. You control the tradeoffs. Have fun!
+//
+// Then remember the three rules: measure, measure, measure. The
+// chances that you significantly and consistently improve on the
+// CRT or Win32 heaps are very slim. -- A Windows Kernel dev.
 //
 
 #include <windows.h>
 #include <mutex>
 
 #define USE_HEAPALLOC
-#define KEEP_ASIDE 1000
+#define KEEP_ASIDE_HWM 1000
 
 #ifdef USE_HEAPALLOC
 HANDLE hHeap;
@@ -76,10 +114,13 @@ _Must_inspect_result_ _Ret_opt_bytecap_ (cb) void *ZMQ_CDECL
         if (ptr != NULL) {
             return ptr;
         } else {
+            // We need to allocate at least sizeof (SLIST_ENTRY) bytes
+            // as the returned blocks are overwritten with the SList
+            // Next pointer, so we need at least a pointer's size.
 #ifdef USE_HEAPALLOC
-            return HeapAlloc (hHeap, 0, cb);
+            return HeapAlloc (hHeap, 0, std::max (cb, sizeof (SLIST_ENTRY)));
 #else
-            return malloc (cb);
+            return malloc (std::max (cb, sizeof (SLIST_ENTRY)));
 #endif
         }
     } else {
@@ -95,7 +136,9 @@ void ZMQ_CDECL msg_free (_Pre_maybenull_ _Post_invalid_ void *ptr_,
                          _In_ ZMQ_MSG_ALLOC_HINT hint)
 {
     if (hint == ZMQ_MSG_ALLOC_HINT_OUTGOING) {
-        if (ptr_ != NULL && QueryDepthSList (&LookasideList) < KEEP_ASIDE) {
+        // There is a possibility that we sligthly exceed the HWM in case
+        // of heavy contention. Not really a problem.
+        if ((ptr_ != NULL) && (QueryDepthSList (&LookasideList) < KEEP_ASIDE_HWM)) {
             InterlockedPushEntrySList (&LookasideList, (PSLIST_ENTRY)ptr_);
         } else {
 #ifdef USE_HEAPALLOC
@@ -106,7 +149,7 @@ void ZMQ_CDECL msg_free (_Pre_maybenull_ _Post_invalid_ void *ptr_,
         }
     } else {
 #ifdef USE_HEAPALLOC
-        (void)HeapFree (hHeap, 0, ptr_);
+        (void) HeapFree (hHeap, 0, ptr_);
 #else
         free (ptr_);
 #endif
@@ -237,20 +280,20 @@ int ZMQ_CDECL main (int argc, char *argv[])
     }
 
     //
-    // Free any set aside leftovers.
+    // Free any leftovers in the lookaside.
     //
 
     unsigned count = QueryDepthSList (&LookasideList);
 
-    printf ("Freeing %u entries in lookaside list\n", count);
-
-    for (void *ptr = InterlockedPopEntrySList (&LookasideList); ptr != NULL;
-         ptr = InterlockedPopEntrySList (&LookasideList)) {
+    if (count) {
+        for (void *ptr = InterlockedPopEntrySList (&LookasideList); ptr != NULL;
+             ptr = InterlockedPopEntrySList (&LookasideList)) {
 #ifdef USE_HEAPALLOC
-        (void) HeapFree (hHeap, 0, ptr);
+            (void) HeapFree (hHeap, 0, ptr);
 #else
-        free (ptr);
+            free (ptr);
 #endif
+        }
     }
 
 #ifdef USE_HEAPALLOC
