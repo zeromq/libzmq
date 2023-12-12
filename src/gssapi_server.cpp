@@ -30,7 +30,7 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     if (!options_.gss_principal.empty ()) {
         const std::string::size_type principal_size =
           options_.gss_principal.size ();
-        principal_name = static_cast<char *> (malloc (principal_size + 1));
+        principal_name = static_cast<char *> (std::malloc (principal_size + 1));
         assert (principal_name);
         memcpy (principal_name, options_.gss_principal.c_str (),
                 principal_size + 1);
@@ -213,7 +213,7 @@ void zmq::gssapi_server_t::accept_context ()
       &target_name, &doid, &send_tok, &ret_flags, NULL, NULL);
 
     if (recv_tok.value) {
-        free (recv_tok.value);
+        std::free (recv_tok.value);
         recv_tok.value = NULL;
     }
 }

@@ -43,7 +43,6 @@
 #include "null_mechanism.hpp"
 #include "plain_server.hpp"
 #include "plain_client.hpp"
-
 #ifdef ZMQ_HAVE_CURVE
 #include "curve_client.hpp"
 #include "curve_server.hpp"

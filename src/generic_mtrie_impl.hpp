@@ -33,7 +33,7 @@ template <typename T> generic_mtrie_t<T>::~generic_mtrie_t ()
         for (unsigned short i = 0; i != _count; ++i) {
             LIBZMQ_DELETE (_next.table[i]);
         }
-        free (_next.table);
+        std::free (_next.table);
     }
 }
 
@@ -57,7 +57,7 @@ bool generic_mtrie_t<T>::add (prefix_t prefix_, size_t size_, value_t *pipe_)
                 generic_mtrie_t *oldp = it->_next.node;
                 it->_count = (it->_min < c ? c - it->_min : it->_min - c) + 1;
                 it->_next.table = static_cast<generic_mtrie_t **> (
-                  malloc (sizeof (generic_mtrie_t *) * it->_count));
+                  std::malloc (sizeof (generic_mtrie_t *) * it->_count));
                 alloc_assert (it->_next.table);
                 for (unsigned short i = 0; i != it->_count; ++i)
                     it->_next.table[i] = 0;
@@ -305,7 +305,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                         //  Free the node table if it's no longer used.
                         switch (it.node->_live_nodes) {
                             case 0:
-                                free (it.node->_next.table);
+                                std::free (it.node->_next.table);
                                 it.node->_next.table = NULL;
                                 it.node->_count = 0;
                                 break;
@@ -324,7 +324,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                                       it.node->_next
                                         .table[it.new_min - it.node->_min];
                                     zmq_assert (node);
-                                    free (it.node->_next.table);
+                                    std::free (it.node->_next.table);
                                     it.node->_next.node = node;
                                 }
                                 it.node->_count = 1;
@@ -354,7 +354,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                                       it.new_max - it.new_min + 1;
                                     it.node->_next.table =
                                       static_cast<generic_mtrie_t **> (
-                                        malloc (sizeof (generic_mtrie_t *)
+                                        std::malloc (sizeof (generic_mtrie_t *)
                                                 * it.node->_count));
                                     alloc_assert (it.node->_next.table);
 
@@ -363,7 +363,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
                                                + (it.new_min - it.node->_min),
                                              sizeof (generic_mtrie_t *)
                                                * it.node->_count);
-                                    free (old_table);
+                                    std::free (old_table);
 
                                     it.node->_min = it.new_min;
                                 }
@@ -373,7 +373,7 @@ void generic_mtrie_t<T>::rm (value_t *pipe_,
         }
     }
 
-    free (buff);
+    std::free (buff);
 }
 
 template <typename T>
@@ -469,7 +469,7 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                         it.node->_min += (unsigned char) i;
                         it.node->_count = 1;
                         generic_mtrie_t *oldp = it.node->_next.table[i];
-                        free (it.node->_next.table);
+                        std::free (it.node->_next.table);
                         it.node->_next.table = NULL;
                         it.node->_next.node = oldp;
                     } else if (it.current_child == it.node->_min) {
@@ -484,12 +484,12 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                         it.node->_count -= i;
                         generic_mtrie_t **old_table = it.node->_next.table;
                         it.node->_next.table =
-                          static_cast<generic_mtrie_t **> (malloc (
+                          static_cast<generic_mtrie_t **> (std::malloc (
                             sizeof (generic_mtrie_t *) * it.node->_count));
                         alloc_assert (it.node->_next.table);
                         memmove (it.node->_next.table, old_table + i,
                                  sizeof (generic_mtrie_t *) * it.node->_count);
-                        free (old_table);
+                        std::free (old_table);
                     } else if (it.current_child
                                == it.node->_min + it.node->_count - 1) {
                         //  We can compact the table "from the right"
@@ -502,12 +502,12 @@ generic_mtrie_t<T>::rm (prefix_t prefix_, size_t size_, value_t *pipe_)
                         it.node->_count -= i;
                         generic_mtrie_t **old_table = it.node->_next.table;
                         it.node->_next.table =
-                          static_cast<generic_mtrie_t **> (malloc (
+                          static_cast<generic_mtrie_t **> (std::malloc (
                             sizeof (generic_mtrie_t *) * it.node->_count));
                         alloc_assert (it.node->_next.table);
                         memmove (it.node->_next.table, old_table,
                                  sizeof (generic_mtrie_t *) * it.node->_count);
-                        free (old_table);
+                        std::free (old_table);
                     }
                 }
             }

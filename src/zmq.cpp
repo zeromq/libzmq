@@ -84,7 +84,6 @@ struct iovec
 typedef char
   check_msg_t_size[sizeof (zmq::msg_t) == sizeof (zmq_msg_t) ? 1 : -1];
 
-
 ZMQ_EXPORT_VOID_IMPL
 zmq_version (_Out_ int *major_, _Out_ int *minor_, _Out_ int *patch_)
 {
@@ -92,7 +91,6 @@ zmq_version (_Out_ int *major_, _Out_ int *minor_, _Out_ int *patch_)
     *minor_ = ZMQ_VERSION_MINOR;
     *patch_ = ZMQ_VERSION_PATCH;
 }
-
 
 ZMQ_EXPORT_STR_IMPL (const char *) zmq_strerror (int errnum_)
 {
@@ -197,7 +195,6 @@ zmq_ctx_get_ext (_In_ void *context_,
       ->get (option_, optval_, optvallen_);
 }
 
-
 //  Stable/legacy context API
 
 ZMQ_EXPORT_VOID_PTR_IMPL
@@ -222,7 +219,6 @@ ZMQ_EXPORT_IMPL (int) zmq_ctx_destroy (_In_ _Post_invalid_ void *context_)
 {
     return zmq_ctx_term (context_);
 }
-
 
 // Sockets
 
@@ -354,7 +350,6 @@ zmq_connect_peer (_In_ void *s_, _In_z_ const char *addr_)
     return s->connect_peer (addr_);
 }
 
-
 ZMQ_EXPORT_IMPL (int) zmq_unbind (_In_ void *s_, _In_z_ const char *addr_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
@@ -452,14 +447,13 @@ zmq_send_const (_In_ void *s_,
     return rc;
 }
 
-
 // Send multiple messages.
 // TODO: this function has no man page
 //
 // If flag bit ZMQ_SNDMORE is set the vector is treated as
 // a single multi-part message, i.e. the last message has
 // ZMQ_SNDMORE bit switched off.
-//
+
 ZMQ_EXPORT_IMPL (int)
 zmq_sendiov (_In_ void *s_,
              _In_reads_ (count_) struct iovec *iov_,
@@ -609,7 +603,7 @@ zmq_recviov (_In_ void *s_,
         }
 
         iov_[i].iov_len = ((zmq::msg_t *) &msg)->sizep ();
-        iov_[i].iov_base = static_cast<char *> (malloc (iov_[i].iov_len));
+        iov_[i].iov_base = static_cast<char *> (std::malloc (iov_[i].iov_len));
         if (unlikely (!iov_[i].iov_base)) {
             errno = ENOMEM;
             return -1;
@@ -628,6 +622,13 @@ zmq_recviov (_In_ void *s_,
 }
 
 // Message manipulators.
+
+ZMQ_EXPORT_IMPL (bool)
+zmq_set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
+                              _In_ zmq_custom_msg_free_fn *free_)
+{
+    return zmq::set_custom_msg_allocator (malloc_, free_);
+}
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)
   zmq_msg_init (_Out_ zmq_msg_t *msg_)
@@ -1863,6 +1864,19 @@ zmq_device (int type_, _In_ void *frontend_, _In_ void *backend_)
 
 ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
 {
+    //
+    // Built-in transports
+    //
+
+    if (strcmp (capability_, zmq::protocol_name::inproc) == 0
+        || strcmp (capability_, zmq::protocol_name::tcp) == 0
+        || strcmp (capability_, zmq::protocol_name::udp) == 0)
+        return true;
+
+    //
+    // Optional transports (config/build time)
+    //
+
 #if defined(ZMQ_HAVE_IPC)
     if (strcmp (capability_, zmq::protocol_name::ipc) == 0)
         return true;
@@ -1880,20 +1894,16 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
     if (strcmp (capability_, zmq::protocol_name::norm) == 0)
         return true;
 #endif
-#if defined(ZMQ_HAVE_CURVE)
-    if (strcmp (capability_, "curve") == 0)
-        return true;
-#endif
-#if defined(HAVE_LIBGSSAPI_KRB5)
-    if (strcmp (capability_, "gssapi") == 0)
-        return true;
-#endif
 #if defined(ZMQ_HAVE_VMCI)
     if (strcmp (capability_, zmq::protocol_name::vmci) == 0)
         return true;
 #endif
-#if defined(ZMQ_BUILD_DRAFT_API)
-    if (strcmp (capability_, "draft") == 0)
+#if defined(ZMQ_HAVE_VSOCK)
+    if (strcmp (capability_, zmq::protocol_name::vsock) == 0)
+        return true;
+#endif
+#if defined(ZMQ_HAVE_HVSOCKET)
+    if (strcmp (capability_, zmq::protocol_name::hvsocket) == 0)
         return true;
 #endif
 #if defined(ZMQ_HAVE_WS)
@@ -1904,7 +1914,33 @@ ZMQ_EXPORT_IMPL (int) zmq_has (_In_z_ const char *capability_)
     if (strcmp (capability_, zmq::protocol_name::wss) == 0)
         return true;
 #endif
+
+    //
+    // Security
+    //
+
+#if defined(ZMQ_HAVE_CURVE)
+    if (strcmp (capability_, "curve") == 0)
+        return true;
+#endif
+#if defined(HAVE_LIBGSSAPI_KRB5)
+    if (strcmp (capability_, "gssapi") == 0)
+        return true;
+#endif
+
+    //
+    // Draft APIs
+    //
+
+#if defined(ZMQ_BUILD_DRAFT_API)
+    if (strcmp (capability_, "draft") == 0)
+        return true;
+#endif
+
+    //
     //  Whatever the application asked for, we don't have
+    //
+
     return false;
 }
 

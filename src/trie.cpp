@@ -23,7 +23,7 @@ zmq::trie_t::~trie_t ()
         for (unsigned short i = 0; i != _count; ++i) {
             LIBZMQ_DELETE (_next.table[i]);
         }
-        free (_next.table);
+        std::free (_next.table);
     }
 }
 
@@ -48,7 +48,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             trie_t *oldp = _next.node;
             _count = (_min < c ? c - _min : _min - c) + 1;
             _next.table =
-              static_cast<trie_t **> (malloc (sizeof (trie_t *) * _count));
+              static_cast<trie_t **> (std::malloc (sizeof (trie_t *) * _count));
             alloc_assert (_next.table);
             for (unsigned short i = 0; i != _count; ++i)
                 _next.table[i] = 0;
@@ -152,7 +152,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                     node = _next.table[0];
                 }
                 zmq_assert (node);
-                free (_next.table);
+                std::free (_next.table);
                 _next.node = node;
                 _count = 1;
             } else if (c == _min) {
@@ -173,13 +173,13 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                 zmq_assert (_count > new_min - _min);
 
                 _count = _count - (new_min - _min);
-                _next.table =
-                  static_cast<trie_t **> (malloc (sizeof (trie_t *) * _count));
+                _next.table = static_cast<trie_t **> (
+                  std::malloc (sizeof (trie_t *) * _count));
                 alloc_assert (_next.table);
 
                 memmove (_next.table, old_table + (new_min - _min),
                          sizeof (trie_t *) * _count);
-                free (old_table);
+                std::free (old_table);
 
                 _min = new_min;
             } else if (c == _min + _count - 1) {
@@ -197,12 +197,12 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                 _count = new_count;
 
                 trie_t **old_table = _next.table;
-                _next.table =
-                  static_cast<trie_t **> (malloc (sizeof (trie_t *) * _count));
+                _next.table = static_cast<trie_t **> (
+                  std::malloc (sizeof (trie_t *) * _count));
                 alloc_assert (_next.table);
 
                 memmove (_next.table, old_table, sizeof (trie_t *) * _count);
-                free (old_table);
+                std::free (old_table);
             }
         }
     }
@@ -247,7 +247,7 @@ void zmq::trie_t::apply (
 {
     unsigned char *buff = NULL;
     apply_helper (&buff, 0, 0, func_, arg_);
-    free (buff);
+    std::free (buff);
 }
 
 void zmq::trie_t::apply_helper (unsigned char **buff_,

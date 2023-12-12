@@ -53,8 +53,15 @@ unsigned char *zmq::shared_message_memory_allocator::allocate ()
         std::size_t const allocationsize =
           _max_size + sizeof (zmq::atomic_counter_t)
           + _max_counters * sizeof (zmq::msg_t::content_t);
-
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _buf = static_cast<unsigned char *> (
+          zmq::malloc (allocationsize, ZMQ_MSG_ALLOC_HINT_INCOMING));
+#ifndef NDEBUG
+        _messages_allocated = true;
+#endif
+#else
         _buf = static_cast<unsigned char *> (std::malloc (allocationsize));
+#endif
         alloc_assert (_buf);
 
         new (_buf) atomic_counter_t (1);
@@ -76,7 +83,11 @@ void zmq::shared_message_memory_allocator::deallocate ()
     zmq::atomic_counter_t *c = reinterpret_cast<zmq::atomic_counter_t *> (_buf);
     if (_buf && !c->sub (1)) {
         c->~atomic_counter_t ();
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        zmq::free (_buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
+#else
         std::free (_buf);
+#endif
     }
     clear ();
 }
@@ -100,7 +111,8 @@ void zmq::shared_message_memory_allocator::inc_ref ()
     (reinterpret_cast<zmq::atomic_counter_t *> (_buf))->add (1);
 }
 
-void zmq::shared_message_memory_allocator::call_dec_ref (void *, void *hint_)
+void ZMQ_CDECL zmq::shared_message_memory_allocator::call_dec_ref (void *,
+                                                                   void *hint_)
 {
     zmq_assert (hint_);
     unsigned char *buf = static_cast<unsigned char *> (hint_);
@@ -108,7 +120,11 @@ void zmq::shared_message_memory_allocator::call_dec_ref (void *, void *hint_)
 
     if (!c->sub (1)) {
         c->~atomic_counter_t ();
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        zmq::free (buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
+#else
         std::free (buf);
+#endif
         buf = NULL;
     }
 }

@@ -232,6 +232,11 @@ void test_pgm ()
 #endif
 }
 
+void test_inproc ()
+{
+    test ("inproc://test_pubsub");
+}
+
 void test_tcp ()
 {
     test ("tcp://localhost:6213");
@@ -239,12 +244,11 @@ void test_tcp ()
 
 void test_ipc ()
 {
+#if defined ZMQ_HAVE_IPC
     test ("ipc://test_pubsub");
-}
-
-void test_inproc ()
-{
-    test ("inproc://test_pubsub");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without WebSockets, ignoring test.");
+#endif
 }
 
 void test_ws ()
@@ -265,18 +269,106 @@ void test_wss ()
 #endif
 }
 
+void test_vmci ()
+{
+#if defined ZMQ_HAVE_VMCI
+    test ("vmci://*:*");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without VMCI, ignoring test.");
+#endif
+}
+
+void test_vsock ()
+{
+#if defined ZMQ_HAVE_VSOCK
+    test ("vsock://2:2222");
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without VSOCK, ignoring test.");
+#endif
+}
+
+void test_hvsocket ()
+{
+#if defined ZMQ_HAVE_HVSOCKET
+    test ("hv://e0e16197-dd56-4a10-9195-5ee7a155a838:*"); // Loopback, any port.
+    test ("hv://loopback:3333"); // Loopback, specific port with VSOCK template.
+
+    //
+    // The following tests are machine and/or VM specifics are are meant
+    // to illustrate the possible connection string formats that can be used.
+    //
+    // Also note that Hyper-V requires the caller to be admin.
+    //
+
+#if 0
+
+    test ("hv://0:*"); // VM/container index (first one), any port.
+    test ("hv://0:4444"); // VM/container index (first one), specific port with VSOCK template.
+    test ("hv://0:44622b22-7665-4499-b2e3-16d5f9bc14d3"); // VM/container index (first one), explicit (registered) service id.
+    test ("hv://0:NMBus"); // VM/container index (first one), explicit (registered) service id by "ElementName"
+
+    test ("hv://WinDev2311Eval:*"); // Symbolic VM/container name, any port.
+    test ("hv://WinDev2311Eval:4444"); // Symbolic VM/container name, specific port with VSOCK template.
+    test ("hv://WinDev2311Eval:44622b22-7665-4499-b2e3-16d5f9bc14d3"); // Symbolic VM/container name, explicit (registered) service id.
+    test ("hv://WinDev2311Eval:NMBus"); // Symbolic VM/container name, explicit (registered) service id by "ElementName"
+
+    test ("hv://af5f35e3-fd7a-4573-9449-e47223939979:*"); // Explicit VM/container id, any port.
+    test ("hv://af5f35e3-fd7a-4573-9449-e47223939979:4444"); // Explicit VM/container id, specific port with VSOCK template.
+    test ("hv://af5f35e3-fd7a-4573-9449-e47223939979:44622b22-7665-4499-b2e3-16d5f9bc14d3"); // Explicit VM/container id, explicit (registered) service id.
+    test ("hv://af5f35e3-fd7a-4573-9449-e47223939979:NMBus"); // Explicit VM/container id, explicit (registered) service id by "ElementName"
+
+#endif
+
+    //
+    // The address parser also understands the following symbolic addresses
+    // 
+    //      broadcast - all partitions (VMs/containers)
+    //      children - all child partitions (VMs/containers)
+    //      loopback - as demonstraded above. Moral equivalent to localhost.
+    //      parent - the parent partition (host OS)
+    //      silohost - the silo host partition (utility VM)
+    //
+    // Assuming a ServiceId has been registered with the name "NMBus" on both
+    // the host and the guest OSes, and the VM name is "SomeVM" the following
+    // connection string can be used:
+    //
+    // From the host:  hv://SomeVM:NMBus
+    // From the guest: hv://parent:NMBus
+    //
+    // Using a numeric index as address carries the risk of collision with
+    // an actual VM name that might happen to be a number. This variant is
+    // not meant for production but in test environments it's useful to be
+    // able to specify a VM/container by index, e.g. the first one.
+    //
+    // The port number might also conflight with a registered service id.
+    //
+
+#else
+    TEST_IGNORE_MESSAGE ("libzmq without HVSOCKET, ignoring test.");
+#endif
+}
+
 int ZMQ_CDECL main ()
 {
     setup_test_environment ();
 
     UNITY_BEGIN ();
-    RUN_TEST (test_norm);
-    RUN_TEST (test_epgm);
-    RUN_TEST (test_pgm);
-    RUN_TEST (test_tcp);
-    RUN_TEST (test_ipc);
+
     RUN_TEST (test_inproc);
+    RUN_TEST (test_tcp);
+    
+    RUN_TEST (test_ipc);
+    
+    RUN_TEST (test_pgm);
+    RUN_TEST (test_epgm);
+    RUN_TEST (test_norm);
+
+    RUN_TEST (test_vmci);
+    RUN_TEST (test_vsock);
+    RUN_TEST (test_hvsocket);
+
     RUN_TEST (test_ws);
     RUN_TEST (test_wss);
+    
     return UNITY_END ();
 }

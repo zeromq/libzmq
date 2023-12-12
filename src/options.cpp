@@ -249,6 +249,11 @@ zmq::options_t::options_t () :
     vmci_buffer_max_size = 0;
     vmci_connect_timeout = -1;
 #endif
+#if defined ZMQ_HAVE_HVSOCKET
+    hvsocket_container_passthru = false;
+    hvsocket_connected_suspend = true;
+    hvsocket_high_vtl = false;
+#endif
 }
 
 int zmq::options_t::set_curve_key (uint8_t *destination_,
@@ -723,6 +728,21 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_VMCI_CONNECT_TIMEOUT:
             return do_setsockopt (optval_, optvallen_, &vmci_connect_timeout);
 #endif
+
+#if defined ZMQ_HAVE_HVSOCKET
+        case ZMQ_HVSOCKET_CONTAINER_PASSTHRU:
+            return do_setsockopt_int_as_bool_strict (
+              optval_, optvallen_, &hvsocket_container_passthru);
+
+        case ZMQ_HVSOCKET_CONNECTED_SUSPEND:
+            return do_setsockopt_int_as_bool_strict (
+              optval_, optvallen_, &hvsocket_connected_suspend);
+
+        case ZMQ_HVSOCKET_HIGH_VTL:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &hvsocket_high_vtl);
+#endif
+
 
         case ZMQ_USE_FD:
             if (is_int && value >= -1) {

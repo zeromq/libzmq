@@ -33,13 +33,13 @@ template <typename T> class encoder_base_t : public i_encoder
         _next (NULL),
         _new_msg_flag (false),
         _buf_size (bufsize_),
-        _buf (static_cast<unsigned char *> (malloc (bufsize_))),
+        _buf (static_cast<unsigned char *> (std::malloc (bufsize_))),
         _in_progress (NULL)
     {
         alloc_assert (_buf);
     }
 
-    ~encoder_base_t () ZMQ_OVERRIDE { free (_buf); }
+    ~encoder_base_t () ZMQ_OVERRIDE { std::free (_buf); }
 
     //  The function returns a batch of binary data. The data
     //  are filled to a supplied buffer. If no buffer is supplied (data_

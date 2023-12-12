@@ -24,7 +24,7 @@ zmq::gssapi_client_t::gssapi_client_t (session_base_t *session_,
 {
     const std::string::size_type service_size =
       options_.gss_service_principal.size ();
-    service_name = static_cast<char *> (malloc (service_size + 1));
+    service_name = static_cast<char *> (std::malloc (service_size + 1));
     assert (service_name);
     memcpy (service_name, options_.gss_service_principal.c_str (),
             service_size + 1);
@@ -34,7 +34,7 @@ zmq::gssapi_client_t::gssapi_client_t (session_base_t *session_,
     if (!options_.gss_principal.empty ()) {
         const std::string::size_type principal_size =
           options_.gss_principal.size ();
-        principal_name = static_cast<char *> (malloc (principal_size + 1));
+        principal_name = static_cast<char *> (std::malloc (principal_size + 1));
         assert (principal_name);
         memcpy (principal_name, options_.gss_principal.c_str (),
                 principal_size + 1);
@@ -51,7 +51,7 @@ zmq::gssapi_client_t::gssapi_client_t (session_base_t *session_,
 zmq::gssapi_client_t::~gssapi_client_t ()
 {
     if (service_name)
-        free (service_name);
+        std::free (service_name);
     if (cred)
         gss_release_cred (&min_stat, &cred);
 }
@@ -167,7 +167,7 @@ int zmq::gssapi_client_t::initialize_context ()
       gss_flags, 0, NULL, token_ptr, NULL, &send_tok, &ret_flags, NULL);
 
     if (token_ptr != GSS_C_NO_BUFFER)
-        free (recv_tok.value);
+        std::free (recv_tok.value);
 
     return 0;
 }

@@ -12,18 +12,41 @@
 
 namespace zmq
 {
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+#ifndef NDEBUG
+extern volatile bool _messages_allocated;
+#endif
+#endif
+
 // Static buffer policy.
 class c_single_allocator
 {
   public:
     explicit c_single_allocator (std::size_t bufsize_) :
         _buf_size (bufsize_),
-        _buf (static_cast<unsigned char *> (std::malloc (_buf_size)))
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        _buf (static_cast<unsigned char *> (
+          zmq::malloc (_buf_size, ZMQ_MSG_ALLOC_HINT_INCOMING)))
+#else
+    _buf (static_cast<unsigned char *> (std::malloc (_buf_size)))
+#endif
     {
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+#ifndef NDEBUG
+        _messages_allocated = true;
+#endif
+#endif
         alloc_assert (_buf);
     }
 
-    ~c_single_allocator () { std::free (_buf); }
+    ~c_single_allocator ()
+    {
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
+        zmq::free (_buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
+#else
+        std::free (_buf);
+#endif
+    }
 
     unsigned char *allocate () { return _buf; }
 
@@ -76,7 +99,7 @@ class shared_message_memory_allocator
 
     void inc_ref ();
 
-    static void call_dec_ref (void *, void *hint_);
+    static void ZMQ_CDECL call_dec_ref (void *, void *hint_);
 
     std::size_t size () const;
 

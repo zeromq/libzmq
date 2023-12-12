@@ -13,6 +13,11 @@
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
+#ifdef _MSC_VER
+// Disable truncations and hiding
+// warnings, this code needs work :(
+#pragma warning (disable : 4244 4245 4310 4456)
+#endif
 
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
 
@@ -55,7 +60,7 @@ zmq::norm_engine_t::~norm_engine_t ()
 }
 
 
-int zmq::norm_engine_t::init (const char *network_, bool send, bool recv)
+int zmq::norm_engine_t::init (_In_z_ const char *network_, bool send, bool recv)
 {
     // Parse the "network_" address int "iface", "addr", and "port"
     // norm endpoint format: [id,][<iface>;]<addr>:<port>
@@ -276,7 +281,7 @@ void zmq::norm_engine_t::shutdown ()
     }
 } // end zmq::norm_engine_t::shutdown()
 
-void zmq::norm_engine_t::plug (io_thread_t *io_thread_,
+void zmq::norm_engine_t::plug (io_thread_t */*io_thread_*/,
                                session_base_t *session_)
 {
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
@@ -437,27 +442,39 @@ void zmq::norm_engine_t::in_event ()
         case NORM_RX_OBJECT_NEW:
             //break;
         case NORM_RX_OBJECT_UPDATED:
-            recv_data (event.object);
+#ifndef NDEBUG
+            // See https://github.com/axelriet/norm/pull/1
+            zmq_assert (event.object != NULL);
+#endif
+            if (event.object != NULL) {
+                recv_data (event.object);
+            }
             break;
 
         case NORM_RX_OBJECT_ABORTED: {
-            NormRxStreamState *rxState =
-              (NormRxStreamState *) NormObjectGetUserData (event.object);
-            if (NULL != rxState) {
-                // We are unconditionally deleting the object,
-                // don't leave a dangling pointer behind.
-                NormObjectSetUserData (event.object, nullptr);
-                // Remove the state from the list it's in
-                // This is now unnecessary since deletion takes care of list removal
-                // but in the interest of being clear ...
-                NormRxStreamState::List *list = rxState->AccessList ();
-                if (NULL != list) {
-                    list->Remove (*rxState);
-                }
 #ifndef NDEBUG
-                memset (rxState, 0, sizeof (NormRxStreamState));
+            // See https://github.com/axelriet/norm/pull/1
+            zmq_assert (event.object != NULL);
 #endif
-                delete rxState;
+            if (event.object != NULL) {
+                NormRxStreamState *rxState =
+                  (NormRxStreamState *) NormObjectGetUserData (event.object);
+                if (NULL != rxState) {
+                    // We are unconditionally deleting the object,
+                    // don't leave a dangling pointer behind.
+                    NormObjectSetUserData (event.object, nullptr);
+                    // Remove the state from the list it's in
+                    // This is now unnecessary since deletion takes care of list removal
+                    // but in the interest of being clear ...
+                    NormRxStreamState::List *list = rxState->AccessList ();
+                    if (NULL != list) {
+                        list->Remove (*rxState);
+                    }
+#ifndef NDEBUG
+                    memset (rxState, 0, sizeof (NormRxStreamState));
+#endif
+                   delete rxState;
+                }
             }
             break;
         }
@@ -865,7 +882,7 @@ DWORD WINAPI normWrapperThread (LPVOID lpParam)
     }
     // Free resources
     rc = closesocket (norm_wrapper_thread_args->wrapper_write_fd);
-    free (norm_wrapper_thread_args);
+    std::free (norm_wrapper_thread_args);
     errno_assert (rc != -1);
 
     return exitCode;

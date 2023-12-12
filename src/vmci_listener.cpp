@@ -8,7 +8,6 @@
 
 #include <new>
 
-//#include "stream_engine.hpp"
 #include "vmci_address.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
@@ -93,7 +92,7 @@ int zmq::vmci_listener_t::set_local_address (const char *addr_)
     _s =
       open_socket (this->get_ctx ()->get_vmci_socket_family (), SOCK_STREAM, 0);
 #ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET) {
+    if (_s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }

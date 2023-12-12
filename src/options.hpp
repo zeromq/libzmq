@@ -227,6 +227,15 @@ struct options_t
     int vmci_connect_timeout;
 #endif
 
+#if defined ZMQ_HAVE_HVSOCKET
+    // Container passthru flag, non-zero value indicates pass thru.
+    bool hvsocket_container_passthru;
+    // True indicates the socket will not disconnect on VM pause (default)
+    bool hvsocket_connected_suspend;
+    // True on host socket indicates the socket will connect to guest VTL 2
+    bool hvsocket_high_vtl;
+#endif
+
     //  When creating a new ZMQ socket, if this option is set the value
     //  will be used as the File Descriptor instead of allocating a new
     //  one via the socket () system call.

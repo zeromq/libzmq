@@ -467,7 +467,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
         const size_t dummy_size =
           1024 * 1024; //  1M to overload default receive buffer
         unsigned char *dummy =
-          static_cast<unsigned char *> (malloc (dummy_size));
+          static_cast<unsigned char *> (std::malloc (dummy_size));
         wsa_assert (dummy);
 
         int still_to_send = static_cast<int> (dummy_size);
@@ -489,7 +489,7 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
             wsa_assert (nbytes != SOCKET_ERROR);
             still_to_recv -= nbytes;
         }
-        free (dummy);
+        std::free (dummy);
     }
 
     //  Save errno if error occurred in bind/listen/connect/accept.
@@ -880,7 +880,7 @@ char *widechar_to_utf8 (const wchar_t *widestring)
     char *utf8 = 0;
     nch = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, 0, 0, NULL, NULL);
     if (nch > 0) {
-        utf8 = (char *) malloc ((nch + (size_t) 1) * sizeof (char));
+        utf8 = (char *) std::malloc ((nch + (size_t) 1) * sizeof (char));
         alloc_assert (utf8);
         n = WideCharToMultiByte (CP_UTF8, 0, widestring, -1, utf8, nch, NULL,
                                  NULL);
@@ -914,7 +914,7 @@ int zmq::create_ipc_wildcard_address (std::string &path_, std::string &file_)
     path_.assign (tmp);
     file_ = path_ + "/socket";
 
-    free (tmp);
+    std::free (tmp);
 #else
     std::string tmp_path;
 

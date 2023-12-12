@@ -54,16 +54,16 @@ template <typename T, int N> class yqueue_t
     {
         while (true) {
             if (_begin_chunk == _end_chunk) {
-                free (_begin_chunk);
+                std::free (_begin_chunk);
                 break;
             }
             chunk_t *o = _begin_chunk;
             _begin_chunk = _begin_chunk->next;
-            free (o);
+            std::free (o);
         }
 
         chunk_t *sc = _spare_chunk.xchg (NULL);
-        free (sc);
+        std::free (sc);
     }
 
     //  Returns reference to the front element of the queue.
@@ -122,7 +122,7 @@ template <typename T, int N> class yqueue_t
         else {
             _end_pos = N - 1;
             _end_chunk = _end_chunk->prev;
-            free (_end_chunk->next);
+            std::free (_end_chunk->next);
             _end_chunk->next = NULL;
         }
     }
@@ -140,7 +140,7 @@ template <typename T, int N> class yqueue_t
             //  so for cache reasons we'll get rid of the spare and
             //  use 'o' as the spare.
             chunk_t *cs = _spare_chunk.xchg (o);
-            free (cs);
+            std::free (cs);
         }
     }
 
@@ -161,7 +161,7 @@ template <typename T, int N> class yqueue_t
             return (chunk_t *) pv;
         return NULL;
 #else
-        return static_cast<chunk_t *> (malloc (sizeof (chunk_t)));
+        return static_cast<chunk_t *> (std::malloc (sizeof (chunk_t)));
 #endif
     }
 

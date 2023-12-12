@@ -53,6 +53,14 @@
 #include "vmci_address.hpp"
 #include "vmci_listener.hpp"
 #endif
+#if defined ZMQ_HAVE_VSOCK
+#include "vsock_address.hpp"
+#include "vsock_listener.hpp"
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+#include "hvsocket_address.hpp"
+#include "hvsocket_listener.hpp"
+#endif
 
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
@@ -322,19 +330,17 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
         && protocol_ != protocol_name::ipc
 #endif
         && protocol_ != protocol_name::tcp
-#ifdef ZMQ_HAVE_WS
-        && protocol_ != protocol_name::ws
-#endif
-#ifdef ZMQ_HAVE_WSS
-        && protocol_ != protocol_name::wss
-#endif
 #if defined ZMQ_HAVE_OPENPGM
-        //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
         && protocol_ != protocol_name::pgm
         && protocol_ != protocol_name::epgm
 #endif
+#if defined ZMQ_HAVE_WS
+        && protocol_ != protocol_name::ws
+#endif
+#if defined ZMQ_HAVE_WSS
+        && protocol_ != protocol_name::wss
+#endif
 #if defined ZMQ_HAVE_TIPC
-        // TIPC transport is only available on Linux.
         && protocol_ != protocol_name::tipc
 #endif
 #if defined ZMQ_HAVE_NORM
@@ -342,6 +348,12 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #endif
 #if defined ZMQ_HAVE_VMCI
         && protocol_ != protocol_name::vmci
+#endif
+#if defined ZMQ_HAVE_VSOCK
+        && protocol_ != protocol_name::vsock
+#endif
+#if defined ZMQ_HAVE_HVSOCKET
+        && protocol_ != protocol_name::hvsocket
 #endif
         && protocol_ != protocol_name::udp) {
         errno = EPROTONOSUPPORT;
@@ -697,6 +709,7 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return 0;
     }
 #endif
+
 #if defined ZMQ_HAVE_TIPC
     if (protocol == protocol_name::tipc) {
         tipc_listener_t *listener =
@@ -720,10 +733,55 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
         return 0;
     }
 #endif
+
 #if defined ZMQ_HAVE_VMCI
     if (protocol == protocol_name::vmci) {
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
+        alloc_assert (listener);
+        rc = listener->set_local_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (listener);
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
+            return -1;
+        }
+
+        listener->get_local_address (_last_endpoint);
+
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
+        options.connected = true;
+        return 0;
+    }
+#endif
+
+#if defined ZMQ_HAVE_VSOCK
+    if (protocol == protocol_name::vsock) {
+        vsock_listener_t *listener =
+          new (std::nothrow) vsock_listener_t (io_thread, this, options);
+        alloc_assert (listener);
+        rc = listener->set_local_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (listener);
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
+            return -1;
+        }
+
+        listener->get_local_address (_last_endpoint);
+
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
+        options.connected = true;
+        return 0;
+    }
+#endif
+
+#if defined ZMQ_HAVE_HVSOCKET
+    if (protocol == protocol_name::hvsocket) {
+        hvsocket_listener_t *listener =
+          new (std::nothrow) hvsocket_listener_t (io_thread, this, options);
         alloc_assert (listener);
         rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
@@ -1006,11 +1064,12 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         }
     }
 #endif
+
 #if defined ZMQ_HAVE_TIPC
     else if (protocol == protocol_name::tipc) {
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
-        int rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
+        rc = paddr->resolved.tipc_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -1027,12 +1086,39 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         }
     }
 #endif
+
 #if defined ZMQ_HAVE_VMCI
     else if (protocol == protocol_name::vmci) {
         paddr->resolved.vmci_addr =
           new (std::nothrow) vmci_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vmci_addr);
-        int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
+        rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+    }
+#endif
+
+#if defined ZMQ_HAVE_VSOCK
+    else if (protocol == protocol_name::vsock) {
+        paddr->resolved.vsock_addr =
+          new (std::nothrow) vsock_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.vsock_addr);
+        rc = paddr->resolved.vsock_addr->resolve (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+    }
+#endif
+
+#if defined ZMQ_HAVE_HVSOCKET
+    else if (protocol == protocol_name::hvsocket) {
+        paddr->resolved.hvsocket_addr =
+          new (std::nothrow) hvsocket_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.hvsocket_addr);
+        rc = paddr->resolved.hvsocket_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;

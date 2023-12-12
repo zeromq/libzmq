@@ -143,7 +143,8 @@ node_t make_node (size_t refcount_, size_t prefix_length_, size_t edgecount_)
     const size_t node_size = 3 * sizeof (uint32_t) + prefix_length_
                              + edgecount_ * (1 + sizeof (void *));
 
-    unsigned char *data = static_cast<unsigned char *> (malloc (node_size));
+    unsigned char *data =
+      static_cast<unsigned char *> (std::malloc (node_size));
     zmq_assert (data);
 
     node_t node (data);
@@ -163,7 +164,7 @@ static void free_nodes (node_t node_)
 {
     for (size_t i = 0, count = node_.edgecount (); i < count; ++i)
         free_nodes (node_.node_at (i));
-    free (node_._data);
+    std::free (node_._data);
 }
 
 zmq::radix_tree_t::~radix_tree_t ()
@@ -432,7 +433,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         current_node.set_node_pointers (child.node_pointers ());
         current_node.set_refcount (child.refcount ());
 
-        free (child._data);
+        std::free (child._data);
         parent_node.set_node_at (edge_index, current_node);
         return true;
     }
@@ -462,8 +463,8 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
         parent_node.set_node_pointers (other_child.node_pointers ());
         parent_node.set_refcount (other_child.refcount ());
 
-        free (current_node._data);
-        free (other_child._data);
+        std::free (current_node._data);
+        std::free (other_child._data);
         grandparent_node.set_node_at (parent_edge_index, parent_node);
         return true;
     }
@@ -493,7 +494,7 @@ bool zmq::radix_tree_t::rm (const unsigned char *key_, size_t key_size_)
                         parent_node.edgecount () - 1);
 
     // Nothing points to this node now, so we can reclaim it.
-    free (current_node._data);
+    std::free (current_node._data);
 
     if (parent_node.prefix_length () == 0)
         _root._data = parent_node._data;

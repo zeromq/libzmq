@@ -432,7 +432,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
 
     //  Allocate memory to get interface names.
     const size_t ifr_size = sizeof (struct lifreq) * ifn.lifn_count;
-    char *ifr = (char *) malloc (ifr_size);
+    char *ifr = (char *) std::malloc (ifr_size);
     alloc_assert (ifr);
 
     //  Retrieve interface names.
@@ -460,7 +460,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
     }
 
     //  Clean-up.
-    free (ifr);
+    std::free (ifr);
     close (fd);
 
     if (!found) {
@@ -589,9 +589,9 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
                                             char **dest_) const
 {
 #ifdef ZMQ_HAVE_WINDOWS_UWP
-    char *buffer = (char *) malloc (1024);
+    char *buffer = (char *) std::malloc (1024);
 #else
-    char *buffer = static_cast<char *> (malloc (IF_MAX_STRING_SIZE));
+    char *buffer = static_cast<char *> (std::malloc (IF_MAX_STRING_SIZE));
 #endif
     alloc_assert (buffer);
 
@@ -602,7 +602,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 #endif
 
     if (if_name_result == NULL) {
-        free (buffer);
+        std::free (buffer);
         return -1;
     }
 
@@ -616,14 +616,14 @@ int zmq::ip_resolver_t::wchar_to_utf8 (const WCHAR *src_, char **dest_) const
     const int buffer_len =
       WideCharToMultiByte (CP_UTF8, 0, src_, -1, NULL, 0, NULL, 0);
 
-    char *buffer = static_cast<char *> (malloc (buffer_len));
+    char *buffer = static_cast<char *> (std::malloc (buffer_len));
     alloc_assert (buffer);
 
     rc =
       WideCharToMultiByte (CP_UTF8, 0, src_, -1, buffer, buffer_len, NULL, 0);
 
     if (rc == 0) {
-        free (buffer);
+        std::free (buffer);
         return -1;
     }
 
@@ -640,7 +640,7 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
                                | GAA_FLAG_SKIP_DNS_SERVER;
 
     IP_ADAPTER_ADDRESSES *addresses =
-      static_cast<IP_ADAPTER_ADDRESSES *> (malloc (out_buf_len));
+      static_cast<IP_ADAPTER_ADDRESSES *> (std::malloc (out_buf_len));
 
     alloc_assert (addresses);
 
@@ -648,8 +648,9 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
       GetAdaptersAddresses (AF_UNSPEC, gaaFlags, NULL, addresses, &out_buf_len);
 
     if (rc == ERROR_BUFFER_OVERFLOW) {
-        free (addresses);
-        addresses = static_cast<IP_ADAPTER_ADDRESSES *> (malloc (out_buf_len));
+        std::free (addresses);
+        addresses =
+          static_cast<IP_ADAPTER_ADDRESSES *> (std::malloc (out_buf_len));
         alloc_assert (addresses);
         rc = GetAdaptersAddresses (AF_UNSPEC, gaaFlags, NULL, addresses,
                                    &out_buf_len);
@@ -692,12 +693,12 @@ int zmq::ip_resolver_t::resolve_nic_name (ip_addr_t *ip_addr_, const char *nic_)
             }
 
             if (str_rc1 == 0)
-                free (if_name);
+                std::free (if_name);
             if (str_rc2 == 0)
-                free (if_friendly_name);
+                std::free (if_friendly_name);
         }
 
-        free (addresses);
+        std::free (addresses);
     }
 
     if (!found) {
