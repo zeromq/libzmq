@@ -293,7 +293,7 @@ void zmq::norm_engine_t::plug (io_thread_t */*io_thread_*/,
     threadArgs->norm_instance_handle = norm_instance;
     norm_descriptor_handle = add_fd (wrapper_read_fd);
 #else
-    fd_t normDescriptor = NormGetDescriptor (norm_instance);
+    fd_t normDescriptor = (fd_t) NormGetDescriptor (norm_instance);
     norm_descriptor_handle = add_fd (normDescriptor);
 #endif
     // Set POLLIN for notification of pending NormEvents
@@ -421,7 +421,7 @@ void zmq::norm_engine_t::in_event ()
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
     int rc = recv (wrapper_read_fd, reinterpret_cast<char *> (&event),
                    sizeof (event), 0);
-    errno_assert (rc == sizeof (event));
+    errno_assert (rc == sizeof (event)); // This fires sometimes???
 #else
     if (!NormGetNextEvent (norm_instance, &event)) {
         // NORM has died before we unplugged?!
@@ -460,14 +460,21 @@ void zmq::norm_engine_t::in_event ()
                 NormRxStreamState *rxState =
                   (NormRxStreamState *) NormObjectGetUserData (event.object);
                 if (NULL != rxState) {
+                    // We are unconditionally deleting the object,
+                    // don't leave a dangling pointer behind.
+                    NormObjectSetUserData (event.object, nullptr);
                     // Remove the state from the list it's in
                     // This is now unnecessary since deletion takes care of list removal
                     // but in the interest of being clear ...
                     NormRxStreamState::List *list = rxState->AccessList ();
-                    if (NULL != list)
+                    if (NULL != list) {
                         list->Remove (*rxState);
+                    }
+#ifndef NDEBUG
+                    memset (rxState, 0, sizeof (NormRxStreamState));
+#endif
+                   delete rxState;
                 }
-                delete rxState;
             }
             break;
         }
