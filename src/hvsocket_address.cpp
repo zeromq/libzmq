@@ -650,9 +650,7 @@ int zmq::hvsocket_address_t::resolve (const char *path_)
                 //
 #endif
                 if (addr_str == "any") {
-                    ; // Already HV_GUID_WILDCARD;
-                } else if (addr_str == "broadcast") {
-                    address.VmId = HV_GUID_BROADCAST;
+                    address.VmId = HV_GUID_WILDCARD;
                 } else if (addr_str == "children") {
                     address.VmId = HV_GUID_CHILDREN;
                 } else if ((addr_str == "local") || (addr_str == "localhost")
