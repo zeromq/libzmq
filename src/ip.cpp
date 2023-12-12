@@ -27,8 +27,8 @@
 
 #include <direct.h>
 
-#define rmdir _rmdir
-#define unlink _unlink
+#define rmdir rmdir_utf8
+#define unlink unlink_utf8
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
