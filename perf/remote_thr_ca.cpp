@@ -163,7 +163,6 @@ void ZMQ_CDECL msg_free (_Pre_maybenull_ _Post_invalid_ void *ptr_,
 _Must_inspect_result_ _Ret_opt_bytecap_ (cb) void *ZMQ_CDECL
   msg_alloc (_In_ size_t cb, _In_ ZMQ_MSG_ALLOC_HINT /*hint*/)
 {
-    
     return malloc (cb);
 }
 
