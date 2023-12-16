@@ -106,6 +106,10 @@
 #include <gssapi/gssapi_krb5.h>
 #endif
 
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+#include <tbb/scalable_allocator.h>
+#endif
+
 #include "options.hpp"
 
 #endif // _MSC_VER

@@ -87,7 +87,11 @@ const char *HintToString (_In_ ZMQ_MSG_ALLOC_HINT hint)
 // the same lookaside list. 3-4 buckets should be enough, the last one is
 // "everything above". You can have a different HWM's for each bucket
 // depending on what you learned about frequencies, and how much you want
-// to spend for the lookasides. You control the tradeoffs. Have fun!
+// to spend for the lookasides. You control the tradeoffs. This may be a
+// little bit faster provided there is no contention on the allocator.
+// 
+// Yet another approach is to use the Intel TBB scalable allocator which
+// is frigteningly quick even in presence of heavy contention.
 //
 // Then remember the three rules: measure, measure, measure. The
 // chances that you significantly and consistently improve on the
@@ -96,6 +100,12 @@ const char *HintToString (_In_ ZMQ_MSG_ALLOC_HINT hint)
 
 #include <windows.h>
 #include <mutex>
+
+// #define ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+#include <tbb/scalable_allocator.h>
+#endif
 
 #define USE_HEAPALLOC
 #define KEEP_ASIDE_HWM 1000
@@ -109,6 +119,10 @@ SLIST_HEADER LookasideList;
 _Must_inspect_result_ _Ret_opt_bytecap_ (cb) void *ZMQ_CDECL
   msg_alloc (_In_ size_t cb, _In_ ZMQ_MSG_ALLOC_HINT hint)
 {
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+    hint; // Unused
+    return scalable_malloc (cb);
+#else
     if (hint == ZMQ_MSG_ALLOC_HINT_OUTGOING) {
         void *ptr = InterlockedPopEntrySList (&LookasideList);
         if (ptr != NULL) {
@@ -130,11 +144,16 @@ _Must_inspect_result_ _Ret_opt_bytecap_ (cb) void *ZMQ_CDECL
         return malloc (cb);
 #endif
     }
+#endif
 }
 
 void ZMQ_CDECL msg_free (_Pre_maybenull_ _Post_invalid_ void *ptr_,
                          _In_ ZMQ_MSG_ALLOC_HINT hint)
 {
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+    hint; // Unused
+    return scalable_free (ptr_);
+#else
     if (hint == ZMQ_MSG_ALLOC_HINT_OUTGOING) {
         // There is a possibility that we sligthly exceed the HWM in case
         // of heavy contention. Not really a problem.
@@ -154,6 +173,7 @@ void ZMQ_CDECL msg_free (_Pre_maybenull_ _Post_invalid_ void *ptr_,
         free (ptr_);
 #endif
     }
+#endif
 }
 #else
 //
@@ -198,11 +218,13 @@ int ZMQ_CDECL main (int argc, char *argv[])
         curve = 1;
     }
 
+#if !defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
 #ifdef USE_HEAPALLOC
     hHeap = HeapCreate (HEAP_NO_SERIALIZE, 1024 * 1024, 0);
 #endif
-
     InitializeSListHead (&LookasideList);
+#endif
+
     (void)zmq_set_custom_msg_allocator (msg_alloc, msg_free);
 
     ctx = zmq_init (1);
@@ -287,16 +309,23 @@ int ZMQ_CDECL main (int argc, char *argv[])
     if (count) {
         for (void *ptr = InterlockedPopEntrySList (&LookasideList); ptr != NULL;
              ptr = InterlockedPopEntrySList (&LookasideList)) {
-#ifdef USE_HEAPALLOC
-            (void) HeapFree (hHeap, 0, ptr);
+
+#if !defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+    #ifdef USE_HEAPALLOC
+                (void) HeapFree (hHeap, 0, ptr);
+    #else
+                free (ptr);
+    #endif
 #else
-            free (ptr);
+                scalable_free (ptr);
 #endif
         }
     }
 
+#if !defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
 #ifdef USE_HEAPALLOC
     HeapDestroy (hHeap);
+#endif
 #endif
 
     return 0;

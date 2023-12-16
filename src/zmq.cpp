@@ -627,7 +627,14 @@ ZMQ_EXPORT_IMPL (bool)
 zmq_set_custom_msg_allocator (_In_ zmq_custom_msg_alloc_fn *malloc_,
                               _In_ zmq_custom_msg_free_fn *free_)
 {
+#ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
     return zmq::set_custom_msg_allocator (malloc_, free_);
+#else
+    LIBZMQ_UNUSED (malloc_);
+    LIBZMQ_UNUSED (free_);
+    errno = ENOTSUP;
+    return false;
+#endif
 }
 
 _At_ (msg_, _Pre_invalid_ _Pre_notnull_ _Post_valid_) ZMQ_EXPORT_IMPL (int)

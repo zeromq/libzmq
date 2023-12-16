@@ -37,9 +37,15 @@ _Must_inspect_result_ _Ret_opt_bytecap_ (
     if (hint < ZMQ_MSG_ALLOC_HINT_NONE || hint > ZMQ_MSG_ALLOC_HINT_MAX) {
         zmq_assert (false);
     }
+#else
+    LIBZMQ_UNUSED (hint);
 #endif
 
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+    return scalable_malloc (cb);
+#else
     return std::malloc (cb);
+#endif
 }
 
 static void ZMQ_CDECL default_msg_free (
@@ -49,9 +55,15 @@ static void ZMQ_CDECL default_msg_free (
     if (hint < ZMQ_MSG_ALLOC_HINT_NONE || hint > ZMQ_MSG_ALLOC_HINT_MAX) {
         zmq_assert (false);
     }
+#else
+    LIBZMQ_UNUSED (hint);
 #endif
 
+#if defined(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR)
+    scalable_free (ptr);
+#else
     std::free (ptr);
+#endif
 }
 
 #ifndef NDEBUG
@@ -164,8 +176,13 @@ int zmq::msg_t::init_size (size_t size_)
         _messages_allocated = true;
 #endif
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        _u.lmsg.content =
+          static_cast<content_t *> (scalable_malloc (sizeof (content_t) + size_));
+#else
         _u.lmsg.content =
           static_cast<content_t *> (std::malloc (sizeof (content_t) + size_));
+#endif
 #endif
         if (unlikely (!_u.lmsg.content)) {
             errno = ENOMEM;
@@ -178,8 +195,6 @@ int zmq::msg_t::init_size (size_t size_)
         _u.lmsg.content->hint = NULL;
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_OUTGOING;
-#else
-        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_NONE;
 #endif
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
@@ -261,8 +276,13 @@ int zmq::msg_t::init_data (_In_opt_ void *data_,
         _messages_allocated = true;
 #endif
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        _u.lmsg.content =
+          static_cast<content_t *> (scalable_malloc (sizeof (content_t)));
+#else
         _u.lmsg.content =
           static_cast<content_t *> (std::malloc (sizeof (content_t)));
+#endif
 #endif
         if (!_u.lmsg.content) {
             errno = ENOMEM;
@@ -275,8 +295,6 @@ int zmq::msg_t::init_data (_In_opt_ void *data_,
         _u.lmsg.content->hint = hint_;
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_FIXED_SIZE;
-#else
-        _u.lmsg.content->custom_allocation_hint = ZMQ_MSG_ALLOC_HINT_NONE;
 #endif
         new (&_u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
@@ -375,7 +393,11 @@ int zmq::msg_t::close ()
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
             zmq::free (_u.lmsg.content, _u.lmsg.content->custom_allocation_hint);
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+            scalable_free (_u.lmsg.content);
+#else
             std::free (_u.lmsg.content);
+#endif
 #endif
         }
     }
@@ -635,7 +657,11 @@ bool zmq::msg_t::rm_refs (int refs_)
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         zmq::free (_u.lmsg.content, _u.lmsg.content->custom_allocation_hint);
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        scalable_free (_u.lmsg.content);
+#else
         std::free (_u.lmsg.content);
+#endif
 #endif
         return false;
     }

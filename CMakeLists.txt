@@ -150,6 +150,7 @@ option(WITH_VMCI "Build with support for VMware VMCI (host<->guests sockets)" OF
 option(WITH_HVSOCKET "Build with support for Microsoft Hyper-V (host<->guests sockets)" OFF)
 option(WITH_VSOCK "Build with support for VSOCK (hvsocket, virtio, vmci) (host<->guests sockets)" OFF)
 option(WITH_CUSTOM_MESSAGE_ALLOCATOR "Build with support for custom message allocators" OFF)
+option(WITH_TBB_SCALABLE_ALLOCATOR "Build with support for Intel's TBB scalable memory allocator" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
@@ -1142,10 +1143,23 @@ set(public_headers include/zmq.h include/zmq_utils.h include/zmq_sal.h)
 set(readme-docs AUTHORS LICENSE NEWS)
 
 # -----------------------------------------------------------------------------
-# Optional modules
+# Optional modules and features
+
+if(WITH_TBB_SCALABLE_ALLOCATOR) 
+  message(STATUS "Building with support for Intel's TBB scalable memory allocator.")
+  set(ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR 1)
+find_path(TBB_INCLUDE_DIRS ./oneapi/tbb.h PATHS "C:/Program Files (x86)/Intel/oneAPI/tbb/latest/include" NO_DEFAULT_PATH)
+include_directories(${TBB_INCLUDE_DIRS})
+set(TBB_MALLOC_LIBS ${TBB_INCLUDE_DIRS}/../lib/vc_mt/tbb12.lib ${TBB_INCLUDE_DIRS}/../lib/vc_mt/tbbmalloc.lib)
+set(TBB_MALLOC_FOUND 1)
+endif()
 
 if(WITH_CUSTOM_MESSAGE_ALLOCATOR)
-  message(STATUS "Building with with support for custom message allocators.")
+if(WITH_TBB_SCALABLE_ALLOCATOR) 
+  message(STATUS "Building with support for custom message allocators. Intel's TBB scalable memory allocator used as default.")
+else()
+  message(STATUS "Building with support for custom message allocators.")
+endif()
   set(ZMQ_HAVE_CUSTOM_ALLOCATOR 1)
 endif()
 
@@ -1513,11 +1527,15 @@ if(BUILD_SHARED)
   endif()
 
   if(norm_FOUND)
-      target_link_libraries(libzmq norm::norm)
+    target_link_libraries(libzmq norm::norm)
   endif()
 
   if(OPENPGM_FOUND)
-      target_link_libraries(libzmq ${OPENPGM_LIBRARIES})
+    target_link_libraries(libzmq ${OPENPGM_LIBRARIES})
+  endif()
+
+  if(TBB_MALLOC_FOUND)
+    target_link_libraries(libzmq ${TBB_MALLOC_LIBS})
   endif()
 endif()
 

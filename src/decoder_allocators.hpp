@@ -28,7 +28,11 @@ class c_single_allocator
         _buf (static_cast<unsigned char *> (
           zmq::malloc (_buf_size, ZMQ_MSG_ALLOC_HINT_INCOMING)))
 #else
-    _buf (static_cast<unsigned char *> (std::malloc (_buf_size)))
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        _buf (static_cast<unsigned char *> (scalable_malloc (_buf_size)))
+#else
+        _buf (static_cast<unsigned char *> (std::malloc (_buf_size)))
+#endif
 #endif
     {
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
@@ -44,7 +48,11 @@ class c_single_allocator
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         zmq::free (_buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        scalable_free (_buf);
+#else
         std::free (_buf);
+#endif
 #endif
     }
 

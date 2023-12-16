@@ -75,6 +75,7 @@
 #cmakedefine ZMQ_HAVE_HVSOCKET
 
 #cmakedefine ZMQ_HAVE_CUSTOM_ALLOCATOR
+#cmakedefine ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
 
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 

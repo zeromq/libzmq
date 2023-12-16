@@ -60,7 +60,11 @@ unsigned char *zmq::shared_message_memory_allocator::allocate ()
         _messages_allocated = true;
 #endif
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        _buf = static_cast<unsigned char *> (scalable_malloc (allocationsize));
+#else
         _buf = static_cast<unsigned char *> (std::malloc (allocationsize));
+#endif
 #endif
         alloc_assert (_buf);
 
@@ -86,7 +90,11 @@ void zmq::shared_message_memory_allocator::deallocate ()
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         zmq::free (_buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        scalable_free (_buf);
+#else
         std::free (_buf);
+#endif
 #endif
     }
     clear ();
@@ -123,7 +131,11 @@ void ZMQ_CDECL zmq::shared_message_memory_allocator::call_dec_ref (void *,
 #ifdef ZMQ_HAVE_CUSTOM_ALLOCATOR
         zmq::free (buf, ZMQ_MSG_ALLOC_HINT_INCOMING);
 #else
+#ifdef ZMQ_HAVE_TBB_SCALABLE_ALLOCATOR
+        scalable_free (buf);
+#else
         std::free (buf);
+#endif
 #endif
         buf = NULL;
     }
