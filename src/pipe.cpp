@@ -539,7 +539,7 @@ bool zmq::pipe_t::check_hwm () const
 
 void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
 {
-    if(_state == active)
+    if (_state == active)
         send_pipe_hwm (_peer, inhwm_, outhwm_);
 }
 
@@ -555,11 +555,11 @@ const zmq::endpoint_uri_pair_t &zmq::pipe_t::get_endpoint_pair () const
 
 void zmq::pipe_t::send_stats_to_peer (own_t *socket_base_)
 {
-    if(_state == active) {
+    if (_state == active) {
         endpoint_uri_pair_t *ep =
-        new (std::nothrow) endpoint_uri_pair_t (_endpoint_pair);
-        send_pipe_peer_stats (_peer, _msgs_written - _peers_msgs_read, socket_base_,
-                            ep);
+          new (std::nothrow) endpoint_uri_pair_t (_endpoint_pair);
+        send_pipe_peer_stats (_peer, _msgs_written - _peers_msgs_read,
+                              socket_base_, ep);
     }
 }
 
