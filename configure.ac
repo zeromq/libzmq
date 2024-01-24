@@ -66,7 +66,7 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 
 # Checks for programs.
 AC_PROG_CC
-AX_CHECK_COMPILE_FLAG([-std=c11], [CFLAGS+=" -std=c11 -D_DEFAULT_SOURCE"], [AC_PROG_CC_C99])
+AX_CHECK_COMPILE_FLAG([-std=c11], [CFLAGS="${CFLAGS} -std=c11 -D_DEFAULT_SOURCE"], [AC_PROG_CC_C99])
 AC_PROG_CXX
 AX_CODE_COVERAGE
 AM_PROG_CC_C_O
@@ -87,8 +87,8 @@ AC_ARG_ENABLE([force-CXX98-compat],
     [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])
 if test "x$enable_force_CXX98_compat" = "xyes"; then
     AC_LANG_PUSH([C++])
-    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS+=" -std=gnu++98"], [])
-    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS+=" -Wc++98-compat"], [])
+    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS="${CXXFLAGS} -std=gnu++98"], [])
+    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS="${CXXFLAGS} -Wc++98-compat"], [])
     AC_LANG_POP([C++])
 else
     AX_CXX_COMPILE_STDCXX_11([ext], [optional])
@@ -799,7 +799,7 @@ AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-Watomic-alignment],
-    [CXXFLAGS+=" -Wno-atomic-alignment"],
+    [CXXFLAGS="${CXXFLAGS} -Wno-atomic-alignment"],
     [],
     [-Werror])
 LIBZMQ_CHECK_ATOMIC_INTRINSICS([
@@ -1137,12 +1137,12 @@ AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
-    [CFLAGS+=" -Wno-tautological-constant-compare"],
+    [CFLAGS="${CFLAGS} -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
-    [CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [CXXFLAGS="${CXXFLAGS} -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 
@@ -1151,12 +1151,12 @@ AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
 # E: lto-no-text-in-archive
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
-    [CFLAGS+=" -ffat-lto-objects"],
+    [CFLAGS="${CFLAGS} -ffat-lto-objects"],
     [],
     [-Werror])
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
-    [CXXFLAGS+=" -ffat-lto-objects"],
+    [CXXFLAGS="${CXXFLAGS} -ffat-lto-objects"],
     [],
     [-Werror])
 
