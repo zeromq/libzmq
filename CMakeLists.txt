@@ -380,7 +380,7 @@ endif(WIN32)
 
 if(NOT MSVC)
   if(POLLER STREQUAL "")
-    check_cxx_symbol_exists(kqueue sys/event.h HAVE_KQUEUE)
+    check_cxx_symbol_exists(kqueue "sys/types.h;sys/event.h;sys/time.h" HAVE_KQUEUE)
     if(HAVE_KQUEUE)
       set(POLLER "kqueue")
     endif()
