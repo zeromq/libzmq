@@ -537,7 +537,7 @@ bool zmq::pipe_t::check_hwm () const
     return !full;
 }
 
-bool zmq::pipe_t::is_active() const
+bool zmq::pipe_t::is_active () const
 {
     return active == _state;
 }
