@@ -115,6 +115,8 @@ class pipe_t ZMQ_FINAL : public object_t,
     //  Returns true if HWM is not reached
     bool check_hwm () const;
 
+    bool is_active () const;
+
     void set_endpoint_pair (endpoint_uri_pair_t endpoint_pair_);
     const endpoint_uri_pair_t &get_endpoint_pair () const;
 
