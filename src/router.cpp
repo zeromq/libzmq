@@ -185,7 +185,7 @@ int zmq::router_t::xsend (msg_t *msg_)
                 if (!_current_out->check_write ()) {
                     // Check whether pipe is full or not
                     const bool pipe_full = !_current_out->check_hwm ();
-                    const bool pipe_active = _current_out->is_active();
+                    const bool pipe_active = _current_out->is_active ();
                     out_pipe->active = false;
                     _current_out = NULL;
 
