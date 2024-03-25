@@ -234,7 +234,7 @@ if(NOT ZMQ_USE_GNUTLS)
       endif()
     endif()
   endif()
-  if(NOT ZMQ_USE_NSS)
+  if(ENABLE_WS AND NOT ZMQ_USE_NSS)
     list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.c
          ${CMAKE_CURRENT_SOURCE_DIR}/external/sha1/sha1.h)
     message(STATUS "Using builtin sha1")
