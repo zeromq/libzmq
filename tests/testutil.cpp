@@ -7,7 +7,7 @@
 
 #if defined _WIN32
 #include "../src/windows.hpp"
-#if defined _MSC_VER
+#if defined ZMQ_HAVE_WINDOWS
 #if defined ZMQ_HAVE_IPC
 #include <direct.h>
 #include <afunix.h>

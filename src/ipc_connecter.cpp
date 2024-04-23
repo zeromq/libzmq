@@ -16,7 +16,7 @@
 #include "ipc_address.hpp"
 #include "session_base.hpp"
 
-#ifdef _MSC_VER
+#if defined ZMQ_HAVE_WINDOWS
 #include <afunix.h>
 #else
 #include <unistd.h>

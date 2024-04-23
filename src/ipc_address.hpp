@@ -7,7 +7,7 @@
 
 #include <string>
 
-#if defined _MSC_VER
+#if defined ZMQ_HAVE_WINDOWS
 #include <afunix.h>
 #else
 #include <sys/socket.h>

@@ -17,7 +17,7 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 
-#ifdef _MSC_VER
+#ifdef ZMQ_HAVE_WINDOWS
 #ifdef ZMQ_IOTHREAD_POLLER_USE_SELECT
 #error On Windows, IPC does not work with POLLER=select, use POLLER=epoll instead, or disable IPC transport
 #endif
