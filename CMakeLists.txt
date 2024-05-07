@@ -295,6 +295,16 @@ else() # ENABLE_CURVE
   message(STATUS "CURVE security is disabled")
 endif()
 
+option(WITH_GSSAPI_KRB5 "Use libgssapi_krb5" OFF)
+if(WITH_GSSAPI_KRB5)
+  find_package("gssapi_krb5" REQUIRED)
+  message(STATUS "Using GSSAPI_KRB5")
+  include_directories(${GSSAPI_KRB5_INCLUDE_DIRS})
+  link_directories(${GSSAPI_KRB5_LIBRARY_DIRS})
+  set(HAVE_LIBGSSAPI_KRB5 1)
+endif()
+
+
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 option(WITH_MILITANT "Enable militant assertions" OFF)
@@ -1218,6 +1228,10 @@ if(ZMQ_HAVE_TIPC)
   list(APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
 endif()
 
+if(WITH_GSSAPI_KRB5)
+  list(APPEND cxx-sources gssapi_client.cpp gssapi_mechanism_base.cpp gssapi_server.cpp)
+endif()
+
 # -----------------------------------------------------------------------------
 # source generators
 
@@ -1491,6 +1505,10 @@ if(BUILD_SHARED)
     endif()
   endif()
 
+  if(WITH_GSSAPI_KRB5)
+    target_link_libraries(libzmq ${GSSAPI_KRB5_LIBRARIES})
+  endif()
+
   if(HAVE_WS2_32)
     target_link_libraries(libzmq ws2_32)
   elseif(HAVE_WS2)
@@ -1539,6 +1557,10 @@ if(BUILD_STATIC)
     if(${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
       target_link_libraries(libzmq-static ssp)
     endif()
+  endif()
+
+  if(WITH_GSSAPI_KRB5)
+    target_link_libraries(libzmq-static ${GSSAPI_KRB5_LIBRARIES})
   endif()
 
   if(HAVE_WS2_32)
@@ -1608,6 +1630,10 @@ if(BUILD_SHARED)
 
       if(SODIUM_FOUND)
         target_link_libraries(${perf-tool} ${SODIUM_LIBRARIES})
+      endif()
+
+      if(WITH_GSSAPI_KRB5)
+        target_link_libraries(${perf-tool} ${GSSAPI_KRB5_LIBRARIES})
       endif()
 
       if(ZMQ_BUILD_FRAMEWORK)

@@ -77,6 +77,7 @@
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_LIBSODIUM
 #cmakedefine SODIUM_STATIC
+#cmakedefine HAVE_LIBGSSAPI_KRB5
 #cmakedefine ZMQ_USE_GNUTLS
 #cmakedefine ZMQ_USE_RADIX_TREE
 #cmakedefine HAVE_IF_NAMETOINDEX

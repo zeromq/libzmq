@@ -49,6 +49,10 @@ elif [ $CURVE == "libsodium" ]; then
     fi
 fi
 
+if [ "$GSSAPI" == "enabled" ]; then
+    CMAKE_OPTS+=("-DWITH_GSSAPI_KRB5=ON")
+fi
+
 CMAKE_PREFIXES=()
 MAKE_PREFIXES=()
 PARALLEL_MAKE_OPT="-j5"
