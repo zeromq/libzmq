@@ -57,6 +57,13 @@ jobs:
             TLS: enabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
+            CURVE: libsodium
+            DRAFT: enabled
+            GSSAPI: enabled
+            PACKAGES: cmake libsodium-dev libkrb5-dev
+            TLS: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
             DRAFT: enabled
             PACKAGES: cmake clang-format-11
             DO_CLANG_FORMAT_CHECK: 1

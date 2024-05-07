@@ -288,6 +288,10 @@ foreach(test ${tests})
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
 
+  if (WITH_GSSAPI_KRB5)
+    target_link_libraries(${static} ${GSSAPI_KRB5_LIBRARIES})
+  endif()
+
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
     target_link_libraries(${test} socket)
     target_link_libraries(${test} m)
