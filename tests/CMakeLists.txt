@@ -289,7 +289,7 @@ foreach(test ${tests})
   endif()
 
   if (WITH_GSSAPI_KRB5)
-    target_link_libraries(${static} ${GSSAPI_KRB5_LIBRARIES})
+    target_link_libraries(${test} ${GSSAPI_KRB5_LIBRARIES})
   endif()
 
   if(CMAKE_SYSTEM_NAME MATCHES "QNX")
