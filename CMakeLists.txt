@@ -589,6 +589,12 @@ if(NOT MINGW)
   find_library(RT_LIBRARY rt)
   if(RT_LIBRARY)
     set(pkg_config_libs_private "${pkg_config_libs_private} -lrt")
+
+    set(CMAKE_REQUIRED_LIBRARIES rt)
+    check_cxx_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
+    set(CMAKE_REQUIRED_LIBRARIES)
+  else()
+    check_cxx_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
   endif()
 endif()
 
@@ -609,10 +615,6 @@ if(WIN32 AND NOT CYGWIN)
 endif()
 
 if(NOT MSVC)
-  set(CMAKE_REQUIRED_LIBRARIES rt)
-  check_cxx_symbol_exists(clock_gettime time.h HAVE_CLOCK_GETTIME)
-  set(CMAKE_REQUIRED_LIBRARIES)
-
   check_cxx_symbol_exists(fork unistd.h HAVE_FORK)
   check_cxx_symbol_exists(gethrtime sys/time.h HAVE_GETHRTIME)
   check_cxx_symbol_exists(mkdtemp "stdlib.h;unistd.h" HAVE_MKDTEMP)
