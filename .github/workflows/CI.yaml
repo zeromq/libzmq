@@ -112,11 +112,11 @@ jobs:
             CXX: clang++
           - os: macos-latest
             BUILD_TYPE: default
-            PACKAGES: automake autoconf
+            PACKAGES: automake autoconf libtool
             DRAFT: enabled
           - os: macos-latest
             BUILD_TYPE: default
-            PACKAGES: automake autoconf libsodium
+            PACKAGES: automake autoconf libtool libsodium
             CURVE: libsodium
             DRAFT: disabled
     env:
