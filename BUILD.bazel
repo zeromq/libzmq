@@ -1,0 +1,24 @@
+""" Builds libzmq."""
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+)
+
+cmake(
+    name = "libzmq",
+    env = {"CMAKE_BUILD_TYPE": "Release"},
+    lib_source = ":srcs",
+    out_include_dir = "include",
+    out_static_libs = ["libzmq.a"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "libzmq_headers_only",
+    hdrs = glob(["include/*.h"]),
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)

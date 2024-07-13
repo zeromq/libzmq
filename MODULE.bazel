@@ -1,0 +1,13 @@
+"""
+The ZeroMQ lightweight messaging kernel is a library which extends the 
+standard socket interfaces with features traditionally provided by 
+specialised messaging middleware products.
+"""
+
+module(
+    name = "libzmq",
+    version = "4.3.5",
+    compatibility_level = 4,
+)
+
+bazel_dep(name = "rules_foreign_cc", version = "0.10.1")
