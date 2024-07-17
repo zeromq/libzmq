@@ -567,12 +567,18 @@ if(ZMQ_HAVE_WINDOWS)
   # Cannot use check_library_exists because the symbol is always declared as char(*)(void)
   set(CMAKE_REQUIRED_LIBRARIES "ws2_32.lib")
   check_cxx_symbol_exists(WSAStartup "winsock2.h" HAVE_WS2_32)
+  if(HAVE_WS2_32)
+    set(pkg_config_libs_private "${pkg_config_libs_private} -lws2_32")
+  endif()
 
   set(CMAKE_REQUIRED_LIBRARIES "rpcrt4.lib")
   check_cxx_symbol_exists(UuidCreateSequential "rpc.h" HAVE_RPCRT4)
 
   set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
   check_cxx_symbol_exists(GetAdaptersAddresses "winsock2.h;iphlpapi.h" HAVE_IPHLAPI)
+  if(HAVE_IPHLAPI)
+    set(pkg_config_libs_private "${pkg_config_libs_private} -liphlpapi")
+  endif()
   check_cxx_symbol_exists(if_nametoindex "iphlpapi.h" HAVE_IF_NAMETOINDEX)
 
   set(CMAKE_REQUIRED_LIBRARIES "")
