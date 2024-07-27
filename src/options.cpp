@@ -6,6 +6,7 @@
 #include <set>
 
 #include "options.hpp"
+#include "blob.hpp"
 #include "err.hpp"
 #include "macros.hpp"
 
@@ -758,8 +759,7 @@ int zmq::options_t::setsockopt (int option_,
                     if (key.compare (0, 2, "X-") == 0
                         && key.length () <= UCHAR_MAX) {
                         std::string val = s.substr (pos + 1, s.length ());
-                        app_metadata.insert (
-                          std::pair<std::string, std::string> (key, val));
+                        app_metadata.ZMQ_MAP_INSERT_OR_EMPLACE (key, val);
                         return 0;
                     }
                 }

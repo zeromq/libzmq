@@ -3,6 +3,7 @@
 #include "precompiled.hpp"
 #include "poller_base.hpp"
 #include "i_poll_events.hpp"
+#include "blob.hpp"
 #include "err.hpp"
 
 zmq::poller_base_t::~poller_base_t ()
@@ -28,7 +29,7 @@ void zmq::poller_base_t::add_timer (int timeout_, i_poll_events *sink_, int id_)
 {
     uint64_t expiration = _clock.now_ms () + timeout_;
     timer_info_t info = {sink_, id_};
-    _timers.insert (timers_t::value_type (expiration, info));
+    _timers.ZMQ_MAP_INSERT_OR_EMPLACE (expiration, info);
 }
 
 void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
