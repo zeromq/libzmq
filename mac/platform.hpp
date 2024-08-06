@@ -64,7 +64,7 @@
 
 #define ZMQ_USE_BUILTIN_SHA1
 /* #undef ZMQ_USE_NSS */
-/* #undef ZMQ_HAVE_WS */
+#define ZMQ_HAVE_WS
 /* #undef ZMQ_HAVE_WSS */
 /* #undef ZMQ_HAVE_TIPC */
 
@@ -79,7 +79,7 @@
 /* #undef SODIUM_STATIC */
 /* #undef HAVE_LIBGSSAPI_KRB5 */
 /* #undef ZMQ_USE_GNUTLS */
-/* #undef ZMQ_USE_RADIX_TREE */
+#define ZMQ_USE_RADIX_TREE
 #define HAVE_IF_NAMETOINDEX
 
 #ifdef _AIX

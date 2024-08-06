@@ -1,3 +1,17 @@
+config_setting(
+    name = "linux",
+    constraint_values = [
+        "@platforms//os:linux",
+    ],
+)
+
+config_setting(
+    name = "mac",
+    constraint_values = [
+        "@platforms//os:osx",
+    ],
+)
+
 cc_library(
     name = "libzmq_headers_only",
     hdrs = [
@@ -9,8 +23,15 @@ cc_library(
 )
 
 cc_library(
-    name = "platform",
-    hdrs = ["platform.hpp"],
+    name = "platform_mac",
+    hdrs = ["mac/platform.hpp"],
+    strip_include_prefix = "mac",
+)
+
+cc_library(
+    name = "platform_linux",
+    hdrs = ["linux/platform.hpp"],
+    strip_include_prefix = "linux",
 )
 
 cc_library(
@@ -268,6 +289,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":libzmq_headers_only",
-        ":platform",
-    ],
+    ] + select({
+        ":linux": [
+            ":platform_linux",
+        ],
+        ":mac": [
+            ":platform_mac",
+        ],
+    }),
 )

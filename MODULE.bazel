@@ -9,3 +9,5 @@ module(
     version = "4.3.5.bcr.2",
     compatibility_level = 4,
 )
+
+bazel_dep(name = "platforms", version = "0.0.10")
