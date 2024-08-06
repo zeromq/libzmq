@@ -1418,6 +1418,11 @@ unittests_unittest_curve_encoding_LDADD =  \
         $(top_builddir)/src/.libs/libzmq.a \
         ${src_libzmq_la_LIBADD} \
         $(CODE_COVERAGE_LDFLAGS)
+
+if USE_LIBSODIUM
+unittests_unittest_curve_encoding_CPPFLAGS += ${sodium_CFLAGS}
+unittests_unittest_curve_encoding_LDADD += ${sodium_LIBS}
+endif
 endif
 
 check_PROGRAMS = ${test_apps}
