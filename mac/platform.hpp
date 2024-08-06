@@ -64,7 +64,7 @@
 
 #define ZMQ_USE_BUILTIN_SHA1
 /* #undef ZMQ_USE_NSS */
-#define ZMQ_HAVE_WS
+/* #undef ZMQ_HAVE_WS */
 /* #undef ZMQ_HAVE_WSS */
 /* #undef ZMQ_HAVE_TIPC */
 
