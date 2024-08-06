@@ -265,6 +265,7 @@ cc_library(
         "src/zmtp_engine.cpp",
         "src/zmtp_engine.hpp",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":libzmq_headers_only",
         ":platform",
