@@ -246,6 +246,46 @@ void reconnect_stop_on_handshake_failed ()
 }
 #endif
 
+#if defined(ZMQ_BUILD_DRAFT_API) && defined(ZMQ_HAVE_IPC)
+// test stopping reconnect after disconnect
+void reconnect_stop_after_disconnect ()
+{
+    // Setup sub socket
+    void *sub = test_context_socket (ZMQ_SUB);
+    // Monitor all events on sub
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    // Create socket for collecting monitor events
+    void *sub_mon = test_context_socket (ZMQ_PAIR);
+    // Connect so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
+    // Set option to stop reconnecting after disconnect
+    int stopReconnectAfterDisconnect = ZMQ_RECONNECT_STOP_AFTER_DISCONNECT;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_RECONNECT_STOP, &stopReconnectAfterDisconnect,
+                      sizeof (stopReconnectAfterDisconnect)));
+
+    // Connect to a dummy that cannot be connected
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "ipc://@dummy"));
+
+    // Confirm that connect failed and reconnect
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CLOSED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_RETRIED);
+
+    // Disconnect the sub socket
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sub, "ipc://@dummy"));
+
+    // Confirm that connect failed and will not reconnect
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CLOSED);
+
+    // Close sub
+    test_context_socket_close_zero_linger (sub);
+
+    // Close monitor
+    test_context_socket_close_zero_linger (sub_mon);
+}
+#endif
+
 void setUp ()
 {
     setup_test_context ();
@@ -267,6 +307,9 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (reconnect_stop_on_refused);
     RUN_TEST (reconnect_stop_on_handshake_failed);
+#endif
+#if defined(ZMQ_BUILD_DRAFT_API) && defined(ZMQ_HAVE_IPC)
+    RUN_TEST (reconnect_stop_after_disconnect);
 #endif
     return UNITY_END ();
 }
