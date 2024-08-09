@@ -228,7 +228,8 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     _monitor_events (0),
     _thread_safe (thread_safe_),
     _reaper_signaler (NULL),
-    _monitor_sync ()
+    _monitor_sync (),
+    _disconnected (false)
 {
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
