@@ -223,6 +223,10 @@ uint64_t zmq::clock_t::rdtsc ()
                                  ((13 & 15) << 3) | // crm
                                  ((0 & 7) << 0));   // op2
     return _ReadStatusReg (pmccntr_el0);
+#elif (defined(_WIN32) && defined(__GNUC__) && defined(__aarch64__))
+    uint64_t val;
+    __asm__ volatile("mrs %0, pmccntr_el0" : "=r"(val));
+    return val;
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile("rdtsc" : "=a"(low), "=d"(high));
