@@ -34,6 +34,7 @@ jobs:
             POLLER: poll
           - os: ubuntu-latest
             BUILD_TYPE: android
+            NDK_VERSION: android-ndk-r25
             DRAFT: disabled
           - os: ubuntu-latest
             BUILD_TYPE: coverage
@@ -148,6 +149,8 @@ jobs:
       USE_NSS: ${{ matrix.USE_NSS }}
       VMCI: ${{ matrix.VMCI }}
       POLLER: ${{ matrix.POLLER }}
+      NDK_VERSION: ${{ matrix.NDK_VERSION }}
+      ANDROID_NDK_ROOT: /tmp/${{ matrix.NDK_VERSION }}
     steps:    
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
