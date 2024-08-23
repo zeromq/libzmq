@@ -565,7 +565,11 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         goto try_tcpip;
     }
 
-    create_ipc_wildcard_address (dirname, filename);
+    rc = create_ipc_wildcard_address (dirname, filename);
+    if (rc != 0) {
+        // This may happen if tmpfile creation fails
+        goto error_closelistener;
+    }
 
     //  Initialise the address structure.
     rc = address.resolve (filename.c_str ());
