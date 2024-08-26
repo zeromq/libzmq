@@ -24,8 +24,9 @@
 #ifdef ZMQ_HAVE_IPC
 #include "ipc_address.hpp"
 // Don't try ipc if it fails once
-namespace zmq {
-    static bool try_ipc_first = true;
+namespace zmq
+{
+static bool try_ipc_first = true;
 }
 #endif
 
