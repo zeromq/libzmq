@@ -164,7 +164,7 @@ Groups are matched using exact matching (vs prefix matching of PubSub).
 NOTE: Radio-dish is still in draft phase.
 
 ZMQ_RADIO
-^^^^^^^
+^^^^^^^^^
 A socket of type 'ZMQ_RADIO' is used by a _publisher_ to distribute data.
 Each message belong to a group, a group is specified with xref:zmq_msg_set_group.adoc[zmq_msg_set_group]
 Messages are distributed to all members of a group.
@@ -339,7 +339,7 @@ Outgoing routing strategy:: N/A
 Action in mute state:: Block
 
 Scatter-gather pattern
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 The scatter-gather pattern is the thread-safe version of the pipeline pattern.
 The scatter-gather pattern is used for distributing data to _nodes_ arranged in
 a pipeline. Data always flows down the pipeline, and each stage of the pipeline
@@ -347,7 +347,7 @@ is connected to at least one _node_. When a pipeline stage is connected to
 multiple _nodes_ data is round-robined among all connected _nodes_.
 
 ZMQ_SCATTER
-^^^^^^^^
+^^^^^^^^^^^
 A socket of type 'ZMQ_SCATTER' is used by a scatter-gather _node_ to send messages
 to downstream scatter-gather _nodes_. Messages are round-robined to all connected
 downstream _nodes_. The _zmq_recv()_ function is not implemented for this
@@ -374,7 +374,7 @@ Action in mute state:: Block
 
 
 ZMQ_GATHER
-^^^^^^^^
+^^^^^^^^^^
 A socket of type 'ZMQ_GATHER' is used by a scatter-gather _node_ to receive messages
 from upstream scatter-gather _nodes_. Messages are fair-queued from among all
 connected upstream _nodes_. The _zmq_send()_ function is not implemented for
@@ -433,7 +433,7 @@ Action in mute state:: Block
 
 
 Peer-to-peer pattern
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 The peer-to-peer pattern is used to connect a peer to multiple peers.
 Peer can both connect and bind and mix both of them with the same socket.
@@ -474,7 +474,7 @@ Incoming routing strategy:: Fair-queued
 Action in mute state:: Return EAGAIN
 
 Channel pattern
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 The channel pattern is the thread-safe version of the exclusive pair pattern.
 The channel pattern is used to connect a peer to precisely one other
 peer. This pattern is used for inter-thread communication across the inproc
@@ -483,7 +483,7 @@ transport.
 NOTE: Channel is still in draft phase.
 
 ZMQ_CHANNEL
-^^^^^^^^
+^^^^^^^^^^^
 A socket of type 'ZMQ_CHANNEL' can only be connected to a single peer at any one
 time.  No message routing or filtering is performed on messages sent over a
 'ZMQ_CHANNEL' socket.
