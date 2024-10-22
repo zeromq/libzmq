@@ -1,0 +1,9 @@
+= ZMQ API reference
+
+This documentation is for libzmq {zmq_version}.
+
+A suggested start to understand 0MQ (also written as ZMQ or ZeroMQ) is the xref:zmq.adoc[zmq] manpage.
+
+== Alphabetic list of documentation pages
+
+include::{zmq_pagelist_dir}/__pagelist[]

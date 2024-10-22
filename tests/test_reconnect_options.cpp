@@ -1,31 +1,4 @@
-/*
-    Copyright (c) 2017 Contributors as noted in the AUTHORS file
-
-    This file is part of libzmq, the ZeroMQ core engine in C++.
-
-    libzmq is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License (LGPL) as published
-    by the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    As a special exception, the Contributors give you permission to link
-    this library with independent modules to produce an executable,
-    regardless of the license terms of these independent modules, and to
-    copy and distribute the resulting executable under terms of your choice,
-    provided that you also meet, for each linked independent module, the
-    terms and conditions of the license of that module. An independent
-    module is a module which is not derived from or based on this library.
-    If you modify this library, you must extend this exception to your
-    version of the library.
-
-    libzmq is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-    License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/* SPDX-License-Identifier: MPL-2.0 */
 #include <assert.h>
 
 #include "testutil.hpp"
@@ -76,6 +49,7 @@ void reconnect_default ()
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              2 * 1000);
     assert (rc == -1);
+    LIBZMQ_UNUSED (rc);
 
     //  Close sub
     //  TODO why does this use zero_linger?
@@ -129,6 +103,7 @@ void reconnect_success ()
     int rc = get_monitor_event_with_timeout (sub_mon, &event, &event_address,
                                              SETTLE_TIME);
     assert (rc == -1);
+    LIBZMQ_UNUSED (rc);
 
     //  Now re-bind pub socket and wait for re-connect
     pub = test_context_socket (ZMQ_PUB);
@@ -271,6 +246,46 @@ void reconnect_stop_on_handshake_failed ()
 }
 #endif
 
+#if defined(ZMQ_BUILD_DRAFT_API) && defined(ZMQ_HAVE_IPC)
+// test stopping reconnect after disconnect
+void reconnect_stop_after_disconnect ()
+{
+    // Setup sub socket
+    void *sub = test_context_socket (ZMQ_SUB);
+    // Monitor all events on sub
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_socket_monitor (sub, "inproc://monitor-sub", ZMQ_EVENT_ALL));
+    // Create socket for collecting monitor events
+    void *sub_mon = test_context_socket (ZMQ_PAIR);
+    // Connect so they'll get events
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub_mon, "inproc://monitor-sub"));
+    // Set option to stop reconnecting after disconnect
+    int stopReconnectAfterDisconnect = ZMQ_RECONNECT_STOP_AFTER_DISCONNECT;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sub, ZMQ_RECONNECT_STOP, &stopReconnectAfterDisconnect,
+                      sizeof (stopReconnectAfterDisconnect)));
+
+    // Connect to a dummy that cannot be connected
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (sub, "ipc://@dummy"));
+
+    // Confirm that connect failed and reconnect
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CLOSED);
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CONNECT_RETRIED);
+
+    // Disconnect the sub socket
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_disconnect (sub, "ipc://@dummy"));
+
+    // Confirm that connect failed and will not reconnect
+    expect_monitor_event (sub_mon, ZMQ_EVENT_CLOSED);
+
+    // Close sub
+    test_context_socket_close_zero_linger (sub);
+
+    // Close monitor
+    test_context_socket_close_zero_linger (sub_mon);
+}
+#endif
+
 void setUp ()
 {
     setup_test_context ();
@@ -292,6 +307,9 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     RUN_TEST (reconnect_stop_on_refused);
     RUN_TEST (reconnect_stop_on_handshake_failed);
+#endif
+#if defined(ZMQ_BUILD_DRAFT_API) && defined(ZMQ_HAVE_IPC)
+    RUN_TEST (reconnect_stop_after_disconnect);
 #endif
     return UNITY_END ();
 }

@@ -63,9 +63,9 @@ SKIP_TESTS="test_.*_tipc"
 #
 # Excluding tests we know will fail because of missing functionality
 #
-noinst_PROGRAMS=$(grep "test_" Makefile.am | egrep -v "_SOURCES|XFAIL" |
+noinst_PROGRAMS=$(grep "test_" Makefile.am | grep -E -v "_SOURCES|XFAIL" |
                   sed 's/noinst_PROGRAMS.* test/test/; s/^ *//; s/ *\\ *$//;' |
-                  grep -v "${SKIP_TESTS}" | egrep -v "${XFAIL_TESTS}")
+                  grep -v "${SKIP_TESTS}" | grep -E -v "${XFAIL_TESTS}")
 #echo "Found tetsts: ${noinst_PROGRAMS}"
 
 # Run tests on command line, or all tests we found

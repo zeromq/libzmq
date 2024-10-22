@@ -43,6 +43,10 @@ foreach(test ${unittests})
     target_link_libraries(${test} m)
   endif()
 
+  if (WITH_GSSAPI_KRB5)
+    target_link_libraries(${test} ${GSSAPI_KRB5_LIBRARIES})
+  endif()
+
   if(WIN32)
     add_test(
       NAME ${test}

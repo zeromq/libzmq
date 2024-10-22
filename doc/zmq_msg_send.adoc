@@ -1,0 +1,123 @@
+= zmq_msg_send(3)
+
+
+== NAME
+zmq_msg_send - send a message part on a socket
+
+
+== SYNOPSIS
+*int zmq_msg_send (zmq_msg_t '*msg', void '*socket', int 'flags');*
+
+
+== DESCRIPTION
+The _zmq_msg_send()_ function is identical to xref:zmq_sendmsg.adoc[zmq_sendmsg], which
+shall be deprecated in future versions. _zmq_msg_send()_ is more consistent
+with other message manipulation functions.
+
+The _zmq_msg_send()_ function shall queue the message referenced by the 'msg'
+argument to be sent to the socket referenced by the 'socket' argument.  The
+'flags' argument is a combination of the flags defined below:
+
+*ZMQ_DONTWAIT*::
+For socket types (DEALER, PUSH) that block (either with ZMQ_IMMEDIATE option set
+and no peer available, or all peers having full high-water mark), specifies that
+the operation should be performed in non-blocking mode. If the message cannot be
+queued on the 'socket', the _zmq_msg_send()_ function shall fail with 'errno' set
+to EAGAIN.
+
+*ZMQ_SNDMORE*::
+Specifies that the message being sent is a multi-part message, and that further
+message parts are to follow. Refer to the section regarding multi-part messages
+below for a detailed description.
+
+The _zmq_msg_t_ structure passed to _zmq_msg_send()_ is nullified on a
+successful call. If you want to send the same message to multiple sockets you
+have to copy it (e.g. using _zmq_msg_copy()_). If the call fails, the
+_zmq_msg_t_ structure stays intact, and must be consumed by another call to
+_zmq_msg_send()_ on the same or another socket, or released using
+_zmq_msg_close()_ to avoid a memory leak.
+
+NOTE: A successful invocation of _zmq_msg_send()_ does not indicate that the
+message has been transmitted to the network, only that it has been queued on
+the 'socket' and 0MQ has assumed responsibility for the message. You do not need
+to call _zmq_msg_close()_ after a successful _zmq_msg_send()_.
+
+
+Multi-part messages
+~~~~~~~~~~~~~~~~~~~
+A 0MQ message is composed of 1 or more message parts. Each message
+part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
+delivery of messages: peers shall receive either all _message parts_ of a
+message or none at all. The total number of message parts is unlimited except
+by available memory.
+
+An application that sends multi-part messages must use the _ZMQ_SNDMORE_ flag
+when sending each message part except the final one.
+
+== RETURN VALUE
+The _zmq_msg_send()_ function shall return number of bytes in the message
+if successful (if number of bytes is higher than 'MAX_INT', the function will
+return 'MAX_INT'). Otherwise it shall return `-1` and set 'errno' to one of the
+values defined below.
+
+
+== ERRORS
+*EAGAIN*::
+Non-blocking mode was requested and the message cannot be sent at the moment.
+*ENOTSUP*::
+The _zmq_msg_send()_ operation is not supported by this socket type.
+*EINVAL*::
+The sender tried to send multipart data, which the socket type does not allow.
+*EFSM*::
+The _zmq_msg_send()_ operation cannot be performed on this socket at the moment
+due to the socket not being in the appropriate state.  This error may occur with
+socket types that switch between several states, such as ZMQ_REP.  See the
+_messaging patterns_ section of xref:zmq_socket.adoc[zmq_socket] for more information.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EINTR*::
+The operation was interrupted by delivery of a signal before the message was
+sent.
+*EFAULT*::
+Invalid message.
+*EHOSTUNREACH*::
+The message cannot be routed.
+
+
+== EXAMPLE
+.Filling in a message and sending it to a socket
+----
+/* Create a new message, allocating 6 bytes for message content */
+zmq_msg_t msg;
+int rc = zmq_msg_init_size (&msg, 6);
+assert (rc == 0);
+/* Fill in message content with 'AAAAAA' */
+memset (zmq_msg_data (&msg), 'A', 6);
+/* Send the message to the socket */
+rc = zmq_msg_send (&msg, socket, 0);
+assert (rc == 6);
+----
+
+.Sending a multi-part message
+----
+/* Send a multi-part message consisting of three parts to socket */
+rc = zmq_msg_send (&part1, socket, ZMQ_SNDMORE);
+rc = zmq_msg_send (&part2, socket, ZMQ_SNDMORE);
+/* Final part; no more parts to follow */
+rc = zmq_msg_send (&part3, socket, 0);
+----
+
+
+== SEE ALSO
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_msg_recv.adoc[zmq_msg_recv]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

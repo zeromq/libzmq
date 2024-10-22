@@ -1,0 +1,189 @@
+= zmq_ctx_set(3)
+
+
+== NAME
+
+zmq_ctx_set - set context options
+
+
+== SYNOPSIS
+*int zmq_ctx_set (void '*context', int 'option_name', int 'option_value');*
+
+
+== DESCRIPTION
+The _zmq_ctx_set()_ function shall set the option specified by the
+'option_name' argument to the value of the 'option_value' argument.
+
+The _zmq_ctx_set()_ function accepts the following options:
+
+
+ZMQ_BLOCKY: Fix blocky behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+By default the context will block, forever, on a zmq_ctx_term call. The
+assumption behind this behavior is that abrupt termination will cause
+message loss. Most real applications use some form of handshaking to ensure
+applications receive termination messages, and then terminate the context
+with 'ZMQ_LINGER' set to zero on all sockets. This setting is an easier way
+to get the same result. When 'ZMQ_BLOCKY' is set to false, all new sockets
+are given a linger timeout of zero. You must still close all sockets before
+calling zmq_ctx_term.
+
+[horizontal]
+Default value:: true (old behavior)
+
+
+ZMQ_IO_THREADS: Set number of I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IO_THREADS' argument specifies the size of the 0MQ thread pool to
+handle I/O operations. If your application is using only the 'inproc'
+transport for messaging you may set this to zero, otherwise set it to at
+least one. This option only applies before creating any sockets on the
+context.
+
+[horizontal]
+Default value:: 1
+
+
+ZMQ_THREAD_SCHED_POLICY: Set scheduling policy for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SCHED_POLICY' argument sets the scheduling policy for
+internal context's thread pool. This option is not available on windows.
+Supported values for this option can be found in sched.h file,
+or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_PRIORITY: Set scheduling priority for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_PRIORITY' argument sets scheduling priority for
+internal context's thread pool. This option is not available on windows.
+Supported values for this option depend on chosen scheduling policy.
+On Linux, when the scheduler policy is SCHED_OTHER, SCHED_IDLE or SCHED_BATCH, the OS scheduler
+will not use the thread priority but rather the thread "nice value"; in such cases,
+if 'ZMQ_THREAD_PRIORITY' is set to a strictly positive value,
+the system call "nice" will be used to set the nice value to -20 (max priority) instead of
+adjusting the thread priority (which must be zero for those scheduling policies).
+Details can be found in sched.h file, or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_AFFINITY_CPU_ADD: Add a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_ADD' argument adds a specific CPU to the affinity list for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_AFFINITY_CPU_REMOVE: Remove a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_REMOVE' argument removes a specific CPU to the affinity list for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_NAME_PREFIX: Set name prefix for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_NAME_PREFIX' argument sets a numeric prefix to each thread
+created for the internal context's thread pool. This option is only supported on Linux.
+This option is useful to help  debugging done via "top -H" or "gdb"; in case
+multiple processes on the system are using ZeroMQ it is useful to provide through
+this context option an application-specific prefix to distinguish ZeroMQ background
+threads that belong to different processes.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
+
+ZMQ_MAX_MSGSZ: Set maximum message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_MSGSZ' argument sets the maximum allowed size
+of a message sent in the context. You can query the maximal
+allowed value with xref:zmq_ctx_get.adoc[zmq_ctx_get] using the
+'ZMQ_MAX_MSGSZ' option.
+
+[horizontal]
+Default value:: INT_MAX
+Maximum value:: INT_MAX
+
+
+ZMQ_ZERO_COPY_RECV: Specify message decoding strategy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ZERO_COPY_RECV' argument specifies whether the message decoder should
+use a zero copy strategy when receiving messages. The zero copy strategy can
+lead to increased memory usage in some cases. This option allows you to use the
+older copying strategy. You can query the value of this option with
+xref:zmq_ctx_get.adoc[zmq_ctx_get] using the 'ZMQ_ZERO_COPY_RECV' option.
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Default value:: 1
+
+
+ZMQ_MAX_SOCKETS: Set maximum number of sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed
+on the context. You can query the maximal allowed value with
+xref:zmq_ctx_get.adoc[zmq_ctx_get] using the 'ZMQ_SOCKET_LIMIT' option.
+
+[horizontal]
+Default value:: 1023
+
+
+ZMQ_IPV6: Set IPv6 option
+~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IPV6' argument sets the IPv6 value for all sockets created in
+the context from this point onwards. A value of `1` means IPv6 is
+enabled, while `0` means the socket will use only IPv4. When IPv6 is
+enabled, a socket will connect to, or accept connections from, both
+IPv4 and IPv6 hosts.
+
+[horizontal]
+Default value:: 0
+
+
+== RETURN VALUE
+The _zmq_ctx_set()_ function returns zero if successful. Otherwise it
+returns `-1` and sets 'errno' to one of the values defined below.
+
+
+== ERRORS
+*EINVAL*::
+The requested option _option_name_ is unknown.
+
+
+== EXAMPLE
+.Setting a limit on the number of sockets
+----
+void *context = zmq_ctx_new ();
+zmq_ctx_set (context, ZMQ_MAX_SOCKETS, 256);
+int max_sockets = zmq_ctx_get (context, ZMQ_MAX_SOCKETS);
+assert (max_sockets == 256);
+----
+
+
+== SEE ALSO
+* xref:zmq_ctx_get.adoc[zmq_ctx_get]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

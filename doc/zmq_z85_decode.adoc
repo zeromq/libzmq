@@ -1,0 +1,43 @@
+= zmq_z85_decode(3)
+
+
+== NAME
+zmq_z85_decode - decode a binary key from Z85 printable text
+
+
+== SYNOPSIS
+*uint8_t *zmq_z85_decode (uint8_t *dest, const char *string);*
+
+
+== DESCRIPTION
+The _zmq_z85_decode()_ function shall decode 'string' into 'dest'.
+The length of 'string' shall be divisible by 5. 'dest' must be large
+enough for the decoded value (0.8 x strlen (string)). 
+
+The encoding shall follow the ZMQ RFC 32 specification.
+
+
+== RETURN VALUE
+The _zmq_z85_decode()_ function shall return 'dest' if successful, else it
+shall return NULL.
+
+
+== EXAMPLE
+.Decoding a CURVE key
+----
+const char decoded [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+uint8_t public_key [32];
+zmq_z85_decode (public_key, decoded);
+----
+
+
+== SEE ALSO
+* xref:zmq_z85_encode.adoc[zmq_z85_encode]
+* xref:zmq_curve_keypair.adoc[zmq_curve_keypair]
+* xref:zmq_curve_public.adoc[zmq_curve_public]
+* xref:zmq_curve.adoc[zmq_curve]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

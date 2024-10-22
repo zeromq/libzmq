@@ -14,8 +14,6 @@
   <!-- general -->
   <ItemDefinitionGroup>
     <ClCompile>
-      <!-- ZMQ_USE_TWEETNACL defined in packaged builds and must be defined for package consumer. -->
-      <PreprocessorDefinitions>ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

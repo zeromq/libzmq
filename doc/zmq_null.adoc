@@ -1,0 +1,22 @@
+= zmq_null(7)
+
+
+== NAME
+zmq_null - no security or confidentiality
+
+
+== SYNOPSIS
+The NULL mechanism is defined by the ZMTP 3.0 specification: 
+<http://rfc.zeromq.org/spec:23>. This is the default security mechanism
+for ZeroMQ sockets.
+
+
+== SEE ALSO
+* xref:zmq_plain.adoc[zmq_plain]
+* xref:zmq_curve.adoc[zmq_curve]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

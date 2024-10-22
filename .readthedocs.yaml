@@ -1,0 +1,38 @@
+#
+# libzmq readthedocs.io integration
+#
+# This configuration file is processed by readthedocs.io to rebuild the
+# libzmq documentation using Asciidoctor, see
+#   https://docs.readthedocs.io/en/stable/build-customization.html#asciidoc
+
+version: "2"
+
+formats:
+  - htmlzip
+
+build:
+  os: "ubuntu-22.04"
+  tools:
+    nodejs: "20"
+  # NOTE: as of Nov 2023, build.apt_packages is NOT considered when using build.commands
+  #apt_packages:
+  #  - automake
+  #  - autoconf
+  #  - cmake
+  #  - libtool
+  commands:
+    # install required tools
+    - npm install -g asciidoctor
+
+    # HTML docs
+    # ---------
+    - doc/create_page_list.sh "$(pwd)/doc/__pagelist" "$(pwd)/doc"
+    - asciidoctor --backend html --destination-dir $READTHEDOCS_OUTPUT/html --attribute stylesheet=asciidoctor.css --attribute zmq_version='4.3.6' --attribute zmq_pagelist_dir=$(pwd)/doc doc/*.adoc
+
+    # HTMLZIP docs
+    # ------------
+    # Note that for usability we make sure zip will create a zipfile containing just a flat list of HTML files; 
+    # to achieve that it's important to avoid storing absolute paths when invoking "zip", thus we use -j
+    # Also note that the archive name should match exactly the project slug, "libzmq" in this case.
+    - mkdir -p $READTHEDOCS_OUTPUT/htmlzip/
+    - cd $READTHEDOCS_OUTPUT/html && zip -j ../htmlzip/libzmq.zip *.html

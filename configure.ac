@@ -53,9 +53,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 4.3.3: 7:3:2 (ABI version 5)
 # ZeroMQ version 4.3.4: 7:4:2 (ABI version 5)
 # ZeroMQ version 4.3.5: 7:5:2 (ABI version 5)
+# ZeroMQ version 4.3.6: 7:6:2 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="7:5:2"
+LTVER="7:6:2"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -65,7 +66,7 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 
 # Checks for programs.
 AC_PROG_CC
-AX_CHECK_COMPILE_FLAG([-std=c11], [CFLAGS+=" -std=c11"], [AC_PROG_CC_C99])
+AX_CHECK_COMPILE_FLAG([-std=c11], [CFLAGS="${CFLAGS} -std=c11 -D_DEFAULT_SOURCE"], [AC_PROG_CC_C99])
 AC_PROG_CXX
 AX_CODE_COVERAGE
 AM_PROG_CC_C_O
@@ -75,10 +76,6 @@ PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([^PKG_[A-Z_]+$], [missing some pkg-config macros (pkg-config package)])
 
 # Libtool configuration for different targets. See acinclude.m4
-AC_ARG_VAR([XMLTO], [path to xmlto command])
-AC_PATH_PROG([XMLTO], [xmlto])
-AC_ARG_VAR([ASCIIDOC], [path to asciidoc command])
-AC_PATH_PROG([ASCIIDOC], [asciidoc])
 LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
@@ -90,8 +87,8 @@ AC_ARG_ENABLE([force-CXX98-compat],
     [AS_HELP_STRING([--enable-force-CXX98-compat], [force C++98 build [default=disabled]])])
 if test "x$enable_force_CXX98_compat" = "xyes"; then
     AC_LANG_PUSH([C++])
-    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS+=" -std=gnu++98"], [])
-    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS+=" -Wc++98-compat"], [])
+    AX_CHECK_COMPILE_FLAG([-std=gnu++98], [CXXFLAGS="${CXXFLAGS} -std=gnu++98"], [])
+    AX_CHECK_COMPILE_FLAG([-Wc++98-compat -Wc++98-compat-pedantic], [CXXFLAGS="${CXXFLAGS} -Wc++98-compat"], [])
     AC_LANG_POP([C++])
 else
     AX_CXX_COMPILE_STDCXX_11([ext], [optional])
@@ -365,7 +362,7 @@ case "${host_os}" in
 
         if test "x$enable_static" = "xyes"; then
             CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
-            PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -liphlpapi"
+            PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -liphlpapi -lws2_32"
         fi
 	# Set FD_SETSIZE to 16384
 	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
@@ -558,12 +555,12 @@ if test "x$have_gssapi_library" = "xyes"; then
 fi
 AM_CONDITIONAL(BUILD_GSSAPI, test "x$have_gssapi_library" = "xyes")
 
-# Select curve encryption library, defaults to tweetnacl
+# Select curve encryption library, defaults to disabled
 # To use libsodium instead, use --with-libsodium (must be installed)
 # To disable curve, use --disable-curve
 
 AC_ARG_WITH([libsodium],
-    [AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]])])
+    [AS_HELP_STRING([--with-libsodium], [use libsodium [default=no]])])
 
 AS_IF([test "x$with_libsodium" = "xyes"], [
     PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
@@ -620,18 +617,11 @@ elif test "x$with_libsodium" = "xyes"; then
     esac
 
     PKGCFG_NAMES_PRIVATE="$PKGCFG_NAMES_PRIVATE libsodium"
-else
-    AC_MSG_NOTICE([Using tweetnacl for CURVE security])
-    AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
-    AC_DEFINE(ZMQ_USE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
-    curve_library="tweetnacl"
-    enable_curve="yes"
 fi
 
 AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_enable_curve_keygen" = "xyes")
 
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
-AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
 AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
 
@@ -809,7 +799,7 @@ AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
 AX_CHECK_COMPILE_FLAG([-Watomic-alignment],
-    [CXXFLAGS+=" -Wno-atomic-alignment"],
+    [CXXFLAGS="${CXXFLAGS} -Wno-atomic-alignment"],
     [],
     [-Werror])
 LIBZMQ_CHECK_ATOMIC_INTRINSICS([
@@ -1147,12 +1137,12 @@ AM_CONDITIONAL(FUZZING_ENGINE_LIB, test "x$FUZZING_ENGINE_LIB" != "x")
 # clang 6 has a warning that does not make sense on multi-platform code
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
-    [CFLAGS+=" -Wno-tautological-constant-compare"],
+    [CFLAGS="${CFLAGS} -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
-    [CXXFLAGS+=" -Wno-tautological-constant-compare"],
+    [CXXFLAGS="${CXXFLAGS} -Wno-tautological-constant-compare"],
     [],
     [-Werror])
 
@@ -1161,12 +1151,12 @@ AX_CHECK_COMPILE_FLAG([-Wtautological-constant-compare],
 # E: lto-no-text-in-archive
 AC_LANG_PUSH([C])
 AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
-    [CFLAGS+=" -ffat-lto-objects"],
+    [CFLAGS="${CFLAGS} -ffat-lto-objects"],
     [],
     [-Werror])
 AC_LANG_POP([C])
 AX_CHECK_COMPILE_FLAG([-ffat-lto-objects],
-    [CXXFLAGS+=" -ffat-lto-objects"],
+    [CXXFLAGS="${CXXFLAGS} -ffat-lto-objects"],
     [],
     [-Werror])
 

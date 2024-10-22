@@ -1,0 +1,323 @@
+= zmq_poller(3)
+
+
+== NAME
+zmq_poller - input/output multiplexing
+
+
+== SYNOPSIS
+
+*void *zmq_poller_new (void);*
+
+*int zmq_poller_destroy (void '****poller_p');*
+
+*int zmq_poller_size (void '*poller');*
+
+*int zmq_poller_add (void '*poller', void '*socket', void '*user_data', short 'events');*
+
+*int zmq_poller_modify (void '*poller', void '*socket', short 'events');*
+
+*int zmq_poller_remove (void '*poller', void '*socket');*
+
+*int zmq_poller_add_fd (void '*poller', int 'fd', void '*user_data', short 'events');*
+
+*int zmq_poller_modify_fd (void '*poller', int 'fd', short 'events');*
+
+*int zmq_poller_remove_fd (void '*poller', int 'fd');*
+
+*int zmq_poller_wait (void '*poller',
+                          zmq_poller_event_t '*event',
+                          long 'timeout');*
+
+*int zmq_poller_wait_all (void '*poller',
+                          zmq_poller_event_t '*events',
+                          int 'n_events',
+                          long 'timeout');*
+
+*int zmq_poller_fd (void '*poller', zmq_fd_t '*fd');*
+
+== DESCRIPTION
+The _zmq_poller_*_ functions provide a mechanism for applications to multiplex
+input/output events in a level-triggered fashion over a set of sockets.
+
+_zmq_poller_new_ and _zmq_poller_destroy_ manage the lifetime of a poller
+instance. _zmq_poller_new_ creates and returns a new poller instance, while
+_zmq_poller_destroy_ destroys it. A pointer to a valid poller must be passed
+as the _poller_p_ argument of _zmq_poller_destroy_. In particular,
+_zmq_poller_destroy_ may not be called multiple times for the same poller
+instance. _zmq_poller_destroy_ sets the passed pointer to NULL in case of a
+successful execution. _zmq_poller_destroy_ implicitly unregisters all
+registered sockets and file descriptors.
+
+_zmq_poller_size_ queries the number of sockets or file descriptors registered
+with a poller. The initial size of a poller is 0, a successful add operation
+increases the size by 1 and a successful remove operation decreases the size
+by 1. The size is unaffected by the events specified.
+
+_zmq_poller_add_, _zmq_poller_modify_ and _zmq_poller_remove_ manage the 0MQ
+sockets registered with a poller.
+
+_zmq_poller_add_ registers a new _socket_ with a given _poller_. Both _poller_
+and _socket_ must point to valid 0MQ objects. The _events_ parameter specifies
+which event types the client wants to subscribe to. It is legal to specify no
+events (i.e. 0), and activate them later with _zmq_poller_modify_.
+In addition, _user_data_ may be specified, which is not used by the poller, but
+passed back to the caller when an event was signalled in a call to
+_zmq_poller_wait_ or _zmq_poller_wait_all_. _user_data_ may be NULL. If it is
+not NULL, it must be a valid pointer. Otherwise, behaviour is undefined.
+You must only add a socket to a single poller instance once (unless 
+_zmq_poller_remove_ has been called for that socket before). You may
+add a socket to multiple poller instances, if the socket itself
+is explicitly thread-safe (Server, Client, ...). If the socket is not,
+you may invoke undefined behavior.
+
+_zmq_poller_modify_ modifies the subscribed events for a socket. It is
+legal to specify no events (i.e. 0) to disable events temporarily, and
+reactivate them later with another call to _zmq_poller_modify_.
+
+_zmq_poller_remove_ removes a socket registration completely.
+_zmq_poller_remove_ must be called before a socket is closed with _zmq_close_.
+
+Note that it is not necessary to call _zmq_poller_remove_ for any socket
+before calling _zmq_poller_destroy_.
+
+Also note that calling _zmq_poller_remove_ is not equivalent to calling
+_zmq_poller_modify_ with no events. _zmq_poller_modify_ does not free resources
+associated with the socket registration, and requires that the _socket_
+remains valid.
+
+_zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_ are
+analogous to the previous functions but manage regular file descriptors
+registered with a poller. On Windows, these functions can only be used with
+WinSock sockets.
+
+In the following, 0MQ sockets added with _zmq_poller_add_ and file descriptors
+added with _zmq_poller_add_fd_ are referred to as 'registered objects'.
+
+The *zmq_poller_event_t* structure is defined as follows:
+
+["literal", subs="quotes"]
+typedef struct
+{
+    void *socket;
+    zmq_fd_t fd;
+    void *user_data;
+    short events;
+} zmq_poller_event_t;
+
+For each registered object, _zmq_poller_wait_all()_ shall examine the
+registered objects for the event(s) currently registered.
+
+If none of the registered events have occurred, _zmq_poller_wait_all_ shall 
+wait 'timeout' milliseconds for an event to occur on any of the registered 
+objects. If the value of 'timeout' is `0`, _zmq_poller_wait_all_ shall 
+return immediately. If the value of 'timeout' is `-1`, _zmq_poller_wait_all_ 
+shall block indefinitely until one event has occurred on any of the 
+registered objects.
+
+The 'events' argument _zmq_poller_wait_all_ must be a pointer to an array of
+at least 'n_events' elements. Behaviour is undefined if 'events' does not point
+to an array of at least 'n_events' elements.
+
+_zmq_poller_wait_all_ returns at most 'n_events' events. If more than
+'n_events' events were signalled, only an unspecified subset of the signalled 
+events is returned through 'events'. 
+
+A caller is advised to ensure that 'n_events' is equal to the number of 
+registered objects. Otherwise, a livelock situation may result: If more than 
+'n_events' registered objects have an active event on each call to 
+_zmq_poller_wait_all_, it might happen that the same subset of registered 
+objects is always returned, and the caller never notices the events on the 
+others. The number of objects registered can be queried with
+_zmq_poller_size_.
+
+_zmq_poller_wait_all_ returns the number of valid elements. The valid elements
+are placed in positions '0' to 'n_events - 1' in the 'events' array. All
+members of a valid element are set to valid values by _zmq_poller_wait_all_.
+For socket events 'socket' is non-null and 'fd' is an operating system
+specific value for an invalid socket (-1 or INVALID_SOCKET). For fd events
+'socket' is NULL and 'fd' is a valid file descriptor.
+The client does therefore not need to initialize the contents of the events
+array before a call to _zmq_poller_wait_all_. It is unspecified whether the
+the remaining elements of 'events' are written to by _zmq_poller_wait_all_.
+
+_zmq_poller_fd_ queries the file descriptor associated with the zmq_poller,
+and stores it in the address pointer to by 'fd'.
+The zmq_poller is only guaranteed to have a file descriptor if
+at least one thread-safe socket is currently registered.
+
+Note that closing a socket that is registered in a poller leads to undefined
+behavior. The socket must be unregistered first.
+
+== EVENT TYPES
+
+The 'events' parameter of _zmq_poller_add_ and _zmq_poller_modify_, and the
+'events' member of the zmq_poller_event_t structure are bit masks constructed
+by OR'ing a combination of the following event flags:
+
+*ZMQ_POLLIN*::
+For 0MQ sockets, at least one message may be received from the 'socket' without
+blocking. For standard sockets this is equivalent to the 'POLLIN' flag of the
+_poll()_ system call and generally means that at least one byte of data may be
+read from 'fd' without blocking.
+
+*ZMQ_POLLOUT*::
+For 0MQ sockets, at least one message may be sent to the 'socket' without
+blocking. For standard sockets this is equivalent to the 'POLLOUT' flag of the
+_poll()_ system call and generally means that at least one byte of data may be
+written to 'fd' without blocking.
+
+*ZMQ_POLLERR*::
+For 0MQ sockets this flag has no effect on the _zmq_poller_add_ and
+_zmq_poller_modify_ functions, and is never set in the
+'events' member of the zmq_poller_event_t structure.
+For standard sockets, this flag is passed through _zmq_poller_wait_all_ to the
+underlying _poll()_ system call and generally means that some sort of error
+condition is present on the socket specified by 'fd'.
+
+*ZMQ_POLLPRI*::
+For 0MQ sockets this flag has no effect on the _zmq_poller_add_ and
+_zmq_poller_modify_ functions, and is never set in the
+'events' member of the zmq_poller_event_t structure.
+For standard sockets this means there
+is urgent data to read. Refer to the POLLPRI flag for more information.
+For a file descriptor, refer to your OS documentation: as an example, GPIO
+interrupts are signaled through a POLLPRI event.
+This flag has no effect on Windows.
+
+NOTE: The _zmq_poller_*_ functions may be implemented or emulated using operating
+system interfaces other than _poll()_, and as such may be subject to the limits
+of those interfaces in ways not defined in this documentation.
+
+== THREAD SAFETY
+Like most other 0MQ objects, a poller is not thread-safe. All operations must
+be called from the same thread. Otherwise, behaviour is undefined.
+
+In addition to that, if you want to add a socket to multiple existing poller
+instances, the socket itself needs to be thread-safe (Server, Client, ...).
+Otherwise, behaviour is undefined. 
+
+== RETURN VALUE
+_zmq_poller_new_ returns a valid pointer to a poller, or NULL in case of a failure.
+
+All functions that return an int, return -1 in case of a failure. In that case,
+zmq_errno() can be used to query the type of the error as described below.
+
+_zmq_poller_wait_all_ returns the number of events signalled and returned in 
+the events array. It never returns 0.
+
+All other functions return 0 in case of a successful execution.
+
+== ERRORS
+On _zmq_poller_new_:
+
+*ENOMEM*::
+A new poller could not be allocated successfully.
+
+On _zmq_poller_destroy_:
+
+*EFAULT*::
+_poller_p_ did not point to a valid poller. Note that passing an invalid pointer (e.g.
+pointer to deallocated memory) may cause undefined behaviour (e.g. an access violation).
+
+On _zmq_poller_size_:
+
+*EFAULT*::
+_poller_ did not point to a valid poller. Note that passing an
+invalid pointer (e.g. pointer to deallocated memory) may cause undefined
+behaviour (e.g. an access violation).
+
+On _zmq_poller_add_, _zmq_poller_modify_ and _zmq_poller_remove_:
+
+*EFAULT*::
+_poller_ did not point to a valid poller. Note that passing an
+invalid pointer (e.g. pointer to deallocated memory) may cause undefined
+behaviour (e.g. an access violation).
+*ENOTSOCK*::
+_socket_ did not point to a valid socket. Note that passing an
+invalid pointer (e.g. pointer to deallocated memory) may cause undefined
+behaviour (e.g. an access violation).
+
+On _zmq_poller_add_:
+
+*EMFILE*::
+TODO
+
+On _zmq_poller_add_ or _zmq_poller_add_fd_:
+
+*ENOMEM*::
+Necessary resources could not be allocated.
+*EINVAL*::
+_socket_ resp. _fd_ was already registered with the poller.
+
+On _zmq_poller_modify_, _zmq_poller_modify_fd_, _zmq_poller_remove_ or
+_zmq_poller_remove_fd_:
+
+*EINVAL*::
+_socket_ resp. _fd_ was not registered with the poller.
+
+On _zmq_poller_add_fd_, _zmq_poller_modify_fd_ and _zmq_poller_remove_fd_:
+
+*EBADF*::
+The _fd_ specified was the retired fd.
+
+On _zmq_poller_wait_ and _zmq_poller_wait_all_:
+
+*ENOMEM*::
+Necessary resources could not be allocated.
+*ETERM*::
+At least one of the registered objects is a 'socket' whose associated 0MQ 
+'context' was terminated.
+*EFAULT*::
+The provided 'events' was NULL, or 'poller' did not point to a valid poller,
+or there are no registered objects or all event subscriptions are disabled
+and 'timeout' was negative.
+*EINTR*::
+The operation was interrupted by delivery of a signal before any events were
+available.
+*EAGAIN*::
+No registered event was signalled before the timeout was reached.
+
+On _zmq_poller_fd_:
+
+*EINVAL*::
+The poller has no associated file descriptor.
+*EFAULT*::
+The provided 'poller' did not point to a valid poller.
+
+== EXAMPLE
+.Polling indefinitely for input events on both a 0MQ socket and a standard socket.
+----
+void *poller = zmq_poller_new ();
+
+/* First item refers to 0MQ socket 'socket' */
+zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
+/* Second item refers to standard socket 'fd' */
+zmq_poller_add_fd (poller, fd, NULL, ZMQ_POLLIN);
+
+zmq_poller_event_t events [2];
+/* Poll for events indefinitely */
+int rc = zmq_poller_wait_all (poller, events, 2, -1);
+assert (rc >= 0);
+/* Returned events will be stored in 'events' */
+for (int i = 0; i < 2; ++i) {
+    if (events[i].socket == socket && events[i].events & ZMQ_POLLIN) {
+        // ...
+    } else if (events[i].fd == fd && events[i].events & ZMQ_POLLIN)) {
+        // ...
+    }
+}
+zmq_poller_destroy (&poller);
+----
+
+
+== SEE ALSO
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

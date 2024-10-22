@@ -283,12 +283,6 @@ src_libzmq_la_SOURCES += \
 	external/wepoll/wepoll.h
 endif
 
-if USE_TWEETNACL
-src_libzmq_la_SOURCES += \
-	src/tweetnacl.c \
-	src/tweetnacl.h
-endif
-
 if HAVE_WS
 src_libzmq_la_SOURCES += \
 	src/ws_address.cpp \
@@ -489,6 +483,7 @@ test_apps = \
 	tests/test_issue_566 \
 	tests/test_proxy_hwm \
 	tests/test_proxy_single_socket \
+	tests/test_proxy_steerable \
 	tests/test_proxy_terminate \
 	tests/test_getsockopt_memset \
 	tests/test_setsockopt \
@@ -499,6 +494,7 @@ test_apps = \
 	tests/test_capabilities \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \
+	tests/test_xpub_topic \
 	tests/test_xpub_welcome_msg \
 	tests/test_xpub_verbose \
 	tests/test_atomics \
@@ -736,6 +732,10 @@ tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
 tests_test_proxy_single_socket_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_single_socket_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+tests_test_proxy_steerable_SOURCES = tests/test_proxy_steerable.cpp
+tests_test_proxy_steerable_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_proxy_steerable_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_proxy_terminate_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
@@ -771,6 +771,10 @@ tests_test_xpub_nodrop_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_xpub_manual_SOURCES = tests/test_xpub_manual.cpp
 tests_test_xpub_manual_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_xpub_manual_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_xpub_topic_SOURCES = tests/test_xpub_topic.cpp
+tests_test_xpub_topic_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_xpub_topic_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
 tests_test_xpub_welcome_msg_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
@@ -846,11 +850,6 @@ tests_test_security_curve_SOURCES = \
 	src/random.cpp \
 	src/err.hpp \
 	src/err.cpp
-
-if USE_TWEETNACL
-tests_test_security_curve_SOURCES += \
-	src/tweetnacl.c
-endif
 
 tests_test_security_curve_LDADD = \
         ${TESTUTIL_LIBS} src/libzmq.la $(LIBUNWIND_LIBS) $(LIBBSD_LIBS)
@@ -1419,6 +1418,11 @@ unittests_unittest_curve_encoding_LDADD =  \
         $(top_builddir)/src/.libs/libzmq.a \
         ${src_libzmq_la_LIBADD} \
         $(CODE_COVERAGE_LDFLAGS)
+
+if USE_LIBSODIUM
+unittests_unittest_curve_encoding_CPPFLAGS += ${sodium_CFLAGS}
+unittests_unittest_curve_encoding_LDADD += ${sodium_LIBS}
+endif
 endif
 
 check_PROGRAMS = ${test_apps}
@@ -1450,6 +1454,7 @@ EXTRA_DIST = \
 	autogen.sh	\
 	version.sh	\
 	ci_build.sh \
+	LICENSE \
 	src/libzmq.vers \
 	src/version.rc.in \
 	tests/CMakeLists.txt \

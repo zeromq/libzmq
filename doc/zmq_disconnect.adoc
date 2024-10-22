@@ -1,0 +1,67 @@
+= zmq_disconnect(3)
+
+
+== NAME
+zmq_disconnect - Disconnect a socket from an endpoint
+
+
+== SYNOPSIS
+*int zmq_disconnect (void '*socket', const char '*endpoint');*
+
+
+== DESCRIPTION
+The _zmq_disconnect()_ function shall disconnect a socket specified
+by the 'socket' argument from the endpoint specified by the 'endpoint'
+argument. Note the actual disconnect system call might occur at a later time.
+
+Upon disconnection the will also stop receiving messages originating from
+this endpoint. Moreover, the socket will no longer be able
+to queue outgoing messages to this endpoint. The outgoing message queue
+associated with the endpoint will be discarded. However, if the socket's linger
+period is non-zero, libzmq will still attempt to transmit these discarded messages,
+until the linger period expires.
+
+The 'endpoint' argument is as described in xref:zmq_connect.adoc[zmq_connect]
+
+NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
+this behaviour may cause the application to block when calling _zmq_ctx_term()_.
+For details refer to xref:zmq_setsockopt.adoc[zmq_setsockopt] and xref:zmq_ctx_term.adoc[zmq_ctx_term]
+
+== RETURN VALUE
+The _zmq_disconnect()_ function shall return zero if successful. Otherwise it
+shall return `-1` and set 'errno' to one of the values defined below.
+
+== ERRORS
+*EINVAL*::
+The endpoint supplied is invalid.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*ENOENT*::
+The provided endpoint is not in use by the socket.
+
+
+== EXAMPLE
+.Connecting a subscriber socket to an in-process and a TCP transport
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Connect it to the host server001, port 5555 using a TCP transport */
+rc = zmq_connect (socket, "tcp://server001:5555");
+assert (rc == 0);
+/* Disconnect from the previously connected endpoint */
+rc = zmq_disconnect (socket, "tcp://server001:5555");
+assert (rc == 0);
+----
+
+== SEE ALSO
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

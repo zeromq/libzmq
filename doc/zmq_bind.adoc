@@ -1,0 +1,96 @@
+= zmq_bind(3)
+
+
+== NAME
+zmq_bind - accept incoming connections on a socket
+
+
+== SYNOPSIS
+*int zmq_bind (void '*socket', const char '*endpoint');*
+
+
+== DESCRIPTION
+The _zmq_bind()_ function binds the 'socket' to a local 'endpoint' and then
+accepts incoming connections on that endpoint.
+
+The 'endpoint' is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to bind to.
+
+0MQ provides the the following transports:
+
+'tcp':: unicast transport using TCP, see xref:zmq_tcp.adoc[zmq_tcp]
+'ipc':: local inter-process communication transport, see xref:zmq_ipc.adoc[zmq_ipc]
+'inproc':: local in-process (inter-thread) communication transport, see xref:zmq_inproc.adoc[zmq_inproc]
+'pgm', 'epgm':: reliable multicast transport using PGM, see xref:zmq_pgm.adoc[zmq_pgm]
+'vmci':: virtual machine communications interface (VMCI), see xref:zmq_vmci.adoc[zmq_vmci]
+'udp':: unreliable unicast and multicast using UDP, see xref:zmq_udp.adoc[zmq_udp]
+
+Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
+semantics. The precise semantics depend on the socket type and are defined in
+xref:zmq_socket.adoc[zmq_socket]
+
+The 'ipc', 'tcp', 'vmci' and 'udp' transports accept wildcard addresses: see
+xref:zmq_ipc.adoc[zmq_ipc], xref:zmq_tcp.adoc[zmq_tcp], xref:zmq_vmci.adoc[zmq_vmci] and
+xref:zmq_udp.adoc[zmq_udp] for details.
+
+NOTE: the address syntax may be different for _zmq_bind()_ and _zmq_connect()_
+especially for the 'tcp', 'pgm' and 'epgm' transports.
+
+NOTE: following a _zmq_bind()_, the socket enters a 'mute' state unless or
+until at least one incoming or outgoing connection is made, at which point
+the socket enters a 'ready' state. In the mute state, the socket blocks or
+drops messages according to the socket type, as defined in xref:zmq_socket.adoc[zmq_socket]
+By contrast, following a libzmq:zmq_connect, the socket enters the 'ready' state.
+
+
+== RETURN VALUE
+The _zmq_bind()_ function returns zero if successful. Otherwise it returns
+`-1` and sets 'errno' to one of the values defined below.
+
+
+== ERRORS
+*EINVAL*::
+The endpoint supplied is invalid.
+*EPROTONOSUPPORT*::
+The requested 'transport' protocol is not supported.
+*ENOCOMPATPROTO*::
+The requested 'transport' protocol is not compatible with the socket type.
+*EADDRINUSE*::
+The requested 'address' is already in use.
+*EADDRNOTAVAIL*::
+The requested 'address' was not local.
+*ENODEV*::
+The requested 'address' specifies a nonexistent interface.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EMTHREAD*::
+No I/O thread is available to accomplish the task.
+
+
+== EXAMPLE
+.Binding a publisher socket to an in-process and a TCP transport
+----
+/* Create a ZMQ_PUB socket */
+void *socket = zmq_socket (context, ZMQ_PUB);
+assert (socket);
+/* Bind it to a in-process transport with the address 'my_publisher' */
+int rc = zmq_bind (socket, "inproc://my_publisher");
+assert (rc == 0);
+/* Bind it to a TCP transport on port 5555 of the 'eth0' interface */
+rc = zmq_bind (socket, "tcp://eth0:5555");
+assert (rc == 0);
+----
+
+
+== SEE ALSO
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

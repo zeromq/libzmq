@@ -1,31 +1,4 @@
-/*
-    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
-
-    This file is part of libzmq, the ZeroMQ core engine in C++.
-
-    libzmq is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License (LGPL) as published
-    by the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    As a special exception, the Contributors give you permission to link
-    this library with independent modules to produce an executable,
-    regardless of the license terms of these independent modules, and to
-    copy and distribute the resulting executable under terms of your choice,
-    provided that you also meet, for each linked independent module, the
-    terms and conditions of the license of that module. An independent
-    module is a module which is not derived from or based on this library.
-    If you modify this library, you must extend this exception to your
-    version of the library.
-
-    libzmq is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-    License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/* SPDX-License-Identifier: MPL-2.0 */
 
 #include "testutil.hpp"
 #include "testutil_unity.hpp"
@@ -192,80 +165,6 @@ static void subscriber_thread_main (void *pvoid_)
     zmq_close (subsocket);
 }
 
-bool recv_stat (void *sock_, bool last_, uint64_t *res_)
-{
-    zmq_msg_t stats_msg;
-
-    int rc = zmq_msg_init (&stats_msg);
-    assert (rc == 0);
-
-    rc = zmq_msg_recv (&stats_msg, sock_, 0); //ZMQ_DONTWAIT);
-    if (rc == -1 && errno == EAGAIN) {
-        rc = zmq_msg_close (&stats_msg);
-        assert (rc == 0);
-        return false; // cannot retrieve the stat
-    }
-
-    assert (rc == sizeof (uint64_t));
-    memcpy (res_, zmq_msg_data (&stats_msg), zmq_msg_size (&stats_msg));
-
-    rc = zmq_msg_close (&stats_msg);
-    assert (rc == 0);
-
-    int more;
-    size_t moresz = sizeof more;
-    rc = zmq_getsockopt (sock_, ZMQ_RCVMORE, &more, &moresz);
-    assert (rc == 0);
-    assert ((last_ && !more) || (!last_ && more));
-
-    return true;
-}
-
-// Utility function to interrogate the proxy:
-
-typedef struct
-{
-    uint64_t msg_in;
-    uint64_t bytes_in;
-    uint64_t msg_out;
-    uint64_t bytes_out;
-} zmq_socket_stats_t;
-
-typedef struct
-{
-    zmq_socket_stats_t frontend;
-    zmq_socket_stats_t backend;
-} zmq_proxy_stats_t;
-
-bool check_proxy_stats (void *control_proxy_)
-{
-    zmq_proxy_stats_t total_stats;
-    int rc;
-
-    rc = zmq_send (control_proxy_, "STATISTICS", 10, ZMQ_DONTWAIT);
-    assert (rc == 10 || (rc == -1 && errno == EAGAIN));
-    if (rc == -1 && errno == EAGAIN) {
-        return false;
-    }
-
-    // first frame of the reply contains FRONTEND stats:
-    if (!recv_stat (control_proxy_, false, &total_stats.frontend.msg_in)) {
-        return false;
-    }
-
-    recv_stat (control_proxy_, false, &total_stats.frontend.bytes_in);
-    recv_stat (control_proxy_, false, &total_stats.frontend.msg_out);
-    recv_stat (control_proxy_, false, &total_stats.frontend.bytes_out);
-
-    // second frame of the reply contains BACKEND stats:
-    recv_stat (control_proxy_, false, &total_stats.backend.msg_in);
-    recv_stat (control_proxy_, false, &total_stats.backend.bytes_in);
-    recv_stat (control_proxy_, false, &total_stats.backend.msg_out);
-    recv_stat (control_proxy_, true, &total_stats.backend.bytes_out);
-
-    return true;
-}
-
 static void proxy_stats_asker_thread_main (void *pvoid_)
 {
     const proxy_hwm_cfg_t *const cfg =
@@ -305,15 +204,8 @@ static void proxy_stats_asker_thread_main (void *pvoid_)
     // Start!
 
     while (!zmq_atomic_counter_value (cfg->subscriber_received_all)) {
-        check_proxy_stats (control_req);
         usleep (1000); // 1ms -> in best case we will get 1000updates/second
     }
-
-
-    // Ask the proxy to exit: the subscriber has received all messages
-
-    rc = zmq_send (control_req, "TERMINATE", 9, 0);
-    assert (rc == 9);
 
     zmq_close (control_req);
 }
@@ -371,7 +263,7 @@ static void proxy_thread_main (void *pvoid_)
 
     // start proxying!
 
-    zmq_proxy_steerable (frontend_xsub, backend_xpub, NULL, control_rep);
+    zmq_proxy (frontend_xsub, backend_xpub, NULL);
 
     zmq_close (frontend_xsub);
     zmq_close (backend_xpub);
@@ -415,10 +307,11 @@ int main (void)
     zmq_threadclose (publisher);
     zmq_threadclose (subscriber);
     zmq_threadclose (asker);
-    zmq_threadclose (proxy);
 
     int rc = zmq_ctx_term (context);
     assert (rc == 0);
+
+    zmq_threadclose (proxy);
 
     zmq_atomic_counter_destroy (&cfg.subscriber_received_all);
 

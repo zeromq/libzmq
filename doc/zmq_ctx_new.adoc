@@ -1,0 +1,47 @@
+= zmq_ctx_new(3)
+
+
+== NAME
+zmq_ctx_new - create new 0MQ context
+
+
+== SYNOPSIS
+*void *zmq_ctx_new ();*
+
+
+== DESCRIPTION
+The _zmq_ctx_new()_ function creates a new 0MQ 'context'.
+
+This function replaces the deprecated function xref:zmq_init.adoc[zmq_init]
+
+.Thread safety
+A 0MQ 'context' is thread safe and may be shared among as many application
+threads as necessary, without any additional locking required on the part of
+the caller.
+
+
+== RETURN VALUE
+The _zmq_ctx_new()_ function shall return an opaque handle to the newly created
+'context' if successful. Otherwise it shall return NULL and set 'errno' to one
+of the values defined below.
+
+
+== ERRORS
+*EMFILE*::
+The limit on the total number of open files has been reached and it
+wasn't possible to create a new context.
+*EMFILE*::
+The limit on the total number of open files in system has been reached
+and it wasn't possible to create a new context.
+
+
+== SEE ALSO
+* xref:zmq.adoc[zmq]
+* xref:zmq_ctx_set.adoc[zmq_ctx_set]
+* xref:zmq_ctx_get.adoc[zmq_ctx_get]
+* xref:zmq_ctx_term.adoc[zmq_ctx_term]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

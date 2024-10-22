@@ -1,0 +1,54 @@
+= zmq_atomic_counter_destroy(3)
+
+
+== NAME
+zmq_atomic_counter_destroy - destroy an atomic counter
+
+
+== SYNOPSIS
+*void zmq_atomic_counter_destroy (void **counter_p);*
+
+
+== DESCRIPTION
+The _zmq_atomic_counter_destroy_ function destroys an atomic counter and
+nullifies its reference. Pass the address of an atomic counter (void **)
+rather than the counter itself. You must destroy all counters that you
+create, to avoid memory leakage. This function uses platform specific
+atomic operations.
+
+
+== RETURN VALUE
+The _zmq_atomic_counter_destroy()_ function has no return value.
+
+
+== EXAMPLE
+.Test code for atomic counters
+----
+void *counter = zmq_atomic_counter_new ();
+assert (zmq_atomic_counter_value (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 1);
+assert (zmq_atomic_counter_inc (counter) == 2);
+assert (zmq_atomic_counter_value (counter) == 3);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_set (counter, 2);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_destroy (&counter);
+return 0;
+----
+
+
+== SEE ALSO
+* xref:zmq_atomic_counter_new.adoc[zmq_atomic_counter_new]
+* xref:zmq_atomic_counter_set.adoc[zmq_atomic_counter_set]
+* xref:zmq_atomic_counter_inc.adoc[zmq_atomic_counter_inc]
+* xref:zmq_atomic_counter_dec.adoc[zmq_atomic_counter_dec]
+* xref:zmq_atomic_counter_value.adoc[zmq_atomic_counter_value]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

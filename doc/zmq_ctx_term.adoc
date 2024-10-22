@@ -1,0 +1,60 @@
+= zmq_ctx_term(3)
+
+
+== NAME
+zmq_ctx_term - terminate a 0MQ context
+
+
+== SYNOPSIS
+*int zmq_ctx_term (void '*context');*
+
+
+== DESCRIPTION
+The _zmq_ctx_term()_ function shall destroy the 0MQ context 'context'.
+
+Context termination is performed in the following steps:
+
+1. Any blocking operations currently in progress on sockets open within
+   'context' shall return immediately with an error code of ETERM.  With the
+   exception of _zmq_close()_, any further operations on sockets open within
+   'context' shall fail with an error code of ETERM.
+
+2. After interrupting all blocking calls, _zmq_ctx_term()_ shall _block_ until
+   the following conditions are satisfied:
+
+   * All sockets open within 'context' have been closed with _zmq_close()_.
+
+   * For each socket within 'context', all messages sent by the application
+     with _zmq_send()_ have either been physically transferred to a network
+     peer, or the socket's linger period set with the _ZMQ_LINGER_ socket
+     option has expired.
+
+For further details regarding socket linger behaviour refer to the _ZMQ_LINGER_
+option in xref:zmq_setsockopt.adoc[zmq_setsockopt]
+
+This function replaces the deprecated functions xref:zmq_term.adoc[zmq_term] and
+xref:zmq_ctx_destroy.adoc[zmq_ctx_destroy]
+
+
+== RETURN VALUE
+The _zmq_ctx_term()_ function shall return zero if successful. Otherwise
+it shall return `-1` and set 'errno' to one of the values defined below.
+
+
+== ERRORS
+*EFAULT*::
+The provided 'context' was invalid.
+*EINTR*::
+Termination was interrupted by a signal. It can be restarted if needed.
+
+
+== SEE ALSO
+* xref:zmq.adoc[zmq]
+* xref:zmq_init.adoc[zmq_init]
+* xref:zmq_close.adoc[zmq_close]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

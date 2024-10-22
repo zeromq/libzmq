@@ -1,0 +1,54 @@
+= zmq_atomic_counter_value(3)
+
+
+== NAME
+zmq_atomic_counter_value - return value of atomic counter
+
+
+== SYNOPSIS
+*int zmq_atomic_counter_value (void *counter);*
+
+
+== DESCRIPTION
+The _zmq_atomic_counter_value_ function returns the value of an atomic
+counter created by _zmq_atomic_counter_new()_. This function uses platform 
+specific atomic operations.
+
+
+== RETURN VALUE
+The _zmq_atomic_counter_value()_ function returns the value of the 
+atomic counter. If _counter_ does not point to an atomic counter created by
+_zmq_atomic_counter_new()_, the behaviour is undefined.
+
+
+== EXAMPLE
+.Test code for atomic counters
+----
+void *counter = zmq_atomic_counter_new ();
+assert (zmq_atomic_counter_value (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 1);
+assert (zmq_atomic_counter_inc (counter) == 2);
+assert (zmq_atomic_counter_value (counter) == 3);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_set (counter, 2);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_destroy (&counter);
+return 0;
+----
+
+
+== SEE ALSO
+* xref:zmq_atomic_counter_new.adoc[zmq_atomic_counter_new]
+* xref:zmq_atomic_counter_set.adoc[zmq_atomic_counter_set]
+* xref:zmq_atomic_counter_inc.adoc[zmq_atomic_counter_inc]
+* xref:zmq_atomic_counter_dec.adoc[zmq_atomic_counter_dec]
+* xref:zmq_atomic_counter_destroy.adoc[zmq_atomic_counter_destroy]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

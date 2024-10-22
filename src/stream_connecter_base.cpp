@@ -1,31 +1,4 @@
-/*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
-
-    This file is part of libzmq, the ZeroMQ core engine in C++.
-
-    libzmq is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License (LGPL) as published
-    by the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    As a special exception, the Contributors give you permission to link
-    this library with independent modules to produce an executable,
-    regardless of the license terms of these independent modules, and to
-    copy and distribute the resulting executable under terms of your choice,
-    provided that you also meet, for each linked independent module, the
-    terms and conditions of the license of that module. An independent
-    module is a module which is not derived from or based on this library.
-    If you modify this library, you must extend this exception to your
-    version of the library.
-
-    libzmq is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-    License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
 #include "stream_connecter_base.hpp"
@@ -57,7 +30,7 @@ zmq::stream_connecter_base_t::stream_connecter_base_t (
     _socket (session_->get_socket ()),
     _delayed_start (delayed_start_),
     _reconnect_timer_started (false),
-    _current_reconnect_ivl (options.reconnect_ivl),
+    _current_reconnect_ivl (-1),
     _session (session_)
 {
     zmq_assert (_addr);
@@ -112,29 +85,32 @@ void zmq::stream_connecter_base_t::add_reconnect_timer ()
 
 int zmq::stream_connecter_base_t::get_new_reconnect_ivl ()
 {
-    //  TODO should the random jitter be really based on the configured initial
-    //  reconnect interval options.reconnect_ivl, or better on the
-    //  _current_reconnect_ivl?
+    if (options.reconnect_ivl_max > 0) {
+        int candidate_interval = 0;
+        if (_current_reconnect_ivl == -1)
+            candidate_interval = options.reconnect_ivl;
+        else if (_current_reconnect_ivl > std::numeric_limits<int>::max () / 2)
+            candidate_interval = std::numeric_limits<int>::max ();
+        else
+            candidate_interval = _current_reconnect_ivl * 2;
 
-    //  The new interval is the current interval + random value.
-    const int random_jitter = generate_random () % options.reconnect_ivl;
-    const int interval =
-      _current_reconnect_ivl < std::numeric_limits<int>::max () - random_jitter
-        ? _current_reconnect_ivl + random_jitter
-        : std::numeric_limits<int>::max ();
-
-    //  Only change the new current reconnect interval if the maximum reconnect
-    //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0
-        && options.reconnect_ivl_max > options.reconnect_ivl) {
-        //  Calculate the next interval
-        _current_reconnect_ivl =
-          _current_reconnect_ivl < std::numeric_limits<int>::max () / 2
-            ? std::min (_current_reconnect_ivl * 2, options.reconnect_ivl_max)
-            : options.reconnect_ivl_max;
+        if (candidate_interval > options.reconnect_ivl_max)
+            _current_reconnect_ivl = options.reconnect_ivl_max;
+        else
+            _current_reconnect_ivl = candidate_interval;
+        return _current_reconnect_ivl;
+    } else {
+        if (_current_reconnect_ivl == -1)
+            _current_reconnect_ivl = options.reconnect_ivl;
+        //  The new interval is the base interval + random value.
+        const int random_jitter = generate_random () % options.reconnect_ivl;
+        const int interval =
+          _current_reconnect_ivl
+              < std::numeric_limits<int>::max () - random_jitter
+            ? _current_reconnect_ivl + random_jitter
+            : std::numeric_limits<int>::max ();
+        return interval;
     }
-
-    return interval;
 }
 
 void zmq::stream_connecter_base_t::rm_handle ()

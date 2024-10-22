@@ -25,23 +25,20 @@ jobs:
             ENABLE_DRAFTS: ON
           - os: ubuntu-latest
             BUILD_TYPE: default
-            PACKAGES: asciidoc xmlto
-            CURVE: tweetnacl
+            PACKAGES: asciidoctor
             DRAFT: disabled
             POLLER: select
           - os: ubuntu-latest
             BUILD_TYPE: default
-            CURVE: tweetnacl
             DRAFT: disabled
             POLLER: poll
           - os: ubuntu-latest
             BUILD_TYPE: android
-            CURVE: tweetnacl
+            NDK_VERSION: android-ndk-r25
             DRAFT: disabled
           - os: ubuntu-latest
             BUILD_TYPE: coverage
             PACKAGES: libkrb5-dev libnorm-dev libpgm-dev libgnutls28-dev lcov
-            CURVE: tweetnacl
             DRAFT: enabled
             GSSAPI: enabled
             PGM: enabled
@@ -52,13 +49,19 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: valgrind
             PACKAGES: valgrind libgnutls28-dev
-            CURVE: tweetnacl
             DRAFT: enabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
             CURVE: libsodium
             DRAFT: enabled
             PACKAGES: cmake libsodium-dev
+            TLS: enabled
+          - os: ubuntu-latest
+            BUILD_TYPE: cmake
+            CURVE: libsodium
+            DRAFT: enabled
+            GSSAPI: enabled
+            PACKAGES: cmake libsodium-dev libkrb5-dev
             TLS: enabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
@@ -102,22 +105,19 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: abi-compliance-checker
             PACKAGES: abi-dumper abi-compliance-checker
-            CURVE: tweetnacl
             DRAFT: disabled
           - os: ubuntu-latest
             BUILD_TYPE: cmake
             PACKAGES: clang-tidy clang-tools
-            CURVE: tweetnacl
             DRAFT: enabled
             CXX: clang++
           - os: macos-latest
             BUILD_TYPE: default
-            PACKAGES: automake autoconf
-            CURVE: tweetnacl
+            PACKAGES: automake autoconf libtool
             DRAFT: enabled
           - os: macos-latest
             BUILD_TYPE: default
-            PACKAGES: automake autoconf libsodium
+            PACKAGES: automake autoconf libtool libsodium
             CURVE: libsodium
             DRAFT: disabled
     env:
@@ -149,6 +149,8 @@ jobs:
       USE_NSS: ${{ matrix.USE_NSS }}
       VMCI: ${{ matrix.VMCI }}
       POLLER: ${{ matrix.POLLER }}
+      NDK_VERSION: ${{ matrix.NDK_VERSION }}
+      ANDROID_NDK_ROOT: /tmp/${{ matrix.NDK_VERSION }}
     steps:    
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2

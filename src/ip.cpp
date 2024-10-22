@@ -1,31 +1,4 @@
-/*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
-
-    This file is part of libzmq, the ZeroMQ core engine in C++.
-
-    libzmq is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License (LGPL) as published
-    by the Free Software Foundation; either version 3 of the License, or
-    (at your option) any later version.
-
-    As a special exception, the Contributors give you permission to link
-    this library with independent modules to produce an executable,
-    regardless of the license terms of these independent modules, and to
-    copy and distribute the resulting executable under terms of your choice,
-    provided that you also meet, for each linked independent module, the
-    terms and conditions of the license of that module. An independent
-    module is a module which is not derived from or based on this library.
-    If you modify this library, you must extend this exception to your
-    version of the library.
-
-    libzmq is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-    License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
 #include "ip.hpp"
@@ -50,12 +23,17 @@
 #include "tcp.hpp"
 #ifdef ZMQ_HAVE_IPC
 #include "ipc_address.hpp"
+// Don't try ipc if it fails once
+namespace zmq
+{
+static bool try_ipc_first = true;
+}
 #endif
 
 #include <direct.h>
 
-#define rmdir _rmdir
-#define unlink _unlink
+#define rmdir rmdir_utf8
+#define unlink unlink_utf8
 #endif
 
 #if defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_VXWORKS
@@ -237,6 +215,9 @@ void zmq::set_socket_priority (fd_t s_, int priority_)
       setsockopt (s_, SOL_SOCKET, SO_PRIORITY,
                   reinterpret_cast<char *> (&priority_), sizeof (priority_));
     errno_assert (rc == 0);
+#else
+    LIBZMQ_UNUSED (s_);
+    LIBZMQ_UNUSED (priority_);
 #endif
 }
 
@@ -579,8 +560,13 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 
     // It appears that a lack of runtime AF_UNIX support
     // can fail in more than one way.
-    // At least: open_socket can fail or later in bind
+    // At least: open_socket can fail or later in bind or even in connect after bind
     bool ipc_fallback_on_tcpip = true;
+
+    if (!zmq::try_ipc_first) {
+        // a past ipc attempt failed, skip straight to try_tcpip in the future;
+        goto try_tcpip;
+    }
 
     //  Create a listening socket.
     const SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
@@ -589,7 +575,11 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         goto try_tcpip;
     }
 
-    create_ipc_wildcard_address (dirname, filename);
+    rc = create_ipc_wildcard_address (dirname, filename);
+    if (rc != 0) {
+        // This may happen if tmpfile creation fails
+        goto error_closelistener;
+    }
 
     //  Initialise the address structure.
     rc = address.resolve (filename.c_str ());
@@ -605,8 +595,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
         goto error_closelistener;
     }
     // if we got here, ipc should be working,
-    // so raise any remaining errors
-    ipc_fallback_on_tcpip = false;
+    // but there are at least some cases where connect can still fail
 
     //  Listen for incoming connections.
     rc = listen (listener, 1);
@@ -617,11 +606,11 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
 
     rc = getsockname (listener, reinterpret_cast<struct sockaddr *> (&lcladdr),
                       &lcladdr_len);
-    wsa_assert (rc != -1);
+    wsa_assert (rc == 0);
 
     //  Create the client socket.
     *w_ = open_socket (AF_UNIX, SOCK_STREAM, 0);
-    if (*w_ == -1) {
+    if (*w_ == retired_fd) {
         errno = wsa_error_to_errno (WSAGetLastError ());
         goto error_closelistener;
     }
@@ -629,12 +618,16 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     //  Connect to the remote peer.
     rc = ::connect (*w_, reinterpret_cast<const struct sockaddr *> (&lcladdr),
                     lcladdr_len);
-    if (rc == -1) {
+    if (rc != 0) {
+        errno = wsa_error_to_errno (WSAGetLastError ());
         goto error_closeclient;
     }
+    // if we got here, ipc should be working,
+    // so raise any remaining errors
+    ipc_fallback_on_tcpip = false;
 
     *r_ = accept (listener, NULL, NULL);
-    errno_assert (*r_ != -1);
+    wsa_assert (*r_ != retired_fd);
 
     //  Close the listener socket, we don't need it anymore.
     rc = closesocket (listener);
@@ -656,6 +649,7 @@ error_closeclient:
     saved_errno = errno;
     rc = closesocket (*w_);
     wsa_assert (rc == 0);
+    *w_ = retired_fd;
     errno = saved_errno;
 
 error_closelistener:
@@ -683,9 +677,13 @@ error_closelistener:
 
 try_tcpip:
     // try to fallback to TCP/IP
-    // TODO: maybe remember this decision permanently?
-#endif
-
+    rc = make_fdpair_tcpip (r_, w_);
+    if (rc == 0 && zmq::try_ipc_first) {
+        // ipc didn't work but tcp/ip did; skip ipc in the future
+        zmq::try_ipc_first = false;
+    }
+    return rc;
+#endif // ZMQ_HAVE_IPC
     return make_fdpair_tcpip (r_, w_);
 #elif defined ZMQ_HAVE_OPENVMS
 

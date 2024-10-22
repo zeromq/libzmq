@@ -1,0 +1,96 @@
+= zmq_send(3)
+
+
+== NAME
+zmq_send - send a message part on a socket
+
+
+== SYNOPSIS
+*int zmq_send (void '*socket', const void '*buf', size_t 'len', int 'flags');*
+
+
+== DESCRIPTION
+The _zmq_send()_ function shall queue a message created from the buffer
+referenced by the 'buf' and 'len' arguments. The 'flags' argument is
+a combination of the flags defined below:
+
+*ZMQ_DONTWAIT*::
+For socket types (DEALER, PUSH) that block (either with ZMQ_IMMEDIATE option set
+and no peer available, or all peers having full high-water mark), specifies that
+the operation should be performed in non-blocking mode. If the message cannot be
+queued on the 'socket', the _zmq_send()_ function shall fail with 'errno' set
+to EAGAIN.
+
+*ZMQ_SNDMORE*::
+Specifies that the message being sent is a multi-part message, and that further
+message parts are to follow. Refer to the section regarding multi-part messages
+below for a detailed description.
+
+NOTE: A successful invocation of _zmq_send()_ does not indicate that the
+message has been transmitted to the network, only that it has been queued on
+the 'socket' and 0MQ has assumed responsibility for the message.
+
+
+Multi-part messages
+~~~~~~~~~~~~~~~~~~~
+A 0MQ message is composed of 1 or more message parts. 0MQ ensures atomic
+delivery of messages: peers shall receive either all _message parts_ of a
+message or none at all. The total number of message parts is unlimited except
+by available memory.
+
+An application that sends multi-part messages must use the _ZMQ_SNDMORE_ flag
+when sending each message part except the final one.
+
+
+== RETURN VALUE
+The _zmq_send()_ function shall return number of bytes in the message
+if successful. Otherwise it shall return `-1` and set 'errno' to one of the
+values defined below.
+
+
+== ERRORS
+*EAGAIN*::
+Non-blocking mode was requested and the message cannot be sent at the moment.
+*ENOTSUP*::
+The _zmq_send()_ operation is not supported by this socket type.
+*EINVAL*::
+The sender tried to send multipart data, which the socket type does not allow.
+*EFSM*::
+The _zmq_send()_ operation cannot be performed on this socket at the moment
+due to the socket not being in the appropriate state.  This error may occur with
+socket types that switch between several states, such as ZMQ_REP.  See the
+_messaging patterns_ section of xref:zmq_socket.adoc[zmq_socket] for more information.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EINTR*::
+The operation was interrupted by delivery of a signal before the message was
+sent.
+*EHOSTUNREACH*::
+The message cannot be routed.
+
+
+== EXAMPLE
+.Sending a multi-part message
+----
+/* Send a multi-part message consisting of three parts to socket */
+rc = zmq_send (socket, "ABC", 3, ZMQ_SNDMORE);
+assert (rc == 3);
+rc = zmq_send (socket, "DEFGH", 5, ZMQ_SNDMORE);
+assert (rc == 5);
+/* Final part; no more parts to follow */
+rc = zmq_send (socket, "JK", 2, 0);
+assert (rc == 2);
+----
+
+== SEE ALSO
+* xref:zmq_send_const.adoc[zmq_send_const]
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

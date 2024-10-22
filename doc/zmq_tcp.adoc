@@ -1,0 +1,134 @@
+= zmq_tcp(7)
+
+
+== NAME
+zmq_tcp - 0MQ unicast transport using TCP
+
+
+== SYNOPSIS
+TCP is an ubiquitous, reliable, unicast transport. When connecting distributed
+applications over a network with 0MQ, using the TCP transport will likely be
+your first choice.
+
+
+== ADDRESSING
+A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+For the TCP transport, the transport is `tcp`, and the meaning of the
+'address' part is defined below.
+
+
+Assigning a local address to a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When assigning a local address to a socket using _zmq_bind()_ with the 'tcp'
+transport, the 'endpoint' shall be interpreted as an 'interface' followed by a
+colon and the TCP port number to use.
+
+An 'interface' may be specified by either of the following:
+
+* The wild-card `*`, meaning all available interfaces.
+* The primary IPv4 or IPv6 address assigned to the interface, in its numeric
+  representation.
+* The non-portable interface name as defined by the operating system.
+
+The TCP port number may be specified by:
+
+* A numeric value, usually above 1024 on POSIX systems.
+* The wild-card `*`, meaning a system-assigned ephemeral port.
+
+When using ephemeral ports, the caller should retrieve the actual assigned
+port using the ZMQ_LAST_ENDPOINT socket option. See xref:zmq_getsockopt.adoc[zmq_getsockopt]
+for details.
+
+Unbinding wild-card address from a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When wild-card `*` 'endpoint' was used in _zmq_bind()_, the caller should use
+real 'endpoint' obtained from the ZMQ_LAST_ENDPOINT socket option to unbind 
+this 'endpoint' from a socket using _zmq_unbind()_.
+
+Connecting a socket
+~~~~~~~~~~~~~~~~~~~
+When connecting a socket to a peer address using _zmq_connect()_ with the 'tcp'
+transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
+a colon and the TCP port number to use.
+You can optionally specify a 'source_endpoint' which will be used as the source
+address for your connection; tcp://'source_endpoint';'endpoint', see the
+'interface' description above for details.
+
+A 'peer address' may be specified by either of the following:
+
+* The DNS name of the peer.
+* The IPv4 or IPv6 address of the peer, in its numeric representation.
+
+Note: A description of the ZeroMQ Message Transport Protocol (ZMTP) which is 
+used by the TCP transport can be found at <http://rfc.zeromq.org/spec:23>
+
+
+== HWM
+
+For the TCP transport, the high water mark (HWM) mechanism works in conjunction
+with the TCP socket buffers handled at OS level.
+Depending on the OS and several other factors the size of such TCP buffers will
+be different. Moreover TCP buffers provided by the OS will accommodate a varying
+number of messages depending on the size of messages (unlike ZMQ HWM settings
+the TCP socket buffers are measured in bytes and not messages).
+
+This may result in apparently inexplicable behaviors: e.g., you may expect that
+setting ZMQ_SNDHWM to 100 on a socket using TCP transport will have the effect
+of blocking the transmission of the 101-th message if the receiver is slow.
+This is very unlikely when using TCP transport since OS TCP buffers will typically
+provide enough buffering to allow you sending much more than 100 messages.
+
+Of course if the receiver is slow, transmitting on a TCP ZMQ socket will eventually trigger
+the "mute state" of the socket; simply don't rely on the exact HWM value.
+
+Obviously the same considerations apply for the receive HWM (see ZMQ_RCVHWM).
+
+
+
+== EXAMPLES
+.Assigning a local address to a socket
+----
+//  TCP port 5555 on all available interfaces
+rc = zmq_bind(socket, "tcp://*:5555");
+assert (rc == 0);
+//  TCP port 5555 on the local loop-back interface on all platforms
+rc = zmq_bind(socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+//  TCP port 5555 on the first Ethernet network interface on Linux
+rc = zmq_bind(socket, "tcp://eth0:5555");
+assert (rc == 0);
+----
+
+.Connecting a socket
+----
+//  Connecting using an IP address
+rc = zmq_connect(socket, "tcp://192.168.1.1:5555");
+assert (rc == 0);
+//  Connecting using a DNS name
+rc = zmq_connect(socket, "tcp://server1:5555");
+assert (rc == 0);
+//  Connecting using a DNS name and bind to eth1
+rc = zmq_connect(socket, "tcp://eth1:0;server1:5555");
+assert (rc == 0);
+//  Connecting using a IP address and bind to an IP address
+rc = zmq_connect(socket, "tcp://192.168.1.17:5555;192.168.1.1:5555");
+assert (rc == 0);
+----
+
+
+== SEE ALSO
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_connect.adoc[zmq_connect]
+* xref:zmq_pgm.adoc[zmq_pgm]
+* xref:zmq_ipc.adoc[zmq_ipc]
+* xref:zmq_inproc.adoc[zmq_inproc]
+* xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

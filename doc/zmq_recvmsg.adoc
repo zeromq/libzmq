@@ -1,0 +1,116 @@
+= zmq_recvmsg(3)
+
+
+== NAME
+zmq_recvmsg - receive a message part from a socket
+
+
+== SYNOPSIS
+*int zmq_recvmsg (void '*socket', zmq_msg_t '*msg', int 'flags');*
+
+
+== DESCRIPTION
+The _zmq_recvmsg()_ function shall receive a message part from the socket
+referenced by the 'socket' argument and store it in the message referenced by
+the 'msg' argument. Any content previously stored in 'msg' shall be properly
+deallocated. If there are no message parts available on the specified 'socket'
+the _zmq_recvmsg()_ function shall block until the request can be satisfied.
+The 'flags' argument is a combination of the flags defined below:
+
+*ZMQ_DONTWAIT*::
+Specifies that the operation should be performed in non-blocking mode. If there
+are no messages available on the specified 'socket', the _zmq_recvmsg()_
+function shall fail with 'errno' set to EAGAIN.
+
+NOTE: this API method is deprecated in favor of zmq_msg_recv(3).
+
+
+Multi-part messages
+~~~~~~~~~~~~~~~~~~~
+A 0MQ message is composed of 1 or more message parts. Each message
+part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
+delivery of messages: peers shall receive either all _message parts_ of a
+message or none at all. The total number of message parts is unlimited except
+by available memory.
+
+An application that processes multi-part messages must use the _ZMQ_RCVMORE_
+xref:zmq_getsockopt.adoc[zmq_getsockopt] option after calling _zmq_recvmsg()_ to determine if
+there are further parts to receive.
+
+
+== RETURN VALUE
+The _zmq_recvmsg()_ function shall return number of bytes in the message
+if successful. Otherwise it shall return `-1` and set 'errno' to one of the
+values defined below.
+
+
+== ERRORS
+*EAGAIN*::
+Either the timeout set via the socket-option ZMQ_RCVTIMEO (see xref:zmq_setsockopt.adoc[zmq_setsockopt])
+has been reached (flag ZMQ_DONTWAIT not set) without being able to read a message
+from the socket or there are no messages available at the moment (flag ZMQ_DONTWAIT set)
+and the operation would block.
+*ENOTSUP*::
+The _zmq_recvmsg()_ operation is not supported by this socket type.
+*EFSM*::
+The _zmq_recvmsg()_ operation cannot be performed on this socket at the moment
+due to the socket not being in the appropriate state.  This error may occur with
+socket types that switch between several states, such as ZMQ_REP.  See the
+_messaging patterns_ section of xref:zmq_socket.adoc[zmq_socket] for more information.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EINTR*::
+The operation was interrupted by delivery of a signal before a message was
+available.
+*EFAULT*::
+The message passed to the function was invalid.
+
+
+== EXAMPLE
+.Receiving a message from a socket
+----
+/* Create an empty 0MQ message */
+zmq_msg_t msg;
+int rc = zmq_msg_init (&msg);
+assert (rc == 0);
+/* Block until a message is available to be received from socket */
+rc = zmq_recvmsg (socket, &msg, 0);
+assert (rc != -1);
+/* Release message */
+zmq_msg_close (&msg);
+----
+
+.Receiving a multi-part message
+----
+int more;
+size_t more_size = sizeof (more);
+do {
+    /* Create an empty 0MQ message to hold the message part */
+    zmq_msg_t part;
+    int rc = zmq_msg_init (&part);
+    assert (rc == 0);
+    /* Block until a message is available to be received from socket */
+    rc = zmq_recvmsg (socket, &part, 0);
+    assert (rc != -1);
+    /* Determine if more message parts are to follow */
+    rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
+    assert (rc == 0);
+    zmq_msg_close (&part);
+} while (more);
+----
+
+
+== SEE ALSO
+* xref:zmq_recv.adoc[zmq_recv]
+* xref:zmq_send.adoc[zmq_send]
+* xref:zmq_getsockopt.adoc[zmq_getsockopt]
+* xref:zmq_setsockopt.adoc[zmq_setsockopt]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

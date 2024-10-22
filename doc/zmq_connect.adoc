@@ -1,0 +1,100 @@
+= zmq_connect(3)
+
+
+== NAME
+zmq_connect - create outgoing connection from socket
+
+
+== SYNOPSIS
+*int zmq_connect (void '*socket', const char '*endpoint');*
+
+
+== DESCRIPTION
+The _zmq_connect()_ function connects the 'socket' to an 'endpoint' and then
+accepts incoming connections on that endpoint.
+
+The 'endpoint' is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+0MQ provides the the following transports:
+
+'tcp':: unicast transport using TCP, see xref:zmq_tcp.adoc[zmq_tcp]
+'ipc':: local inter-process communication transport, see xref:zmq_ipc.adoc[zmq_ipc]
+'inproc':: local in-process (inter-thread) communication transport, see xref:zmq_inproc.adoc[zmq_inproc]
+'pgm', 'epgm':: reliable multicast transport using PGM, see xref:zmq_pgm.adoc[zmq_pgm]
+'vmci':: virtual machine communications interface (VMCI), see xref:zmq_vmci.adoc[zmq_vmci]
+'udp':: unreliable unicast and multicast using UDP, see xref:zmq_udp.adoc[zmq_udp]
+
+Every 0MQ socket type except 'ZMQ_PAIR' and 'ZMQ_CHANNEL' supports one-to-many and many-to-one
+semantics. The precise semantics depend on the socket type and are defined in
+xref:zmq_socket.adoc[zmq_socket]
+
+NOTE: for most transports and socket types the connection is not performed
+immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
+does not mean that the connection was or could actually be established.
+Because of this, for most transports and socket types the order in which
+a 'server' socket is bound and a 'client' socket is connected to it does not
+matter. The _ZMQ_PAIR_ and _ZMQ_CHANNEL_ sockets are an exception, as they do not automatically
+reconnect to endpoints.
+
+NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,
+the socket enters its normal 'ready' state. By contrast, following a
+_zmq_bind()_ alone, the socket enters a 'mute' state in which the socket
+blocks or drops messages according to the socket type, as defined in
+xref:zmq_socket.adoc[zmq_socket] A ZMQ_ROUTER socket enters its normal 'ready' state
+for a specific peer only when handshaking is complete for that peer, which
+may take an arbitrary time.
+
+NOTE: for some socket types, multiple connections to the same endpoint
+don't really make sense
+(see https://github.com/zeromq/libzmq/issues/788).
+For those socket types, any attempt to connect to an already connected endpoint
+is silently ignored (i.e., returns zero).  This behavior applies to ZMQ_DEALER,
+ZMQ_SUB, ZMQ_PUB, and ZMQ_REQ socket types.
+
+
+== RETURN VALUE
+The _zmq_connect()_ function returns zero if successful. Otherwise it returns
+`-1` and sets 'errno' to one of the values defined below.
+
+
+== ERRORS
+*EINVAL*::
+The endpoint supplied is invalid.
+*EPROTONOSUPPORT*::
+The requested 'transport' protocol is not supported.
+*ENOCOMPATPROTO*::
+The requested 'transport' protocol is not compatible with the socket type.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*EMTHREAD*::
+No I/O thread is available to accomplish the task.
+
+
+== EXAMPLE
+.Connecting a subscriber socket to an in-process and a TCP transport
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Connect it to an in-process transport with the address 'my_publisher' */
+int rc = zmq_connect (socket, "inproc://my_publisher");
+assert (rc == 0);
+/* Connect it to the host server001, port 5555 using a TCP transport */
+rc = zmq_connect (socket, "tcp://server001:5555");
+assert (rc == 0);
+----
+
+
+== SEE ALSO
+* xref:zmq_bind.adoc[zmq_bind]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.
