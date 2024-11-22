@@ -136,6 +136,10 @@ _timer_id_ did not exist or was already cancelled.
     // Wait until the end
     rc = msleep (zmq_timers_timeout (timers));
     assert (rc == 0);
+
+    // The handler will be executed
+    rc = zmq_timers_execute (timers);
+    assert (rc == 0);
     assert (timer_invoked);
 
     rc = zmq_timers_destroy (&timers);
