@@ -557,6 +557,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     socklen_t lcladdr_len = sizeof lcladdr;
     int rc = 0;
     int saved_errno = 0;
+    SOCKET listener = INVALID_SOCKET;
 
     // It appears that a lack of runtime AF_UNIX support
     // can fail in more than one way.
@@ -569,7 +570,7 @@ int zmq::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Create a listening socket.
-    const SOCKET listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
+    listener = open_socket (AF_UNIX, SOCK_STREAM, 0);
     if (listener == retired_fd) {
         //  This may happen if the library was built on a system supporting AF_UNIX, but the system running doesn't support it.
         goto try_tcpip;
