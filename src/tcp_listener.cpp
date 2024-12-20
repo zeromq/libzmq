@@ -246,5 +246,33 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     if (options.priority != 0)
         set_socket_priority (sock, options.priority);
 
+    // OK. Let's talk about this lazy implementation.
+    //
+    // On Linux, after ::accept(), TCP_KEEPALIVE is not set by default.
+    // Moreover, there is no way for an application to retreive this socket
+    // and then, no way to close() or use setsockopt() on it.
+    // So, the only possibility to avoid socket leakage is TCP_KEEPALIVE.
+    //
+    // Regarding the values, the default TCP ones are far too huge (> 2h).
+    // The values below seem reasonnable for a ZYRE application :
+    //   120 + 10 * 10 = 220s (3mn 40s)
+    //
+    // Note:
+    //   A ZYRE client application will reset its side after about 30s, so
+    //   no worry about such applications.
+    //   What about other applications ?
+    //
+    int rc = tune_tcp_keepalives (sock, 1, 10, 120, 10);
+    if (rc != 0) {
+#ifdef ZMQ_HAVE_WINDOWS
+        const int rc = closesocket (sock);
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        rc = ::close (sock);
+        errno_assert (rc == 0);
+#endif
+        return retired_fd;
+    }
+
     return sock;
 }
