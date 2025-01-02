@@ -2,6 +2,7 @@
 
 #include "precompiled.hpp"
 #include "timers.hpp"
+#include "blob.hpp"
 #include "err.hpp"
 
 #include <algorithm>
@@ -30,7 +31,7 @@ int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void *arg_)
 
     uint64_t when = _clock.now_ms () + interval_;
     timer_t timer = {++_next_timer_id, interval_, handler_, arg_};
-    _timers.insert (timersmap_t::value_type (when, timer));
+    _timers.ZMQ_MAP_INSERT_OR_EMPLACE (when, timer);
 
     return timer.timer_id;
 }
@@ -79,7 +80,7 @@ int zmq::timers_t::set_interval (int timer_id_, size_t interval_)
         timer.interval = interval_;
         uint64_t when = _clock.now_ms () + interval_;
         _timers.erase (it);
-        _timers.insert (timersmap_t::value_type (when, timer));
+        _timers.ZMQ_MAP_INSERT_OR_EMPLACE (when, timer);
 
         return 0;
     }
@@ -97,7 +98,7 @@ int zmq::timers_t::reset (int timer_id_)
         timer_t timer = it->second;
         uint64_t when = _clock.now_ms () + timer.interval;
         _timers.erase (it);
-        _timers.insert (timersmap_t::value_type (when, timer));
+        _timers.ZMQ_MAP_INSERT_OR_EMPLACE (when, timer);
 
         return 0;
     }
@@ -147,8 +148,7 @@ int zmq::timers_t::execute ()
 
             timer.handler (timer.timer_id, timer.arg);
 
-            _timers.insert (
-              timersmap_t::value_type (now + timer.interval, timer));
+            _timers.ZMQ_MAP_INSERT_OR_EMPLACE (now + timer.interval, timer);
         }
     }
     _timers.erase (begin, it);
