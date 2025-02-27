@@ -1743,7 +1743,7 @@ foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
   if(NOT ZMQ_BUILD_FRAMEWORK)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION share/zmq)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION ${CMAKE_INSTALL_DOCDIR})
   endif()
 endforeach()
 
@@ -1751,7 +1751,7 @@ if(WITH_DOC)
   if(NOT ZMQ_BUILD_FRAMEWORK)
     install(
       FILES ${html-docs}
-      DESTINATION doc/zmq
+      DESTINATION ${CMAKE_INSTALL_DOCDIR}
       COMPONENT RefGuide)
   endif()
 endif()
