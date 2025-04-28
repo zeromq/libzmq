@@ -218,7 +218,11 @@ int zmq::signaler_t::wait (int timeout_) const
     pfd.events = POLLIN;
     const int rc = poll (&pfd, 1, timeout_);
     if (unlikely (rc < 0)) {
+#if defined ZMQ_HAVE_WINDOWS
+        wsa_assert (WSAGetLastError () == WSAENETDOWN || WSAGetLastError () == WSAENOBUFS);
+#else
         errno_assert (errno == EINTR);
+#endif
         return -1;
     }
     if (unlikely (rc == 0)) {
