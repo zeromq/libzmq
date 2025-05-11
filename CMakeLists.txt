@@ -1,10 +1,5 @@
 # CMake build script for ZeroMQ
-
-if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL Darwin)
-  cmake_minimum_required(VERSION 3.0.2)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
+cmake_minimum_required(VERSION 3.0...3.10)
 
 project(ZeroMQ)
 
@@ -1340,15 +1335,15 @@ if(MSVC)
   if(BUILD_SHARED)
     # Whole Program Optimization flags. http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
     #
-    # "Finally, there's the subject of libraries. It's possible to create .LIB 
-    # files with code in its IL form. The linker will happily work with these 
-    # .LIB files. Be aware that these libraries will be tied to a specific 
-    # version of the compiler and linker. If you distribute these libraries, 
-    # you'll need to update them if Microsoft changes the format of IL in a 
+    # "Finally, there's the subject of libraries. It's possible to create .LIB
+    # files with code in its IL form. The linker will happily work with these
+    # .LIB files. Be aware that these libraries will be tied to a specific
+    # version of the compiler and linker. If you distribute these libraries,
+    # you'll need to update them if Microsoft changes the format of IL in a
     # future release."
-    # 
-    # /GL and /LTCG can cause problems when libraries built with different 
-    # versions of compiler are later linked into an executable while /LTCG is active. 
+    #
+    # /GL and /LTCG can cause problems when libraries built with different
+    # versions of compiler are later linked into an executable while /LTCG is active.
     # https://social.msdn.microsoft.com/Forums/vstudio/en-US/5c102025-c254-4f02-9a51-c775c6cc9f4b/problem-with-ltcg-when-building-a-static-library-in-vs2005?forum=vcgeneral
     #
     # For this reason, enable only when building a "Release" (e.g. non-DEBUG) DLL.
