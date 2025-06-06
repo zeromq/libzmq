@@ -355,8 +355,11 @@ function android_build_opts {
 
     _android_build_opts_process_binaries
 
-    # Since NDK r23 we don't need -lgcc due to LLVM being now the default
-    if [ ! -x "${TOOLCHAIN_PATH}/${TOOLCHAIN_HOST}-ar" ]; then
+    if [ ${NDK_NUMBER} -ge 2700 ] ; then
+        # Since NDK r27 symbols like '__aeabi_xxx' are no more exported in the dynamic lib.
+        export ANDROID_BUILD_LIBS="-lc -ldl -lm -llog -static-libstdc++"
+    elif [ ${NDK_NUMBER} -ge 2300 ] ; then
+        # Since NDK r23 we don't need -lgcc due to LLVM being now the default.
         export ANDROID_BUILD_LIBS="-lc -ldl -lm -llog -lc++_shared"
     else
         export ANDROID_BUILD_LIBS="-lc -lgcc -ldl -lm -llog -lc++_shared"
