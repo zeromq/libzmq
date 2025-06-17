@@ -1,5 +1,5 @@
 # CMake build script for ZeroMQ unit tests
-cmake_minimum_required(VERSION "2.8.1")
+cmake_minimum_required(VERSION 3.0...3.10)
 
 set(unittests
     unittest_ypipe
