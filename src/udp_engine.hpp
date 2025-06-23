@@ -40,7 +40,7 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     //  are messages to send available.
     void restart_output ();
 
-    void zap_msg_available (){};
+    void zap_msg_available () {};
 
     void in_event ();
     void out_event ();

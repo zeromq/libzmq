@@ -17,7 +17,7 @@
 #define ZMQ_VERSION_PATCH 6
 
 #define ZMQ_MAKE_VERSION(major, minor, patch)                                  \
-    ((major) *10000 + (minor) *100 + (patch))
+    ((major) * 10000 + (minor) * 100 + (patch))
 #define ZMQ_VERSION                                                            \
     ZMQ_MAKE_VERSION (ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH)
 
@@ -39,9 +39,9 @@ extern "C" {
 #if defined ZMQ_STATIC
 #define ZMQ_EXPORT
 #elif defined DLL_EXPORT
-#define ZMQ_EXPORT __declspec(dllexport)
+#define ZMQ_EXPORT __declspec (dllexport)
 #else
-#define ZMQ_EXPORT __declspec(dllimport)
+#define ZMQ_EXPORT __declspec (dllimport)
 #endif
 #else
 #if defined __SUNPRO_C || defined __SUNPRO_CC
@@ -218,10 +218,10 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context_);
 typedef struct zmq_msg_t
 {
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
-    __declspec(align (8)) unsigned char _[64];
+    __declspec (align (8)) unsigned char _[64];
 #elif defined(_MSC_VER)                                                        \
   && (defined(_M_IX86) || defined(_M_ARM_ARMV7VE) || defined(_M_ARM))
-    __declspec(align (4)) unsigned char _[64];
+    __declspec (align (4)) unsigned char _[64];
 #elif defined(__GNUC__) || defined(__INTEL_COMPILER)                           \
   || (defined(__SUNPRO_C) && __SUNPRO_C >= 0x590)                              \
   || (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x590)

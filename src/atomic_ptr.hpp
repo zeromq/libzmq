@@ -60,22 +60,22 @@ inline void *atomic_xchg_ptr (void **ptr_,
     return arch_atomic_exchange (ptr_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
     void *old;
-    __asm__ volatile("lock; xchg %0, %2"
-                     : "=r"(old), "=m"(*ptr_)
-                     : "m"(*ptr_), "0"(val_));
+    __asm__ volatile ("lock; xchg %0, %2"
+                      : "=r"(old), "=m"(*ptr_)
+                      : "m"(*ptr_), "0"(val_));
     return old;
 #elif defined ZMQ_ATOMIC_PTR_ARM
     void *old;
     unsigned int flag;
-    __asm__ volatile("       dmb     sy\n\t"
-                     "1:     ldrex   %1, [%3]\n\t"
-                     "       strex   %0, %4, [%3]\n\t"
-                     "       teq     %0, #0\n\t"
-                     "       bne     1b\n\t"
-                     "       dmb     sy\n\t"
-                     : "=&r"(flag), "=&r"(old), "+Qo"(*ptr_)
-                     : "r"(ptr_), "r"(val_)
-                     : "cc");
+    __asm__ volatile ("       dmb     sy\n\t"
+                      "1:     ldrex   %1, [%3]\n\t"
+                      "       strex   %0, %4, [%3]\n\t"
+                      "       teq     %0, #0\n\t"
+                      "       bne     1b\n\t"
+                      "       dmb     sy\n\t"
+                      : "=&r"(flag), "=&r"(old), "+Qo"(*ptr_)
+                      : "r"(ptr_), "r"(val_)
+                      : "cc");
     return old;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
     _sync.lock ();
@@ -111,26 +111,26 @@ inline void *atomic_cas (void *volatile *ptr_,
     return arch_atomic_val_compare_and_exchange (ptr_, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
     void *old;
-    __asm__ volatile("lock; cmpxchg %2, %3"
-                     : "=a"(old), "=m"(*ptr_)
-                     : "r"(val_), "m"(*ptr_), "0"(cmp_)
-                     : "cc");
+    __asm__ volatile ("lock; cmpxchg %2, %3"
+                      : "=a"(old), "=m"(*ptr_)
+                      : "r"(val_), "m"(*ptr_), "0"(cmp_)
+                      : "cc");
     return old;
 #elif defined ZMQ_ATOMIC_PTR_ARM
     void *old;
     unsigned int flag;
-    __asm__ volatile("       dmb     sy\n\t"
-                     "1:     ldrex   %1, [%3]\n\t"
-                     "       mov     %0, #0\n\t"
-                     "       teq     %1, %4\n\t"
-                     "       it      eq\n\t"
-                     "       strexeq %0, %5, [%3]\n\t"
-                     "       teq     %0, #0\n\t"
-                     "       bne     1b\n\t"
-                     "       dmb     sy\n\t"
-                     : "=&r"(flag), "=&r"(old), "+Qo"(*ptr_)
-                     : "r"(ptr_), "r"(cmp_), "r"(val_)
-                     : "cc");
+    __asm__ volatile ("       dmb     sy\n\t"
+                      "1:     ldrex   %1, [%3]\n\t"
+                      "       mov     %0, #0\n\t"
+                      "       teq     %1, %4\n\t"
+                      "       it      eq\n\t"
+                      "       strexeq %0, %5, [%3]\n\t"
+                      "       teq     %0, #0\n\t"
+                      "       bne     1b\n\t"
+                      "       dmb     sy\n\t"
+                      : "=&r"(flag), "=&r"(old), "+Qo"(*ptr_)
+                      : "r"(ptr_), "r"(cmp_), "r"(val_)
+                      : "cc");
     return old;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
     _sync.lock ();

@@ -110,14 +110,10 @@ int zmq::socket_poller_t::add (socket_base_t *socket_,
         socket_->add_signaler (_signaler);
     }
 
-    const item_t item = {
-        socket_,
-        0,
-        user_data_,
-        events_
+    const item_t item = {socket_, 0, user_data_, events_
 #if defined ZMQ_POLL_BASED_ON_POLL
-        ,
-        -1
+                         ,
+                         -1
 #endif
     };
     try {
@@ -140,14 +136,10 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
         return -1;
     }
 
-    const item_t item = {
-        NULL,
-        fd_,
-        user_data_,
-        events_
+    const item_t item = {NULL, fd_, user_data_, events_
 #if defined ZMQ_POLL_BASED_ON_POLL
-        ,
-        -1
+                         ,
+                         -1
 #endif
     };
     try {

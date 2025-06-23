@@ -90,6 +90,7 @@ mkdir build_cmake
 cd build_cmake
 if [ "$DO_CLANG_FORMAT_CHECK" = "1" ] ; then
     if ! ( PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make clang-format-check) ; then
+        echo "clang-format version is: $(clang-format --version)"
         make clang-format-diff
         exit 1
     fi

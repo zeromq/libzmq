@@ -113,14 +113,12 @@ int zmq::tipc_address_t::to_string (std::string &addr_) const
     std::stringstream s;
     if (address.addrtype == TIPC_ADDR_NAMESEQ
         || address.addrtype == TIPC_ADDR_NAME) {
-        s << "tipc://"
-          << "{" << address.addr.nameseq.type;
+        s << "tipc://" << "{" << address.addr.nameseq.type;
         s << ", " << address.addr.nameseq.lower;
         s << ", " << address.addr.nameseq.upper << "}";
         addr_ = s.str ();
     } else if (address.addrtype == TIPC_ADDR_ID || is_random ()) {
-        s << "tipc://"
-          << "<" << tipc_zone (address.addr.id.node);
+        s << "tipc://" << "<" << tipc_zone (address.addr.id.node);
         s << "." << tipc_cluster (address.addr.id.node);
         s << "." << tipc_node (address.addr.id.node);
         s << ":" << address.addr.id.ref << ">";

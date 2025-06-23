@@ -629,7 +629,7 @@ void zmq::norm_engine_t::recv_data (NormObjectHandle object)
                 else // Move back to "rx_pending" list until NORM_RX_OBJECT_UPDATED
                     msg_ready_list.Append (*rxState);
             } // end while(NULL != (rxState = iterator.GetNextItem()))
-        }     // end if (zmq_input_ready)
+        } // end if (zmq_input_ready)
     } // end while ((!rx_ready_list.empty() || (zmq_input_ready && !msg_ready_list.empty()))
 
     // Alert zmq of the messages we have pushed up
