@@ -293,7 +293,7 @@ int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
     return -1;
 }
 
-int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
+int zmq::ctx_t::get (int option_, void *optval_, size_t *optvallen_)
 {
     const bool is_int = (*optvallen_ == sizeof (int));
     int *value = static_cast<int *> (optval_);
@@ -607,7 +607,7 @@ int zmq::thread_ctx_t::set (int option_, const void *optval_, size_t optvallen_)
 
 int zmq::thread_ctx_t::get (int option_,
                             void *optval_,
-                            const size_t *optvallen_)
+                            size_t *optvallen_)
 {
     const bool is_int = (*optvallen_ == sizeof (int));
     int *value = static_cast<int *> (optval_);
@@ -630,6 +630,7 @@ int zmq::thread_ctx_t::get (int option_,
                 scoped_lock_t locker (_opt_sync);
                 memcpy (optval_, _thread_name_prefix.data (),
                         _thread_name_prefix.size ());
+                *optvallen_ = _thread_name_prefix.size ();
                 return 0;
             }
             break;
