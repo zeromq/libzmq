@@ -66,7 +66,7 @@ jobs:
           - os: ubuntu-latest
             BUILD_TYPE: cmake
             DRAFT: enabled
-            PACKAGES: cmake clang-format-11
+            PACKAGES: cmake clang-format-18
             DO_CLANG_FORMAT_CHECK: 1
           - os: ubuntu-latest
             BUILD_TYPE: default
@@ -223,7 +223,7 @@ jobs:
       CLANG_TIDY: clang-tidy
     steps:
     - name: Add debian packages
-      run: apt-get install --yes clang-tidy clang-tools
+      run: sudo apt-get install --yes clang-tidy clang-tools
     - name: build
       shell: bash
       working-directory: libzmq

@@ -36,7 +36,7 @@ void zmq_abort (const char *errmsg_) __attribute__ ((analyzer_noreturn));
 void zmq_abort (const char *errmsg_);
 #endif
 #elif defined __MSCVER__
-__declspec(noreturn) void zmq_abort (const char *errmsg_);
+__declspec (noreturn) void zmq_abort (const char *errmsg_);
 #else
 void zmq_abort (const char *errmsg_);
 #endif

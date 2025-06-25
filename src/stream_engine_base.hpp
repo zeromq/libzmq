@@ -69,7 +69,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
     void set_handshake_timer ();
 
     virtual bool handshake () { return true; };
-    virtual void plug_internal (){};
+    virtual void plug_internal () {};
 
     virtual int process_command_message (msg_t *msg_)
     {

@@ -42,19 +42,13 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
 #endif
 
     // There are no incomplete items for conflate ypipe
-    bool unwrite (T *)
-    {
-        return false;
-    }
+    bool unwrite (T *) { return false; }
 
     //  Flush is no-op for conflate ypipe. Reader asleep behaviour
     //  is as of the usual ypipe.
     //  Returns false if the reader thread is sleeping. In that case,
     //  caller is obliged to wake the reader up before using the pipe again.
-    bool flush ()
-    {
-        return reader_awake;
-    }
+    bool flush () { return reader_awake; }
 
     //  Check whether item is available for reading.
     bool check_read ()
@@ -79,10 +73,7 @@ template <typename T> class ypipe_conflate_t ZMQ_FINAL : public ypipe_base_t<T>
     //  Applies the function fn to the first element in the pipe
     //  and returns the value returned by the fn.
     //  The pipe mustn't be empty or the function crashes.
-    bool probe (bool (*fn_) (const T &))
-    {
-        return dbuffer.probe (fn_);
-    }
+    bool probe (bool (*fn_) (const T &)) { return dbuffer.probe (fn_); }
 
   protected:
     dbuffer_t<T> dbuffer;
