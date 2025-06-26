@@ -556,10 +556,19 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
 
         //  Wait for events.
         const int rc = poll (_pollfds, _pollset_size, timeout);
+#if defined ZMQ_HAVE_WINDOWS
+        if (unlikely (rc == SOCKET_ERROR)) {
+            errno = wsa_error_to_errno (WSAGetLastError ());
+
+            if (errno == EINTR || errno == EAGAIN)
+                return -1;
+        }
+#else
         if (rc == -1 && errno == EINTR) {
             return -1;
         }
         errno_assert (rc >= 0);
+#endif
 
         //  Receive the signal from pollfd
         if (_use_signaler && _pollfds[0].revents & POLLIN)
