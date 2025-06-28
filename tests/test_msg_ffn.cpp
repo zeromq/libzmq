@@ -89,7 +89,7 @@ void test_msg_init_ffn ()
     test_context_socket_close (dealer);
 }
 
-void test_msg_init_external_storage ()
+void test_msg_init_ffn_external_storage ()
 {
     //  Create the infrastructure
     char my_endpoint[MAX_SOCKET_STRING];
@@ -101,6 +101,7 @@ void test_msg_init_external_storage ()
     TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dealer, my_endpoint));
 
     // Test that creating and closing a message triggers ffn
+    zmq_msg_content_t content;
     zmq_msg_t msg;
     char hint[5];
     char data[255];
@@ -108,7 +109,7 @@ void test_msg_init_external_storage ()
     memcpy (data, (void *) "data", 4);
     memcpy (hint, (void *) "hint", 4);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint));
+      zmq_msg_init_external_storage(&msg, &content, (void *) data, 255, ffn, (void *) hint));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
 
     msleep (SETTLE_TIME);
@@ -119,7 +120,7 @@ void test_msg_init_external_storage ()
     zmq_msg_t msg2;
     zmq_msg_init (&msg2);
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint));
+      zmq_msg_init_external_storage(&msg2, &content, (void *) data, 255, ffn, (void *) hint));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_copy (&msg2, &msg));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_close (&msg));
@@ -130,7 +131,7 @@ void test_msg_init_external_storage ()
 
     // Test that sending a message triggers ffn
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint));
+      zmq_msg_init_external_storage(&msg, &content, (void *) data, 255, ffn, (void *) hint));
 
     zmq_msg_send (&msg, dealer, 0);
     char buf[255];
@@ -146,7 +147,7 @@ void test_msg_init_external_storage ()
     // Sending a copy of a message triggers ffn
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_init (&msg2));
     TEST_ASSERT_SUCCESS_ERRNO (
-      zmq_msg_init_data (&msg, (void *) data, 255, ffn, (void *) hint));
+      zmq_msg_init_external_storage (&msg2, &content, (void *) data, 255, ffn, (void *) hint));
     TEST_ASSERT_SUCCESS_ERRNO (zmq_msg_copy (&msg2, &msg));
 
     zmq_msg_send (&msg, dealer, 0);
