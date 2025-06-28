@@ -610,7 +610,7 @@ int zmq_msg_init_external_storage (
 zmq_msg_t *msg_, zmq_msg_content_t *content_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_)
 {
     return (reinterpret_cast<zmq::msg_t *> (msg_))
-    ->init_external_storage (msg_, content_, data_, size_, ffn_, hint_);
+    ->init_external_storage (reinterpret_cast<zmq::msg_t::content_t*>(content_), data_, size_, ffn_, hint_);
 }
 
 
