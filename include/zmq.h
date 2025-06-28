@@ -233,10 +233,27 @@ typedef struct zmq_msg_t
 
 typedef void (zmq_free_fn) (void *data_, void *hint_);
 
+typedef struct zmq_msg_content_t{
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
+  __declspec (align (8)) unsigned char _[64];
+#elif defined(_MSC_VER)                                                        \
+&& (defined(_M_IX86) || defined(_M_ARM_ARMV7VE) || defined(_M_ARM))
+  __declspec (align (4)) unsigned char _[64];
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER)                           \
+|| (defined(__SUNPRO_C) && __SUNPRO_C >= 0x590)                              \
+|| (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
+  unsigned char _[64] __attribute__ ((aligned (sizeof (void *))));
+#else
+  unsigned char _[64];
+#endif
+} zmq_msg_content_t;
+
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
 ZMQ_EXPORT int zmq_msg_init_data (
   zmq_msg_t *msg_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_);
+ZMQ_EXPORT int zmq_msg_init_external_storage (
+  zmq_msg_t *msg_, zmq_msg_content_t *content_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_);
 ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_);
 ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg_, void *s_, int flags_);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg_);
