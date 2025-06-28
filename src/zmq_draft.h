@@ -91,6 +91,30 @@ int zmq_msg_set_group (zmq_msg_t *msg_, const char *group_);
 const char *zmq_msg_group (zmq_msg_t *msg_);
 int zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
+/*  Draft Msg control block type for init_external_storage.                   */
+typedef struct zmq_msg_content_t
+{
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
+    __declspec (align (8)) unsigned char _[64];
+#elif defined(_MSC_VER)                                                        \
+  && (defined(_M_IX86) || defined(_M_ARM_ARMV7VE) || defined(_M_ARM))
+    __declspec (align (4)) unsigned char _[64];
+#elif defined(__GNUC__) || defined(__INTEL_COMPILER)                           \
+  || (defined(__SUNPRO_C) && __SUNPRO_C >= 0x590)                              \
+  || (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
+    unsigned char _[64] __attribute__ ((aligned (sizeof (void *))));
+#else
+    unsigned char _[64];
+#endif
+} zmq_msg_content_t;
+
+int zmq_msg_init_external_storage (zmq_msg_t *msg_,
+                                   zmq_msg_content_t *content_,
+                                   void *data_,
+                                   size_t size_,
+                                   zmq_free_fn *ffn_,
+                                   void *hint_);
+
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE "Socket-Type"
