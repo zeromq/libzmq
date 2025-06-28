@@ -175,6 +175,7 @@ if(ENABLE_DRAFTS)
     test_zmq_ppoll_fd
     test_xsub_verbose
     test_pubsub_topics_count
+    test_msg_ffn_external_storage
   )
 
   if(HAVE_FORK)
