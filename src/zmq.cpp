@@ -86,8 +86,8 @@ typedef char
 
 // Compile time check whether msg_t::content_t fits into zmq_msg_content_t.
 // It is expected to be larger.
-typedef char
-  check_msg_content_size[sizeof (zmq::msg_t::content_t) <= sizeof (zmq_msg_content_t) ? 1 : -1];
+typedef char check_msg_content_size
+  [sizeof (zmq::msg_t::content_t) <= sizeof (zmq_msg_content_t) ? 1 : -1];
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
