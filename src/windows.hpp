@@ -24,6 +24,7 @@
 #endif
 #endif
 
+#include "err.hpp"
 #include <winsock2.h>
 #include <windows.h>
 #include <mswsock.h>
@@ -57,7 +58,26 @@ struct tcp_keepalive
 #if defined ZMQ_IOTHREAD_POLLER_USE_POLL || defined ZMQ_POLL_BASED_ON_POLL
 static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 {
-    return WSAPoll (pfd, nfds, timeout);
+    int rc = WSAPoll (pfd, nfds, timeout);
+    if (rc == -1)
+      {
+      int wsaError = WSAGetLastError ();
+      switch (wsaError)
+        {
+        // let these conditions appear as an interrupted call to
+        // simplify downstream error processing.
+        case WSAENETDOWN:
+        case WSAENOBUFS:
+          errno = EINTR;
+          break;
+
+        default:
+          errno = zmq::wsa_error_to_errno(wsaError);
+          break;
+        }
+      }
+
+    return rc;
 }
 #endif
 
