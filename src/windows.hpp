@@ -59,23 +59,21 @@ struct tcp_keepalive
 static inline int poll (struct pollfd *pfd, unsigned long nfds, int timeout)
 {
     int rc = WSAPoll (pfd, nfds, timeout);
-    if (rc == -1)
-      {
-      int wsaError = WSAGetLastError ();
-      switch (wsaError)
-        {
-        // let these conditions appear as an interrupted call to
-        // simplify downstream error processing.
-        case WSAENETDOWN:
-        case WSAENOBUFS:
-          errno = EINTR;
-          break;
+    if (rc == -1) {
+        int wsaError = WSAGetLastError ();
+        switch (wsaError) {
+            // let these conditions appear as an interrupted call to
+            // simplify downstream error processing.
+            case WSAENETDOWN:
+            case WSAENOBUFS:
+                errno = EINTR;
+                break;
 
-        default:
-          errno = zmq::wsa_error_to_errno(wsaError);
-          break;
+            default:
+                errno = zmq::wsa_error_to_errno (wsaError);
+                break;
         }
-      }
+    }
 
     return rc;
 }
