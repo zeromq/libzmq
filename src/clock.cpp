@@ -37,9 +37,17 @@ int alt_clock_gettime (int clock_id, timespec *ts)
 {
     clock_serv_t cclock;
     mach_timespec_t mts;
-    host_get_clock_service (mach_host_self (), clock_id, &cclock);
-    clock_get_time (cclock, &mts);
-    mach_port_deallocate (mach_task_self (), cclock);
+    kern_return_t kr;
+
+    kr = host_get_clock_service (mach_host_self (), clock_id, &cclock);
+    if (kr == KERN_SUCCESS) {
+        kr = clock_get_time (cclock, &mts);
+        mach_port_deallocate (mach_task_self (), cclock);
+    }
+
+    if (kr != KERN_SUCCESS)
+        return -1;
+
     ts->tv_sec = mts.tv_sec;
     ts->tv_nsec = mts.tv_nsec;
     return 0;
