@@ -559,6 +559,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
         if (rc == -1 && errno == EINTR) {
             return -1;
         }
+
         errno_assert (rc >= 0);
 
         //  Receive the signal from pollfd
