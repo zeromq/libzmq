@@ -537,6 +537,11 @@ bool zmq::pipe_t::check_hwm () const
     return !full;
 }
 
+bool zmq::pipe_t::is_active () const
+{
+    return active == _state;
+}
+
 void zmq::pipe_t::send_hwms_to_peer (int inhwm_, int outhwm_)
 {
     if (_state == active)
