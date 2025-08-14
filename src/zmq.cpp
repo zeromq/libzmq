@@ -84,6 +84,10 @@ struct iovec
 typedef char
   check_msg_t_size[sizeof (zmq::msg_t) == sizeof (zmq_msg_t) ? 1 : -1];
 
+// Compile time check whether msg_t::content_t fits into zmq_msg_content_t.
+// It is expected to be larger.
+typedef char check_msg_content_size
+  [sizeof (zmq::msg_t::content_t) <= sizeof (zmq_msg_content_t) ? 1 : -1];
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
@@ -605,6 +609,20 @@ int zmq_msg_init_data (
     return (reinterpret_cast<zmq::msg_t *> (msg_))
       ->init_data (data_, size_, ffn_, hint_);
 }
+
+int zmq_msg_init_external_storage (zmq_msg_t *msg_,
+                                   zmq_msg_content_t *content_,
+                                   void *data_,
+                                   size_t size_,
+                                   zmq_free_fn *ffn_,
+                                   void *hint_)
+{
+    return (reinterpret_cast<zmq::msg_t *> (msg_))
+      ->init_external_storage (
+        reinterpret_cast<zmq::msg_t::content_t *> (content_), data_, size_,
+        ffn_, hint_);
+}
+
 
 int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
 {
