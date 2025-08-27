@@ -497,6 +497,70 @@ typedef struct zmq_pollitem_t
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_);
 
 /******************************************************************************/
+/*  Poller polling on sockets,fd and thread-safe sockets                      */
+/******************************************************************************/
+
+#define ZMQ_HAVE_POLLER
+
+typedef struct zmq_poller_event_t
+{
+    void *socket;
+    zmq_fd_t fd;
+    void *user_data;
+    short events;
+} zmq_poller_event_t;
+
+ZMQ_EXPORT void *zmq_poller_new (void);
+ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int zmq_poller_size (void *poller);
+ZMQ_EXPORT int
+zmq_poller_add (void *poller, void *socket, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);
+ZMQ_EXPORT int zmq_poller_remove (void *poller, void *socket);
+ZMQ_EXPORT int
+zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
+ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
+                                    zmq_poller_event_t *events,
+                                    int n_events,
+                                    long timeout);
+ZMQ_EXPORT int zmq_poller_fd (void *poller, zmq_fd_t *fd);
+
+ZMQ_EXPORT int
+zmq_poller_add_fd (void *poller, zmq_fd_t fd, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, zmq_fd_t fd, short events);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, zmq_fd_t fd);
+
+ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
+                                          const void *routing_id,
+                                          size_t routing_id_size);
+
+/*  Socket monitoring events                                            */
+#define ZMQ_EVENT_PIPES_STATS 0x10000
+
+#define ZMQ_CURRENT_EVENT_VERSION 1
+#define ZMQ_CURRENT_EVENT_VERSION_DRAFT 2
+
+#define ZMQ_EVENT_ALL_V1 ZMQ_EVENT_ALL
+#define ZMQ_EVENT_ALL_V2 ZMQ_EVENT_ALL_V1 | ZMQ_EVENT_PIPES_STATS
+
+ZMQ_EXPORT int zmq_socket_monitor_versioned (
+  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
+ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
+
+#if !defined _WIN32
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const sigset_t *sigmask_);
+#else
+// Windows has no sigset_t
+ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
+                          int nitems_,
+                          long timeout_,
+                          const void *sigmask_);
+#endif
+
+/******************************************************************************/
 /*  Message proxying                                                          */
 /******************************************************************************/
 
@@ -710,70 +774,6 @@ zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 /*  Router notify options                                                     */
 #define ZMQ_NOTIFY_CONNECT 1
 #define ZMQ_NOTIFY_DISCONNECT 2
-
-/******************************************************************************/
-/*  Poller polling on sockets,fd and thread-safe sockets                      */
-/******************************************************************************/
-
-#define ZMQ_HAVE_POLLER
-
-typedef struct zmq_poller_event_t
-{
-    void *socket;
-    zmq_fd_t fd;
-    void *user_data;
-    short events;
-} zmq_poller_event_t;
-
-ZMQ_EXPORT void *zmq_poller_new (void);
-ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
-ZMQ_EXPORT int zmq_poller_size (void *poller);
-ZMQ_EXPORT int
-zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);
-ZMQ_EXPORT int zmq_poller_remove (void *poller, void *socket);
-ZMQ_EXPORT int
-zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
-                                    zmq_poller_event_t *events,
-                                    int n_events,
-                                    long timeout);
-ZMQ_EXPORT int zmq_poller_fd (void *poller, zmq_fd_t *fd);
-
-ZMQ_EXPORT int
-zmq_poller_add_fd (void *poller, zmq_fd_t fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, zmq_fd_t fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, zmq_fd_t fd);
-
-ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
-                                          const void *routing_id,
-                                          size_t routing_id_size);
-
-/*  DRAFT Socket monitoring events                                            */
-#define ZMQ_EVENT_PIPES_STATS 0x10000
-
-#define ZMQ_CURRENT_EVENT_VERSION 1
-#define ZMQ_CURRENT_EVENT_VERSION_DRAFT 2
-
-#define ZMQ_EVENT_ALL_V1 ZMQ_EVENT_ALL
-#define ZMQ_EVENT_ALL_V2 ZMQ_EVENT_ALL_V1 | ZMQ_EVENT_PIPES_STATS
-
-ZMQ_EXPORT int zmq_socket_monitor_versioned (
-  void *s_, const char *addr_, uint64_t events_, int event_version_, int type_);
-ZMQ_EXPORT int zmq_socket_monitor_pipes_stats (void *s);
-
-#if !defined _WIN32
-ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
-                          int nitems_,
-                          long timeout_,
-                          const sigset_t *sigmask_);
-#else
-// Windows has no sigset_t
-ZMQ_EXPORT int zmq_ppoll (zmq_pollitem_t *items_,
-                          int nitems_,
-                          long timeout_,
-                          const void *sigmask_);
-#endif
 
 #endif // ZMQ_BUILD_DRAFT_API
 
