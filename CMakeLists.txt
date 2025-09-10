@@ -1756,7 +1756,7 @@ if(WITH_DOC)
   endif()
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT MINGW)
   set(ZEROMQ_CMAKECONFIG_INSTALL_DIR
       "CMake"
       CACHE STRING "install path for ZeroMQConfig.cmake")
