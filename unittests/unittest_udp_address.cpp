@@ -232,7 +232,7 @@ static void test_resolve_ipv6_mcast_src_connect ()
     }
 
     zmq::udp_address_t addr;
-    int rc = addr.resolve ("[1:2:3::4];[ff01::1]:5555", false, true);
+    int rc = addr.resolve ("[1:2:3::4];[ff01::1]:5555", true, true);
 
     //  For the time being this fails because we only support binding multicast
     //  by interface name, not interface IP
