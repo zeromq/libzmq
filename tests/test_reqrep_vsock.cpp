@@ -17,14 +17,14 @@ void test_reqrep_vsock ()
     unsigned int cid;
     int vsock;
 
-    if ((vsock = open("/dev/vsock", O_RDONLY, 0)) < 0 ) {
+    if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
         TEST_IGNORE_MESSAGE ("failed to open /dev/vsock, skipping test");
-    } else if (ioctl(vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
+    } else if (ioctl (vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
         TEST_IGNORE_MESSAGE ("failed to get local cid, skipping test");
     }
 
     if (vsock >= 0) {
-      close(vsock);
+        close (vsock);
     }
 
     if (cid == VMADDR_CID_ANY)

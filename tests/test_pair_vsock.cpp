@@ -17,14 +17,15 @@ void test_pair_vsock ()
     unsigned int cid;
     int vsock;
 
-    if ((vsock = open("/dev/vsock", O_RDONLY, 0)) < 0 ) {
-        printf("open(\"/dev/vsock\", ...): %d\n", errno);
-    } else if (ioctl(vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
-        printf("ioctl(%d, IOCTL_VM_SOCKETS_GET_LOCAL_CID, ...): %d\n",vsock, errno);
+    if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
+        printf ("open(\"/dev/vsock\", ...): %d\n", errno);
+    } else if (ioctl (vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
+        printf ("ioctl(%d, IOCTL_VM_SOCKETS_GET_LOCAL_CID, ...): %d\n", vsock,
+                errno);
     }
 
     if (vsock >= 0) {
-      close(vsock);
+        close (vsock);
     }
 
     if (cid == VMADDR_CID_ANY)

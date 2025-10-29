@@ -24,8 +24,8 @@ zmq::vsock_address_t::vsock_address_t (ctx_t *parent_) : parent (parent_)
 }
 
 zmq::vsock_address_t::vsock_address_t (const sockaddr *sa,
-                                     socklen_t sa_len,
-                                     ctx_t *parent_) :
+                                       socklen_t sa_len,
+                                       ctx_t *parent_) :
     parent (parent_)
 {
     zmq_assert (sa && sa_len > 0);
@@ -92,8 +92,7 @@ int zmq::vsock_address_t::resolve (const char *path_)
         port = static_cast<unsigned int> (l);
     }
 
-    address.svm_family =
-      static_cast<sa_family_t> (AF_VSOCK);
+    address.svm_family = static_cast<sa_family_t> (AF_VSOCK);
     address.svm_cid = cid;
     address.svm_port = port;
 

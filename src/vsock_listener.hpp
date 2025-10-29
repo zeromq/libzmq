@@ -19,8 +19,8 @@ class vsock_listener_t ZMQ_FINAL : public stream_listener_base_t
 {
   public:
     vsock_listener_t (zmq::io_thread_t *io_thread_,
-                     zmq::socket_base_t *socket_,
-                     const options_t &options_);
+                      zmq::socket_base_t *socket_,
+                      const options_t &options_);
 
     //  Set address to listen on.
     int set_local_address (const char *addr_);

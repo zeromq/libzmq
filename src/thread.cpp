@@ -136,7 +136,7 @@ void zmq::thread_t::
 
 #else
 
-        // not implemented
+    // not implemented
 
 #endif
 }
@@ -359,7 +359,7 @@ void zmq::thread_t::
     if (!_name[0])
         return;
 
-        /* Fails with permission denied on Android 5/6 */
+    /* Fails with permission denied on Android 5/6 */
 #if defined(ZMQ_HAVE_ANDROID)
     return;
 #endif
