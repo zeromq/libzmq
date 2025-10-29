@@ -2,7 +2,7 @@
 
 
 == NAME
-zmq_vmci - 0MQ transport over virtual machine communicatios interface (VMCI) sockets
+zmq_vmci - 0MQ transport over virtual machine communications interface (VMCI) sockets
 
 
 == SYNOPSIS
