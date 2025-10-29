@@ -10,6 +10,7 @@
 #include "ipc_address.hpp"
 #include "tipc_address.hpp"
 #include "ws_address.hpp"
+#include "vsock_address.hpp"
 
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
@@ -60,6 +61,11 @@ zmq::address_t::~address_t ()
         LIBZMQ_DELETE (resolved.vmci_addr);
     }
 #endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (protocol == protocol_name::vsock) {
+        LIBZMQ_DELETE (resolved.vsock_addr);
+    }
+#endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
@@ -87,6 +93,10 @@ int zmq::address_t::to_string (std::string &addr_) const
 #if defined ZMQ_HAVE_VMCI
     if (protocol == protocol_name::vmci && resolved.vmci_addr)
         return resolved.vmci_addr->to_string (addr_);
+#endif
+#if defined ZMQ_HAVE_VSOCK
+    if (protocol == protocol_name::vsock && resolved.vsock_addr)
+        return resolved.vsock_addr->to_string (addr_);
 #endif
 
     if (!protocol.empty () && !address.empty ()) {

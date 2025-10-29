@@ -128,6 +128,22 @@ AC_RUN_IFELSE(
 
 AC_MSG_RESULT([$libzmq_tipc_support])
 
+
+# check vsock support
+AC_MSG_CHECKING([if vsock is available ])
+
+AC_CHECK_HEADERS([linux/vm_sockets.h],
+   [libzmq_vsock_support=yes],
+   [libzmq_vsock_support=no],
+   [
+    #include <sys/socket.h>
+    #include <linux/vm_sockets.h>
+   ]
+)
+AC_MSG_RESULT([$libzmq_vsock_support])
+
+
+
 AC_ARG_ENABLE([pedantic],
     [AS_HELP_STRING([--disable-pedantic], [disable pedantic compiler checks [default=enabled]])],
     [libzmq_pedantic=$enableval], [libzmq_pedantic=yes])
@@ -234,6 +250,10 @@ case "${host_os}" in
 
         if test "x$libzmq_tipc_support" = "xyes"; then
             AC_DEFINE(ZMQ_HAVE_TIPC, 1, [Have TIPC support])
+        fi
+
+        if test "x$libzmq_vsock_support" = "xyes"; then
+            AC_DEFINE(ZMQ_HAVE_VSOCK, 1, [Have vsock support])
         fi
         case "${host_os}" in
             *android*)
@@ -774,6 +794,7 @@ fi
 
 AM_CONDITIONAL(HAVE_VMCI, test "x$have_vmci_ext" != "xno")
 
+
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
 
@@ -789,6 +810,7 @@ if test "x$libzmq_pedantic" = "xyes"; then
 fi
 AC_LANG_POP([C++])
 
+AM_CONDITIONAL(BUILD_VSOCK, test "x$libzmq_vsock_support" = "xyes")
 AM_CONDITIONAL(BUILD_TIPC, test "x$libzmq_tipc_support" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")

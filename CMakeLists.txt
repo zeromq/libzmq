@@ -1160,6 +1160,9 @@ set(cxx-sources
     vmci_address.hpp
     vmci_connecter.hpp
     vmci_listener.hpp
+    vsock_address.hpp
+    vsock_connecter.hpp
+    vsock_listener.hpp
     windows.hpp
     wire.hpp
     xpub.hpp
@@ -1231,6 +1234,10 @@ message(STATUS "Building with VMCI")
   set(ZMQ_HAVE_VMCI 1)
   include_directories(${VMCI_INCLUDE_DIRS})
   list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
+endif()
+
+if(ZMQ_HAVE_VSOCK)
+  list(APPEND cxx-sources vsock_address.cpp vsock_connecter.cpp vsock_listener.cpp)
 endif()
 
 if(ZMQ_HAVE_TIPC)

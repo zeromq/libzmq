@@ -1802,6 +1802,10 @@ int zmq_has (const char *capability_)
     if (strcmp (capability_, "WSS") == 0)
         return true;
 #endif
+#if defined(ZMQ_HAVE_VSOCK)
+    if (strcmp (capability_, zmq::protocol_name::vsock) == 0)
+        return true;
+#endif
     //  Whatever the application asked for, we don't have
     return false;
 }

@@ -152,6 +152,10 @@ if(WITH_VMCI)
   list(APPEND tests test_pair_vmci test_reqrep_vmci)
 endif()
 
+if(ZMQ_HAVE_VSOCK)
+  list(APPEND tests test_pair_vsock test_reqrep_vsock)
+endif()
+
 if(ENABLE_DRAFTS)
   list(
     APPEND
