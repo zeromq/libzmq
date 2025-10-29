@@ -140,8 +140,6 @@ AC_CHECK_HEADERS([linux/vm_sockets.h],
     #include <linux/vm_sockets.h>
    ]
 )
-AC_MSG_RESULT([$libzmq_vsock_support])
-
 
 
 AC_ARG_ENABLE([pedantic],
