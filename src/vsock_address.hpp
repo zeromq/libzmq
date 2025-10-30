@@ -8,8 +8,9 @@
 #include "platform.hpp"
 #include "ctx.hpp"
 #if defined ZMQ_HAVE_VSOCK
-#include <linux/vm_sockets.h>
 #include <sys/socket.h>
+#include <linux/vm_sockets.h>
+
 
 namespace zmq
 {

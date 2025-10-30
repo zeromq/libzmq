@@ -9,8 +9,6 @@
 #include <climits>
 #include <string>
 #include <sstream>
-#include <sys/socket.h>
-#include <linux/vm_sockets.h>
 #include "err.hpp"
 
 zmq::vsock_address_t::vsock_address_t ()

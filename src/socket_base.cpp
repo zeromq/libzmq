@@ -49,15 +49,24 @@
 #ifdef ZMQ_HAVE_WSS
 #include "wss_address.hpp"
 #endif
+
+#if defined ZMQ_HAVE_VSOCK
+// fix header conflict with VMCI
+#define sockaddr_vm linux_sockaddr_vm
+#define VMADDR_PORT_ANY LINUX_VMADDR_PORT_ANY
+#define VMADDR_CID_ANY LINUX_VMADDR_CID_ANY
+#include "vsock_address.hpp"
+#include "vsock_listener.hpp"
+#undef sockaddr_vm
+#undef VMADDR_CID_ANY
+#undef VMADDR_PORT_ANY
+#endif
+
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
 #include "vmci_listener.hpp"
 #endif
 
-#if defined ZMQ_HAVE_VSOCK
-#include "vsock_address.hpp"
-#include "vsock_listener.hpp"
-#endif
 
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
