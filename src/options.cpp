@@ -727,6 +727,7 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_VMCI_CONNECT_TIMEOUT:
             return do_setsockopt (optval_, optvallen_, &vmci_connect_timeout);
 #endif
+
         case ZMQ_USE_FD:
             if (is_int && value >= -1) {
                 use_fd = value;
