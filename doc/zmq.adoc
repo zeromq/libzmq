@@ -171,7 +171,7 @@ Virtual Machine Communications Interface (VMCI) transport::
 Unreliable unicast and multicast using UDP::
  * xref:zmq_udp.adoc[zmq_udp]
 
-Linux VSOCK (AF_VSCOK) transport::
+Linux VSOCK (AF_VSOCK) transport::
  * xref:zmq_vsock.adoc[zmq_vsock]
 
 Proxies
