@@ -14,8 +14,8 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_pair_vsock ()
 {
-    unsigned int cid;
-    int vsock;
+    int cid = -1;
+    int vsock = -1;
 
     if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
         TEST_IGNORE_MESSAGE ("failed to open /dev/vsock, skipping test");
