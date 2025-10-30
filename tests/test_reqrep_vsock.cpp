@@ -14,7 +14,7 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_reqrep_vsock ()
 {
-    int cid = -1;
+    unsigned int cid = VMADDR_CID_ANY;
     int vsock = -1;
 
     if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
