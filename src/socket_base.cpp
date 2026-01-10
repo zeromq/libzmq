@@ -493,6 +493,13 @@ int zmq::socket_base_t::leave (const char *group_)
     return xleave (group_);
 }
 
+int zmq::socket_base_t::disconnect_peer (uint32_t routing_id_)
+{
+    scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+
+    return xdisconnect_peer (routing_id_);
+}
+
 void zmq::socket_base_t::add_signaler (signaler_t *s_)
 {
     zmq_assert (_thread_safe);
@@ -1633,6 +1640,12 @@ int zmq::socket_base_t::xjoin (const char *group_)
 int zmq::socket_base_t::xleave (const char *group_)
 {
     LIBZMQ_UNUSED (group_);
+    errno = ENOTSUP;
+    return -1;
+}
+
+int zmq::socket_base_t::xdisconnect_peer (uint32_t)
+{
     errno = ENOTSUP;
     return -1;
 }

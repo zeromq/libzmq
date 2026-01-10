@@ -155,3 +155,16 @@ bool zmq::server_t::xhas_out ()
     //  to be routed to.
     return true;
 }
+
+int zmq::server_t::xdisconnect_peer (uint32_t routing_id_)
+{
+    out_pipes_t::iterator it = _out_pipes.find (routing_id_);
+    if (it == _out_pipes.end ()) {
+        errno = EHOSTUNREACH;
+        return -1;
+    }
+
+    // Terminate the pipe; xpipe_terminated will erase it from maps.
+    it->second.pipe->terminate (false);
+    return 0;
+}

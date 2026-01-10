@@ -333,6 +333,14 @@ uint32_t zmq_connect_peer (void *s_, const char *addr_)
     return s->connect_peer (addr_);
 }
 
+int zmq_disconnect_peer (void *s_, uint32_t routing_id_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+    return s->disconnect_peer (routing_id_);
+}
+
 
 int zmq_unbind (void *s_, const char *addr_)
 {

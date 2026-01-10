@@ -140,6 +140,9 @@ class socket_base_t : public own_t,
 
     bool is_disconnected () const;
 
+    // Disconnect a specific peer given its routing id. Default ENOTSUP.
+    int disconnect_peer (uint32_t routing_id_);
+
   protected:
     socket_base_t (zmq::ctx_t *parent_,
                    uint32_t tid_,
@@ -181,6 +184,9 @@ class socket_base_t : public own_t,
     //  the default implementation assumes that joub and leave are not supported.
     virtual int xjoin (const char *group_);
     virtual int xleave (const char *group_);
+
+    // Default implementation returns ENOTSUP. Specific sockets may override.
+    virtual int xdisconnect_peer (uint32_t routing_id_);
 
     //  Delay actual destruction of the socket.
     void process_destroy () ZMQ_FINAL;

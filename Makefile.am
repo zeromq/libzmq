@@ -1059,6 +1059,7 @@ test_apps += tests/test_poller \
 	tests/test_xpub_manual_last_value \
 	tests/test_router_notify \
 	tests/test_peer \
+	tests/test_peer_disconnect \
 	tests/test_reconnect_options \
 	tests/test_msg_init \
 	tests/test_hello_msg \
@@ -1112,6 +1113,10 @@ tests_test_router_notify_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_peer_SOURCES = tests/test_peer.cpp
 tests_test_peer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_peer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_peer_disconnect_SOURCES = tests/test_peer_disconnect.cpp
+tests_test_peer_disconnect_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_peer_disconnect_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reconnect_options_SOURCES = tests/test_reconnect_options.cpp
 tests_test_reconnect_options_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

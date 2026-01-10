@@ -1,0 +1,67 @@
+= zmq_disconnect_peer(3)
+
+
+== NAME
+zmq_disconnect_peer - disconnect a specific peer connection by routing id.
+
+
+== SYNOPSIS
+*int zmq_disconnect_peer (void '*socket', uint32_t 'routing_id');*
+
+
+== DESCRIPTION
+The _zmq_disconnect_peer()_ function disconnects a specific connection from a
+socket given the peer 'routing_id'. After a successful disconnection, attempts
+to send messages addressed with that 'routing_id' will fail with 'EHOSTUNREACH'
+until a new connection with a different 'routing_id' is established.
+
+This function is supported on socket types that manage per-peer routing ids:
+'ZMQ_SERVER' and 'ZMQ_PEER'. Calling it on other socket types will fail with
+'ENOTSUP'.
+
+
+== RETURN VALUE
+The _zmq_disconnect_peer()_ function returns `0` if successful. Otherwise it
+returns `-1` and sets 'errno' to one of the values defined below.
+
+
+== ERRORS
+*EHOSTUNREACH*::
+No connection exists for the given 'routing_id'.
+*ENOTSUP*::
+The socket type does not support disconnecting by 'routing_id'.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+
+
+== EXAMPLE
+.Disconnect a peer by routing id
+----
+void *server = zmq_socket (context, ZMQ_SERVER);
+assert (server);
+assert (zmq_bind (server, "tcp://*:5555") == 0);
+/* ... receive a message and read its routing id ... */
+uint32_t routing_id = /* obtained from zmq_msg_routing_id(...) */;
+/* Disconnect that specific peer */
+int rc = zmq_disconnect_peer (server, routing_id);
+assert (rc == 0);
+/* Any attempt to send to that routing id now will fail with EHOSTUNREACH */
+----
+
+
+== SEE ALSO
+* xref:zmq_connect_peer.adoc[zmq_connect_peer]
+* xref:zmq_disconnect.adoc[zmq_disconnect]
+* xref:zmq_msg_routing_id.adoc[zmq_msg_routing_id]
+* xref:zmq_msg_set_routing_id.adoc[zmq_msg_set_routing_id]
+* xref:zmq_socket.adoc[zmq_socket]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.
+
+

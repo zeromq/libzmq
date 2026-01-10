@@ -692,6 +692,7 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
 ZMQ_EXPORT int zmq_leave (void *s, const char *group);
 ZMQ_EXPORT uint32_t zmq_connect_peer (void *s_, const char *addr_);
+ZMQ_EXPORT int zmq_disconnect_peer (void *s_, uint32_t routing_id_);
 
 /*  DRAFT Msg methods.                                                        */
 ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);

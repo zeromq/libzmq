@@ -35,6 +35,7 @@ class server_t : public socket_base_t
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
+    int xdisconnect_peer (uint32_t routing_id_);
 
   private:
     //  Fair queueing object for inbound pipes.
