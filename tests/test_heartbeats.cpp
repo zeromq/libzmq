@@ -422,9 +422,8 @@ void test_heartbeat_timeout_slow_subscriber ()
       zmq_setsockopt (sub, ZMQ_RCVHWM, &rcvhwm, sizeof (rcvhwm)));
 
     int heartbeat_ivl = 100; // 100ms heartbeat interval
-    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_HEARTBEAT_IVL,
-                                               &heartbeat_ivl,
-                                               sizeof (heartbeat_ivl)));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (
+      sub, ZMQ_HEARTBEAT_IVL, &heartbeat_ivl, sizeof (heartbeat_ivl)));
 
     int heartbeat_timeout = 200; // 200ms timeout
     TEST_ASSERT_SUCCESS_ERRNO (zmq_setsockopt (sub, ZMQ_HEARTBEAT_TIMEOUT,
