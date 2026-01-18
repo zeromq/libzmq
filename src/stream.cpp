@@ -116,7 +116,7 @@ int zmq::stream_t::xsend (msg_t *msg_)
             _current_out = NULL;
             return 0;
         }
-        if (!_current_out->check_write()) {
+        if (!_current_out->check_write ()) {
             _more_out = true;
             errno = EAGAIN;
             return -1;
