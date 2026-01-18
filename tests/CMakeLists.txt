@@ -27,6 +27,7 @@ set(tests
   test_stream
   test_stream_empty
   test_stream_disconnect
+  test_stream_hwm_disconnect
   test_disconnect_inproc
   test_unbind_wildcard
   test_ctx_options
