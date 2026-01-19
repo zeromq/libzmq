@@ -79,6 +79,9 @@ int zmq::stream_t::xsend (msg_t *msg_)
                 _current_out = out_pipe->pipe;
                 if (!_current_out->check_write ()) {
                     out_pipe->active = false;
+                    _current_out = NULL;
+                    errno = EAGAIN;
+                    return -1;
                 }
             } else {
                 errno = EHOSTUNREACH;
@@ -115,11 +118,6 @@ int zmq::stream_t::xsend (msg_t *msg_)
             errno_assert (rc == 0);
             _current_out = NULL;
             return 0;
-        }
-        if (!_current_out->check_write ()) {
-            _more_out = true;
-            errno = EAGAIN;
-            return -1;
         }
         const bool ok = _current_out->write (msg_);
         if (likely (ok))
@@ -239,6 +237,32 @@ bool zmq::stream_t::xhas_out ()
     //  attempt to write succeeds depends on which pipe the message is going
     //  to be routed to.
     return true;
+}
+
+int zmq::stream_t::xdisconnect_peer (uint32_t routing_id_)
+{
+    unsigned char buffer[5];
+    buffer[0] = 0;
+    put_uint32 (buffer + 1, routing_id_);
+
+    blob_t routing_id;
+    routing_id.set (buffer, sizeof buffer);
+
+    out_pipe_t *out_pipe = lookup_out_pipe (routing_id);
+    if (!out_pipe) {
+        errno = EHOSTUNREACH;
+        return -1;
+    }
+
+    out_pipe->pipe->terminate (false);
+
+    // if currently writing to this pipe at same time, reset _current_out and _more_out
+    if (out_pipe->pipe == _current_out) {
+        _current_out = NULL;
+        _more_out = false;
+    }
+
+    return 0;
 }
 
 void zmq::stream_t::identify_peer (pipe_t *pipe_, bool locally_initiated_)
