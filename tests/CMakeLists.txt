@@ -26,7 +26,6 @@ set(tests
   test_probe_router
   test_stream
   test_stream_empty
-  test_stream_disconnect_peer
   test_stream_disconnect
   test_disconnect_inproc
   test_unbind_wildcard

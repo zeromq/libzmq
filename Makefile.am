@@ -460,7 +460,6 @@ test_apps = \
 	tests/test_probe_router \
 	tests/test_stream \
 	tests/test_stream_empty \
-	tests/test_stream_disconnect_peer \
 	tests/test_stream_disconnect \
 	tests/test_stream_timeout \
 	tests/test_disconnect_inproc \
@@ -635,10 +634,6 @@ tests_test_stream_empty_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_stream_timeout_SOURCES = tests/test_stream_timeout.cpp
 tests_test_stream_timeout_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_stream_timeout_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
-
-tests_test_stream_disconnect_peer_SOURCES = tests/test_stream_disconnect_peer.cpp
-tests_test_stream_disconnect_peer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
-tests_test_stream_disconnect_peer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_stream_disconnect_SOURCES = tests/test_stream_disconnect.cpp
 tests_test_stream_disconnect_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

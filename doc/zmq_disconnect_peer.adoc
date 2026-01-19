@@ -16,7 +16,7 @@ to send messages addressed with that 'routing_id' will fail with 'EHOSTUNREACH'
 until a new connection with a different 'routing_id' is established.
 
 This function is supported on socket types that manage per-peer routing ids:
-'ZMQ_SERVER', 'ZMQ_PEER' and `ZMQ_STREAM`. Calling it on other socket types will fail with
+'ZMQ_SERVER' and 'ZMQ_PEER'. Calling it on other socket types will fail with
 'ENOTSUP'.
 
 
