@@ -414,8 +414,11 @@ void zmq::norm_engine_t::in_event ()
     // This means a NormEvent is pending, so call NormGetNextEvent() and handle
     NormEvent event;
 #ifdef ZMQ_USE_NORM_SOCKET_WRAPPER
-    int rc = recv (wrapper_read_fd, reinterpret_cast<char *> (&event),
+    int rc;
+    do {
+        rc = recv (wrapper_read_fd, reinterpret_cast<char *> (&event),
                    sizeof (event), 0);
+    } while (rc == -1 && errno == EINTR);
     errno_assert (rc == sizeof (event));
 #else
     if (!NormGetNextEvent (norm_instance, &event)) {
