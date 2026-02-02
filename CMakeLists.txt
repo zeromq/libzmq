@@ -6,6 +6,8 @@ else()
   cmake_minimum_required(VERSION 2.8.12...3.31)
 endif()
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 project(ZeroMQ)
 
 include(CheckIncludeFiles)
