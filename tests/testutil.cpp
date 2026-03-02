@@ -331,7 +331,7 @@ sockaddr_in bind_bsd_socket (int socket_)
     struct sockaddr_in saddr;
     memset (&saddr, 0, sizeof (saddr));
     saddr.sin_family = AF_INET;
-    saddr.sin_addr.s_addr = INADDR_ANY;
+    saddr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
     saddr.sin_port = 0;
 #else
