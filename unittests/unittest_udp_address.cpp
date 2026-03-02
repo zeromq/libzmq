@@ -23,7 +23,8 @@ static void test_resolve (bool bind_,
                           const char *target_addr_,
                           uint16_t expected_port_,
                           const char *bind_addr_,
-                          bool multicast_)
+                          bool multicast_,
+                          uint16_t expected_zone = 0)
 {
     if (family_ == AF_INET6 && !is_ipv6_available ()) {
         TEST_IGNORE_MESSAGE ("ipv6 is not available");
@@ -53,7 +54,7 @@ static void test_resolve (bool bind_,
     }
 
     validate_address (family_, addr.target_addr (), target_addr_,
-                      expected_port_);
+                      expected_port_, expected_zone);
     validate_address (family_, addr.bind_addr (), bind_addr_, expected_port_);
 }
 
@@ -62,10 +63,11 @@ static void test_resolve_bind (int family_,
                                const char *dest_addr_,
                                uint16_t expected_port_ = 0,
                                const char *bind_addr_ = NULL,
-                               bool multicast_ = false)
+                               bool multicast_ = false,
+                               uint16_t expected_zone = 0)
 {
     test_resolve (true, family_, name_, dest_addr_, expected_port_, bind_addr_,
-                  multicast_);
+                  multicast_, expected_zone);
 }
 
 static void test_resolve_connect (int family_,
@@ -172,7 +174,7 @@ static void test_resolve_ipv4_bind_mcast ()
 
 static void test_resolve_ipv6_bind_mcast ()
 {
-    test_resolve_bind (AF_INET6, "[ff00::1]:1234", "ff00::1", 1234, "::", true);
+    test_resolve_bind (AF_INET6, "eth0;[ff00::1]:1234", "ff00::1", 1234, "fe80::", true, 2);
 }
 
 static void test_resolve_ipv4_connect_mcast ()
@@ -232,7 +234,7 @@ static void test_resolve_ipv6_mcast_src_connect ()
     }
 
     zmq::udp_address_t addr;
-    int rc = addr.resolve ("[1:2:3::4];[ff01::1]:5555", false, true);
+    int rc = addr.resolve ("[1:2:3::4];[ff01::1]:5555", true, true);
 
     //  For the time being this fails because we only support binding multicast
     //  by interface name, not interface IP

@@ -125,7 +125,6 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
         if (_is_multicast || !bind_) {
             _bind_address = ip_addr_t::any (_target_address.family ());
             _bind_address.set_port (port);
-            _bind_interface = 0;
         } else {
             //  If we were asked for a bind socket and the address
             //  provided was not multicast then it was really meant as
@@ -141,9 +140,12 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_, bool ipv6_)
 
     //  For IPv6 multicast we *must* have an interface index since we can't
     //  bind by address.
-    if (ipv6_ && _is_multicast && _bind_interface < 0) {
-        errno = ENODEV;
-        return -1;
+    if (ipv6_ && _is_multicast && bind_) {
+        if (_bind_interface < 0) {
+            errno = ENODEV;
+            return -1;
+        }
+        _target_address.ipv6.sin6_scope_id = _bind_interface;
     }
 
     return 0;
