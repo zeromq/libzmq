@@ -11,6 +11,17 @@
 #include "tipc_address.hpp"
 #include "ws_address.hpp"
 
+#if defined ZMQ_HAVE_VSOCK
+// fix header conflict with VMCI
+#define sockaddr_vm linux_sockaddr_vm
+#define VMADDR_PORT_ANY LINUX_VMADDR_PORT_ANY
+#define VMADDR_CID_ANY LINUX_VMADDR_CID_ANY
+#include "vsock_address.hpp"
+#undef sockaddr_vm
+#undef VMADDR_CID_ANY
+#undef VMADDR_PORT_ANY
+#endif
+
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
 #endif
@@ -60,6 +71,11 @@ zmq::address_t::~address_t ()
         LIBZMQ_DELETE (resolved.vmci_addr);
     }
 #endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (protocol == protocol_name::vsock) {
+        LIBZMQ_DELETE (resolved.vsock_addr);
+    }
+#endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
@@ -87,6 +103,10 @@ int zmq::address_t::to_string (std::string &addr_) const
 #if defined ZMQ_HAVE_VMCI
     if (protocol == protocol_name::vmci && resolved.vmci_addr)
         return resolved.vmci_addr->to_string (addr_);
+#endif
+#if defined ZMQ_HAVE_VSOCK
+    if (protocol == protocol_name::vsock && resolved.vsock_addr)
+        return resolved.vsock_addr->to_string (addr_);
 #endif
 
     if (!protocol.empty () && !address.empty ()) {
