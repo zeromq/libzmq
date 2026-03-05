@@ -1479,7 +1479,7 @@ endif()
 foreach(target ${build_targets})
   target_include_directories(
     ${target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:include>)
+                     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
   if(ENABLE_DRAFTS)
     target_compile_definitions(${target} PUBLIC ZMQ_BUILD_DRAFT_API)
