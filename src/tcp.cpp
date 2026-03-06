@@ -187,7 +187,10 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
-    const int nbytes = send (s_, (char *) data_, static_cast<int> (size_), 0);
+    int nbytes;
+    do {
+        nbytes = send (s_, (char *) data_, static_cast<int> (size_), 0);
+    } while (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEINTR);
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
@@ -212,7 +215,10 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
     return nbytes;
 
 #else
-    ssize_t nbytes = send (s_, static_cast<const char *> (data_), size_, 0);
+    ssize_t nbytes;
+    do {
+        nbytes = send (s_, static_cast<const char *> (data_), size_, 0);
+    } while (nbytes == -1 && errno == EINTR);
 
     //  Several errors are OK. When speculative write is being done we may not
     //  be able to write a single byte from the socket. Also, SIGSTOP issued
@@ -269,7 +275,10 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
 #else
 
-    const ssize_t rc = recv (s_, static_cast<char *> (data_), size_, 0);
+    ssize_t rc;
+    do {
+        rc = recv (s_, static_cast<char *> (data_), size_, 0);
+    } while (rc == -1 && errno == EINTR);
 
     //  Several errors are OK. When speculative read is being done we may not
     //  be able to read a single byte from the socket. Also, SIGSTOP issued

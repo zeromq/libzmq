@@ -37,7 +37,10 @@ zmq::devpoll_t::~devpoll_t ()
 void zmq::devpoll_t::devpoll_ctl (fd_t fd_, short events_)
 {
     struct pollfd pfd = {fd_, events_, 0};
-    ssize_t rc = write (devpoll_fd, &pfd, sizeof pfd);
+    ssize_t rc;
+    do {
+        rc = write (devpoll_fd, &pfd, sizeof pfd);
+    } while (rc == -1 && errno == EINTR);
     zmq_assert (rc == sizeof pfd);
 }
 
