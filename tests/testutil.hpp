@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
+#ifdef _AIX
+#define MSG_DONTWAIT MSG_NONBLOCK
+#endif
+
 #ifndef __TESTUTIL_HPP_INCLUDED__
 #define __TESTUTIL_HPP_INCLUDED__
 
