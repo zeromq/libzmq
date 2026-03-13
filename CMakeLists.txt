@@ -1327,11 +1327,24 @@ option(BUILD_SHARED "Whether or not to build the shared object" ON)
 option(BUILD_STATIC "Whether or not to build the static archive" ON)
 
 if(MSVC)
+  option(ZMQ_MSVC_SHORT_LIB_NAMES "Use short lib names (e.g. libzmq.lib/dll, libzmq-static.lib) for MSVC" OFF)
+  if(ZMQ_MSVC_SHORT_LIB_NAMES)
+    set(ZMQ_SHARED_RELEASE_POSTFIX "")
+    set(ZMQ_SHARED_DEBUG_POSTFIX "d")
+    set(ZMQ_STATIC_RELEASE_POSTFIX "-static")
+    set(ZMQ_STATIC_DEBUG_POSTFIX "-staticd")
+  else()
+    set(ZMQ_SHARED_RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+    set(ZMQ_SHARED_DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+    set(ZMQ_STATIC_RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+    set(ZMQ_STATIC_DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+  endif()
+    
   # Suppress linker warnings caused by #ifdef omission of file content.
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
   set(PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
   set(PDB_NAME
-      "lib${ZMQ_OUTPUT_BASENAME}${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+      "lib${ZMQ_OUTPUT_BASENAME}${ZMQ_SHARED_DEBUG_POSTFIX}")
   function(enable_vs_guideline_checker target)
     set_target_properties(
       ${target} PROPERTIES VS_GLOBAL_EnableCppCoreCheck true VS_GLOBAL_CodeAnalysisRuleSet CppCoreCheckRules.ruleset
@@ -1367,11 +1380,10 @@ if(MSVC)
     set_target_properties(
       libzmq
       PROPERTIES PUBLIC_HEADER "${public_headers}"
-                 RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 RELWITHDEBINFO_POSTFIX
-                 "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 MINSIZEREL_POSTFIX "${MSVC_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 RELEASE_POSTFIX "${ZMQ_SHARED_RELEASE_POSTFIX}"
+                 RELWITHDEBINFO_POSTFIX "${ZMQ_SHARED_RELEASE_POSTFIX}"
+                 MINSIZEREL_POSTFIX "${ZMQ_SHARED_RELEASE_POSTFIX}"
+                 DEBUG_POSTFIX "${ZMQ_SHARED_DEBUG_POSTFIX}"
                  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
                  COMPILE_DEFINITIONS "DLL_EXPORT"
                  OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
@@ -1385,12 +1397,10 @@ if(MSVC)
     set_target_properties(
       libzmq-static
       PROPERTIES PUBLIC_HEADER "${public_headers}"
-                 RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 RELWITHDEBINFO_POSTFIX
-                 "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 MINSIZEREL_POSTFIX
-                 "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                 DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                 RELEASE_POSTFIX "${ZMQ_STATIC_RELEASE_POSTFIX}"
+                 RELWITHDEBINFO_POSTFIX "${ZMQ_STATIC_RELEASE_POSTFIX}"
+                 MINSIZEREL_POSTFIX "${ZMQ_STATIC_RELEASE_POSTFIX}"
+                 DEBUG_POSTFIX "${ZMQ_STATIC_DEBUG_POSTFIX}"
                  COMPILE_FLAGS "/DZMQ_STATIC"
                  OUTPUT_NAME "lib${ZMQ_OUTPUT_BASENAME}")
   endif()
