@@ -165,12 +165,14 @@ Local inter-process communication transport::
 Local in-process (inter-thread) communication transport::
  * xref:zmq_inproc.adoc[zmq_inproc]
 
-Virtual Machine Communications Interface (VMC) transport::
+Virtual Machine Communications Interface (VMCI) transport::
  * xref:zmq_vmci.adoc[zmq_vmci]
 
 Unreliable unicast and multicast using UDP::
  * xref:zmq_udp.adoc[zmq_udp]
 
+Linux VSOCK (AF_VSOCK) transport::
+ * xref:zmq_vsock.adoc[zmq_vsock]
 
 Proxies
 ~~~~~~~
