@@ -175,11 +175,16 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     socklen_t ss_len = sizeof (ss);
 #endif
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
-    fd_t sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
-                           &ss_len, SOCK_CLOEXEC);
+    fd_t sock;
+    do {
+        sock = ::accept4 (_s, reinterpret_cast<struct sockaddr *> (&ss),
+                          &ss_len, SOCK_CLOEXEC);
+    } while (sock == retired_fd && errno == EINTR);
 #else
-    const fd_t sock =
-      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    fd_t sock;
+    do {
+        sock = ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    } while (sock == retired_fd && errno == EINTR);
 #endif
 
     if (sock == retired_fd) {

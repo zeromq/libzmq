@@ -447,8 +447,10 @@ static int make_fdpair_tcpip (zmq::fd_t *r_, zmq::fd_t *w_)
 
     //  Connect writer to the listener.
     if (rc != SOCKET_ERROR) {
-        rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
-                      sizeof addr);
+        do {
+            rc = connect (*w_, reinterpret_cast<struct sockaddr *> (&addr),
+                          sizeof addr);
+        } while (rc == SOCKET_ERROR && errno == EINTR);
     }
 
     //  Accept connection from writer.
@@ -730,10 +732,14 @@ try_tcpip:
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    do {
+        rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    } while (rc == -1 && errno == EINTR);
     errno_assert (rc != -1);
 
-    *r_ = accept (listener, NULL, NULL);
+    do {
+        *r_ = accept (listener, NULL, NULL);
+    } while (*r_ == -1 && errno == EINTR);
     errno_assert (*r_ != -1);
 
     close (listener);
@@ -772,10 +778,14 @@ try_tcpip:
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    do {
+        rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
+    } while (rc == -1 && errno == EINTR);
     errno_assert (rc != -1);
 
-    *r_ = accept (listener, NULL, NULL);
+    do {
+        *r_ = accept (listener, NULL, NULL);
+    } while (*r_ == -1 && errno == EINTR);
     errno_assert (*r_ != -1);
 
     close (listener);
