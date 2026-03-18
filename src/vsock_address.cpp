@@ -99,7 +99,7 @@ int zmq::vsock_address_t::resolve (const char *path_)
 
 int zmq::vsock_address_t::to_string (std::string &addr_) const
 {
-    if (address.svm_family != AF_VSOCK) {
+    if (address.svm_family != parent->get_vsock_socket_family ()) {
         addr_.clear ();
         return -1;
     }
@@ -135,5 +135,11 @@ socklen_t zmq::vsock_address_t::addrlen () const
 {
     return static_cast<socklen_t> (sizeof address);
 }
+
+sa_family_t zmq::vsock_address_t::family () const
+{
+    return AF_VSOCK;
+}
+
 
 #endif
