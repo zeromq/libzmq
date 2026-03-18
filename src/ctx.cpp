@@ -27,7 +27,6 @@
 
 #ifdef ZMQ_HAVE_VSOCK
 #include <sys/socket.h>
-#include "linux/vm_sockets.h"
 #endif
 
 #ifdef ZMQ_USE_NSS
