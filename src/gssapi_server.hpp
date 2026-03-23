@@ -38,7 +38,8 @@ class gssapi_server_t ZMQ_FINAL : public gssapi_mechanism_base_t,
         expect_zap_reply,
         send_ready,
         recv_ready,
-        connected
+        connected,
+        closing
     };
 
     session_base_t *const session;

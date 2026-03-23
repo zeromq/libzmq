@@ -100,7 +100,6 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
         //  Use ZAP protocol (RFC 27) to authenticate the user.
         //  Note that rc will be -1 only if ZAP is not set up, but if it was
         //  requested and it does not work properly the program will abort.
-        bool expecting_zap_reply = false;
         int rc = session->zap_connect ();
         if (rc == 0) {
             send_zap_request ();
@@ -108,10 +107,16 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
             if (rc != 0) {
                 if (rc == -1)
                     return -1;
-                expecting_zap_reply = true;
+                //  ZAP reply not yet available, wait asynchronously
+                state = expect_zap_reply;
+            } else {
+                //  Synchronous ZAP reply: honour the status code
+                state = status_code[0] == '2' ? send_ready : closing;
             }
+        } else {
+            //  ZAP not configured; allow the connection
+            state = send_ready;
         }
-        state = expecting_zap_reply ? expect_zap_reply : send_ready;
         return 0;
     }
 
@@ -166,13 +171,17 @@ int zmq::gssapi_server_t::zap_msg_available ()
     }
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        state = send_ready;
+        state = status_code[0] == '2' ? send_ready : closing;
     return rc == -1 ? -1 : 0;
 }
 
 zmq::mechanism_t::status_t zmq::gssapi_server_t::status () const
 {
-    return state == connected ? mechanism_t::ready : mechanism_t::handshaking;
+    if (state == connected)
+        return mechanism_t::ready;
+    if (state == closing)
+        return mechanism_t::error;
+    return mechanism_t::handshaking;
 }
 
 int zmq::gssapi_server_t::produce_next_token (msg_t *msg_)
