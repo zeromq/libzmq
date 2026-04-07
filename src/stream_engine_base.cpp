@@ -399,7 +399,10 @@ void zmq::stream_engine_base_t::restart_output ()
 
 bool zmq::stream_engine_base_t::restart_input ()
 {
-    zmq_assert (_input_stopped);
+    // Engine can be replaced while a write_activated notification is pending.
+    if (!_input_stopped)
+        return true;
+
     zmq_assert (_session != NULL);
     zmq_assert (_decoder != NULL);
 
