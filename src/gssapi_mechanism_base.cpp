@@ -52,6 +52,10 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
         flags |= 0x01;
     if (msg_->flags () & msg_t::command)
         flags |= 0x02;
+    if (msg_->is_subscribe ())
+        flags |= 0x04;
+    else if (msg_->is_cancel ())
+        flags |= 0x08;
 
     uint8_t *plaintext_buffer =
       static_cast<uint8_t *> (malloc (msg_->size () + 1));
@@ -174,6 +178,10 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
         msg_->set_flags (msg_t::more);
     if (flags & 0x02)
         msg_->set_flags (msg_t::command);
+    if (flags & 0x04)
+        msg_->set_flags (msg_t::subscribe);
+    else if (flags & 0x08)
+        msg_->set_flags (msg_t::cancel);
 
     memcpy (msg_->data (), static_cast<char *> (plaintext.value) + 1,
             plaintext.length - 1);
