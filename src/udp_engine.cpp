@@ -457,13 +457,19 @@ void zmq::udp_engine_t::out_event ()
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = sendto (_fd, _out_buffer, static_cast<int> (size), 0, _out_address,
-                     _out_address_len);
+        do {
+            rc = sendto (_fd, _out_buffer, static_cast<int> (size), 0, _out_address,
+                         _out_address_len);
+        } while (rc < 0 && WSAGetLastError () == WSAEINTR);
 #elif defined ZMQ_HAVE_VXWORKS
-        rc = sendto (_fd, reinterpret_cast<caddr_t> (_out_buffer), size, 0,
-                     (sockaddr *) _out_address, _out_address_len);
+        do {
+            rc = sendto (_fd, reinterpret_cast<caddr_t> (_out_buffer), size, 0,
+                         (sockaddr *) _out_address, _out_address_len);
+        } while (rc < 0 && errno == EINTR);
 #else
-        rc = sendto (_fd, _out_buffer, size, 0, _out_address, _out_address_len);
+        do {
+            rc = sendto (_fd, _out_buffer, size, 0, _out_address, _out_address_len);
+        } while (rc < 0 && errno == EINTR);
 #endif
         if (rc < 0) {
 #ifdef ZMQ_HAVE_WINDOWS
@@ -507,9 +513,11 @@ void zmq::udp_engine_t::in_event ()
     zmq_socklen_t in_addrlen =
       static_cast<zmq_socklen_t> (sizeof (sockaddr_storage));
 
-    const int nbytes =
-      recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
-                reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
+    int nbytes;
+    do {
+        nbytes = recvfrom (_fd, _in_buffer, MAX_UDP_MSG, 0,
+                           reinterpret_cast<sockaddr *> (&in_address), &in_addrlen);
+    } while (nbytes < 0 && errno == EINTR);
 
     if (nbytes < 0) {
 #ifdef ZMQ_HAVE_WINDOWS

@@ -1045,8 +1045,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 return -1;
             }
 #else
-            int rc = select (maxfd + 1, inset.get (), outset.get (),
+            int rc;
+            do {
+                rc = select (maxfd + 1, inset.get (), outset.get (),
                              errset.get (), ptimeout);
+            } while (rc == -1 && errno == EINTR);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);
                 return -1;

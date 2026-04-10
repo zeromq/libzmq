@@ -555,7 +555,10 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
               static_cast<int> (std::min<uint64_t> (end - now, INT_MAX));
 
         //  Wait for events.
-        const int rc = poll (_pollfds, _pollset_size, timeout);
+        int rc;
+        do {
+            rc = poll (_pollfds, _pollset_size, timeout);
+        } while (rc == -1 && errno == EINTR);
         if (rc == -1 && errno == EINTR) {
             return -1;
         }
@@ -615,8 +618,11 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_,
                 valid_pollset_bytes (*_pollset_out.get ()));
         memcpy (errset.get (), _pollset_err.get (),
                 valid_pollset_bytes (*_pollset_err.get ()));
-        const int rc = select (static_cast<int> (_max_fd + 1), inset.get (),
-                               outset.get (), errset.get (), ptimeout);
+        int rc;
+        do {
+            rc = select (static_cast<int> (_max_fd + 1), inset.get (),
+                         outset.get (), errset.get (), ptimeout);
+        } while (rc == -1 && errno == EINTR);
 #if defined ZMQ_HAVE_WINDOWS
         if (unlikely (rc == SOCKET_ERROR)) {
             errno = wsa_error_to_errno (WSAGetLastError ());

@@ -129,10 +129,15 @@ zmq::fd_t zmq::tipc_listener_t::accept ()
 
     zmq_assert (_s != retired_fd);
 #ifdef ZMQ_HAVE_VXWORKS
-    fd_t sock = ::accept (_s, (struct sockaddr *) &ss, (int *) &ss_len);
+    fd_t sock;
+    do {
+        sock = ::accept (_s, (struct sockaddr *) &ss, (int *) &ss_len);
+    } while (sock == -1 && errno == EINTR);
 #else
-    fd_t sock =
-      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    fd_t sock;
+    do {
+        sock = ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    } while (sock == -1 && errno == EINTR);
 #endif
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK
