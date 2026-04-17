@@ -313,7 +313,8 @@ bool zmq::stream_engine_base_t::in_event_internal ()
 
 void zmq::stream_engine_base_t::out_event ()
 {
-    zmq_assert (!_io_error);
+    if (_io_error)
+        return;
 
     //  If write buffer is empty, try to read new data from the encoder.
     if (!_outsize) {
