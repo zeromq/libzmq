@@ -359,16 +359,18 @@ void zmq::pipe_t::process_pipe_term_ack ()
     //  First, delete all the unread messages in the pipe. We have to do it by
     //  hand because msg_t doesn't have automatic destructor. Then deallocate
     //  the ypipe itself.
+    upipe_t *const in_pipe = _in_pipe;
+    _in_pipe = NULL;
 
-    if (!_conflate) {
+    if (!_conflate && in_pipe) {
         msg_t msg;
-        while (_in_pipe->read (&msg)) {
+        while (in_pipe->read (&msg)) {
             const int rc = msg.close ();
             errno_assert (rc == 0);
         }
     }
 
-    LIBZMQ_DELETE (_in_pipe);
+    delete in_pipe;
 
     //  Deallocate the pipe object
     delete this;
