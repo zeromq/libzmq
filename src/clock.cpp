@@ -37,9 +37,11 @@ int alt_clock_gettime (int clock_id, timespec *ts)
 {
     clock_serv_t cclock;
     mach_timespec_t mts;
+    host_name_t host_self = mach_host_self ();
     host_get_clock_service (mach_host_self (), clock_id, &cclock);
     clock_get_time (cclock, &mts);
     mach_port_deallocate (mach_task_self (), cclock);
+    mach_port_deallocate (mach_task_self (), host_self);
     ts->tv_sec = mts.tv_sec;
     ts->tv_nsec = mts.tv_nsec;
     return 0;
