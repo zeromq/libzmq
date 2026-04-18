@@ -1,15 +1,15 @@
-= zmq_vmci(7)
+= zmq_vsock(7)
 
 
 == NAME
-zmq_vmci - 0MQ transport over virtual machine communications interface (VMCI) sockets
+zmq_vsock - 0MQ transport over Linux VSOCK (AF_VSOCK)
 
 
 == SYNOPSIS
-The VMCI transport passes messages between VMware virtual machines running on the same host,
-between virtual machine and the host and within virtual machines (inter-process transport like ipc).
+The AF_VSOCK address family facilitates communication between virtual machines and the host they are running on.
+This address family is used by guest agents and hypervisor services that need a communications channel that is independent of virtual machine network configuration.
 
-NOTE: Communication between a virtual machine and the host is not supported on Mac OS X 10.9 and above.
+NOTE: AF_VSOCK is only supported on linux, <https://man7.org/linux/man-pages/man7/vsock.7.html>
 
 
 == ADDRESSING
@@ -17,20 +17,20 @@ A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
 'address'. The 'transport' specifies the underlying protocol to use. The
 'address' specifies the transport-specific address to connect to.
 
-For the VMCI transport, the transport is `vmci`, and the meaning of
+For the VSOCK transport, the transport is `vsock`, and the meaning of
 the 'address' part is defined below.
 
 
 Binding a socket
 ~~~~~~~~~~~~~~~~
-When binding a 'socket' to a local address using _zmq_bind()_ with the 'vmci'
+When binding a 'socket' to a local address using _zmq_bind()_ with the 'vsock'
 transport, the 'endpoint' shall be interpreted as an 'interface' followed by a
-colon and the TCP port number to use.
+colon and the port number to use.
 
 An 'interface' may be specified by either of the following:
 
 * The wild-card `*`, meaning all available interfaces.
-* An integer returned by `VMCISock_GetLocalCID` or `@` (ZeroMQ will call VMCISock_GetLocalCID internally).
+* An integer returned by `VMADDR_CID_LOCAL` or `@`.
 
 The port may be specified by:
 
@@ -45,7 +45,7 @@ this 'endpoint' from a socket using _zmq_unbind()_.
 
 Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
-When connecting a socket to a peer address using _zmq_connect()_ with the 'vmci'
+When connecting a socket to a peer address using _zmq_connect()_ with the 'vsock'
 transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
 a colon and the port number to use.
 
@@ -55,12 +55,12 @@ A 'peer address' must be a CID of the peer.
 == EXAMPLES
 .Assigning a local address to a socket
 ----
-//  VMCI port 5555 on all available interfaces
-rc = zmq_bind(socket, "vmci://*:5555");
+//  VSOCK port 5555 on all available interfaces
+rc = zmq_bind(socket, "vsock://*:5555");
 assert (rc == 0);
-//  VMCI port 5555 on the local loop-back interface on all platforms
-cid = VMCISock_GetLocalCID();
-sprintf(endpoint, "vmci://%d:5555", cid);
+//  VSOCK port 5555 on the local loop-back interface on all platforms
+cid = VMADDR_CID_LOCAL;
+sprintf(endpoint, "vsock://%d:5555", cid);
 rc = zmq_bind(socket, endpoint);
 assert (rc == 0);
 ----
@@ -68,7 +68,7 @@ assert (rc == 0);
 .Connecting a socket
 ----
 //  Connecting using a CID
-sprintf(endpoint, "vmci://%d:5555", cid);
+sprintf(endpoint, "vsock://%d:5555", cid);
 rc = zmq_connect(socket, endpoint);
 assert (rc == 0);
 ----
@@ -80,7 +80,7 @@ assert (rc == 0);
 * xref:zmq_inproc.adoc[zmq_inproc]
 * xref:zmq_tcp.adoc[zmq_tcp]
 * xref:zmq_pgm.adoc[zmq_pgm]
-* xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq_vsock.adoc[zmq_vsock]
 * xref:zmq_getsockopt.adoc[zmq_getsockopt]
 * xref:zmq.adoc[zmq]
 

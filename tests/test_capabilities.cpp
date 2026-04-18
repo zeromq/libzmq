@@ -60,6 +60,12 @@ void test_capabilities ()
 #else
     TEST_ASSERT_TRUE (!zmq_has ("draft"));
 #endif
+
+#if defined(ZMQ_HAVE_VSOCK)
+    TEST_ASSERT_TRUE (zmq_has ("vsock"));
+#else
+    TEST_ASSERT_TRUE (!zmq_has ("vsock"));
+#endif
 }
 
 int main ()

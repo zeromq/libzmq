@@ -383,13 +383,14 @@ if(WIN32)
       "${ZMQ_WIN32_WINNT_DEFAULT}"
       CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
 
-  # On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc
-  # support)
+  # On Windows Vista or greater, default to epoll for MSVC 2013+ and MinGW
+  # to avoid falling back to select, which is incompatible with IPC transport.
   if(ZMQ_WIN32_WINNT GREATER "0x05FF"
-     AND MSVC_VERSION GREATER 1799
      AND POLLER STREQUAL ""
      AND NOT ZMQ_HAVE_WINDOWS_UWP)
-    set(POLLER "epoll")
+    if(MSVC_VERSION GREATER 1799 OR MINGW)
+      set(POLLER "epoll")
+    endif()
   endif()
 
   add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
@@ -1160,6 +1161,9 @@ set(cxx-sources
     vmci_address.hpp
     vmci_connecter.hpp
     vmci_listener.hpp
+    vsock_address.hpp
+    vsock_connecter.hpp
+    vsock_listener.hpp
     windows.hpp
     wire.hpp
     xpub.hpp
@@ -1231,6 +1235,10 @@ message(STATUS "Building with VMCI")
   set(ZMQ_HAVE_VMCI 1)
   include_directories(${VMCI_INCLUDE_DIRS})
   list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
+endif()
+
+if(ZMQ_HAVE_VSOCK)
+  list(APPEND cxx-sources vsock_address.cpp vsock_connecter.cpp vsock_listener.cpp)
 endif()
 
 if(ZMQ_HAVE_TIPC)

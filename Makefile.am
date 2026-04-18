@@ -255,6 +255,12 @@ src_libzmq_la_SOURCES = \
 	src/vmci_connecter.hpp \
 	src/vmci_listener.cpp \
 	src/vmci_listener.hpp \
+	src/vsock_address.cpp \
+	src/vsock_address.hpp \
+	src/vsock_connecter.cpp \
+	src/vsock_connecter.hpp \
+	src/vsock_listener.cpp \
+	src/vsock_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
 	src/xpub.cpp \
@@ -1044,6 +1050,19 @@ tests_test_reqrep_vmci_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_reqrep_vmci_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
 tests_test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
+
+endif
+
+if BUILD_VSOCK
+test_apps += tests/test_pair_vsock tests/test_reqrep_vsock
+
+tests_test_pair_vsock_SOURCES = tests/test_pair_vsock.cpp
+tests_test_pair_vsock_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pair_vsock_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_reqrep_vsock_SOURCES = tests/test_reqrep_vsock.cpp
+tests_test_reqrep_vsock_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_reqrep_vsock_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 endif
 
