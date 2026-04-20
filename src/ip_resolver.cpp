@@ -585,7 +585,7 @@ int zmq::ip_resolver_t::get_interface_name (unsigned long index_,
 
     char *if_name_result = NULL;
 
-#if _WIN32_WINNT > _WIN32_WINNT_WINXP && !defined ZMQ_HAVE_WINDOWS_UWP
+#if _WIN32_WINNT >= 0x0600 && !defined ZMQ_HAVE_WINDOWS_UWP
     if_name_result = if_indextoname (index_, buffer);
 #endif
 
