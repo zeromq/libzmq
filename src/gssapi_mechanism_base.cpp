@@ -66,6 +66,8 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     maj_stat = gss_wrap (&min_stat, context, 1, GSS_C_QOP_DEFAULT, &plaintext,
                          &state, &wrapped);
 
+    free (plaintext_buffer);
+
     zmq_assert (maj_stat == GSS_S_COMPLETE);
     zmq_assert (state);
 
