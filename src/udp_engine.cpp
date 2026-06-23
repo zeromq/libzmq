@@ -547,10 +547,8 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes;
         body_offset = 0;
     } else {
-        // TODO in out_event, the group size is an *unsigned* char. what is
-        // the maximum value?
         const char *group_buffer = _in_buffer + 1;
-        const int group_size = _in_buffer[0];
+        const int group_size = static_cast<unsigned char> (_in_buffer[0]);
 
         rc = msg.init_size (group_size);
         errno_assert (rc == 0);
