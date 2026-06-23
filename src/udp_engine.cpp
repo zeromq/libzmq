@@ -549,8 +549,11 @@ void zmq::udp_engine_t::in_event ()
         memcpy (msg.data (), group_buffer, group_size);
 
         //  This doesn't fit, just ignore
-        if (nbytes - 1 < group_size)
+        if (nbytes - 1 < group_size) {
+            rc = msg.close ();
+            errno_assert (rc == 0);
             return;
+        }
 
         body_size = nbytes - 1 - group_size;
         body_offset = 1 + group_size;
