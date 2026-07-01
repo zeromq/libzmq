@@ -75,7 +75,7 @@ int zmq::ws_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     _host = std::string (name_, delim - name_);
 
     // find the path part, which is optional
-    delim = strrchr (name_, '/');
+    delim = strchr (delim, '/');
     std::string host_name;
     if (delim) {
         _path = std::string (delim);
