@@ -155,7 +155,7 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
       if: matrix.WITH_LIBSODIUM == 'ON'
       with:
         repository: jedisct1/libsodium
@@ -171,7 +171,7 @@ jobs:
       shell: powershell
       working-directory: libsodium
       run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
       with:
         path: libzmq
     - run: md build_libzmq
