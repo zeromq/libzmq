@@ -151,7 +151,7 @@ jobs:
       POLLER: ${{ matrix.POLLER }}
       NDK_VERSION: ${{ matrix.NDK_VERSION }}
       ANDROID_NDK_ROOT: /tmp/${{ matrix.NDK_VERSION }}
-    steps:    
+    steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: matrix.os == 'windows-2019'
@@ -171,8 +171,8 @@ jobs:
       shell: powershell
       working-directory: libsodium
       run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
-    - uses: actions/checkout@v2    
-      with:    
+    - uses: actions/checkout@v2
+      with:
         path: libzmq
     - run: md build_libzmq
       shell: cmd
@@ -181,9 +181,9 @@ jobs:
       if: matrix.os == 'windows-2019'
       shell: cmd
       working-directory: build_libzmq
-      run: |        
+      run: |
         cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
-        cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount           
+        cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount
     - name: test
       if: matrix.os == 'windows-2019'
       shell: cmd
