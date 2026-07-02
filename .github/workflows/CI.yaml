@@ -15,10 +15,10 @@ jobs:
         include:
           - platform: x64
             configuration: release
-            os: windows-2019
+            os: windows-2025
             WITH_LIBSODIUM: ON
             ENABLE_CURVE: ON
-            CMAKE_GENERATOR: Visual Studio 16 2019
+            CMAKE_GENERATOR: Visual Studio 18 2026
             MSVCVERSION: v142
             MSVCYEAR: vs2019
             ARTIFACT_NAME: v142-x64
@@ -130,8 +130,8 @@ jobs:
       MSVCYEAR: ${{ matrix.MSVCYEAR }}
       ARTIFACT_NAME: ${{ matrix.ARTIFACT_NAME }}
       ENABLE_DRAFTS: ${{ matrix.ENABLE_DRAFTS }}
-      SODIUM_INCLUDE_DIR: ${{ github.workspace }}\libsodium\src\libsodium\include"
-      SODIUM_LIBRARY_DIR: ${{ github.workspace }}\libsodium\bin\${{ matrix.platform }}\${{ matrix.configuration }}\${{ matrix.MSVCVERSION }}\dynamic"
+      SODIUM_INCLUDE_DIR: ${{ github.workspace }}\libsodium\src\libsodium\include
+      SODIUM_LIBRARY_DIR: ${{ github.workspace }}\libsodium\bin\${{ matrix.platform }}\${{ matrix.configuration }}\${{ matrix.MSVCVERSION }}\dynamic
       LIBZMQ_SRCDIR: ${{ github.workspace }}\libzmq
       BUILD_TYPE: ${{ matrix.BUILD_TYPE }}
       CURVE: ${{ matrix.CURVE }}
@@ -154,7 +154,7 @@ jobs:
     steps:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-2025'
     - uses: actions/checkout@v7
       if: matrix.WITH_LIBSODIUM == 'ON'
       with:
@@ -162,12 +162,12 @@ jobs:
         ref: stable
         path: libsodium
     - name: Compile libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2019'
+      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2025'
       shell: cmd
       working-directory: libsodium
       run: msbuild /v:minimal /p:Configuration=%Configuration%DLL builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
     - name: Copy libsodium
-      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2019'
+      if: matrix.WITH_LIBSODIUM == 'ON' && matrix.os == 'windows-2025'
       shell: powershell
       working-directory: libsodium
       run: Copy-Item "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\libsodium.lib" -Destination "bin\${env:Platform}\${env:Configuration}\${env:MSVCVERSION}\dynamic\sodium.lib"
@@ -176,16 +176,16 @@ jobs:
         path: libzmq
     - run: md build_libzmq
       shell: cmd
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-2025'
     - name: build-win
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-2025'
       shell: cmd
       working-directory: build_libzmq
       run: |
         cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_DRAFTS="%ENABLE_DRAFTS%" -D ENABLE_ANALYSIS="%ENABLE_ANALYSIS%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D API_POLLER="%API_POLLER%" -D POLLER="%POLLER%" %EXTRA_FLAGS% -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D LIBZMQ_WERROR="%LIBZMQ_WERROR%" -G "%CMAKE_GENERATOR%" "%LIBZMQ_SRCDIR%"
         cmake --build . --config %configuration% --target install -- -verbosity:Minimal -maxcpucount
     - name: test
-      if: matrix.os == 'windows-2019'
+      if: matrix.os == 'windows-2025'
       shell: cmd
       working-directory: build_libzmq
       run: ctest -C "%Configuration%"
