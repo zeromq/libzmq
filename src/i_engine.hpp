@@ -35,8 +35,18 @@ struct i_engine
     //  events are not fired on termination.
     virtual void terminate () = 0;
 
+    //  Indicates whether the engine has stopped reading input because
+    //  it could not push more messages to the session (e.g. the pipe
+    //  is full). Only if this is the case may restart_input () be called.
+    //  The session must check this before calling restart_input (),
+    //  since the pipe and its flow-control state outlive the engine:
+    //  a pipe writability notification may be delivered after the engine
+    //  that stalled on the full pipe has been replaced by a new one.
+    virtual bool input_stopped () const = 0;
+
     //  This method is called by the session to signalise that more
     //  messages can be written to the pipe.
+    //  May only be called if input_stopped () returns true.
     //  Returns false if the engine was deleted due to an error.
     //  TODO it is probably better to change the design such that the engine
     //  does not delete itself

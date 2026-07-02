@@ -32,6 +32,10 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     //  events are not fired on termination.
     void terminate ();
 
+    //  Indicates whether the engine stopped polling for input because
+    //  a message did not fit into the session's pipe.
+    bool input_stopped () const { return _input_stopped; }
+
     //  This method is called by the session to signalise that more
     //  messages can be written to the pipe.
     bool restart_input ();
@@ -86,6 +90,7 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     char _in_buffer[MAX_UDP_MSG];
     bool _send_enabled;
     bool _recv_enabled;
+    bool _input_stopped;
 };
 }
 

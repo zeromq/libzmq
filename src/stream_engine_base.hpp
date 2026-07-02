@@ -39,6 +39,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
     void plug (zmq::io_thread_t *io_thread_,
                zmq::session_base_t *session_) ZMQ_FINAL;
     void terminate () ZMQ_FINAL;
+    bool input_stopped () const ZMQ_FINAL { return _input_stopped; }
     bool restart_input () ZMQ_FINAL;
     void restart_output () ZMQ_FINAL;
     void zap_msg_available () ZMQ_FINAL;
