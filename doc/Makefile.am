@@ -2,7 +2,7 @@
 # documentation
 #
 MAN3 = \
-    zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect.3 zmq_close.3 \
+    zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect_peer.3 zmq_disconnect.3 zmq_close.3 \
     zmq_ctx_new.3 zmq_ctx_term.3 zmq_ctx_get.3 zmq_ctx_set.3 zmq_ctx_shutdown.3 \
     zmq_msg_init.3 zmq_msg_init_data.3 zmq_msg_init_size.3 zmq_msg_init_buffer.3 \
     zmq_msg_move.3 zmq_msg_copy.3 zmq_msg_size.3 zmq_msg_data.3 zmq_msg_close.3 \
@@ -26,7 +26,7 @@ MAN3 = \
 MAN7 = \
     zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
-    zmq_gssapi.7
+    zmq_gssapi.7 zmq_vsock.7
 
 # ASCIIDOC_DOC_WITHOUT_INDEX contains all the Asciidoc files checked into the git repo, except for index.adoc
 ASCIIDOC_DOC_WITHOUT_INDEX = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)

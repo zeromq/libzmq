@@ -122,6 +122,10 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     // Return family for the VMCI socket or -1 if it's not available.
     int get_vmci_socket_family ();
 #endif
+#ifdef ZMQ_HAVE_VSOCK
+    // Return family for the AF_VSOCK socket or -1 if it's not available.
+    int get_vsock_socket_family ();
+#endif
 
     enum
     {

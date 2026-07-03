@@ -447,6 +447,7 @@ ZMQ_PEER
 A 'ZMQ_PEER' socket talks to a set of 'ZMQ_PEER' sockets.
 
 To connect and fetch the 'routing_id' of the peer use xref:zmq_connect_peer.adoc[zmq_connect_peer]
+and to disconnect a specific peer by its 'routing_id' use xref:zmq_disconnect_peer.adoc[zmq_disconnect_peer].
 
 Each received message has a 'routing_id' that is a 32-bit unsigned integer.
 The application can fetch this with xref:zmq_msg_routing_id.adoc[zmq_msg_routing_id]

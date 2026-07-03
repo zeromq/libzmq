@@ -73,6 +73,7 @@ assert (rc == 0);
 * xref:zmq_tcp.adoc[zmq_tcp]
 * xref:zmq_pgm.adoc[zmq_pgm]
 * xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq_vsock.adoc[zmq_vsock]
 * xref:zmq.adoc[zmq]
 
 

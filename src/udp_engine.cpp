@@ -444,7 +444,16 @@ void zmq::udp_engine_t::out_event ()
         } else {
             size = group_size + body_size + 1;
 
-            // TODO: check if larger than maximum size
+            if (size > MAX_UDP_MSG) {
+                rc = group_msg.close ();
+                errno_assert (rc == 0);
+
+                rc = body_msg.close ();
+                errno_assert (rc == 0);
+
+                return;
+            }
+
             _out_buffer[0] = static_cast<unsigned char> (group_size);
             memcpy (_out_buffer + 1, group_msg.data (), group_size);
             memcpy (_out_buffer + 1 + group_size, body_msg.data (), body_size);
@@ -538,10 +547,8 @@ void zmq::udp_engine_t::in_event ()
         body_size = nbytes;
         body_offset = 0;
     } else {
-        // TODO in out_event, the group size is an *unsigned* char. what is
-        // the maximum value?
         const char *group_buffer = _in_buffer + 1;
-        const int group_size = _in_buffer[0];
+        const int group_size = static_cast<unsigned char> (_in_buffer[0]);
 
         rc = msg.init_size (group_size);
         errno_assert (rc == 0);
@@ -549,8 +556,11 @@ void zmq::udp_engine_t::in_event ()
         memcpy (msg.data (), group_buffer, group_size);
 
         //  This doesn't fit, just ignore
-        if (nbytes - 1 < group_size)
+        if (nbytes - 1 < group_size) {
+            rc = msg.close ();
+            errno_assert (rc == 0);
             return;
+        }
 
         body_size = nbytes - 1 - group_size;
         body_offset = 1 + group_size;

@@ -25,6 +25,10 @@
 #include <vmci_sockets.h>
 #endif
 
+#ifdef ZMQ_HAVE_VSOCK
+#include <sys/socket.h>
+#endif
+
 #ifdef ZMQ_USE_NSS
 #include <nss.h>
 #endif
@@ -863,6 +867,15 @@ int zmq::ctx_t::get_vmci_socket_family ()
     }
 
     return _vmci_family;
+}
+
+#endif
+
+#ifdef ZMQ_HAVE_VSOCK
+
+int zmq::ctx_t::get_vsock_socket_family ()
+{
+    return AF_VSOCK;
 }
 
 #endif

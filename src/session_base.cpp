@@ -13,6 +13,7 @@
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
 #include "vmci_connecter.hpp"
+#include "vsock_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
@@ -641,6 +642,13 @@ void zmq::session_base_t::start_connecting (bool wait_)
           io_thread, this, options, _addr, wait_, true, _wss_hostname);
     }
 #endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (_addr->protocol == protocol_name::vsock) {
+        connecter = new (std::nothrow)
+          vsock_connecter_t (io_thread, this, options, _addr, wait_);
+    }
+#endif
+
     if (connecter != NULL) {
         alloc_assert (connecter);
         launch_child (connecter);

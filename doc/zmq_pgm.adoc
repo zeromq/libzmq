@@ -170,6 +170,7 @@ assert (rc == 0);
 * xref:zmq_ipc.adoc[zmq_ipc]
 * xref:zmq_inproc.adoc[zmq_inproc]
 * xref:zmq_vmci.adoc[zmq_vmci]
+* xref:zmq_vsock.adoc[zmq_vsock]
 * xref:zmq.adoc[zmq]
 
 

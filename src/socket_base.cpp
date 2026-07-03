@@ -49,10 +49,24 @@
 #ifdef ZMQ_HAVE_WSS
 #include "wss_address.hpp"
 #endif
+
+#if defined ZMQ_HAVE_VSOCK
+// fix header conflict with VMCI
+#define sockaddr_vm linux_sockaddr_vm
+#define VMADDR_PORT_ANY LINUX_VMADDR_PORT_ANY
+#define VMADDR_CID_ANY LINUX_VMADDR_CID_ANY
+#include "vsock_address.hpp"
+#include "vsock_listener.hpp"
+#undef sockaddr_vm
+#undef VMADDR_CID_ANY
+#undef VMADDR_PORT_ANY
+#endif
+
 #if defined ZMQ_HAVE_VMCI
 #include "vmci_address.hpp"
 #include "vmci_listener.hpp"
 #endif
+
 
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
@@ -344,6 +358,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #if defined ZMQ_HAVE_VMCI
         && protocol_ != protocol_name::vmci
 #endif
+#if defined ZMQ_HAVE_VSOCK
+        && protocol_ != protocol_name::vsock
+#endif
         && protocol_ != protocol_name::udp) {
         errno = EPROTONOSUPPORT;
         return -1;
@@ -491,6 +508,13 @@ int zmq::socket_base_t::leave (const char *group_)
     scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
 
     return xleave (group_);
+}
+
+int zmq::socket_base_t::disconnect_peer (uint32_t routing_id_)
+{
+    scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+
+    return xdisconnect_peer (routing_id_);
 }
 
 void zmq::socket_base_t::add_signaler (signaler_t *s_)
@@ -725,6 +749,28 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
     if (protocol == protocol_name::vmci) {
         vmci_listener_t *listener =
           new (std::nothrow) vmci_listener_t (io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_local_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (listener);
+            event_bind_failed (make_unconnected_bind_endpoint_pair (address),
+                               zmq_errno ());
+            return -1;
+        }
+
+        listener->get_local_address (_last_endpoint);
+
+        add_endpoint (make_unconnected_bind_endpoint_pair (_last_endpoint),
+                      static_cast<own_t *> (listener), NULL);
+        options.connected = true;
+        return 0;
+    }
+#endif
+
+#if defined ZMQ_HAVE_VSOCK
+    if (protocol == protocol_name::vsock) {
+        vsock_listener_t *listener =
+          new (std::nothrow) vsock_listener_t (io_thread, this, options);
         alloc_assert (listener);
         int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
@@ -1035,6 +1081,18 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
           new (std::nothrow) vmci_address_t (this->get_ctx ());
         alloc_assert (paddr->resolved.vmci_addr);
         int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE (paddr);
+            return -1;
+        }
+    }
+#endif
+#if defined ZMQ_HAVE_VSOCK
+    else if (protocol == protocol_name::vsock) {
+        paddr->resolved.vsock_addr =
+          new (std::nothrow) vsock_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.vsock_addr);
+        int rc = paddr->resolved.vsock_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE (paddr);
             return -1;
@@ -1633,6 +1691,12 @@ int zmq::socket_base_t::xjoin (const char *group_)
 int zmq::socket_base_t::xleave (const char *group_)
 {
     LIBZMQ_UNUSED (group_);
+    errno = ENOTSUP;
+    return -1;
+}
+
+int zmq::socket_base_t::xdisconnect_peer (uint32_t)
+{
     errno = ENOTSUP;
     return -1;
 }
