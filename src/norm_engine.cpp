@@ -1,6 +1,7 @@
 
 #include "precompiled.hpp"
 
+#include <new>
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_NORM

@@ -15,6 +15,7 @@
 #endif
 
 #include <limits>
+#include <new>
 
 zmq::stream_connecter_base_t::stream_connecter_base_t (
   zmq::io_thread_t *io_thread_,

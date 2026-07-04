@@ -2,6 +2,7 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
+#include <new>
 #include "reaper.hpp"
 #include "socket_base.hpp"
 #include "err.hpp"
