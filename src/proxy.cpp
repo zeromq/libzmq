@@ -3,6 +3,7 @@
 #include "precompiled.hpp"
 
 #include <stddef.h>
+#include <new>
 #include "poller.hpp"
 #include "proxy.hpp"
 #include "likely.hpp"

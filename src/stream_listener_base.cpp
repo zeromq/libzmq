@@ -13,6 +13,8 @@
 #include <winsock2.h>
 #endif
 
+#include <new>
+
 zmq::stream_listener_base_t::stream_listener_base_t (
   zmq::io_thread_t *io_thread_,
   zmq::socket_base_t *socket_,

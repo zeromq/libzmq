@@ -4,6 +4,7 @@
 #define __ZMQ_SOCKET_POLLING_UTIL_HPP_INCLUDED__
 
 #include <stdlib.h>
+#include <new>
 #include <vector>
 
 #if defined ZMQ_HAVE_WINDOWS

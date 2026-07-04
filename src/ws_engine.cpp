@@ -26,6 +26,7 @@
 #endif
 
 #include <cstring>
+#include <new>
 
 #include "compat.hpp"
 #include "tcp.hpp"

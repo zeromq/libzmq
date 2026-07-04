@@ -7,6 +7,7 @@
 #include "macros.hpp"
 
 #include <limits.h>
+#include <new>
 
 static bool is_thread_safe (const zmq::socket_base_t &socket_)
 {

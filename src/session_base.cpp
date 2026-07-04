@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
+#include <new>
 #include "macros.hpp"
 #include "session_base.hpp"
 #include "i_engine.hpp"
