@@ -2,6 +2,9 @@
 
 #include "precompiled.hpp"
 #include "wss_engine.hpp"
+#ifndef ZMQ_HAVE_WINDOWS
+#include <arpa/inet.h>
+#endif
 
 static int verify_certificate_callback (gnutls_session_t session)
 {
@@ -24,6 +27,16 @@ static int verify_certificate_callback (gnutls_session_t session)
     return 0;
 }
 
+static bool is_domain_name(const char* hostname)
+{
+    if (*hostname == '[' || strchr (hostname, ':') != NULL) // IPv6 address
+        return false;
+    // Check for IPv4 address with inet_pton
+    struct in_addr buf;
+    if (inet_pton(AF_INET, hostname, &buf) == 1)
+        return false;
+    return true;
+}
 
 zmq::wss_engine_t::wss_engine_t (fd_t fd_,
                                  const options_t &options_,
@@ -61,13 +74,15 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
         rc = gnutls_init (&_tls_session, GNUTLS_CLIENT | GNUTLS_NONBLOCK);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
 
-        if (!hostname_.empty ())
+        if (!hostname_.empty ()) {
             gnutls_server_name_set (_tls_session, GNUTLS_NAME_DNS,
                                     hostname_.c_str (), hostname_.size ());
-
-        gnutls_session_set_ptr (
-          _tls_session,
-          hostname_.empty () ? NULL : const_cast<char *> (hostname_.c_str ()));
+            gnutls_session_set_ptr (_tls_session, const_cast<char*> (hostname_.c_str ()));
+        } else if (is_domain_name (address_.host ())) {
+            gnutls_server_name_set (_tls_session, GNUTLS_NAME_DNS,
+                                    address_.host (), strlen (address_.host ()));
+            gnutls_session_set_ptr (_tls_session, const_cast<char*> (address_.host ()));
+        }
 
         rc = gnutls_credentials_set (_tls_session, GNUTLS_CRD_CERTIFICATE,
                                      _tls_client_cred);
