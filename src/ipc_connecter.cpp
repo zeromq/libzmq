@@ -16,6 +16,14 @@
 #include "ipc_address.hpp"
 #include "session_base.hpp"
 
+#if defined ZMQ_HAVE_LINUX
+#include "shm_engine.hpp"
+#include "shm_fd.hpp"
+#include "socket_base.hpp"
+#include <sys/mman.h>
+#include <sys/stat.h>
+#endif
+
 #if defined ZMQ_HAVE_WINDOWS
 #include <afunix.h>
 #else
@@ -29,11 +37,21 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
                                        class session_base_t *session_,
                                        const options_t &options_,
                                        address_t *addr_,
-                                       bool delayed_start_) :
+                                       bool delayed_start_,
+                                       bool use_shm_) :
     stream_connecter_base_t (
-      io_thread_, session_, options_, addr_, delayed_start_)
+      io_thread_, session_, options_, addr_, delayed_start_),
+    _use_shm (use_shm_),
+    _waiting_for_shm_fd (false),
+    _shm_handshake_timer_started (false)
 {
+#if defined ZMQ_HAVE_LINUX
+    zmq_assert (_addr->protocol == protocol_name::ipc
+                || _addr->protocol == protocol_name::shm);
+#else
     zmq_assert (_addr->protocol == protocol_name::ipc);
+    zmq_assert (!_use_shm);
+#endif
 }
 
 void zmq::ipc_connecter_t::out_event ()
@@ -48,7 +66,141 @@ void zmq::ipc_connecter_t::out_event ()
         return;
     }
 
-    create_engine (fd, get_socket_name<ipc_address_t> (fd, socket_end_local));
+    std::string local_address =
+      get_socket_name<ipc_address_t> (fd, socket_end_local);
+#if defined ZMQ_HAVE_LINUX
+    if (_use_shm) {
+        _s = fd;
+        _handle = add_fd (_s);
+        set_pollin (_handle);
+        _waiting_for_shm_fd = true;
+        if (options.handshake_ivl > 0) {
+            add_timer (options.handshake_ivl, shm_handshake_timer_id);
+            _shm_handshake_timer_started = true;
+        }
+        return;
+    }
+#endif
+    create_engine (fd, local_address);
+}
+
+#if defined ZMQ_HAVE_LINUX
+void zmq::ipc_connecter_t::in_event ()
+{
+    if (!_waiting_for_shm_fd) {
+        out_event ();
+        return;
+    }
+    receive_shm_engine ();
+}
+
+void zmq::ipc_connecter_t::fail_shm_handshake ()
+{
+    if (_shm_handshake_timer_started) {
+        cancel_timer (shm_handshake_timer_id);
+        _shm_handshake_timer_started = false;
+    }
+    _waiting_for_shm_fd = false;
+    rm_handle ();
+    close ();
+    add_reconnect_timer ();
+}
+
+void zmq::ipc_connecter_t::receive_shm_engine ()
+{
+    zmq_assert (_waiting_for_shm_fd);
+
+    int shm_fd = -1;
+    size_t size = 0;
+    if (shm_recv_fd (_s, &shm_fd, &size) != 0) {
+        if (errno != EAGAIN && errno != EWOULDBLOCK)
+            fail_shm_handshake ();
+        return;
+    }
+
+    const size_t expected_size = shm_engine_t::mapping_size ();
+    struct stat stat_buf;
+    if (size != expected_size || fstat (shm_fd, &stat_buf) != 0
+        || stat_buf.st_size != static_cast<off_t> (expected_size)) {
+        ::close (shm_fd);
+        errno = EPROTO;
+        fail_shm_handshake ();
+        return;
+    }
+
+    void *const mapping = shm_map_fd (shm_fd, size);
+    const int saved_errno = errno;
+    ::close (shm_fd);
+    errno = saved_errno;
+    if (mapping == MAP_FAILED) {
+        fail_shm_handshake ();
+        return;
+    }
+
+    bool valid = false;
+    {
+        shm_channel_t channel (mapping, size, false);
+        valid = channel.valid ();
+    }
+    if (!valid) {
+        munmap (mapping, size);
+        errno = EPROTO;
+        fail_shm_handshake ();
+        return;
+    }
+
+    std::string local_address =
+      get_socket_name<ipc_address_t> (_s, socket_end_local);
+    if (local_address.compare (0, 6, "ipc://") == 0)
+        local_address.replace (0, 6, "shm://");
+
+    const fd_t fd = _s;
+    _s = retired_fd;
+    _waiting_for_shm_fd = false;
+    if (_shm_handshake_timer_started) {
+        cancel_timer (shm_handshake_timer_id);
+        _shm_handshake_timer_started = false;
+    }
+    rm_handle ();
+
+    const endpoint_uri_pair_t endpoint_pair (local_address, _endpoint,
+                                             endpoint_type_connect);
+    shm_engine_t *const engine = new (std::nothrow)
+      shm_engine_t (fd, mapping, size, false, endpoint_pair);
+    alloc_assert (engine);
+    zmq_assert (engine->valid ());
+
+    send_attach (_session, engine);
+    terminate ();
+    _socket->event_connected (endpoint_pair, fd);
+}
+#else
+void zmq::ipc_connecter_t::in_event ()
+{
+    out_event ();
+}
+#endif
+
+void zmq::ipc_connecter_t::timer_event (int id_)
+{
+#if defined ZMQ_HAVE_LINUX
+    if (id_ == shm_handshake_timer_id) {
+        zmq_assert (_shm_handshake_timer_started);
+        _shm_handshake_timer_started = false;
+        fail_shm_handshake ();
+        return;
+    }
+#endif
+    stream_connecter_base_t::timer_event (id_);
+}
+
+void zmq::ipc_connecter_t::process_term (int linger_)
+{
+    if (_shm_handshake_timer_started) {
+        cancel_timer (shm_handshake_timer_id);
+        _shm_handshake_timer_started = false;
+    }
+    stream_connecter_base_t::process_term (linger_);
 }
 
 void zmq::ipc_connecter_t::start_connecting ()

@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifndef MFD_CLOEXEC
@@ -58,11 +59,18 @@ inline int shm_send_fd (int socket_, int fd_, size_t size_)
         errno = EINVAL;
         return -1;
     }
+    struct stat stat_buf;
+    if (fstat (fd_, &stat_buf) != 0
+        || stat_buf.st_size != static_cast<off_t> (size_)) {
+        if (errno == 0)
+            errno = EINVAL;
+        return -1;
+    }
 
-    const uint64_t wire_size = size_;
+    const unsigned char marker = 1;
     struct iovec iov;
-    iov.iov_base = const_cast<uint64_t *> (&wire_size);
-    iov.iov_len = sizeof wire_size;
+    iov.iov_base = const_cast<unsigned char *> (&marker);
+    iov.iov_len = sizeof marker;
 
     union
     {
@@ -88,7 +96,7 @@ inline int shm_send_fd (int socket_, int fd_, size_t size_)
     do {
         rc = sendmsg (socket_, &message, MSG_NOSIGNAL);
     } while (rc == -1 && errno == EINTR);
-    return rc == static_cast<ssize_t> (sizeof wire_size) ? 0 : -1;
+    return rc == static_cast<ssize_t> (sizeof marker) ? 0 : -1;
 }
 
 inline int shm_recv_fd (int socket_, int *fd_, size_t *size_)
@@ -98,10 +106,10 @@ inline int shm_recv_fd (int socket_, int *fd_, size_t *size_)
         return -1;
     }
 
-    uint64_t wire_size = 0;
+    unsigned char marker = 0;
     struct iovec iov;
-    iov.iov_base = &wire_size;
-    iov.iov_len = sizeof wire_size;
+    iov.iov_base = &marker;
+    iov.iov_len = sizeof marker;
 
     union
     {
@@ -125,26 +133,43 @@ inline int shm_recv_fd (int socket_, int *fd_, size_t *size_)
         rc = recvmsg (socket_, &message, 0);
 #endif
     } while (rc == -1 && errno == EINTR);
-    if (rc != static_cast<ssize_t> (sizeof wire_size) || wire_size == 0) {
-        errno = EPROTO;
+    if (rc == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
         return -1;
-    }
-
     struct cmsghdr *const cmsg = CMSG_FIRSTHDR (&message);
-    if (!cmsg || cmsg->cmsg_level != SOL_SOCKET
+    int received_fd = -1;
+    if (cmsg && cmsg->cmsg_level == SOL_SOCKET
+        && cmsg->cmsg_type == SCM_RIGHTS
+        && cmsg->cmsg_len >= CMSG_LEN (sizeof (int)))
+        memcpy (&received_fd, CMSG_DATA (cmsg), sizeof received_fd);
+
+    if (rc != static_cast<ssize_t> (sizeof marker) || marker != 1
+        || (message.msg_flags & MSG_CTRUNC) || !cmsg
+        || cmsg->cmsg_level != SOL_SOCKET
         || cmsg->cmsg_type != SCM_RIGHTS
         || cmsg->cmsg_len != CMSG_LEN (sizeof (int))) {
+        if (received_fd != -1)
+            close (received_fd);
         errno = EPROTO;
         return -1;
     }
 
-    int received_fd = -1;
-    memcpy (&received_fd, CMSG_DATA (cmsg), sizeof received_fd);
 #ifndef MSG_CMSG_CLOEXEC
     fcntl (received_fd, F_SETFD, FD_CLOEXEC);
 #endif
+    struct stat stat_buf;
+    if (fstat (received_fd, &stat_buf) != 0) {
+        const int saved_errno = errno;
+        close (received_fd);
+        errno = saved_errno;
+        return -1;
+    }
+    if (stat_buf.st_size <= 0) {
+        close (received_fd);
+        errno = EPROTO;
+        return -1;
+    }
     *fd_ = received_fd;
-    *size_ = static_cast<size_t> (wire_size);
+    *size_ = static_cast<size_t> (stat_buf.st_size);
     return 0;
 }
 }

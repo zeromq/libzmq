@@ -336,6 +336,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
 #if defined ZMQ_HAVE_IPC
         && protocol_ != protocol_name::ipc
 #endif
+#if defined ZMQ_HAVE_LINUX
+        && protocol_ != protocol_name::shm
+#endif
         && protocol_ != protocol_name::tcp
 #ifdef ZMQ_HAVE_WS
         && protocol_ != protocol_name::ws
@@ -365,6 +368,19 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_) const
         errno = EPROTONOSUPPORT;
         return -1;
     }
+
+#if defined ZMQ_HAVE_LINUX
+    if (protocol_ == protocol_name::shm
+        && (options.mechanism != ZMQ_NULL || !options.zap_domain.empty ())) {
+        errno = ENOCOMPATPROTO;
+        return -1;
+    }
+    if (protocol_ == protocol_name::shm && options.type != ZMQ_PAIR
+        && options.type != ZMQ_PUSH && options.type != ZMQ_PULL) {
+        errno = ENOCOMPATPROTO;
+        return -1;
+    }
+#endif
 
     //  Check whether socket type and transport protocol match.
     //  Specifically, multicast protocols can't be combined with
@@ -701,9 +717,20 @@ int zmq::socket_base_t::bind (const char *endpoint_uri_)
 #endif
 
 #if defined ZMQ_HAVE_IPC
-    if (protocol == protocol_name::ipc) {
+    if (protocol == protocol_name::ipc
+#if defined ZMQ_HAVE_LINUX
+        || protocol == protocol_name::shm
+#endif
+    ) {
         ipc_listener_t *listener =
-          new (std::nothrow) ipc_listener_t (io_thread, this, options);
+          new (std::nothrow) ipc_listener_t (
+            io_thread, this, options,
+#if defined ZMQ_HAVE_LINUX
+            protocol == protocol_name::shm
+#else
+            false
+#endif
+          );
         alloc_assert (listener);
         int rc = listener->set_local_address (address.c_str ());
         if (rc != 0) {
@@ -1011,7 +1038,11 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
 #endif
 
 #if defined ZMQ_HAVE_IPC
-    else if (protocol == protocol_name::ipc) {
+    else if (protocol == protocol_name::ipc
+#if defined ZMQ_HAVE_LINUX
+             || protocol == protocol_name::shm
+#endif
+    ) {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());

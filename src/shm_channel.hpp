@@ -9,7 +9,6 @@
 
 #include <new>
 #include <stddef.h>
-#include <string.h>
 
 namespace zmq
 {
@@ -31,7 +30,6 @@ class shm_channel_t
         const size_t required = memory_size (slot_count_, payload_capacity_);
         if (!memory_ || required == 0 || memory_size_ < required)
             return -1;
-        memset (memory_, 0, required);
         header_t *const header = static_cast<header_t *> (memory_);
         header->magic = channel_magic ();
         header->version = 1;

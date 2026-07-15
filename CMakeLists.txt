@@ -991,6 +991,7 @@ set(cxx-sources
     select.cpp
     server.cpp
     session_base.cpp
+    shm_engine.cpp
     signaler.cpp
     socket_base.cpp
     socks.cpp
@@ -1126,6 +1127,10 @@ set(cxx-sources
     select.hpp
     server.hpp
     session_base.hpp
+    shm_channel.hpp
+    shm_engine.hpp
+    shm_fd.hpp
+    shm_ring.hpp
     signaler.hpp
     socket_base.hpp
     socket_poller.hpp
