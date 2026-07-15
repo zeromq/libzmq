@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 #include "testutil_unity.hpp"
+#include "../src/shm_fd.hpp"
 #include "../src/shm_ring.hpp"
 
 #include <assert.h>
 #include <new>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -107,9 +109,61 @@ void test_spsc_ring_preserves_cross_process_object_lifetime ()
     TEST_ASSERT_EQUAL_INT (0, munmap (mapping, mapping_size));
 }
 
+void test_memfd_transfer_supports_independent_mapping ()
+{
+    const size_t mapping_size = 4096;
+    int sockets[2];
+    TEST_ASSERT_EQUAL_INT (0, socketpair (AF_UNIX, SOCK_STREAM, 0, sockets));
+
+    const int fd = zmq::shm_create_fd (mapping_size);
+    TEST_ASSERT_GREATER_OR_EQUAL (0, fd);
+    uint64_t *const parent_mapping = static_cast<uint64_t *> (
+      zmq::shm_map_fd (fd, mapping_size));
+    TEST_ASSERT_NOT_EQUAL (MAP_FAILED, parent_mapping);
+    parent_mapping[0] = UINT64_C (0x1122334455667788);
+    parent_mapping[1] = 0;
+
+    const pid_t child = fork ();
+    TEST_ASSERT_NOT_EQUAL (-1, child);
+    if (child == 0) {
+        close (sockets[0]);
+        close (fd);
+        munmap (parent_mapping, mapping_size);
+
+        int received_fd = -1;
+        size_t received_size = 0;
+        assert (zmq::shm_recv_fd (sockets[1], &received_fd, &received_size)
+                == 0);
+        assert (received_size == mapping_size);
+        uint64_t *const child_mapping = static_cast<uint64_t *> (
+          zmq::shm_map_fd (received_fd, received_size));
+        assert (child_mapping != MAP_FAILED);
+        assert (child_mapping[0] == UINT64_C (0x1122334455667788));
+        child_mapping[1] = UINT64_C (0x8877665544332211);
+        munmap (child_mapping, received_size);
+        close (received_fd);
+        close (sockets[1]);
+        _exit (0);
+    }
+
+    close (sockets[1]);
+    TEST_ASSERT_EQUAL_INT (
+      0, zmq::shm_send_fd (sockets[0], fd, mapping_size));
+    int status = 0;
+    TEST_ASSERT_EQUAL (child, waitpid (child, &status, 0));
+    TEST_ASSERT_TRUE (WIFEXITED (status));
+    TEST_ASSERT_EQUAL_INT (0, WEXITSTATUS (status));
+    TEST_ASSERT_EQUAL_UINT64 (UINT64_C (0x8877665544332211),
+                              parent_mapping[1]);
+    TEST_ASSERT_EQUAL_INT (0, munmap (parent_mapping, mapping_size));
+    close (fd);
+    close (sockets[0]);
+}
+
 int main ()
 {
     UNITY_BEGIN ();
     RUN_TEST (test_spsc_ring_preserves_cross_process_object_lifetime);
+    RUN_TEST (test_memfd_transfer_supports_independent_mapping);
     return UNITY_END ();
 }
