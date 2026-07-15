@@ -129,7 +129,7 @@ if(NOT WIN32)
   endif()
 
   if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    list(APPEND tests test_abstract_ipc test_shm_ring)
+    list(APPEND tests test_abstract_ipc test_shm_ring test_shm_channel)
 
     if(ZMQ_HAVE_TIPC)
       list(
