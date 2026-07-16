@@ -1627,6 +1627,9 @@ if(BUILD_SHARED)
       inproc_lat
       inproc_thr
       proxy_thr)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND perf-tools shm_pair_thr)
+  endif()
 
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     option(WITH_PERF_TOOL "Build with perf-tools" ON)

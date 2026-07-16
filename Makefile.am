@@ -404,6 +404,11 @@ noinst_PROGRAMS = \
 	perf/inproc_thr \
 	perf/proxy_thr
 
+if ON_LINUX
+noinst_PROGRAMS += \
+	perf/shm_pair_thr
+endif
+
 perf_local_lat_LDADD = src/libzmq.la
 perf_local_lat_SOURCES = perf/local_lat.cpp
 
@@ -424,6 +429,9 @@ perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
 
 perf_proxy_thr_LDADD = src/libzmq.la
 perf_proxy_thr_SOURCES = perf/proxy_thr.cpp
+
+perf_shm_pair_thr_LDADD = src/libzmq.la
+perf_shm_pair_thr_SOURCES = perf/shm_pair_thr.cpp
 
 if ENABLE_STATIC
 noinst_PROGRAMS += \

@@ -289,14 +289,7 @@ int zmq::socket_base_t::get_peer_state (const void *routing_id_,
 zmq::socket_base_t::~socket_base_t ()
 {
 #if defined ZMQ_HAVE_LINUX
-    shm_state_t *shm_state = NULL;
-    {
-        scoped_lock_t lock (_shm_sync);
-        shm_state = _shm_state;
-        _shm_state = NULL;
-    }
-    if (shm_state)
-        shm_state->drop_ref ();
+    release_shm_state ();
 #endif
 
     if (_mailbox)
@@ -1427,18 +1420,16 @@ void zmq::socket_base_t::register_shm_state (shm_state_t *state_)
         old_state->drop_ref ();
 }
 
-void zmq::socket_base_t::unregister_shm_state (shm_state_t *state_)
+void zmq::socket_base_t::release_shm_state ()
 {
-    bool removed = false;
+    shm_state_t *shm_state = NULL;
     {
         scoped_lock_t lock (_shm_sync);
-        if (_shm_state == state_) {
-            _shm_state = NULL;
-            removed = true;
-        }
+        shm_state = _shm_state;
+        _shm_state = NULL;
     }
-    if (removed)
-        state_->drop_ref ();
+    if (shm_state)
+        shm_state->drop_ref ();
 }
 
 int zmq::socket_base_t::shm_msg_init (msg_t *msg_, size_t size_)
@@ -1976,6 +1967,10 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
 
     // Remove the pipe from _endpoints (set it to NULL).
     const std::string &identifier = pipe_->get_endpoint_pair ().identifier ();
+#if defined ZMQ_HAVE_LINUX
+    if (identifier.compare (0, 6, "shm://") == 0)
+        release_shm_state ();
+#endif
     if (!identifier.empty ()) {
         std::pair<endpoints_t::iterator, endpoints_t::iterator> range;
         range = _endpoints.equal_range (identifier);

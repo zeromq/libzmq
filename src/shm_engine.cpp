@@ -55,8 +55,11 @@ zmq::shm_engine_t::~shm_engine_t ()
     errno_assert (rc == 0);
     rc = _in_msg.close ();
     errno_assert (rc == 0);
-    if (_session)
-        _session->get_socket ()->unregister_shm_state (_state);
+    //  Do not call back into the owning socket here.  The engine may outlive
+    //  zmq_close() on the socket while the session is drained asynchronously,
+    //  in which case the socket mutexes have already been destroyed.  The
+    //  socket releases its registered shm_state_t reference from the socket
+    //  thread; this engine only owns the reference passed at construction.
     _state->clear_control_fd (_fd);
     if (_fd != retired_fd) {
         rc = close (_fd);

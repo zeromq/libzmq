@@ -68,7 +68,6 @@ class socket_base_t : public own_t,
     int shm_msg_init (zmq::msg_t *msg_, size_t size_);
     int shm_msg_send (zmq::msg_t *msg_, int flags_);
     void register_shm_state (shm_state_t *state_);
-    void unregister_shm_state (shm_state_t *state_);
 #endif
     void add_signaler (signaler_t *s_);
     void remove_signaler (signaler_t *s_);
@@ -264,6 +263,7 @@ class socket_base_t : public own_t,
     mutex_t _shm_sync;
     shm_state_t *_shm_state;
     shm_send_mode_t _shm_send_mode;
+    void release_shm_state ();
 #endif
     uint32_t _tag;
 
