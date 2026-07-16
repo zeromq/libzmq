@@ -110,6 +110,16 @@ class shm_channel_t
         _send->publish_write (position_);
     }
 
+    bool set_send_flags (uint64_t position_, unsigned char flags_)
+    {
+        frame_t *const frame = static_cast<frame_t *> (
+          _send->try_acquire_write (position_));
+        if (!frame)
+            return false;
+        frame->flags = flags_;
+        return true;
+    }
+
     bool try_receive (uint64_t position_,
                       const void **data_,
                       size_t *size_,
@@ -149,7 +159,7 @@ class shm_channel_t
     {
         size_t size;
         unsigned char flags;
-        unsigned char padding[7];
+        unsigned char padding[cache_line_size - sizeof (size_t) - 1];
     };
 
     struct header_t

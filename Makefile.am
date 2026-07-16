@@ -198,6 +198,8 @@ src_libzmq_la_SOURCES = \
 	src/shm_engine.hpp \
 	src/shm_fd.hpp \
 	src/shm_ring.hpp \
+	src/shm_state.cpp \
+	src/shm_state.hpp \
 	src/signaler.cpp \
 	src/signaler.hpp \
 	src/socket_base.cpp \

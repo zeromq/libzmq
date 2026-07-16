@@ -77,6 +77,7 @@ void test_bidirectional_channel_across_independent_mappings ()
     void *payload = NULL;
     while (!payload)
         payload = channel.try_reserve_send (0, 4, 3);
+    TEST_ASSERT_EQUAL_UINT64 (0, reinterpret_cast<size_t> (payload) % 64);
     memcpy (payload, "ping", 4);
     channel.publish_send (0);
 

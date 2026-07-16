@@ -110,9 +110,8 @@ void zmq::ipc_connecter_t::receive_shm_engine ()
 {
     zmq_assert (_waiting_for_shm_fd);
 
-    int shm_fd = -1;
-    size_t size = 0;
-    if (shm_recv_fd (_s, &shm_fd, &size) != 0) {
+    int fds[3];
+    if (shm_recv_fds (_s, fds) != 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK)
             fail_shm_handshake ();
         return;
@@ -120,30 +119,36 @@ void zmq::ipc_connecter_t::receive_shm_engine ()
 
     const size_t expected_size = shm_engine_t::mapping_size ();
     struct stat stat_buf;
-    if (size != expected_size || fstat (shm_fd, &stat_buf) != 0
+    if (fstat (fds[0], &stat_buf) != 0
         || stat_buf.st_size != static_cast<off_t> (expected_size)) {
-        ::close (shm_fd);
+        ::close (fds[0]);
+        ::close (fds[1]);
+        ::close (fds[2]);
         errno = EPROTO;
         fail_shm_handshake ();
         return;
     }
 
-    void *const mapping = shm_map_fd (shm_fd, size);
+    void *const mapping = shm_map_fd (fds[0], expected_size);
     const int saved_errno = errno;
-    ::close (shm_fd);
+    ::close (fds[0]);
     errno = saved_errno;
     if (mapping == MAP_FAILED) {
+        ::close (fds[1]);
+        ::close (fds[2]);
         fail_shm_handshake ();
         return;
     }
 
     bool valid = false;
     {
-        shm_channel_t channel (mapping, size, false);
+        shm_channel_t channel (mapping, expected_size, false);
         valid = channel.valid ();
     }
     if (!valid) {
-        munmap (mapping, size);
+        munmap (mapping, expected_size);
+        ::close (fds[1]);
+        ::close (fds[2]);
         errno = EPROTO;
         fail_shm_handshake ();
         return;
@@ -165,8 +170,18 @@ void zmq::ipc_connecter_t::receive_shm_engine ()
 
     const endpoint_uri_pair_t endpoint_pair (local_address, _endpoint,
                                              endpoint_type_connect);
+    shm_state_t *const state = shm_state_t::create (
+      mapping, expected_size, false, fd, fds[1]);
+    if (!state) {
+        const int state_errno = errno;
+        ::close (fds[2]);
+        ::close (fd);
+        errno = state_errno;
+        add_reconnect_timer ();
+        return;
+    }
     shm_engine_t *const engine = new (std::nothrow)
-      shm_engine_t (fd, mapping, size, false, endpoint_pair);
+      shm_engine_t (fd, fds[2], state, endpoint_pair);
     alloc_assert (engine);
     zmq_assert (engine->valid ());
 

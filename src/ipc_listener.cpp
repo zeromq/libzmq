@@ -21,6 +21,7 @@
 #include "shm_engine.hpp"
 #include "shm_fd.hpp"
 #include "session_base.hpp"
+#include <sys/eventfd.h>
 #include <sys/mman.h>
 #endif
 
@@ -101,11 +102,27 @@ void zmq::ipc_listener_t::create_shm_engine (fd_t fd_)
 
     void *const mapping = shm_map_fd (shm_fd, size);
     if (mapping == MAP_FAILED
-        || shm_engine_t::initialize_mapping (mapping, size) != 0
-        || shm_send_fd (fd_, shm_fd, size) != 0) {
+        || shm_engine_t::initialize_mapping (mapping, size) != 0) {
         const int saved_errno = errno;
         if (mapping != MAP_FAILED)
             munmap (mapping, size);
+        ::close (shm_fd);
+        ::close (fd_);
+        errno = saved_errno;
+        return;
+    }
+
+    const int server_release_fd = eventfd (0, EFD_NONBLOCK | EFD_CLOEXEC);
+    const int client_release_fd = eventfd (0, EFD_NONBLOCK | EFD_CLOEXEC);
+    const int fds[3] = {shm_fd, server_release_fd, client_release_fd};
+    if (server_release_fd == -1 || client_release_fd == -1
+        || shm_send_fds (fd_, fds) != 0) {
+        const int saved_errno = errno;
+        if (server_release_fd != -1)
+            ::close (server_release_fd);
+        if (client_release_fd != -1)
+            ::close (client_release_fd);
+        munmap (mapping, size);
         ::close (shm_fd);
         ::close (fd_);
         errno = saved_errno;
@@ -116,8 +133,17 @@ void zmq::ipc_listener_t::create_shm_engine (fd_t fd_)
     const endpoint_uri_pair_t endpoint_pair (
       get_socket_name (fd_, socket_end_local),
       get_socket_name (fd_, socket_end_remote), endpoint_type_bind);
+    shm_state_t *const state =
+      shm_state_t::create (mapping, size, true, fd_, client_release_fd);
+    if (!state) {
+        const int saved_errno = errno;
+        ::close (server_release_fd);
+        ::close (fd_);
+        errno = saved_errno;
+        return;
+    }
     shm_engine_t *const engine = new (std::nothrow)
-      shm_engine_t (fd_, mapping, size, true, endpoint_pair);
+      shm_engine_t (fd_, server_release_fd, state, endpoint_pair);
     alloc_assert (engine);
     zmq_assert (engine->valid ());
 

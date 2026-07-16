@@ -172,6 +172,113 @@ inline int shm_recv_fd (int socket_, int *fd_, size_t *size_)
     *size_ = static_cast<size_t> (stat_buf.st_size);
     return 0;
 }
+
+inline int shm_send_fds (int socket_, const int fds_[3])
+{
+    if (socket_ < 0 || !fds_ || fds_[0] < 0 || fds_[1] < 0 || fds_[2] < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    const unsigned char marker = 3;
+    struct iovec iov;
+    iov.iov_base = const_cast<unsigned char *> (&marker);
+    iov.iov_len = sizeof marker;
+
+    union
+    {
+        struct cmsghdr align;
+        unsigned char data[CMSG_SPACE (3 * sizeof (int))];
+    } control;
+    memset (&control, 0, sizeof control);
+
+    struct msghdr message;
+    memset (&message, 0, sizeof message);
+    message.msg_iov = &iov;
+    message.msg_iovlen = 1;
+    message.msg_control = control.data;
+    message.msg_controllen = sizeof control.data;
+
+    struct cmsghdr *const cmsg = CMSG_FIRSTHDR (&message);
+    cmsg->cmsg_level = SOL_SOCKET;
+    cmsg->cmsg_type = SCM_RIGHTS;
+    cmsg->cmsg_len = CMSG_LEN (3 * sizeof (int));
+    memcpy (CMSG_DATA (cmsg), fds_, 3 * sizeof (int));
+
+    ssize_t rc;
+    do {
+        rc = sendmsg (socket_, &message, MSG_NOSIGNAL);
+    } while (rc == -1 && errno == EINTR);
+    return rc == static_cast<ssize_t> (sizeof marker) ? 0 : -1;
+}
+
+inline int shm_recv_fds (int socket_, int fds_[3])
+{
+    if (socket_ < 0 || !fds_) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    fds_[0] = fds_[1] = fds_[2] = -1;
+    unsigned char marker = 0;
+    struct iovec iov;
+    iov.iov_base = &marker;
+    iov.iov_len = sizeof marker;
+
+    union
+    {
+        struct cmsghdr align;
+        unsigned char data[CMSG_SPACE (3 * sizeof (int))];
+    } control;
+    memset (&control, 0, sizeof control);
+
+    struct msghdr message;
+    memset (&message, 0, sizeof message);
+    message.msg_iov = &iov;
+    message.msg_iovlen = 1;
+    message.msg_control = control.data;
+    message.msg_controllen = sizeof control.data;
+
+    ssize_t rc;
+    do {
+#ifdef MSG_CMSG_CLOEXEC
+        rc = recvmsg (socket_, &message, MSG_CMSG_CLOEXEC);
+#else
+        rc = recvmsg (socket_, &message, 0);
+#endif
+    } while (rc == -1 && errno == EINTR);
+    if (rc == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
+        return -1;
+
+    struct cmsghdr *const cmsg = CMSG_FIRSTHDR (&message);
+    if (cmsg && cmsg->cmsg_level == SOL_SOCKET
+        && cmsg->cmsg_type == SCM_RIGHTS
+        && cmsg->cmsg_len >= CMSG_LEN (sizeof (int))) {
+        const size_t bytes = cmsg->cmsg_len - CMSG_LEN (0);
+        const size_t count = bytes / sizeof (int) < 3
+                               ? bytes / sizeof (int)
+                               : 3;
+        memcpy (fds_, CMSG_DATA (cmsg), count * sizeof (int));
+    }
+
+    if (rc != static_cast<ssize_t> (sizeof marker) || marker != 3
+        || (message.msg_flags & MSG_CTRUNC) || !cmsg
+        || cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_RIGHTS
+        || cmsg->cmsg_len != CMSG_LEN (3 * sizeof (int))) {
+        for (size_t i = 0; i != 3; ++i)
+            if (fds_[i] != -1)
+                close (fds_[i]);
+        fds_[0] = fds_[1] = fds_[2] = -1;
+        errno = EPROTO;
+        return -1;
+    }
+
+#ifndef MSG_CMSG_CLOEXEC
+    for (size_t i = 0; i != 3; ++i)
+        fcntl (fds_[i], F_SETFD, FD_CLOEXEC);
+#endif
+    return 0;
+}
 }
 
 #endif

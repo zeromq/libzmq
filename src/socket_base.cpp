@@ -22,6 +22,10 @@
 #endif
 
 #include "socket_base.hpp"
+
+#if defined ZMQ_HAVE_LINUX
+#include "shm_state.hpp"
+#endif
 #include "tcp_listener.hpp"
 #include "ws_listener.hpp"
 #include "ipc_listener.hpp"
@@ -230,6 +234,11 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
                                    bool thread_safe_) :
     own_t (parent_, tid_),
     _sync (),
+#if defined ZMQ_HAVE_LINUX
+    _shm_sync (),
+    _shm_state (NULL),
+    _shm_send_mode (shm_send_mode_none),
+#endif
     _tag (0xbaddecaf),
     _ctx_terminated (false),
     _destroyed (false),
@@ -279,6 +288,17 @@ int zmq::socket_base_t::get_peer_state (const void *routing_id_,
 
 zmq::socket_base_t::~socket_base_t ()
 {
+#if defined ZMQ_HAVE_LINUX
+    shm_state_t *shm_state = NULL;
+    {
+        scoped_lock_t lock (_shm_sync);
+        shm_state = _shm_state;
+        _shm_state = NULL;
+    }
+    if (shm_state)
+        shm_state->drop_ref ();
+#endif
+
     if (_mailbox)
         LIBZMQ_DELETE (_mailbox);
 
@@ -1313,6 +1333,17 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         return -1;
     }
 
+#if defined ZMQ_HAVE_LINUX
+    {
+        scoped_lock_t lock (_shm_sync);
+        if (unlikely (_shm_send_mode == shm_send_mode_direct)) {
+            errno = ENOTSUP;
+            return -1;
+        }
+        _shm_send_mode = shm_send_mode_copy;
+    }
+#endif
+
     //  Clear any user-visible flags that are set on the message.
     msg_->reset_flags (msg_t::more);
 
@@ -1378,6 +1409,120 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 
     return 0;
 }
+
+#if defined ZMQ_HAVE_LINUX
+void zmq::socket_base_t::register_shm_state (shm_state_t *state_)
+{
+    zmq_assert (state_);
+    shm_state_t *old_state = NULL;
+    {
+        scoped_lock_t lock (_shm_sync);
+        if (_shm_state == state_)
+            return;
+        state_->add_ref ();
+        old_state = _shm_state;
+        _shm_state = state_;
+    }
+    if (old_state)
+        old_state->drop_ref ();
+}
+
+void zmq::socket_base_t::unregister_shm_state (shm_state_t *state_)
+{
+    bool removed = false;
+    {
+        scoped_lock_t lock (_shm_sync);
+        if (_shm_state == state_) {
+            _shm_state = NULL;
+            removed = true;
+        }
+    }
+    if (removed)
+        state_->drop_ref ();
+}
+
+int zmq::socket_base_t::shm_msg_init (msg_t *msg_, size_t size_)
+{
+    scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+    if (unlikely (_ctx_terminated)) {
+        errno = ETERM;
+        return -1;
+    }
+    if (unlikely (!msg_)) {
+        errno = EFAULT;
+        return -1;
+    }
+    if (size_ == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (options.type != ZMQ_PAIR) {
+        errno = ENOTSUP;
+        return -1;
+    }
+    if (process_commands (0, false) != 0)
+        return -1;
+
+    shm_state_t *state = NULL;
+    {
+        scoped_lock_t lock (_shm_sync);
+        if (_shm_send_mode == shm_send_mode_copy) {
+            errno = ENOTSUP;
+            return -1;
+        }
+        state = _shm_state;
+        if (state)
+            state->add_ref ();
+        if (state)
+            _shm_send_mode = shm_send_mode_direct;
+    }
+    if (!state) {
+        errno = EAGAIN;
+        return -1;
+    }
+    const int rc = state->init_direct_message (msg_, size_);
+    state->drop_ref ();
+    return rc;
+}
+
+int zmq::socket_base_t::shm_msg_send (msg_t *msg_, int flags_)
+{
+    scoped_optional_lock_t sync_lock (_thread_safe ? &_sync : NULL);
+    if (unlikely (_ctx_terminated)) {
+        errno = ETERM;
+        return -1;
+    }
+    if (unlikely (!msg_ || !msg_->check ())) {
+        errno = EFAULT;
+        return -1;
+    }
+    if (options.type != ZMQ_PAIR) {
+        errno = ENOTSUP;
+        return -1;
+    }
+    if (process_commands (0, false) != 0)
+        return -1;
+
+    shm_state_t *state = NULL;
+    {
+        scoped_lock_t lock (_shm_sync);
+        if (_shm_send_mode != shm_send_mode_direct) {
+            errno = EINVAL;
+            return -1;
+        }
+        state = _shm_state;
+        if (state)
+            state->add_ref ();
+    }
+    if (!state) {
+        errno = EAGAIN;
+        return -1;
+    }
+    const int rc = state->send_direct_message (msg_, flags_);
+    state->drop_ref ();
+    return rc;
+}
+#endif
 
 int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 {

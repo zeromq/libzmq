@@ -237,6 +237,10 @@ ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg_);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_);
 ZMQ_EXPORT int zmq_msg_init_data (
   zmq_msg_t *msg_, void *data_, size_t size_, zmq_free_fn *ffn_, void *hint_);
+ZMQ_EXPORT int
+zmq_shm_msg_init (void *s_, zmq_msg_t *msg_, size_t size_);
+ZMQ_EXPORT int
+zmq_shm_msg_send (zmq_msg_t *msg_, void *s_, int flags_);
 ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_);
 ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg_, void *s_, int flags_);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg_);
@@ -353,6 +357,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg_,
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SHARED 3
+#define ZMQ_SHM 4
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1

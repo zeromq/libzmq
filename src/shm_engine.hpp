@@ -10,7 +10,7 @@
 #include "i_engine.hpp"
 #include "io_object.hpp"
 #include "msg.hpp"
-#include "shm_channel.hpp"
+#include "shm_state.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -22,9 +22,8 @@ class shm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 {
   public:
     shm_engine_t (fd_t fd_,
-                  void *mapping_,
-                  size_t mapping_size_,
-                  bool server_,
+                  fd_t release_fd_,
+                  shm_state_t *state_,
                   const endpoint_uri_pair_t &endpoint_);
     ~shm_engine_t ();
 
@@ -51,13 +50,12 @@ class shm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 
     bool _plugged;
     fd_t _fd;
-    void *_mapping;
-    size_t _mapping_size;
-    shm_channel_t _channel;
+    fd_t _release_fd;
+    shm_state_t *_state;
     session_base_t *_session;
     handle_t _handle;
+    handle_t _release_handle;
     endpoint_uri_pair_t _endpoint;
-    uint64_t _send_position;
     uint64_t _receive_position;
     msg_t _out_msg;
     msg_t _in_msg;
