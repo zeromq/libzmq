@@ -17,6 +17,14 @@
 #include "socket_base.hpp"
 #include "address.hpp"
 
+#if defined ZMQ_HAVE_LINUX
+#include "shm_engine.hpp"
+#include "shm_fd.hpp"
+#include "session_base.hpp"
+#include <sys/eventfd.h>
+#include <sys/mman.h>
+#endif
+
 #ifdef ZMQ_HAVE_WINDOWS
 #ifdef ZMQ_IOTHREAD_POLLER_USE_SELECT
 #error On Windows, IPC does not work with POLLER=select, use POLLER=epoll instead, or disable IPC transport
@@ -50,9 +58,15 @@
 
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
                                      socket_base_t *socket_,
-                                     const options_t &options_) :
-    stream_listener_base_t (io_thread_, socket_, options_), _has_file (false)
+                                     const options_t &options_,
+                                     bool use_shm_) :
+    stream_listener_base_t (io_thread_, socket_, options_),
+    _has_file (false),
+    _use_shm (use_shm_)
 {
+#if !defined ZMQ_HAVE_LINUX
+    zmq_assert (!_use_shm);
+#endif
 }
 
 void zmq::ipc_listener_t::in_event ()
@@ -68,14 +82,92 @@ void zmq::ipc_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    create_engine (fd);
+#if defined ZMQ_HAVE_LINUX
+    if (_use_shm)
+        create_shm_engine (fd);
+    else
+#endif
+        create_engine (fd);
 }
+
+#if defined ZMQ_HAVE_LINUX
+void zmq::ipc_listener_t::create_shm_engine (fd_t fd_)
+{
+    const size_t size = shm_engine_t::mapping_size ();
+    const int shm_fd = shm_create_fd (size);
+    if (shm_fd == -1) {
+        ::close (fd_);
+        return;
+    }
+
+    void *const mapping = shm_map_fd (shm_fd, size);
+    if (mapping == MAP_FAILED
+        || shm_engine_t::initialize_mapping (mapping, size) != 0) {
+        const int saved_errno = errno;
+        if (mapping != MAP_FAILED)
+            munmap (mapping, size);
+        ::close (shm_fd);
+        ::close (fd_);
+        errno = saved_errno;
+        return;
+    }
+
+    const int server_release_fd = eventfd (0, EFD_NONBLOCK | EFD_CLOEXEC);
+    const int client_release_fd = eventfd (0, EFD_NONBLOCK | EFD_CLOEXEC);
+    const int fds[3] = {shm_fd, server_release_fd, client_release_fd};
+    if (server_release_fd == -1 || client_release_fd == -1
+        || shm_send_fds (fd_, fds) != 0) {
+        const int saved_errno = errno;
+        if (server_release_fd != -1)
+            ::close (server_release_fd);
+        if (client_release_fd != -1)
+            ::close (client_release_fd);
+        munmap (mapping, size);
+        ::close (shm_fd);
+        ::close (fd_);
+        errno = saved_errno;
+        return;
+    }
+    ::close (shm_fd);
+
+    const endpoint_uri_pair_t endpoint_pair (
+      get_socket_name (fd_, socket_end_local),
+      get_socket_name (fd_, socket_end_remote), endpoint_type_bind);
+    shm_state_t *const state =
+      shm_state_t::create (mapping, size, true, fd_, client_release_fd);
+    if (!state) {
+        const int saved_errno = errno;
+        ::close (server_release_fd);
+        ::close (fd_);
+        errno = saved_errno;
+        return;
+    }
+    shm_engine_t *const engine = new (std::nothrow)
+      shm_engine_t (fd_, server_release_fd, state, endpoint_pair);
+    alloc_assert (engine);
+    zmq_assert (engine->valid ());
+
+    io_thread_t *const io_thread = choose_io_thread (options.affinity);
+    zmq_assert (io_thread);
+    session_base_t *const session =
+      session_base_t::create (io_thread, false, _socket, options, NULL);
+    errno_assert (session);
+    session->inc_seqnum ();
+    launch_child (session);
+    send_attach (session, engine, false);
+    _socket->event_accepted (endpoint_pair, fd_);
+}
+#endif
 
 std::string
 zmq::ipc_listener_t::get_socket_name (zmq::fd_t fd_,
                                       socket_end_t socket_end_) const
 {
-    return zmq::get_socket_name<ipc_address_t> (fd_, socket_end_);
+    std::string endpoint =
+      zmq::get_socket_name<ipc_address_t> (fd_, socket_end_);
+    if (_use_shm && endpoint.compare (0, 6, "ipc://") == 0)
+        endpoint.replace (0, 6, "shm://");
+    return endpoint;
 }
 
 int zmq::ipc_listener_t::set_local_address (const char *addr_)
@@ -115,6 +207,8 @@ int zmq::ipc_listener_t::set_local_address (const char *addr_)
     }
 
     address.to_string (_endpoint);
+    if (_use_shm && _endpoint.compare (0, 6, "ipc://") == 0)
+        _endpoint.replace (0, 6, "shm://");
 
     if (options.use_fd != -1) {
         _s = options.use_fd;

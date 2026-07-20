@@ -57,7 +57,11 @@ zmq::address_t::~address_t ()
 #endif
 
 #if defined ZMQ_HAVE_IPC
-    else if (protocol == protocol_name::ipc) {
+    else if (protocol == protocol_name::ipc
+#if defined ZMQ_HAVE_LINUX
+             || protocol == protocol_name::shm
+#endif
+    ) {
         LIBZMQ_DELETE (resolved.ipc_addr);
     }
 #endif
@@ -95,6 +99,14 @@ int zmq::address_t::to_string (std::string &addr_) const
 #if defined ZMQ_HAVE_IPC
     if (protocol == protocol_name::ipc && resolved.ipc_addr)
         return resolved.ipc_addr->to_string (addr_);
+#if defined ZMQ_HAVE_LINUX
+    if (protocol == protocol_name::shm && resolved.ipc_addr) {
+        const int rc = resolved.ipc_addr->to_string (addr_);
+        if (rc == 0 && addr_.compare (0, 6, "ipc://") == 0)
+            addr_.replace (0, 6, "shm://");
+        return rc;
+    }
+#endif
 #endif
 #if defined ZMQ_HAVE_TIPC
     if (protocol == protocol_name::tipc && resolved.tipc_addr)
