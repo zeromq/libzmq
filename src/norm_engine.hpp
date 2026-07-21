@@ -44,6 +44,8 @@ class norm_engine_t ZMQ_FINAL : public io_object_t, public i_engine
     //  events are not fired on termination.
     void terminate () ZMQ_FINAL;
 
+    bool input_stopped () const ZMQ_FINAL { return !zmq_input_ready; }
+
     //  This method is called by the session to signalise that more
     //  messages can be written to the pipe.
     bool restart_input () ZMQ_FINAL;

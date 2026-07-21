@@ -304,7 +304,12 @@ void zmq::session_base_t::write_activated (pipe_t *pipe_)
         return;
     }
 
-    if (_engine)
+    //  The pipe and its flow-control state outlive the engine: the engine
+    //  that stopped reading input because this pipe was full may have been
+    //  destroyed (e.g. on reconnect after a heartbeat timeout) before the
+    //  peer's activation reaches us. Restart input only if the current
+    //  engine is actually stalled; a stale notification must be ignored.
+    if (_engine && _engine->input_stopped ())
         _engine->restart_input ();
 }
 
