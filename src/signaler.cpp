@@ -216,7 +216,10 @@ int zmq::signaler_t::wait (int timeout_) const
     struct pollfd pfd;
     pfd.fd = _r;
     pfd.events = POLLIN;
-    const int rc = poll (&pfd, 1, timeout_);
+    int rc;
+    do {
+        rc = poll (&pfd, 1, timeout_);
+    } while (rc < 0 && errno == EINTR);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;
@@ -249,12 +252,16 @@ int zmq::signaler_t::wait (int timeout_) const
         timeout.tv_usec = timeout_ % 1000 * 1000;
     }
 #ifdef ZMQ_HAVE_WINDOWS
-    int rc =
-      select (0, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    int rc;
+    do {
+        rc = select (0, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    } while (rc == SOCKET_ERROR && WSAGetLastError () == WSAEINTR);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc =
-      select (_r + 1, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    int rc;
+    do {
+        rc = select (_r + 1, fds.get (), NULL, NULL, timeout_ >= 0 ? &timeout : NULL);
+    } while (rc < 0 && errno == EINTR);
     if (unlikely (rc < 0)) {
         errno_assert (errno == EINTR);
         return -1;

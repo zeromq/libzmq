@@ -150,7 +150,10 @@ zmq::fd_t zmq::vmci_listener_t::accept ()
     //  The situation where connection cannot be accepted due to insufficient
     //  resources is considered valid and treated by ignoring the connection.
     zmq_assert (_s != retired_fd);
-    fd_t sock = ::accept (_s, NULL, NULL);
+    fd_t sock;
+    do {
+        sock = ::accept (_s, NULL, NULL);
+    } while (sock == retired_fd && errno == EINTR);
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {

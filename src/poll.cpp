@@ -125,8 +125,11 @@ void zmq::poll_t::loop ()
         }
 
         //  Wait for events.
-        int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
+        int rc;
+        do {
+            rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
                        timeout ? timeout : -1);
+        } while (rc == -1 && errno == EINTR);
         if (rc == -1) {
             errno_assert (errno == EINTR);
             continue;
