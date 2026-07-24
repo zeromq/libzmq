@@ -702,6 +702,16 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 ZMQ_EXPORT int
 zmq_msg_init_buffer (zmq_msg_t *msg_, const void *buf_, size_t size_);
 
+/*  Draft Msg control block type for init_external_storage. (64 bytes)        */
+typedef zmq_msg_t zmq_msg_content_t;
+
+ZMQ_EXPORT int zmq_msg_init_external_storage (zmq_msg_t *msg_,
+                                              zmq_msg_content_t *content_,
+                                              void *data_,
+                                              size_t size_,
+                                              zmq_free_fn *ffn_,
+                                              void *hint_);
+
 /*  DRAFT Msg property names.                                                 */
 #define ZMQ_MSG_PROPERTY_ROUTING_ID "Routing-Id"
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE "Socket-Type"

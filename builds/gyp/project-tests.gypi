@@ -133,6 +133,17 @@
       ],
     },
     {
+      'target_name': 'test_msg_ffn_external_storage',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_msg_ffn_external_storage.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    },
+    {
       'target_name': 'test_msg_init',
       'type': 'executable',
       'sources': [
