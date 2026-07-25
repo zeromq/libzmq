@@ -132,14 +132,19 @@ AC_MSG_RESULT([$libzmq_tipc_support])
 # check vsock support
 AC_MSG_CHECKING([if vsock is available ])
 
-AC_CHECK_HEADERS([linux/vm_sockets.h],
-   [libzmq_vsock_support=yes],
-   [libzmq_vsock_support=no],
-   [
-    #include <sys/socket.h>
-    #include <linux/vm_sockets.h>
-   ]
-)
+AC_RUN_IFELSE(
+    [AC_LANG_PROGRAM([[
+            #include <sys/socket.h>
+            #include <linux/vm_sockets.h>
+        ]],[[
+            return AF_VSOCK == 0 || VMADDR_CID_LOCAL == 0;
+        ]])
+    ],
+    [libzmq_vsock_support=yes],
+    [libzmq_vsock_support=no],
+    [libzmq_vsock_support=no])
+
+AC_MSG_RESULT([$libzmq_vsock_support])
 
 
 AC_ARG_ENABLE([pedantic],
