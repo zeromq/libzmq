@@ -28,7 +28,8 @@ void test_reqrep_vsock ()
     }
 
     if (cid == VMADDR_CID_ANY) {
-        TEST_IGNORE_MESSAGE ("vsock_loopback environment unavailable, skipping test ");
+        TEST_IGNORE_MESSAGE (
+                "vsock_loopback environment unavailable, skipping test");
     }
 
     std::stringstream s;
@@ -66,7 +67,8 @@ void test_reqrep_vsock_loopback ()
     }
 
     if (cid == VMADDR_CID_ANY) {
-        TEST_IGNORE_MESSAGE ("vsock_loopback environment unavailable, skipping test ");
+        TEST_IGNORE_MESSAGE (
+                "vsock_loopback environment unavailable, skipping test");
     }
 
     std::stringstream s;
