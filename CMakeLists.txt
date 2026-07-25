@@ -773,6 +773,7 @@ if (NOT MSVC)
     zmq_check_tcp_keepalive()
     zmq_check_tcp_tipc()
     zmq_check_getrandom()
+    zmq_check_vsock()
   endif()
 endif()
 

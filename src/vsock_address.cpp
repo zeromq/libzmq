@@ -53,7 +53,7 @@ int zmq::vsock_address_t::resolve (const char *path_)
         errno = EINVAL;
         return -1;
     } else if (addr_str == "@") {
-        cid = VMADDR_CID_HOST;
+        cid = VMADDR_CID_LOCAL;
 
         if (cid == VMADDR_CID_ANY) {
             errno = ENODEV;
