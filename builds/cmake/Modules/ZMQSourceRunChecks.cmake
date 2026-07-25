@@ -338,6 +338,11 @@ macro(zmq_check_vsock)
     "
 #include <sys/socket.h>
 #include <linux/vm_sockets.h>
+
+int main (void)
+{
+    return AF_VSOCK == 0;
+}
 "
     ZMQ_HAVE_VSOCK)
 endmacro()
