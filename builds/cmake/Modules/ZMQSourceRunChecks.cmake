@@ -341,7 +341,7 @@ macro(zmq_check_vsock)
 
 int main (void)
 {
-    return AF_VSOCK == 0;
+    return AF_VSOCK == 0 || VMADDR_CID_LOCAL == 0;
 }
 "
     ZMQ_HAVE_VSOCK)
