@@ -49,6 +49,10 @@ function set_config_opts() {
         sudo modprobe tipc
     fi
 
+    if [ -n "$VSOCK" ] && [ "$VSOCK" = "enabled" ]; then
+        sudo modprobe vsock_loopback
+    fi
+
     if [ -n "$POLLER" ]; then
         CONFIG_OPTS+=("--with-poller=${POLLER}")
     fi

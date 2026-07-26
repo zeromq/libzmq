@@ -44,6 +44,7 @@ jobs:
             PGM: enabled
             NORM: enabled
             TIPC: enabled
+            VSOCK: enabled
             TLS: enabled
             VMCI: enabled
           - os: ubuntu-latest
@@ -82,6 +83,7 @@ jobs:
             PGM: enabled
             NORM: enabled
             TIPC: enabled
+            VSOCK: enabled
             IPv6: ON
             TLS: enabled
             USE_NSS: yes
@@ -95,6 +97,7 @@ jobs:
             PGM: enabled
             NORM: enabled
             TIPC: enabled
+            VSOCK: enabled
             IPv6: ON
             TLS: enabled
             USE_NSS: yes
@@ -144,6 +147,7 @@ jobs:
       PGM: ${{ matrix.PGM }}
       NORM: ${{ matrix.NORM }}
       TIPC: ${{ matrix.TIPC }}
+      VSOCK: ${{ matrix.VSOCK }}
       IPv6: ${{ matrix.IPv6 }}
       TLS: ${{ matrix.TLS }}
       USE_NSS: ${{ matrix.USE_NSS }}
