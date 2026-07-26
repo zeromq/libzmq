@@ -187,6 +187,10 @@ int is_ipv6_available (void);
 // as it depends on a non-default kernel module to be already loaded
 int is_tipc_available (void);
 
+// check if vsock is available (0/false if not, 1/true if it is)
+// /dev/sock might exist, but vsock_loopback module might not be loaded
+int is_vsock_available (void);
+
 //  Wrapper around 'inet_pton' for systems that don't support it (e.g. Windows
 //  XP)
 int test_inet_pton (int af_, const char *src_, void *dst_);

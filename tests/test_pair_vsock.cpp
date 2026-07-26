@@ -14,24 +14,12 @@ SETUP_TEARDOWN_TESTCONTEXT
 
 void test_pair_vsock ()
 {
-    unsigned int cid = VMADDR_CID_ANY;
-    int vsock = -1;
-
-    if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
-        TEST_IGNORE_MESSAGE ("failed to open /dev/vsock, skipping test");
-    } else if (ioctl (vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
-        TEST_IGNORE_MESSAGE ("failed to get local cid, skipping test");
+    if (is_vsock_available () == 0) {
+        TEST_IGNORE_MESSAGE ("vsock environnement not available");
     }
-
-    if (vsock >= 0) {
-        close (vsock);
-    }
-
-    if (cid == VMADDR_CID_ANY)
-        TEST_IGNORE_MESSAGE ("vsock environment unavailable, skipping test");
 
     std::stringstream s;
-    s << "vsock://" << cid << ":" << 5561;
+    s << "vsock://@:5562";
     std::string endpoint = s.str ();
 
     void *sb = test_context_socket (ZMQ_PAIR);

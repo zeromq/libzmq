@@ -40,6 +40,12 @@
 #endif
 #endif
 
+#if defined(ZMQ_HAVE_VSOCK)
+#include "linux/vm_sockets.h"
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#endif
+
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
@@ -298,6 +304,33 @@ int is_tipc_available ()
 
     return tipc == 0;
 #endif // ZMQ_HAVE_TIPC
+}
+
+int is_vsock_available ()
+{
+#ifndef ZMQ_HAVE_VSOCK
+    return 0;
+#else
+    unsigned int cid = VMADDR_CID_ANY;
+    int vsock = -1;
+
+    if ((vsock = open ("/dev/vsock", O_RDONLY, 0)) < 0) {
+        TEST_IGNORE_MESSAGE ("failed to open /dev/vsock, skipping test");
+    } else if (ioctl (vsock, IOCTL_VM_SOCKETS_GET_LOCAL_CID, &cid) < 0) {
+        TEST_IGNORE_MESSAGE ("failed to get local cid, skipping test");
+    }
+
+    if (vsock >= 0) {
+        close (vsock);
+    }
+
+    if (cid == VMADDR_CID_ANY) {
+        TEST_IGNORE_MESSAGE (
+          "vsock_loopback environment unavailable, skipping test");
+    }
+
+    return cid != VMADDR_CID_ANY;
+#endif // ZMQ_HAVE_VSOCK
 }
 
 int test_inet_pton (int af_, const char *src_, void *dst_)
