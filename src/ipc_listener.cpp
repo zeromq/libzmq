@@ -275,7 +275,10 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     //  resources is considered valid and treated by ignoring the connection.
     zmq_assert (_s != retired_fd);
 #if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
-    fd_t sock = ::accept4 (_s, NULL, NULL, SOCK_CLOEXEC);
+    fd_t sock;
+    do {
+        sock = ::accept4 (_s, NULL, NULL, SOCK_CLOEXEC);
+    } while (sock == retired_fd && errno == EINTR);
 #else
     struct sockaddr_storage ss;
     memset (&ss, 0, sizeof (ss));
@@ -285,8 +288,10 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     socklen_t ss_len = sizeof (ss);
 #endif
 
-    const fd_t sock =
-      ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    fd_t sock;
+    do {
+        sock = ::accept (_s, reinterpret_cast<struct sockaddr *> (&ss), &ss_len);
+    } while (sock == retired_fd && errno == EINTR);
 #endif
     if (sock == retired_fd) {
 #if defined ZMQ_HAVE_WINDOWS

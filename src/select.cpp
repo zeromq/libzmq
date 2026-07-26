@@ -403,8 +403,11 @@ void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
         return;
 
     fds_set_t local_fds_set = family_entry_.fds_set;
-    int rc = select (max_fd_, &local_fds_set.read, &local_fds_set.write,
+    int rc;
+    do {
+        rc = select (max_fd_, &local_fds_set.read, &local_fds_set.write,
                      &local_fds_set.error, use_timeout_ ? &tv_ : NULL);
+    } while (rc == -1 && errno == EINTR);
 
 #if defined ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
