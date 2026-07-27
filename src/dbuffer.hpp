@@ -46,6 +46,13 @@ template <> class dbuffer_t<msg_t>
     void write (const msg_t &value_)
     {
         zmq_assert (value_.check ());
+
+        //  If a previous write faced a locked buffer (the reader was busy),
+        //  the unswapped message is still owned by _back.
+        //  Release it before overwriting, otherwise its content is leaked.
+        const int rc = _back->close ();
+        errno_assert (rc == 0);
+
         *_back = value_;
 
         zmq_assert (_back->check ());
