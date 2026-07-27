@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.1...3.31)
 
 set(unittests
     unittest_ypipe
+    unittest_dbuffer
     unittest_poller
     unittest_mtrie
     unittest_ip_resolver
