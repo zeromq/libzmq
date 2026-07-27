@@ -56,6 +56,9 @@ static const char wss[] = "wss";
 #if defined ZMQ_HAVE_IPC
 static const char ipc[] = "ipc";
 #endif
+#if defined ZMQ_HAVE_LINUX
+static const char shm[] = "shm";
+#endif
 #if defined ZMQ_HAVE_TIPC
 static const char tipc[] = "tipc";
 #endif

@@ -614,9 +614,20 @@ void zmq::session_base_t::start_connecting (bool wait_)
         }
     }
 #if defined ZMQ_HAVE_IPC
-    else if (_addr->protocol == protocol_name::ipc) {
+    else if (_addr->protocol == protocol_name::ipc
+#if defined ZMQ_HAVE_LINUX
+             || _addr->protocol == protocol_name::shm
+#endif
+    ) {
         connecter = new (std::nothrow)
-          ipc_connecter_t (io_thread, this, options, _addr, wait_);
+          ipc_connecter_t (
+            io_thread, this, options, _addr, wait_,
+#if defined ZMQ_HAVE_LINUX
+            _addr->protocol == protocol_name::shm
+#else
+            false
+#endif
+          );
     }
 #endif
 #if defined ZMQ_HAVE_TIPC

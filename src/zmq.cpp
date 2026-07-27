@@ -56,6 +56,9 @@ struct iovec
 
 #include "proxy.hpp"
 #include "socket_base.hpp"
+#if defined ZMQ_HAVE_LINUX
+#include "shm_state.hpp"
+#endif
 #include "stdint.hpp"
 #include "config.hpp"
 #include "likely.hpp"
@@ -614,6 +617,36 @@ int zmq_msg_init_data (
       ->init_data (data_, size_, ffn_, hint_);
 }
 
+int zmq_shm_msg_init (void *s_, zmq_msg_t *msg_, size_t size_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+#if defined ZMQ_HAVE_LINUX
+    return s->shm_msg_init (reinterpret_cast<zmq::msg_t *> (msg_), size_);
+#else
+    LIBZMQ_UNUSED (msg_);
+    LIBZMQ_UNUSED (size_);
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
+int zmq_shm_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
+{
+    zmq::socket_base_t *s = as_socket_base_t (s_);
+    if (!s)
+        return -1;
+#if defined ZMQ_HAVE_LINUX
+    return s->shm_msg_send (reinterpret_cast<zmq::msg_t *> (msg_), flags_);
+#else
+    LIBZMQ_UNUSED (msg_);
+    LIBZMQ_UNUSED (flags_);
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
 int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
@@ -680,6 +713,15 @@ int zmq_msg_get (const zmq_msg_t *msg_, int property_)
                        || (((zmq::msg_t *) msg_)->flags () & zmq::msg_t::shared)
                      ? 1
                      : 0;
+        case ZMQ_SHM:
+#if defined ZMQ_HAVE_LINUX
+            return zmq::shm_state_t::is_shm_message (
+                     reinterpret_cast<const zmq::msg_t *> (msg_))
+                     ? 1
+                     : 0;
+#else
+            return 0;
+#endif
         default:
             errno = EINVAL;
             return -1;

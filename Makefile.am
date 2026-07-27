@@ -193,6 +193,13 @@ src_libzmq_la_SOURCES = \
 	src/server.hpp \
 	src/session_base.cpp \
 	src/session_base.hpp \
+	src/shm_channel.hpp \
+	src/shm_engine.cpp \
+	src/shm_engine.hpp \
+	src/shm_fd.hpp \
+	src/shm_ring.hpp \
+	src/shm_state.cpp \
+	src/shm_state.hpp \
 	src/signaler.cpp \
 	src/signaler.hpp \
 	src/socket_base.cpp \
@@ -397,6 +404,11 @@ noinst_PROGRAMS = \
 	perf/inproc_thr \
 	perf/proxy_thr
 
+if ON_LINUX
+noinst_PROGRAMS += \
+	perf/shm_pair_thr
+endif
+
 perf_local_lat_LDADD = src/libzmq.la
 perf_local_lat_SOURCES = perf/local_lat.cpp
 
@@ -417,6 +429,9 @@ perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
 
 perf_proxy_thr_LDADD = src/libzmq.la
 perf_proxy_thr_SOURCES = perf/proxy_thr.cpp
+
+perf_shm_pair_thr_LDADD = src/libzmq.la
+perf_shm_pair_thr_SOURCES = perf/shm_pair_thr.cpp
 
 if ENABLE_STATIC
 noinst_PROGRAMS += \
@@ -1010,11 +1025,27 @@ tests_test_security_gssapi_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 endif
 
 if ON_LINUX
-test_apps += tests/test_abstract_ipc
+test_apps += \
+	tests/test_abstract_ipc \
+	tests/test_pair_shm \
+	tests/test_shm_channel \
+	tests/test_shm_ring
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
 tests_test_abstract_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_abstract_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_pair_shm_SOURCES = tests/test_pair_shm.cpp
+tests_test_pair_shm_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_pair_shm_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_shm_channel_SOURCES = tests/test_shm_channel.cpp
+tests_test_shm_channel_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_shm_channel_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_shm_ring_SOURCES = tests/test_shm_ring.cpp
+tests_test_shm_ring_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_shm_ring_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 # TODO: gets stuck even with long timeout running under Github Actions
 if !VALGRIND_ENABLED

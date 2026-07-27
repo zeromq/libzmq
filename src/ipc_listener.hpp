@@ -17,7 +17,8 @@ class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
   public:
     ipc_listener_t (zmq::io_thread_t *io_thread_,
                     zmq::socket_base_t *socket_,
-                    const options_t &options_);
+                    const options_t &options_,
+                    bool use_shm_ = false);
 
     //  Set address to listen on.
     int set_local_address (const char *addr_);
@@ -28,6 +29,7 @@ class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
   private:
     //  Handlers for I/O events.
     void in_event ();
+    void create_shm_engine (fd_t fd_);
 
     //  Filter new connections if the OS provides a mechanism to get
     //  the credentials of the peer process.  Called from accept().
@@ -51,6 +53,8 @@ class ipc_listener_t ZMQ_FINAL : public stream_listener_base_t
 
     //  Name of the file associated with the UNIX domain address.
     std::string _filename;
+
+    bool _use_shm;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ipc_listener_t)
 };

@@ -27,6 +27,9 @@ namespace zmq
 class ctx_t;
 class msg_t;
 class pipe_t;
+#if defined ZMQ_HAVE_LINUX
+class shm_state_t;
+#endif
 
 class socket_base_t : public own_t,
                       public array_item_t<>,
@@ -61,6 +64,11 @@ class socket_base_t : public own_t,
     int term_endpoint (const char *endpoint_uri_);
     int send (zmq::msg_t *msg_, int flags_);
     int recv (zmq::msg_t *msg_, int flags_);
+#if defined ZMQ_HAVE_LINUX
+    int shm_msg_init (zmq::msg_t *msg_, size_t size_);
+    int shm_msg_send (zmq::msg_t *msg_, int flags_);
+    void register_shm_state (shm_state_t *state_);
+#endif
     void add_signaler (signaler_t *s_);
     void remove_signaler (signaler_t *s_);
     int close ();
@@ -245,6 +253,18 @@ class socket_base_t : public own_t,
     void extract_flags (const msg_t *msg_);
 
     //  Used to check whether the object is a socket.
+#if defined ZMQ_HAVE_LINUX
+    enum shm_send_mode_t
+    {
+        shm_send_mode_none,
+        shm_send_mode_copy,
+        shm_send_mode_direct
+    };
+    mutex_t _shm_sync;
+    shm_state_t *_shm_state;
+    shm_send_mode_t _shm_send_mode;
+    void release_shm_state ();
+#endif
     uint32_t _tag;
 
     //  If true, associated context was already terminated.

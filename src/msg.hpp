@@ -126,6 +126,7 @@ class msg_t
     bool is_cmsg () const;
     bool is_lmsg () const;
     bool is_zcmsg () const;
+    bool external_storage_matches (msg_free_fn *ffn_, void **hint_) const;
     uint32_t get_routing_id () const;
     int set_routing_id (uint32_t routing_id_);
     int reset_routing_id ();

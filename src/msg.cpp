@@ -498,6 +498,16 @@ bool zmq::msg_t::is_zcmsg () const
     return _u.base.type == type_zclmsg;
 }
 
+bool zmq::msg_t::external_storage_matches (msg_free_fn *ffn_,
+                                           void **hint_) const
+{
+    if (!is_zcmsg () || _u.zclmsg.content->ffn != ffn_)
+        return false;
+    if (hint_)
+        *hint_ = _u.zclmsg.content->hint;
+    return true;
+}
+
 bool zmq::msg_t::is_join () const
 {
     return _u.base.type == type_join;

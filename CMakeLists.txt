@@ -992,6 +992,8 @@ set(cxx-sources
     select.cpp
     server.cpp
     session_base.cpp
+    shm_engine.cpp
+    shm_state.cpp
     signaler.cpp
     socket_base.cpp
     socks.cpp
@@ -1127,6 +1129,11 @@ set(cxx-sources
     select.hpp
     server.hpp
     session_base.hpp
+    shm_channel.hpp
+    shm_engine.hpp
+    shm_fd.hpp
+    shm_ring.hpp
+    shm_state.hpp
     signaler.hpp
     socket_base.hpp
     socket_poller.hpp
@@ -1621,6 +1628,9 @@ if(BUILD_SHARED)
       inproc_lat
       inproc_thr
       proxy_thr)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND perf-tools shm_pair_thr)
+  endif()
 
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     option(WITH_PERF_TOOL "Build with perf-tools" ON)
