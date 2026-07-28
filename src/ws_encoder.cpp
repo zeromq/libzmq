@@ -61,10 +61,12 @@ void zmq::ws_encoder_t::message_ready ()
         offset += 8;
     }
 
+    unsigned char mask_buf[8];
     if (_must_mask) {
         const uint32_t random = generate_random ();
         put_uint32 (_tmp_buf + offset, random);
-        put_uint32 (_mask, random);
+        put_uint32 (mask_buf, random);
+        put_uint32 (mask_buf + 4, random);
         offset += 4;
     }
 
@@ -78,15 +80,18 @@ void zmq::ws_encoder_t::message_ready ()
             protocol_flags |= ws_protocol_t::command_flag;
 
         _tmp_buf[offset++] =
-          _must_mask ? protocol_flags ^ _mask[mask_index++] : protocol_flags;
+          _must_mask ? protocol_flags ^ mask_buf[mask_index++] : protocol_flags;
     }
 
     //  Encode the subscribe/cancel byte.
     //  TODO: remove once there is an opcode for subscribe/cancel
     if (in_progress ()->is_subscribe ())
-        _tmp_buf[offset++] = _must_mask ? 1 ^ _mask[mask_index++] : 1;
+        _tmp_buf[offset++] = _must_mask ? 1 ^ mask_buf[mask_index++] : 1;
     else if (in_progress ()->is_cancel ())
-        _tmp_buf[offset++] = _must_mask ? 0 ^ _mask[mask_index++] : 0;
+        _tmp_buf[offset++] = _must_mask ? 0 ^ mask_buf[mask_index++] : 0;
+
+    // Store the rotated mask, so ws_mask_payload can use it directly
+    memcpy(_mask, mask_buf + mask_index, 4);
 
     next_step (_tmp_buf, offset, &ws_encoder_t::size_ready, false);
 }
@@ -109,14 +114,7 @@ void zmq::ws_encoder_t::size_ready ()
             dest = static_cast<unsigned char *> (_masked_msg.data ());
         }
 
-        int mask_index = 0;
-        if (_is_binary)
-            ++mask_index;
-        //  TODO: remove once there is an opcode for subscribe/cancel
-        if (in_progress ()->is_subscribe () || in_progress ()->is_cancel ())
-            ++mask_index;
-        for (size_t i = 0; i < size; ++i, mask_index++)
-            dest[i] = src[i] ^ _mask[mask_index % 4];
+        ws_mask_payload (dest, src, size, _mask);
 
         next_step (dest, size, &ws_encoder_t::message_ready, true);
     } else {

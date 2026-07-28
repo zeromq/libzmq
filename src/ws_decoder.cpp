@@ -131,6 +131,7 @@ int zmq::ws_decoder_t::long_size_ready (unsigned char const *read_from_)
 int zmq::ws_decoder_t::mask_ready (unsigned char const *read_from_)
 {
     memcpy (_mask, _tmpbuf, 4);
+    memcpy (_mask + 4, _tmpbuf, 4);
 
     if (_opcode == ws_protocol_t::opcode_binary) {
         if (_size == 0)
@@ -238,8 +239,8 @@ int zmq::ws_decoder_t::message_ready (unsigned char const *)
 
         unsigned char *data =
           static_cast<unsigned char *> (_in_progress.data ());
-        for (size_t i = 0; i < _size; ++i, mask_index++)
-            data[i] = data[i] ^ _mask[mask_index % 4];
+
+        ws_mask_payload (data, data, _size, _mask + mask_index);
     }
 
     //  Message is completely read. Signal this to the caller
