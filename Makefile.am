@@ -1374,6 +1374,7 @@ if ENABLE_STATIC
 test_apps += \
 	unittests/unittest_poller \
 	unittests/unittest_ypipe \
+	unittests/unittest_dbuffer \
 	unittests/unittest_mtrie \
 	unittests/unittest_ip_resolver \
 	unittests/unittest_udp_address \
@@ -1393,6 +1394,15 @@ unittests_unittest_ypipe_SOURCES = unittests/unittest_ypipe.cpp
 unittests_unittest_ypipe_CPPFLAGS = -I$(top_srcdir)/src ${TESTUTIL_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
 unittests_unittest_ypipe_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
 unittests_unittest_ypipe_LDADD = \
+        ${TESTUTIL_LIBS} \
+        $(top_builddir)/src/.libs/libzmq.a \
+        ${src_libzmq_la_LIBADD} \
+        $(CODE_COVERAGE_LDFLAGS)
+
+unittests_unittest_dbuffer_SOURCES = unittests/unittest_dbuffer.cpp
+unittests_unittest_dbuffer_CPPFLAGS = -I$(top_srcdir)/src ${TESTUTIL_CPPFLAGS} $(CODE_COVERAGE_CPPFLAGS)
+unittests_unittest_dbuffer_CXXFLAGS = $(CODE_COVERAGE_CXXFLAGS)
+unittests_unittest_dbuffer_LDADD = \
         ${TESTUTIL_LIBS} \
         $(top_builddir)/src/.libs/libzmq.a \
         ${src_libzmq_la_LIBADD} \
