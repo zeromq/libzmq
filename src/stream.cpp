@@ -79,9 +79,6 @@ int zmq::stream_t::xsend (msg_t *msg_)
                 _current_out = out_pipe->pipe;
                 if (!_current_out->check_write ()) {
                     out_pipe->active = false;
-                    _current_out = NULL;
-                    errno = EAGAIN;
-                    return -1;
                 }
             } else {
                 errno = EHOSTUNREACH;
@@ -118,6 +115,13 @@ int zmq::stream_t::xsend (msg_t *msg_)
             errno_assert (rc == 0);
             _current_out = NULL;
             return 0;
+        }
+        if (!_current_out->check_write ()) {
+            // Because we set _more_out to false above, the user is forced
+            // to resend the Identity frame on their next attempt.
+            _current_out = NULL;
+            errno = EAGAIN;
+            return -1;
         }
         const bool ok = _current_out->write (msg_);
         if (likely (ok))
