@@ -30,6 +30,9 @@ class pgm_sender_t ZMQ_FINAL : public io_object_t, public i_engine
     bool has_handshake_stage () { return false; };
     void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
     void terminate ();
+    //  The sender never reads messages from the wire into the session's
+    //  pipe, so its input can never be stopped nor restarted.
+    bool input_stopped () const { return false; }
     bool restart_input ();
     void restart_output ();
     void zap_msg_available () {}

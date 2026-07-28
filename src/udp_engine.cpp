@@ -36,7 +36,8 @@ zmq::udp_engine_t::udp_engine_t (const options_t &options_) :
     _address (NULL),
     _options (options_),
     _send_enabled (false),
-    _recv_enabled (false)
+    _recv_enabled (false),
+    _input_stopped (false)
 {
 }
 
@@ -574,6 +575,7 @@ void zmq::udp_engine_t::in_event ()
         rc = msg.close ();
         errno_assert (rc == 0);
 
+        _input_stopped = true;
         reset_pollin (_handle);
         return;
     }
@@ -592,6 +594,7 @@ void zmq::udp_engine_t::in_event ()
         errno_assert (rc == 0);
 
         _session->reset ();
+        _input_stopped = true;
         reset_pollin (_handle);
         return;
     }
@@ -603,6 +606,9 @@ void zmq::udp_engine_t::in_event ()
 
 bool zmq::udp_engine_t::restart_input ()
 {
+    zmq_assert (_input_stopped);
+
+    _input_stopped = false;
     if (_recv_enabled) {
         set_pollin (_handle);
         in_event ();

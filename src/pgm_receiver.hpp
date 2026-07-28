@@ -31,6 +31,7 @@ class pgm_receiver_t ZMQ_FINAL : public io_object_t, public i_engine
     bool has_handshake_stage () { return false; };
     void plug (zmq::io_thread_t *io_thread_, zmq::session_base_t *session_);
     void terminate ();
+    bool input_stopped () const { return active_tsi != NULL; }
     bool restart_input ();
     void restart_output ();
     void zap_msg_available () {}
