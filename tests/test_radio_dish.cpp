@@ -261,7 +261,7 @@ MAKE_TEST_V4V6 (test_radio_dish_udp)
 static const char *mcast_url (int ipv6_)
 {
     if (ipv6_) {
-        return "udp://[" MCAST_IPV6 "]:5555";
+        return "udp://eth0;[" MCAST_IPV6 "]:5555";
     }
     return "udp://" MCAST_IPV4 ":5555";
 }

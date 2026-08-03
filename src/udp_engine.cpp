@@ -133,7 +133,6 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
         rc = rc | set_udp_reuse_address (_fd, true);
 
         const ip_addr_t *bind_addr = udp_addr->bind_addr ();
-        ip_addr_t any = ip_addr_t::any (bind_addr->family ());
         const ip_addr_t *real_bind_addr;
 
         const bool multicast = udp_addr->is_mcast ();
@@ -143,11 +142,10 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
             //  one port as all ports should receive the message
             rc = rc | set_udp_reuse_port (_fd, true);
 
-            //  In multicast we should bind ANY and use the mreq struct to
-            //  specify the interface
-            any.set_port (bind_addr->port ());
+            //  In multicast we should bind the target address and use the
+            //  mreq struct to specify the interface
 
-            real_bind_addr = &any;
+            real_bind_addr = udp_addr->target_addr ();
         } else {
             real_bind_addr = bind_addr;
         }
