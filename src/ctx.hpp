@@ -46,7 +46,7 @@ class thread_ctx_t
                        const char *name_ = NULL) const;
 
     int set (int option_, const void *optval_, size_t optvallen_);
-    int get (int option_, void *optval_, const size_t *optvallen_);
+    int get (int option_, void *optval_, size_t *optvallen_);
 
   protected:
     //  Synchronisation of access to context options.
@@ -89,7 +89,7 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
 
     //  Set and get context properties.
     int set (int option_, const void *optval_, size_t optvallen_);
-    int get (int option_, void *optval_, const size_t *optvallen_);
+    int get (int option_, void *optval_, size_t *optvallen_);
     int get (int option_);
 
     //  Create and destroy a socket.
