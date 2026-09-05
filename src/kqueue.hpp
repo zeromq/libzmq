@@ -47,7 +47,7 @@ class kqueue_t ZMQ_FINAL : public worker_poller_base_t
     ZMQ_PRIVATE bool run_once (int timeout_ms_);
     friend class manual_io_t;
     ZMQ_PRIVATE bool run_once (int timeout_ms_, poller_step_t *step_);
-    bool has_pending_events () const { return _manual_ready != NULL; }
+    ZMQ_PRIVATE bool has_pending_events () const { return _manual_ready != NULL; }
     void cleanup_retired ();
     template <bool Manual>
     ZMQ_PRIVATE bool run_once_impl (int timeout_ms_, poller_step_t *step_);

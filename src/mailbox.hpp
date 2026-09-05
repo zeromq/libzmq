@@ -27,7 +27,7 @@ class mailbox_t : public i_mailbox
 
     bool valid () const;
 #ifdef ZMQ_BUILD_DRAFT_API
-    void set_manual_cleanup (bool manual_ = true)
+    ZMQ_PRIVATE void set_manual_cleanup (bool manual_ = true)
     {
         _signaler.set_manual_cleanup (manual_);
     }

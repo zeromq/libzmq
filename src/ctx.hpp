@@ -89,8 +89,8 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     int shutdown ();
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    bool is_manual_io () const { return _manual_io_threads; }
-    manual_io_t *get_manual_io () const { return _manual_io; }
+    ZMQ_PRIVATE bool is_manual_io () const { return _manual_io_threads; }
+    ZMQ_PRIVATE manual_io_t *get_manual_io () const { return _manual_io; }
     ZMQ_PRIVATE int step (const zmq_ctx_step_budget_t *budget_,
                           zmq_ctx_step_result_t *result_);
 #endif

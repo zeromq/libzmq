@@ -29,7 +29,10 @@ class signaler_t
     void send ();
 #ifdef ZMQ_BUILD_DRAFT_API
     ZMQ_PRIVATE void send_manual ();
-    void set_manual_cleanup (bool manual_ = true) { _manual_cleanup = manual_; }
+    ZMQ_PRIVATE void set_manual_cleanup (bool manual_ = true)
+    {
+        _manual_cleanup = manual_;
+    }
 #endif
     int wait (int timeout_) const;
     void recv ();
