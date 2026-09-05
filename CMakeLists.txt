@@ -954,6 +954,7 @@ set(cxx-sources
     kqueue.cpp
     lb.cpp
     mailbox.cpp
+    manual_io.cpp
     mailbox_safe.cpp
     mechanism.cpp
     mechanism_base.cpp
@@ -1082,6 +1083,7 @@ set(cxx-sources
     likely.hpp
     macros.hpp
     mailbox.hpp
+    manual_io.hpp
     mailbox_safe.hpp
     mechanism.hpp
     mechanism_base.hpp

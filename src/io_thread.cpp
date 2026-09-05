@@ -8,12 +8,18 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
+#include "manual_io.hpp"
 
 zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
     _mailbox_handle (static_cast<poller_t::handle_t> (NULL))
 {
-    _poller = new (std::nothrow) poller_t (*ctx_);
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (ctx_->get_manual_io ())
+        _poller = ctx_->get_manual_io ()->poller ();
+    else
+#endif
+        _poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (_poller);
 
     if (_mailbox.get_fd () != retired_fd) {
@@ -24,11 +30,19 @@ zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
 
 zmq::io_thread_t::~io_thread_t ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->is_manual_io ())
+        return;
+#endif
     LIBZMQ_DELETE (_poller);
 }
 
 void zmq::io_thread_t::start ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->is_manual_io ())
+        return;
+#endif
     char name[16] = "";
     snprintf (name, sizeof (name), "IO/%u",
               get_tid () - zmq::ctx_t::reaper_tid - 1);

@@ -104,6 +104,8 @@ src_libzmq_la_SOURCES = \
 	src/macros.hpp \
 	src/mailbox.cpp \
 	src/mailbox.hpp \
+	src/manual_io.cpp \
+	src/manual_io.hpp \
 	src/mailbox_safe.cpp \
 	src/mailbox_safe.hpp \
 	src/mechanism.cpp \

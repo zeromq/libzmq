@@ -93,6 +93,9 @@ uint64_t zmq::poller_base_t::execute_timers ()
 
 zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :
     _ctx (ctx_)
+#if defined ZMQ_BUILD_DRAFT_API && !defined NDEBUG
+    , _manual (false), _manual_thread (NULL)
+#endif
 {
 }
 
@@ -110,9 +113,28 @@ void zmq::worker_poller_base_t::start (const char *name_)
 void zmq::worker_poller_base_t::check_thread () const
 {
 #ifndef NDEBUG
+#ifdef ZMQ_BUILD_DRAFT_API
+    if (_manual) {
+        zmq_assert (_manual_thread && _manual_thread->is_current_thread ());
+        return;
+    }
+#endif
     zmq_assert (!_worker.get_started () || _worker.is_current_thread ());
 #endif
 }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::worker_poller_base_t::set_manual_thread (const thread_t *owner_)
+{
+    zmq_assert (!_worker.get_started ());
+#ifndef NDEBUG
+    _manual = true;
+    _manual_thread = owner_;
+#else
+    LIBZMQ_UNUSED (owner_);
+#endif
+}
+#endif
 
 void zmq::worker_poller_base_t::worker_routine (void *arg_)
 {

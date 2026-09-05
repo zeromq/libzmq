@@ -69,11 +69,6 @@
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
-#define ZMQ_IO_MODE 11
-
-/*  DRAFT ZMQ_IO_MODE options                                                 */
-#define ZMQ_IO_MODE_THREADED 0
-#define ZMQ_IO_MODE_CALLER 1
 
 /*  DRAFT Context methods.                                                    */
 int zmq_ctx_set_ext (void *context_,
@@ -84,7 +79,6 @@ int zmq_ctx_get_ext (void *context_,
                      int option_,
                      void *optval_,
                      size_t *optvallen_);
-int zmq_ctx_step (void *context_);
 
 /*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s_, const char *group_);

@@ -20,6 +20,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "random.hpp"
+#include "manual_io.hpp"
 
 #ifdef ZMQ_HAVE_VMCI
 #include <vmci_sockets.h>
@@ -61,6 +62,9 @@ zmq::ctx_t::ctx_t () :
     _blocky (true),
     _ipv6 (false),
     _zero_copy (true)
+#ifdef ZMQ_BUILD_DRAFT_API
+    , _manual_io_threads (false), _manual_io (NULL)
+#endif
 {
 #ifdef HAVE_FORK
     _pid = getpid ();
@@ -106,6 +110,10 @@ zmq::ctx_t::~ctx_t ()
 
     //  Deallocate the reaper thread object.
     LIBZMQ_DELETE (_reaper);
+
+#ifdef ZMQ_HAVE_MANUAL_IO
+    LIBZMQ_DELETE (_manual_io);
+#endif
 
     //  The mailboxes in _slots themselves were deallocated with their
     //  corresponding io_thread/socket objects.
@@ -240,6 +248,36 @@ int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
         memcpy (&value, optval_, sizeof (int));
 
     switch (option_) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_MANUAL_IO_THREADS: {
+            scoped_lock_t locker (_slot_sync);
+            if (!is_int || (value != 0 && value != 1) || !_starting) {
+                errno = EINVAL;
+                return -1;
+            }
+#ifndef ZMQ_HAVE_MANUAL_IO
+            if (value) {
+                errno = ENOTSUP;
+                return -1;
+            }
+#else
+            if (value && !_manual_io) {
+                _manual_io = new (std::nothrow) manual_io_t (*this, _term_mailbox);
+                if (!_manual_io) {
+                    errno = ENOMEM;
+                    return -1;
+                }
+            } else if (!value && _manual_io) {
+                if (!_manual_io->enter ())
+                    return -1;
+                _manual_io->leave ();
+                LIBZMQ_DELETE (_manual_io);
+            }
+#endif
+            _manual_io_threads = value != 0;
+            return 0;
+        }
+#endif
         case ZMQ_MAX_SOCKETS:
             if (is_int && value >= 1 && value == clipped_maxsocket (value)) {
                 scoped_lock_t locker (_opt_sync);
@@ -303,6 +341,15 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
     int *value = static_cast<int *> (optval_);
 
     switch (option_) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_MANUAL_IO_THREADS:
+            if (is_int) {
+                scoped_lock_t locker (_slot_sync);
+                *value = _manual_io_threads;
+                return 0;
+            }
+            break;
+#endif
         case ZMQ_MAX_SOCKETS:
             if (is_int) {
                 scoped_lock_t locker (_opt_sync);
@@ -410,6 +457,14 @@ bool zmq::ctx_t::start ()
     //  Initialise the infrastructure for zmq_ctx_term thread.
     _slots[term_tid] = &_term_mailbox;
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io_threads) {
+        const bool entered = _manual_io->enter ();
+        if (!entered)
+            return false;
+    }
+#endif
+
     //  Create the reaper thread.
     _reaper = new (std::nothrow) reaper_t (this, reaper_tid);
     if (!_reaper) {
@@ -447,6 +502,10 @@ bool zmq::ctx_t::start ()
     }
 
     _starting = false;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io)
+        _manual_io->leave ();
+#endif
     return true;
 
 fail_cleanup_reaper:
@@ -455,6 +514,10 @@ fail_cleanup_reaper:
     _reaper = NULL;
 
 fail_cleanup_slots:
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io)
+        _manual_io->leave ();
+#endif
     _slots.clear ();
     return false;
 }

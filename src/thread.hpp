@@ -58,6 +58,11 @@ class thread_t
     //  thread object.
     bool is_current_thread () const;
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Record an external owner without spawning, joining or changing attributes.
+    void record_current_thread ();
+#endif
+
     //  Waits for thread termination.
     void stop ();
 

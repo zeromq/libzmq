@@ -140,6 +140,11 @@ class worker_poller_base_t : public poller_base_t
     // Methods from the poller concept.
     void start (const char *name = NULL);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  NULL relinquishes ownership, but does not revert to the worker invariant.
+    void set_manual_thread (const thread_t *owner_);
+#endif
+
   protected:
     //  Checks whether the currently executing thread is the worker thread
     //  via an assertion.
@@ -162,6 +167,10 @@ class worker_poller_base_t : public poller_base_t
 
     //  Handle of the physical thread doing the I/O work.
     thread_t _worker;
+#if defined ZMQ_BUILD_DRAFT_API && !defined NDEBUG
+    bool _manual;
+    const thread_t *_manual_thread;
+#endif
 };
 }
 

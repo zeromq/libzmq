@@ -677,11 +677,8 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
-#define ZMQ_IO_MODE 11
-
-/*  DRAFT ZMQ_IO_MODE options                                                 */
-#define ZMQ_IO_MODE_THREADED 0
-#define ZMQ_IO_MODE_CALLER 1
+/*  Boolean; must be set before the first socket is created.                  */
+#define ZMQ_MANUAL_IO_THREADS 12
 
 /*  DRAFT Context methods.                                                    */
 ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,
@@ -692,7 +689,6 @@ ZMQ_EXPORT int zmq_ctx_get_ext (void *context_,
                                 int option_,
                                 void *optval_,
                                 size_t *optvallen_);
-ZMQ_EXPORT int zmq_ctx_step (void *context_);
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
