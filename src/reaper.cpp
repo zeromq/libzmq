@@ -15,6 +15,9 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     _sockets (0),
     _terminating (false)
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _manual_receiver = NULL;
+#endif
     if (!_mailbox.valid ())
         return;
 
@@ -26,8 +29,19 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
         _poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (_poller);
 
+    i_poll_events *receiver = this;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _manual_receiver = NULL;
+    if (ctx_->get_manual_io ()) {
+        _manual_receiver = new (std::nothrow)
+          manual_mailbox_t (*ctx_->get_manual_io (), _mailbox);
+        alloc_assert (_manual_receiver);
+        receiver = _manual_receiver;
+    }
+#endif
+
     if (_mailbox.get_fd () != retired_fd) {
-        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this);
+        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), receiver);
         _poller->set_pollin (_mailbox_handle);
     }
 
@@ -39,8 +53,10 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
 zmq::reaper_t::~reaper_t ()
 {
 #ifdef ZMQ_HAVE_MANUAL_IO
-    if (get_ctx ()->is_manual_io ())
+    if (get_ctx ()->is_manual_io ()) {
+        LIBZMQ_DELETE (_manual_receiver);
         return;
+    }
 #endif
     LIBZMQ_DELETE (_poller);
 }

@@ -8,6 +8,7 @@
 #include "clock.hpp"
 #include "atomic_counter.hpp"
 #include "ctx.hpp"
+#include "poller_step.hpp"
 
 namespace zmq
 {
@@ -110,8 +111,12 @@ class poller_base_t
     //  Executes any timers that are due. Returns number of milliseconds
     //  to wait to match the next timer or 0 meaning "no timers".
     uint64_t execute_timers ();
+    uint64_t execute_timers (poller_step_t *step_);
+    int next_timer_delay ();
 
   private:
+    friend class manual_io_t;
+    template <bool Manual> uint64_t execute_timers_impl (poller_step_t *step_);
     //  Clock instance private to this I/O thread.
     clock_t _clock;
 

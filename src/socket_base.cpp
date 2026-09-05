@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
+#include "manual_io.hpp"
 #include <new>
 #include <string>
 #include <algorithm>
@@ -242,6 +243,9 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     _monitor_events (0),
     _thread_safe (thread_safe_),
     _reaper_signaler (NULL),
+#ifdef ZMQ_BUILD_DRAFT_API
+    _manual_receiver (NULL),
+#endif
     _monitor_sync (),
     _disconnected (false)
 {
@@ -279,6 +283,9 @@ int zmq::socket_base_t::get_peer_state (const void *routing_id_,
 
 zmq::socket_base_t::~socket_base_t ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    LIBZMQ_DELETE (_manual_receiver);
+#endif
     if (_mailbox)
         LIBZMQ_DELETE (_mailbox);
 
@@ -1498,7 +1505,16 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
         _reaper_signaler->send ();
     }
 
-    _handle = _poller->add_fd (fd, this);
+    i_poll_events *receiver = this;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->get_manual_io ()) {
+        _manual_receiver = new (std::nothrow) manual_mailbox_t (
+          *get_ctx ()->get_manual_io (), *_mailbox, manual_in_event, this);
+        alloc_assert (_manual_receiver);
+        receiver = _manual_receiver;
+    }
+#endif
+    _handle = _poller->add_fd (fd, receiver);
     _poller->set_pollin (_handle);
 
     //  Initialise the termination and check whether it can be deallocated
@@ -1739,6 +1755,23 @@ void zmq::socket_base_t::in_event ()
     check_destroy ();
 }
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+void zmq::socket_base_t::manual_in_event (manual_mailbox_t *receiver_,
+                                        bool notification_)
+{
+    socket_base_t *self = static_cast<socket_base_t *> (receiver_->arg ());
+    bool drained;
+    {
+        scoped_optional_lock_t lock (self->_thread_safe ? &self->_sync : NULL);
+        if (notification_ && self->_thread_safe)
+            self->_reaper_signaler->recv ();
+        drained = receiver_->drain ();
+    }
+    if (drained)
+        self->check_destroy ();
+}
+
+#endif
 void zmq::socket_base_t::out_event ()
 {
     zmq_assert (false);

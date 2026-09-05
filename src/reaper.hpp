@@ -11,6 +11,7 @@
 namespace zmq
 {
 class ctx_t;
+class manual_mailbox_t;
 class socket_base_t;
 
 class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
@@ -43,6 +44,9 @@ class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
 
     //  I/O multiplexing is performed using a poller object.
     poller_t *_poller;
+#ifdef ZMQ_BUILD_DRAFT_API
+    manual_mailbox_t *_manual_receiver;
+#endif
 
     //  Number of sockets being reaped at the moment.
     int _sockets;

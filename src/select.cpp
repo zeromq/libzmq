@@ -32,6 +32,7 @@ zmq::select_t::select_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
 #if defined ZMQ_HAVE_WINDOWS
     //  Fine as long as map is not cleared.
+    _manual_family (0),
     _current_family_entry_it (_family_entries.end ())
 #else
     _max_fd (retired_fd)
@@ -90,18 +91,34 @@ zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries_,
     return fd_entry_it;
 }
 
+template <bool Manual>
 void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
                                     const fds_set_t &local_fds_set_,
-                                    int event_count_)
+                                    int event_count_, size_t *cursor_,
+                                    poller_step_t *step_)
 {
     //  Size is cached to avoid iteration through recently added descriptors.
-    for (fd_entries_t::size_type i = 0, size = fd_entries_.size ();
-         i < size && event_count_ > 0; ++i) {
+    const size_t size = fd_entries_.size ();
+    const size_t start = Manual && size ? *cursor_ % size : 0;
+    for (fd_entries_t::size_type pos = 0;
+         pos < size && event_count_ > 0; ++pos) {
+        const size_t i = Manual ? (start + pos) % size : pos;
         //  fd_entries_[i] may not be stored, since calls to
         //  in_event/out_event may reallocate the vector
 
         if (is_retired_fd (fd_entries_[i]))
             continue;
+
+        if (Manual) {
+            const fd_t fd = fd_entries_[i].fd;
+            if (!FD_ISSET (fd, &local_fds_set_.read)
+                && !FD_ISSET (fd, &local_fds_set_.write)
+                && !FD_ISSET (fd, &local_fds_set_.error))
+                continue;
+            if (!step_->event ())
+                break;
+            *cursor_ = i + 1;
+        }
 
         if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.read)) {
             fd_entries_[i].events->in_event ();
@@ -282,10 +299,24 @@ void zmq::select_t::loop ()
 
 bool zmq::select_t::run_once (int timeout_ms_)
 {
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::select_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
     //  Execute any due timers.
-    int timeout = static_cast<int> (execute_timers ());
+    const int timeout = static_cast<int> (
+      Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+      Manual && (step_->progress () || step_->more || step_->probe) ? 0
+      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
                      : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
 
     cleanup_retired ();
@@ -379,31 +410,46 @@ bool zmq::select_t::run_once (int timeout_ms_)
             return true;
     }
 
-    for (_current_family_entry_it = _family_entries.begin ();
-         _current_family_entry_it != _family_entries.end ();
-         ++_current_family_entry_it) {
+    size_t families_left = _family_entries.size ();
+    _current_family_entry_it = Manual ? _family_entries.upper_bound (_manual_family)
+                                      : _family_entries.begin ();
+    if (Manual && _current_family_entry_it == _family_entries.end ())
+        _current_family_entry_it = _family_entries.begin ();
+    for (; Manual ? families_left != 0
+                  : _current_family_entry_it != _family_entries.end ();) {
         family_entry_t &family_entry = _current_family_entry_it->second;
-
+        const uint32_t before = Manual ? step_->events : 0;
 
         if (use_wsa_events) {
             //  There is no reason to wait again after WSAWaitForMultipleEvents.
             //  Simply collect what is ready.
             struct timeval tv_nodelay = {0, 0};
-            select_family_entry (family_entry, 0, true, tv_nodelay);
+            select_family_entry<Manual> (family_entry, 0, true, tv_nodelay, step_);
         } else {
-            select_family_entry (family_entry, 0, wait >= 0, tv);
+            select_family_entry<Manual> (family_entry, 0, wait >= 0, tv, step_);
+        }
+        if (Manual && step_->events != before)
+            _manual_family = _current_family_entry_it->first;
+        ++_current_family_entry_it;
+        if (Manual) {
+            --families_left;
+            if (_current_family_entry_it == _family_entries.end ())
+                _current_family_entry_it = _family_entries.begin ();
         }
     }
+    if (Manual)
+        _current_family_entry_it = _family_entries.end ();
 #else
-    select_family_entry (_family_entry, _max_fd + 1, wait >= 0, tv);
+    select_family_entry<Manual> (_family_entry, _max_fd + 1, wait >= 0, tv, step_);
 #endif
     return true;
 }
 
+template <bool Manual>
 void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
                                          const int max_fd_,
                                          const bool use_timeout_,
-                                         struct timeval &tv_)
+                                         struct timeval &tv_, poller_step_t *step_)
 {
     //  select will fail when run with empty sets.
     fd_entries_t &fd_entries = family_entry_.fd_entries;
@@ -419,11 +465,14 @@ void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
 #else
     if (rc == -1) {
         errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
         return;
     }
 #endif
 
-    trigger_events (fd_entries, local_fds_set, rc);
+    trigger_events<Manual> (fd_entries, local_fds_set, rc,
+                            &family_entry_.manual_cursor, step_);
 
     cleanup_retired (family_entry_);
 }
@@ -522,7 +571,8 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry_)
     return entry_.fd == retired_fd;
 }
 
-zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
+zmq::select_t::family_entry_t::family_entry_t () :
+    has_retired (false), manual_cursor (0)
 {
 }
 

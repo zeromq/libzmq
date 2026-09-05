@@ -151,10 +151,24 @@ void zmq::kqueue_t::loop ()
 
 bool zmq::kqueue_t::run_once (int timeout_ms_)
 {
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::kqueue_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::kqueue_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
     //  Execute any due timers.
-    int timeout = (int) execute_timers ();
+    const int timeout = static_cast<int> (
+      Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+      Manual && (step_->progress () || step_->more || step_->probe) ? 0
+      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
                      : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
 
     if (get_load () == 0) {
@@ -168,7 +182,8 @@ bool zmq::kqueue_t::run_once (int timeout_ms_)
     //  Wait for events.
     struct kevent ev_buf[max_io_events];
     timespec ts = {wait / 1000, (wait % 1000) * 1000000};
-    int n = kevent (kqueue_fd, NULL, 0, &ev_buf[0], max_io_events,
+    int n = kevent (kqueue_fd, NULL, 0, &ev_buf[0],
+                    Manual ? step_->event_batch (max_io_events) : max_io_events,
                     wait >= 0 ? &ts : NULL);
 #ifdef HAVE_FORK
     if (unlikely (pid != getpid ())) {
@@ -179,10 +194,14 @@ bool zmq::kqueue_t::run_once (int timeout_ms_)
 #endif
     if (n == -1) {
         errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
         return true;
     }
 
     for (int i = 0; i < n; i++) {
+        if (Manual && !step_->event ())
+            break;
         poll_entry_t *pe = (poll_entry_t *) ev_buf[i].udata;
 
         if (pe->fd == retired_fd)

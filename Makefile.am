@@ -152,6 +152,7 @@ src_libzmq_la_SOURCES = \
 	src/poller.hpp \
 	src/poller_base.cpp \
 	src/poller_base.hpp \
+	src/poller_step.hpp \
 	src/polling_util.cpp \
 	src/polling_util.hpp \
 	src/pollset.cpp \

@@ -217,6 +217,41 @@ int zmq::ctx_t::terminate ()
     return 0;
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+int zmq::ctx_t::step (const zmq_ctx_step_budget_t *budget_,
+                      zmq_ctx_step_result_t *result_)
+{
+    const zmq_ctx_step_budget_t unlimited = {0, 0, 0, 0};
+    const zmq_ctx_step_budget_t budget = budget_ ? *budget_ : unlimited;
+    if (budget.timeout_ms < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _slot_sync.lock ();
+    manual_io_t *driver = _manual_io;
+    if (!driver) {
+        _slot_sync.unlock ();
+        errno = ENOTSUP;
+        return -1;
+    }
+    const bool entered = driver->enter ();
+    _slot_sync.unlock ();
+    if (!entered)
+        return -1;
+    const int rc = driver->run (budget, result_);
+    const int saved_errno = errno;
+    driver->leave ();
+    errno = saved_errno;
+    return rc;
+#else
+    LIBZMQ_UNUSED (result_);
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
+#endif
 int zmq::ctx_t::shutdown ()
 {
     scoped_lock_t locker (_slot_sync);

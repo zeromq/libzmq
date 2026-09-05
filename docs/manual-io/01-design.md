@@ -222,7 +222,11 @@ registration supplies a real wait source even while there are only timers or
 no application sockets. It is removed before destroying the shared poller.
 
 A step takes exclusive manual ownership, resumes a bounded snapshot of pending
-mailbox continuations in FIFO order, then executes one shared poller iteration.
+mailbox continuations in FIFO order, and executes one shared poller iteration.
+When continuations exist, successive calls alternate which of these two runs
+first. This correction to the initial continuation-first sketch is necessary:
+with a one-event cap, an endlessly requeued continuation must not starve native
+readiness that has not yet been admitted to the FIFO.
 If it already made progress or has deferred work, its native wait is zero;
 otherwise the wait is min(caller timeout, next timer). It executes timers again
 after a timed wait so timers that expired during that wait fire in this call,

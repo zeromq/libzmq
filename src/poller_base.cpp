@@ -53,6 +53,28 @@ void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 
 uint64_t zmq::poller_base_t::execute_timers ()
 {
+    return execute_timers_impl<false> (NULL);
+}
+
+uint64_t zmq::poller_base_t::execute_timers (poller_step_t *step_)
+{
+    return execute_timers_impl<true> (step_);
+}
+
+int zmq::poller_base_t::next_timer_delay ()
+{
+    if (_timers.empty ())
+        return -1;
+    const uint64_t now = _clock.now_ms ();
+    return _timers.begin ()->first <= now
+             ? 0
+             : static_cast<int> (std::min<uint64_t> (_timers.begin ()->first - now,
+                                                     INT_MAX));
+}
+
+template <bool Manual>
+uint64_t zmq::poller_base_t::execute_timers_impl (poller_step_t *step_)
+{
     //  Fast track.
     if (_timers.empty ())
         return 0;
@@ -75,6 +97,13 @@ uint64_t zmq::poller_base_t::execute_timers ()
             res = it->first - current;
             break;
         }
+
+        if (Manual && !step_->timer_available ()) {
+            step_->defer ();
+            break;
+        }
+        if (Manual)
+            poller_step_t::increment (step_->timers);
 
         //  Save and remove the timer because timer_event() call might delete
         //  exactly this timer and then the iterator will be invalid.

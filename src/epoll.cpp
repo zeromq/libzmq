@@ -145,12 +145,26 @@ void zmq::epoll_t::loop ()
 
 bool zmq::epoll_t::run_once (int timeout_ms_)
 {
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::epoll_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
     epoll_event ev_buf[max_io_events];
 
     //  Execute any due timers.
-    const int timeout = static_cast<int> (execute_timers ());
+    const int timeout = static_cast<int> (
+      Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+      Manual && (step_->progress () || step_->more || step_->probe) ? 0
+      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
                      : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
 
     if (get_load () == 0) {
@@ -162,13 +176,20 @@ bool zmq::epoll_t::run_once (int timeout_ms_)
     }
 
     //  Wait for events.
-    const int n = epoll_wait (_epoll_fd, &ev_buf[0], max_io_events, wait);
+    const int n = epoll_wait (_epoll_fd, &ev_buf[0],
+                              Manual ? step_->event_batch (max_io_events)
+                                     : max_io_events,
+                              wait);
     if (n == -1) {
         errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
         return true;
     }
 
     for (int i = 0; i < n; i++) {
+        if (Manual && !step_->event ())
+            break;
         const poll_entry_t *const pe =
           static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
 

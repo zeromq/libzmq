@@ -12,6 +12,7 @@
 namespace zmq
 {
 class ctx_t;
+class manual_mailbox_t;
 
 //  Generic part of the I/O thread. Polling-mechanism-specific features
 //  are implemented in separate "polling objects".
@@ -57,6 +58,9 @@ class io_thread_t ZMQ_FINAL : public object_t, public i_poll_events
 
     //  I/O multiplexing is performed using a poller object.
     poller_t *_poller;
+#ifdef ZMQ_BUILD_DRAFT_API
+    manual_mailbox_t *_manual_receiver;
+#endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (io_thread_t)
 };

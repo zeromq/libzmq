@@ -15,7 +15,7 @@
 #include "i_poll_events.hpp"
 
 zmq::poll_t::poll_t (const zmq::thread_ctx_t &ctx_) :
-    worker_poller_base_t (ctx_), retired (false)
+    worker_poller_base_t (ctx_), _manual_cursor (0), retired (false)
 {
 }
 
@@ -114,10 +114,24 @@ void zmq::poll_t::loop ()
 
 bool zmq::poll_t::run_once (int timeout_ms_)
 {
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::poll_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::poll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
     //  Execute any due timers.
-    int timeout = (int) execute_timers ();
+    const int timeout = static_cast<int> (
+      Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+      Manual && (step_->progress () || step_->more || step_->probe) ? 0
+      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
                      : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
 
     cleanup_retired ();
@@ -137,6 +151,8 @@ bool zmq::poll_t::run_once (int timeout_ms_)
                    wait);
     if (rc == -1) {
         errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
         return true;
     }
 
@@ -145,10 +161,21 @@ bool zmq::poll_t::run_once (int timeout_ms_)
     if (rc == 0)
         return true;
 
-    for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
+    const size_t polled_size = pollset.size ();
+    const size_t start = Manual ? _manual_cursor % polled_size : 0;
+    for (pollset_t::size_type pos = 0;
+         pos != (Manual ? polled_size : pollset.size ()); pos++) {
+        const size_t i = Manual ? (start + pos) % polled_size : pos;
         zmq_assert (!(pollset[i].revents & POLLNVAL));
         if (pollset[i].fd == retired_fd)
             continue;
+        if (Manual) {
+            if (!pollset[i].revents)
+                continue;
+            if (!step_->event ())
+                break;
+            _manual_cursor = i + 1;
+        }
         if (pollset[i].revents & (POLLERR | POLLHUP))
             fd_table[pollset[i].fd].events->in_event ();
         if (pollset[i].fd == retired_fd)
