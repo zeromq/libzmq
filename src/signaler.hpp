@@ -27,6 +27,10 @@ class signaler_t
     // May return retired_fd if the signaler could not be initialized.
     fd_t get_fd () const;
     void send ();
+#ifdef ZMQ_BUILD_DRAFT_API
+    void send_manual ();
+    void set_manual_cleanup (bool manual_ = true) { _manual_cleanup = manual_; }
+#endif
     int wait (int timeout_) const;
     void recv ();
     int recv_failable ();
@@ -40,6 +44,10 @@ class signaler_t
 #endif
 
   private:
+    template <bool Manual> void send_impl ();
+#ifdef ZMQ_BUILD_DRAFT_API
+    bool _manual_cleanup;
+#endif
     //  Underlying write & read file descriptor
     //  Will be -1 if an error occurred during initialization, e.g. we
     //  exceeded the number of available handles

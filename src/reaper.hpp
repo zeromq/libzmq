@@ -23,6 +23,9 @@ class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
     mailbox_t *get_mailbox ();
 
     void start ();
+#ifdef ZMQ_BUILD_DRAFT_API
+    void abort_start ();
+#endif
     void stop ();
 
     //  i_poll_events implementation.
@@ -46,6 +49,7 @@ class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
     poller_t *_poller;
 #ifdef ZMQ_BUILD_DRAFT_API
     manual_mailbox_t *_manual_receiver;
+    mailbox_t *_manual_channel;
 #endif
 
     //  Number of sockets being reaped at the moment.

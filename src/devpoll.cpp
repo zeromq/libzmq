@@ -142,9 +142,9 @@ bool zmq::devpoll_t::run_once (int timeout_ms_)
 
     //  Execute any due timers.
     int timeout = (int) execute_timers ();
-    const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
-                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+    const int wait = timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout       ? std::min (timeout, timeout_ms_)
+                                     : timeout_ms_;
 
     if (get_load () == 0) {
         if (timeout == 0)

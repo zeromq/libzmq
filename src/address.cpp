@@ -35,10 +35,16 @@ zmq::address_t::address_t (const std::string &protocol_,
     protocol (protocol_), address (address_), parent (parent_)
 {
     resolved.dummy = NULL;
+#ifdef ZMQ_BUILD_DRAFT_API
+    manual_proxy_addr = NULL;
+#endif
 }
 
 zmq::address_t::~address_t ()
 {
+#ifdef ZMQ_BUILD_DRAFT_API
+    LIBZMQ_DELETE (manual_proxy_addr);
+#endif
     if (protocol == protocol_name::tcp) {
         LIBZMQ_DELETE (resolved.tcp_addr);
     } else if (protocol == protocol_name::udp) {

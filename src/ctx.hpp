@@ -91,7 +91,8 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
 #ifdef ZMQ_BUILD_DRAFT_API
     bool is_manual_io () const { return _manual_io_threads; }
     manual_io_t *get_manual_io () const { return _manual_io; }
-    int step (const zmq_ctx_step_budget_t *budget_, zmq_ctx_step_result_t *result_);
+    int step (const zmq_ctx_step_budget_t *budget_,
+              zmq_ctx_step_result_t *result_);
 #endif
 
     //  Set and get context properties.

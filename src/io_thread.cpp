@@ -25,16 +25,20 @@ zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
     i_poll_events *receiver = this;
 #ifdef ZMQ_HAVE_MANUAL_IO
     _manual_receiver = NULL;
+    _manual_channel = NULL;
     if (ctx_->get_manual_io ()) {
+        _mailbox.set_manual_cleanup ();
+        _manual_channel = new (std::nothrow) manual_mailbox_channel_t ();
+        alloc_assert (_manual_channel);
         _manual_receiver = new (std::nothrow)
-          manual_mailbox_t (*ctx_->get_manual_io (), _mailbox);
+          manual_mailbox_t (*ctx_->get_manual_io (), *_manual_channel);
         alloc_assert (_manual_receiver);
         receiver = _manual_receiver;
     }
 #endif
 
-    if (_mailbox.get_fd () != retired_fd) {
-        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), receiver);
+    if (get_mailbox ()->get_fd () != retired_fd) {
+        _mailbox_handle = _poller->add_fd (get_mailbox ()->get_fd (), receiver);
         _poller->set_pollin (_mailbox_handle);
     }
 }
@@ -44,6 +48,7 @@ zmq::io_thread_t::~io_thread_t ()
 #ifdef ZMQ_HAVE_MANUAL_IO
     if (get_ctx ()->is_manual_io ()) {
         LIBZMQ_DELETE (_manual_receiver);
+        LIBZMQ_DELETE (_manual_channel);
         return;
     }
 #endif
@@ -63,6 +68,14 @@ void zmq::io_thread_t::start ()
     _poller->start (name);
 }
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+void zmq::io_thread_t::abort_start ()
+{
+    if (_mailbox_handle)
+        _poller->rm_fd (_mailbox_handle);
+}
+
+#endif
 void zmq::io_thread_t::stop ()
 {
     send_stop ();
@@ -70,6 +83,10 @@ void zmq::io_thread_t::stop ()
 
 zmq::mailbox_t *zmq::io_thread_t::get_mailbox ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_channel)
+        return _manual_channel;
+#endif
     return &_mailbox;
 }
 

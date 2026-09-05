@@ -78,6 +78,9 @@ struct address_t
     const std::string protocol;
     const std::string address;
     ctx_t *const parent;
+#ifdef ZMQ_BUILD_DRAFT_API
+    tcp_address_t *manual_proxy_addr;
+#endif
 
     //  Protocol specific resolved address
     //  All members must be pointers to allow for consistent initialization

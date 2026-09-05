@@ -5,11 +5,11 @@
 
 #include "poller.hpp"
 
-#if defined ZMQ_BUILD_DRAFT_API && !defined ZMQ_HAVE_VXWORKS                  \
-  && !defined ZMQ_HAVE_OPENPGM && !defined ZMQ_HAVE_NORM                      \
-  && (defined ZMQ_IOTHREAD_POLLER_USE_EPOLL                                  \
-      || defined ZMQ_IOTHREAD_POLLER_USE_KQUEUE                              \
-      || defined ZMQ_IOTHREAD_POLLER_USE_POLL                                \
+#if defined ZMQ_BUILD_DRAFT_API && !defined ZMQ_HAVE_VXWORKS                   \
+  && !defined ZMQ_HAVE_OPENPGM && !defined ZMQ_HAVE_NORM                       \
+  && (defined ZMQ_IOTHREAD_POLLER_USE_EPOLL                                    \
+      || defined ZMQ_IOTHREAD_POLLER_USE_KQUEUE                                \
+      || defined ZMQ_IOTHREAD_POLLER_USE_POLL                                  \
       || defined ZMQ_IOTHREAD_POLLER_USE_SELECT)
 #define ZMQ_HAVE_MANUAL_IO 1
 
@@ -26,14 +26,28 @@ class manual_mailbox_t;
 class manual_io_t : public i_poll_events
 {
   public:
-    manual_io_t (const thread_ctx_t &ctx_, mailbox_t &term_mailbox_);
+    manual_io_t (const thread_ctx_t &ctx_);
     ~manual_io_t ();
 
     bool enter ();
     void leave ();
     poller_t *poller () { return &_poller; }
+    mailbox_t *term_mailbox () { return &_term_mailbox; }
+    bool valid () const { return _term_mailbox.valid (); }
     bool done () const { return _done; }
-    int run (const zmq_ctx_step_budget_t &budget_, zmq_ctx_step_result_t *result_);
+    bool begin_worker_stop ()
+    {
+        if (_workers_stopping)
+            return false;
+        _workers_stopping = true;
+        return true;
+    }
+    bool has_workers ()
+    {
+        return _poller.get_load () > 1 || _poller.next_timer_delay () >= 0;
+    }
+    int run (const zmq_ctx_step_budget_t &budget_,
+             zmq_ctx_step_result_t *result_);
     poller_step_t &state () { return *_state; }
     void defer (manual_mailbox_t *mailbox_);
     void cancel (manual_mailbox_t *mailbox_);
@@ -45,7 +59,7 @@ class manual_io_t : public i_poll_events
 
   private:
     poller_t _poller;
-    mailbox_t &_term_mailbox;
+    manual_mailbox_channel_t _term_mailbox;
     poller_t::handle_t _term_handle;
     mutex_t _sync;
     thread_t _owner;
@@ -55,6 +69,7 @@ class manual_io_t : public i_poll_events
     manual_mailbox_t *_term_receiver;
     std::list<manual_mailbox_t *> _pending;
     bool _pending_first;
+    bool _workers_stopping;
 
     void resume_pending ();
 
@@ -66,8 +81,10 @@ class manual_mailbox_t : public i_poll_events
 {
   public:
     typedef void (*callback_t) (manual_mailbox_t *, bool);
-    manual_mailbox_t (manual_io_t &driver_, i_mailbox &mailbox_,
-                      callback_t callback_ = NULL, void *arg_ = NULL);
+    manual_mailbox_t (manual_io_t &driver_,
+                      i_mailbox &mailbox_,
+                      callback_t callback_ = NULL,
+                      void *arg_ = NULL);
     ~manual_mailbox_t ();
     bool drain ();
     void *arg () const { return _arg; }

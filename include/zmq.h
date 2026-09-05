@@ -710,8 +710,8 @@ ZMQ_EXPORT int zmq_ctx_step (void *ctx, int timeout_ms);
  * An event is one native ready record or resumed mailbox; commands also count
  * individually. Count caps do not preempt a callback or bound execution time. */
 ZMQ_EXPORT int zmq_ctx_step_budget (void *ctx,
-                                  const zmq_ctx_step_budget_t *budget,
-                                  zmq_ctx_step_result_t *result);
+                                    const zmq_ctx_step_budget_t *budget,
+                                    zmq_ctx_step_result_t *result);
 
 /*  DRAFT Context methods.                                                    */
 ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,

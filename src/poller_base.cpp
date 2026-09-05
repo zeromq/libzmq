@@ -68,8 +68,8 @@ int zmq::poller_base_t::next_timer_delay ()
     const uint64_t now = _clock.now_ms ();
     return _timers.begin ()->first <= now
              ? 0
-             : static_cast<int> (std::min<uint64_t> (_timers.begin ()->first - now,
-                                                     INT_MAX));
+             : static_cast<int> (
+                 std::min<uint64_t> (_timers.begin ()->first - now, INT_MAX));
 }
 
 template <bool Manual>
@@ -99,7 +99,10 @@ uint64_t zmq::poller_base_t::execute_timers_impl (poller_step_t *step_)
         }
 
         if (Manual && !step_->timer_available ()) {
-            step_->defer ();
+            step_->more = true;
+            if (!step_->probe
+                || (step_->max_timers && step_->timers >= step_->max_timers))
+                step_->exhausted = true;
             break;
         }
         if (Manual)
@@ -123,7 +126,9 @@ uint64_t zmq::poller_base_t::execute_timers_impl (poller_step_t *step_)
 zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :
     _ctx (ctx_)
 #if defined ZMQ_BUILD_DRAFT_API && !defined NDEBUG
-    , _manual (false), _manual_thread (NULL)
+    ,
+    _manual (false),
+    _manual_thread (NULL)
 #endif
 {
 }

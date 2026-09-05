@@ -136,7 +136,12 @@ int zmq_ctx_term (void *ctx_)
     const int en = errno;
 
     //  Shut down only if termination was not interrupted by a signal.
-    if (!rc || en != EINTR) {
+    if (!rc
+        || (en != EINTR
+#ifdef ZMQ_BUILD_DRAFT_API
+            && en != EBUSY
+#endif
+            )) {
         zmq::shutdown_network ();
     }
 
@@ -151,7 +156,8 @@ int zmq_ctx_step (void *ctx_, int timeout_ms_)
     return zmq_ctx_step_budget (ctx_, &budget, NULL);
 }
 
-int zmq_ctx_step_budget (void *ctx_, const zmq_ctx_step_budget_t *budget_,
+int zmq_ctx_step_budget (void *ctx_,
+                         const zmq_ctx_step_budget_t *budget_,
                          zmq_ctx_step_result_t *result_)
 {
     if (!ctx_ || !(static_cast<zmq::ctx_t *> (ctx_))->check_tag ()) {

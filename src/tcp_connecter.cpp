@@ -149,18 +149,31 @@ int zmq::tcp_connecter_t::open ()
     zmq_assert (_s == retired_fd);
 
     //  Resolve the address
-    if (_addr->resolved.tcp_addr != NULL) {
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
-    }
+#ifdef ZMQ_BUILD_DRAFT_API
+    const bool manual = _addr->parent->is_manual_io ();
+    if (manual) {
+        zmq_assert (_addr->resolved.tcp_addr);
+        _s = tcp_open_socket (options, _addr->resolved.tcp_addr);
+    } else {
+#endif
+        if (_addr->resolved.tcp_addr != NULL) {
+            LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+        }
 
-    _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-    alloc_assert (_addr->resolved.tcp_addr);
-    _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
-                          _addr->resolved.tcp_addr);
+        _addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+        alloc_assert (_addr->resolved.tcp_addr);
+        _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
+                              _addr->resolved.tcp_addr);
+#ifdef ZMQ_BUILD_DRAFT_API
+    }
+#endif
     if (_s == retired_fd) {
         //  TODO we should emit some event in this case!
 
-        LIBZMQ_DELETE (_addr->resolved.tcp_addr);
+#ifdef ZMQ_BUILD_DRAFT_API
+        if (!manual)
+#endif
+            LIBZMQ_DELETE (_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (_addr->resolved.tcp_addr != NULL);

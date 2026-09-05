@@ -64,6 +64,7 @@ class epoll_t ZMQ_FINAL : public worker_poller_base_t
     bool run_once (int timeout_ms_);
     friend class manual_io_t;
     bool run_once (int timeout_ms_, poller_step_t *step_);
+    bool has_pending_events () const { return _manual_ready; }
     template <bool Manual>
     bool run_once_impl (int timeout_ms_, poller_step_t *step_);
 
@@ -80,6 +81,8 @@ class epoll_t ZMQ_FINAL : public worker_poller_base_t
     //  List of retired event sources.
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t _retired;
+    bool _manual_ready;
+    epoll_event _manual_event;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (epoll_t)
 };

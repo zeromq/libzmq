@@ -13,8 +13,16 @@ namespace zmq
 struct poller_step_t
 {
     poller_step_t () :
-        max_events (0), max_commands (0), max_timers (0), events (0), commands (0),
-        timers (0), more (false), exhausted (false), probe (false), error (0)
+        max_events (0),
+        max_commands (0),
+        max_timers (0),
+        events (0),
+        commands (0),
+        timers (0),
+        more (false),
+        exhausted (false),
+        probe (false),
+        error (0)
     {
     }
 
@@ -48,13 +56,18 @@ struct poller_step_t
         //  A one-record observation is needed even when the allowance is zero.
         if (!event_available ())
             return 1;
-        return max_events
-                 ? static_cast<int> (std::min<uint32_t> (max_events - events,
-                                                         maximum_))
-                 : maximum_;
+        return max_events ? static_cast<int> (std::min<uint32_t> (
+                              max_events - events, maximum_))
+                          : maximum_;
     }
     bool event ()
     {
+        if (probe) {
+            more = true;
+            if (max_events && events >= max_events)
+                exhausted = true;
+            return false;
+        }
         if (!event_available ()) {
             defer ();
             return false;

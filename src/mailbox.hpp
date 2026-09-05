@@ -15,7 +15,7 @@
 
 namespace zmq
 {
-class mailbox_t ZMQ_FINAL : public i_mailbox
+class mailbox_t : public i_mailbox
 {
   public:
     mailbox_t ();
@@ -26,6 +26,12 @@ class mailbox_t ZMQ_FINAL : public i_mailbox
     int recv (command_t *cmd_, int timeout_);
 
     bool valid () const;
+#ifdef ZMQ_BUILD_DRAFT_API
+    void set_manual_cleanup (bool manual_ = true)
+    {
+        _signaler.set_manual_cleanup (manual_);
+    }
+#endif
 
 #ifdef HAVE_FORK
     // close the file descriptors in the signaller. This is used in a forked
@@ -35,6 +41,8 @@ class mailbox_t ZMQ_FINAL : public i_mailbox
 #endif
 
   private:
+    friend class manual_mailbox_channel_t;
+    template <bool Manual> void send_impl (const command_t &cmd_);
     //  The pipe to store actual commands.
     typedef ypipe_t<command_t, command_pipe_granularity> cpipe_t;
     cpipe_t _cpipe;
@@ -54,6 +62,16 @@ class mailbox_t ZMQ_FINAL : public i_mailbox
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_t)
 };
+#ifdef ZMQ_BUILD_DRAFT_API
+//  Uses the same pipe, locking and signal transitions; only the OS retry
+//  policy differs. Selection is at construction, not in the default hot path.
+class manual_mailbox_channel_t ZMQ_FINAL : public mailbox_t
+{
+  public:
+    manual_mailbox_channel_t () { set_manual_cleanup (); }
+    void send (const command_t &cmd_) ZMQ_FINAL;
+};
+#endif
 }
 
 #endif

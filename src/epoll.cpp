@@ -25,7 +25,7 @@ const zmq::epoll_t::epoll_fd_t zmq::epoll_t::epoll_retired_fd =
 #endif
 
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
-    worker_poller_base_t (ctx_)
+    worker_poller_base_t (ctx_), _manual_ready (false)
 {
 #ifdef ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions
@@ -160,12 +160,13 @@ bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     epoll_event ev_buf[max_io_events];
 
     //  Execute any due timers.
-    const int timeout = static_cast<int> (
-      Manual ? execute_timers (step_) : execute_timers ());
+    const int timeout =
+      static_cast<int> (Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
       Manual && (step_->progress () || step_->more || step_->probe) ? 0
       : timeout_ms_ < 0 ? (timeout ? timeout : -1)
-                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+      : timeout         ? std::min (timeout, timeout_ms_)
+                        : timeout_ms_;
 
     if (get_load () == 0) {
         if (timeout == 0)
@@ -176,10 +177,15 @@ bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     }
 
     //  Wait for events.
-    const int n = epoll_wait (_epoll_fd, &ev_buf[0],
-                              Manual ? step_->event_batch (max_io_events)
-                                     : max_io_events,
-                              wait);
+    int n;
+    if (Manual && _manual_ready) {
+        ev_buf[0] = _manual_event;
+        _manual_ready = false;
+        n = 1;
+    } else
+        n = epoll_wait (
+          _epoll_fd, &ev_buf[0],
+          Manual ? step_->event_batch (max_io_events) : max_io_events, wait);
     if (n == -1) {
         errno_assert (errno == EINTR);
         if (Manual)
@@ -188,8 +194,6 @@ bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     }
 
     for (int i = 0; i < n; i++) {
-        if (Manual && !step_->event ())
-            break;
         const poll_entry_t *const pe =
           static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
 
@@ -199,6 +203,13 @@ bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
             continue;
         if (pe->fd == retired_fd)
             continue;
+        if (Manual && !step_->event ()) {
+            //  A readiness probe advances the native queue too. Retain its
+            //  record until dispatched, while the usual retirement rules hold.
+            _manual_event = ev_buf[i];
+            _manual_ready = true;
+            break;
+        }
         if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
             pe->events->in_event ();
         if (pe->fd == retired_fd)

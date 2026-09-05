@@ -204,6 +204,12 @@ class socket_base_t : public own_t,
                 uint64_t type_);
 
     // Socket event data dispatch
+    template <bool Manual, int Version>
+    void
+    monitor_event_impl (uint64_t event_,
+                        const uint64_t values_[],
+                        uint64_t values_count_,
+                        const endpoint_uri_pair_t &endpoint_uri_pair_) const;
     void monitor_event (uint64_t event_,
                         const uint64_t values_[],
                         uint64_t values_count_,
@@ -240,7 +246,8 @@ class socket_base_t : public own_t,
     //  handlers explicitly. If required, it will deallocate the socket.
     void check_destroy ();
 #ifdef ZMQ_BUILD_DRAFT_API
-    static void manual_in_event (class manual_mailbox_t *receiver_, bool notification_);
+    static void manual_in_event (class manual_mailbox_t *receiver_,
+                                 bool notification_);
 #endif
 
     //  Moves the flags from the message to local variables,

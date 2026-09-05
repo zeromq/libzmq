@@ -8,16 +8,18 @@
 #include "object.hpp"
 #include <new>
 
-zmq::manual_io_t::manual_io_t (const thread_ctx_t &ctx_,
-                              mailbox_t &term_mailbox_) :
+zmq::manual_io_t::manual_io_t (const thread_ctx_t &ctx_) :
     _poller (ctx_),
-    _term_mailbox (term_mailbox_),
+    _term_handle (static_cast<poller_t::handle_t> (NULL)),
     _active (false),
     _done (false),
     _state (NULL),
     _term_receiver (NULL),
-    _pending_first (true)
+    _pending_first (true),
+    _workers_stopping (false)
 {
+    if (!_term_mailbox.valid ())
+        return;
     const bool entered = enter ();
     zmq_assert (entered);
     _term_receiver = new (std::nothrow) manual_mailbox_t (*this, _term_mailbox);
@@ -31,7 +33,11 @@ zmq::manual_io_t::~manual_io_t ()
 {
     const bool entered = enter ();
     zmq_assert (entered);
-    _poller.rm_fd (_term_handle);
+    if (_term_handle)
+        _poller.rm_fd (_term_handle);
+#ifdef ZMQ_IOTHREAD_POLLER_USE_KQUEUE
+    _poller.cleanup_retired ();
+#endif
     LIBZMQ_DELETE (_term_receiver);
     zmq_assert (_pending.empty ());
     leave ();
@@ -68,11 +74,17 @@ void zmq::manual_io_t::in_event ()
     zmq_assert (false);
 }
 
-void zmq::manual_io_t::out_event () { zmq_assert (false); }
-void zmq::manual_io_t::timer_event (int) { zmq_assert (false); }
+void zmq::manual_io_t::out_event ()
+{
+    zmq_assert (false);
+}
+void zmq::manual_io_t::timer_event (int)
+{
+    zmq_assert (false);
+}
 
 int zmq::manual_io_t::run (const zmq_ctx_step_budget_t &budget_,
-                          zmq_ctx_step_result_t *result_)
+                           zmq_ctx_step_result_t *result_)
 {
     zmq_assert (_active && _owner.is_current_thread () && !_state);
     poller_step_t state;
@@ -88,8 +100,13 @@ int zmq::manual_io_t::run (const zmq_ctx_step_budget_t &budget_,
     if (pending_first)
         resume_pending ();
 
+    const bool native_pending = _poller.has_pending_events ();
     if (!state.error)
         _poller.run_once (had_pending ? 0 : budget_.timeout_ms, &state);
+    //  Dispatch a retained probe record before querying native readiness again;
+    //  combining a saved and a fresh batch could duplicate a level notification.
+    if (native_pending && !state.error && state.event_available ())
+        _poller.run_once (0, &state);
     if (!pending_first && !state.error)
         resume_pending ();
     //  A timer that expired during the OS wait must fire in this step.
@@ -101,8 +118,9 @@ int zmq::manual_io_t::run (const zmq_ctx_step_budget_t &budget_,
         if (!state.error)
             state.exhausted = true;
     }
-    //  Observe, without dispatching, whether an exact event cap left work.
-    if (!state.error && !state.event_available ()) {
+    //  A bounded observation also reports work left by the native batch size,
+    //  even with no user cap. Queue backends retain that observation for fairness.
+    if (!state.error) {
         state.probe = true;
         _poller.run_once (0, &state);
     }
@@ -112,9 +130,10 @@ int zmq::manual_io_t::run (const zmq_ctx_step_budget_t &budget_,
         result_->events_processed = state.events;
         result_->commands_processed = state.commands;
         result_->timers_processed = state.timers;
-        result_->flags = (state.more ? ZMQ_CTX_STEP_MORE_WORK : 0)
-                         | (state.exhausted ? ZMQ_CTX_STEP_BUDGET_EXHAUSTED : 0)
-                         | (!state.progress () && !state.more ? ZMQ_CTX_STEP_IDLE : 0);
+        result_->flags =
+          (state.more ? ZMQ_CTX_STEP_MORE_WORK : 0)
+          | (state.exhausted ? ZMQ_CTX_STEP_BUDGET_EXHAUSTED : 0)
+          | (!state.progress () && !state.more ? ZMQ_CTX_STEP_IDLE : 0);
         result_->next_timeout_ms = next;
     }
     _state = NULL;
@@ -146,8 +165,9 @@ void zmq::manual_io_t::resume_pending ()
 {
     //  A finite snapshot; a receiver that requeues goes behind its peers.
     size_t remaining = _pending.size ();
-    while (remaining-- && !_pending.empty () && _state->event_available ()
+    while (remaining && !_pending.empty () && _state->event_available ()
            && !_state->error) {
+        --remaining;
         manual_mailbox_t *receiver = _pending.front ();
         _pending.pop_front ();
         receiver->_queued = false;
@@ -157,10 +177,16 @@ void zmq::manual_io_t::resume_pending ()
     }
 }
 
-zmq::manual_mailbox_t::manual_mailbox_t (manual_io_t &driver_, i_mailbox &mailbox_,
-                                        callback_t callback_, void *arg_) :
-    _driver (driver_), _mailbox (mailbox_), _callback (callback_), _arg (arg_),
-    _has_command (false), _queued (false)
+zmq::manual_mailbox_t::manual_mailbox_t (manual_io_t &driver_,
+                                         i_mailbox &mailbox_,
+                                         callback_t callback_,
+                                         void *arg_) :
+    _driver (driver_),
+    _mailbox (mailbox_),
+    _callback (callback_),
+    _arg (arg_),
+    _has_command (false),
+    _queued (false)
 {
 }
 
@@ -184,8 +210,14 @@ void zmq::manual_mailbox_t::in_event ()
         dispatch (true);
 }
 
-void zmq::manual_mailbox_t::out_event () { zmq_assert (false); }
-void zmq::manual_mailbox_t::timer_event (int) { zmq_assert (false); }
+void zmq::manual_mailbox_t::out_event ()
+{
+    zmq_assert (false);
+}
+void zmq::manual_mailbox_t::timer_event (int)
+{
+    zmq_assert (false);
+}
 
 bool zmq::manual_mailbox_t::drain ()
 {

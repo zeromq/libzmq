@@ -127,12 +127,13 @@ template <bool Manual>
 bool zmq::poll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
 {
     //  Execute any due timers.
-    const int timeout = static_cast<int> (
-      Manual ? execute_timers (step_) : execute_timers ());
+    const int timeout =
+      static_cast<int> (Manual ? execute_timers (step_) : execute_timers ());
     const int wait =
       Manual && (step_->progress () || step_->more || step_->probe) ? 0
       : timeout_ms_ < 0 ? (timeout ? timeout : -1)
-                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+      : timeout         ? std::min (timeout, timeout_ms_)
+                        : timeout_ms_;
 
     cleanup_retired ();
 
@@ -147,8 +148,7 @@ bool zmq::poll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     }
 
     //  Wait for events.
-    int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
-                   wait);
+    int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()), wait);
     if (rc == -1) {
         errno_assert (errno == EINTR);
         if (Manual)

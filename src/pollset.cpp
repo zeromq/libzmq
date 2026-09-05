@@ -187,13 +187,12 @@ bool zmq::pollset_t::run_once (int timeout_ms_)
 
     //  Execute any due timers.
     int timeout = (int) execute_timers ();
-    const int wait =
-      timeout_ms_ < 0 ? (timeout ? timeout : -1)
-                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+    const int wait = timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout       ? std::min (timeout, timeout_ms_)
+                                     : timeout_ms_;
 
     //  Wait for events.
-    int n = pollset_poll (pollset_fd, polldata_array, max_io_events,
-                          wait);
+    int n = pollset_poll (pollset_fd, polldata_array, max_io_events, wait);
     if (n == -1) {
         errno_assert (errno == EINTR);
         return true;
@@ -219,8 +218,7 @@ bool zmq::pollset_t::run_once (int timeout_ms_)
     }
 
     //  Destroy retired event sources.
-    for (retired_t::iterator it = retired.begin (); it != retired.end ();
-         ++it)
+    for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it)
         LIBZMQ_DELETE (*it);
     retired.clear ();
     return true;

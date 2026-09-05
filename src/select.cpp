@@ -94,14 +94,15 @@ zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries_,
 template <bool Manual>
 void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
                                     const fds_set_t &local_fds_set_,
-                                    int event_count_, size_t *cursor_,
+                                    int event_count_,
+                                    size_t *cursor_,
                                     poller_step_t *step_)
 {
     //  Size is cached to avoid iteration through recently added descriptors.
     const size_t size = fd_entries_.size ();
     const size_t start = Manual && size ? *cursor_ % size : 0;
-    for (fd_entries_t::size_type pos = 0;
-         pos < size && event_count_ > 0; ++pos) {
+    for (fd_entries_t::size_type pos = 0; pos < size && event_count_ > 0;
+         ++pos) {
         const size_t i = Manual ? (start + pos) % size : pos;
         //  fd_entries_[i] may not be stored, since calls to
         //  in_event/out_event may reallocate the vector
@@ -312,12 +313,12 @@ template <bool Manual>
 bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
 {
     //  Execute any due timers.
-    const int timeout = static_cast<int> (
-      Manual ? execute_timers (step_) : execute_timers ());
-    const int wait =
-      Manual && (step_->progress () || step_->more || step_->probe) ? 0
-      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
-                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+    const int timeout =
+      static_cast<int> (Manual ? execute_timers (step_) : execute_timers ());
+    int wait = Manual && (step_->progress () || step_->more || step_->probe) ? 0
+               : timeout_ms_ < 0 ? (timeout ? timeout : -1)
+               : timeout         ? std::min (timeout, timeout_ms_)
+                                 : timeout_ms_;
 
     cleanup_retired ();
 
@@ -361,7 +362,22 @@ bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     //  If there is just one family, there is no reason to use WSA events.
     int rc = 0;
     const bool use_wsa_events = _family_entries.size () > 1;
-    if (use_wsa_events) {
+    if (Manual && use_wsa_events && wait != 0) {
+        //  WSA FD_WRITE notifications are edge-like. A previous budget may
+        //  have left a writable socket without performing a write. Observe
+        //  all provider families before waiting for a *new* notification.
+        poller_step_t observation;
+        observation.probe = true;
+        for (family_entries_t::iterator it = _family_entries.begin ();
+             it != _family_entries.end (); ++it) {
+            struct timeval immediate = {0, 0};
+            select_family_entry<true> (it->second, 0, true, immediate,
+                                       &observation);
+        }
+        if (observation.more)
+            wait = 0;
+    }
+    if (use_wsa_events && (!Manual || wait != 0)) {
         // TODO: I don't really understand why we are doing this. If any of
         // the events was signaled, we will call select for each fd_family
         // afterwards. The only benefit is if none of the events was
@@ -378,8 +394,7 @@ bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
 
             for (fd_entries_t::iterator fd_entry_it =
                    family_entry.fd_entries.begin ();
-                 fd_entry_it != family_entry.fd_entries.end ();
-                 ++fd_entry_it) {
+                 fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it) {
                 fd_t fd = fd_entry_it->fd;
 
                 //  http://stackoverflow.com/q/35043420/188530
@@ -411,8 +426,9 @@ bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     }
 
     size_t families_left = _family_entries.size ();
-    _current_family_entry_it = Manual ? _family_entries.upper_bound (_manual_family)
-                                      : _family_entries.begin ();
+    _current_family_entry_it = Manual
+                                 ? _family_entries.upper_bound (_manual_family)
+                                 : _family_entries.begin ();
     if (Manual && _current_family_entry_it == _family_entries.end ())
         _current_family_entry_it = _family_entries.begin ();
     for (; Manual ? families_left != 0
@@ -424,7 +440,8 @@ bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
             //  There is no reason to wait again after WSAWaitForMultipleEvents.
             //  Simply collect what is ready.
             struct timeval tv_nodelay = {0, 0};
-            select_family_entry<Manual> (family_entry, 0, true, tv_nodelay, step_);
+            select_family_entry<Manual> (family_entry, 0, true, tv_nodelay,
+                                         step_);
         } else {
             select_family_entry<Manual> (family_entry, 0, wait >= 0, tv, step_);
         }
@@ -440,7 +457,8 @@ bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
     if (Manual)
         _current_family_entry_it = _family_entries.end ();
 #else
-    select_family_entry<Manual> (_family_entry, _max_fd + 1, wait >= 0, tv, step_);
+    select_family_entry<Manual> (_family_entry, _max_fd + 1, wait >= 0, tv,
+                                 step_);
 #endif
     return true;
 }
@@ -449,7 +467,8 @@ template <bool Manual>
 void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
                                          const int max_fd_,
                                          const bool use_timeout_,
-                                         struct timeval &tv_, poller_step_t *step_)
+                                         struct timeval &tv_,
+                                         poller_step_t *step_)
 {
     //  select will fail when run with empty sets.
     fd_entries_t &fd_entries = family_entry_.fd_entries;

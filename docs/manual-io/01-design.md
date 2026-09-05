@@ -185,7 +185,11 @@ Devpoll retains pending-registration acceptance before timers and sets
 its timeout fast return. Pollset retains `stopping` and its own worker entry.
 Select retains its family helper and `trigger_events`: both the WSA aggregate
 wait and the per-family select use the correct zero/nonzero/infinite distinction;
-the multi-family follow-up selects always remain nonblocking.
+the multi-family follow-up selects always remain nonblocking. In manual mode,
+multi-provider Windows select first observes all families without dispatching:
+WSA FD_WRITE notification alone cannot rediscover writable records left by a
+previous budget. An observed ready family suppresses the aggregate wait. This
+costs one extra O(descriptors) readiness scan only in that manual configuration.
 
 For budgeting, evolve the extracted body into one private template
 `run_once_impl<Manual>(timeout_ms, state)`. The threaded wrapper instantiates
@@ -200,8 +204,15 @@ accepted record run in the original order, with original retirement checks.
 Unprocessed level readiness remains registered. Epoll/kqueue request at most
 the remaining record allowance; poll/select rotate their starting descriptor
 when a bounded visit ends, so the next call continues after the last visited
-source. Explicit pending work prevents a subsequent blocking wait. No stored
-raw pointer outlives the backend's existing retirement rules.
+source. Each step finishes with one non-dispatching readiness observation,
+including when no user cap was supplied, so the native batch limit cannot hide
+MORE_WORK. Epoll/kqueue retain the observed record: discarding a probe can
+advance the native round-robin queue past sources indefinitely. A retained
+record is dispatched before a fresh batch, through the same dispatch body, to
+avoid duplicate level notifications within a batch. Retired cached records are
+skipped before dereferencing their sinks; retirement storage is reclaimed only
+after the cached record has been consumed. Explicit pending work prevents a
+subsequent blocking wait. No stored raw pointer outlives these retirement rules.
 
 ## 4.2. One step and the wait covering all actors
 
@@ -254,6 +265,19 @@ the safe socket's reaper signal only on the original notification, and perform
 `check_destroy()` after command processing. Adapter destruction unlinks pending
 continuations. Default receivers keep their existing callbacks without a
 per-command or per-event manual-mode test.
+
+The final shutdown audit also requires a manual OS-signaling policy. It shares
+the existing mailbox send body through a compile-time policy; an internal
+derived mailbox selects that policy at construction, using the already-existing
+virtual send interface. Pipe state, mutex coverage, flush ordering and signal
+transitions are unchanged. Manual signalers close once (no close/EAGAIN sleep
+fallback), and a Windows send that violates the one-outstanding-signal invariant
+asserts instead of retrying WSAEWOULDBLOCK. Existing POSIX EINTR syscall restarts
+are retained; they are not readiness polling or a sleep/retry progress strategy.
+Normal actor callbacks and the normal mailbox send instantiation have no mode
+test. Manual actors retain their unused embedded normal mailboxes as well as
+their selected manual mailboxes; this avoids changing default construction at
+the cost of extra descriptors in manual mode only.
 
 ## 4.3. Timers
 
@@ -360,8 +384,13 @@ Additional decisions required by the source survey:
   monitor path is unchanged. A stalled observer cannot stall a step.
 * Manual TCP reconnect uses an address resolved outside the step path. The
   endpoint's resolved numeric address is retained, so DNS changes require an
-  application reconnect. Manual resolution must not run the NIC sleeping retry
-  loop from a transport callback. The same audit applies to WS/proxy connects.
+  application reconnect. Resolution failures are returned by connect instead
+  of being retried internally. WS uses its already-resolved sockaddr; SOCKS
+  caches the proxy address, leaving destination-name resolution to the proxy.
+  Manual resolution must not run the NIC sleeping retry loop from a transport
+  callback. The cached address family is retained too: unlike the normal TCP
+  open helper, manual reconnect does not resolve an IPv4 fallback after a
+  failed IPv6 socket open. Select IPv4 before connecting on IPv4-only hosts.
 * Manual cleanup must use a single close attempt rather than the signaler's
   existing sleep/retry fallback. Preserve mailbox signaling semantics and the
   default cleanup path; isolate this cleanup policy from per-event code.
