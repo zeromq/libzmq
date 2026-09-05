@@ -127,55 +127,63 @@ int zmq::devpoll_t::max_fds ()
 
 void zmq::devpoll_t::loop ()
 {
-    while (true) {
-        struct pollfd ev_buf[max_io_events];
-        struct dvpoll poll_req;
-
-        for (pending_list_t::size_type i = 0; i < pending_list.size (); i++)
-            fd_table[pending_list[i]].accepted = true;
-        pending_list.clear ();
-
-        //  Execute any due timers.
-        int timeout = (int) execute_timers ();
-
-        if (get_load () == 0) {
-            if (timeout == 0)
-                break;
-
-            // TODO sleep for timeout
-            continue;
-        }
-
-        //  Wait for events.
-        //  On Solaris, we can retrieve no more then (OPEN_MAX - 1) events.
-        poll_req.dp_fds = &ev_buf[0];
-#if defined ZMQ_HAVE_SOLARIS
-        poll_req.dp_nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
-#else
-        poll_req.dp_nfds = max_io_events;
-#endif
-        poll_req.dp_timeout = timeout ? timeout : -1;
-        int n = ioctl (devpoll_fd, DP_POLL, &poll_req);
-        if (n == -1 && errno == EINTR)
-            continue;
-        errno_assert (n != -1);
-
-        for (int i = 0; i < n; i++) {
-            fd_entry_t *fd_ptr = &fd_table[ev_buf[i].fd];
-            if (!fd_ptr->valid || !fd_ptr->accepted)
-                continue;
-            if (ev_buf[i].revents & (POLLERR | POLLHUP))
-                fd_ptr->reactor->in_event ();
-            if (!fd_ptr->valid || !fd_ptr->accepted)
-                continue;
-            if (ev_buf[i].revents & POLLOUT)
-                fd_ptr->reactor->out_event ();
-            if (!fd_ptr->valid || !fd_ptr->accepted)
-                continue;
-            if (ev_buf[i].revents & POLLIN)
-                fd_ptr->reactor->in_event ();
-        }
+    while (run_once (-1)) {
     }
+}
+
+bool zmq::devpoll_t::run_once (int timeout_ms_)
+{
+    struct pollfd ev_buf[max_io_events];
+    struct dvpoll poll_req;
+
+    for (pending_list_t::size_type i = 0; i < pending_list.size (); i++)
+        fd_table[pending_list[i]].accepted = true;
+    pending_list.clear ();
+
+    //  Execute any due timers.
+    int timeout = (int) execute_timers ();
+    const int wait =
+      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+
+    if (get_load () == 0) {
+        if (timeout == 0)
+            return false;
+
+        // TODO sleep for timeout
+        return true;
+    }
+
+    //  Wait for events.
+    //  On Solaris, we can retrieve no more then (OPEN_MAX - 1) events.
+    poll_req.dp_fds = &ev_buf[0];
+#if defined ZMQ_HAVE_SOLARIS
+    poll_req.dp_nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
+#else
+    poll_req.dp_nfds = max_io_events;
+#endif
+    poll_req.dp_timeout = wait;
+    int n = ioctl (devpoll_fd, DP_POLL, &poll_req);
+    if (n == -1 && errno == EINTR)
+        return true;
+    errno_assert (n != -1);
+
+    for (int i = 0; i < n; i++) {
+        fd_entry_t *fd_ptr = &fd_table[ev_buf[i].fd];
+        if (!fd_ptr->valid || !fd_ptr->accepted)
+            continue;
+        if (ev_buf[i].revents & (POLLERR | POLLHUP))
+            fd_ptr->reactor->in_event ();
+        if (!fd_ptr->valid || !fd_ptr->accepted)
+            continue;
+        if (ev_buf[i].revents & POLLOUT)
+            fd_ptr->reactor->out_event ();
+        if (!fd_ptr->valid || !fd_ptr->accepted)
+            continue;
+        if (ev_buf[i].revents & POLLIN)
+            fd_ptr->reactor->in_event ();
+    }
+    return true;
 }
 
 #endif

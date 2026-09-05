@@ -276,120 +276,128 @@ int zmq::select_t::max_fds ()
 
 void zmq::select_t::loop ()
 {
-    while (true) {
-        //  Execute any due timers.
-        int timeout = static_cast<int> (execute_timers ());
+    while (run_once (-1)) {
+    }
+}
 
-        cleanup_retired ();
+bool zmq::select_t::run_once (int timeout_ms_)
+{
+    //  Execute any due timers.
+    int timeout = static_cast<int> (execute_timers ());
+    const int wait =
+      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+
+    cleanup_retired ();
 
 #ifdef _WIN32
-        if (_family_entries.empty ()) {
+    if (_family_entries.empty ()) {
 #else
-        if (_family_entry.fd_entries.empty ()) {
+    if (_family_entry.fd_entries.empty ()) {
 #endif
-            zmq_assert (get_load () == 0);
+        zmq_assert (get_load () == 0);
 
-            if (timeout == 0)
-                break;
+        if (timeout == 0)
+            return false;
 
-            // TODO sleep for timeout
-            continue;
-        }
+        // TODO sleep for timeout
+        return true;
+    }
 
 #if defined ZMQ_HAVE_OSX
-        struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
+    struct timeval tv = {(long) (wait / 1000), wait % 1000 * 1000};
 #else
-        struct timeval tv = {static_cast<long> (timeout / 1000),
-                             static_cast<long> (timeout % 1000 * 1000)};
+    struct timeval tv = {static_cast<long> (wait / 1000),
+                         static_cast<long> (wait % 1000 * 1000)};
 #endif
 
 #if defined ZMQ_HAVE_WINDOWS
-        /*
-            On Windows select does not allow to mix descriptors from different
-            service providers. It seems to work for AF_INET and AF_INET6,
-            but fails for AF_INET and VMCI. The workaround is to use
-            WSAEventSelect and WSAWaitForMultipleEvents to wait, then use
-            select to find out what actually changed. WSAWaitForMultipleEvents
-            cannot be used alone, because it does not support more than 64 events
-            which is not enough.
+    /*
+        On Windows select does not allow to mix descriptors from different
+        service providers. It seems to work for AF_INET and AF_INET6,
+        but fails for AF_INET and VMCI. The workaround is to use
+        WSAEventSelect and WSAWaitForMultipleEvents to wait, then use
+        select to find out what actually changed. WSAWaitForMultipleEvents
+        cannot be used alone, because it does not support more than 64 events
+        which is not enough.
 
-            To reduce unnecessary overhead, WSA is only used when there are more
-            than one family. Moreover, AF_INET and AF_INET6 are considered the same
-            family because Windows seems to handle them properly.
-            See get_fd_family for details.
-        */
+        To reduce unnecessary overhead, WSA is only used when there are more
+        than one family. Moreover, AF_INET and AF_INET6 are considered the same
+        family because Windows seems to handle them properly.
+        See get_fd_family for details.
+    */
 
-        //  If there is just one family, there is no reason to use WSA events.
-        int rc = 0;
-        const bool use_wsa_events = _family_entries.size () > 1;
-        if (use_wsa_events) {
-            // TODO: I don't really understand why we are doing this. If any of
-            // the events was signaled, we will call select for each fd_family
-            // afterwards. The only benefit is if none of the events was
-            // signaled, then we continue early.
-            // IMHO, either WSAEventSelect/WSAWaitForMultipleEvents or select
-            // should be used, but not both
+    //  If there is just one family, there is no reason to use WSA events.
+    int rc = 0;
+    const bool use_wsa_events = _family_entries.size () > 1;
+    if (use_wsa_events) {
+        // TODO: I don't really understand why we are doing this. If any of
+        // the events was signaled, we will call select for each fd_family
+        // afterwards. The only benefit is if none of the events was
+        // signaled, then we continue early.
+        // IMHO, either WSAEventSelect/WSAWaitForMultipleEvents or select
+        // should be used, but not both
 
-            wsa_events_t wsa_events;
+        wsa_events_t wsa_events;
 
-            for (family_entries_t::iterator family_entry_it =
-                   _family_entries.begin ();
-                 family_entry_it != _family_entries.end (); ++family_entry_it) {
-                family_entry_t &family_entry = family_entry_it->second;
+        for (family_entries_t::iterator family_entry_it =
+               _family_entries.begin ();
+             family_entry_it != _family_entries.end (); ++family_entry_it) {
+            family_entry_t &family_entry = family_entry_it->second;
 
-                for (fd_entries_t::iterator fd_entry_it =
-                       family_entry.fd_entries.begin ();
-                     fd_entry_it != family_entry.fd_entries.end ();
-                     ++fd_entry_it) {
-                    fd_t fd = fd_entry_it->fd;
+            for (fd_entries_t::iterator fd_entry_it =
+                   family_entry.fd_entries.begin ();
+                 fd_entry_it != family_entry.fd_entries.end ();
+                 ++fd_entry_it) {
+                fd_t fd = fd_entry_it->fd;
 
-                    //  http://stackoverflow.com/q/35043420/188530
-                    if (FD_ISSET (fd, &family_entry.fds_set.read)
-                        && FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc = WSAEventSelect (fd, wsa_events.events[3],
-                                             FD_READ | FD_ACCEPT | FD_CLOSE
-                                               | FD_WRITE | FD_CONNECT);
-                    else if (FD_ISSET (fd, &family_entry.fds_set.read))
-                        rc = WSAEventSelect (fd, wsa_events.events[0],
-                                             FD_READ | FD_ACCEPT | FD_CLOSE);
-                    else if (FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc = WSAEventSelect (fd, wsa_events.events[1],
-                                             FD_WRITE | FD_CONNECT);
-                    else
-                        rc = 0;
+                //  http://stackoverflow.com/q/35043420/188530
+                if (FD_ISSET (fd, &family_entry.fds_set.read)
+                    && FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[3],
+                                         FD_READ | FD_ACCEPT | FD_CLOSE
+                                           | FD_WRITE | FD_CONNECT);
+                else if (FD_ISSET (fd, &family_entry.fds_set.read))
+                    rc = WSAEventSelect (fd, wsa_events.events[0],
+                                         FD_READ | FD_ACCEPT | FD_CLOSE);
+                else if (FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[1],
+                                         FD_WRITE | FD_CONNECT);
+                else
+                    rc = 0;
 
-                    wsa_assert (rc != SOCKET_ERROR);
-                }
-            }
-
-            rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
-                                           timeout ? timeout : INFINITE, FALSE);
-            wsa_assert (rc != (int) WSA_WAIT_FAILED);
-            zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
-
-            if (rc == WSA_WAIT_TIMEOUT)
-                continue;
-        }
-
-        for (_current_family_entry_it = _family_entries.begin ();
-             _current_family_entry_it != _family_entries.end ();
-             ++_current_family_entry_it) {
-            family_entry_t &family_entry = _current_family_entry_it->second;
-
-
-            if (use_wsa_events) {
-                //  There is no reason to wait again after WSAWaitForMultipleEvents.
-                //  Simply collect what is ready.
-                struct timeval tv_nodelay = {0, 0};
-                select_family_entry (family_entry, 0, true, tv_nodelay);
-            } else {
-                select_family_entry (family_entry, 0, timeout > 0, tv);
+                wsa_assert (rc != SOCKET_ERROR);
             }
         }
-#else
-        select_family_entry (_family_entry, _max_fd + 1, timeout > 0, tv);
-#endif
+
+        rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
+                                       wait >= 0 ? wait : INFINITE, FALSE);
+        wsa_assert (rc != (int) WSA_WAIT_FAILED);
+        zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
+
+        if (rc == WSA_WAIT_TIMEOUT)
+            return true;
     }
+
+    for (_current_family_entry_it = _family_entries.begin ();
+         _current_family_entry_it != _family_entries.end ();
+         ++_current_family_entry_it) {
+        family_entry_t &family_entry = _current_family_entry_it->second;
+
+
+        if (use_wsa_events) {
+            //  There is no reason to wait again after WSAWaitForMultipleEvents.
+            //  Simply collect what is ready.
+            struct timeval tv_nodelay = {0, 0};
+            select_family_entry (family_entry, 0, true, tv_nodelay);
+        } else {
+            select_family_entry (family_entry, 0, wait >= 0, tv);
+        }
+    }
+#else
+    select_family_entry (_family_entry, _max_fd + 1, wait >= 0, tv);
+#endif
+    return true;
 }
 
 void zmq::select_t::select_family_entry (family_entry_t &family_entry_,

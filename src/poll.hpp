@@ -52,6 +52,7 @@ class poll_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    bool run_once (int timeout_ms_);
 
     void cleanup_retired ();
 

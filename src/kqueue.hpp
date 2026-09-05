@@ -44,6 +44,7 @@ class kqueue_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    bool run_once (int timeout_ms_);
 
     //  File descriptor referring to the kernel event queue.
     fd_t kqueue_fd;

@@ -108,51 +108,59 @@ int zmq::poll_t::max_fds ()
 
 void zmq::poll_t::loop ()
 {
-    while (true) {
-        //  Execute any due timers.
-        int timeout = (int) execute_timers ();
-
-        cleanup_retired ();
-
-        if (pollset.empty ()) {
-            zmq_assert (get_load () == 0);
-
-            if (timeout == 0)
-                break;
-
-            // TODO sleep for timeout
-            continue;
-        }
-
-        //  Wait for events.
-        int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
-                       timeout ? timeout : -1);
-        if (rc == -1) {
-            errno_assert (errno == EINTR);
-            continue;
-        }
-
-        //  If there are no events (i.e. it's a timeout) there's no point
-        //  in checking the pollset.
-        if (rc == 0)
-            continue;
-
-        for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
-            zmq_assert (!(pollset[i].revents & POLLNVAL));
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & (POLLERR | POLLHUP))
-                fd_table[pollset[i].fd].events->in_event ();
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & POLLOUT)
-                fd_table[pollset[i].fd].events->out_event ();
-            if (pollset[i].fd == retired_fd)
-                continue;
-            if (pollset[i].revents & POLLIN)
-                fd_table[pollset[i].fd].events->in_event ();
-        }
+    while (run_once (-1)) {
     }
+}
+
+bool zmq::poll_t::run_once (int timeout_ms_)
+{
+    //  Execute any due timers.
+    int timeout = (int) execute_timers ();
+    const int wait =
+      timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout ? std::min (timeout, timeout_ms_) : timeout_ms_;
+
+    cleanup_retired ();
+
+    if (pollset.empty ()) {
+        zmq_assert (get_load () == 0);
+
+        if (timeout == 0)
+            return false;
+
+        // TODO sleep for timeout
+        return true;
+    }
+
+    //  Wait for events.
+    int rc = poll (&pollset[0], static_cast<nfds_t> (pollset.size ()),
+                   wait);
+    if (rc == -1) {
+        errno_assert (errno == EINTR);
+        return true;
+    }
+
+    //  If there are no events (i.e. it's a timeout) there's no point
+    //  in checking the pollset.
+    if (rc == 0)
+        return true;
+
+    for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
+        zmq_assert (!(pollset[i].revents & POLLNVAL));
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & (POLLERR | POLLHUP))
+            fd_table[pollset[i].fd].events->in_event ();
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & POLLOUT)
+            fd_table[pollset[i].fd].events->out_event ();
+        if (pollset[i].fd == retired_fd)
+            continue;
+        if (pollset[i].revents & POLLIN)
+            fd_table[pollset[i].fd].events->in_event ();
+    }
+    return true;
 }
 
 void zmq::poll_t::cleanup_retired ()

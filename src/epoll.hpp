@@ -61,6 +61,7 @@ class epoll_t ZMQ_FINAL : public worker_poller_base_t
 
     //  Main event loop.
     void loop () ZMQ_OVERRIDE;
+    bool run_once (int timeout_ms_);
 
     //  Main epoll file descriptor
     epoll_fd_t _epoll_fd;

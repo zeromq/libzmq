@@ -49,6 +49,7 @@ class pollset_t ZMQ_FINAL : public poller_base_t
 
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    bool run_once (int timeout_ms_);
 
     // Reference to ZMQ context.
     const thread_ctx_t &ctx;
