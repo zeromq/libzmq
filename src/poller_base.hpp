@@ -111,12 +111,13 @@ class poller_base_t
     //  Executes any timers that are due. Returns number of milliseconds
     //  to wait to match the next timer or 0 meaning "no timers".
     uint64_t execute_timers ();
-    uint64_t execute_timers (poller_step_t *step_);
-    int next_timer_delay ();
+    ZMQ_PRIVATE uint64_t execute_timers (poller_step_t *step_);
+    ZMQ_PRIVATE int next_timer_delay ();
 
   private:
     friend class manual_io_t;
-    template <bool Manual> uint64_t execute_timers_impl (poller_step_t *step_);
+    template <bool Manual>
+    ZMQ_PRIVATE uint64_t execute_timers_impl (poller_step_t *step_);
     //  Clock instance private to this I/O thread.
     clock_t _clock;
 
@@ -147,7 +148,7 @@ class worker_poller_base_t : public poller_base_t
 
 #ifdef ZMQ_BUILD_DRAFT_API
     //  NULL relinquishes ownership, but does not revert to the worker invariant.
-    void set_manual_thread (const thread_t *owner_);
+    ZMQ_PRIVATE void set_manual_thread (const thread_t *owner_);
 #endif
 
   protected:

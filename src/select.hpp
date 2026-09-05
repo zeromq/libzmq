@@ -52,12 +52,12 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
-    bool run_once (int timeout_ms_);
+    ZMQ_PRIVATE bool run_once (int timeout_ms_);
     friend class manual_io_t;
-    bool run_once (int timeout_ms_, poller_step_t *step_);
+    ZMQ_PRIVATE bool run_once (int timeout_ms_, poller_step_t *step_);
     bool has_pending_events () const { return false; }
     template <bool Manual>
-    bool run_once_impl (int timeout_ms_, poller_step_t *step_);
+    ZMQ_PRIVATE bool run_once_impl (int timeout_ms_, poller_step_t *step_);
 
     //  Internal state.
     struct fds_set_t
@@ -81,11 +81,11 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
     typedef std::vector<fd_entry_t> fd_entries_t;
 
     template <bool Manual>
-    void trigger_events (const fd_entries_t &fd_entries_,
-                         const fds_set_t &local_fds_set_,
-                         int event_count_,
-                         size_t *cursor_,
-                         poller_step_t *step_);
+    ZMQ_PRIVATE void trigger_events (const fd_entries_t &fd_entries_,
+                                     const fds_set_t &local_fds_set_,
+                                     int event_count_,
+                                     size_t *cursor_,
+                                     poller_step_t *step_);
 
     struct family_entry_t
     {
@@ -98,11 +98,11 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
     };
 
     template <bool Manual>
-    void select_family_entry (family_entry_t &family_entry_,
-                              int max_fd_,
-                              bool use_timeout_,
-                              struct timeval &tv_,
-                              poller_step_t *step_);
+    ZMQ_PRIVATE void select_family_entry (family_entry_t &family_entry_,
+                                          int max_fd_,
+                                          bool use_timeout_,
+                                          struct timeval &tv_,
+                                          poller_step_t *step_);
 
 #if defined ZMQ_HAVE_WINDOWS
     typedef std::map<u_short, family_entry_t> family_entries_t;

@@ -23,7 +23,7 @@ namespace zmq
 {
 class manual_mailbox_t;
 //  One wait set for all actors. This class and its handles are never exported.
-class manual_io_t : public i_poll_events
+class ZMQ_PRIVATE manual_io_t : public i_poll_events
 {
   public:
     manual_io_t (const thread_ctx_t &ctx_);
@@ -77,7 +77,7 @@ class manual_io_t : public i_poll_events
 };
 
 //  Selected only for manual actors. The normal receiver callbacks stay intact.
-class manual_mailbox_t : public i_poll_events
+class ZMQ_PRIVATE manual_mailbox_t : public i_poll_events
 {
   public:
     typedef void (*callback_t) (manual_mailbox_t *, bool);

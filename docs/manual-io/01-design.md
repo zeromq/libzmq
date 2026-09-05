@@ -368,6 +368,12 @@ draft integration test. Commit sequence after the survey/design: pure backend
 extraction; manual ownership/construction plumbing; step/budgets; termination;
 integration tests; man pages/context option/NEWS and verification report.
 
+Internal iteration methods, their template specializations, and the manual
+driver/receiver classes have hidden visibility on GCC-compatible non-Windows
+targets. This is explicit: this checkout's CMake build otherwise exports
+unannotated C++ methods. Windows keeps its existing explicit-export policy.
+Neither backend iteration methods nor actor accessors are public C APIs.
+
 ## 4.7. Caller-visible hazards and boundedness
 
 Use DONTWAIT (or zero send/receive timeout) and zero-timeout zmq_poll/poller

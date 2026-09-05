@@ -60,7 +60,7 @@ class thread_t
 
 #ifdef ZMQ_BUILD_DRAFT_API
     //  Record an external owner without spawning, joining or changing attributes.
-    void record_current_thread ();
+    ZMQ_PRIVATE void record_current_thread ();
 #endif
 
     //  Waits for thread termination.

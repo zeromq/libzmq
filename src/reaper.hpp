@@ -24,7 +24,7 @@ class reaper_t ZMQ_FINAL : public object_t, public i_poll_events
 
     void start ();
 #ifdef ZMQ_BUILD_DRAFT_API
-    void abort_start ();
+    ZMQ_PRIVATE void abort_start ();
 #endif
     void stop ();
 

@@ -4,6 +4,7 @@
 #define __ZMQ_TCP_HPP_INCLUDED__
 
 #include "fd.hpp"
+#include "macros.hpp"
 
 namespace zmq
 {
@@ -50,8 +51,8 @@ void tune_tcp_busy_poll (fd_t socket_, int busy_poll_);
 //  errno is set to an error code describing the cause of the error.
 #ifdef ZMQ_BUILD_DRAFT_API
 //  Open using an already resolved address; no resolver or NIC retry in a step.
-fd_t tcp_open_socket (const options_t &options_,
-                      const tcp_address_t *tcp_addr_);
+ZMQ_PRIVATE fd_t tcp_open_socket (const options_t &options_,
+                                  const tcp_address_t *tcp_addr_);
 #endif
 fd_t tcp_open_socket (const char *address_,
                       const options_t &options_,

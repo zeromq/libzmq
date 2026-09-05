@@ -4,13 +4,14 @@
 #define __ZMQ_POLLER_STEP_HPP_INCLUDED__
 
 #include "stdint.hpp"
+#include "macros.hpp"
 #include <algorithm>
 #include <climits>
 
 namespace zmq
 {
 //  Private accounting policy. Threaded template instantiations never access it.
-struct poller_step_t
+struct ZMQ_PRIVATE poller_step_t
 {
     poller_step_t () :
         max_events (0),

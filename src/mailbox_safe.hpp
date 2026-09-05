@@ -43,7 +43,7 @@ class mailbox_safe_t : public i_mailbox
 
   private:
     friend class manual_mailbox_safe_t;
-    template <bool Manual> void send_impl (const command_t &cmd_);
+    template <bool Manual> ZMQ_PRIVATE void send_impl (const command_t &cmd_);
     //  The pipe to store actual commands.
     typedef ypipe_t<command_t, command_pipe_granularity> cpipe_t;
     cpipe_t _cpipe;
@@ -59,7 +59,7 @@ class mailbox_safe_t : public i_mailbox
     ZMQ_NON_COPYABLE_NOR_MOVABLE (mailbox_safe_t)
 };
 #ifdef ZMQ_BUILD_DRAFT_API
-class manual_mailbox_safe_t ZMQ_FINAL : public mailbox_safe_t
+class ZMQ_PRIVATE manual_mailbox_safe_t ZMQ_FINAL : public mailbox_safe_t
 {
   public:
     manual_mailbox_safe_t (mutex_t *sync_) : mailbox_safe_t (sync_) {}

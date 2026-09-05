@@ -28,7 +28,7 @@ class signaler_t
     fd_t get_fd () const;
     void send ();
 #ifdef ZMQ_BUILD_DRAFT_API
-    void send_manual ();
+    ZMQ_PRIVATE void send_manual ();
     void set_manual_cleanup (bool manual_ = true) { _manual_cleanup = manual_; }
 #endif
     int wait (int timeout_) const;
@@ -44,7 +44,7 @@ class signaler_t
 #endif
 
   private:
-    template <bool Manual> void send_impl ();
+    template <bool Manual> ZMQ_PRIVATE void send_impl ();
 #ifdef ZMQ_BUILD_DRAFT_API
     bool _manual_cleanup;
 #endif

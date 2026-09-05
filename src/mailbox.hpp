@@ -42,7 +42,7 @@ class mailbox_t : public i_mailbox
 
   private:
     friend class manual_mailbox_channel_t;
-    template <bool Manual> void send_impl (const command_t &cmd_);
+    template <bool Manual> ZMQ_PRIVATE void send_impl (const command_t &cmd_);
     //  The pipe to store actual commands.
     typedef ypipe_t<command_t, command_pipe_granularity> cpipe_t;
     cpipe_t _cpipe;
@@ -65,7 +65,7 @@ class mailbox_t : public i_mailbox
 #ifdef ZMQ_BUILD_DRAFT_API
 //  Uses the same pipe, locking and signal transitions; only the OS retry
 //  policy differs. Selection is at construction, not in the default hot path.
-class manual_mailbox_channel_t ZMQ_FINAL : public mailbox_t
+class ZMQ_PRIVATE manual_mailbox_channel_t ZMQ_FINAL : public mailbox_t
 {
   public:
     manual_mailbox_channel_t () { set_manual_cleanup (); }
