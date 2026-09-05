@@ -1,0 +1,194 @@
+= zmq_ctx_step(3)
+
+
+== NAME
+
+zmq_ctx_step, zmq_ctx_step_budget - advance a manual-I/O context
+
+
+== SYNOPSIS
+
+*int zmq_ctx_step (void '*context', int 'timeout_ms');*
+
+*int zmq_ctx_step_budget (void '*context', const zmq_ctx_step_budget_t '*budget', zmq_ctx_step_result_t '*result');*
+
+[source,c]
+----
+typedef struct zmq_ctx_step_budget_t {
+    int timeout_ms;
+    uint32_t max_events;
+    uint32_t max_commands;
+    uint32_t max_timers;
+} zmq_ctx_step_budget_t;
+
+typedef struct zmq_ctx_step_result_t {
+    uint32_t events_processed;
+    uint32_t commands_processed;
+    uint32_t timers_processed;
+    uint32_t flags;
+    int next_timeout_ms;
+} zmq_ctx_step_result_t;
+----
+
+NOTE: These interfaces are DRAFT and may change. Build the library with draft
+support and define ZMQ_BUILD_DRAFT_API before including zmq.h.
+
+
+== DESCRIPTION
+
+These functions advance all context-owned internal I/O and shutdown work on the
+calling thread. Enable 'ZMQ_MANUAL_IO_THREADS' with xref:zmq_ctx_set.adoc[zmq_ctx_set]
+before creating the first socket. In this mode libzmq does not start its own
+context worker threads. Ordinary contexts retain their threaded behavior.
+
+'timeout_ms' limits the OS wait, in milliseconds. Zero performs a nonblocking
+step, including execution of due timers. Negative values are invalid; an
+infinite public step is not supported. The wait covers all internal work, not
+one selected component, and is shortened for an earlier timer or pending work.
+Timers that become due between calls remain scheduled and fire on the next
+step, subject to its timer budget.
+
+The budgeted form additionally limits counts. Each zero count means unlimited:
+
+* 'max_events' limits native ready records and resumed mailbox continuations.
+  One ready record can invoke multiple callbacks for the same source.
+* 'max_commands' limits internal mailbox commands dispatched during the call.
+* 'max_timers' limits due timer callbacks.
+
+These are not message or byte limits. Commands also contribute to their
+containing event's progress, so the counters are not disjoint. Count budgets
+cannot preempt a callback or provide a hard execution-time deadline.
+
+A null 'budget' selects zero OS wait and unlimited counts. A null 'result'
+discards the report. Otherwise, the three counters report work actually
+performed and 'flags' contains a combination of:
+
+* 'ZMQ_CTX_STEP_MORE_WORK': work has been observed pending now.
+* 'ZMQ_CTX_STEP_IDLE': no progress was made and no pending work was observed.
+* 'ZMQ_CTX_STEP_BUDGET_EXHAUSTED': a count cap prevented observed work from
+  being processed. This also sets MORE_WORK. Merely reaching a count exactly
+  does not establish exhaustion.
+
+'next_timeout_ms' is zero if work is pending, minus one if no timer is scheduled,
+or the delay until the earliest timer, capped at INT_MAX. It is a snapshot, not
+a notification mechanism: a network packet or application command can arrive
+earlier. Even a result of minus one does not mean that the application can stop
+stepping a context with live connections. Choose a maximum tick interval suitable
+for the application and use the reported timer delay to shorten it.
+
+Any application thread may call these functions, one at a time. The application
+must establish happens-before synchronization between calls made on different
+threads, and must continue observing ordinary socket thread-ownership rules.
+Concurrent or reentrant calls to step or to manual context termination fail
+with EBUSY. A failed EBUSY termination does not start shutdown. Prevent new API
+entries once successful termination can destroy the context.
+
+
+== SOCKET OPERATIONS AND TERMINATION
+
+IMPORTANT: When the same thread supplies I/O progress, use ZMQ_DONTWAIT or zero
+send/receive timeouts, and nonblocking socket-poller queries. Blocking send at a
+high water mark, blocking receive, and a blocking socket poll can wait for work
+that only the next step can perform. Libzmq does not change those socket calls
+to implicit nonblocking operations. Inproc traffic can progress through socket
+operations alone; transport I/O still needs stepping.
+
+xref:zmq_ctx_shutdown.adoc[zmq_ctx_shutdown] remains nonblocking and does not
+disable stepping. It is valid to shut down, continue stepping, then terminate.
+xref:zmq_ctx_term.adoc[zmq_ctx_term] drives manual I/O itself until termination
+completes. It requires no additional application-side shutdown protocol.
+Finite linger is driven by the existing timers; zero linger discards queued
+messages; infinite linger can still wait forever. Sockets owned by another
+application thread must still be closed by the application. Termination may be
+performed on a different thread after a synchronized handoff from stepping.
+
+
+== LIMITATIONS
+
+Manual mode is supported with epoll (including Windows wepoll), kqueue, POSIX
+poll, and select on Windows and POSIX systems. Enabling it fails immediately
+with ENOTSUP for devpoll, pollset, VxWorks, or builds with OpenPGM or NORM.
+Windows select retains the existing build restriction requiring IPC to be
+disabled. Native descriptor limits still apply to the combined context wait
+set; increasing ZMQ_IO_THREADS does not increase its capacity or provide
+parallelism in manual mode. Thread naming, priority and affinity settings are
+not applied to the application's stepping thread.
+
+This option suppresses libzmq-owned workers, not threads created internally by
+the operating system or third-party providers. In particular, Windows select
+can lazily initialize a Winsock provider helper thread.
+
+TCP names are resolved at connect time and cached for reconnect; resolution
+failures are returned by connect. DNS changes require an application reconnect.
+WebSocket connections reuse their resolved address; SOCKS caches the proxy
+address and leaves destination-name resolution to the proxy. The resolved
+address family is retained, without a resolver-driven IPv6-to-IPv4 fallback in
+a step. Select IPv4 before connecting on an IPv4-only host.
+
+Manual monitor notifications are nonblocking and can be dropped as whole
+messages under backpressure. OS signaling/close failures that violate internal
+invariants remain fatal errors, not work to spin or sleep awaiting. User message
+free callbacks and OS/security operations can take arbitrary time. Do not fork
+and continue using a live manual context in the child.
+
+
+== RETURN VALUE
+
+On success these functions return the sum of the three progress counters,
+saturated at INT_MAX. This is not a count of messages delivered or connections
+established. On failure they return minus one and set errno. A wait interrupted
+by a signal can follow partial progress; a supplied result then reports that
+progress, and a subsequent step can continue it.
+
+
+== ERRORS
+
+*EFAULT*::
+The provided context is invalid.
+*EINVAL*::
+The timeout is negative.
+*ENOTSUP*::
+The context is not in manual mode, or the build does not support manual mode.
+*EBUSY*::
+Another step or manual termination is active, including same-thread reentry.
+*EINTR*::
+An OS wait was interrupted by a signal.
+
+
+== EXAMPLE
+
+.Advancing an application-owned frame loop
+[source,c]
+----
+void *ctx = zmq_ctx_new ();
+assert (zmq_ctx_set (ctx, ZMQ_MANUAL_IO_THREADS, 1) == 0);
+void *socket = zmq_socket (ctx, ZMQ_DEALER);
+int linger = 0;
+zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof linger);
+assert (zmq_connect (socket, "tcp://127.0.0.1:5555") == 0);
+
+/* Once per host frame; all socket operations in this loop use DONTWAIT. */
+zmq_ctx_step_budget_t budget = {0, 64, 128, 32};
+zmq_ctx_step_result_t result;
+int rc = zmq_ctx_step_budget (ctx, &budget, &result);
+assert (rc >= 0 || errno == EINTR);
+/* Use result.next_timeout_ms to shorten the host's next tick interval. */
+
+zmq_close (socket);
+while (zmq_ctx_term (ctx) == -1)
+    assert (errno == EINTR);
+----
+
+
+== SEE ALSO
+
+* xref:zmq_ctx_set.adoc[zmq_ctx_set]
+* xref:zmq_ctx_shutdown.adoc[zmq_ctx_shutdown]
+* xref:zmq_ctx_term.adoc[zmq_ctx_term]
+* xref:zmq.adoc[zmq]
+
+
+== AUTHORS
+
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <https://zeromq.org/how-to-contribute/>.

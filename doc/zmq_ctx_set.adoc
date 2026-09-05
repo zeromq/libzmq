@@ -44,6 +44,33 @@ context.
 Default value:: 1
 
 
+ZMQ_MANUAL_IO_THREADS: Let the application drive internal I/O
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set this draft boolean option to 1 before the first socket is created to
+prevent libzmq from starting context worker threads. The application must call
+xref:zmq_ctx_step.adoc[zmq_ctx_step or zmq_ctx_step_budget] to supply internal
+progress. Calls advance the whole context; no internal components are exposed.
+The default value 0 retains normal threaded behavior.
+
+Only 0 and 1 are valid. Setting the option after context socket startup fails
+with EINVAL, even when setting the existing value. Enabling it fails with
+ENOTSUP on devpoll, pollset, VxWorks, and builds with OpenPGM or NORM. The option
+and new functions require ZMQ_BUILD_DRAFT_API.
+
+ZMQ_IO_THREADS still needs to be at least 1 for non-inproc transports; in manual
+mode its slots are logical, not OS threads. The application thread's name,
+scheduling policy, priority and CPU affinity are not changed.
+
+IMPORTANT: In a single-threaded manual loop, use nonblocking socket operations
+and socket-poller queries. Blocking calls can wait for progress that only a
+future step can supply. Context termination drives progress itself and retains
+the ordinary socket-close and linger requirements.
+
+[horizontal]
+Default value:: 0
+Valid values:: 0, 1
+
+
 ZMQ_THREAD_SCHED_POLICY: Set scheduling policy for I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_SCHED_POLICY' argument sets the scheduling policy for
@@ -166,7 +193,12 @@ returns `-1` and sets 'errno' to one of the values defined below.
 
 == ERRORS
 *EINVAL*::
-The requested option _option_name_ is unknown.
+The requested option _option_name_ is unknown, the manual-I/O value is not
+boolean, or manual mode is being changed after socket startup.
+*ENOTSUP*::
+Manual mode is not supported by the selected backend or dependencies.
+*EBUSY*::
+An active manual step prevents changing the mode before socket startup.
 
 
 == EXAMPLE
