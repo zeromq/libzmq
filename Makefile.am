@@ -1071,6 +1071,7 @@ endif
 
 if ENABLE_DRAFTS
 test_apps += tests/test_poller \
+	tests/test_manual_io \
 	tests/test_client_server \
 	tests/test_thread_safe \
 	tests/test_timers \
@@ -1095,6 +1096,10 @@ test_apps += tests/test_poller \
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_poller_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_manual_io_SOURCES = tests/test_manual_io.cpp
+tests_test_manual_io_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_manual_io_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
