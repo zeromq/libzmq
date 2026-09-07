@@ -38,7 +38,7 @@ static inline size_t strnlen (const char *s, size_t len)
 {
     for (size_t i = 0; i < len; i++) {
         if (s[i] == '\0')
-            return i + 1;
+            return i;
     }
 
     return len;
