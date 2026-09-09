@@ -52,6 +52,13 @@ class poll_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_);
+    size_t _manual_cursor;
+    friend class manual_io_t;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_, poller_step_t *step_);
+    ZMQ_PRIVATE bool has_pending_events () const { return false; }
+    template <bool Manual>
+    ZMQ_PRIVATE bool run_once_impl (int timeout_ms_, poller_step_t *step_);
 
     void cleanup_retired ();
 

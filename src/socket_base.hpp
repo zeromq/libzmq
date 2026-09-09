@@ -204,6 +204,12 @@ class socket_base_t : public own_t,
                 uint64_t type_);
 
     // Socket event data dispatch
+    template <bool Manual, int Version>
+    ZMQ_PRIVATE void
+    monitor_event_impl (uint64_t event_,
+                        const uint64_t values_[],
+                        uint64_t values_count_,
+                        const endpoint_uri_pair_t &endpoint_uri_pair_) const;
     void monitor_event (uint64_t event_,
                         const uint64_t values_[],
                         uint64_t values_count_,
@@ -239,6 +245,10 @@ class socket_base_t : public own_t,
     //  To be called after processing commands or invoking any command
     //  handlers explicitly. If required, it will deallocate the socket.
     void check_destroy ();
+#ifdef ZMQ_BUILD_DRAFT_API
+    ZMQ_PRIVATE static void manual_in_event (class manual_mailbox_t *receiver_,
+                                             bool notification_);
+#endif
 
     //  Moves the flags from the message to local variables,
     //  to be later retrieved by getsockopt.
@@ -326,6 +336,9 @@ class socket_base_t : public own_t,
 
     // Signaler to be used in the reaping stage
     signaler_t *_reaper_signaler;
+#ifdef ZMQ_BUILD_DRAFT_API
+    class manual_mailbox_t *_manual_receiver;
+#endif
 
     // Mutex to synchronize access to the monitor Pair socket
     mutex_t _monitor_sync;

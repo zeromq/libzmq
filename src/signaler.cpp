@@ -89,6 +89,10 @@ static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
 #endif
 
 zmq::signaler_t::signaler_t ()
+#ifdef ZMQ_BUILD_DRAFT_API
+    :
+    _manual_cleanup (false)
+#endif
 {
     //  Create the socketpair for signaling.
     if (make_fdpair (&_r, &_w) == 0) {
@@ -107,7 +111,11 @@ zmq::signaler_t::~signaler_t ()
 #if defined ZMQ_HAVE_EVENTFD
     if (_r == retired_fd)
         return;
-    int rc = close_wait_ms (_r);
+    int rc =
+#ifdef ZMQ_BUILD_DRAFT_API
+      _manual_cleanup ? close (_r) :
+#endif
+                      close_wait_ms (_r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
     if (_w != retired_fd) {
@@ -128,11 +136,19 @@ zmq::signaler_t::~signaler_t ()
     }
 #else
     if (_w != retired_fd) {
-        int rc = close_wait_ms (_w);
+        int rc =
+#ifdef ZMQ_BUILD_DRAFT_API
+          _manual_cleanup ? close (_w) :
+#endif
+                          close_wait_ms (_w);
         errno_assert (rc == 0);
     }
     if (_r != retired_fd) {
-        int rc = close_wait_ms (_r);
+        int rc =
+#ifdef ZMQ_BUILD_DRAFT_API
+          _manual_cleanup ? close (_r) :
+#endif
+                          close_wait_ms (_r);
         errno_assert (rc == 0);
     }
 #endif
@@ -144,6 +160,18 @@ zmq::fd_t zmq::signaler_t::get_fd () const
 }
 
 void zmq::signaler_t::send ()
+{
+    send_impl<false> ();
+}
+
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::signaler_t::send_manual ()
+{
+    send_impl<true> ();
+}
+#endif
+
+template <bool Manual> void zmq::signaler_t::send_impl ()
 {
 #if defined HAVE_FORK
     if (unlikely (pid != getpid ())) {
@@ -161,6 +189,10 @@ void zmq::signaler_t::send ()
     do {
         nbytes = ::send (_w, &dummy, sizeof (dummy), 0);
         wsa_assert (nbytes != SOCKET_ERROR);
+        //  At most one byte may be outstanding (see signaler.hpp). A full
+        //  signaling socket violates that invariant; manual I/O must not spin.
+        if (Manual)
+            zmq_assert (nbytes != SOCKET_ERROR);
         // wsa_assert does not abort on WSAEWOULDBLOCK. If we get this, we retry.
     } while (nbytes == SOCKET_ERROR);
     // Given the small size of dummy (should be 1) expect that send was able to send everything.

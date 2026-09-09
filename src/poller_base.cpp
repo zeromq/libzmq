@@ -53,6 +53,28 @@ void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 
 uint64_t zmq::poller_base_t::execute_timers ()
 {
+    return execute_timers_impl<false> (NULL);
+}
+
+uint64_t zmq::poller_base_t::execute_timers (poller_step_t *step_)
+{
+    return execute_timers_impl<true> (step_);
+}
+
+int zmq::poller_base_t::next_timer_delay ()
+{
+    if (_timers.empty ())
+        return -1;
+    const uint64_t now = _clock.now_ms ();
+    return _timers.begin ()->first <= now
+             ? 0
+             : static_cast<int> (
+                 std::min<uint64_t> (_timers.begin ()->first - now, INT_MAX));
+}
+
+template <bool Manual>
+uint64_t zmq::poller_base_t::execute_timers_impl (poller_step_t *step_)
+{
     //  Fast track.
     if (_timers.empty ())
         return 0;
@@ -76,6 +98,16 @@ uint64_t zmq::poller_base_t::execute_timers ()
             break;
         }
 
+        if (Manual && !step_->timer_available ()) {
+            step_->more = true;
+            if (!step_->probe
+                || (step_->max_timers && step_->timers >= step_->max_timers))
+                step_->exhausted = true;
+            break;
+        }
+        if (Manual)
+            poller_step_t::increment (step_->timers);
+
         //  Save and remove the timer because timer_event() call might delete
         //  exactly this timer and then the iterator will be invalid.
         timer_temp = it->second;
@@ -93,6 +125,11 @@ uint64_t zmq::poller_base_t::execute_timers ()
 
 zmq::worker_poller_base_t::worker_poller_base_t (const thread_ctx_t &ctx_) :
     _ctx (ctx_)
+#if defined ZMQ_BUILD_DRAFT_API && !defined NDEBUG
+    ,
+    _manual (false),
+    _manual_thread (NULL)
+#endif
 {
 }
 
@@ -110,9 +147,28 @@ void zmq::worker_poller_base_t::start (const char *name_)
 void zmq::worker_poller_base_t::check_thread () const
 {
 #ifndef NDEBUG
+#ifdef ZMQ_BUILD_DRAFT_API
+    if (_manual) {
+        zmq_assert (_manual_thread && _manual_thread->is_current_thread ());
+        return;
+    }
+#endif
     zmq_assert (!_worker.get_started () || _worker.is_current_thread ());
 #endif
 }
+
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::worker_poller_base_t::set_manual_thread (const thread_t *owner_)
+{
+    zmq_assert (!_worker.get_started ());
+#ifndef NDEBUG
+    _manual = true;
+    _manual_thread = owner_;
+#else
+    LIBZMQ_UNUSED (owner_);
+#endif
+}
+#endif
 
 void zmq::worker_poller_base_t::worker_routine (void *arg_)
 {

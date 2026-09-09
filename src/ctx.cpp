@@ -20,6 +20,7 @@
 #include "err.hpp"
 #include "msg.hpp"
 #include "random.hpp"
+#include "manual_io.hpp"
 
 #ifdef ZMQ_HAVE_VMCI
 #include <vmci_sockets.h>
@@ -61,6 +62,11 @@ zmq::ctx_t::ctx_t () :
     _blocky (true),
     _ipv6 (false),
     _zero_copy (true)
+#ifdef ZMQ_BUILD_DRAFT_API
+    ,
+    _manual_io_threads (false),
+    _manual_io (NULL)
+#endif
 {
 #ifdef HAVE_FORK
     _pid = getpid ();
@@ -95,9 +101,12 @@ zmq::ctx_t::~ctx_t ()
     //  Ask I/O threads to terminate. If stop signal wasn't sent to I/O
     //  thread subsequent invocation of destructor would hang-up.
     const io_threads_t::size_type io_threads_size = _io_threads.size ();
-    for (io_threads_t::size_type i = 0; i != io_threads_size; i++) {
-        _io_threads[i]->stop ();
-    }
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (!_manual_io)
+#endif
+        for (io_threads_t::size_type i = 0; i != io_threads_size; i++) {
+            _io_threads[i]->stop ();
+        }
 
     //  Wait till I/O threads actually terminate.
     for (io_threads_t::size_type i = 0; i != io_threads_size; i++) {
@@ -106,6 +115,10 @@ zmq::ctx_t::~ctx_t ()
 
     //  Deallocate the reaper thread object.
     LIBZMQ_DELETE (_reaper);
+
+#ifdef ZMQ_HAVE_MANUAL_IO
+    LIBZMQ_DELETE (_manual_io);
+#endif
 
     //  The mailboxes in _slots themselves were deallocated with their
     //  corresponding io_thread/socket objects.
@@ -133,6 +146,13 @@ bool zmq::ctx_t::valid () const
 int zmq::ctx_t::terminate ()
 {
     _slot_sync.lock ();
+
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io && !_manual_io->enter ()) {
+        _slot_sync.unlock ();
+        return -1;
+    }
+#endif
 
     const bool save_terminating = _terminating;
     _terminating = false;
@@ -182,16 +202,48 @@ int zmq::ctx_t::terminate ()
         _slot_sync.unlock ();
 
         //  Wait till reaper thread closes all the sockets.
-        command_t cmd;
-        const int rc = _term_mailbox.recv (&cmd, -1);
-        if (rc == -1 && errno == EINTR)
-            return -1;
-        errno_assert (rc == 0);
-        zmq_assert (cmd.type == command_t::done);
+#ifdef ZMQ_HAVE_MANUAL_IO
+        if (_manual_io) {
+            const zmq_ctx_step_budget_t wait = {-1, 0, 0, 0};
+            while (!_manual_io->done ()) {
+                if (_manual_io->run (wait, NULL) == -1) {
+                    _manual_io->leave ();
+                    return -1;
+                }
+            }
+        } else {
+#endif
+            command_t cmd;
+            const int rc = _term_mailbox.recv (&cmd, -1);
+            if (rc == -1 && errno == EINTR)
+                return -1;
+            errno_assert (rc == 0);
+            zmq_assert (cmd.type == command_t::done);
+#ifdef ZMQ_HAVE_MANUAL_IO
+        }
+#endif
         _slot_sync.lock ();
         zmq_assert (_sockets.empty ());
     }
     _slot_sync.unlock ();
+
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io) {
+        //  All sessions have acknowledged termination. Stop the borrowing
+        //  actors through their normal mailboxes, then finish their callbacks.
+        if (_manual_io->begin_worker_stop ())
+            for (io_threads_t::size_type i = 0; i != _io_threads.size (); ++i)
+                _io_threads[i]->stop ();
+        const zmq_ctx_step_budget_t wait = {-1, 0, 0, 0};
+        while (_manual_io->has_workers ()) {
+            if (_manual_io->run (wait, NULL) == -1) {
+                _manual_io->leave ();
+                return -1;
+            }
+        }
+        _manual_io->leave ();
+    }
+#endif
 
 #ifdef ZMQ_HAVE_VMCI
     _vmci_sync.lock ();
@@ -209,6 +261,41 @@ int zmq::ctx_t::terminate ()
     return 0;
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+int zmq::ctx_t::step (const zmq_ctx_step_budget_t *budget_,
+                      zmq_ctx_step_result_t *result_)
+{
+    const zmq_ctx_step_budget_t unlimited = {0, 0, 0, 0};
+    const zmq_ctx_step_budget_t budget = budget_ ? *budget_ : unlimited;
+    if (budget.timeout_ms < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _slot_sync.lock ();
+    manual_io_t *driver = _manual_io;
+    if (!driver) {
+        _slot_sync.unlock ();
+        errno = ENOTSUP;
+        return -1;
+    }
+    const bool entered = driver->enter ();
+    _slot_sync.unlock ();
+    if (!entered)
+        return -1;
+    const int rc = driver->run (budget, result_);
+    const int saved_errno = errno;
+    driver->leave ();
+    errno = saved_errno;
+    return rc;
+#else
+    LIBZMQ_UNUSED (result_);
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
+#endif
 int zmq::ctx_t::shutdown ()
 {
     scoped_lock_t locker (_slot_sync);
@@ -240,6 +327,40 @@ int zmq::ctx_t::set (int option_, const void *optval_, size_t optvallen_)
         memcpy (&value, optval_, sizeof (int));
 
     switch (option_) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_MANUAL_IO_THREADS: {
+            scoped_lock_t locker (_slot_sync);
+            if (!is_int || (value != 0 && value != 1) || !_starting) {
+                errno = EINVAL;
+                return -1;
+            }
+#ifndef ZMQ_HAVE_MANUAL_IO
+            if (value) {
+                errno = ENOTSUP;
+                return -1;
+            }
+#else
+            if (value && !_manual_io) {
+                _manual_io = new (std::nothrow) manual_io_t (*this);
+                if (!_manual_io || !_manual_io->valid ()) {
+                    const int saved_errno = _manual_io ? errno : ENOMEM;
+                    LIBZMQ_DELETE (_manual_io);
+                    errno = saved_errno;
+                    return -1;
+                }
+                _term_mailbox.set_manual_cleanup ();
+            } else if (!value && _manual_io) {
+                if (!_manual_io->enter ())
+                    return -1;
+                _manual_io->leave ();
+                LIBZMQ_DELETE (_manual_io);
+                _term_mailbox.set_manual_cleanup (false);
+            }
+#endif
+            _manual_io_threads = value != 0;
+            return 0;
+        }
+#endif
         case ZMQ_MAX_SOCKETS:
             if (is_int && value >= 1 && value == clipped_maxsocket (value)) {
                 scoped_lock_t locker (_opt_sync);
@@ -303,6 +424,15 @@ int zmq::ctx_t::get (int option_, void *optval_, const size_t *optvallen_)
     int *value = static_cast<int *> (optval_);
 
     switch (option_) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_MANUAL_IO_THREADS:
+            if (is_int) {
+                scoped_lock_t locker (_slot_sync);
+                *value = _manual_io_threads;
+                return 0;
+            }
+            break;
+#endif
         case ZMQ_MAX_SOCKETS:
             if (is_int) {
                 scoped_lock_t locker (_opt_sync);
@@ -410,6 +540,15 @@ bool zmq::ctx_t::start ()
     //  Initialise the infrastructure for zmq_ctx_term thread.
     _slots[term_tid] = &_term_mailbox;
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io_threads) {
+        const bool entered = _manual_io->enter ();
+        if (!entered)
+            return false;
+        _slots[term_tid] = _manual_io->term_mailbox ();
+    }
+#endif
+
     //  Create the reaper thread.
     _reaper = new (std::nothrow) reaper_t (this, reaper_tid);
     if (!_reaper) {
@@ -447,14 +586,34 @@ bool zmq::ctx_t::start ()
     }
 
     _starting = false;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io)
+        _manual_io->leave ();
+#endif
     return true;
 
 fail_cleanup_reaper:
-    _reaper->stop ();
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io) {
+        //  No socket has been created, so these actors have no commands or
+        //  transport registrations. Undo only their constructor registrations.
+        for (io_threads_t::size_type i = 0; i != _io_threads.size (); ++i) {
+            _io_threads[i]->abort_start ();
+            delete _io_threads[i];
+        }
+        _io_threads.clear ();
+        _reaper->abort_start ();
+    } else
+#endif
+        _reaper->stop ();
     delete _reaper;
     _reaper = NULL;
 
 fail_cleanup_slots:
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_io)
+        _manual_io->leave ();
+#endif
     _slots.clear ();
     return false;
 }

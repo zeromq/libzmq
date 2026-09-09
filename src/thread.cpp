@@ -18,6 +18,20 @@ bool zmq::thread_t::get_started () const
     return _started;
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::thread_t::record_current_thread ()
+{
+    zmq_assert (!_started);
+#ifdef ZMQ_HAVE_WINDOWS
+    _thread_id = GetCurrentThreadId ();
+#elif defined ZMQ_HAVE_VXWORKS
+    _descriptor = taskIdSelf ();
+#else
+    _descriptor = pthread_self ();
+#endif
+}
+#endif
+
 #ifdef ZMQ_HAVE_WINDOWS
 
 extern "C" {

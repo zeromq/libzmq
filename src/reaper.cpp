@@ -6,6 +6,7 @@
 #include "reaper.hpp"
 #include "socket_base.hpp"
 #include "err.hpp"
+#include "manual_io.hpp"
 
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
@@ -14,14 +15,37 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     _sockets (0),
     _terminating (false)
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _manual_receiver = NULL;
+    _manual_channel = NULL;
+#endif
     if (!_mailbox.valid ())
         return;
 
-    _poller = new (std::nothrow) poller_t (*ctx_);
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (ctx_->get_manual_io ())
+        _poller = ctx_->get_manual_io ()->poller ();
+    else
+#endif
+        _poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (_poller);
 
-    if (_mailbox.get_fd () != retired_fd) {
-        _mailbox_handle = _poller->add_fd (_mailbox.get_fd (), this);
+    i_poll_events *receiver = this;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    _manual_receiver = NULL;
+    if (ctx_->get_manual_io ()) {
+        _mailbox.set_manual_cleanup ();
+        _manual_channel = new (std::nothrow) manual_mailbox_channel_t ();
+        alloc_assert (_manual_channel);
+        _manual_receiver = new (std::nothrow)
+          manual_mailbox_t (*ctx_->get_manual_io (), *_manual_channel);
+        alloc_assert (_manual_receiver);
+        receiver = _manual_receiver;
+    }
+#endif
+
+    if (get_mailbox ()->get_fd () != retired_fd) {
+        _mailbox_handle = _poller->add_fd (get_mailbox ()->get_fd (), receiver);
         _poller->set_pollin (_mailbox_handle);
     }
 
@@ -32,22 +56,45 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
 
 zmq::reaper_t::~reaper_t ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->is_manual_io ()) {
+        LIBZMQ_DELETE (_manual_receiver);
+        LIBZMQ_DELETE (_manual_channel);
+        return;
+    }
+#endif
     LIBZMQ_DELETE (_poller);
 }
 
 zmq::mailbox_t *zmq::reaper_t::get_mailbox ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (_manual_channel)
+        return _manual_channel;
+#endif
     return &_mailbox;
 }
 
 void zmq::reaper_t::start ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->is_manual_io ())
+        return;
+#endif
     zmq_assert (_mailbox.valid ());
 
     //  Start the thread.
     _poller->start ("Reaper");
 }
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+void zmq::reaper_t::abort_start ()
+{
+    if (_mailbox_handle)
+        _poller->rm_fd (_mailbox_handle);
+}
+
+#endif
 void zmq::reaper_t::stop ()
 {
     if (get_mailbox ()->valid ()) {

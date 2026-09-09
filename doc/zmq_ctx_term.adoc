@@ -36,6 +36,15 @@ This function replaces the deprecated functions xref:zmq_term.adoc[zmq_term] and
 xref:zmq_ctx_destroy.adoc[zmq_ctx_destroy]
 
 
+If the draft ZMQ_MANUAL_IO_THREADS option is enabled, termination advances
+internal I/O itself until these conditions are satisfied. The application need
+not perform any additional internal shutdown steps. Infinite linger can still
+wait forever, and sockets in other application threads must still be closed.
+Termination may follow user-driven steps after zmq_ctx_shutdown, and may run on
+a different thread after a synchronized handoff. It must not overlap or reenter
+an active step or manual termination. See xref:zmq_ctx_step.adoc[zmq_ctx_step].
+
+
 == RETURN VALUE
 The _zmq_ctx_term()_ function shall return zero if successful. Otherwise
 it shall return `-1` and set 'errno' to one of the values defined below.
@@ -46,6 +55,9 @@ it shall return `-1` and set 'errno' to one of the values defined below.
 The provided 'context' was invalid.
 *EINTR*::
 Termination was interrupted by a signal. It can be restarted if needed.
+*EBUSY*::
+In manual mode, a step or termination is already active. Shutdown was not
+initiated by this failed call.
 
 
 == SEE ALSO

@@ -4,6 +4,7 @@
 MAN3 = \
     zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_connect_peer.3 zmq_disconnect_peer.3 zmq_disconnect.3 zmq_close.3 \
     zmq_ctx_new.3 zmq_ctx_term.3 zmq_ctx_get.3 zmq_ctx_set.3 zmq_ctx_shutdown.3 \
+    zmq_ctx_step.3 \
     zmq_msg_init.3 zmq_msg_init_data.3 zmq_msg_init_size.3 zmq_msg_init_buffer.3 \
     zmq_msg_move.3 zmq_msg_copy.3 zmq_msg_size.3 zmq_msg_data.3 zmq_msg_close.3 \
     zmq_msg_send.3 zmq_msg_recv.3 \
@@ -28,11 +29,14 @@ MAN7 = \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7 zmq_vmci.7 zmq_udp.7 \
     zmq_gssapi.7 zmq_vsock.7
 
+# Asciidoctor emits this alias from the two-name zmq_ctx_step NAME section.
+MAN_ALIAS = zmq_ctx_step_budget.3
+
 # ASCIIDOC_DOC_WITHOUT_INDEX contains all the Asciidoc files checked into the git repo, except for index.adoc
 ASCIIDOC_DOC_WITHOUT_INDEX = $(MAN3:%.3=%.adoc) $(MAN7:%.7=%.adoc)
 
 # MAN_DOC contains all the MANPAGE documentation (generated from asciidoc files)
-MAN_DOC = $(MAN3) $(MAN7) 
+MAN_DOC = $(MAN3) $(MAN7) $(MAN_ALIAS)
 
 # HTML_DOC contains all the HTML documentation (generated from asciidoc files)
 HTML_DOC = index.html $(ASCIIDOC_DOC_WITHOUT_INDEX:%.adoc=%.html)
@@ -50,6 +54,8 @@ if BUILD_DOC
 EXTRA_DIST += $(HTML_DOC) $(MAN_DOC)
 MAINTAINERCLEANFILES += $(HTML_DOC) $(MAN_DOC)
 SUFFIXES=.html .adoc .3 .7
+
+zmq_ctx_step_budget.3: zmq_ctx_step.3
 
 .adoc.html:
 	asciidoctor --backend html  --attribute stylesheet=asciidoctor.css --attribute zmq_version=@PACKAGE_VERSION@  $<

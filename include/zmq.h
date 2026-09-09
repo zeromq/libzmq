@@ -677,6 +677,41 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_ZERO_COPY_RECV 10
+/*  Boolean; must be set before the first socket is created.                  */
+#define ZMQ_MANUAL_IO_THREADS 12
+
+typedef struct zmq_ctx_step_budget_t
+{
+    int timeout_ms;        /* Maximum OS wait in milliseconds; must be >= 0. */
+    uint32_t max_events;   /* Ready records/continuations; 0 means unlimited. */
+    uint32_t max_commands; /* Internal mailbox commands; 0 means unlimited. */
+    uint32_t max_timers;   /* Due timer callbacks; 0 means unlimited. */
+} zmq_ctx_step_budget_t;
+
+#define ZMQ_CTX_STEP_MORE_WORK 1
+#define ZMQ_CTX_STEP_IDLE 2
+#define ZMQ_CTX_STEP_BUDGET_EXHAUSTED 4
+
+typedef struct zmq_ctx_step_result_t
+{
+    uint32_t events_processed;
+    uint32_t commands_processed;
+    uint32_t timers_processed;
+    uint32_t flags;
+    int next_timeout_ms; /* 0: work due now; -1: no scheduled timer. */
+} zmq_ctx_step_result_t;
+
+/* Advance all internal work. Return progress units (not messages), capped at
+ * INT_MAX, or -1/errno. Requires manual mode. Concurrent/reentrant calls: EBUSY.
+ * Use nonblocking socket operations when the same thread supplies progress. */
+ZMQ_EXPORT int zmq_ctx_step (void *ctx, int timeout_ms);
+
+/* NULL budget: nonblocking with unlimited counts. NULL result: discard report.
+ * An event is one native ready record or resumed mailbox; commands also count
+ * individually. Count caps do not preempt a callback or bound execution time. */
+ZMQ_EXPORT int zmq_ctx_step_budget (void *ctx,
+                                    const zmq_ctx_step_budget_t *budget,
+                                    zmq_ctx_step_result_t *result);
 
 /*  DRAFT Context methods.                                                    */
 ZMQ_EXPORT int zmq_ctx_set_ext (void *context_,

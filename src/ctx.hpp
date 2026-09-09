@@ -24,6 +24,7 @@ class io_thread_t;
 class socket_base_t;
 class reaper_t;
 class pipe_t;
+class manual_io_t;
 
 //  Information associated with inproc endpoint. Note that endpoint options
 //  are registered as well so that the peer can access them without a need
@@ -86,6 +87,13 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
     // This function is optional, terminate will unblock any current
     // operations as well.
     int shutdown ();
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    ZMQ_PRIVATE bool is_manual_io () const { return _manual_io_threads; }
+    ZMQ_PRIVATE manual_io_t *get_manual_io () const { return _manual_io; }
+    ZMQ_PRIVATE int step (const zmq_ctx_step_budget_t *budget_,
+                          zmq_ctx_step_result_t *result_);
+#endif
 
     //  Set and get context properties.
     int set (int option_, const void *optval_, size_t optvallen_);
@@ -218,6 +226,11 @@ class ctx_t ZMQ_FINAL : public thread_ctx_t
 
     // Should we use zero copy message decoding in this context?
     bool _zero_copy;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    bool _manual_io_threads;
+    manual_io_t *_manual_io;
+#endif
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (ctx_t)
 

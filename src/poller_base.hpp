@@ -8,6 +8,7 @@
 #include "clock.hpp"
 #include "atomic_counter.hpp"
 #include "ctx.hpp"
+#include "poller_step.hpp"
 
 namespace zmq
 {
@@ -110,8 +111,13 @@ class poller_base_t
     //  Executes any timers that are due. Returns number of milliseconds
     //  to wait to match the next timer or 0 meaning "no timers".
     uint64_t execute_timers ();
+    ZMQ_PRIVATE uint64_t execute_timers (poller_step_t *step_);
+    ZMQ_PRIVATE int next_timer_delay ();
 
   private:
+    friend class manual_io_t;
+    template <bool Manual>
+    ZMQ_PRIVATE uint64_t execute_timers_impl (poller_step_t *step_);
     //  Clock instance private to this I/O thread.
     clock_t _clock;
 
@@ -140,6 +146,11 @@ class worker_poller_base_t : public poller_base_t
     // Methods from the poller concept.
     void start (const char *name = NULL);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  NULL relinquishes ownership, but does not revert to the worker invariant.
+    ZMQ_PRIVATE void set_manual_thread (const thread_t *owner_);
+#endif
+
   protected:
     //  Checks whether the currently executing thread is the worker thread
     //  via an assertion.
@@ -162,6 +173,10 @@ class worker_poller_base_t : public poller_base_t
 
     //  Handle of the physical thread doing the I/O work.
     thread_t _worker;
+#if defined ZMQ_BUILD_DRAFT_API && !defined NDEBUG
+    bool _manual;
+    const thread_t *_manual_thread;
+#endif
 };
 }
 

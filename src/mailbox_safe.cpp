@@ -49,6 +49,19 @@ void zmq::mailbox_safe_t::clear_signalers ()
 
 void zmq::mailbox_safe_t::send (const command_t &cmd_)
 {
+    send_impl<false> (cmd_);
+}
+
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::manual_mailbox_safe_t::send (const command_t &cmd_)
+{
+    send_impl<true> (cmd_);
+}
+#endif
+
+template <bool Manual>
+void zmq::mailbox_safe_t::send_impl (const command_t &cmd_)
+{
     _sync->lock ();
     _cpipe.write (cmd_, false);
     const bool ok = _cpipe.flush ();
@@ -59,7 +72,12 @@ void zmq::mailbox_safe_t::send (const command_t &cmd_)
         for (std::vector<signaler_t *>::iterator it = _signalers.begin (),
                                                  end = _signalers.end ();
              it != end; ++it) {
-            (*it)->send ();
+#ifdef ZMQ_BUILD_DRAFT_API
+            if (Manual)
+                (*it)->send_manual ();
+            else
+#endif
+                (*it)->send ();
         }
     }
 

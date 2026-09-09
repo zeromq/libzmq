@@ -32,6 +32,7 @@ zmq::select_t::select_t (const zmq::thread_ctx_t &ctx_) :
     worker_poller_base_t (ctx_),
 #if defined ZMQ_HAVE_WINDOWS
     //  Fine as long as map is not cleared.
+    _manual_family (0),
     _current_family_entry_it (_family_entries.end ())
 #else
     _max_fd (retired_fd)
@@ -90,18 +91,35 @@ zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries_,
     return fd_entry_it;
 }
 
+template <bool Manual>
 void zmq::select_t::trigger_events (const fd_entries_t &fd_entries_,
                                     const fds_set_t &local_fds_set_,
-                                    int event_count_)
+                                    int event_count_,
+                                    size_t *cursor_,
+                                    poller_step_t *step_)
 {
     //  Size is cached to avoid iteration through recently added descriptors.
-    for (fd_entries_t::size_type i = 0, size = fd_entries_.size ();
-         i < size && event_count_ > 0; ++i) {
+    const size_t size = fd_entries_.size ();
+    const size_t start = Manual && size ? *cursor_ % size : 0;
+    for (fd_entries_t::size_type pos = 0; pos < size && event_count_ > 0;
+         ++pos) {
+        const size_t i = Manual ? (start + pos) % size : pos;
         //  fd_entries_[i] may not be stored, since calls to
         //  in_event/out_event may reallocate the vector
 
         if (is_retired_fd (fd_entries_[i]))
             continue;
+
+        if (Manual) {
+            const fd_t fd = fd_entries_[i].fd;
+            if (!FD_ISSET (fd, &local_fds_set_.read)
+                && !FD_ISSET (fd, &local_fds_set_.write)
+                && !FD_ISSET (fd, &local_fds_set_.error))
+                continue;
+            if (!step_->event ())
+                break;
+            *cursor_ = i + 1;
+        }
 
         if (FD_ISSET (fd_entries_[i].fd, &local_fds_set_.read)) {
             fd_entries_[i].events->in_event ();
@@ -276,126 +294,181 @@ int zmq::select_t::max_fds ()
 
 void zmq::select_t::loop ()
 {
-    while (true) {
-        //  Execute any due timers.
-        int timeout = static_cast<int> (execute_timers ());
-
-        cleanup_retired ();
-
-#ifdef _WIN32
-        if (_family_entries.empty ()) {
-#else
-        if (_family_entry.fd_entries.empty ()) {
-#endif
-            zmq_assert (get_load () == 0);
-
-            if (timeout == 0)
-                break;
-
-            // TODO sleep for timeout
-            continue;
-        }
-
-#if defined ZMQ_HAVE_OSX
-        struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
-#else
-        struct timeval tv = {static_cast<long> (timeout / 1000),
-                             static_cast<long> (timeout % 1000 * 1000)};
-#endif
-
-#if defined ZMQ_HAVE_WINDOWS
-        /*
-            On Windows select does not allow to mix descriptors from different
-            service providers. It seems to work for AF_INET and AF_INET6,
-            but fails for AF_INET and VMCI. The workaround is to use
-            WSAEventSelect and WSAWaitForMultipleEvents to wait, then use
-            select to find out what actually changed. WSAWaitForMultipleEvents
-            cannot be used alone, because it does not support more than 64 events
-            which is not enough.
-
-            To reduce unnecessary overhead, WSA is only used when there are more
-            than one family. Moreover, AF_INET and AF_INET6 are considered the same
-            family because Windows seems to handle them properly.
-            See get_fd_family for details.
-        */
-
-        //  If there is just one family, there is no reason to use WSA events.
-        int rc = 0;
-        const bool use_wsa_events = _family_entries.size () > 1;
-        if (use_wsa_events) {
-            // TODO: I don't really understand why we are doing this. If any of
-            // the events was signaled, we will call select for each fd_family
-            // afterwards. The only benefit is if none of the events was
-            // signaled, then we continue early.
-            // IMHO, either WSAEventSelect/WSAWaitForMultipleEvents or select
-            // should be used, but not both
-
-            wsa_events_t wsa_events;
-
-            for (family_entries_t::iterator family_entry_it =
-                   _family_entries.begin ();
-                 family_entry_it != _family_entries.end (); ++family_entry_it) {
-                family_entry_t &family_entry = family_entry_it->second;
-
-                for (fd_entries_t::iterator fd_entry_it =
-                       family_entry.fd_entries.begin ();
-                     fd_entry_it != family_entry.fd_entries.end ();
-                     ++fd_entry_it) {
-                    fd_t fd = fd_entry_it->fd;
-
-                    //  http://stackoverflow.com/q/35043420/188530
-                    if (FD_ISSET (fd, &family_entry.fds_set.read)
-                        && FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc = WSAEventSelect (fd, wsa_events.events[3],
-                                             FD_READ | FD_ACCEPT | FD_CLOSE
-                                               | FD_WRITE | FD_CONNECT);
-                    else if (FD_ISSET (fd, &family_entry.fds_set.read))
-                        rc = WSAEventSelect (fd, wsa_events.events[0],
-                                             FD_READ | FD_ACCEPT | FD_CLOSE);
-                    else if (FD_ISSET (fd, &family_entry.fds_set.write))
-                        rc = WSAEventSelect (fd, wsa_events.events[1],
-                                             FD_WRITE | FD_CONNECT);
-                    else
-                        rc = 0;
-
-                    wsa_assert (rc != SOCKET_ERROR);
-                }
-            }
-
-            rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
-                                           timeout ? timeout : INFINITE, FALSE);
-            wsa_assert (rc != (int) WSA_WAIT_FAILED);
-            zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
-
-            if (rc == WSA_WAIT_TIMEOUT)
-                continue;
-        }
-
-        for (_current_family_entry_it = _family_entries.begin ();
-             _current_family_entry_it != _family_entries.end ();
-             ++_current_family_entry_it) {
-            family_entry_t &family_entry = _current_family_entry_it->second;
-
-
-            if (use_wsa_events) {
-                //  There is no reason to wait again after WSAWaitForMultipleEvents.
-                //  Simply collect what is ready.
-                struct timeval tv_nodelay = {0, 0};
-                select_family_entry (family_entry, 0, true, tv_nodelay);
-            } else {
-                select_family_entry (family_entry, 0, timeout > 0, tv);
-            }
-        }
-#else
-        select_family_entry (_family_entry, _max_fd + 1, timeout > 0, tv);
-#endif
+    while (run_once (-1)) {
     }
 }
 
+bool zmq::select_t::run_once (int timeout_ms_)
+{
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::select_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::select_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
+    //  Execute any due timers.
+    const int timeout =
+      static_cast<int> (Manual ? execute_timers (step_) : execute_timers ());
+    int wait = Manual && (step_->progress () || step_->more || step_->probe) ? 0
+               : timeout_ms_ < 0 ? (timeout ? timeout : -1)
+               : timeout         ? std::min (timeout, timeout_ms_)
+                                 : timeout_ms_;
+
+    cleanup_retired ();
+
+#ifdef _WIN32
+    if (_family_entries.empty ()) {
+#else
+    if (_family_entry.fd_entries.empty ()) {
+#endif
+        zmq_assert (get_load () == 0);
+
+        if (timeout == 0)
+            return false;
+
+        // TODO sleep for timeout
+        return true;
+    }
+
+#if defined ZMQ_HAVE_OSX
+    struct timeval tv = {(long) (wait / 1000), wait % 1000 * 1000};
+#else
+    struct timeval tv = {static_cast<long> (wait / 1000),
+                         static_cast<long> (wait % 1000 * 1000)};
+#endif
+
+#if defined ZMQ_HAVE_WINDOWS
+    /*
+        On Windows select does not allow to mix descriptors from different
+        service providers. It seems to work for AF_INET and AF_INET6,
+        but fails for AF_INET and VMCI. The workaround is to use
+        WSAEventSelect and WSAWaitForMultipleEvents to wait, then use
+        select to find out what actually changed. WSAWaitForMultipleEvents
+        cannot be used alone, because it does not support more than 64 events
+        which is not enough.
+
+        To reduce unnecessary overhead, WSA is only used when there are more
+        than one family. Moreover, AF_INET and AF_INET6 are considered the same
+        family because Windows seems to handle them properly.
+        See get_fd_family for details.
+    */
+
+    //  If there is just one family, there is no reason to use WSA events.
+    int rc = 0;
+    const bool use_wsa_events = _family_entries.size () > 1;
+    if (Manual && use_wsa_events && wait != 0) {
+        //  WSA FD_WRITE notifications are edge-like. A previous budget may
+        //  have left a writable socket without performing a write. Observe
+        //  all provider families before waiting for a *new* notification.
+        poller_step_t observation;
+        observation.probe = true;
+        for (family_entries_t::iterator it = _family_entries.begin ();
+             it != _family_entries.end (); ++it) {
+            struct timeval immediate = {0, 0};
+            select_family_entry<true> (it->second, 0, true, immediate,
+                                       &observation);
+        }
+        if (observation.more)
+            wait = 0;
+    }
+    if (use_wsa_events && (!Manual || wait != 0)) {
+        // TODO: I don't really understand why we are doing this. If any of
+        // the events was signaled, we will call select for each fd_family
+        // afterwards. The only benefit is if none of the events was
+        // signaled, then we continue early.
+        // IMHO, either WSAEventSelect/WSAWaitForMultipleEvents or select
+        // should be used, but not both
+
+        wsa_events_t wsa_events;
+
+        for (family_entries_t::iterator family_entry_it =
+               _family_entries.begin ();
+             family_entry_it != _family_entries.end (); ++family_entry_it) {
+            family_entry_t &family_entry = family_entry_it->second;
+
+            for (fd_entries_t::iterator fd_entry_it =
+                   family_entry.fd_entries.begin ();
+                 fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it) {
+                fd_t fd = fd_entry_it->fd;
+
+                //  http://stackoverflow.com/q/35043420/188530
+                if (FD_ISSET (fd, &family_entry.fds_set.read)
+                    && FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[3],
+                                         FD_READ | FD_ACCEPT | FD_CLOSE
+                                           | FD_WRITE | FD_CONNECT);
+                else if (FD_ISSET (fd, &family_entry.fds_set.read))
+                    rc = WSAEventSelect (fd, wsa_events.events[0],
+                                         FD_READ | FD_ACCEPT | FD_CLOSE);
+                else if (FD_ISSET (fd, &family_entry.fds_set.write))
+                    rc = WSAEventSelect (fd, wsa_events.events[1],
+                                         FD_WRITE | FD_CONNECT);
+                else
+                    rc = 0;
+
+                wsa_assert (rc != SOCKET_ERROR);
+            }
+        }
+
+        rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
+                                       wait >= 0 ? wait : INFINITE, FALSE);
+        wsa_assert (rc != (int) WSA_WAIT_FAILED);
+        zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
+
+        if (rc == WSA_WAIT_TIMEOUT)
+            return true;
+    }
+
+    size_t families_left = _family_entries.size ();
+    _current_family_entry_it = Manual
+                                 ? _family_entries.upper_bound (_manual_family)
+                                 : _family_entries.begin ();
+    if (Manual && _current_family_entry_it == _family_entries.end ())
+        _current_family_entry_it = _family_entries.begin ();
+    for (; Manual ? families_left != 0
+                  : _current_family_entry_it != _family_entries.end ();) {
+        family_entry_t &family_entry = _current_family_entry_it->second;
+        const uint32_t before = Manual ? step_->events : 0;
+
+        if (use_wsa_events) {
+            //  There is no reason to wait again after WSAWaitForMultipleEvents.
+            //  Simply collect what is ready.
+            struct timeval tv_nodelay = {0, 0};
+            select_family_entry<Manual> (family_entry, 0, true, tv_nodelay,
+                                         step_);
+        } else {
+            select_family_entry<Manual> (family_entry, 0, wait >= 0, tv, step_);
+        }
+        if (Manual && step_->events != before)
+            _manual_family = _current_family_entry_it->first;
+        ++_current_family_entry_it;
+        if (Manual) {
+            --families_left;
+            if (_current_family_entry_it == _family_entries.end ())
+                _current_family_entry_it = _family_entries.begin ();
+        }
+    }
+    if (Manual)
+        _current_family_entry_it = _family_entries.end ();
+#else
+    select_family_entry<Manual> (_family_entry, _max_fd + 1, wait >= 0, tv,
+                                 step_);
+#endif
+    return true;
+}
+
+template <bool Manual>
 void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
                                          const int max_fd_,
                                          const bool use_timeout_,
-                                         struct timeval &tv_)
+                                         struct timeval &tv_,
+                                         poller_step_t *step_)
 {
     //  select will fail when run with empty sets.
     fd_entries_t &fd_entries = family_entry_.fd_entries;
@@ -411,11 +484,14 @@ void zmq::select_t::select_family_entry (family_entry_t &family_entry_,
 #else
     if (rc == -1) {
         errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
         return;
     }
 #endif
 
-    trigger_events (fd_entries, local_fds_set, rc);
+    trigger_events<Manual> (fd_entries, local_fds_set, rc,
+                            &family_entry_.manual_cursor, step_);
 
     cleanup_retired (family_entry_);
 }
@@ -514,7 +590,8 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry_)
     return entry_.fd == retired_fd;
 }
 
-zmq::select_t::family_entry_t::family_entry_t () : has_retired (false)
+zmq::select_t::family_entry_t::family_entry_t () :
+    has_retired (false), manual_cursor (0)
 {
 }
 

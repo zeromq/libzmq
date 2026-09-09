@@ -158,8 +158,15 @@ int zmq::ws_connecter_t::open ()
     zmq_assert (_s == retired_fd);
 
     tcp_address_t tcp_addr;
-    _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
-                          &tcp_addr);
+#ifdef ZMQ_BUILD_DRAFT_API
+    if (_addr->parent->is_manual_io ()) {
+        tcp_addr = tcp_address_t (_addr->resolved.ws_addr->addr (),
+                                  _addr->resolved.ws_addr->addrlen ());
+        _s = tcp_open_socket (options, &tcp_addr);
+    } else
+#endif
+        _s = tcp_open_socket (_addr->address.c_str (), options, false, true,
+                              &tcp_addr);
     if (_s == retired_fd)
         return -1;
 
