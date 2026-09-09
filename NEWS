@@ -1,3 +1,15 @@
+Unreleased
+==========
+
+* New DRAFT context option ZMQ_MANUAL_IO_THREADS and functions zmq_ctx_step and
+  zmq_ctx_step_budget allow application-owned threads to advance all internal
+  I/O, timers and shutdown without libzmq context worker threads. Supports epoll
+  (including Windows wepoll), kqueue, poll and select; unsupported configurations
+  reject the option immediately. Normal threaded operation remains the default.
+  See doc/zmq_ctx_step.adoc for budgets, ownership, linger and nonblocking-use
+  requirements.
+
+
 0MQ version 4.3.5 stable, released on 2023/10/09
 ================================================
 

@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0 */
 
 #include "precompiled.hpp"
+#include "manual_io.hpp"
 #include <new>
 #include <string>
 #include <algorithm>
@@ -242,6 +243,9 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     _monitor_events (0),
     _thread_safe (thread_safe_),
     _reaper_signaler (NULL),
+#ifdef ZMQ_BUILD_DRAFT_API
+    _manual_receiver (NULL),
+#endif
     _monitor_sync (),
     _disconnected (false)
 {
@@ -251,10 +255,21 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     options.zero_copy = parent_->get (ZMQ_ZERO_COPY_RECV) != 0;
 
     if (_thread_safe) {
-        _mailbox = new (std::nothrow) mailbox_safe_t (&_sync);
+#ifdef ZMQ_HAVE_MANUAL_IO
+        if (parent_->is_manual_io ())
+            _mailbox = new (std::nothrow) manual_mailbox_safe_t (&_sync);
+        else
+#endif
+            _mailbox = new (std::nothrow) mailbox_safe_t (&_sync);
         zmq_assert (_mailbox);
     } else {
-        mailbox_t *m = new (std::nothrow) mailbox_t ();
+        mailbox_t *m;
+#ifdef ZMQ_HAVE_MANUAL_IO
+        if (parent_->is_manual_io ())
+            m = new (std::nothrow) manual_mailbox_channel_t ();
+        else
+#endif
+            m = new (std::nothrow) mailbox_t ();
         zmq_assert (m);
 
         if (m->get_fd () != retired_fd)
@@ -279,6 +294,9 @@ int zmq::socket_base_t::get_peer_state (const void *routing_id_,
 
 zmq::socket_base_t::~socket_base_t ()
 {
+#ifdef ZMQ_HAVE_MANUAL_IO
+    LIBZMQ_DELETE (_manual_receiver);
+#endif
     if (_mailbox)
         LIBZMQ_DELETE (_mailbox);
 
@@ -983,6 +1001,25 @@ int zmq::socket_base_t::connect_internal (const char *endpoint_uri_)
         }
         //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
+#ifdef ZMQ_HAVE_MANUAL_IO
+        if (get_ctx ()->is_manual_io ()) {
+            tcp_address_t *cached = new (std::nothrow) tcp_address_t ();
+            alloc_assert (cached);
+            const bool proxy = !options.socks_proxy_address.empty ();
+            rc = cached->resolve (proxy ? options.socks_proxy_address.c_str ()
+                                        : address.c_str (),
+                                  false, options.ipv6);
+            if (rc != 0) {
+                delete cached;
+                delete paddr;
+                return -1;
+            }
+            if (proxy)
+                paddr->manual_proxy_addr = cached;
+            else
+                paddr->resolved.tcp_addr = cached;
+        }
+#endif
     }
 #ifdef ZMQ_HAVE_WS
 #ifdef ZMQ_HAVE_WSS
@@ -1495,10 +1532,25 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
           ->add_signaler (_reaper_signaler);
 
         //  Send a signal to make sure reaper handle existing commands
-        _reaper_signaler->send ();
+#ifdef ZMQ_HAVE_MANUAL_IO
+        if (get_ctx ()->is_manual_io ()) {
+            _reaper_signaler->set_manual_cleanup ();
+            _reaper_signaler->send_manual ();
+        } else
+#endif
+            _reaper_signaler->send ();
     }
 
-    _handle = _poller->add_fd (fd, this);
+    i_poll_events *receiver = this;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->get_manual_io ()) {
+        _manual_receiver = new (std::nothrow) manual_mailbox_t (
+          *get_ctx ()->get_manual_io (), *_mailbox, manual_in_event, this);
+        alloc_assert (_manual_receiver);
+        receiver = _manual_receiver;
+    }
+#endif
+    _handle = _poller->add_fd (fd, receiver);
     _poller->set_pollin (_handle);
 
     //  Initialise the termination and check whether it can be deallocated
@@ -1739,6 +1791,23 @@ void zmq::socket_base_t::in_event ()
     check_destroy ();
 }
 
+#ifdef ZMQ_HAVE_MANUAL_IO
+void zmq::socket_base_t::manual_in_event (manual_mailbox_t *receiver_,
+                                          bool notification_)
+{
+    socket_base_t *self = static_cast<socket_base_t *> (receiver_->arg ());
+    bool drained;
+    {
+        scoped_optional_lock_t lock (self->_thread_safe ? &self->_sync : NULL);
+        if (notification_ && self->_thread_safe)
+            self->_reaper_signaler->recv ();
+        drained = receiver_->drain ();
+    }
+    if (drained)
+        self->check_destroy ();
+}
+
+#endif
 void zmq::socket_base_t::out_event ()
 {
     zmq_assert (false);
@@ -1883,10 +1952,25 @@ int zmq::socket_base_t::monitor (const char *endpoint_,
     //  Register events to monitor
     _monitor_events = events_;
     options.monitor_event_version = event_version_;
+#ifdef ZMQ_HAVE_MANUAL_IO
+    //  Select the serializer/retry policy together with the existing protocol
+    //  version, without a mode check on each default monitor event.
+    if (get_ctx ()->is_manual_io ())
+        options.monitor_event_version = -event_version_;
+#endif
     //  Create a monitor socket of the specified type.
     _monitor_socket = zmq_socket (get_ctx (), type_);
     if (_monitor_socket == NULL)
         return -1;
+
+#ifdef ZMQ_HAVE_MANUAL_IO
+    if (get_ctx ()->is_manual_io ()) {
+        const int timeout = 0;
+        const int rc = zmq_setsockopt (_monitor_socket, ZMQ_SNDTIMEO, &timeout,
+                                       sizeof timeout);
+        zmq_assert (rc == 0);
+    }
+#endif
 
     //  Never block context termination on pending event messages
     int linger = 0;
@@ -2012,7 +2096,47 @@ void zmq::socket_base_t::event (const endpoint_uri_pair_t &endpoint_uri_pair_,
 }
 
 //  Send a monitor event
+template <bool Manual>
+static bool send_monitor_frame (zmq_msg_t *msg_, void *socket_, int flags_)
+{
+    const int rc = zmq_msg_send (msg_, socket_, flags_);
+    if (Manual && rc == -1) {
+        zmq_msg_close (msg_);
+        return false;
+    }
+    return true;
+}
+
 void zmq::socket_base_t::monitor_event (
+  uint64_t event_,
+  const uint64_t values_[],
+  uint64_t values_count_,
+  const endpoint_uri_pair_t &endpoint_uri_pair_) const
+{
+    switch (options.monitor_event_version) {
+        case 1:
+            monitor_event_impl<false, 1> (event_, values_, values_count_,
+                                          endpoint_uri_pair_);
+            break;
+        case 2:
+            monitor_event_impl<false, 2> (event_, values_, values_count_,
+                                          endpoint_uri_pair_);
+            break;
+#ifdef ZMQ_HAVE_MANUAL_IO
+        case -1:
+            monitor_event_impl<true, 1> (event_, values_, values_count_,
+                                         endpoint_uri_pair_);
+            break;
+        case -2:
+            monitor_event_impl<true, 2> (event_, values_, values_count_,
+                                         endpoint_uri_pair_);
+            break;
+#endif
+    }
+}
+
+template <bool Manual, int Version>
+void zmq::socket_base_t::monitor_event_impl (
   uint64_t event_,
   const uint64_t values_[],
   uint64_t values_count_,
@@ -2024,7 +2148,7 @@ void zmq::socket_base_t::monitor_event (
     if (_monitor_socket) {
         zmq_msg_t msg;
 
-        switch (options.monitor_event_version) {
+        switch (Version) {
             case 1: {
                 //  The API should not allow to activate unsupported events
                 zmq_assert (event_ <= std::numeric_limits<uint16_t>::max ());
@@ -2041,7 +2165,9 @@ void zmq::socket_base_t::monitor_event (
                 //  Avoid dereferencing uint32_t on unaligned address
                 memcpy (data + 0, &event, sizeof (event));
                 memcpy (data + sizeof (event), &value, sizeof (value));
-                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket,
+                                                 ZMQ_SNDMORE))
+                    return;
 
                 const std::string &endpoint_uri =
                   endpoint_uri_pair_.identifier ();
@@ -2050,39 +2176,49 @@ void zmq::socket_base_t::monitor_event (
                 zmq_msg_init_size (&msg, endpoint_uri.size ());
                 memcpy (zmq_msg_data (&msg), endpoint_uri.c_str (),
                         endpoint_uri.size ());
-                zmq_msg_send (&msg, _monitor_socket, 0);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket, 0))
+                    return;
             } break;
             case 2: {
                 //  Send event in first frame (64bit unsigned)
                 zmq_msg_init_size (&msg, sizeof (event_));
                 memcpy (zmq_msg_data (&msg), &event_, sizeof (event_));
-                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket,
+                                                 ZMQ_SNDMORE))
+                    return;
 
                 //  Send number of values that will follow in second frame
                 zmq_msg_init_size (&msg, sizeof (values_count_));
                 memcpy (zmq_msg_data (&msg), &values_count_,
                         sizeof (values_count_));
-                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket,
+                                                 ZMQ_SNDMORE))
+                    return;
 
                 //  Send values in third-Nth frames (64bit unsigned)
                 for (uint64_t i = 0; i < values_count_; ++i) {
                     zmq_msg_init_size (&msg, sizeof (values_[i]));
                     memcpy (zmq_msg_data (&msg), &values_[i],
                             sizeof (values_[i]));
-                    zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                    if (!send_monitor_frame<Manual> (&msg, _monitor_socket,
+                                                     ZMQ_SNDMORE))
+                        return;
                 }
 
                 //  Send local endpoint URI in second-to-last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.local.size ());
                 memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.local.c_str (),
                         endpoint_uri_pair_.local.size ());
-                zmq_msg_send (&msg, _monitor_socket, ZMQ_SNDMORE);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket,
+                                                 ZMQ_SNDMORE))
+                    return;
 
                 //  Send remote endpoint URI in last frame (string)
                 zmq_msg_init_size (&msg, endpoint_uri_pair_.remote.size ());
                 memcpy (zmq_msg_data (&msg), endpoint_uri_pair_.remote.c_str (),
                         endpoint_uri_pair_.remote.size ());
-                zmq_msg_send (&msg, _monitor_socket, 0);
+                if (!send_monitor_frame<Manual> (&msg, _monitor_socket, 0))
+                    return;
             } break;
         }
     }

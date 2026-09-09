@@ -25,7 +25,7 @@ const zmq::epoll_t::epoll_fd_t zmq::epoll_t::epoll_retired_fd =
 #endif
 
 zmq::epoll_t::epoll_t (const zmq::thread_ctx_t &ctx_) :
-    worker_poller_base_t (ctx_)
+    worker_poller_base_t (ctx_), _manual_ready (false)
 {
 #ifdef ZMQ_IOTHREAD_POLLER_USE_EPOLL_CLOEXEC
     //  Setting this option result in sane behaviour when exec() functions
@@ -139,57 +139,96 @@ int zmq::epoll_t::max_fds ()
 
 void zmq::epoll_t::loop ()
 {
+    while (run_once (-1)) {
+    }
+}
+
+bool zmq::epoll_t::run_once (int timeout_ms_)
+{
+    return run_once_impl<false> (timeout_ms_, NULL);
+}
+
+bool zmq::epoll_t::run_once (int timeout_ms_, poller_step_t *step_)
+{
+    check_thread ();
+    return run_once_impl<true> (timeout_ms_, step_);
+}
+
+template <bool Manual>
+bool zmq::epoll_t::run_once_impl (int timeout_ms_, poller_step_t *step_)
+{
     epoll_event ev_buf[max_io_events];
 
-    while (true) {
-        //  Execute any due timers.
-        const int timeout = static_cast<int> (execute_timers ());
+    //  Execute any due timers.
+    const int timeout =
+      static_cast<int> (Manual ? execute_timers (step_) : execute_timers ());
+    const int wait =
+      Manual && (step_->progress () || step_->more || step_->probe) ? 0
+      : timeout_ms_ < 0 ? (timeout ? timeout : -1)
+      : timeout         ? std::min (timeout, timeout_ms_)
+                        : timeout_ms_;
 
-        if (get_load () == 0) {
-            if (timeout == 0)
-                break;
+    if (get_load () == 0) {
+        if (timeout == 0)
+            return false;
 
-            // TODO sleep for timeout
-            continue;
-        }
-
-        //  Wait for events.
-        const int n = epoll_wait (_epoll_fd, &ev_buf[0], max_io_events,
-                                  timeout ? timeout : -1);
-        if (n == -1) {
-            errno_assert (errno == EINTR);
-            continue;
-        }
-
-        for (int i = 0; i < n; i++) {
-            const poll_entry_t *const pe =
-              static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
-
-            if (NULL == pe)
-                continue;
-            if (NULL == pe->events)
-                continue;
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
-                pe->events->in_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].events & EPOLLOUT)
-                pe->events->out_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (ev_buf[i].events & EPOLLIN)
-                pe->events->in_event ();
-        }
-
-        //  Destroy retired event sources.
-        for (retired_t::iterator it = _retired.begin (), end = _retired.end ();
-             it != end; ++it) {
-            LIBZMQ_DELETE (*it);
-        }
-        _retired.clear ();
+        // TODO sleep for timeout
+        return true;
     }
+
+    //  Wait for events.
+    int n;
+    if (Manual && _manual_ready) {
+        ev_buf[0] = _manual_event;
+        _manual_ready = false;
+        n = 1;
+    } else
+        n = epoll_wait (
+          _epoll_fd, &ev_buf[0],
+          Manual ? step_->event_batch (max_io_events) : max_io_events, wait);
+    if (n == -1) {
+        errno_assert (errno == EINTR);
+        if (Manual)
+            step_->error = EINTR;
+        return true;
+    }
+
+    for (int i = 0; i < n; i++) {
+        const poll_entry_t *const pe =
+          static_cast<const poll_entry_t *> (ev_buf[i].data.ptr);
+
+        if (NULL == pe)
+            continue;
+        if (NULL == pe->events)
+            continue;
+        if (pe->fd == retired_fd)
+            continue;
+        if (Manual && !step_->event ()) {
+            //  A readiness probe advances the native queue too. Retain its
+            //  record until dispatched, while the usual retirement rules hold.
+            _manual_event = ev_buf[i];
+            _manual_ready = true;
+            break;
+        }
+        if (ev_buf[i].events & (EPOLLERR | EPOLLHUP))
+            pe->events->in_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (ev_buf[i].events & EPOLLOUT)
+            pe->events->out_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (ev_buf[i].events & EPOLLIN)
+            pe->events->in_event ();
+    }
+
+    //  Destroy retired event sources.
+    for (retired_t::iterator it = _retired.begin (), end = _retired.end ();
+         it != end; ++it) {
+        LIBZMQ_DELETE (*it);
+    }
+    _retired.clear ();
+    return true;
 }
 
 #endif

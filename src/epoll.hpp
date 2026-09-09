@@ -61,6 +61,12 @@ class epoll_t ZMQ_FINAL : public worker_poller_base_t
 
     //  Main event loop.
     void loop () ZMQ_OVERRIDE;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_);
+    friend class manual_io_t;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_, poller_step_t *step_);
+    ZMQ_PRIVATE bool has_pending_events () const { return _manual_ready; }
+    template <bool Manual>
+    ZMQ_PRIVATE bool run_once_impl (int timeout_ms_, poller_step_t *step_);
 
     //  Main epoll file descriptor
     epoll_fd_t _epoll_fd;
@@ -75,6 +81,8 @@ class epoll_t ZMQ_FINAL : public worker_poller_base_t
     //  List of retired event sources.
     typedef std::vector<poll_entry_t *> retired_t;
     retired_t _retired;
+    bool _manual_ready;
+    epoll_event _manual_event;
 
     ZMQ_NON_COPYABLE_NOR_MOVABLE (epoll_t)
 };

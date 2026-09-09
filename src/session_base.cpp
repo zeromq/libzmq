@@ -9,6 +9,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 #include "tcp_connecter.hpp"
+#include "tcp_address.hpp"
 #include "ws_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
@@ -600,6 +601,13 @@ void zmq::session_base_t::start_connecting (bool wait_)
               address_t (protocol_name::tcp, options.socks_proxy_address,
                          this->get_ctx ());
             alloc_assert (proxy_address);
+#ifdef ZMQ_BUILD_DRAFT_API
+            if (_addr->manual_proxy_addr) {
+                proxy_address->resolved.tcp_addr =
+                  new (std::nothrow) tcp_address_t (*_addr->manual_proxy_addr);
+                alloc_assert (proxy_address->resolved.tcp_addr);
+            }
+#endif
             connecter = new (std::nothrow) socks_connecter_t (
               io_thread, this, options, _addr, proxy_address, wait_);
             alloc_assert (connecter);

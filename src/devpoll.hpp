@@ -42,6 +42,7 @@ class devpoll_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_);
 
     //  File descriptor referring to "/dev/poll" pseudo-device.
     fd_t devpoll_fd;

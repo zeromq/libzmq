@@ -3,6 +3,14 @@
 /*  0MQ Internal Use                                                          */
 /******************************************************************************/
 
+#if !defined ZMQ_PRIVATE
+#if defined __GNUC__ && __GNUC__ >= 4 && !defined _WIN32
+#define ZMQ_PRIVATE __attribute__ ((visibility ("hidden")))
+#else
+#define ZMQ_PRIVATE
+#endif
+#endif
+
 #define LIBZMQ_UNUSED(object) (void) object
 #define LIBZMQ_DELETE(p_object)                                                \
     {                                                                          \

@@ -177,45 +177,51 @@ int zmq::pollset_t::max_fds ()
 
 void zmq::pollset_t::loop ()
 {
+    while (!stopping && run_once (-1)) {
+    }
+}
+
+bool zmq::pollset_t::run_once (int timeout_ms_)
+{
     struct pollfd polldata_array[max_io_events];
 
-    while (!stopping) {
-        //  Execute any due timers.
-        int timeout = (int) execute_timers ();
+    //  Execute any due timers.
+    int timeout = (int) execute_timers ();
+    const int wait = timeout_ms_ < 0 ? (timeout ? timeout : -1)
+                     : timeout       ? std::min (timeout, timeout_ms_)
+                                     : timeout_ms_;
 
-        //  Wait for events.
-        int n = pollset_poll (pollset_fd, polldata_array, max_io_events,
-                              timeout ? timeout : -1);
-        if (n == -1) {
-            errno_assert (errno == EINTR);
-            continue;
-        }
-
-        for (int i = 0; i < n; i++) {
-            poll_entry_t *pe = fd_table[polldata_array[i].fd];
-            if (!pe)
-                continue;
-
-            if (pe->fd == retired_fd)
-                continue;
-            if (polldata_array[i].revents & (POLLERR | POLLHUP))
-                pe->events->in_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (polldata_array[i].revents & POLLOUT)
-                pe->events->out_event ();
-            if (pe->fd == retired_fd)
-                continue;
-            if (polldata_array[i].revents & POLLIN)
-                pe->events->in_event ();
-        }
-
-        //  Destroy retired event sources.
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
-             ++it)
-            LIBZMQ_DELETE (*it);
-        retired.clear ();
+    //  Wait for events.
+    int n = pollset_poll (pollset_fd, polldata_array, max_io_events, wait);
+    if (n == -1) {
+        errno_assert (errno == EINTR);
+        return true;
     }
+
+    for (int i = 0; i < n; i++) {
+        poll_entry_t *pe = fd_table[polldata_array[i].fd];
+        if (!pe)
+            continue;
+
+        if (pe->fd == retired_fd)
+            continue;
+        if (polldata_array[i].revents & (POLLERR | POLLHUP))
+            pe->events->in_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (polldata_array[i].revents & POLLOUT)
+            pe->events->out_event ();
+        if (pe->fd == retired_fd)
+            continue;
+        if (polldata_array[i].revents & POLLIN)
+            pe->events->in_event ();
+    }
+
+    //  Destroy retired event sources.
+    for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it)
+        LIBZMQ_DELETE (*it);
+    retired.clear ();
+    return true;
 }
 
 void zmq::pollset_t::worker_routine (void *arg_)

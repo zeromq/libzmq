@@ -251,20 +251,33 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (_s == retired_fd);
 
     //  Resolve the address
-    if (_proxy_addr->resolved.tcp_addr != NULL) {
-        LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
-    }
+#ifdef ZMQ_BUILD_DRAFT_API
+    const bool manual = _proxy_addr->parent->is_manual_io ();
+    if (manual) {
+        zmq_assert (_proxy_addr->resolved.tcp_addr);
+        _s = tcp_open_socket (options, _proxy_addr->resolved.tcp_addr);
+    } else {
+#endif
+        if (_proxy_addr->resolved.tcp_addr != NULL) {
+            LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
+        }
 
-    _proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-    alloc_assert (_proxy_addr->resolved.tcp_addr);
-    //  Automatic fallback to ipv4 is disabled here since this was the existing
-    //  behaviour, however I don't see a real reason for this. Maybe this can
-    //  be changed to true (and then the parameter can be removed entirely).
-    _s = tcp_open_socket (_proxy_addr->address.c_str (), options, false, false,
-                          _proxy_addr->resolved.tcp_addr);
+        _proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+        alloc_assert (_proxy_addr->resolved.tcp_addr);
+        //  Automatic fallback to ipv4 is disabled here since this was the existing
+        //  behaviour, however I don't see a real reason for this. Maybe this can
+        //  be changed to true (and then the parameter can be removed entirely).
+        _s = tcp_open_socket (_proxy_addr->address.c_str (), options, false,
+                              false, _proxy_addr->resolved.tcp_addr);
+#ifdef ZMQ_BUILD_DRAFT_API
+    }
+#endif
     if (_s == retired_fd) {
         //  TODO we should emit some event in this case!
-        LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
+#ifdef ZMQ_BUILD_DRAFT_API
+        if (!manual)
+#endif
+            LIBZMQ_DELETE (_proxy_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (_proxy_addr->resolved.tcp_addr != NULL);

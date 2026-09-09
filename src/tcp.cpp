@@ -329,38 +329,14 @@ void zmq::tune_tcp_busy_poll (fd_t socket_, int busy_poll_)
 #endif
 }
 
-zmq::fd_t zmq::tcp_open_socket (const char *address_,
-                                const zmq::options_t &options_,
-                                bool local_,
-                                bool fallback_to_ipv4_,
-                                zmq::tcp_address_t *out_tcp_addr_)
+static zmq::fd_t configure_tcp_socket (zmq::fd_t s,
+                                       const zmq::options_t &options_,
+                                       const zmq::tcp_address_t *tcp_addr_)
 {
-    //  Convert the textual address into address structure.
-    int rc = out_tcp_addr_->resolve (address_, local_, options_.ipv6);
-    if (rc != 0)
-        return retired_fd;
-
-    //  Create the socket.
-    fd_t s = open_socket (out_tcp_addr_->family (), SOCK_STREAM, IPPROTO_TCP);
-
-    //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (s == retired_fd && fallback_to_ipv4_
-        && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
-        && options_.ipv6) {
-        rc = out_tcp_addr_->resolve (address_, local_, false);
-        if (rc != 0) {
-            return retired_fd;
-        }
-        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    }
-
-    if (s == retired_fd) {
-        return retired_fd;
-    }
-
+    using namespace zmq;
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
-    if (out_tcp_addr_->family () == AF_INET6)
+    if (tcp_addr_->family () == AF_INET6)
         enable_ipv4_mapping (s);
 
     // Set the IP Type-Of-Service priority for this socket
@@ -393,11 +369,52 @@ zmq::fd_t zmq::tcp_open_socket (const char *address_,
 
 setsockopt_error:
 #ifdef ZMQ_HAVE_WINDOWS
-    rc = closesocket (s);
+    int rc = closesocket (s);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    rc = ::close (s);
+    int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
     return retired_fd;
 }
+
+zmq::fd_t zmq::tcp_open_socket (const char *address_,
+                                const zmq::options_t &options_,
+                                bool local_,
+                                bool fallback_to_ipv4_,
+                                zmq::tcp_address_t *out_tcp_addr_)
+{
+    //  Convert the textual address into address structure.
+    int rc = out_tcp_addr_->resolve (address_, local_, options_.ipv6);
+    if (rc != 0)
+        return retired_fd;
+
+    //  Create the socket.
+    fd_t s = open_socket (out_tcp_addr_->family (), SOCK_STREAM, IPPROTO_TCP);
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (s == retired_fd && fallback_to_ipv4_
+        && out_tcp_addr_->family () == AF_INET6 && errno == EAFNOSUPPORT
+        && options_.ipv6) {
+        rc = out_tcp_addr_->resolve (address_, local_, false);
+        if (rc != 0) {
+            return retired_fd;
+        }
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+
+    if (s == retired_fd) {
+        return retired_fd;
+    }
+
+    return configure_tcp_socket (s, options_, out_tcp_addr_);
+}
+
+#ifdef ZMQ_BUILD_DRAFT_API
+zmq::fd_t zmq::tcp_open_socket (const zmq::options_t &options_,
+                                const zmq::tcp_address_t *tcp_addr_)
+{
+    const fd_t s = open_socket (tcp_addr_->family (), SOCK_STREAM, IPPROTO_TCP);
+    return s == retired_fd ? s : configure_tcp_socket (s, options_, tcp_addr_);
+}
+#endif

@@ -161,6 +161,7 @@ if(ENABLE_DRAFTS)
     APPEND
     tests
     test_poller
+    test_manual_io
     test_thread_safe
     test_client_server
     test_timers

@@ -31,12 +31,30 @@ zmq::fd_t zmq::mailbox_t::get_fd () const
 
 void zmq::mailbox_t::send (const command_t &cmd_)
 {
+    send_impl<false> (cmd_);
+}
+
+#ifdef ZMQ_BUILD_DRAFT_API
+void zmq::manual_mailbox_channel_t::send (const command_t &cmd_)
+{
+    send_impl<true> (cmd_);
+}
+#endif
+
+template <bool Manual> void zmq::mailbox_t::send_impl (const command_t &cmd_)
+{
     _sync.lock ();
     _cpipe.write (cmd_, false);
     const bool ok = _cpipe.flush ();
     _sync.unlock ();
-    if (!ok)
-        _signaler.send ();
+    if (!ok) {
+#ifdef ZMQ_BUILD_DRAFT_API
+        if (Manual)
+            _signaler.send_manual ();
+        else
+#endif
+            _signaler.send ();
+    }
 }
 
 int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)

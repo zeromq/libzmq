@@ -52,6 +52,12 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
   private:
     //  Main event loop.
     void loop () ZMQ_FINAL;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_);
+    friend class manual_io_t;
+    ZMQ_PRIVATE bool run_once (int timeout_ms_, poller_step_t *step_);
+    ZMQ_PRIVATE bool has_pending_events () const { return false; }
+    template <bool Manual>
+    ZMQ_PRIVATE bool run_once_impl (int timeout_ms_, poller_step_t *step_);
 
     //  Internal state.
     struct fds_set_t
@@ -74,9 +80,12 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
     };
     typedef std::vector<fd_entry_t> fd_entries_t;
 
-    void trigger_events (const fd_entries_t &fd_entries_,
-                         const fds_set_t &local_fds_set_,
-                         int event_count_);
+    template <bool Manual>
+    ZMQ_PRIVATE void trigger_events (const fd_entries_t &fd_entries_,
+                                     const fds_set_t &local_fds_set_,
+                                     int event_count_,
+                                     size_t *cursor_,
+                                     poller_step_t *step_);
 
     struct family_entry_t
     {
@@ -85,12 +94,15 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
         fd_entries_t fd_entries;
         fds_set_t fds_set;
         bool has_retired;
+        size_t manual_cursor;
     };
 
-    void select_family_entry (family_entry_t &family_entry_,
-                              int max_fd_,
-                              bool use_timeout_,
-                              struct timeval &tv_);
+    template <bool Manual>
+    ZMQ_PRIVATE void select_family_entry (family_entry_t &family_entry_,
+                                          int max_fd_,
+                                          bool use_timeout_,
+                                          struct timeval &tv_,
+                                          poller_step_t *step_);
 
 #if defined ZMQ_HAVE_WINDOWS
     typedef std::map<u_short, family_entry_t> family_entries_t;
@@ -105,6 +117,7 @@ class select_t ZMQ_FINAL : public worker_poller_base_t
     };
 
     family_entries_t _family_entries;
+    u_short _manual_family;
     // See loop for details.
     family_entries_t::iterator _current_family_entry_it;
 

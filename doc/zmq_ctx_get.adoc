@@ -23,6 +23,12 @@ The 'ZMQ_IO_THREADS' argument returns the size of the 0MQ thread pool
 for this context.
 
 
+ZMQ_MANUAL_IO_THREADS: Get manual-I/O mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This draft option returns 1 for an application-stepped context and 0 for an
+ordinary threaded context. See xref:zmq_ctx_step.adoc[zmq_ctx_step].
+
+
 ZMQ_MAX_SOCKETS: Get maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument returns the maximum number of sockets
