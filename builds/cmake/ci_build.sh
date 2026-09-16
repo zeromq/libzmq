@@ -53,6 +53,10 @@ if [ "$GSSAPI" == "enabled" ]; then
     CMAKE_OPTS+=("-DWITH_GSSAPI_KRB5=ON")
 fi
 
+if [ "$ZMTP_FALLBACK" == "disabled" ]; then
+    CMAKE_OPTS+=("-DENABLE_ZMTP_FALLBACK=OFF")
+fi
+
 CMAKE_PREFIXES=()
 MAKE_PREFIXES=()
 PARALLEL_MAKE_OPT="-j5"

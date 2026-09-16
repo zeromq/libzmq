@@ -648,6 +648,26 @@ AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
 AM_CONDITIONAL(USE_WEPOLL, test "$poller" = "wepoll")
 
+dnl ZMTP fallback: by default, a ZMTP engine that receives a greeting not
+dnl matching a valid ZMTP 3.x signature falls back to unversioned/ZMTP 1.0
+dnl or ZMTP 2.0 framing (see src/zmtp_engine.cpp receive_greeting()). That
+dnl legacy framing has no mechanism negotiation, so any TCP peer that is
+dnl not a ZMTP client at all (e.g. a port scanner) can have arbitrary
+dnl bytes it sends decoded and surfaced as an application message rather
+dnl than the connection simply being rejected. Disabling this option
+dnl removes that fallback entirely, for every socket, regardless of
+dnl ZAP/security mechanism configuration: peers must speak ZMTP 3.x or
+dnl are rejected.
+AC_ARG_ENABLE([zmtp-fallback],
+    [AS_HELP_STRING([--disable-zmtp-fallback], [disable negotiating down to legacy unversioned/ZMTP 1.0/ZMTP 2.0 framing [default=no]])])
+
+if test "x$enable_zmtp_fallback" = "xno"; then
+    AC_DEFINE(ZMQ_HAVE_ZMTP_FALLBACK_DISABLED, [1], [Disable fallback to legacy ZMTP 1.0/2.0 framing])
+    AC_MSG_NOTICE([ZMTP fallback to legacy 1.0/2.0 framing is disabled])
+fi
+
+AM_CONDITIONAL(ZMTP_FALLBACK_DISABLED, test "x$enable_zmtp_fallback" = "xno")
+
 # Check requiring packages for WebSocket
 ws_crypto_library=""
 

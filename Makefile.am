@@ -673,6 +673,15 @@ tests_test_security_null_SOURCES = tests/test_security_null.cpp
 tests_test_security_null_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_null_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
+if ZMTP_FALLBACK_DISABLED
+test_apps += \
+	tests/test_zmtp_fallback_disabled
+
+tests_test_zmtp_fallback_disabled_SOURCES = tests/test_zmtp_fallback_disabled.cpp
+tests_test_zmtp_fallback_disabled_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_zmtp_fallback_disabled_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+endif
+
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_security_plain_CPPFLAGS = ${TESTUTIL_CPPFLAGS}

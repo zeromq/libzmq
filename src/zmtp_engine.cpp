@@ -225,11 +225,18 @@ zmq::zmtp_engine_t::handshake_fun_t zmq::zmtp_engine_t::select_handshake_fun (
 bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 {
     //  We send and receive rest of routing id message
+#ifdef ZMQ_HAVE_ZMTP_FALLBACK_DISABLED
+    // ZMTP fallback disabled at build time: refuse to negotiate down to
+    // unversioned ZMTP 1.0 regardless of ZAP configuration.
+    error (protocol_error);
+    return false;
+#else
     if (session ()->zap_enabled ()) {
         // reject ZMTP 1.0 connections if ZAP is enabled
         error (protocol_error);
         return false;
     }
+#endif
 
     _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
@@ -281,11 +288,18 @@ bool zmq::zmtp_engine_t::handshake_v1_0_unversioned ()
 
 bool zmq::zmtp_engine_t::handshake_v1_0 ()
 {
+#ifdef ZMQ_HAVE_ZMTP_FALLBACK_DISABLED
+    // ZMTP fallback disabled at build time: refuse to negotiate down to
+    // ZMTP 1.0 regardless of ZAP configuration.
+    error (protocol_error);
+    return false;
+#else
     if (session ()->zap_enabled ()) {
         // reject ZMTP 1.0 connections if ZAP is enabled
         error (protocol_error);
         return false;
     }
+#endif
 
     _encoder = new (std::nothrow) v1_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);
@@ -299,11 +313,18 @@ bool zmq::zmtp_engine_t::handshake_v1_0 ()
 
 bool zmq::zmtp_engine_t::handshake_v2_0 ()
 {
+#ifdef ZMQ_HAVE_ZMTP_FALLBACK_DISABLED
+    // ZMTP fallback disabled at build time: refuse to negotiate down to
+    // ZMTP 2.0 regardless of ZAP configuration.
+    error (protocol_error);
+    return false;
+#else
     if (session ()->zap_enabled ()) {
         // reject ZMTP 2.0 connections if ZAP is enabled
         error (protocol_error);
         return false;
     }
+#endif
 
     _encoder = new (std::nothrow) v2_encoder_t (_options.out_batch_size);
     alloc_assert (_encoder);

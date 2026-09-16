@@ -78,6 +78,7 @@
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_LIBSODIUM
 #cmakedefine SODIUM_STATIC
+#cmakedefine ZMQ_HAVE_ZMTP_FALLBACK_DISABLED
 #cmakedefine HAVE_LIBGSSAPI_KRB5
 #cmakedefine ZMQ_USE_GNUTLS
 #cmakedefine ZMQ_USE_RADIX_TREE

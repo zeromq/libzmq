@@ -296,6 +296,21 @@ else() # ENABLE_CURVE
   message(STATUS "CURVE security is disabled")
 endif()
 
+# ZMTP fallback: by default, a ZMTP engine that receives a greeting not
+# matching a valid ZMTP 3.x signature falls back to unversioned/ZMTP 1.0
+# or ZMTP 2.0 framing (see src/zmtp_engine.cpp receive_greeting()). That
+# legacy framing has no mechanism negotiation, so any TCP peer that is not
+# a ZMTP client at all (e.g. a port scanner) can have arbitrary bytes it
+# sends decoded and surfaced as an application message rather than the
+# connection simply being rejected. Disabling this option removes that
+# fallback entirely, for every socket, regardless of ZAP/security
+# mechanism configuration: peers must speak ZMTP 3.x or are rejected.
+option(ENABLE_ZMTP_FALLBACK "Allow negotiating down to legacy unversioned/ZMTP 1.0/ZMTP 2.0 framing" ON)
+if(NOT ENABLE_ZMTP_FALLBACK)
+  set(ZMQ_HAVE_ZMTP_FALLBACK_DISABLED 1)
+  message(STATUS "ZMTP fallback to legacy 1.0/2.0 framing is disabled")
+endif()
+
 option(WITH_GSSAPI_KRB5 "Use libgssapi_krb5" OFF)
 if(WITH_GSSAPI_KRB5)
   find_package("gssapi_krb5" REQUIRED)

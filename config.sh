@@ -37,6 +37,10 @@ function set_config_opts() {
         CONFIG_OPTS+=("--with-libgssapi_krb5=yes")
     fi
 
+    if [ -n "$ZMTP_FALLBACK" ] && [ "$ZMTP_FALLBACK" = "disabled" ]; then
+        CONFIG_OPTS+=("--disable-zmtp-fallback")
+    fi
+
     if [ -n "$PGM" ] && [ "$PGM" = "enabled" ]; then
         CONFIG_OPTS+=("--with-pgm=yes")
     fi

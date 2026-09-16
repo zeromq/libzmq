@@ -92,6 +92,10 @@ if(ZMQ_HAVE_CURVE)
   endif()
 endif()
 
+if(ZMQ_HAVE_ZMTP_FALLBACK_DISABLED)
+  list(APPEND tests test_zmtp_fallback_disabled)
+endif()
+
 option(ENABLE_CAPSH "Run tests that require sudo and capsh (for cap_net_admin)" OFF)
 
 if(ENABLE_CAPSH)
