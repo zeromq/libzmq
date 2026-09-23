@@ -22,6 +22,7 @@ set(tests
   test_immediate
   test_last_endpoint
   test_term_endpoint
+  test_disconnect_protocol_error
   test_router_mandatory
   test_probe_router
   test_stream
