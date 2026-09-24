@@ -1593,10 +1593,34 @@ void zmq::socket_base_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
-void zmq::socket_base_t::process_term_endpoint (std::string *endpoint_)
+void zmq::socket_base_t::process_term_endpoint (own_t *object_)
 {
-    term_endpoint (endpoint_->c_str ());
-    delete endpoint_;
+    //  Locate the connection endpoint by owner identity. _endpoints is keyed
+    //  on the original string the user passed to zmq_connect(), which the
+    //  sender (IO object) does not have, and other connections can have the
+    //  same URI. This also skips any unnecessary resolve_tcp_addr calls.
+    //
+    //  We don't directly terminate the socket-side pipe here, unlike
+    //  term_endpoint(). That would drive the session side into
+    //  waiting_for_delimiter while its _delay is still set. The delimiter gets
+    //  written, but with the engine already gone nothing drains the messages
+    //  queued ahead of it, so it is never read; and the session's own
+    //  process_term() then calls terminate(delay=true), which under infinite
+    //  linger cannot rescue a pipe from that state. The term ack never
+    //  arrives. term_child() alone lets the session tear its own pipe down in
+    //  the order pipe_t expects.
+    for (endpoints_t::iterator it = _endpoints.begin (),
+                               end = _endpoints.end ();
+         it != end; ++it) {
+        if (it->second.first == object_) {
+            _endpoints.erase (it);
+            term_child (object_);
+            return;
+        }
+    }
+
+    //  Already gone: an explicit zmq_disconnect() raced with this command and
+    //  has term_child()ed the object, so it is on its way down regardless.
 }
 
 void zmq::socket_base_t::process_pipe_stats_publish (

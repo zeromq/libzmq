@@ -468,7 +468,20 @@ void zmq::session_base_t::engine_error (bool handshaked_,
                     _pipe->terminate (false);
                 if (_zap_pipe)
                     _zap_pipe->terminate (false);
+            } else if (_active && _addr) {
+                //  Connecting side. A protocol error is fatal to this session,
+                //  so tell the socket_base to de-register our endpoint entry.
+                //  Same as process_conn_failed() and reconnect() when
+                //  reconnect_ivl is disabled. Otherwise there's a permanently
+                //  unusable leftover entry in socket_base::_endpoints and the
+                //  single-connect guard in connect_internal for some socket
+                //  types turns every later zmq_connect() to that URI into a
+                //  silent no-op. This applies at any point in the
+                //  connection's life, including handshake.
+                send_term_endpoint (_socket, this);
             } else {
+                //  Accepted side, or no address: there is no _endpoints entry
+                //  to remove.
                 terminate ();
             }
             break;
@@ -535,9 +548,7 @@ void zmq::session_base_t::timer_event (int id_)
 
 void zmq::session_base_t::process_conn_failed ()
 {
-    std::string *ep = new (std::string);
-    _addr->to_string (*ep);
-    send_term_endpoint (_socket, ep);
+    send_term_endpoint (_socket, this);
 }
 
 void zmq::session_base_t::reconnect ()
@@ -569,11 +580,8 @@ void zmq::session_base_t::reconnect ()
     //  Reconnect.
     if (options.reconnect_ivl > 0)
         start_connecting (true);
-    else {
-        std::string *ep = new (std::string);
-        _addr->to_string (*ep);
-        send_term_endpoint (_socket, ep);
-    }
+    else
+        send_term_endpoint (_socket, this);
 
     //  For subscriber sockets we hiccup the inbound pipe, which will cause
     //  the socket object to resend all the subscriptions.

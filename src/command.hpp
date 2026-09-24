@@ -142,9 +142,14 @@ struct command_t
 
         //  Sent by session_base (I/O thread) to socket (application thread)
         //  to ask to disconnect the endpoint.
+        //
+        //  The connection is identified by its owning object. The receiver
+        //  only ever compares the pointer, never dereferences it, and the
+        //  owner/term protocol keeps the object alive until the socket has
+        //  processed this command.
         struct
         {
-            std::string *endpoint;
+            zmq::own_t *object;
         } term_endpoint;
 
         //  Transfers the ownership of the closed socket

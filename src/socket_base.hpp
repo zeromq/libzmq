@@ -282,7 +282,7 @@ class socket_base_t : public own_t,
                                 uint64_t inbound_queue_count_,
                                 endpoint_uri_pair_t *endpoint_pair_) ZMQ_FINAL;
     void process_term (int linger_) ZMQ_FINAL;
-    void process_term_endpoint (std::string *endpoint_) ZMQ_FINAL;
+    void process_term_endpoint (zmq::own_t *object_) ZMQ_FINAL;
 
     void update_pipe_options (int option_);
 

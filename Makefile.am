@@ -458,6 +458,7 @@ test_apps = \
 	tests/test_immediate \
 	tests/test_last_endpoint \
 	tests/test_term_endpoint \
+	tests/test_disconnect_protocol_error \
 	tests/test_srcfd \
 	tests/test_monitor \
 	tests/test_router_mandatory \
@@ -604,6 +605,10 @@ tests_test_last_endpoint_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_term_endpoint_SOURCES = tests/test_term_endpoint.cpp
 tests_test_term_endpoint_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_term_endpoint_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_disconnect_protocol_error_SOURCES = tests/test_disconnect_protocol_error.cpp
+tests_test_disconnect_protocol_error_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_disconnect_protocol_error_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_srcfd_SOURCES = tests/test_srcfd.cpp
 tests_test_srcfd_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

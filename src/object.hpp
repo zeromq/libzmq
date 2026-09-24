@@ -86,7 +86,7 @@ class object_t
     void send_term_req (zmq::own_t *destination_, zmq::own_t *object_);
     void send_term (zmq::own_t *destination_, int linger_);
     void send_term_ack (zmq::own_t *destination_);
-    void send_term_endpoint (own_t *destination_, std::string *endpoint_);
+    void send_term_endpoint (own_t *destination_, zmq::own_t *object_);
     void send_reap (zmq::socket_base_t *socket_);
     void send_reaped ();
     void send_done ();
@@ -116,7 +116,7 @@ class object_t
     virtual void process_term_req (zmq::own_t *object_);
     virtual void process_term (int linger_);
     virtual void process_term_ack ();
-    virtual void process_term_endpoint (std::string *endpoint_);
+    virtual void process_term_endpoint (zmq::own_t *object_);
     virtual void process_reap (zmq::socket_base_t *socket_);
     virtual void process_reaped ();
     virtual void process_conn_failed ();
