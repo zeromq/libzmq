@@ -1189,7 +1189,15 @@ fuzzer_apps = tests/test_bind_null_fuzzer \
 	tests/test_connect_fuzzer \
 	tests/test_bind_stream_fuzzer \
 	tests/test_connect_stream_fuzzer \
-	tests/test_socket_options_fuzzer
+	tests/test_socket_options_fuzzer \
+	tests/test_v2_decoder_fuzzer
+
+tests_test_v2_decoder_fuzzer_DEPENDENCIES = src/libzmq.la
+tests_test_v2_decoder_fuzzer_SOURCES = tests/test_v2_decoder_fuzzer.cpp
+tests_test_v2_decoder_fuzzer_LDADD = ${FUZZING_ENGINE_LIB} \
+		$(top_builddir)/src/.libs/libzmq.a \
+		${src_libzmq_la_LIBADD}
+tests_test_v2_decoder_fuzzer_CXXFLAGS = -std=c++11
 
 tests_test_bind_null_fuzzer_DEPENDENCIES = src/libzmq.la
 tests_test_bind_null_fuzzer_SOURCES = tests/test_bind_null_fuzzer.cpp
