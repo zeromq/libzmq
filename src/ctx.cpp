@@ -502,19 +502,25 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 
 void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
 {
-    scoped_lock_t locker (_slot_sync);
+    bool stop_reaper = false;
+    {
+        scoped_lock_t locker (_slot_sync);
 
-    //  Free the associated thread slot.
-    const uint32_t tid = socket_->get_tid ();
-    _empty_slots.push_back (tid);
-    _slots[tid] = NULL;
+        //  Free the associated thread slot.
+        const uint32_t tid = socket_->get_tid ();
+        _empty_slots.push_back (tid);
+        _slots[tid] = NULL;
 
-    //  Remove the socket from the list of sockets.
-    _sockets.erase (socket_);
+        //  Remove the socket from the list of sockets.
+        _sockets.erase (socket_);
 
-    //  If zmq_ctx_term() was already called and there are no more socket
-    //  we can ask reaper thread to terminate.
-    if (_terminating && _sockets.empty ())
+        //  If zmq_ctx_term() was already called and there are no more socket
+        //  we can ask reaper thread to terminate.
+        if (_terminating && _sockets.empty ())
+            stop_reaper = true;
+    }
+
+    if (stop_reaper)
         _reaper->stop ();
 }
 
@@ -645,7 +651,9 @@ int zmq::thread_ctx_t::get (int option_,
 
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)
 {
-    _slots[tid_]->send (command_);
+    scoped_lock_t locker (_slot_sync);
+    if (likely (_slots[tid_]))
+        _slots[tid_]->send (command_);
 }
 
 zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
