@@ -895,6 +895,7 @@ test_apps += \
 	tests/test_ipc_wildcard \
 	tests/test_pair_ipc \
 	tests/test_rebind_ipc \
+	tests/test_ipc_buffer \
 	tests/test_reqrep_ipc \
 	tests/test_use_fd \
 	tests/test_zmq_poll_fd \
@@ -916,6 +917,10 @@ tests_test_pair_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_rebind_ipc_SOURCES = tests/test_rebind_ipc.cpp
 tests_test_rebind_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_rebind_ipc_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_ipc_buffer_SOURCES = tests/test_ipc_buffer.cpp
+tests_test_ipc_buffer_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_ipc_buffer_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_reqrep_ipc_SOURCES = tests/test_reqrep_ipc.cpp
 tests_test_reqrep_ipc_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

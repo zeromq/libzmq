@@ -31,6 +31,11 @@ void set_socket_priority (fd_t s_, int priority_);
 // Return 0 on success, -1 if the connection has been closed by the peer
 int set_nosigpipe (fd_t s_);
 
+//  Applies ZMQ_SNDBUF/ZMQ_RCVBUF (when >= 0) to a stream socket that is not
+//  TCP, e.g. an IPC (AF_UNIX) one. Best effort: the OS default stays in place
+//  if a platform does not support resizing the buffers of this socket type.
+void set_socket_buffers (fd_t s_, int sndbuf_, int rcvbuf_);
+
 // Binds the underlying socket to the given device, eg. VRF or interface
 int bind_to_device (fd_t s_, const std::string &bound_device_);
 

@@ -241,6 +241,18 @@ int zmq::set_nosigpipe (fd_t s_)
     return 0;
 }
 
+void zmq::set_socket_buffers (fd_t s_, int sndbuf_, int rcvbuf_)
+{
+    //  Unlike set_tcp_send_buffer() & co. this does not assert: AF_UNIX
+    //  sockets may not support SO_SNDBUF/SO_RCVBUF on every platform.
+    if (sndbuf_ >= 0)
+        setsockopt (s_, SOL_SOCKET, SO_SNDBUF,
+                    reinterpret_cast<char *> (&sndbuf_), sizeof sndbuf_);
+    if (rcvbuf_ >= 0)
+        setsockopt (s_, SOL_SOCKET, SO_RCVBUF,
+                    reinterpret_cast<char *> (&rcvbuf_), sizeof rcvbuf_);
+}
+
 int zmq::bind_to_device (fd_t s_, const std::string &bound_device_)
 {
 #ifdef ZMQ_HAVE_SO_BINDTODEVICE

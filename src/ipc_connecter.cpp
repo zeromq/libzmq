@@ -101,6 +101,9 @@ int zmq::ipc_connecter_t::open ()
     //  Set the non-blocking flag.
     unblock_socket (_s);
 
+    //  Set the socket buffer limits for the underlying transport.
+    set_socket_buffers (_s, options.sndbuf, options.rcvbuf);
+
     //  Connect to the remote peer.
     const int rc = ::connect (_s, _addr->resolved.ipc_addr->addr (),
                               _addr->resolved.ipc_addr->addrlen ());
