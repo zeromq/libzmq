@@ -323,6 +323,9 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
         return retired_fd;
     }
 
+    //  Set the socket buffer limits for the underlying transport.
+    set_socket_buffers (sock, options.sndbuf, options.rcvbuf);
+
     return sock;
 }
 

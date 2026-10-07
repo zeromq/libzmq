@@ -105,7 +105,8 @@ if(ENABLE_CAPSH)
 endif()
 
 if(ZMQ_HAVE_IPC)
-  list(APPEND tests test_ipc_wildcard test_pair_ipc test_reqrep_ipc test_rebind_ipc)
+  list(APPEND tests test_ipc_wildcard test_pair_ipc test_reqrep_ipc test_rebind_ipc
+       test_ipc_buffer)
 endif()
 
 if(NOT WIN32)
