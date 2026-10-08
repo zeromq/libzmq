@@ -652,7 +652,7 @@ int zmq::thread_ctx_t::get (int option_,
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)
 {
     scoped_lock_t locker (_slot_sync);
-    if (likely (_slots[tid_]))
+    if (likely (_slots[tid_] != NULL))
         _slots[tid_]->send (command_);
 }
 
