@@ -7,7 +7,7 @@ macro(zmq_check_sock_cloexec)
 #include <sys/types.h>
 #include <sys/socket.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s = socket(PF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
     return(s == -1);
@@ -22,7 +22,7 @@ macro(zmq_check_efd_cloexec)
     "
 #include <sys/eventfd.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s = eventfd (0, EFD_CLOEXEC);
     return(s == -1);
@@ -39,7 +39,7 @@ macro(zmq_check_o_cloexec)
 #include <sys/stat.h>
 #include <fcntl.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s = open (\"/dev/null\", O_CLOEXEC | O_RDONLY);
     return s == -1;
@@ -54,7 +54,7 @@ macro(zmq_check_so_bindtodevice)
 "
 #include <sys/socket.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
 /* Actually making the setsockopt() call requires CAP_NET_RAW */
 #ifndef SO_BINDTODEVICE
@@ -76,7 +76,7 @@ macro(zmq_check_so_keepalive)
 #include <sys/types.h>
 #include <sys/socket.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return(
@@ -97,7 +97,7 @@ macro(zmq_check_tcp_keepcnt)
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return(
@@ -119,7 +119,7 @@ macro(zmq_check_tcp_keepidle)
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return(
@@ -142,7 +142,7 @@ macro(zmq_check_tcp_keepintvl)
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return(
@@ -166,7 +166,7 @@ macro(zmq_check_tcp_keepalive)
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return(
@@ -191,7 +191,7 @@ macro(zmq_check_tcp_tipc)
 #include <sys/socket.h>
 #include <linux/tipc.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     struct sockaddr_tipc topsrv;
     int sd = socket(PF_TIPC, SOCK_SEQPACKET, 0);
@@ -216,7 +216,7 @@ macro(zmq_check_pthread_setname)
     "
 #include <pthread.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     pthread_setname_np (\"foo\");
     return 0;
@@ -227,7 +227,7 @@ int main(int argc, char *argv [])
     "
 #include <pthread.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     pthread_setname_np (pthread_self(), \"foo\");
     return 0;
@@ -238,7 +238,7 @@ int main(int argc, char *argv [])
     "
 #include <pthread.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     pthread_setname_np (pthread_self(), \"foo\", (void *)0);
     return 0;
@@ -249,7 +249,7 @@ int main(int argc, char *argv [])
     "
 #include <pthread.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
     pthread_set_name_np (pthread_self(), \"foo\");
     return 0;
@@ -266,10 +266,12 @@ macro(zmq_check_pthread_setaffinity)
   check_c_source_compiles(
     "
 #include <pthread.h>
+#include <sched.h>
 
-int main(int argc, char *argv [])
+int main (void)
 {
-    cpu_set_t test; 
+    cpu_set_t test;
+    CPU_ZERO (&test);
     pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test);
     return 0;
 }
@@ -285,7 +287,7 @@ macro(zmq_check_getrandom)
     "
 #include <sys/random.h>
 
-int main (int argc, char *argv [])
+int main (void)
 {
     char buf[4];
     int rc = getrandom(buf, 4, 0);
@@ -304,9 +306,10 @@ struct X
     X(int i) noexcept {}
 };
 
-int main(int argc, char *argv [])
+int main (void)
 {
     X x(5);
+    (void) x;
     return 0;
 }
 "
@@ -320,7 +323,7 @@ macro(zmq_check_so_priority)
 #include <sys/types.h>
 #include <sys/socket.h>
 
-int main (int argc, char *argv [])
+int main (void)
 {
     int s, rc, opt = 1;
     return (
