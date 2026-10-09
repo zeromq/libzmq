@@ -438,6 +438,16 @@ void zmq::udp_engine_t::out_event ()
                 return;
             }
 
+            if (body_size > MAX_UDP_MSG) {
+                rc = group_msg.close ();
+                errno_assert (rc == 0);
+
+                rc = body_msg.close ();
+                errno_assert (rc == 0);
+
+                return;
+            }
+
             size = body_size;
 
             memcpy (_out_buffer, body_msg.data (), body_size);
