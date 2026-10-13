@@ -454,6 +454,7 @@ test_apps = \
 	tests/test_invalid_rep \
 	tests/test_msg_flags \
 	tests/test_msg_ffn \
+	tests/test_multipart_disconnect \
 	tests/test_connect_resolve \
 	tests/test_immediate \
 	tests/test_last_endpoint \
@@ -588,6 +589,10 @@ tests_test_msg_flags_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
 tests_test_msg_ffn_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
 tests_test_msg_ffn_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
+
+tests_test_multipart_disconnect_SOURCES = tests/test_multipart_disconnect.cpp
+tests_test_multipart_disconnect_LDADD = ${TESTUTIL_LIBS} src/libzmq.la
+tests_test_multipart_disconnect_CPPFLAGS = ${TESTUTIL_CPPFLAGS}
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
 tests_test_connect_resolve_LDADD = ${TESTUTIL_LIBS} src/libzmq.la

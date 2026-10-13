@@ -314,6 +314,7 @@ void zmq::pipe_t::process_pipe_term ()
         if (_delay)
             _state = waiting_for_delimiter;
         else {
+            rollback ();
             _state = term_ack_sent;
             _out_pipe = NULL;
             send_pipe_term_ack (_peer);

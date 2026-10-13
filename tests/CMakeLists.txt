@@ -18,6 +18,7 @@ set(tests
   test_invalid_rep
   test_msg_flags
   test_msg_ffn
+  test_multipart_disconnect
   test_connect_resolve
   test_immediate
   test_last_endpoint
