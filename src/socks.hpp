@@ -143,7 +143,7 @@ class socks_response_decoder_t
     void reset ();
 
   private:
-    int8_t _buf[4 + UINT8_MAX + 1 + 2];
+    uint8_t _buf[4 + UINT8_MAX + 1 + 2];
     size_t _bytes_read;
 };
 }
