@@ -17,7 +17,10 @@ const size_t initiate_prefix_len = sizeof (initiate_prefix) - 1;
 const char ready_prefix[] = "\x05READY";
 const size_t ready_prefix_len = sizeof (ready_prefix) - 1;
 
-const char error_prefix[] = "\x05ERROR";
+//  The length octet must be separated from the command name: "\x05ERROR"
+//  would be read as "\x05E" "RROR", as 'E' is a hexadecimal digit.
+const char error_prefix[] = "\x05"
+                            "ERROR";
 const size_t error_prefix_len = sizeof (error_prefix) - 1;
 
 const size_t brief_len_size = sizeof (char);
