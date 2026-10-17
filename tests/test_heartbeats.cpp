@@ -317,6 +317,53 @@ void test_heartbeat_timeout_router_mock_ping ()
     test_heartbeat_timeout (ZMQ_ROUTER, 1);
 }
 
+// A PING command carries a mandatory 2-byte TTL. A PING frame too short to
+// contain it must be ignored, not answered with a PONG whose context is read
+// from past the end of the frame. Here a malformed short PING is sent followed
+// by a well-formed PING with a known context; only the latter must be PONGed,
+// and the PONG must contain exactly that context (not leaked memory).
+static void test_heartbeat_short_ping_router ()
+{
+    int rc;
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *server, *server_mon;
+    prep_server_socket (0, 0, &server, &server_mon, my_endpoint,
+                        MAX_SOCKET_STRING, ZMQ_ROUTER);
+
+    fd_t s = connect_socket (my_endpoint);
+
+    mock_handshake (s, 0);
+
+    rc = get_monitor_event (server_mon);
+    TEST_ASSERT_EQUAL_INT (ZMQ_EVENT_ACCEPTED, rc);
+
+    //  Malformed PING with no TTL, immediately followed by a valid PING whose
+    //  context is "ABCD". Sent in one write so ordering is deterministic.
+    const uint8_t frames[7 + 13] = {
+      //  command flag, size 5, then \4PING (missing the 2-byte TTL)
+      4, 5, 4, 'P', 'I', 'N', 'G',
+      //  command flag, size 11, \4PING, 2-byte TTL, context "ABCD"
+      4, 11, 4, 'P', 'I', 'N', 'G', 0, 0, 'A', 'B', 'C', 'D'};
+    char buffer[64];
+    memcpy (buffer, frames, sizeof (frames));
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      send (s, buffer, sizeof (frames), 0));
+    TEST_ASSERT_EQUAL_INT (sizeof (frames), rc);
+
+    //  Exactly one PONG must come back, for the valid PING: \4PONG + "ABCD".
+    const uint8_t expected_pong[11] = {4,   9,   4,   'P', 'O', 'N',
+                                       'G', 'A', 'B', 'C', 'D'};
+    recv_with_retry (s, buffer, sizeof (expected_pong));
+    TEST_ASSERT_EQUAL_INT (
+      0, memcmp (expected_pong, buffer, sizeof (expected_pong)));
+
+    close (s);
+
+    test_context_socket_close (server);
+    test_context_socket_close (server_mon);
+}
+
 #define DEFINE_TESTS(first, second, first_define, second_define)               \
     void test_heartbeat_ttl_##first##_##second ()                              \
     {                                                                          \
@@ -394,6 +441,7 @@ int main (void)
 
     RUN_TEST (test_heartbeat_timeout_router);
     RUN_TEST (test_heartbeat_timeout_router_mock_ping);
+    RUN_TEST (test_heartbeat_short_ping_router);
 
     RUN_TEST (test_heartbeat_ttl_dealer_router);
     RUN_TEST (test_heartbeat_ttl_req_rep);

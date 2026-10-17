@@ -489,6 +489,13 @@ int zmq::zmtp_engine_t::process_heartbeat_message (msg_t *msg_)
         const size_t ping_max_ctx_len = 16;
         uint16_t remote_heartbeat_ttl;
 
+        //  A valid PING carries the mandatory 2-byte TTL. A shorter frame is
+        //  malformed; without this check the TTL read below is out of bounds
+        //  and msg_->size () - ping_ttl_len underflows, so up to 16 bytes past
+        //  the end of the frame get copied into the PONG and sent to the peer.
+        if (msg_->size () < ping_ttl_len)
+            return 0;
+
         // Get the remote heartbeat TTL to setup the timer
         memcpy (&remote_heartbeat_ttl,
                 static_cast<uint8_t *> (msg_->data ())
