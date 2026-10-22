@@ -69,6 +69,41 @@ void test_roundtrip ()
     test_context_socket_close (listener);
 }
 
+void test_oversized_message_dropped ()
+{
+    char *message_string;
+    char *address;
+
+    void *sender = test_context_socket (ZMQ_DGRAM);
+    void *listener = test_context_socket (ZMQ_DGRAM);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (listener, ENDPOINT_4));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sender, ENDPOINT_5));
+
+    //  A body larger than the engine's send buffer must be dropped
+    const size_t oversized = 64 * 1024;
+    char *big = static_cast<char *> (malloc (oversized));
+    TEST_ASSERT_NOT_NULL (big);
+    memset (big, 'x', oversized);
+    send_string_expect_success (sender, strrchr (ENDPOINT_4, '/') + 1,
+                                ZMQ_SNDMORE);
+    TEST_ASSERT_EQUAL_INT ((int) oversized,
+                           zmq_send (sender, big, oversized, 0));
+    free (big);
+
+    //  The socket must still work afterwards
+    str_send_to (sender, test_question, strrchr (ENDPOINT_4, '/') + 1);
+
+    str_recv_from (listener, &message_string, &address);
+    TEST_ASSERT_EQUAL_STRING (test_question, message_string);
+    free (message_string);
+    free (address);
+
+    test_context_socket_close (sender);
+    test_context_socket_close (listener);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -76,5 +111,6 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_connect_fails);
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_oversized_message_dropped);
     return UNITY_END ();
 }

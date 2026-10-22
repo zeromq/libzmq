@@ -427,8 +427,9 @@ void zmq::udp_engine_t::out_event ()
             rc = resolve_raw_address (static_cast<char *> (group_msg.data ()),
                                       group_size);
 
-            //  We discard the message if address is not valid
-            if (rc != 0) {
+            //  We discard the message if address is not valid or if
+            //  the body does not fit in the send buffer
+            if (rc != 0 || body_size > MAX_UDP_MSG) {
                 rc = group_msg.close ();
                 errno_assert (rc == 0);
 
