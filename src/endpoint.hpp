@@ -26,7 +26,10 @@ struct endpoint_uri_pair_t
 
     const std::string &identifier () const
     {
-        return local_type == endpoint_type_bind ? local : remote;
+        //  A connect endpoint is identified by its remote peer.  Every other
+        //  endpoint, including connection-less ones such as UDP bind sockets,
+        //  is identified by its local address; its remote part is empty.
+        return local_type == endpoint_type_connect ? remote : local;
     }
 
     bool clash () const { return local == remote; }
