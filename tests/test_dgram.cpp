@@ -69,6 +69,20 @@ void test_roundtrip ()
     test_context_socket_close (listener);
 }
 
+void test_unbind_udp_endpoint ()
+{
+    //  A connection-less UDP socket must be able to unbind an endpoint it
+    //  bound earlier.  Regression test for issue #4728: bind endpoints of
+    //  DGRAM/DISH sockets are connection-less, so they were registered under
+    //  an empty identifier and zmq_unbind always failed with ENOENT.
+    void *listener = test_context_socket (ZMQ_DGRAM);
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (listener, ENDPOINT_4));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_unbind (listener, ENDPOINT_4));
+
+    test_context_socket_close (listener);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -76,5 +90,6 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_connect_fails);
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_unbind_udp_endpoint);
     return UNITY_END ();
 }
