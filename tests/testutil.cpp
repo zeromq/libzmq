@@ -339,16 +339,25 @@ int test_inet_pton (int af_, const char *src_, void *dst_)
     if (af_ == AF_INET) {
         struct in_addr *ip4addr = (struct in_addr *) dst_;
 
-        ip4addr->s_addr = inet_addr (src_);
+        struct addrinfo hints;
+        memset (&hints, 0, sizeof hints);
+        hints.ai_family = AF_INET;
+        hints.ai_flags = AI_NUMERICHOST;
 
-        //  INADDR_NONE is -1 which is also a valid representation for IP
-        //  255.255.255.255
-        if (ip4addr->s_addr == INADDR_NONE
-            && strcmp (src_, "255.255.255.255") != 0) {
+        struct addrinfo *result = NULL;
+        if (getaddrinfo (src_, NULL, &hints, &result) != 0 || result == NULL
+            || result->ai_addr == NULL || result->ai_family != AF_INET
+            || static_cast<size_t> (result->ai_addrlen)
+                 < sizeof (struct sockaddr_in)) {
+            if (result != NULL)
+                freeaddrinfo (result);
             return 0;
         }
 
-        //  Success
+        ip4addr->s_addr =
+          reinterpret_cast<struct sockaddr_in *> (result->ai_addr)
+            ->sin_addr.s_addr;
+        freeaddrinfo (result);
         return 1;
     } else {
         //  Not supported.

@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 #ifdef ZMQ_HAVE_VXWORKS
 #include <sockLib.h>
 #endif
@@ -334,10 +335,15 @@ void zmq::udp_engine_t::terminate ()
     delete this;
 }
 
-void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
+bool zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
                                          const sockaddr_in *addr_)
 {
-    const char *const name = inet_ntoa (addr_->sin_addr);
+    char name[NI_MAXHOST];
+    const int name_rc =
+      getnameinfo (reinterpret_cast<const sockaddr *> (addr_), sizeof (*addr_),
+                   name, sizeof name, NULL, 0, NI_NUMERICHOST);
+    if (name_rc != 0)
+        return false;
 
     char port[6];
     const int port_len =
@@ -360,6 +366,8 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg_,
     memcpy (address, port, static_cast<size_t> (port_len));
     address += port_len;
     *address = 0;
+
+    return true;
 }
 
 int zmq::udp_engine_t::resolve_raw_address (const char *name_, size_t length_)
@@ -388,6 +396,11 @@ int zmq::udp_engine_t::resolve_raw_address (const char *name_, size_t length_)
     const std::string addr_str (name_, delimiter - name_);
     const std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
 
+    if (addr_str.empty ()) {
+        errno = EINVAL;
+        return -1;
+    }
+
     //  Parse the port number (0 is not a valid port).
     const uint16_t port = static_cast<uint16_t> (atoi (port_str.c_str ()));
     if (port == 0) {
@@ -395,10 +408,33 @@ int zmq::udp_engine_t::resolve_raw_address (const char *name_, size_t length_)
         return -1;
     }
 
-    _raw_address.sin_family = AF_INET;
-    _raw_address.sin_port = htons (port);
-    _raw_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
+    struct addrinfo hints;
+    memset (&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+    hints.ai_flags = AI_NUMERICHOST;
 
+    struct addrinfo *result = NULL;
+    const int gai_rc = getaddrinfo (addr_str.c_str (), NULL, &hints, &result);
+    if (gai_rc != 0) {
+        errno = gai_rc == EAI_MEMORY ? ENOMEM : EINVAL;
+        return -1;
+    }
+
+    if (result == NULL || result->ai_addr == NULL
+        || result->ai_family != AF_INET
+        || static_cast<size_t> (result->ai_addrlen) < sizeof (_raw_address)) {
+        if (result != NULL)
+            freeaddrinfo (result);
+        errno = EINVAL;
+        return -1;
+    }
+
+    memcpy (&_raw_address, result->ai_addr, sizeof (_raw_address));
+    freeaddrinfo (result);
+
+    _raw_address.sin_port = htons (port);
     if (_raw_address.sin_addr.s_addr == INADDR_NONE) {
         errno = EINVAL;
         return -1;
@@ -542,7 +578,11 @@ void zmq::udp_engine_t::in_event ()
 
     if (_options.raw_socket) {
         zmq_assert (in_address.ss_family == AF_INET);
-        sockaddr_to_msg (&msg, reinterpret_cast<sockaddr_in *> (&in_address));
+        if (!sockaddr_to_msg (&msg,
+                              reinterpret_cast<sockaddr_in *> (&in_address))) {
+            error (connection_error);
+            return;
+        }
 
         body_size = nbytes;
         body_offset = 0;
