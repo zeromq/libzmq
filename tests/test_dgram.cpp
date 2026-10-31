@@ -26,10 +26,12 @@ static void assert_raw_datagram_received (void *s_,
     char received_address[64] = {0};
     char received_content[64] = {0};
 
-    TEST_ASSERT_EQUAL_INT (strlen (address_) + 1,
+    TEST_ASSERT_EQUAL_INT (
+      strlen (address_) + 1,
       zmq_recv (s_, received_address, sizeof received_address, 0));
     TEST_ASSERT_EQUAL_STRING (address_, received_address);
-    TEST_ASSERT_EQUAL_INT (strlen (content_),
+    TEST_ASSERT_EQUAL_INT (
+      strlen (content_),
       zmq_recv (s_, received_content, sizeof received_content, 0));
     TEST_ASSERT_EQUAL_STRING (content_, received_content);
 }
@@ -92,8 +94,8 @@ void test_roundtrip ()
 void test_invalid_raw_addresses_are_dropped ()
 {
     static const char *const invalid_addresses[] = {
-      "localhost:5559", "not-an-address:5559", "2001:db8::1:5559",
-      ":5559", "255.255.255.255:5559"};
+      "localhost:5559", "not-an-address:5559", "2001:db8::1:5559", ":5559",
+      "255.255.255.255:5559"};
 
     void *sender = test_context_socket (ZMQ_DGRAM);
     void *listener = test_context_socket (ZMQ_DGRAM);
@@ -122,8 +124,8 @@ void test_invalid_raw_addresses_are_dropped ()
 
 void test_legacy_numeric_addresses ()
 {
-    static const char *const legacy_addresses[] = {
-      "127.1", "0177.0.0.1", "0x7f000001"};
+    static const char *const legacy_addresses[] = {"127.1", "0177.0.0.1",
+                                                   "0x7f000001"};
     bool supported[sizeof (legacy_addresses) / sizeof (legacy_addresses[0])];
     size_t supported_count = 0;
     void *sender = test_context_socket (ZMQ_DGRAM);
@@ -144,7 +146,7 @@ void test_legacy_numeric_addresses ()
           && static_cast<size_t> (result->ai_addrlen)
                >= sizeof (struct sockaddr_in)
           && reinterpret_cast<struct sockaddr_in *> (result->ai_addr)
-               ->sin_addr.s_addr
+                 ->sin_addr.s_addr
                == htonl (INADDR_LOOPBACK);
         if (result != NULL)
             freeaddrinfo (result);

@@ -345,9 +345,8 @@ int test_inet_pton (int af_, const char *src_, void *dst_)
         hints.ai_flags = AI_NUMERICHOST;
 
         struct addrinfo *result = NULL;
-        if (getaddrinfo (src_, NULL, &hints, &result) != 0
-            || result == NULL || result->ai_addr == NULL
-            || result->ai_family != AF_INET
+        if (getaddrinfo (src_, NULL, &hints, &result) != 0 || result == NULL
+            || result->ai_addr == NULL || result->ai_family != AF_INET
             || static_cast<size_t> (result->ai_addrlen)
                  < sizeof (struct sockaddr_in)) {
             if (result != NULL)
