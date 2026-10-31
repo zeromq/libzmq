@@ -49,7 +49,7 @@ class udp_engine_t ZMQ_FINAL : public io_object_t, public i_engine
 
   private:
     int resolve_raw_address (const char *name_, size_t length_);
-    static void sockaddr_to_msg (zmq::msg_t *msg_, const sockaddr_in *addr_);
+    static bool sockaddr_to_msg (zmq::msg_t *msg_, const sockaddr_in *addr_);
 
     static int set_udp_reuse_address (fd_t s_, bool on_);
     static int set_udp_reuse_port (fd_t s_, bool on_);
