@@ -69,6 +69,51 @@ void test_roundtrip ()
     test_context_socket_close (listener);
 }
 
+void test_multicast_hops ()
+{
+    char *message_string;
+    char *address;
+
+    void *sender = test_context_socket (ZMQ_DGRAM);
+    void *listener = test_context_socket (ZMQ_DGRAM);
+
+    int hops = 4;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sender, ZMQ_MULTICAST_HOPS, &hops, sizeof (hops)));
+
+    int get_hops = 0;
+    size_t get_hops_size = sizeof (get_hops);
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_getsockopt (sender, ZMQ_MULTICAST_HOPS, &get_hops, &get_hops_size));
+    TEST_ASSERT_EQUAL_INT (hops, get_hops);
+
+    int loop = 1;
+    TEST_ASSERT_SUCCESS_ERRNO (
+      zmq_setsockopt (sender, ZMQ_MULTICAST_LOOP, &loop, sizeof (loop)));
+
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (listener, ENDPOINT_4));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_bind (sender, ENDPOINT_5));
+
+    str_send_to (sender, test_question, strrchr (ENDPOINT_4, '/') + 1);
+
+    str_recv_from (listener, &message_string, &address);
+    TEST_ASSERT_EQUAL_STRING (test_question, message_string);
+    TEST_ASSERT_EQUAL_STRING (strrchr (ENDPOINT_5, '/') + 1, address);
+    free (message_string);
+
+    str_send_to (listener, test_answer, address);
+    free (address);
+
+    str_recv_from (sender, &message_string, &address);
+    TEST_ASSERT_EQUAL_STRING (test_answer, message_string);
+    TEST_ASSERT_EQUAL_STRING (strrchr (ENDPOINT_4, '/') + 1, address);
+    free (message_string);
+    free (address);
+
+    test_context_socket_close (sender);
+    test_context_socket_close (listener);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -76,5 +121,6 @@ int main (void)
     UNITY_BEGIN ();
     RUN_TEST (test_connect_fails);
     RUN_TEST (test_roundtrip);
+    RUN_TEST (test_multicast_hops);
     return UNITY_END ();
 }
