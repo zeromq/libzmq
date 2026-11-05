@@ -122,10 +122,22 @@ void zmq::udp_engine_t::plug (io_thread_t *io_thread_, session_base_t *session_)
                 rc = rc | set_udp_multicast_iface (_fd, is_ipv6, udp_addr);
             }
         } else {
-            /// XXX fixme ?
             _out_address = reinterpret_cast<sockaddr *> (&_raw_address);
             _out_address_len =
               static_cast<zmq_socklen_t> (sizeof (sockaddr_in));
+
+            const bool is_ipv6 = (udp_addr->family () == AF_INET6);
+            rc =
+              rc
+              | set_udp_multicast_loop (_fd, is_ipv6, _options.multicast_loop);
+
+            if (_options.multicast_hops > 0) {
+                rc = rc
+                     | set_udp_multicast_ttl (_fd, is_ipv6,
+                                              _options.multicast_hops);
+            }
+
+            rc = rc | set_udp_multicast_iface (_fd, is_ipv6, udp_addr);
         }
     }
 
@@ -218,16 +230,22 @@ int zmq::udp_engine_t::set_udp_multicast_loop (fd_t s_,
 int zmq::udp_engine_t::set_udp_multicast_ttl (fd_t s_, bool is_ipv6_, int hops_)
 {
     int level;
+    int optname;
 
     if (is_ipv6_) {
         level = IPPROTO_IPV6;
+#ifdef IPV6_MULTICAST_HOPS
+        optname = IPV6_MULTICAST_HOPS;
+#else
+        optname = IP_MULTICAST_TTL;
+#endif
     } else {
         level = IPPROTO_IP;
+        optname = IP_MULTICAST_TTL;
     }
 
-    const int rc =
-      setsockopt (s_, level, IP_MULTICAST_TTL,
-                  reinterpret_cast<char *> (&hops_), sizeof (hops_));
+    const int rc = setsockopt (
+      s_, level, optname, reinterpret_cast<char *> (&hops_), sizeof (hops_));
     assert_success_or_recoverable (s_, rc);
     return rc;
 }
