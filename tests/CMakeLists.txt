@@ -106,6 +106,9 @@ endif()
 
 if(ZMQ_HAVE_IPC)
   list(APPEND tests test_ipc_wildcard test_pair_ipc test_reqrep_ipc test_rebind_ipc)
+  if(WIN32)
+    list(APPEND tests test_windows_ipc_fallback)
+  endif()
 endif()
 
 if(NOT WIN32)
