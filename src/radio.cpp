@@ -211,9 +211,14 @@ int zmq::radio_session_t::push_msg (msg_t *msg_)
 
         errno_assert (rc == 0);
 
-        //  Set the group
+        //  Set the group, rejecting a peer that sends one that is too long
         rc = join_leave_msg.set_group (group, group_length);
-        errno_assert (rc == 0);
+        if (rc != 0) {
+            rc = join_leave_msg.close ();
+            errno_assert (rc == 0);
+            errno = EPROTO;
+            return -1;
+        }
 
         //  Close the current command
         rc = msg_->close ();
