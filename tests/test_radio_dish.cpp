@@ -127,6 +127,69 @@ void test_join_twice_fails ()
     test_context_socket_close (dish);
 }
 
+static void recv_all (fd_t fd_, char *buffer_, int bytes_)
+{
+    int received = 0;
+    while (received < bytes_) {
+        const int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+          recv (fd_, buffer_ + received, bytes_ - received, 0));
+        TEST_ASSERT_GREATER_THAN_INT (0, rc);
+        received += rc;
+    }
+}
+
+void test_peer_join_too_long_group ()
+{
+    char my_endpoint[MAX_SOCKET_STRING];
+
+    void *radio = test_context_socket (ZMQ_RADIO);
+    bind_loopback_ipv4 (radio, my_endpoint, sizeof my_endpoint);
+
+    //  Mock a ZMTP 3.1 DISH peer
+    fd_t s = connect_socket (my_endpoint);
+
+    char greeting[sizeof (zmtp_greeting_null)];
+    int rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      send (s, (const char *) zmtp_greeting_null, sizeof greeting, 0));
+    TEST_ASSERT_EQUAL_INT (sizeof greeting, rc);
+    recv_all (s, greeting, sizeof greeting);
+
+    const uint8_t ready_dish[28] = {
+      4,   26,  5,   'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e',
+      't', '-', 'T', 'y', 'p', 'e', 0,   0,   0,  4,   'D', 'I', 'S', 'H'};
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (
+      send (s, (const char *) ready_dish, sizeof ready_dish, 0));
+    TEST_ASSERT_EQUAL_INT (sizeof ready_dish, rc);
+
+    //  JOIN command whose group exceeds ZMQ_GROUP_MAX_LENGTH
+    const size_t group_len = ZMQ_GROUP_MAX_LENGTH + 1;
+    const size_t body_len = 5 + group_len;
+    char join[9 + 5 + group_len];
+    join[0] = 0x06; //  command, long size
+    for (int i = 0; i < 8; i++)
+        join[1 + i] = static_cast<char> ((body_len >> (8 * (7 - i))) & 0xff);
+    memcpy (join + 9, "\4JOIN", 5);
+    memset (join + 14, 'A', group_len);
+    rc = TEST_ASSERT_SUCCESS_RAW_ERRNO (send (s, join, sizeof join, 0));
+    TEST_ASSERT_EQUAL_INT (sizeof join, rc);
+
+    msleep (SETTLE_TIME);
+    close (s);
+
+    //  The radio must survive and keep serving well-behaved dishes
+    void *dish = test_context_socket (ZMQ_DISH);
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_join (dish, "Movies"));
+    TEST_ASSERT_SUCCESS_ERRNO (zmq_connect (dish, my_endpoint));
+
+    msleep (SETTLE_TIME);
+
+    msg_send_expect_success (radio, "Movies", "Godfather");
+    msg_recv_cmp (dish, "Movies", "Godfather");
+
+    test_context_socket_close (dish);
+    test_context_socket_close (radio);
+}
+
 void test_radio_dish_tcp_poll (int ipv6_)
 {
     size_t len = MAX_SOCKET_STRING;
@@ -520,6 +583,7 @@ int main (void)
     RUN_TEST (test_join_too_long_fails);
     RUN_TEST (test_long_group);
     RUN_TEST (test_join_twice_fails);
+    RUN_TEST (test_peer_join_too_long_group);
     RUN_TEST (test_radio_bind_fails_ipv4);
     RUN_TEST (test_radio_bind_fails_ipv6);
     RUN_TEST (test_dish_connect_fails_ipv4);
