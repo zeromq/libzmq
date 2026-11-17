@@ -94,7 +94,8 @@ typedef enum
     client_handshake_end_line_cr,
     client_handshake_complete,
 
-    client_handshake_error = -1
+    client_handshake_error = -1,
+    client_handshake_http_rejected = -2,
 } ws_client_handshake_state_t;
 
 class ws_engine_t : public stream_engine_base_t
