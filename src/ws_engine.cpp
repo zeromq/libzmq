@@ -616,25 +616,25 @@ bool zmq::ws_engine_t::client_handshake ()
                 else if (c == '1')
                     _client_handshake_state = response_line_status_1;
                 else
-                    _client_handshake_state = client_handshake_error;
+                    _client_handshake_state = client_handshake_http_rejected;
                 break;
             case response_line_status_1:
                 if (c == '0')
                     _client_handshake_state = response_line_status_10;
                 else
-                    _client_handshake_state = client_handshake_error;
+                    _client_handshake_state = client_handshake_http_rejected;
                 break;
             case response_line_status_10:
                 if (c == '1')
                     _client_handshake_state = response_line_status_101;
                 else
-                    _client_handshake_state = client_handshake_error;
+                    _client_handshake_state = client_handshake_http_rejected;
                 break;
             case response_line_status_101:
                 if (c == ' ')
                     _client_handshake_state = response_line_status_101_space;
                 else
-                    _client_handshake_state = client_handshake_error;
+                    _client_handshake_state = client_handshake_http_rejected;
                 break;
             case response_line_status_101_space:
                 if (c == ' ')
@@ -877,6 +877,11 @@ bool zmq::ws_engine_t::client_handshake ()
               _endpoint_uri_pair, ZMQ_PROTOCOL_ERROR_WS_UNSPECIFIED);
 
             error (zmq::i_engine::protocol_error);
+            return false;
+        }
+        if (_client_handshake_state == client_handshake_http_rejected) {
+            errno = ECONNREFUSED;
+            error (zmq::i_engine::connection_error);
             return false;
         }
     }
