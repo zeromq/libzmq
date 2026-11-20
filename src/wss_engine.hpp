@@ -29,13 +29,23 @@ class wss_engine_t : public ws_engine_t
     void plug_internal ();
     int read (void *data, size_t size_);
     int write (const void *data_, size_t size_);
+    bool init_properties (properties_t &properties_);
 
   private:
     bool do_handshake ();
+    void capture_peer_cert_properties ();
 
     bool _established;
     gnutls_certificate_credentials_t _tls_client_cred;
     gnutls_session_t _tls_session;
+
+    // Captured from the peer's X.509 cert on handshake success. Empty if the
+    // peer did not present a cert (e.g. mTLS was not required). Exposed to
+    // the application via zmq_msg_gets() as Peer-Cert-* properties.
+    std::string _peer_cert_cn;
+    std::string _peer_cert_san_dns;
+    std::string _peer_cert_san_uri;
+    std::string _peer_cert_sha256;
 };
 }
 

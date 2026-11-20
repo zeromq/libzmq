@@ -274,6 +274,11 @@ struct options_t
     std::string wss_hostname;
     bool wss_trust_system;
 
+    //  WSS server-side mTLS: validate client certs against this trust bundle.
+    std::string wss_client_trust_pem;
+    bool wss_client_trust_system;
+    bool wss_require_client_cert;
+
     //  Hello msg
     std::vector<unsigned char> hello_msg;
     bool can_send_hello_msg;

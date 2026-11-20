@@ -882,10 +882,14 @@ endif
 
 if HAVE_WSS
 test_apps += \
-	tests/test_wss_transport
+	tests/test_wss_transport \
+	tests/test_wss_mtls
 tests_test_wss_transport_SOURCES = tests/test_wss_transport.cpp
 tests_test_wss_transport_LDADD = ${TESTUTIL_LIBS} src/libzmq.la ${GNUTLS_LIBS}
 tests_test_wss_transport_CPPFLAGS = ${TESTUTIL_CPPFLAGS} ${GNUTLS_CFLAGS}
+tests_test_wss_mtls_SOURCES = tests/test_wss_mtls.cpp
+tests_test_wss_mtls_LDADD = ${TESTUTIL_LIBS} src/libzmq.la ${GNUTLS_LIBS}
+tests_test_wss_mtls_CPPFLAGS = ${TESTUTIL_CPPFLAGS} ${GNUTLS_CFLAGS}
 endif
 
 if !ON_MINGW

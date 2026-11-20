@@ -1,3 +1,33 @@
+0MQ version 4.3.6, unreleased
+=============================
+
+* New DRAFT socket options for mutual TLS (mTLS) on the WSS transport:
+  - ZMQ_WSS_CLIENT_TRUST_PEM sets the PEM-encoded CA bundle used by a bound
+    socket to validate client certificates during the TLS handshake.
+  - ZMQ_WSS_CLIENT_TRUST_SYSTEM makes a bound socket additionally trust the
+    operating-system CA store when validating client certificates.
+  - ZMQ_WSS_REQUIRE_CLIENT_CERT, when set on a bound socket, requires every
+    connecting peer to present a certificate and rejects the handshake if
+    the chain does not validate against the configured trust bundle.
+  The existing ZMQ_WSS_CERT_PEM and ZMQ_WSS_KEY_PEM options are now also
+  honoured on connecting sockets, so clients can present a certificate for
+  mTLS without additional API surface.
+  See doc/zmq_setsockopt.adoc for details.
+
+* New DRAFT zmq_msg_gets() properties for messages received over an
+  authenticated WSS connection:
+  - Peer-Cert-Subject-CN
+  - Peer-Cert-SAN-DNS
+  - Peer-Cert-SAN-URI
+  - Peer-Cert-SHA256
+  These expose the peer's X.509 certificate to the application for
+  per-message identity binding, pinning, or auditing. Both peers see the
+  other's certificate: the client sees the server cert on every received
+  message, and the server (when ZMQ_WSS_REQUIRE_CLIENT_CERT is set) sees
+  the client cert on every received message.
+  See doc/zmq_msg_gets.adoc for details.
+
+
 0MQ version 4.3.5 stable, released on 2023/10/09
 ================================================
 

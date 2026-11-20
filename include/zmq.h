@@ -662,6 +662,9 @@ ZMQ_EXPORT void zmq_threadclose (void *thread_);
 #define ZMQ_NORM_NUM_PARITY 122
 #define ZMQ_NORM_NUM_AUTOPARITY 123
 #define ZMQ_NORM_PUSH 124
+#define ZMQ_WSS_CLIENT_TRUST_PEM 125
+#define ZMQ_WSS_CLIENT_TRUST_SYSTEM 126
+#define ZMQ_WSS_REQUIRE_CLIENT_CERT 127
 
 /*  DRAFT ZMQ_NORM_MODE options                                               */
 #define ZMQ_NORM_FIXED 0

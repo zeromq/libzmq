@@ -224,6 +224,8 @@ zmq::options_t::options_t () :
     router_notify (0),
     monitor_event_version (1),
     wss_trust_system (false),
+    wss_client_trust_system (false),
+    wss_require_client_cert (false),
     hello_msg (),
     can_send_hello_msg (false),
     disconnect_msg (),
@@ -811,6 +813,15 @@ int zmq::options_t::setsockopt (int option_,
         case ZMQ_WSS_TRUST_SYSTEM:
             return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
                                                      &wss_trust_system);
+        case ZMQ_WSS_CLIENT_TRUST_PEM:
+            wss_client_trust_pem = std::string ((char *) optval_, optvallen_);
+            return 0;
+        case ZMQ_WSS_CLIENT_TRUST_SYSTEM:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &wss_client_trust_system);
+        case ZMQ_WSS_REQUIRE_CLIENT_CERT:
+            return do_setsockopt_int_as_bool_strict (optval_, optvallen_,
+                                                     &wss_require_client_cert);
 #endif
 
 #ifdef ZMQ_HAVE_NORM

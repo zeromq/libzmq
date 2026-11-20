@@ -57,6 +57,20 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
         rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
                                                   GNUTLS_X509_FMT_PEM);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
+
+        // Optional: load a CA bundle used to validate client certificates
+        // when the engine requires client auth (mTLS).
+        if (options_.wss_client_trust_system)
+            gnutls_certificate_set_x509_system_trust (_tls_cred);
+
+        if (options_.wss_client_trust_pem.length () > 0) {
+            gnutls_datum_t client_trust = {
+              (unsigned char *) options_.wss_client_trust_pem.c_str (),
+              (unsigned int) options_.wss_client_trust_pem.length ()};
+            rc = gnutls_certificate_set_x509_trust_mem (
+              _tls_cred, &client_trust, GNUTLS_X509_FMT_PEM);
+            zmq_assert (rc >= 0);
+        }
     }
 #endif
 }
