@@ -33,9 +33,39 @@ property will return the IP address of the remote endpoint as returned by
 getnameinfo(2).
 
 The names of these properties are also defined in _zmq.h_ as
-_ZMQ_MSG_PROPERTY_SOCKET_TYPE_ _ZMQ_MSG_PROPERTY_ROUTING_ID_, and 
+_ZMQ_MSG_PROPERTY_SOCKET_TYPE_ _ZMQ_MSG_PROPERTY_ROUTING_ID_, and
 _ZMQ_MSG_PROPERTY_PEER_ADDRESS_.
 Currently, these definitions are only available as a DRAFT API.
+
+For messages received over an authenticated WSS (TLS) connection, the
+following properties describing the peer's X.509 certificate are also
+available:
+
+    Peer-Cert-Subject-CN
+    Peer-Cert-SAN-DNS
+    Peer-Cert-SAN-URI
+    Peer-Cert-SHA256
+
+*Peer-Cert-Subject-CN* is the Common Name (CN) from the peer certificate's
+Subject distinguished name, when present.
+
+*Peer-Cert-SAN-DNS* is the comma-separated list of DNS names from the
+peer certificate's SubjectAltName extension. Applications that treat the
+SAN as an identity for authorisation decisions must reject certificates
+whose SAN contains more than one DNS name, or must require the claimed
+identity to appear explicitly in this list.
+
+*Peer-Cert-SAN-URI* is the comma-separated list of URI entries from the
+peer certificate's SubjectAltName extension.
+
+*Peer-Cert-SHA256* is the lowercase hexadecimal SHA-256 fingerprint of
+the peer's leaf certificate in DER encoding. It is useful for pinning
+the exact certificate independently of any issuing CA.
+
+These properties are only populated when the WSS handshake presented a
+peer certificate. On bound sockets this requires 'ZMQ_WSS_REQUIRE_CLIENT_CERT'
+to be set (see xref:zmq_setsockopt.adoc[zmq_setsockopt]); on connecting
+sockets the server certificate is always presented.
 
 Other properties may be defined based on the underlying security mechanism,
 see ZAP authenticated connection sample below.

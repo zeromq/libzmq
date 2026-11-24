@@ -57,6 +57,20 @@ zmq::ws_listener_t::ws_listener_t (io_thread_t *io_thread_,
         rc = gnutls_certificate_set_x509_key_mem (_tls_cred, &cert, &key,
                                                   GNUTLS_X509_FMT_PEM);
         zmq_assert (rc == GNUTLS_E_SUCCESS);
+
+        // Optional: load a CA bundle used to validate client certificates
+        // when the engine requires client auth (mTLS).
+        if (options_.wss_client_trust_system)
+            gnutls_certificate_set_x509_system_trust (_tls_cred);
+
+        if (options_.wss_client_trust_pem.length () > 0) {
+            gnutls_datum_t client_trust = {
+              (unsigned char *) options_.wss_client_trust_pem.c_str (),
+              (unsigned int) options_.wss_client_trust_pem.length ()};
+            rc = gnutls_certificate_set_x509_trust_mem (
+              _tls_cred, &client_trust, GNUTLS_X509_FMT_PEM);
+            zmq_assert (rc >= 0);
+        }
     }
 #endif
 }
@@ -179,6 +193,17 @@ error:
 
 int zmq::ws_listener_t::set_local_address (const char *addr_)
 {
+#ifdef ZMQ_HAVE_WSS
+    //  Reject misconfiguration early: requiring a client certificate
+    //  without any trust bundle would reject every client silently.
+    if (_wss && options.wss_require_client_cert
+        && options.wss_client_trust_pem.empty ()
+        && !options.wss_client_trust_system) {
+        errno = EINVAL;
+        return -1;
+    }
+#endif
+
     if (options.use_fd != -1) {
         //  in this case, the addr_ passed is not used and ignored, since the
         //  socket was already created by the application

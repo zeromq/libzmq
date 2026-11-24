@@ -200,6 +200,7 @@ if(ZMQ_HAVE_WS)
 
   if(ZMQ_HAVE_WSS)
     list(APPEND tests test_wss_transport)
+    list(APPEND tests test_wss_mtls)
   endif()
 endif()
 

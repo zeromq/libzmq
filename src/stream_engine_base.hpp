@@ -51,7 +51,7 @@ class stream_engine_base_t : public io_object_t, public i_engine
 
   protected:
     typedef metadata_t::dict_t properties_t;
-    bool init_properties (properties_t &properties_);
+    virtual bool init_properties (properties_t &properties_);
 
     //  Function to handle network disconnections.
     virtual void error (error_reason_t reason_);

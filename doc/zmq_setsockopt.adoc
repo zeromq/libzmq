@@ -1666,6 +1666,144 @@ Default value:: 0 (false)
 Applicable socket types:: All, when using NORM transport.
 
 
+ZMQ_WSS_CERT_PEM: Set the WSS X.509 certificate chain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the PEM-encoded X.509 certificate chain presented during the TLS
+handshake. When set on a bound socket, this is the server's certificate.
+When set on a connecting socket together with 'ZMQ_WSS_KEY_PEM', it is
+the client certificate presented for mutual TLS (mTLS).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: PEM-encoded certificate chain
+Default value:: empty
+Applicable socket types:: All, when using WSS transport.
+
+
+ZMQ_WSS_KEY_PEM: Set the WSS X.509 private key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the PEM-encoded private key matching the certificate configured via
+'ZMQ_WSS_CERT_PEM'. Required alongside 'ZMQ_WSS_CERT_PEM' on bound sockets
+and on connecting sockets that participate in mTLS.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: PEM-encoded private key
+Default value:: empty
+Applicable socket types:: All, when using WSS transport.
+
+
+ZMQ_WSS_TRUST_PEM: Set the WSS trust bundle for validating peer (server) certificates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets a PEM-encoded CA certificate bundle used by connecting sockets to
+validate the server certificate presented during the TLS handshake. May
+be combined with 'ZMQ_WSS_TRUST_SYSTEM' to extend the system trust store.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: PEM-encoded CA bundle
+Default value:: empty
+Applicable socket types:: All, when using WSS transport.
+
+
+ZMQ_WSS_TRUST_SYSTEM: Trust the system CA store when validating the server
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If set, connecting sockets load the operating-system-level CA trust store
+in addition to any PEM bundle configured via 'ZMQ_WSS_TRUST_PEM', and use
+it to validate the server certificate.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: All, when using WSS transport.
+
+
+ZMQ_WSS_HOSTNAME: Set the expected hostname of the WSS peer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the hostname the connecting socket expects in the server
+certificate's Subject or SubjectAltName field. Also used as the SNI
+value during the TLS handshake. If unset, no hostname verification is
+performed.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: UTF-8 hostname
+Default value:: empty
+Applicable socket types:: All, when using WSS transport.
+
+
+ZMQ_WSS_CLIENT_TRUST_PEM: Set the WSS trust bundle for validating client certificates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets a PEM-encoded CA certificate bundle used by bound sockets to
+validate client certificates presented during the TLS handshake. Combined
+with 'ZMQ_WSS_REQUIRE_CLIENT_CERT' this enables mutual TLS (mTLS): the
+server requires every connecting client to present a certificate whose
+chain validates against the configured bundle.
+
+May be combined with 'ZMQ_WSS_CLIENT_TRUST_SYSTEM' to extend the system
+trust store.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: PEM-encoded CA bundle
+Default value:: empty
+Applicable socket types:: All, when using WSS transport as a server.
+
+
+ZMQ_WSS_CLIENT_TRUST_SYSTEM: Trust the system CA store when validating clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If set, bound sockets load the operating-system-level CA trust store in
+addition to any PEM bundle configured via 'ZMQ_WSS_CLIENT_TRUST_PEM', and
+use it to validate client certificates during mTLS.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: All, when using WSS transport as a server.
+
+
+ZMQ_WSS_REQUIRE_CLIENT_CERT: Require client certificate during WSS handshake
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If set, bound sockets request a client certificate during the TLS
+handshake and reject the connection if the client does not present one,
+or presents one that does not chain to a trusted CA (as configured via
+'ZMQ_WSS_CLIENT_TRUST_PEM' and/or 'ZMQ_WSS_CLIENT_TRUST_SYSTEM').
+
+After a successful handshake, the peer certificate is exposed to the
+application through xref:zmq_msg_gets.adoc[zmq_msg_gets] as the
+'Peer-Cert-Subject-CN', 'Peer-Cert-SAN-DNS', 'Peer-Cert-SAN-URI', and
+'Peer-Cert-SHA256' properties on messages received over the authenticated
+connection.
+
+Both peers enabling this and the client presenting a certificate chain
+via 'ZMQ_WSS_CERT_PEM' + 'ZMQ_WSS_KEY_PEM' is commonly referred to as
+mutual TLS (mTLS).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: All, when using WSS transport as a server.
+
+
 == RETURN VALUE
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
 shall return `-1` and set 'errno' to one of the values defined below.
