@@ -108,6 +108,13 @@ zmq::wss_engine_t::wss_engine_t (fd_t fd_,
         if (options_.wss_require_client_cert) {
             gnutls_certificate_server_set_request (_tls_session,
                                                    GNUTLS_CERT_REQUIRE);
+            //  GNUTLS_CERT_REQUIRE alone only enforces that the client
+            //  presents *a* certificate; it does not validate the chain
+            //  against the loaded trust bundle. Enable automatic
+            //  verification during the handshake so a cert signed by an
+            //  untrusted CA is rejected. NULL hostname: servers don't do
+            //  hostname checks on client certs.
+            gnutls_session_set_verify_cert (_tls_session, NULL, 0);
         }
     }
 
@@ -253,21 +260,33 @@ void zmq::wss_engine_t::capture_peer_cert_properties ()
         _peer_cert_cn.assign (buf, buf_size);
     }
 
-    // SAN: DNS + URI (joined with "," per type)
+    // SAN: DNS + URI (joined with "," per type). Each entry is read into
+    // a dynamically-sized buffer so long SANs don't terminate the loop or
+    // get silently truncated. GnuTLS reports GNUTLS_E_SHORT_MEMORY_BUFFER
+    // and writes the required size to san_size on undersized reads.
     for (int i = 0;; ++i) {
-        size_t san_size = sizeof (buf);
-        int san_type =
-          gnutls_x509_crt_get_subject_alt_name (crt, i, buf, &san_size, NULL);
-        if (san_type < 0)
+        size_t san_size = 256;
+        std::string san (san_size, '\0');
+        int san_type = gnutls_x509_crt_get_subject_alt_name (crt, i, &san[0],
+                                                             &san_size, NULL);
+        if (san_type == GNUTLS_E_SHORT_MEMORY_BUFFER) {
+            san.resize (san_size);
+            san_type = gnutls_x509_crt_get_subject_alt_name (crt, i, &san[0],
+                                                             &san_size, NULL);
+        }
+        if (san_type == GNUTLS_E_REQUESTED_DATA_NOT_AVAILABLE)
             break;
+        if (san_type < 0)
+            continue;
+        san.resize (san_size);
         if (san_type == GNUTLS_SAN_DNSNAME) {
             if (!_peer_cert_san_dns.empty ())
                 _peer_cert_san_dns.append (",");
-            _peer_cert_san_dns.append (buf, san_size);
+            _peer_cert_san_dns.append (san);
         } else if (san_type == GNUTLS_SAN_URI) {
             if (!_peer_cert_san_uri.empty ())
                 _peer_cert_san_uri.append (",");
-            _peer_cert_san_uri.append (buf, san_size);
+            _peer_cert_san_uri.append (san);
         }
     }
 

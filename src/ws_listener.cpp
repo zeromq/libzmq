@@ -193,6 +193,17 @@ error:
 
 int zmq::ws_listener_t::set_local_address (const char *addr_)
 {
+#ifdef ZMQ_HAVE_WSS
+    //  Reject misconfiguration early: requiring a client certificate
+    //  without any trust bundle would reject every client silently.
+    if (_wss && options.wss_require_client_cert
+        && options.wss_client_trust_pem.empty ()
+        && !options.wss_client_trust_system) {
+        errno = EINVAL;
+        return -1;
+    }
+#endif
+
     if (options.use_fd != -1) {
         //  in this case, the addr_ passed is not used and ignored, since the
         //  socket was already created by the application
